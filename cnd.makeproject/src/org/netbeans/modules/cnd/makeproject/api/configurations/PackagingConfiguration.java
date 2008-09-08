@@ -374,7 +374,14 @@ public class PackagingConfiguration {
         if (getTopDir().getModified()) {
             return getTopDir().getValue();
         } else {
-            String val = IpeUtils.getBaseName(getOutputValue());
+            String val;
+            
+            if (getType().getValue() == TYPE_RPM_PACKAGE) {
+                val = "/usr"; // NOI18N
+            }
+            else {
+                val = IpeUtils.getBaseName(getOutputValue());
+            }
             
             int i = val.lastIndexOf("."); // NOI18N
             if (i > 0) {
@@ -397,17 +404,17 @@ public class PackagingConfiguration {
     }
     
     private String getOutputDefault() {
-        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/package/"; // NOI18N 
+        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/package"; // NOI18N 
         String outputName = getOutputName();
         
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            outputPath += outputName;
+            outputPath += "/" + outputName; // NOI18
         } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            outputPath += outputName + ".rpm"; // NOI18N // FIXUP
+            // nothing
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
-            outputPath += outputName + ".tar"; // NOI18N
+            outputPath += "/" + outputName + ".tar"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
-            outputPath += outputName + ".zip"; // NOI18N
+            outputPath += "/" + outputName + ".zip"; // NOI18N
         } else {
             assert false;
         }

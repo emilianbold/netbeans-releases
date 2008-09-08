@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.websvc.saas.services.twitter.resources;
 
+import com.sun.tools.xjc.XJC2Task;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -66,6 +67,7 @@ import org.xml.sax.SAXException;
 public class TwitterResponseSchemaTest extends NbTestCase {
 
     private static final Logger LOG = Logger.getLogger(TwitterResponseSchemaTest.class.getName());
+    private static String resourceName = "/org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterResponse.xsd"; //NOI18N
     private static Schema schema;
     private File file;
 
@@ -75,7 +77,6 @@ public class TwitterResponseSchemaTest extends NbTestCase {
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
         // load a WXS schema, represented by a Schema instance
-        String resourceName = "/org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterResponse.xsd"; //NOI18N
         Source schemaFile = new StreamSource(TwitterResponseSchemaTest.class.getResourceAsStream(resourceName));
         try {
             schema = factory.newSchema(schemaFile);
@@ -123,6 +124,13 @@ public class TwitterResponseSchemaTest extends NbTestCase {
         }
     }
 
+    public void testCompileSchema() throws IOException {
+        XJC2Task xjc = new XJC2Task();
+        xjc.setDestdir(getWorkDir());
+        xjc.setSchema(TwitterResponseSchemaTest.class.getResource(resourceName).toExternalForm());
+        xjc.execute();
+    }
+
     private static TestSuite createTestSuite(NbTestCase t) {
         TestSuite ts = new NbTestSuite();
         File dataDir = t.getDataDir();
@@ -133,6 +141,7 @@ public class TwitterResponseSchemaTest extends NbTestCase {
                 ts.addTest(new TwitterResponseSchemaTest("validate", f)); //NOI18N
             }
         }
+        ts.addTest(new TwitterResponseSchemaTest("testCompileSchema")); //NOI18N
         return ts;
     }
 }

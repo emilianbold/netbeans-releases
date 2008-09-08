@@ -137,7 +137,7 @@ public class JavaTypeProvider implements TypeProvider {
 //        }
 //    }
 
-    public void computeTypeNames(Context context, Result res) {
+    public void computeTypeNames(Context context, final Result res) {
         isCanceled = false;
         String text = context.getText();
         SearchType searchType = context.getSearchType();
@@ -349,6 +349,7 @@ public class JavaTypeProvider implements TypeProvider {
                     Future<Void> f = src.runWhenScanFinished(new Task<CompilationController>() {
                         public void run(CompilationController parameter) throws Exception {
                             LOGGER.fine("Restarting search...");
+                            res.setMessage(null);
                         }
                     }, false);
                     f.get();

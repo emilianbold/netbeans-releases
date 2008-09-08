@@ -283,6 +283,7 @@ public final class Main extends Object {
 	    // -----------------------------------------------------------------------------------------------------
 	    // License check
             if (!handleLicenseCheck()) {
+                deleteRec(new File(CLIOptions.getUserDir())); // #145936
                 TopLogging.exit(0);
             }
 	    // -----------------------------------------------------------------------------------------------------
@@ -338,6 +339,20 @@ public final class Main extends Object {
     // start to store all caches after 15s
     Stamps.getModulesJARs().flush(15000);
   }
+    protected static void deleteRec(File f) throws IOException {
+        if (f.isDirectory()) {
+            File[] kids = f.listFiles();
+            if (kids == null) {
+                throw new IOException("Could not list: " + f);
+            }
+            for (File kid : kids) {
+                deleteRec(kid);
+            }
+        }
+        if (!f.delete()) {
+            throw new IOException("Could not delete: " + f);
+        }
+    }
   
     /** Loads a class from available class loaders. */
     private static final Class getKlass(String cls) {

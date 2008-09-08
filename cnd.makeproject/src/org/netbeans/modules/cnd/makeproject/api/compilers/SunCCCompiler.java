@@ -86,11 +86,11 @@ public class SunCCCompiler extends SunCCCCompiler {
                         token = line.substring(includeIndex+2);
                     }
                     if ( ! token.equals("-xbuiltin")) { //NOI18N
-                        systemIncludeDirectoriesList.addUnique(normalizePath(token));
+                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
                     }
                     if (token.endsWith("Cstd")) { // NOI18N
                         // See 89872 "Parser Settings" for Sun Compilers Collection are incorrect
-                        systemIncludeDirectoriesList.addUnique(normalizePath(token.substring(0, token.length()-4) + "std")); // NOI18N
+                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(token.substring(0, token.length()-4) + "std")); // NOI18N
                     }
                     // Hack to handle -compat flag. If this flag is added,
                     // the compiler looks in in CC4 and not in CC. Just adding CC4 doesn't

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
@@ -55,14 +56,14 @@ public class DevelopmentHostNodeProp extends Node.Property {
     public DevelopmentHostNodeProp(DevelopmentHostConfiguration configuration, boolean canWrite, String name, String description) {
         super(Integer.class);
         this.configuration = configuration;
-	this.canWrite = canWrite;
-	this.name = name;
-	this.description = description;
+        this.canWrite = canWrite;
+        this.name = name;
+        this.description = description;
     }
 
     @Override
     public String getName() {
-	return name;
+        return name;
     }
 
     @Override
@@ -112,7 +113,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new IntEditor();
+        return new IntEditor();
     }
 
     private class IntEditor extends PropertyEditorSupport {
@@ -134,6 +135,16 @@ public class DevelopmentHostNodeProp extends Node.Property {
         @Override
         public String[] getTags() {
             return configuration.getServerNames();
+        }
+
+        @Override
+        public boolean supportsCustomEditor() {
+            return false;
+        }
+
+        @Override
+        public Component getCustomEditor() {
+            return null;
         }
     }
 }
