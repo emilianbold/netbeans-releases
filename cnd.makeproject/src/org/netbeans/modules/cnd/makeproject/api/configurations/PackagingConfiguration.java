@@ -408,7 +408,7 @@ public class PackagingConfiguration {
         String outputName = getOutputName();
         
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            outputPath += "/" + outputName;
+            outputPath += "/" + outputName; // NOI18
         } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
             // nothing
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {

@@ -255,8 +255,14 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         PersistentUtils.writeType(this.type, output);
 
         // not null
-        assert this.containerUID != null;
-        UIDObjectFactory.getDefaultFactory().writeUID(this.containerUID, output);        
+        if (this.containerUID == null) {
+            System.err.println("trying to write non-writable typedef:" + this.getContainingFile() + toString()); // NOI18N
+            if (this.containerRef == null) {
+                System.err.println("typedef doesn't have container at all"); // NOI18N
+            }
+        } else {
+            UIDObjectFactory.getDefaultFactory().writeUID(this.containerUID, output);
+        }
     }  
     
     public TypedefImpl(DataInput input) throws IOException {
@@ -268,8 +274,10 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         assert this.type != null;
         
         this.containerUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        // not null UID
-        assert this.containerUID != null;
+        // should not be null UID
+        if (this.containerUID == null) {
+            System.err.println("non-writable object was read:" + this.getContainingFile() + toString()); // NOI18N
+        }
         this.containerRef = null;
     }       
 }
