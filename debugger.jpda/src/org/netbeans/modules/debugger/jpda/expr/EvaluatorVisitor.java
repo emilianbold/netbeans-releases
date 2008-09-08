@@ -633,7 +633,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return classes.get(0);
     }
 
-    private boolean instanceOf(Type left, Type right) {
+    public static boolean instanceOf(Type left, Type right) {
         if (left == null) return false;
         if (left.equals(right)) return true;
 
