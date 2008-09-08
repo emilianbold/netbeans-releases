@@ -347,7 +347,11 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
     }
 
     public INamedElement processDrop(INamedElement elementToDrop) {
-        //
+        
+        if ( elementToDrop == null)
+        {
+            return null;
+        }
         String type0=elementToDrop.getExpandedElementType();
         if(type0==null)type0=elementToDrop.getElementType();
         INamedElement ret=elementToDrop;

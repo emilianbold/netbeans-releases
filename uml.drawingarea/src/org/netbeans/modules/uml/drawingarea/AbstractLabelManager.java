@@ -572,6 +572,10 @@ public abstract class AbstractLabelManager implements LabelManager
 
         public void movementFinished(Widget widget)
         {
+            if (origLoc == null)
+            {
+                origLoc = widget.getLocation();
+            }
             if (origLoc != null)
             {
                 Point finalLoc = widget.getPreferredLocation();
