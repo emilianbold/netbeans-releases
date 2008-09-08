@@ -74,12 +74,14 @@ public class UtilitiesTest extends TestCase {
     
     private String originalOsName;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         Utilities.resetOperatingSystem ();
         originalOsName = System.getProperty("os.name");
     }
     
+    @Override
     protected void tearDown() throws Exception {
         System.setProperty("os.name", originalOsName);
         super.tearDown();
@@ -151,11 +153,17 @@ public class UtilitiesTest extends TestCase {
         assertFalse( "no custom cursor created", toolkit.createCustomCursorCalled );
     }
      */
-    
+
+    public void testKeyConversions() throws Exception {
+        assertEquals("CS-F1", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_F1, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK)));
+        assertEquals(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.ALT_MASK), Utilities.stringToKey("A-EQUALS"));
+        // XXX stringToKeys, Mac support, various more exotic conditions...
+    }
+
     public void testSpecialKeyworksOn14AsWell15 () throws Exception {
         KeyStroke ks = Utilities.stringToKey("C-CONTEXT_MENU");
         assertNotNull ("key stroke created", ks);
-        KeyStroke alt = ks.getKeyStroke(ks.getKeyCode(), KeyEvent.ALT_MASK);
+        KeyStroke alt = KeyStroke.getKeyStroke(ks.getKeyCode(), KeyEvent.ALT_MASK);
         String s = Utilities.keyToString(alt);
         assertEquals ("Correctly converted", "A-CONTEXT_MENU", s);    
     }
