@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,34 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.saas.codegen.java.support;
+package org.netbeans.modules.websvc.jaxrpc.wsdlmodel;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 
 /**
  *
- * @author ayubskhan
+ * @author rico
  */
-public class SoapClientJavaOperationInfo extends SoapClientOperationInfo {
+public class WsdlJavaParameter implements JavaParameter {
 
-    public SoapClientJavaOperationInfo(WsdlSaasMethod m, Project project) {
-        super(m, project);
+    private com.sun.xml.rpc.processor.model.java.JavaParameter param;
+    private String name;
+    private WsdlJavaType type;
+
+    public WsdlJavaParameter(com.sun.xml.rpc.processor.model.java.JavaParameter param) {
+        this.param = param;
     }
 
-    @Override
-    public void initWsdlModelInfo() {
-        if (isRPCEncoded()) {
-            LibrariesHelper.addDefaultJaxRpcClientJars(getProject(), null, getMethod().getSaas());
-        } else {
-            LibrariesHelper.addDefaultJaxWsClientJars(getProject(), null, getMethod().getSaas());
+    public Object getInternalJAXWSJavaParameter() {
+        return this.param;
+    }
+
+    public String getName() {
+        if (this.name == null) {
+            this.name = this.param.getName();
         }
-
+        return this.name;
     }
 
-    @Override
-    public Class getType(Project project, String typeName) {
-        return JavaUtil.getType(project, typeName);
+    public WsdlJavaType getType() {
+        if (this.type == null) {
+            this.type = new WsdlJavaType(this.param.getType());
+        }
+        return this.type;
+    }
+
+    public Object getParameter() {
+        return this.param.getParameter();
+    }
+
+    public boolean isHolder() {
+        return this.param.isHolder();
+    }
+
+    public String getHolderName() {
+        return this.param.getHolderName();
+    }
+
+    public boolean isIN() {
+        return getHolderName() == null; //TODO figure this out
+    }
+
+    public boolean isINOUT() {
+        return getHolderName() != null; //TODO figure this out
+    }
+
+    public boolean isOUT() {
+        return getHolderName() != null; //TODO figure this out
     }
 }

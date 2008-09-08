@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,12 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,34 +37,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.saas.codegen.java.support;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+package org.netbeans.modules.profiler.j2ee.tomcat;
+
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author ayubskhan
+ * @author Jaroslav Bachorik
  */
-public class SoapClientJavaOperationInfo extends SoapClientOperationInfo {
+public class Tomcat6IntegrationProvider extends Tomcat5IntegrationProvider {
+    //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    public SoapClientJavaOperationInfo(WsdlSaasMethod m, Project project) {
-        super(m, project);
+    private final String TOMCAT_60_TITLE = NbBundle.getMessage(this.getClass(), "TomcatIntegrationProvider_Tomcat6String"); // NOI18N
+
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
+
+    public String getTitle() {
+        return TOMCAT_60_TITLE;
     }
 
-    @Override
-    public void initWsdlModelInfo() {
-        if (isRPCEncoded()) {
-            LibrariesHelper.addDefaultJaxRpcClientJars(getProject(), null, getMethod().getSaas());
-        } else {
-            LibrariesHelper.addDefaultJaxWsClientJars(getProject(), null, getMethod().getSaas());
-        }
-
+    protected int getAttachWizardPriority() {
+        return 10;
     }
 
-    @Override
-    public Class getType(Project project, String typeName) {
-        return JavaUtil.getType(project, typeName);
+    protected String getCatalinaScriptName() {
+        return "catalina"; // NOI18N
     }
+
+    protected int getMagicNumber() {
+        return 40;
+    }
+
+    protected String getTomcatName() {
+        return "Tomcat6";
+    }
+
 }

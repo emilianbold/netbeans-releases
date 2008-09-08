@@ -88,18 +88,31 @@ import org.openide.util.NbBundle;
  * @author ayubkhan
  */
 public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
-    
+
     public static final String QNAME = "javax.xml.namespace.QName";
     public static final String WS_BINDING_PROVIDER = "com.sun.xml.ws.developer.WSBindingProvider";
     public static final String HEADERS = "com.sun.xml.ws.api.message.Headers";
     public static final String SET_HEADER_PARAMS = "setHeaderParameters";
     public static final String VAR_NAMES_SERVICE = "service";
     public static final String VAR_NAMES_PORT = "port";
-    
+
+     // {0} = fully qualified service class name ( e.g. "org.netbeans.FooSeWebService")
+    // {1} = service variable name ( e.g. "fooService")
+    // {2} = fully qualified port name (as type, e.g. com.service.FooPort)
+    // {3} = port varialbe name (e.g., "port")
+    // {4} = port getter method (e.g., getFooPort)
+    // {5} = operation name
+    // {6} = argument array
+    private static final String INVOKE_JAXRPC_BODY =
+            "\t\tjavax.naming.InitialContext ic = new javax.naming.InitialContext();\n" +
+            "\t\t{0} {1} = ({0}) ic.lookup(\"java:comp/env/service/{0}\");\n" +
+            "\t\t{2} {3} = {1}.{4}();\n" +
+            "\t\t{3}.{5}({6});\n" ;
+  
     public SoapClientPojoCodeGenerator() {
         setDropFileType(Constants.DropFileType.JAVA_CLIENT);
     }
-    
+
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
         if (SaasBean.canAccept(method, WsdlSaasMethod.class, getDropFileType()) &&
@@ -127,37 +140,41 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     @Override
     protected void preGenerate() throws IOException {
         super.preGenerate();
-        
+
         SoapClientOperationInfo[] operations = getBean().getOperationInfos();
         for (SoapClientOperationInfo info : operations) {
-            LibrariesHelper.addDefaultJaxWsClientJars(getProject(), null, info.getMethod().getSaas());
+            if (info.isRPCEncoded()) {
+                LibrariesHelper.addDefaultJaxRpcClientJars(getProject(), null, info.getMethod().getSaas());
+            } else {
+                LibrariesHelper.addDefaultJaxWsClientJars(getProject(), null, info.getMethod().getSaas());
+            }
         }
     }
 
     @Override
     public Set<FileObject> generate() throws IOException {
         preGenerate();
-        
+
         insertSaasServiceAccessCode(isInBlock(getTargetDocument()));
         //addImportsToTargetFile();
-        
+
         finishProgressReporting();
 
         return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
-    
+
     /**
      *  Insert the Saas client call
      */
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
         try {
             String code = "";
-            if(isInBlock) {
+            if (isInBlock) {
                 code = getCustomMethodBody();
             } else {
-                code = "\nprivate String call"+getBean().getName()+"Service() {\n";
-                code += getCustomMethodBody()+"\n";
-                code += "return "+getResultPattern()+";\n";
+                code = "\nprivate String call" + getBean().getName() + "Service() {\n";
+                code += getCustomMethodBody() + "\n";
+                code += "return " + getResultPattern() + ";\n";
                 code += "}\n";
             }
             insert(code, true);
@@ -165,29 +182,86 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
             throw new IOException(ex.getMessage());
         }
     }
-    
+
     @Override
     protected String getCustomMethodBody() throws IOException {
-        String methodBody = "\n"+INDENT + "try {\n";
+        String methodBody = "\n" + INDENT + "try {\n";
         List<ParameterInfo> params = getBean().getQueryParameters();
         updateVariableNames(params);
         List<ParameterInfo> renamedParams = renameParameterNames(params);
         for (ParameterInfo param : renamedParams) {
             String name = param.getName();
-            methodBody += INDENT_2 + param.getType().getName() + " " + name + " = "+
-                    resolveInitValue(param)+"\n";
+            methodBody += INDENT_2 + param.getType().getName() + " " + name + " = " +
+                    resolveInitValue(param) + "\n";
         }
         SoapClientOperationInfo[] operations = getBean().getOperationInfos();
         for (SoapClientOperationInfo info : operations) {
+            if(!info.isRPCEncoded()){
             methodBody += getWSInvocationCode(info);
+            }
+            else{
+                methodBody += getWSInvocationCodeForJaxrpc(info);
+            }
         }
         methodBody += INDENT + "} catch (Exception ex) {\n";
         methodBody += INDENT_2 + "ex.printStackTrace();\n";
         methodBody += INDENT + "}\n";
         return methodBody;
     }
-    
-     /**
+
+    private static String varFromName(final String name) {
+        if (name.length() > 0) {
+            StringBuffer buf = new StringBuffer(name);
+
+            // If the first character is uppercase, make it lowercase for the variable name,
+            // otherwise, prefix an underscore.
+            if (Character.isUpperCase(buf.charAt(0))) {
+                buf.setCharAt(0, Character.toLowerCase(buf.charAt(0)));
+            } else {
+                buf.insert(0, '_');
+            }
+            return removeDots(buf).toString();
+        } else {
+            return "unknown"; // NOI18N
+        }
+    }
+
+   
+    // replace dots in a class/var name
+    private static StringBuffer removeDots(final StringBuffer name) {
+        int dotIndex;
+        while ((dotIndex = name.indexOf(".")) > -1) { //NOI18N
+            name.deleteCharAt(dotIndex); //delete the dot
+            name.setCharAt(dotIndex, Character.toUpperCase(name.charAt(dotIndex))); // make the letter after dot uppercase
+        }
+        return name;
+    }
+
+  
+     // {0} = fully qualified service class name ( e.g. "org.netbeans.FooSeWebService")
+    // {1} = service variable name ( e.g. "fooService")
+    // {2} = fully qualified port name (as type, e.g. com.service.FooPort)
+    // {3} = port varialbe name (e.g., "port")
+    // {4} = port getter method (e.g., getFooPort)
+    // {5} = operation name
+    private String getWSInvocationCodeForJaxrpc(SoapClientOperationInfo info) throws IOException{
+        String serviceClassName = info.getService().getJavaName();
+        String serviceName = info.getServiceName();
+        if(serviceName == null || serviceName.length() ==0){
+            serviceName = "service";
+        }
+        String serviceVarName = varFromName(serviceName);
+        String servicePortClassName = info.getPort().getJavaName();
+        String portVarName = varFromName(info.getPortName());
+        String portDelegateName = "get" + info.getPortName(); //NOI18N
+        String serviceOperationName = info.getOperationName();        
+        Object[] args = new String[]{serviceClassName, serviceVarName, servicePortClassName, portVarName,
+        portDelegateName, serviceOperationName};
+
+        String operationInvocation = MessageFormat.format(this.INVOKE_JAXRPC_BODY, args);
+        return operationInvocation;
+    }
+    /**
      * Add JAXWS client code for invoking the given operation at current position.
      */
     protected String getWSInvocationCode(SoapClientOperationInfo info) throws IOException {
@@ -196,7 +270,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         String portJavaName = info.getPort().getJavaName();
         String operationJavaName = info.getOperation().getJavaName();
         String portGetterMethod = info.getPort().getPortGetter();
-        String serviceFieldName = findNewName(serviceJavaName+" "+VAR_NAMES_SERVICE, VAR_NAMES_SERVICE); //NOI18N
+        String serviceFieldName = findNewName(serviceJavaName + " " + VAR_NAMES_SERVICE, VAR_NAMES_SERVICE); //NOI18N
         String returnTypeName = info.getOperation().getReturnTypeName();
         List<WSParameter> outArguments = info.getOutputParameters();
         updateVariableNamesForWS(outArguments);
@@ -215,7 +289,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
                     callbackHandlerName = argumentTypeName;
                 }
                 String argumentName = findNewName(getVariableDecl(outArguments.get(i)), outArguments.get(i).getName());
-                argumentBuffer1.append(INDENT_2 + argumentTypeName + " " + argumentName + 
+                argumentBuffer1.append(INDENT_2 + argumentTypeName + " " + argumentName +
                         " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
             }
 
@@ -225,15 +299,15 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
                 String argument = findNewName(getVariableDecl(parameters.get(i)), parameters.get(i).getName());
                 argumentBuffer2.append(i > 0 ? ", " + argument : argument); //NOI18N
             }
-            argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" + 
+            argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" +
                     HINT_INIT_ARGUMENTS + argumentBuffer1.toString() : "");
             argumentDeclarationPart = argumentBuffer2.toString();
         } catch (NullPointerException npe) {
             // !PW notify failure to extract service information.
             npe.printStackTrace();
-            String message = NbBundle.getMessage(SoapClientPojoCodeGenerator.class, 
+            String message = NbBundle.getMessage(SoapClientPojoCodeGenerator.class,
                     "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
-            NotifyDescriptor desc = new NotifyDescriptor.Message(message, 
+            NotifyDescriptor desc = new NotifyDescriptor.Message(message,
                     NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
         }
@@ -245,6 +319,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         final String[] serviceFName = {serviceFieldName};
         final boolean[] generateWsRefInjection = {false};
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
             private Kind VARIABLE;
 
             public void run(CompilationController controller) throws IOException {
@@ -290,15 +365,14 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
             }
         };
 
-        String invocationBody = getJavaInvocationBody(info.getOperation(), 
-                insertServiceDef[0], serviceJavaName, portJavaName, 
-                portGetterMethod, argumentInitPart[0], returnTypeName, 
-                operationJavaName, argumentDeclPart[0], serviceFName[0], 
+        String invocationBody = getJavaInvocationBody(info.getOperation(),
+                insertServiceDef[0], serviceJavaName, portJavaName,
+                portGetterMethod, argumentInitPart[0], returnTypeName,
+                operationJavaName, argumentDeclPart[0], serviceFName[0],
                 printerName[0], responseType);
 
         return invocationBody;
     }
-
     public static final String HINT_INIT_ARGUMENTS = " // TODO initialize WS operation arguments here\n"; //NOI18N
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")
@@ -368,7 +442,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
 
         return "null;"; //NOI18N
     }
-    
+
     /**
      * Determines the initialization value of a variable of type "type"
      * @param type Type of the variable
@@ -382,13 +456,14 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
             return "new " + type + "();";
         }
         if ("int".equals(type) || "long".equals(type) || "short".equals(type) || "byte".equals(type) ||
-                 "java.lang.Integer".equals(type) || "java.lang.Long".equals(type) || 
-                 "java.lang.Short".equals(type) || "java.lang.Byte".equals(type)) {
+                "java.lang.Integer".equals(type) || "java.lang.Long".equals(type) ||
+                "java.lang.Short".equals(type) || "java.lang.Byte".equals(type)) {
             //NOI18N
             try {
                 int val = Integer.parseInt((String) defaultVal);
                 return String.valueOf(val) + ";";
-            } catch(Exception ex) {}
+            } catch (Exception ex) {
+            }
             return "0;"; //NOI18N
         }
         if ("boolean".equals(type) || "java.lang.Boolean".equals(type)) {
@@ -396,18 +471,20 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
             return defaultVal.toString() + ";";
         }
         if ("float".equals(type) || "double".equals(type) ||
-                 "java.lang.Float".equals(type) || "java.lang.Double".equals(type)) {
+                "java.lang.Float".equals(type) || "java.lang.Double".equals(type)) {
             //NOI18N
             try {
                 double val = Double.parseDouble((String) defaultVal);
                 return String.valueOf(val) + ";";
-            } catch(Exception ex) {}
+            } catch (Exception ex) {
+            }
             return "0.0;"; //NOI18N
         }
         if ("java.lang.String".equals(type)) {
             //NOI18N
-            if(defaultVal != null && defaultVal instanceof String)
+            if (defaultVal != null && defaultVal instanceof String) {
                 return "\"" + (String) defaultVal + "\";";
+            }
             return "\"\";"; //NOI18N
         }
         if (type.endsWith("CallbackHandler")) {
@@ -431,47 +508,44 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
             return "javax.xml.ws.Response"; //NOI18N
         }
     }
-    
     public static final String SET_HEADER_PARAMS_CALL = SET_HEADER_PARAMS + "(port); \n";
 
-    protected String getJavaInvocationBody(WSOperation operation, 
-            boolean insertServiceDef, String serviceJavaName, String portJavaName, 
-            String portGetterMethod, String argumentInitializationPart, 
-            String returnTypeName, String operationJavaName, String argumentDeclarationPart, 
+    protected String getJavaInvocationBody(WSOperation operation,
+            boolean insertServiceDef, String serviceJavaName, String portJavaName,
+            String portGetterMethod, String argumentInitializationPart,
+            String returnTypeName, String operationJavaName, String argumentDeclarationPart,
             String serviceFieldName, String printerName, String responseType) {
 
         String invocationBody = INDENT_2;
-        String setHeaderParams = getBean().getHeaderParameters().size() > 0 ? SET_HEADER_PARAMS_CALL : "" ;
+        String setHeaderParams = getBean().getHeaderParameters().size() > 0 ? SET_HEADER_PARAMS_CALL : "";
         Object[] args = new Object[]{
-            serviceJavaName, portJavaName, portGetterMethod, 
-            argumentInitializationPart, returnTypeName, operationJavaName, 
-            argumentDeclarationPart, serviceFieldName, printerName, 
-            getResultPattern(), findNewName(serviceJavaName+" "+VAR_NAMES_SERVICE, VAR_NAMES_SERVICE), 
-                findNewName(portJavaName+" "+VAR_NAMES_PORT, VAR_NAMES_PORT)};
+            serviceJavaName, portJavaName, portGetterMethod,
+            argumentInitializationPart, returnTypeName, operationJavaName,
+            argumentDeclarationPart, serviceFieldName, printerName,
+            getResultPattern(), findNewName(serviceJavaName + " " + VAR_NAMES_SERVICE, VAR_NAMES_SERVICE),
+            findNewName(portJavaName + " " + VAR_NAMES_PORT, VAR_NAMES_PORT)
+        };
         switch (operation.getOperationType()) {
-            case WSOperation.TYPE_NORMAL:
-                {
-                    if ("void".equals(returnTypeName)) {
-                        //NOI18N
-                        String body = (insertServiceDef ? JAVA_SERVICE_DEF : "") + setHeaderParams + JAVA_PORT_DEF + JAVA_VOID;
-                        invocationBody += MessageFormat.format(body, args);
-                    } else {
-                        String body = (insertServiceDef ? JAVA_SERVICE_DEF : "") + JAVA_PORT_DEF + setHeaderParams + JAVA_RESULT + JAVA_OUT;
-                        invocationBody += MessageFormat.format(body, args);
-                    }
-                    break;
+            case WSOperation.TYPE_NORMAL: {
+                if ("void".equals(returnTypeName)) {
+                    //NOI18N
+                    String body = (insertServiceDef ? JAVA_SERVICE_DEF : "") + setHeaderParams + JAVA_PORT_DEF + JAVA_VOID;
+                    invocationBody += MessageFormat.format(body, args);
+                } else {
+                    String body = (insertServiceDef ? JAVA_SERVICE_DEF : "") + JAVA_PORT_DEF + setHeaderParams + JAVA_RESULT + JAVA_OUT;
+                    invocationBody += MessageFormat.format(body, args);
                 }
-            case WSOperation.TYPE_ASYNC_POLLING:
-                {
-                    invocationBody += MessageFormat.format(JAVA_STATIC_STUB_ASYNC_POLLING, args);
-                    break;
-                }
-            case WSOperation.TYPE_ASYNC_CALLBACK:
-                {
-                    args[7] = responseType;
-                    invocationBody += MessageFormat.format(JAVA_STATIC_STUB_ASYNC_CALLBACK, args);
-                    break;
-                }
+                break;
+            }
+            case WSOperation.TYPE_ASYNC_POLLING: {
+                invocationBody += MessageFormat.format(JAVA_STATIC_STUB_ASYNC_POLLING, args);
+                break;
+            }
+            case WSOperation.TYPE_ASYNC_CALLBACK: {
+                args[7] = responseType;
+                invocationBody += MessageFormat.format(JAVA_STATIC_STUB_ASYNC_CALLBACK, args);
+                break;
+            }
         }
         return invocationBody;
     }
@@ -484,6 +558,8 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         }
         return name; //NOI18N
     }
+
+
 
     private ClassTree addSetHeaderParamsMethod(WorkingCopy copy, ClassTree tree, String portJavaType) {
         Modifier[] modifiers = JavaUtil.PRIVATE;
@@ -505,13 +581,13 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
             String namespaceUri = pinfo.getQName().getNamespaceURI();
             bodyText += "Headers.create(new QName(";
             if (namespaceUri != null) {
-                bodyText += "\""+ namespaceUri +"\",";
+                bodyText += "\"" + namespaceUri + "\",";
             }
-            bodyText += "\"" + pinfo.getName()+"\"), \""+pinfo.getDefaultValue()+"\")";
+            bodyText += "\"" + pinfo.getName() + "\"), \"" + pinfo.getDefaultValue() + "\")";
         }
         bodyText += ");";
-        String[] parameters = new String[] { findNewName(portJavaType+" "+VAR_NAMES_PORT, VAR_NAMES_PORT) };
-        Object[] paramTypes = new Object[] { portJavaType };
+        String[] parameters = new String[]{findNewName(portJavaType + " " + VAR_NAMES_PORT, VAR_NAMES_PORT)};
+        Object[] paramTypes = new Object[]{portJavaType};
         String[] paramAnnotations = new String[0];
         Object[] paramAnnotationAttrs = new String[0];
         String comment = null;
