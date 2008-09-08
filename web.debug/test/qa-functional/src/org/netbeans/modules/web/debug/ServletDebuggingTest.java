@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.web.debug;
 
+import java.awt.event.KeyEvent;
+import java.beans.EventHandler;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JDialog;
@@ -48,6 +50,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -65,6 +68,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.openide.util.Exceptions;
 
 /** Test of web application debugging. Manual test specification is here:
  * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
@@ -155,20 +159,19 @@ public class ServletDebuggingTest extends J2eeTestCase {
         String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
         new NbDialogOperator(setURITitle).ok();
         Utils.confirmClientSideDebuggingMeassage();
-        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        OutputTabOperator outputTab = new OutputTabOperator("MainTestApplication (debug)");
+        outputTab.waitText("BUILD SUCCESSFUL");
         stt.waitText("DivideServlet.java:" + line); //NOI18N
-        // set sources from TestFreeformLibrary to be used for debugging
-        JemmyProperties.setCurrentTimeout("JMenuOperator.PushMenuTimeout", 60000);
-        SourcesOperator so = SourcesOperator.invoke();
-        so.useSource("TestFreeformLibrary"+File.separator+"src1", true); // NOI18N
-        so.useSource("TestFreeformLibrary"+File.separator+"src2", true); // NOI18N
-        so.close();
         new StepIntoAction().perform();
+        MainWindowOperator.getDefault().pressKey(KeyEvent.VK_ENTER);
         stt.waitText("DivideServlet.java:"+(line+2)); //NOI18N
         new StepIntoAction().perform();
-        stt.waitText("Divider.java:"); //NOI18N
-        new EditorOperator("Divider.java").close(); //NOI18N
+        stt.waitText("DivideServlet.java:"+(line+4));
         Utils.finishDebugger();
     }
 
@@ -181,7 +184,6 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepOut() {
         new DebugAction().perform(servletNode);
-        Utils.confirmClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
         stt.waitText("DivideServlet.java:" + line); //NOI18N
