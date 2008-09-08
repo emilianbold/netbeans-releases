@@ -55,6 +55,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.openide.cookies.LineCookie;
@@ -124,21 +125,6 @@ public class OutputWindowWriter extends Writer {
     
     public void close() throws IOException {
         delegate.close();
-    }
-
-    private static FileObject resolveFile(String fileName) {
-        if (Utilities.isWindows()) {
-            //replace /cygdrive/<something> prefix with <something>:/ prefix:
-            if (fileName.startsWith("/cygdrive/")) { // NOI18N
-                fileName = fileName.substring("/cygdrive/".length()); // NOI18N
-                fileName = "" + fileName.charAt(0) + ':' + fileName.substring(1); // NOI18N
-                fileName = fileName.replace('/', '\\');
-            }
-        }
-        
-	File directory = FileUtil.normalizeFile(new File(fileName));
-        
-        return FileUtil.toFileObject(directory);
     }
 
     private static final int LENGTH_TRESHOLD = 2048;
@@ -245,6 +231,23 @@ public class OutputWindowWriter extends Writer {
         
         public abstract Pattern[] getPattern();
         
+        protected FileObject resolveFile(String fileName) {
+            if (Utilities.isWindows()) {
+                //replace /cygdrive/<something> prefix with <something>:/ prefix:
+                if (fileName.startsWith("/cygdrive/")) { // NOI18N
+                    fileName = fileName.substring("/cygdrive/".length()); // NOI18N
+                    fileName = "" + fileName.charAt(0) + ':' + fileName.substring(1); // NOI18N
+                    fileName = fileName.replace('/', '\\');
+                }
+            }
+
+            fileName = HostInfoProvider.getDefault().getMapper(hkey).getLocalPath(fileName);
+
+            File directory = FileUtil.normalizeFile(new File(fileName));
+
+            return FileUtil.toFileObject(directory);
+        }
+
         protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
             if (IpeUtils.isPathAbsolute(relativePath)){ // NOI18N
                 if (!RemoteUtils.isLocalhost(hkey) || Utilities.isWindows()) {
