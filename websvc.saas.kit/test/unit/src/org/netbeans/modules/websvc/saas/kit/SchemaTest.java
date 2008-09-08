@@ -106,9 +106,11 @@ public class SchemaTest extends NbTestCase {
     protected List<File> getTestCases() {
         List<File> testCases = new ArrayList<File>();
         File[] testFiles = getDataDir().listFiles();
-        for (File f : testFiles) {
-            if (f.isFile()) {
-                testCases.add(f); //NOI18N
+        if (testFiles != null) {
+            for (File f : testFiles) {
+                if (f.isFile()) {
+                    testCases.add(f); //NOI18N
+                }
             }
         }
         return testCases;
