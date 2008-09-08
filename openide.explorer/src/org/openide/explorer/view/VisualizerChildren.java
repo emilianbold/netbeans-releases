@@ -61,7 +61,7 @@ final class VisualizerChildren extends Object {
     
     private List<Node> snapshot;
     
-    private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerChildren.prefetchCount", 50), 0);  // NOI18N
+    static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerChildren.prefetchCount", 50), 0);  // NOI18N
 
     /** Empty VisualizerChildren. */
     private VisualizerChildren () {

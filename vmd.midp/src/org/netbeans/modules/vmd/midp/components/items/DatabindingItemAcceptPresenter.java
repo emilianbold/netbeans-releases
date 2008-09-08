@@ -69,7 +69,6 @@ public abstract class DatabindingItemAcceptPresenter extends AcceptPresenter {
     public final boolean isAcceptable(ComponentProducer producer, AcceptSuggestion suggestion) {
         DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
         TypeID producerTypeID = producer.getMainComponentTypeID ();
-        System.out.println(registry.isInHierarchy(typeID, producerTypeID));
         return registry.isInHierarchy(typeID, producerTypeID) ;
     }
 

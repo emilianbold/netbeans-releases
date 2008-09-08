@@ -79,6 +79,10 @@ public class TryGetTest extends BaseTestCase {
 	    return "Repository_Test_Unit";
 	}
 
+        public int getUnitId() {
+	    return 1;
+	}
+
 	public int getSecondaryDepth() {
 	    return 0;
 	}

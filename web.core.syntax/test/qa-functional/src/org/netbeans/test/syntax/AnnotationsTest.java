@@ -118,9 +118,9 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue133760.jsp");
     }
 
-//    public void testIssue133841() throws Exception {
-//        runTest("issue133841.html");
-//    }
+    public void testIssue133841() throws Exception {
+        runTest("issue133841.html");
+    }
 
     public void testIssue134518() throws Exception {
         runTest("issue134518.jsp");

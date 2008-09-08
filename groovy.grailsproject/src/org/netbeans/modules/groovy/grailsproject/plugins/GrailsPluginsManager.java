@@ -98,7 +98,7 @@ public class GrailsPluginsManager {
         return new GrailsPluginsManager(project);
     }
 
-    public List<GrailsPlugin> refreshAvailablePlugins() {
+    public List<GrailsPlugin> refreshAvailablePlugins() throws InterruptedException {
         final String command = "list-plugins"; // NOI18N
 
         final ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
@@ -116,10 +116,12 @@ public class GrailsPluginsManager {
         });
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
+        Future<Integer> task = service.run();
         try {
-            service.run().get();
+            task.get();
         } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
+            task.cancel(true);
+            throw ex;
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex.getCause());
         }

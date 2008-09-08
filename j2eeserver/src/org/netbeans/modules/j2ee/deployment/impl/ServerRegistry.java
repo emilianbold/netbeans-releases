@@ -268,7 +268,7 @@ public final class ServerRegistry implements java.io.Serializable {
 
     }
 
-    public Collection getServers() {
+    public Collection<Server> getServers() {
         return serversMap().values();
     }
 

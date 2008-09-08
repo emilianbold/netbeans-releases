@@ -176,7 +176,7 @@ public class RegionsAction extends SceneNodeAction implements ContextAwareAction
                 State state = w.getElement();
                 state.addContent(region);
                 setLayout(w);
-                w.addRegion(region);
+                w.addCompartment(region);
             }
         }
 

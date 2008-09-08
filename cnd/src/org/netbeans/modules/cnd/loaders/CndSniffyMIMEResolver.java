@@ -19,7 +19,7 @@ package org.netbeans.modules.cnd.loaders;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 
@@ -29,6 +29,10 @@ import org.openide.filesystems.MIMEResolver;
  * @author Vladimir Voskresensky
  */
 public class CndSniffyMIMEResolver extends MIMEResolver {
+
+    public CndSniffyMIMEResolver() {
+        super(MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.SHELL_MIME_TYPE);
+    }
 
     /**
      * Resolves FileObject and returns recognized MIME type

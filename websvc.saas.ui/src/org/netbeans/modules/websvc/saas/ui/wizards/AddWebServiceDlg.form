@@ -248,9 +248,6 @@
       <Events>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jTxtpackageNameMouseClicked"/>
       </Events>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="jTxtpackageName.getDocument().addDocumentListener(new DocumentListener() {&#xd;&#xa;            public void insertUpdate(DocumentEvent e) {&#xd;&#xa;                updateAddButtonState(jTxtpackageName);&#xd;&#xa;            }&#xd;&#xa;            &#xd;&#xa;            public void removeUpdate(DocumentEvent e) {&#xd;&#xa;                updateAddButtonState(jTxtpackageName);&#xd;&#xa;            }&#xd;&#xa;            &#xd;&#xa;            public void changedUpdate(DocumentEvent e) {&#xd;&#xa;                updateAddButtonState(jTxtpackageName);&#xd;&#xa;            }&#xd;&#xa;});&#xd;&#xa;"/>
-      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="errorLabel">
       <Properties>

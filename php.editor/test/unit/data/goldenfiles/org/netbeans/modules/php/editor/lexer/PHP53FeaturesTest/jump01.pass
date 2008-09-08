@@ -38,5 +38,5 @@ token #36 WHITESPACE
 token #37 PHP_STRING L1
 token #38 PHP_SEMICOLON ;
 token #39 WHITESPACE \n
-token #40 PHP_CLOSETAG ?>\n
-token #41 T_INLINE_HTML --EXPECT--\n1: ok\n2: ok\n3: ok\n
+token #40 PHP_CLOSETAG ?>
+token #41 T_INLINE_HTML \n--EXPECT--\n1: ok\n2: ok\n3: ok\n

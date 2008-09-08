@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -67,7 +67,6 @@ import org.netbeans.modules.i18n.java.JavaI18nSupport;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
@@ -141,34 +140,37 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
 
     /** Overrides superclass method.
      * @return null as we don't support this feature */
+    @Override
     public String[] getTags() {
         return null;
     }
 
     /** Sets as text. Overrides superclass method to be dummy -> don't throw
      * <code>IllegalArgumentException</code> . */
+    @Override
     public void setAsText(String text) {}
         
     
     /** Overrides superclass method. 
      * @return text for the current value */
+    @Override
     public String getAsText() {
-        FormI18nInteger formI18nInteger = (FormI18nInteger)getValue();
-        DataObject dataObject = formI18nInteger.getSupport().getResourceHolder().getResource();
+        FormI18nInteger value = (FormI18nInteger)getValue();
+        DataObject dataObject = value.getSupport().getResourceHolder().getResource();
         
-        if (dataObject == null || formI18nInteger.getKey() == null) {
+        if (dataObject == null || value.getKey() == null) {
             return bundle.getString("TXT_InvalidValue");
         } else {
 
             String resourceName = org.netbeans.modules.i18n.Util.
-                getResourceName(formI18nInteger.getSupport().getSourceDataObject().getPrimaryFile(),
+                getResourceName(value.getSupport().getSourceDataObject().getPrimaryFile(),
                                 dataObject.getPrimaryFile(),
                                 '/', false);// NOI18N
 
             return MessageFormat.format(
                 bundle.getString("TXT_Key"),
                 new Object[] {
-                    formI18nInteger.getKey(),
+                    value.getKey(),
                     resourceName, // NOI18N
                 }
             );
@@ -183,12 +185,14 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
      * <p>
      * <b>java.text.MessageFormat.format(<identifier name>getString("<key name>"), new Object[] {<code set in Parameters and Comments panel>})</b>
      */
+    @Override
     public String getJavaInitializationString() {
         return ((FormI18nInteger)getValue()).getReplaceString();
     }
     
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nInteger</code> value. */
+    @Override
     public Component getCustomEditor() {
         return new CustomEditor(new FormI18nInteger((FormI18nInteger)getValue()), getProject(), sourceDataObject.getPrimaryFile());
     }
@@ -200,12 +204,14 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
 
     /** Overrides superclass method. 
      * @return true since we support this feature */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
 
     /** Overrides superclass method.
      * @return <code>formI18nInteger</code> */
+    @Override
     public Object getValue() {
         if(formI18nInteger == null) {
             formI18nInteger = createFormI18nInteger();
@@ -219,6 +225,7 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
 
     /** Overrides superclass method.
      * @param value sets the new value for this editor */
+    @Override
     public void setValue(Object object) {
         if(object instanceof FormI18nInteger)
             formI18nInteger = (FormI18nInteger)object;
@@ -276,7 +283,7 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
             throw new IOException ();
         }
         
-        FormI18nInteger formI18nInteger = createFormI18nInteger();
+        FormI18nInteger value = createFormI18nInteger();
 
         NamedNodeMap namedNodes = domNode.getAttributes ();
         
@@ -301,8 +308,8 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
                     if(fileObject != null) {
                         try {
                             DataObject dataObject = DataObject.find(fileObject);
-                            if(dataObject.getClass().equals(formI18nInteger.getSupport().getResourceHolder().getResourceClasses()[0])) // PENDING
-                                formI18nInteger.getSupport().getResourceHolder().setResource(dataObject);
+                            if(dataObject.getClass().equals(value.getSupport().getResourceHolder().getResourceClasses()[0])) // PENDING
+                                value.getSupport().getResourceHolder().setResource(dataObject);
                         } 
                         catch (IOException e) {
                         }
@@ -312,22 +319,22 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
 
             // Set the key property.
             if(key != null && key.length() > 0) {
-                formI18nInteger.setKey(key);
+                value.setKey(key);
                 
                 // Set value and comment.
-                formI18nInteger.setValue(formI18nInteger.getSupport().getResourceHolder().getValueForKey(key));
-                formI18nInteger.setComment(formI18nInteger.getSupport().getResourceHolder().getCommentForKey(key));
+                value.setValue(value.getSupport().getResourceHolder().getValueForKey(key));
+                value.setComment(value.getSupport().getResourceHolder().getCommentForKey(key));
             }
 
             // Try to get identifier value.
-            ((JavaI18nSupport)formI18nInteger.getSupport()).createIdentifier();            
+            ((JavaI18nSupport)value.getSupport()).createIdentifier();
             
             node = namedNodes.getNamedItem(ATTR_IDENTIFIER);
             if(node != null) {
                 String identifier = (node == null) ? null : node.getNodeValue();
                 
                 if(identifier != null)
-                    ((JavaI18nSupport)formI18nInteger.getSupport()).setIdentifier(identifier);
+                    ((JavaI18nSupport)value.getSupport()).setIdentifier(identifier);
             }
             
             // Try to get init format string value.
@@ -353,11 +360,11 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
                     
                     String newReplaceFormat = MapFormat.format(replaceFormat, map);
                     
-                    formI18nInteger.setReplaceFormat(newReplaceFormat);
+                    value.setReplaceFormat(newReplaceFormat);
                 }
             } else {
                 // Read was not succesful (old form or error) -> set old form replace format.
-                formI18nInteger.setReplaceFormat((String)I18nUtil.getDefaultReplaceFormat(false));
+                value.setReplaceFormat((String)I18nUtil.getDefaultReplaceFormat(false));
             }
         } catch(NullPointerException npe) {
             throw new IOException ();
@@ -412,11 +419,11 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
                     parameters[i] = ""; // NOI18N
 
             // Set the parameters.
-            formI18nInteger.setArguments(parameters);
+            value.setArguments(parameters);
         }
 
         // Set the value for this editor.
-        setValue(formI18nInteger);
+        setValue(value);
     }
 
     /**
@@ -484,13 +491,24 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
         public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
                     && isVisible()) {
+                String errMsgKey = null;
                 I18nString i18nString = getI18nString();
-                if (i18nString == null 
-                    || !(i18nString instanceof FormI18nInteger)
-                    || i18nString.getSupport().getResourceHolder().getResource() == null 
-                    || i18nString.getKey() == null) {
+                if (i18nString == null || !(i18nString instanceof FormI18nInteger)) {
+                    errMsgKey = "MSG_InvalidValue";                     //NOI18N
+                } else {
+                    if (i18nString.getSupport().getResourceHolder().getResource()
+                            == null) {
+                        errMsgKey = "MSG_BundleNotSpecified";           //NOI18N
+                    } else if (i18nString.getKey() == null) {
+                        errMsgKey = "MSG_KeyNotSpecified";              //NOI18N
+                    } else {
+                        errMsgKey = checkMnemonicIndex(i18nString.getValue());
+                    }
+                }
+                if (errMsgKey != null) {
                     // Notify user that invalid value set.
-                    throw new PropertyVetoException(bundle.getString("MSG_InvalidValue"), evt); // NOI18N
+                    throw new PropertyVetoException(bundle.getString(errMsgKey),
+                                                    evt);
                 }
                 // Try to add new key into resource bundle first.
                 i18nString.getSupport().getResourceHolder().addProperty(
@@ -502,7 +520,39 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
                 FormI18nIntegerEditor.this.setValue(i18nString);
             }
         }
+
+        private String checkMnemonicIndex(String value) {
+            if ((value == null) || (value.length() == 0)) {
+                return "MSG_MnemonicIndexNotSpecified";                 //NOI18N
+            }
+
+            if (!isNonNegativeInteger(value)) {
+                return "MSG_MnemonicIndexIsInvalid";                    //NOI18N
+            }
+
+            return null;
+        }
+
+    }
+    
+    private static boolean isNonNegativeInteger(String value) {
+        if ((value == null) || (value.length() == 0)) {
+            return false;
+        }
+
+        char ch = value.charAt(0);
+        if ((ch < '0') || (ch > '9')) {
+            return false;
+        } else if (value.length() == 1) {
+            return true;
+        }
+
+        for (char c : value.toCharArray()) {
+            if ((c < '0') || (c > '9')) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    
 }

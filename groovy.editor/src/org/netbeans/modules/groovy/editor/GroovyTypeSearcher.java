@@ -58,13 +58,13 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.TypeSearcher;
+import org.netbeans.modules.gsf.api.IndexSearcher;
+import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -75,9 +75,9 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek
  */
-public class GroovyTypeSearcher implements TypeSearcher {
+public class GroovyTypeSearcher implements IndexSearcher {
 
-    public Set<? extends GsfTypeDescriptor> getDeclaredTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
+    public Set<? extends Descriptor> getTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
         GroovyIndex index = new GroovyIndex(gsfIndex);
 
         kind = adjustKind(kind, textForQuery);
@@ -98,10 +98,6 @@ public class GroovyTypeSearcher implements TypeSearcher {
         }
         
         return result;
-    }
-
-    public String getMimetype() {
-        return GroovyTokenId.GROOVY_MIME_TYPE;
     }
 
     private static boolean isAllUpper( String text ) {
@@ -138,8 +134,15 @@ public class GroovyTypeSearcher implements TypeSearcher {
         cachedKind = kind;
         return kind;
     }
+
+    public Set<? extends Descriptor> getSymbols(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
+        // TODO - search for methods too!!
+
+        // For now, just at a minimum do the types
+        return getTypes(gsfIndex, textForQuery, kind, scope, helper);
+    }
     
-    private class GroovyTypeDescriptor extends GsfTypeDescriptor {
+    private class GroovyTypeDescriptor extends Descriptor {
         private final IndexedElement element;
         private String projectName;
         private Icon projectIcon;
@@ -247,7 +250,6 @@ public class GroovyTypeSearcher implements TypeSearcher {
                 fqn = null;
             }
             if (fqn != null/* || require != null*/) {
-                sb.append(" (");
                 if (fqn != null) {
                     sb.append(fqn);
                 }
@@ -259,7 +261,6 @@ public class GroovyTypeSearcher implements TypeSearcher {
 //                    sb.append(require);
 //                    sb.append(".rb");
 //                }
-                sb.append(")");
                 return sb.toString();
             } else {
                 return null;

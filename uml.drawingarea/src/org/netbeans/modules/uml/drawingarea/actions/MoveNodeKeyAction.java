@@ -36,36 +36,50 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
-import java.util.Set;
+import org.netbeans.api.visual.action.MoveProvider;
+import org.netbeans.api.visual.action.MoveStrategy;
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.action.WidgetAction.State;
-import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.graph.GraphScene;
-import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author treyspiva
  */
-public class MoveNodeKeyAction extends WidgetAction.Adapter
+public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
 {
 
-    public MoveNodeKeyAction()
+    private MoveStrategy strategy;
+    private MoveProvider provider;
+    private Widget movingWidget = null;
+    private Point dragSceneLocation = null;
+    private Point originalSceneLocation = null;
+    private Point initialWidgetLocation = null;
+
+    public MoveNodeKeyAction(MoveStrategy strategy, MoveProvider provider)
     {
+        this.strategy = strategy;
+        this.provider = provider;
     }
 
-    @Override
-    public State keyPressed(Widget widget, WidgetKeyEvent event)
+    protected boolean isLocked()
     {
-        State retVal = State.REJECTED;
+        return movingWidget != null;
+    }
+
+    public State keyPressed (Widget widget, WidgetKeyEvent event)
+    {
+        if (isLocked())
+        {
+            return State.createLocked(widget, this);
+        }
         
         boolean controlKeyPressed = event.isControlDown();
         if(Utilities.isMac() == true)
@@ -73,87 +87,161 @@ public class MoveNodeKeyAction extends WidgetAction.Adapter
             controlKeyPressed = event.isMetaDown();
         }
             
-        if(controlKeyPressed == true)
+        if((controlKeyPressed == true) && 
+          ((event.getKeyCode() == KeyEvent.VK_UP) ||
+           (event.getKeyCode() == KeyEvent.VK_DOWN) ||
+           (event.getKeyCode() == KeyEvent.VK_LEFT) ||
+           (event.getKeyCode() == KeyEvent.VK_RIGHT)))
         {
-//            Point location = widget.getLocation();
+            movingWidget = getNodeWidget(widget);
+            if(movingWidget != null)
+            {
+                initialWidgetLocation = getWidgetLocation(movingWidget);
 
-            boolean update = false;
-            if(event.getKeyCode() == KeyEvent.VK_UP)
-            {
-//                location.y -= 10;
-//                update = true;
-                updateSelectedWidgets(widget.getScene(), 0, -10);
-            }
-            else if(event.getKeyCode() == KeyEvent.VK_DOWN)
-            {
-//                location.y += 10;
-//                update = true;
-                updateSelectedWidgets(widget.getScene(), 0, 10);
-            }
-            else if(event.getKeyCode() == KeyEvent.VK_LEFT)
-            {
-//                location.x -= 10;
-//                update = true;
-                updateSelectedWidgets(widget.getScene(), -10, 0);
-            }
-            else if(event.getKeyCode() == KeyEvent.VK_RIGHT)
-            {
-//                location.x += 10;
-//                update = true;
-                updateSelectedWidgets(widget.getScene(), 10, 0);
-
-            }
-
-//            if(update == true)
-//            {
-//                ContextPaletteManager manager = widget.getScene().getLookup().lookup(ContextPaletteManager.class);
-//                if(manager != null)
-//                {
-//                    manager.cancelPalette();
-//                }
-//
-//                widget.setPreferredLocation(location);
-//
-//                if(manager != null)
-//                {
-//                    manager.selectionChanged(null);
-//                }
-//            }
-        }
-        
-        return retVal;
-    }
-    
-    protected void updateSelectedWidgets(Scene scene , int dx, int dy)
-    {
-        ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
-        if(manager != null)
-        {
-            manager.cancelPalette();
-        }
-        
-        if (scene instanceof GraphScene)
-        {
-            GraphScene gScene = (GraphScene) scene;
-            Set selected = gScene.getSelectedObjects();
-            
-            for(Object curSelected : selected)
-            {
-                Widget widget = gScene.findWidget(curSelected);
-                if(widget != null)
+                originalSceneLocation = provider.getOriginalLocation(movingWidget);
+                if (originalSceneLocation == null)
                 {
-                    Point location = widget.getLocation();
-                    location.x += dx;
-                    location.y += dy;
-                    
-                    widget.setPreferredLocation(location);
+                    originalSceneLocation = new Point();
+                }
+
+                // TODO: I do not think I need the dragSceneLocation any longer
+                dragSceneLocation = initialWidgetLocation;
+                provider.movementStarted(movingWidget);
+                return State.createLocked(widget, this);
+            }
+        }
+        return State.REJECTED;
+    }
+
+    public State keyReleased (Widget widget, WidgetKeyEvent event)
+    {
+        boolean state = false;
+        
+        if(movingWidget != null)
+        {
+            Point newWidgetLocation = getNewLocation(movingWidget, event);
+
+            if (initialWidgetLocation != null && initialWidgetLocation.equals(newWidgetLocation))
+            {
+                state = true;
+            }
+            else
+            {
+                state = move(movingWidget, newWidgetLocation);
+            }
+
+            if (state)
+            {
+                provider.movementFinished(movingWidget);
+                
+                movingWidget = null;
+                dragSceneLocation = null;
+                originalSceneLocation = null;
+                initialWidgetLocation = null;
+            }
+        }
+
+        return state ? State.CONSUMED : State.REJECTED;
+    }
+
+    private Point getNewLocation (Widget widget, WidgetKeyEvent event)
+    {
+        Point location = getWidgetLocation(widget);
+        if(event.getKeyCode() == KeyEvent.VK_UP)
+        {
+            location.y -= 10;
+        }
+        else if(event.getKeyCode() == KeyEvent.VK_DOWN)
+        {
+            location.y += 10;
+        }
+        else if(event.getKeyCode() == KeyEvent.VK_LEFT)
+        {
+            location.x -= 10;
+        }
+        else if(event.getKeyCode() == KeyEvent.VK_RIGHT)
+        {
+            location.x += 10;
+
+        }
+        
+        return location;
+    }
+
+    /**
+     * A connection widget can not be moved.  Therefore if the focused widget 
+     * is a connection widget get one of the ends and base the movement on the
+     * nodes.  A node widget will only returned if one of the nodes are selected.
+     * 
+     * @param widget The target of the key event.
+     * @return The node widget.  If no node widget is selected, then null is
+     *         returned.
+     */
+    private Widget getNodeWidget(Widget widget) 
+    {
+        Widget retVal = widget;
+        
+        if (widget instanceof ConnectionWidget) 
+        {
+            retVal = null;
+            
+            ConnectionWidget connection = (ConnectionWidget) widget;
+            Widget source = connection.getSourceAnchor().getRelatedWidget();
+            if((source != null) && (source.getState().isSelected() == true))
+            {
+                retVal = source;
+            }
+            else
+            {
+                Widget target = connection.getTargetAnchor().getRelatedWidget();
+                if((target != null) && (target.getState().isSelected() == true))
+                {
+                    retVal = target;
+                }
+            }
+            
+            if(retVal == null)
+            {
+                if (widget.getScene() instanceof GraphScene)
+                {
+                    GraphScene scene = (GraphScene) widget.getScene();
+                    for(Object select : scene.getSelectedObjects())
+                    {
+                        if(scene.isNode(select) == true)
+                        {
+                            retVal = scene.findWidget(select);
+                            break;
+                        }
+                    }
                 }
             }
         }
         
-        if(manager != null)
+        return retVal;
+    }
+
+    private Point getWidgetLocation(Widget widget)
+    {
+
+        Point retVal = widget.getPreferredLocation();
+        if (retVal == null)
         {
-            manager.selectionChanged(null);
+            retVal = widget.getLocation();
         }
+
+        return retVal;
+    }
+    
+    private boolean move(Widget widget, Point newLocation)
+    {
+        if ((movingWidget != widget) || (widget == null))
+        {
+            return false;
+        }
+        initialWidgetLocation = null;
+        //newLocation = widget.getParentWidget().convertLocalToScene(newLocation);
+        Point location = new Point(originalSceneLocation.x + newLocation.x - dragSceneLocation.x, originalSceneLocation.y + newLocation.y - dragSceneLocation.y);
+        provider.setNewLocation(widget, strategy.locationSuggested(widget, originalSceneLocation, location));
+        return true;
     }
 }

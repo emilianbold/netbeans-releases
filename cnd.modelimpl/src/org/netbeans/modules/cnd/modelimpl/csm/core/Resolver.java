@@ -86,4 +86,6 @@ public interface Resolver {
     public interface SafeTemplateBasedProvider {
         boolean isTemplateBased(Set<CsmType> visited);
     }    
+    
+    public CsmClassifier getOriginalClassifier(CsmClassifier orig);
 }

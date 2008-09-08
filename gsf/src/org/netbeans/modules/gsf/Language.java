@@ -94,6 +94,7 @@ public final class Language {
     private StructureScanner structure;
     private HintsProvider hintsProvider;
     private GsfHintsManager hintsManager;
+    private IndexSearcher indexSearcher;
     //private PaletteController palette;
     private OccurrencesFinder occurrences;
     private SemanticAnalyzer semantic;
@@ -110,6 +111,7 @@ public final class Language {
     //private FileObject paletteFile;
     private FileObject semanticFile;
     private FileObject occurrencesFile;
+    private FileObject indexSearcherFile;
     
     
     /** Creates a new instance of DefaultLanguage */
@@ -670,5 +672,31 @@ public final class Language {
 
     void setSemanticAnalyzer(FileObject semanticFile) {
         this.semanticFile = semanticFile;
+    }
+
+    /**
+     * Return the semantic analyzer for this language
+     */
+    @NonNull
+    public IndexSearcher getIndexSearcher() {
+        if (indexSearcher == null) {
+            if (indexSearcherFile != null) {
+                indexSearcher = (IndexSearcher)createInstance(indexSearcherFile);
+                if (indexSearcher == null) {
+                    // Don't keep trying
+                    indexSearcherFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    indexSearcher = languageConfig.getIndexSearcher();
+                }
+            }
+        }
+        return indexSearcher;
+    }
+
+    void setIndexSearcher(FileObject indexSearcherFile) {
+        this.indexSearcherFile = indexSearcherFile;
     }
 }

@@ -41,30 +41,37 @@
 package org.netbeans.modules.uml.drawingarea.palette.context;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteButtonModel;
-import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 
 /**
  * The PaletteButton is displayed in the context palette.  
  * @author treyspiva
  */
-public class PaletteButton extends JPanel
+public class PaletteButton extends ContextPaletteButton
 {
+    
     private Widget actionTarget = null;
     private ContextPaletteButtonModel model = null;
     private WidgetAction[] actions = null;
@@ -118,8 +125,19 @@ public class PaletteButton extends JPanel
         ButtonListener listener = new ButtonListener();
         addMouseListener(listener);
         addMouseMotionListener(listener);
+        addKeyListener(new ExecuteAction());
     }
-
+    
+    protected Border getFocusBorder()
+    {
+        return BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 1);
+    }
+    
+    protected Border getNonFocusedBorder()
+    {
+        return BorderFactory.createEmptyBorder(1, 1, 1, 1);
+    }
+            
     protected void initializeUI()
     {
         removeAll();
@@ -135,24 +153,25 @@ public class PaletteButton extends JPanel
         if(direction == PaletteDirection.RIGHT)
         {
             add(display, BorderLayout.WEST);
-        display.setHorizontalAlignment(SwingConstants.LEFT);
+            display.setHorizontalAlignment(SwingConstants.LEFT);
         }
         else
         {
             add(display, BorderLayout.EAST);
-        display.setHorizontalAlignment(SwingConstants.RIGHT);
+            display.setHorizontalAlignment(SwingConstants.RIGHT);
         }
         
         if(filler == true)
         {
-            JPanel filler = new JPanel();
-            filler.setOpaque(false);
-            filler.setPreferredSize(new Dimension(0, 0));
+            JPanel fillerPanel = new JPanel();
+            fillerPanel.setOpaque(false);
+            fillerPanel.setPreferredSize(new Dimension(0, 0));
             
-            add(filler, BorderLayout.CENTER);
+            add(fillerPanel, BorderLayout.CENTER);
         }
         
         setToolTipText(model.getTooltip());
+        setBorder(getNonFocusedBorder());
     }
     
     public PaletteDirection getDirection()
@@ -465,6 +484,25 @@ public class PaletteButton extends JPanel
         {
             State state = delegatedAction.drop(widget, event);
             return fireWidgetActionHandedEvent(state);
+        }
+        
+    }
+
+    public class ExecuteAction extends KeyAdapter
+    {
+
+        @Override
+        public void keyPressed(KeyEvent e)
+        {
+            for(WidgetAction action : actions)
+            {
+                WidgetAction.WidgetKeyEvent keyEvent = new WidgetAction.WidgetKeyEvent((long)e.getID(), e);
+                if(action.keyPressed(actionTarget, keyEvent) == State.CONSUMED)
+                {
+                    e.consume();
+                    break;
+                }
+            }
         }
         
     }

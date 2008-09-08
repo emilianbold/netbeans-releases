@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler.j2ee.tomcat;
 
-import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,7 +58,7 @@ public class Tomcat55IntegrationProvider extends Tomcat5IntegrationProvider {
     }
 
     protected int getAttachWizardPriority() {
-        return 10;
+        return 11;
     }
 
     protected String getCatalinaScriptName() {

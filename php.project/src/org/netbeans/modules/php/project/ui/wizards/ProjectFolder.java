@@ -39,9 +39,7 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -69,7 +67,8 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class ProjectFolder extends JPanel implements ActionListener, DocumentListener {
-    private static final long serialVersionUID = 7976754658426848L;
+    private static final long serialVersionUID = 7976754658427748L;
+    private static final Font BOLD_FONT = new JTextArea().getFont().deriveFont(Font.BOLD);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final ProjectNameProvider projectNameProvider;
@@ -79,6 +78,8 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         initComponents();
 
         init();
+        projectFolderScrollPane.setVisible(false);
+        projectFolderTextArea.setFont(BOLD_FONT);
     }
 
     private void init() {
@@ -115,6 +116,8 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderLabel.setEnabled(enabled);
         projectFolderTextField.setEnabled(enabled);
         projectFolderBrowseButton.setEnabled(enabled);
+        // warning
+        projectFolderScrollPane.setVisible(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -157,9 +160,10 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderTextArea.setEditable(false);
         projectFolderTextArea.setLineWrap(true);
         projectFolderTextArea.setText(NbBundle.getMessage(ProjectFolder.class, "TXT_MetadataInfo")); // NOI18N
+        projectFolderTextArea.setToolTipText(NbBundle.getMessage(ProjectFolder.class, "TXT_MetadataInfo")); // NOI18N
         projectFolderTextArea.setWrapStyleWord(true);
         projectFolderTextArea.setBorder(null);
-        projectFolderTextArea.setDisabledTextColor(UIManager.getDefaults().getColor("Label.disabledForeground"));
+        projectFolderTextArea.setDisabledTextColor(UIManager.getDefaults().getColor("nb.warningForeground"));
         projectFolderTextArea.setEnabled(false);
         projectFolderScrollPane.setViewportView(projectFolderTextArea);
 
@@ -172,7 +176,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(GroupLayout.LEADING, projectFolderScrollPane, GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                    .add(GroupLayout.LEADING, projectFolderScrollPane)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(projectFolderCheckBox)

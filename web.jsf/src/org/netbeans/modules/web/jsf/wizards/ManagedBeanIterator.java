@@ -178,9 +178,8 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         
         String description = (String) wizard.getProperty(WizardProperties.DESCRIPTION);
         if (description != null && description.length() > 0){
-            String newLine = System.getProperty("line.separator");
             Description beanDescription = bean.getModel().getFactory().createDescription();
-            beanDescription.setValue(newLine + description + newLine);
+            beanDescription.setValue(description);
             bean.addDescription(beanDescription);
         }
         facesConfig.getModel().startTransaction();
