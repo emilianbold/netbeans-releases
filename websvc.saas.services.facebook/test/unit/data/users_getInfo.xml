@@ -10,7 +10,8 @@
                 <name>Facebook Developers</name>
                 <type>work</type>
                 <status/>
-                <year/>
+                <!-- The year field is not empty from actual method call. -->
+                <year>0</year>
             </affiliation>
         </affiliations>
         <birthday>November 3</birthday>
