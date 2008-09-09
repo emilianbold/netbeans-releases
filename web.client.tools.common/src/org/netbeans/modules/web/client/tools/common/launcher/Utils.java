@@ -106,7 +106,7 @@ public class Utils {
                     // which this file lives. The code name base can be found in
                     // nbproject/project.xml
                     "org.netbeans.modules.web.client.tools.common", // NOI18N
-                    false));
+                    true));
         }
         return debuggerDotHtmlFileObject;
     }

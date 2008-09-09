@@ -94,6 +94,9 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
             entryComboBox.addItem("%preun"); // NOI18N
             entryComboBox.addItem("%postun"); // NOI18N
         }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            // FIXUP
+        }
         else
             assert false;
     }

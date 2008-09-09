@@ -41,4 +41,7 @@ FUNCTION DEFINITION hello  [6:1/63-9:2/102] FunctionDDImpl SCOPE: $Global$
 CLASS MyClassWithM1 (MyClassWithM1 ) [10:1/192-11:2/215] lcurly=212 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
+CLASS MyClassNoM1 (MyClassNoM1 ) [13:1/223-14:2/244] lcurly=241 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
 

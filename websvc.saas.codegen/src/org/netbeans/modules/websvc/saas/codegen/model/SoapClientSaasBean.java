@@ -137,19 +137,19 @@ public class SoapClientSaasBean extends SaasBean {
     }
 
     @Override
-    public String getOutputWrapperName() {
+    public List<String> getOutputWrapperNames() {
         if (needsHtmlRepresentation()) {
             return null;
         }
-        return super.getOutputWrapperName();
+        return super.getOutputWrapperNames();
     }
 
     @Override
-    public String getOutputWrapperPackageName() {
+    public List<String> getOutputWrapperPackageNames() {
         if (needsHtmlRepresentation()) {
             return null;
         }
-        return super.getOutputWrapperPackageName();
+        return super.getOutputWrapperPackageNames();
     }
     
     public boolean needsHtmlRepresentation() {
