@@ -347,6 +347,7 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         {
             connectionLayer.addChild(connection);
             engine.setActions(connection,edge);
+            connection.initialize(edge);
         }
         return connection;
     }

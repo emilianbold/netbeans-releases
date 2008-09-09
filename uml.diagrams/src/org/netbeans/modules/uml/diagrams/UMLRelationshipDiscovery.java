@@ -693,10 +693,6 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
         {
             scene.setEdgeSource(edge, source);
             scene.setEdgeTarget(edge, target);
-            if(w instanceof AbstractUMLConnectionWidget)
-            {
-                ((AbstractUMLConnectionWidget)w).initialize(edge);
-            }
 
             Lookup lookup = w.getLookup();
             if (lookup != null)

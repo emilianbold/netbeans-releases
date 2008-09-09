@@ -633,7 +633,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return classes.get(0);
     }
 
-    private boolean instanceOf(Type left, Type right) {
+    public static boolean instanceOf(Type left, Type right) {
         if (left == null) return false;
         if (left.equals(right)) return true;
 
@@ -2354,6 +2354,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     private void setToMirror(Tree var, Value value, EvaluationContext evaluationContext) {
         VariableInfo varInfo = evaluationContext.getVariables().get(var);
         if (varInfo == null) {
+            Assert2.error(var, "unknownVariable", var.toString());
+            // EvaluationException will be thrown from the Assert
             throw new IllegalStateException("Unknown variable "+var);
         }
         try {

@@ -32,6 +32,11 @@ import java.util.logging.Logger;
  */
 public class ${name} {
 
+    static {
+        //set the identification of the client
+        System.setProperty("http.agent", System.getProperty("user.name") + " (from NetBeans IDE)");
+    }
+
     private HttpURLConnection conn;
     private String date;
 
@@ -191,7 +196,7 @@ public class ${name} {
                 StringBuffer buf = new StringBuffer();
                 while ((line = rd.readLine()) != null) {
                     buf.append(line);
-                    System.out.print(line);
+                    buf.append('\n');
                 }
                 errMsg = buf.toString();
             } finally {

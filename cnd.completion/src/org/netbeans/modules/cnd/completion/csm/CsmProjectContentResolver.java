@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -440,7 +441,7 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
-    public List<CsmVariable> getFileLocalVariables(CsmContext context, String strPrefix, boolean match, boolean needFileLocalOrDeclFromUnnamedNS) {
+    public List<CsmVariable> getFileLocalVariables(CsmContext context, FileReferencesContext fileReferncesContext, String strPrefix, boolean match, boolean needFileLocalOrDeclFromUnnamedNS) {
         List<CsmVariable> out = new ArrayList<CsmVariable>();
         if (!context.isEmpty()) {
             for (Iterator it = context.iterator(); it.hasNext();) {
@@ -449,7 +450,15 @@ public final class CsmProjectContentResolver {
                     CsmFile currentFile = (CsmFile) elem.getScope();
                     fillFileLocalVariables(strPrefix, match, currentFile, needFileLocalOrDeclFromUnnamedNS, false, out);
                     if (!needFileLocalOrDeclFromUnnamedNS) {
-                        fillFileLocalIncludeVariables(strPrefix, match, currentFile, out);
+                        List<CsmVariable> cached = null;
+                        if (fileReferncesContext != null && match) {
+                            cached = fileReferncesContext.getFileLocalIncludeVariables(strPrefix);
+                        }
+                        if (cached != null) {
+                            out.addAll(cached);
+                        } else {
+                            fillFileLocalIncludeVariables(strPrefix, match, currentFile, out);
+                        }
                     }
                     for (Iterator it2 = context.iterator(); it2.hasNext();) {
                         CsmContext.CsmContextEntry elem2 = (CsmContext.CsmContextEntry) it2.next();

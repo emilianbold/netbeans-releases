@@ -45,7 +45,7 @@ import java.awt.Dimension;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTree;
+import org.netbeans.modules.soa.mappercore.Searchable;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -53,8 +53,10 @@ import javax.swing.JTree;
  */
 public final class Navigation extends JPanel {
   
-  public Navigation(JTree tree, JScrollPane scrollPane, JComponent component) {
-    myWrapper = new Wrapper(tree);
+  public Navigation(Searchable searchable, JScrollPane scrollPane, 
+          JComponent component)
+  {
+    myWrapper = new Wrapper(searchable);
     myScrollPane = scrollPane;
     myComponent = component;
 

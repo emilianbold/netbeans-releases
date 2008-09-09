@@ -739,6 +739,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     org.netbeans.modules.debugger.jpda.expr.TreeEvaluator evaluator2 =
                         expression2.evaluator(
                             context = new EvaluationContext(
+                                tr,
                                 frame,
                                 frameDepth,
                                 imports,
@@ -780,6 +781,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator =
                         expression.evaluator (
                             context = new EvaluationContext (
+                                tr,
                                 frame,
                                 frameDepth,
                                 imports,
