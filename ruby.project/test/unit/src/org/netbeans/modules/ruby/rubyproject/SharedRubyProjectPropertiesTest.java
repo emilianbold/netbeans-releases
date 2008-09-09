@@ -38,68 +38,70 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
-import org.netbeans.api.project.ProjectManager;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.concurrent.Semaphore;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-import org.openide.util.Mutex;
 import static org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties.RUBY_OPTIONS;
 import static org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties.RUBY_OPTIONS_DEPRECATED;
 
 public class SharedRubyProjectPropertiesTest extends RubyProjectTestBase {
 
+    private RubyProject project;
+    private FileObject privateFO;
+    private EditableProperties privateProps;
+
     public SharedRubyProjectPropertiesTest(String testName) {
         super(testName);
     }
 
-    public void testSupportForRunJvmArgs() throws Exception {
-        final RubyProject project = createTestProject();
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        this.project = createTestProject();
         FileObject prjDirFO = project.getProjectDirectory();
         String prjDirS = FileUtil.toFile(prjDirFO).getAbsolutePath();
+        this.privateFO = touch(prjDirS, "nbproject/private/private.properties");
+        this.privateProps = loadProperties(privateFO);
+    }
 
-        FileObject privateFO = touch(prjDirS, "nbproject/private/private.properties");
-        EditableProperties privateProps = loadProperties(privateFO);
+    public void testSupportForRunJvmArgs() throws Exception {
         privateProps.setProperty(RUBY_OPTIONS_DEPRECATED, "-v");
-        storeProperties(privateFO, privateProps);
-
+        storeProperties(RUBY_OPTIONS_DEPRECATED);
         assertRubyOptions(project, "run.jvmargs supported", "-v");
     }
 
     public void testGetRubyOptions() throws Exception {
-        final RubyProject project = createTestProject();
-        FileObject prjDirFO = project.getProjectDirectory();
-        String prjDirS = FileUtil.toFile(prjDirFO).getAbsolutePath();
-
-        FileObject privateFO = touch(prjDirS, "nbproject/private/private.properties");
-        EditableProperties privateProps = loadProperties(privateFO);
         privateProps.setProperty(RUBY_OPTIONS, "-v");
-        storeProperties(privateFO, privateProps);
-
+        storeProperties(RUBY_OPTIONS);
         assertRubyOptions(project, "right options", "-v");
     }
 
     public void testGetRubyOptionsMixedWithDeprecatedRunJvmArgsPreference() throws Exception {
-        final RubyProject project = createTestProject();
-        FileObject prjDirFO = project.getProjectDirectory();
-        String prjDirS = FileUtil.toFile(prjDirFO).getAbsolutePath();
-
-        FileObject privateFO = touch(prjDirS, "nbproject/private/private.properties");
-        EditableProperties privateProps = loadProperties(privateFO);
         privateProps.setProperty(RUBY_OPTIONS_DEPRECATED, "-d");
         privateProps.setProperty(RUBY_OPTIONS, "-v");
-        storeProperties(privateFO, privateProps);
-
+        storeProperties(RUBY_OPTIONS);
         assertRubyOptions(project, "right options", "-v");
     }
 
-    private static void assertRubyOptions(final RubyBaseProject project, final String message, final String value) {
-        String rubyOptions = ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-            public String run() {
-                return SharedRubyProjectProperties.getRubyOptions(project);
+    private void storeProperties(final String property) throws InterruptedException, IOException {
+        final Semaphore updateSemaphore = new Semaphore(0);
+        project.evaluator().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(property)) {
+                    updateSemaphore.release();
+                }
             }
         });
-        assertEquals(message, "-v", rubyOptions);
+        storeProperties(privateFO, privateProps);
+        updateSemaphore.acquire();
+    }
 
+    private static void assertRubyOptions(final RubyBaseProject project, final String message, final String value) {
+        assertEquals(message, "-v", SharedRubyProjectProperties.getRubyOptions(project));
     }
 }
