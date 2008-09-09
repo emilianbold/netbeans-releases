@@ -368,7 +368,30 @@ public final class TreePathHandle {
         public TreePath resolve(final CompilationInfo compilationInfo) throws IllegalArgumentException {
             assert compilationInfo != null;
             if (!compilationInfo.getFileObject().equals(getFileObject())) {
-                throw new IllegalArgumentException("TreePathHandle [" + FileUtil.getFileDisplayName(getFileObject()) + "] was not created from " + FileUtil.getFileDisplayName(compilationInfo.getFileObject()));
+                StringBuilder debug  = new StringBuilder();
+                FileObject    mine   = getFileObject();
+                FileObject    remote = compilationInfo.getFileObject();
+                
+                debug.append("TreePathHandle [" + FileUtil.getFileDisplayName(mine) + "] was not created from " + FileUtil.getFileDisplayName(remote));
+                debug.append("\n");
+
+                try {
+                    debug.append("mine: id=" + System.identityHashCode(mine) + ", valid=" + mine.isValid() + ", url=");
+                    debug.append(mine.getURL().toExternalForm());
+                } catch (FileStateInvalidException ex) {
+                    debug.append(ex.getMessage());
+                }
+
+                debug.append("\n");
+                
+                try {
+                    debug.append("remote: id=" + System.identityHashCode(remote) + ", valid=" + remote.isValid() + ", url=");
+                    debug.append(remote.getURL().toExternalForm());
+                } catch (FileStateInvalidException ex) {
+                    debug.append(ex.getMessage());
+                }
+
+                throw new IllegalArgumentException(debug.toString());
             }
             Element element = enclosingElement.resolve(compilationInfo);
             TreePath tp = null;
