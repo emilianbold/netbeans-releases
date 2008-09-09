@@ -190,22 +190,18 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         RubyExecution service = new RubyExecution(desc, getSourceEncoding());
         service.run();
     }
-    
+
     public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
     
-        String options = project.evaluator().getProperty(RubyProjectProperties.RUBY_OPTIONS);
-
-        if (options != null && options.trim().length() == 0) {
-            options = null;
-        }
+        String rubyOptions = SharedRubyProjectProperties.getRubyOptions(project);
 
         String includePath = RubyProjectUtil.getLoadPath(project);
-        if (options != null) {
-            options = includePath + " " + options; // NOI18N
+        if (rubyOptions != null) {
+            rubyOptions = includePath + " " + rubyOptions; // NOI18N
         } else {
-            options = includePath;
+            rubyOptions = includePath;
         }
         FileObject[] srcPath = project.getSourceRoots().getRoots();
         FileObject[] testPath = project.getTestSourceRoots().getRoots();
@@ -239,15 +235,15 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
         
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
-        String jrubyProps = project.evaluator().getProperty(RubyProjectProperties.JRUBY_PROPS);
+        String jvmArgs = project.evaluator().getProperty(RubyProjectProperties.JVM_ARGS);
 
         ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
         desc.fileObject(fileObject);
-        desc.jrubyProperties(jrubyProps);
-        desc.initialArgs(options);
+        desc.jvmArguments(jvmArgs);
+        desc.initialArgs(rubyOptions);
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RubyFileLocator(context, project));
@@ -1056,5 +1052,4 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
         return null;
     }
-
 }

@@ -80,7 +80,7 @@ public class J2eeActionsProvider extends AbstractMavenActionsProvider {
             ActionProvider.COMMAND_DEBUG_SINGLE.equals(action)) {
             //only enable for doc root fileobjects..
             FileObject[] fos = extractFileObjectsfromLookup(lookup);
-            if (fos != null) {
+            if (fos.length > 0) {
                 Sources srcs = project.getLookup().lookup(Sources.class);
                 SourceGroup[] grp = srcs.getSourceGroups("doc_root"); //NOI18N J2EE
                 for (int i = 0; i < grp.length; i++) {

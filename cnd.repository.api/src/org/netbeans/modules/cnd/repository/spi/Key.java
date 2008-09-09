@@ -57,6 +57,12 @@ public interface Key {
      * @return the unit
      */
     CharSequence getUnit();
+
+    /** return a unit id which serves as a sign of global set of keys, e.g., 
+     *  projects in the IDE
+     * @return the unit
+     */
+    int getUnitId();
     
     /** Behaviors allow repository to optimize
      *  storaging files

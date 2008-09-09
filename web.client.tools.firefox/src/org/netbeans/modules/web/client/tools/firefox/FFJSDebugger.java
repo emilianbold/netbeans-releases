@@ -39,6 +39,7 @@
 package org.netbeans.modules.web.client.tools.firefox;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
@@ -78,7 +79,12 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
         boolean result = super.startDebuggingImpl();
         startHttpMonitorThread();
         return result;
-    }    
+    }
+    
+    @Override
+    protected InputStream getInputStreamForURLImpl(String uri) {
+        return super.getInputStreamForURLImpl(uri, true);
+    }        
 
     public String getID() {
         if (ID == null) {

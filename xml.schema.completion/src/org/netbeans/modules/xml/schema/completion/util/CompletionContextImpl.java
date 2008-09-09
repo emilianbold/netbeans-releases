@@ -298,6 +298,9 @@ public class CompletionContextImpl extends CompletionContext {
                     
                 //user enters = character, we should ignore all other operators
                 case XMLDefaultTokenContext.OPERATOR_ID:
+                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                    break;
+                    
                 //user enters either ' or "
                 case XMLDefaultTokenContext.VALUE_ID: {
                     //user enters start quote and no end quote exists
@@ -315,6 +318,8 @@ public class CompletionContextImpl extends CompletionContext {
                             (str.startsWith("\"") || str.startsWith("\'")) &&
                             (str.endsWith("\"") || str.endsWith("\'")) ) {
                             typedChars = str.substring(1, str.length()-1);
+                            if(completionAtOffset == token.getOffset()+1)
+                                typedChars = "";
                         }
                     }
                     attribute = element.getPrevious().toString();                    

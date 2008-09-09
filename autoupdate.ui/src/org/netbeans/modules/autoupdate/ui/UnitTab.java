@@ -93,6 +93,8 @@ import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
@@ -645,14 +647,28 @@ public class UnitTab extends javax.swing.JPanel {
     private Task reloadTask (final boolean force) {
         final Runnable checkUpdates = new Runnable (){
             public void run () {
+                ProgressHandle handle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UnitTab.class,  ("UnitTab_ReloadAction")));
+                JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+                JLabel detailLabel = new JLabel (NbBundle.getMessage (UnitTab.class, "UnitTab_PrepareReloadAction"));
+                manager.setProgressComponent (detailLabel, progressComp);
+                handle.setInitialDelay (0);
+                handle.start ();
                 manager.initTask.waitFinished ();
                 setWaitingState (true);
+                if (getDownloadSizeTask != null && ! getDownloadSizeTask.isFinished ()) {
+                    if (getDownloadSizeTask.getDelay () > 0) {
+                        getDownloadSizeTask.cancel ();
+                    } else {
+                        getDownloadSizeTask.waitFinished ();
+                    }
+                }
                 final int row = getSelectedRow ();
                 final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
                 if (model instanceof LocallyDownloadedTableModel) {
                     ((LocallyDownloadedTableModel) model).removeInstalledUnits ();
                     ((LocallyDownloadedTableModel) model).setUnits (null);
                 }
+                manager.unsetProgressComponent (detailLabel, progressComp);
                 Utilities.presentRefreshProviders (manager, force);
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {

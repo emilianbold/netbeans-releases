@@ -191,7 +191,7 @@ public class XmlFoldManager implements FoldManager {
                 try {
                     ArrayList<Fold> existingFolds = new ArrayList<Fold>();
                     collectExistingFolds(foldHierarchy.getRootFold(), existingFolds);
-                    for (Fold f : existingFolds) {
+                    for(Fold f : existingFolds) {
                         getOperation().removeFromHierarchy(f, fht);
                     }
                     createFolds(fht);

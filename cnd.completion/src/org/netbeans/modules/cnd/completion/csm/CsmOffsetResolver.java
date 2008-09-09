@@ -118,6 +118,7 @@ public class CsmOffsetResolver {
                 Collection<CsmTemplateParameter> templateParams = ((CsmTemplate)fun).getTemplateParameters();
                 CsmTemplateParameter templateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
                 if (templateParam != null) {
+                    context.setLastObject(templateParam);
                     return templateParam;                   
                 }
             }

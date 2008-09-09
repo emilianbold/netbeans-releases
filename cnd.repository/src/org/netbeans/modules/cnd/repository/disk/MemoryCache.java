@@ -61,19 +61,41 @@ import org.netbeans.modules.cnd.repository.util.Pair;
  * @author Vladimir Kvashin
  */
 public class MemoryCache {
+    private static final boolean STATISTIC = false;
     
     private static class SoftValue extends SoftReference {
-        private final Object key;
-        private SoftValue(Object k, Object key, ReferenceQueue q) {
+        private final Key key;
+        private SoftValue(Object k, Key key, ReferenceQueue q) {
             super(k, q);
             this.key = key;
         }
     }
     
-    private final Map<Key, Object> cache = new HashMap<Key, Object>(1024);
-    private ReadWriteLock cacheLock = new ReentrantReadWriteLock();
-    private Lock w = cacheLock.writeLock();
-    private Lock r = cacheLock.readLock();
+    private static final class Slice {
+        private final Map<Key, Object> storage = new HashMap<Key, Object>(256);
+        private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+        private final Lock w = cacheLock.writeLock();
+        private final Lock r = cacheLock.readLock();
+    }
+    
+    private static final int SLICE_SIZE = 16;
+    private static final class SlicedMap {
+        private final Slice slices[] = new Slice[SLICE_SIZE];
+        private SlicedMap(){
+            for(int i = 0; i < SLICE_SIZE; i++){
+                slices[i] = new Slice();
+            }
+        }
+        private Slice getSilce(Key key){
+            int i = key.hashCode() & 0xF;
+            return slices[i];
+        }
+        private Slice getSilce(int i){
+            return slices[i];
+        }
+    }
+    
+    private final SlicedMap cache = new SlicedMap();
     private Lock refQueueLock;
     private ReferenceQueue refQueue;
     
@@ -87,21 +109,23 @@ public class MemoryCache {
     }
     
     public void hang(Key key, Persistent obj) {
-        w.lock();
+        Slice s = cache.getSilce(key);
+        s.w.lock();
         try {
-            cache.put(key, obj);
+            s.storage.put(key, obj);
         } finally {
-            w.unlock();
+            s.w.unlock();
         }
     }
     
     public void put(Key key, Persistent obj, boolean primary) {
+        Slice s = cache.getSilce(key);
         SoftValue value = new SoftValue(obj, key, refQueue);
-        w.lock();
+        s.w.lock();
         try {
-            cache.put(key, value);
+            s.storage.put(key, value);
         } finally {
-            w.unlock();
+            s.w.unlock();
         }
         if( ! primary ) {
             processQueue();
@@ -109,20 +133,21 @@ public class MemoryCache {
     }
     
     public Persistent get(Key key) {
-        readCnt++;
+        if (STATISTIC) readCnt++;
+        Slice s = cache.getSilce(key);
         Object value;
-        r.lock();
+        s.r.lock();
         try{
-            value = cache.get(key);
+            value = s.storage.get(key);
         } finally {
-            r.unlock();
+            s.r.unlock();
         }
         if (value instanceof Persistent) {
-            readHitCnt++;
+            if (STATISTIC) readHitCnt++;
             return (Persistent) value;
         } else if (value instanceof SoftReference) {
             Persistent result = ((SoftReference<Persistent>) value).get();
-            if( result != null ) {
+            if( STATISTIC && result != null ) {
                 readHitCnt++;
             }
             return result;
@@ -131,11 +156,12 @@ public class MemoryCache {
     }
     
     public void remove(Key key) {
-        w.lock();
+        Slice s = cache.getSilce(key);
+        s.w.lock();
         try {
-            cache.remove(key);
+            s.storage.remove(key);
         } finally {
-            w.unlock();
+            s.w.unlock();
         }
     }
     
@@ -143,22 +169,25 @@ public class MemoryCache {
         //cleanWriteHungObjects(null, false);
         processQueue();
         Set<Key> keys;
-        r.lock();
-        try{
-            keys = new HashSet<Key>(cache.keySet());
-        } finally {
-            r.unlock();
-        }
-        for (Key key : keys) {
-            Object value;
-            w.lock();
+        for(int i = 0; i < SLICE_SIZE; i++) {
+            Slice s = cache.getSilce(i);
+            s.r.lock();
             try{
-               value = cache.get(key);
-               if (value != null && !(value instanceof Persistent)) {
-                   cache.remove(key);
-                }
+                keys = new HashSet<Key>(s.storage.keySet());
             } finally {
-                w.unlock();
+                s.r.unlock();
+            }
+            for (Key key : keys) {
+                Object value;
+                s.w.lock();
+                try{
+                   value = s.storage.get(key);
+                   if (value != null && !(value instanceof Persistent)) {
+                       s.storage.remove(key);
+                    }
+                } finally {
+                    s.w.unlock();
+                }
             }
         }
     }
@@ -169,17 +198,18 @@ public class MemoryCache {
                 SoftValue sv;
                 while ((sv = (SoftValue) refQueue.poll()) != null) {
                     Object value;
-                    w.lock();
+                    Slice s = cache.getSilce(sv.key);
+                    s.w.lock();
                     try{
-                        value = cache.get(sv.key);
+                        value = s.storage.get(sv.key);
                         // check if the object has already been added by another thread
                         // it is more efficient than blocking puts from the disk
                         if ((value != null) && (value instanceof SoftReference) && (((SoftReference) value).get() == null)) {
-                            Object removed = cache.remove(sv.key);
+                            Object removed = s.storage.remove(sv.key);
                             assert (value == removed);
                         }
                     } finally {
-                        w.unlock();
+                        s.w.unlock();
                     }
                 }
             } finally {
@@ -192,34 +222,37 @@ public class MemoryCache {
         processQueue();
         Collection<Pair<Key, Persistent>> result = new ArrayList<Pair<Key, Persistent>>();
         Set<Key> keys;
-        r.lock();
-        try{
-            keys = new HashSet<Key>(cache.keySet());
-        } finally {
-            r.unlock();
-        }
-        for (Key key : keys) {
-            Object value;
-            r.lock();
+        for(int i = 0; i < SLICE_SIZE; i++) {
+            Slice s = cache.getSilce(i);
+            s.r.lock();
             try{
-                value = cache.get(key);
+                keys = new HashSet<Key>(s.storage.keySet());
             } finally {
-                r.unlock();
+                s.r.unlock();
             }
-            if (value instanceof Persistent ) {
-                result.add(new Pair(key, (Persistent) value));
-                w.lock();
-                try {
-                    cache.remove(key);
+            for (Key key : keys) {
+                Object value;
+                s.r.lock();
+                try{
+                    value = s.storage.get(key);
                 } finally {
-                    w.unlock();
+                    s.r.unlock();
+                }
+                if (value instanceof Persistent ) {
+                    result.add(new Pair(key, (Persistent) value));
+                    s.w.lock();
+                    try {
+                        s.storage.remove(key);
+                    } finally {
+                        s.w.unlock();
+                    }
                 }
             }
         }
         return result;
     }
     
-    public void printStatistics(String name) {
+    private void printStatistics(String name) {
         int hitPercentage = (readCnt == 0) ? 0 : readHitCnt*100/readCnt;
         System.out.printf("\n\nMemory cache statistics %s: %d reads,  %d hits (%d%%)\n\n", // NOI18N
                 name, readCnt, readHitCnt, hitPercentage);

@@ -203,13 +203,14 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
     private void setJaxbWrapper() {
         List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
         if (!repTypesFromWadl.isEmpty()) {
-            QName qName = repTypesFromWadl.get(0);
-            String nsUri = qName.getNamespaceURI();
-            getBean().setOutputWrapperName(qName.getLocalPart());
-            getBean().setOutputWrapperPackageName(
-                    (getBean().getGroupName() + "." +
-                    getBean().getDisplayName()).toLowerCase() +
-                    "." + nsUri.substring(nsUri.lastIndexOf(":") + 1).toLowerCase());
+            for(QName qName: repTypesFromWadl) {
+                String nsUri = qName.getNamespaceURI();
+                getBean().addOutputWrapperName(qName.getLocalPart());
+                getBean().addOutputWrapperPackageName(
+                        (getBean().getGroupName() + "." +
+                        getBean().getDisplayName()).toLowerCase() +
+                        "." + nsUri.substring(nsUri.lastIndexOf(":") + 1).toLowerCase());
+            }
         }
     }
 
@@ -235,8 +236,8 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         methodBody += INDENT_2 + REST_RESPONSE + " "+getResultPattern()+" = " + getBean().getSaasServiceName() +
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += Util.createPrintStatement(
-                getBean().getOutputWrapperPackageName(),
-                getBean().getOutputWrapperName(),
+                getBean().getOutputWrapperPackageNames(),
+                getBean().getOutputWrapperNames(),
                 getDropFileType(),
                 getBean().getHttpMethod(),
                 getBean().canGenerateJAXBUnmarshaller(), getResultPattern(), INDENT_2);
@@ -404,7 +405,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
                 String bodyText = "{ \n" + getServiceMethodBody() + "\n }";
 
 
-                String comment = "Retrieves representation of an instance of " + getBean().getQualifiedClassName() + "\n";// NOI18N
+                String comment = "\n";// NOI18N
 
                 for (String param : parameters) {
                     comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N

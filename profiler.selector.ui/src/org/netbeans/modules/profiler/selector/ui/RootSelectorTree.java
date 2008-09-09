@@ -562,6 +562,7 @@ public class RootSelectorTree extends JCheckTree {
                                         toAdd.addAll(siblingNode.getRootMethods(true));
                                     }
                                 }
+                                toAdd.removeAll(signatures);
                             }
 
                             Collection<ClientUtils.SourceCodeSelection> toRemove = new ArrayList<ClientUtils.SourceCodeSelection>();

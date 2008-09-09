@@ -110,6 +110,15 @@ import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase.Use;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -1223,27 +1232,38 @@ public class Util {
         DialogDisplayer.getDefault().notify(desc);
     }
     
-    public static String createPrintStatement(String pkg, String typeName,
+    public static String createPrintStatement(List<String> pkgs, List<String> typeNames,
             DropFileType dropFileType, HttpMethodType methodType,
             boolean canGenerateJaxb, String indent) {
-        return createPrintStatement(pkg, typeName, dropFileType, methodType,
+        return createPrintStatement(pkgs, typeNames, dropFileType, methodType,
             canGenerateJaxb, VAR_NAMES_RESULT, indent);
     }
     
-    public static String createPrintStatement(String pkg, String typeName,
+    public static String createPrintStatement(List<String> pkgs, List<String> typeNames,
             DropFileType dropFileType, HttpMethodType methodType,
             boolean canGenerateJaxb, String resultVarName, String indent) {
         String methodBody = "";
         String commentStr = "//";
         if (canGenerateJaxb) {
-            if (!isPrimitive(typeName)) {
-                String resultClass = pkg + "." + Util.camelize(typeName, false);
-                methodBody += indent + resultClass + " "+resultVarName+"Obj = " +
-                    resultVarName+".getDataAsObject(" + resultClass + ".class);\n";
-            } else {
-                String resultClass = Util.camelize(typeName, false);
-                methodBody += indent + resultClass + " "+resultVarName+"Obj = " +
-                    resultVarName+".getDataAsObject(" + resultClass + ".class, " + "\"" + pkg + "\");\n";
+            for(int i=0;i<typeNames.size();i++) {
+                String pkg = pkgs.get(i);
+                String typeName = typeNames.get(i);
+                if(i>0) {
+                    methodBody += "else ";
+                }
+                if (!isPrimitive(typeName)) {
+                    String resultClass = pkg + "." + Util.camelize(typeName, false);
+                    String lft = resultClass;
+                    String rht = resultVarName+".getDataAsObject(" + resultClass + ".class)";
+                    methodBody += indent + "if(" + rht + " instanceof " + lft + ") {\n";
+                    methodBody += indent + "    " + lft + " "+resultVarName+"Obj = " + rht + ";\n}\n";
+                } else {
+                    String resultClass = Util.camelize(typeName, false);
+                    String lft = resultClass;
+                    String rht = resultVarName+".getDataAsObject(" + resultClass + ".class, \"java.lang\")";
+                    methodBody += indent + "if(" + rht + " instanceof " + lft + ") {\n";
+                    methodBody += indent + resultClass + " "+resultVarName+"Obj = " + rht +";\n}\n";
+                }
             }
         }
         methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
@@ -1447,4 +1467,33 @@ public class Util {
             throw new IOException("DataObject does not exist for : " + f.getPath());
         }
     }
+
+    public static boolean isRPCEncoded(WSDLModel wsdlModel){
+
+        Definitions definitions = wsdlModel.getDefinitions();
+        Collection<Binding> bindings = definitions.getBindings();
+        for (Binding binding : bindings) {
+            List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
+            for (SOAPBinding soapBinding : soapBindings) {
+                if (soapBinding.getStyle() == Style.RPC) {
+                    Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
+                    for (BindingOperation bindingOperation : bindingOperations) {
+                        BindingInput bindingInput = bindingOperation.getBindingInput();
+                        if (bindingInput != null) {
+                            List<SOAPBody> soapBodies = bindingInput.getExtensibilityElements(SOAPBody.class);
+                            if (soapBodies != null && soapBodies.size() > 0) {
+                                SOAPBody soapBody = soapBodies.get(0);
+                                if (soapBody.getUse() == Use.ENCODED) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        return false;
+    }
+
 }

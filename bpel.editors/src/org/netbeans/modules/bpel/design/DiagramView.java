@@ -71,6 +71,7 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
         nameEditor = new NameEditor(this);
         mouseHandler = new MouseHandler(this);
 
+        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
     public abstract FBounds getContentSize();

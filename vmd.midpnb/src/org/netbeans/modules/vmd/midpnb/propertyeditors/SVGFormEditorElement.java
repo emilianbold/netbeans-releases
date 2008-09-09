@@ -114,6 +114,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private Map<String, String> pathMap;
     private JPopupMenu menu;
     private WeakReference<DesignComponent> svgFormReferences;
+    private boolean needUpdate;
+    private boolean orderNeedsUpdate;
 
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
@@ -182,7 +184,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         final DesignDocument document = documentReferences.get();
         project = ProjectUtils.getProject(document);
 
-
         if (wrapper == null) {
             // UI stuff
             setText(null);
@@ -236,7 +237,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 retValue[0] = component.getDocument().getDescriptorRegistry().isInHierarchy(SVGFormCD.TYPEID, component.getType());
             }
         });
-
         return retValue[0];
     }
 
@@ -246,7 +246,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         final FileObject[] svgImageFileObject = new FileObject[1];
         final Boolean[] parseIt = new Boolean[1];
         parseIt[0] = Boolean.TRUE;
-         parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+        parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
                 PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
@@ -258,16 +258,18 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                     parseIt[0] = Boolean.TRUE;
                 }
                 DesignComponent oldComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
-                if (oldComponent == childComponent && svgImageFileObject[0] != null) {
+                if (!needUpdate && oldComponent == childComponent && svgImageFileObject[0] != null) {
                     parseIt[0] = Boolean.FALSE;
                 }
             }
         });
-
         if (parseIt[0] != null && parseIt[0]) {
             parseSVGImageItems(svgImageFileObject[0], parentComponent);
+            orderSVGComponentsArray(parentComponent);
         }
-        orderSVGComponentsArray(parentComponent);
+        if (orderNeedsUpdate) {
+            orderSVGComponentsArray(parentComponent);
+        }
     }
 
     private void orderSVGComponentsArray(final DesignComponent svgForm) {
@@ -478,7 +480,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 if (!fullPath.substring(i).startsWith("/")) { //NOI18N
                     relativePath = "/" + fullPath.substring(i); //NOI18N
                 } else {
-                    relativePath = fullPath.substring(i); 
+                    relativePath = fullPath.substring(i);
                 }
             } else if (needCopy) {
                 // somewhere outside sources - need to copy (export image)
@@ -505,6 +507,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     public void run() {
+        orderNeedsUpdate = false;
+        needUpdate = false;
         if (documentReferences == null || documentReferences.get() == null) {
             return;
         }
@@ -536,8 +540,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                progressBar.setVisible(
-                        isShowing);
+                progressBar.setVisible(isShowing);
             }
         });
     }
@@ -834,6 +837,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
             fireElementChanged(componentID, SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
             updatePreview();
             updateSVGComponentsList();
+            needUpdate = true;
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -962,6 +966,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         }
 
         private void moveValue(int step) {
+            orderNeedsUpdate = true;
             TableModel model = jTable1.getModel();
             int selectedRow = jTable1.getSelectedRow();
             String typeToMoveUp = (String) model.getValueAt(selectedRow, 0);
@@ -988,6 +993,9 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            int selectedRow = jTable1.rowAtPoint(e.getPoint());
+            jTable1.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
+            showPopup(e);
         }
 
         private void showPopup(MouseEvent e) {
@@ -998,6 +1006,5 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     public void elementChanged(PropertyEditorResourceElementEvent event) {
-        
     }
 }

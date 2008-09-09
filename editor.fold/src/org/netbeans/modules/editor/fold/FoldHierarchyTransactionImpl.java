@@ -102,7 +102,7 @@ public final class FoldHierarchyTransactionImpl {
     private static final int[] EMPTY_INT_ARRAY = new int[0];
 
     // The max number of nested folds
-    private static final int MAX_NESTING_LEVEL = 50;
+    private static final int MAX_NESTING_LEVEL = 1000;
     
     private FoldHierarchyTransaction transaction;
 
@@ -594,43 +594,61 @@ public final class FoldHierarchyTransactionImpl {
         if (prevFold != null && foldStartOffset < prevFold.getEndOffset()) { // overlap
             if (foldEndOffset <= prevFold.getEndOffset()) { // fold fully nested
                 if (level < MAX_NESTING_LEVEL) {
-                    // Nest into prevFold
-                    return addFold(fold, prevFold, level + 1);
-                } else {
-                    blocked = true;
-                    addFoldBlock = prevFold;
-                    prevOverlapIndexes = null;
-
-                    if (LOG.isLoggable(Level.WARNING)) {
-                        boolean a = false;
-                        assert a = true;
-                        if (a) {
+                    if (getManager(fold) == getManager(prevFold) &&
+                        fold.getStartOffset() == prevFold.getStartOffset() &&
+                        fold.getEndOffset() == prevFold.getEndOffset())
+                    {
+                        if (LOG.isLoggable(Level.WARNING)) {
                             StringBuilder sb = new StringBuilder();
-                            
-                            Document doc = getOperation(prevFold).getDocument();
-                            sb.append("Too many nested folds in "); //NOI18N
-                            sb.append(doc.getClass().getName());
-                            sb.append("@"); //NOI18N
-                            sb.append(Integer.toHexString(System.identityHashCode(doc)));
-                            sb.append("['").append((String)doc.getProperty("mimeType")).append("', "); //NOI18N
-                            sb.append(findFilePath(doc)).append("]\n"); //NOI18N
+                            sb.append("Adding a fold that is identical with another previously added fold " + //NOI18N
+                                "from the same FoldManager is not allowed.\n"); //NOI18N
+                            sb.append("Existing fold: "); //NOI18N
+                            sb.append(prevFold.toString());
+                            sb.append("; FoldManager: ").append(getManager(prevFold)); //NOI18N
+                            sb.append("\n"); //NOI18N
+                            sb.append("     New fold: "); //NOI18N
+                            sb.append(fold.toString());
+                            sb.append("; FoldManager: ").append(getManager(fold)); //NOI18N
+                            sb.append("\n"); //NOI18N
 
-                            sb.append("Dumping the nesting folds:\n"); //NOI18N
-                            for(Fold f = prevFold; f != null; f = f.getParent()) {
-                                sb.append("<"); //NOI18N
-                                sb.append(f.getStartOffset());
-                                sb.append(", "); //NOI18N
-                                sb.append(f.getEndOffset());
-                                sb.append(">: "); //NOI18N
-                                sb.append(f.toString());
-                                sb.append("; FoldManager: ").append(getManager(f));
-                                sb.append("\n"); //NOI18N
-                            }
+                            LOG.warning(sb.toString());
+                        }
+                    } else {
+                        // Nest into prevFold
+                        return addFold(fold, prevFold, level + 1);
+                    }
+                } else {
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        StringBuilder sb = new StringBuilder();
 
+                        Document doc = getOperation(prevFold).getDocument();
+                        sb.append("Too many nested folds in "); //NOI18N
+                        sb.append(doc.getClass().getName());
+                        sb.append("@"); //NOI18N
+                        sb.append(Integer.toHexString(System.identityHashCode(doc)));
+                        sb.append("['").append((String)doc.getProperty("mimeType")).append("', "); //NOI18N
+                        sb.append(findFilePath(doc)).append("]\n"); //NOI18N
+
+                        sb.append("Dumping the nesting folds:\n"); //NOI18N
+                        for(Fold f = prevFold; f != null; f = f.getParent()) {
+                            sb.append(f.toString());
+                            sb.append("; FoldManager: ").append(getManager(f));
+                            sb.append("\n"); //NOI18N
+                        }
+
+                        boolean assertionsOn = false;
+                        assert assertionsOn = true;
+                        if (assertionsOn) {
                             LOG.log(Level.WARNING, null, new Throwable(sb.toString()));
+                        } else {
+                            LOG.warning(sb.toString());
                         }
                     }
                 }
+
+                blocked = true;
+                addFoldBlock = prevFold;
+                prevOverlapIndexes = null;
                 
             } else { // fold overlaps with prevFold
                 if (foldPriority > getOperation(prevFold).getPriority()) { // can replace

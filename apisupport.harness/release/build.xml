@@ -66,6 +66,7 @@ made subject to such option by the copyright holder.
             <isset property="suite.dir"/>
         </condition>
         <property name="test.dist.dir" location="build/testdist"/>
+        <property name="build.classes.dir" location="build/classes"/>
 
     </target>
 
@@ -125,7 +126,6 @@ made subject to such option by the copyright holder.
         <property name="build.package.index" value="false"/>
         <property name="manifest.mf" location="manifest.mf"/>
         <property name="src.dir" location="src"/>
-        <property name="build.classes.dir" location="build/classes"/>
         <property name="nbm" value="${code.name.base.dashes}.nbm"/>
         <property name="nbm.module.author" value=""/>
         <property name="nbm.release.date" value=""/>

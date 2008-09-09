@@ -94,7 +94,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.openide.util.NotImplementedException;
 
 /**
  * CsmFile implementations
@@ -118,6 +117,39 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static final int HEADER_FILE = 4;
 
     private FileBuffer fileBuffer;
+
+    /**
+     * DUMMY_STATE and DUMMY_HANDLERS are used when we need to ensure that the file will be arsed.
+     * Typucally this happens when user edited buffer (after a delay), but also by clents request, etc. -
+     * i.e. when we do not know the state to put in the parsing queue
+     *
+     * The issue here is that adding this file with default states (from container) does not suite,
+     * since we don't know what is being done with the queue, file container and this file itself,
+     * so there are a lot of sync issues on this way.
+     *
+     * Previously, null value was used instead; using null is much less clear an visible
+     * 
+     * So, putting DUMMY_STATE into the queue
+     *
+     * 1) does not harm states that are in queue or will be put there (see ParserQueue code)
+     *
+     * 2) in the case DUMMY_STATE is popped from queue by the ParserThread,
+     * it invokes ensureParsed(DUMMY_HANDLERS), which parses the file with all valid states from container.
+     * This (2) might hapen only when there are NO other states in queue
+     */
+    public static final Collection<APTPreprocHandler> DUMMY_HANDLERS = new EmptyCollection<APTPreprocHandler>();
+    
+    public static final APTPreprocHandler.State DUMMY_STATE = new APTPreprocHandler.State() {
+        public boolean isCleaned() {
+            return true;
+        }
+        public boolean isCompileContext() {
+            return false;
+        }
+        public boolean isValid() {
+            return false;
+        }
+    };
     
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)  
     private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
@@ -283,7 +315,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public Collection<APTPreprocHandler> getPreprocHandlers() {
-        throw new NotImplementedException();
+        return getProjectImpl(true)==null ? Collections.<APTPreprocHandler>emptyList() : getProjectImpl(true).getPreprocHandlers(this.getFile());
+    }
+    
+    private Collection<APTPreprocHandler.State> getPreprocStates() {
+        ProjectBase project = getProjectImpl(true);
+        return (project == null) ? Collections.<APTPreprocHandler.State>emptyList() : project.getPreprocStates(this);
     }
     
     public void setBuffer(FileBuffer fileBuffer) {
@@ -304,6 +341,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public void ensureParsed(Collection<APTPreprocHandler> handlers) {
+        if (handlers == DUMMY_HANDLERS) {
+            handlers = getPreprocHandlers();
+        }
 	synchronized( stateLock ) {
 	    switch( state ) {
 		case INITIAL:
@@ -529,7 +569,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
         if( reportParse || TraceFlags.DEBUG ) logParse("Parsing", preprocHandler); //NOI18N
 
-        AST ast = doParse((preprocHandler == null) ?  getPreprocHandler() : preprocHandler);
+        AST ast = doParse(preprocHandler);
         if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
 
         if( ast != null ) {
@@ -736,7 +776,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 		new Throwable(text).printStackTrace(System.err);
 	    }
         }        
-        
+        assert preprocHandler != null;
+        if (preprocHandler == null) {
+            return null;
+        }
+
         ParseStatistics.getInstance().fileParsed(this, preprocHandler);
         
         int flags = CPPParserEx.CPP_CPLUSPLUS;
@@ -1213,48 +1257,24 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public void scheduleParsing(boolean wait) throws InterruptedException {
-        scheduleParsing(wait, null);
-    }
-  
-    public void scheduleParsing(boolean wait, APTPreprocHandler.State ppState) throws InterruptedException {
-        //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("> File " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
         boolean fixFakes = false;
         synchronized( stateLock ) {
-            //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  sync " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
-            if (SKIP_UNNECESSARY_FAKE_FIXES) {
-                if (isParsed()) {
-                    fixFakes = wait;
-                } else {
-                    while( ! isParsed() ) {
-                        ParserQueue.instance().add(this, ppState, ParserQueue.Position.HEAD);
-                        //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
-                        if( wait ) {
-                            stateLock.wait();
-                        }
-                        else {
-                            return;
-                        }
-                        //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("< wait " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
-                    }
-                }
+            if (isParsed()) {
+                fixFakes = wait;
             } else {
                 while( ! isParsed() ) {
-                    ParserQueue.instance().add(this, ppState, ParserQueue.Position.HEAD);
-                    //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
+                    ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE), ParserQueue.Position.HEAD, false);
                     if( wait ) {
                         stateLock.wait();
-                    }
-                    else {
+                    } else {
                         return;
                     }
-                    //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("< wait " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
                 }
             }
         }
         if (SKIP_UNNECESSARY_FAKE_FIXES && fixFakes) {
             fixFakeRegistrations();
         }
-        //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("< File " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
     }    
     
     public void onFakeRegisration(FunctionImplEx decl) {
@@ -1507,4 +1527,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             name = NameCache.getManager().getString(input.readUTF());
         }
     }
+    
+    private static class EmptyCollection<T> extends AbstractCollection<T>{
+        public int size() {return 0;}
+        public @Override boolean contains(Object obj) {return false;}
+        @Override
+        public Iterator<T> iterator() {
+            return Collections.<T>emptyList().iterator();
+        }
+    }
+    
 }

@@ -47,8 +47,8 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.AbstractList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
@@ -76,6 +76,8 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik
  */
 public final class Utils {
+    private static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
+
     // protocol://[user[:password]@]domain[:port]/rel/path?query#anchor
     public static final String URL_REGEXP = "^https?://([^/?#: ]+(:[^/?#: ]+)?@)?[^/?#: ]+(:\\d+)?/[^?# ]*(\\?[^#]*)?(#\\w*)?$"; // NOI18N
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
@@ -294,7 +296,7 @@ public final class Utils {
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
-        if (projLoc == null || !projLoc.canWrite()) {
+        if (projLoc == null || !isFolderWritable(projLoc)) {
             return NbBundle.getMessage(Utils.class, "MSG_" + type + "FolderReadOnly");
         }
 
@@ -384,6 +386,36 @@ public final class Utils {
      */
     public static boolean isAsciiPrintable(char ch) {
         return ch >= 32 && ch < 127;
+    }
+
+    public static boolean isWindowsVista() {
+        return (Utilities.getOperatingSystem() & Utilities.OS_WINVISTA) != 0;
+    }
+
+    // #144928
+    public static boolean isFolderWritable(File folder) {
+        assert folder.isDirectory() : "Not a directory: " + folder;
+
+        LOGGER.fine("On Windows Vista: " + isWindowsVista());
+
+        boolean canWrite = folder.canWrite();
+        LOGGER.fine(String.format("Folder %s is writable: %s", folder, canWrite));
+        if (!canWrite || !isWindowsVista()) {
+            return canWrite;
+        }
+
+        // vista and we "can" write
+        LOGGER.fine("Trying to create temp file");
+        try {
+            File tmpFile = File.createTempFile("netbeans", null, folder);
+            LOGGER.fine(String.format("Temp file %s created", tmpFile));
+            tmpFile.delete();
+            LOGGER.fine(String.format("Temp file %s deleted", tmpFile));
+        } catch (IOException iOException) {
+            LOGGER.log(Level.FINE, "Temp file NOT created", iOException);
+            return false;
+        }
+        return true;
     }
 
     /**

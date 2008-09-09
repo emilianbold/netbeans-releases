@@ -8,6 +8,7 @@ Debugging               > Local Variables           L
                           Sources                   S
                           Disassembly               m
                           Registers                 R
+                          Memory                    o
                           HTTP Monitor              H
                           ========================
                           BPEL Variables            V

@@ -760,9 +760,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             modified = true;
 
             if (atomicDepth > 0) {
-                if (atomicEdits == null) {
-                    atomicEdits = new AtomicCompoundEdit();
-                }
+                ensureAtomicEditsInited();
                 atomicEdits.addEdit(evt); // will be added
             }
 
@@ -907,9 +905,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 }
 
                 if (atomicDepth > 0) { // add edits as soon as possible
-                    if (atomicEdits == null) {
-                        atomicEdits = new AtomicCompoundEdit();
-                    }
+                    ensureAtomicEditsInited();
                     atomicEdits.addEdit(evt); // will be added
                 }
 
@@ -1985,6 +1981,23 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         updateDocumentListenerList.remove(listener);
     }
 
+    /**
+     * Add a custom undoable edit during atomic lock of the document.
+     * <br/>
+     * For example code templates use this method to mark an insertion of a code template
+     * skeleton into the document. Once the edit gets undone the CT editing will be cancelled.
+     *
+     * @param edit non-null undoable edit.
+     * @throws IllegalStateException if the document is not under atomic lock.
+     * @since 1.29
+     */
+    public void addUndoableEdit(UndoableEdit edit) {
+        if (!isAtomicLock())
+            throw new IllegalStateException("This method can only be called under atomic-lock."); // NOI18N
+        ensureAtomicEditsInited();
+        atomicEdits.addEdit(edit);
+    }
+
     /** Was the document modified by either insert/remove
     * but not the initial read)?
     */
@@ -2117,10 +2130,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     CompoundEdit markAtomicEditsNonSignificant() {
         assert (atomicDepth > 0); // Should only be called under atomic lock
-        if (atomicEdits == null)
-            atomicEdits = new AtomicCompoundEdit();
+        ensureAtomicEditsInited();
         atomicEdits.setSignificant(false);
         return atomicEdits;
+    }
+
+    private void ensureAtomicEditsInited() {
+        if (atomicEdits == null)
+            atomicEdits = new AtomicCompoundEdit();
     }
 
     public @Override String toString() {
