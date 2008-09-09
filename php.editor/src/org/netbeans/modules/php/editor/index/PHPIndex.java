@@ -50,7 +50,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -593,6 +592,38 @@ public class PHPIndex {
         search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), NameKind.PREFIX, idSearchResult, ALL_SCOPE, TERMS_BASE);
         for (SearchResult searchResult : idSearchResult) {
             result.add(FileUtil.toFileObject(new File(URI.create(searchResult.getPersistentUrl()))));
+        }
+        return result;
+    }
+    public Set<String> typeNamesForIdentifier(String identifierName, ElementKind kind) {
+        identifierName = identifierName.toLowerCase();
+        final Set<String> result = new HashSet<String>();
+        final Set<SearchResult> idSearchResult = new HashSet<SearchResult>();
+        search(PHPIndexer.FIELD_IDENTIFIER_DECLARATION, identifierName.toLowerCase(), NameKind.PREFIX, idSearchResult, ALL_SCOPE, TERMS_BASE);
+        for (SearchResult searchResult : idSearchResult) {
+            if (searchResult.getPersistentUrl() != null) {
+                String[] signatures = searchResult.getValues(PHPIndexer.FIELD_IDENTIFIER_DECLARATION);
+                if (signatures == null) {
+                    continue;
+                }
+                for (String sign : signatures) {
+                    IdentifierSignature idSign = IdentifierSignature.createDeclaration(Signature.get(sign));
+                    if ((!idSign.isClassMember() && !idSign.isIfaceMember()) ||
+                            !idSign.getName().equals(identifierName) ||
+                            idSign.getTypeName() == null) {
+                        continue;
+                    }
+                    if (kind == null) {
+                        result.add(idSign.getTypeName());
+                    } else if (kind.equals(ElementKind.FIELD) && idSign.isField()) {
+                        result.add(idSign.getTypeName());
+                    } else if (kind.equals(ElementKind.METHOD) && idSign.isMethod()) {
+                        result.add(idSign.getTypeName());
+                    } else if (kind.equals(ElementKind.CONSTANT) && idSign.isClassConstant()) {
+                        result.add(idSign.getTypeName());
+                    }
+                }
+            }
         }
         return result;
     }
