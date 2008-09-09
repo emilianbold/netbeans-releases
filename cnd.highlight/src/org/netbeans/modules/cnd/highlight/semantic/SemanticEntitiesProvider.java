@@ -224,6 +224,10 @@ public class SemanticEntitiesProvider {
             return null;
         }
 
+        public boolean isEnabledByDefault() {
+            return true;
+        }
+        
     }
 
     // Singleton

@@ -88,7 +88,7 @@ public final class SyntaxParser {
     private List<SyntaxElement> parsedElements;
     private boolean isSuccessfulyParsed = false;
 
-    protected final ParserSource parserSource;
+    protected ParserSource parserSource;
     
     /** Returns an instance of SyntaxParser for given document.
      *  The client is supposed to add a SyntaxParserListener to the obtained instance
@@ -105,8 +105,28 @@ public final class SyntaxParser {
     }
 
     /** Creates a new instance of SyntaxParser parsing the immutable source. */
-    public static SyntaxParser create(CharSequence source) {
-        return new SyntaxParser(source);
+    public static List<SyntaxElement> parseImmutableSource(final CharSequence source) {
+        SyntaxParser parser = new SyntaxParser(source);
+
+        parser.parserSource = new ParserSource() {
+
+            public CharSequence getText(int offset, int length) throws BadLocationException {
+                return source.subSequence(offset, offset + length);
+            }
+        };
+
+        try {
+            return parser.parseDocument();
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.WARNING, "Error during parsing html content", ex);
+            return null;
+
+        } finally {
+            //help GC - the SyntaxElements returned by the parser
+            //holds references to the parser source 
+            parser.parserSource = null; 
+        }
+
     }
     
     private SyntaxParser(final CharSequence source) {
@@ -115,11 +135,6 @@ public final class SyntaxParser {
         this.parsedElements = EMPTY_ELEMENTS_LIST;
         this.languagePath = LanguagePath.get(HTMLTokenId.language());
         this.hi = TokenHierarchy.create(source, HTMLTokenId.language());
-        this.parserSource = new ParserSource() {
-            public CharSequence getText(int offset, int length) throws BadLocationException {
-                return source.subSequence(offset, offset + length);
-            }
-        };
     }
     
     private SyntaxParser(Document document, LanguagePath languagePath) {
@@ -155,21 +170,6 @@ public final class SyntaxParser {
         //ensure the document is parsed
         restartParser();
 
-    }
-    
-    /** Parses the immutable source. */
-    public List<SyntaxElement> parseImmutableSource() {
-        if(doc != null) {
-            throw new IllegalStateException("Cannot explicitly parse muttable source!");
-        } else {
-            try {
-                return parseDocument();
-            } catch (BadLocationException ex) {
-                LOGGER.log(Level.WARNING, "Error during parsing html content", ex);
-                return null;
-                
-            }
-        }
     }
 
     //---------------------------- public methods ------------------------------
@@ -272,8 +272,8 @@ public final class SyntaxParser {
                 if(values == null) {
                     //attribute has no value
                     SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
-                            key.text().toString(), 
-                            joinedValue.toString(), 
+                            key.text().toString().intern(), 
+                            joinedValue.toString().intern(), 
                             key.offset(hi), 
                             key.offset(hi) + key.length(),
                             0);
@@ -287,8 +287,8 @@ public final class SyntaxParser {
                     Token lastValuePart = values.get(values.size() - 1);
 
                     SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
-                            key.text().toString(), 
-                            joinedValue.toString(), 
+                            key.text().toString().intern(), 
+                            joinedValue.toString().intern(), 
                             key.offset(hi), 
                             firstValuePart.offset(hi),
                             lastValuePart.offset(hi) + lastValuePart.length() - firstValuePart.offset(hi));
@@ -299,8 +299,8 @@ public final class SyntaxParser {
         elements.add(new SyntaxElement.Tag(parserSource, 
                 start, 
                 token.offset(hi) + token.length() - start, 
-                tagName, 
-                attributes,
+                tagName.intern(), 
+                attributes.isEmpty() ? null : attributes,
                 openTag,
                 emptyTag));
         

@@ -106,6 +106,7 @@ public class PackagingConfiguration {
         // Init default values
         String perm = MakeOptions.getInstance().getDefExePerm();
         String packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
+        String suffix = ""; // NOI18N
 
         if (makeConfiguration.isMakefileConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
@@ -113,6 +114,9 @@ public class PackagingConfiguration {
         } else if (makeConfiguration.isApplicationConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
             packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
+            if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                suffix = ".exe"; // NOI18N
+            }
         } else if (makeConfiguration.isLibraryConfiguration()) {
             perm = MakeOptions.getInstance().getDefFilePerm();
             packageDir = "${PACKAGE_TOP_DIR}lib"; // NOI18N
@@ -122,8 +126,8 @@ public class PackagingConfiguration {
         }
         FileElement elem = new FileElement(
                 FileType.FILE,
-                "${OUTPUT_PATH}", // NOI18N
-                packageDir + "/${OUTPUT_BASENAME}", // NOI18N
+                "${OUTPUT_PATH}" + suffix, // NOI18N
+                packageDir + "/${OUTPUT_BASENAME}" + suffix, // NOI18N
                 perm,
                 MakeOptions.getInstance().getDefOwner(),
                 MakeOptions.getInstance().getDefGroup());

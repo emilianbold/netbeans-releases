@@ -687,8 +687,11 @@ public class ConfigurationMakefileWriter {
         bw.write("{\n"); // NOI18N
         bw.write("    cp $1 $2\n"); // NOI18N
         bw.write("    checkReturnCode\n"); // NOI18N
-        bw.write("    chmod $3 $2\n"); // NOI18N
-        bw.write("    checkReturnCode\n"); // NOI18N
+        bw.write("    if [ \"$3\" != \"\" ]\n"); // NOI18N
+        bw.write("    then\n"); // NOI18N
+        bw.write("        chmod $3 $2\n"); // NOI18N
+        bw.write("        checkReturnCode\n"); // NOI18N
+        bw.write("    fi\n"); // NOI18N
         bw.write("}\n"); // NOI18N
         
         bw.write("\n"); // NOI18N

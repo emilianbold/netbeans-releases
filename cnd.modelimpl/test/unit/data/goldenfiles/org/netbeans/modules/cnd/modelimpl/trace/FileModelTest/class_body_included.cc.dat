@@ -28,6 +28,12 @@ FUNCTION class_body_included_foo [2:1/11-2:32/42] FunctionImpl SCOPE: $Global$
     UNIQUE NAME F:class_body_included_foo()
     PARAMETERS:
     RETURNS void TEXT=void  [2:1/11-2:5/15]
+FUNCTION class_body_included_boo [4:1/62-4:32/93] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE class_body_included_boo()
+    UNIQUE NAME F:class_body_included_boo()
+    PARAMETERS:
+    RETURNS void TEXT=void  [4:1/62-4:5/66]
 FUNCTION class_body_included_no_name_fun [6:1/100-6:40/139] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE class_body_included_no_name_fun()

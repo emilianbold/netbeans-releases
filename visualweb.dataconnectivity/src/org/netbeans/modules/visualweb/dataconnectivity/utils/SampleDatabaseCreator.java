@@ -50,9 +50,10 @@ package org.netbeans.modules.visualweb.dataconnectivity.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileLock;
@@ -137,7 +138,11 @@ public class SampleDatabaseCreator {
             throw new IllegalStateException("The " + DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N
         }
         DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://" + server + ":" + port + "/" + databaseName, user, schema, password, rememberPassword); // NOI18N
-        ConnectionManager.getDefault().addConnection(dbconn);
+        DatabaseConnection[] dbconns = ConnectionManager.getDefault().getConnections();
+        List dbconnsList = Arrays.asList(dbconns);
+        if (!dbconnsList.contains(dbconn.getName())) {
+            ConnectionManager.getDefault().addConnection(dbconn);
+        }
         return dbconn;
     }
 

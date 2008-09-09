@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -102,6 +103,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean sort = false;
     private QueryScope queryScope = QueryScope.GLOBAL_QUERY;
     private boolean inIncludeDirective = false;
+    private final FileReferencesContext fileReferncesContext;
 
     public boolean isSortNeeded() {
         return sort;
@@ -129,19 +131,20 @@ public class CompletionResolverImpl implements CompletionResolver {
 
     /** Creates a new instance of CompletionResolver */
     public CompletionResolverImpl(CsmFile file) {
-        this(file, false, false, false);
+        this(file, false, false, false, null);
     }
 
-    public CompletionResolverImpl(CsmFile file, boolean caseSensitive, boolean sort, boolean naturalSort) {
-        this(file, RESOLVE_CONTEXT, caseSensitive, sort, naturalSort);
+    public CompletionResolverImpl(CsmFile file, boolean caseSensitive, boolean sort, boolean naturalSort, FileReferencesContext fileReferncesContext) {
+        this(file, RESOLVE_CONTEXT, caseSensitive, sort, naturalSort, fileReferncesContext);
     }
 
-    public CompletionResolverImpl(CsmFile file, int resolveTypes, boolean caseSensitive, boolean sort, boolean naturalSort) {
+    private CompletionResolverImpl(CsmFile file, int resolveTypes, boolean caseSensitive, boolean sort, boolean naturalSort, FileReferencesContext fileReferncesContext) {
         this.file = file;
         this.resolveTypes = resolveTypes;
         this.caseSensitive = caseSensitive;
         this.naturalSort = naturalSort;
         this.sort = sort;
+        this.fileReferncesContext = fileReferncesContext;
     }
 
     public void setResolveTypes(int resolveTypes) {
@@ -174,7 +177,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (file == null) {
             return false;
         }
-        context  = CsmOffsetResolver.findContext(file, offset);
+        context  = CsmOffsetResolver.findContext(file, offset, fileReferncesContext);
         if (DEBUG) System.out.println("context for offset " + offset + " :\n" + context); //NOI18N
         initResolveMask(context, offset, strPrefix, match);
         this.hideTypes = initHideMask(context, offset, this.resolveTypes, this.queryScope, strPrefix, this.inIncludeDirective);
@@ -395,7 +398,10 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         // file local variables
         if (needFileLocalVars(context, offset)) {
-            resImpl.fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match, queryScope == QueryScope.LOCAL_QUERY);
+            if (fileReferncesContext != null){
+                fileReferncesContext.advance(offset);
+            }
+            resImpl.fileLocalVars = contResolver.getFileLocalVariables(context, fileReferncesContext, strPrefix, match, queryScope == QueryScope.LOCAL_QUERY);
             if (isEnough(strPrefix, match, resImpl.fileLocalVars)) return true;
             if (resImpl.fileLocalEnumerators == null) {
                 resImpl.fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);
@@ -589,7 +595,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 fun = (CsmFunction)obj;
             } else {
                 int offset = ((CsmOffsetable)context.getLastObject()).getEndOffset();
-                obj = CsmDeclarationResolver.findInnerFileObject(file, offset, context);
+                obj = CsmDeclarationResolver.findInnerFileObject(file, offset, context, fileReferncesContext);
                 if (CsmKindUtilities.isFunction(obj)) {
                     fun = (CsmFunction)obj;
                 } else if (CsmKindUtilities.isClassForwardDeclaration(obj)) {

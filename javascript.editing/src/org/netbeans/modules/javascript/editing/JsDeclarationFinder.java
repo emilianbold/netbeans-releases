@@ -246,10 +246,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                 // Local reference -- is it a local var?
 
                 VariableVisitor v = parseResult.getVariableVisitor();
-                Map<String,List<Node>> localVars = v.getLocalVars(node);
-
-                String name = node.getString();
-                List<Node> nodes = localVars.get(name);
+                List<Node> nodes = v.getVarOccurrences(node);
                 if (nodes != null && nodes.size() > 0) { // Should always be true
                     Map<Integer,Node> posToNode = new  HashMap<Integer, Node>();
                     for (Node n : nodes) {
