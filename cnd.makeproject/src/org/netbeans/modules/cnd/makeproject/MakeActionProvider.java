@@ -744,9 +744,9 @@ public class MakeActionProvider implements ActionProvider {
 
     private static String getActionName(String projectName, String targetName, MakeConfiguration conf) {
         StringBuilder actionName = new StringBuilder(projectName);
-        actionName.append(" (").append(targetName); //NOI8N
+        actionName.append(" (").append(targetName); // NOI8N
         if (!conf.getDevelopmentHost().isLocalhost()) {
-            actionName.append(" - ").append( conf.getDevelopmentHost().getName() );
+            actionName.append(" - ").append( conf.getDevelopmentHost().getName() ); // NOI8N
         }
         actionName.append(")"); // NOI18N
         return actionName.toString();
