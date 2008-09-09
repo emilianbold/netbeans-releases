@@ -1,7 +1,7 @@
 # Ensures columns from the "customer" table show up, although the table
 # is not qualified with the (default) schema name in the SELECT clause.
 
-select customer.cus| from customer
+select customer.| from customer
 
 --
 <unknown>
