@@ -122,6 +122,7 @@ import org.openide.util.Exceptions;
 public class TSDiagramConverter
 {
     public static final String ELEMENT = "ELEMENT";
+    private static final String BENDSPROPERTY = "BENDS61";
     private static final String PRESENTATIONELEMENT = "PRESENTATION";
     private static final String SHOWMESSAGETYPE = "ShowMessageType";
     private static final String TSLABELTYPE = "TYPE";
@@ -210,6 +211,7 @@ public class TSDiagramConverter
         createNodesPresentationElements();
         findEdgesElements();
         handleLabelsInfo(peidToEdgeLabelMap);
+        handleBendPointsInfo();
         if(diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
         {
             normalizeSQDDiagram();
@@ -949,6 +951,44 @@ public class TSDiagramConverter
             loc.x-=minX-margin;
             loc.y=maxY+margin-loc.y;
             ninfo.setPosition(loc);
+        }
+    }
+    
+    private void handleBendPointsInfo()
+    {
+        Collection<EdgeInfo> einfos = presIdEdgeInfoMap.values();
+        int margin=60;
+        for (EdgeInfo einfo : einfos)
+        {
+            if(einfo.getProperty(BENDSPROPERTY)!=null)
+            {
+                ArrayList<Point> points=new ArrayList<Point>();
+                Point point0=new Point(0,0);
+                if(einfo.getSourcePE()!=null && presIdNodeInfoMap.get(einfo.getSourcePE().getXMIID())!=null)
+                {
+                    point0=presIdNodeInfoMap.get(einfo.getSourcePE().getXMIID()).getPosition();
+                }
+                points.add(point0);
+                
+                ArrayList<Point> tmp=(ArrayList<Point>) einfo.getProperty(BENDSPROPERTY);
+                for(int i=tmp.size()-1;i>=0;i--)
+                {
+                    Point p=tmp.get(i);
+                    Point loc=new Point(p);
+                    loc.x-=minX-margin;
+                    loc.y=maxY+margin-loc.y;
+                    points.add(loc);
+                }
+                
+                Point pointN=new Point(0,0);
+                if(einfo.getTargetPE()!=null && presIdNodeInfoMap.get(einfo.getTargetPE().getXMIID())!=null)
+                {
+                    pointN=presIdNodeInfoMap.get(einfo.getTargetPE().getXMIID()).getPosition();
+                }
+                points.add(pointN);
+                //
+                einfo.setWayPoints(points);
+            }
         }
     }
     
@@ -1808,24 +1848,26 @@ public class TSDiagramConverter
     private void handleEdgeBends(EdgeInfo einfo)
     {
         try {
-            String startWith = readerPres.getLocalName();
-            //we need to go deeper and exit on the same node, or can exit before on place we found necessary info
-            while (readerPres.hasNext() && !(readerPres.isEndElement() && readerPres.getLocalName().equals(startWith))) {
-                if(readerPres.isStartElement() && readerPres.getLocalName().equals("point"))
-                {
-                    int x=(int) Double.parseDouble(readerPres.getAttributeValue(null, "x"));
-                    int y=(int) Double.parseDouble(readerPres.getAttributeValue(null, "y"));
-                    if(einfo.getProperty("BENDS61")==null)
-                    {
-                        einfo.setProperty("BENDS61", new ArrayList());
+            while (readerData.hasNext()) {
+                if (XMLStreamConstants.START_ELEMENT == readerData.next()) {
+                    if (readerData.getName().getLocalPart().equals("point")) {
+                        int x = (int) Double.parseDouble(readerData.getAttributeValue(null, "x"));
+                        int y = (int) Double.parseDouble(readerData.getAttributeValue(null, "y"));
+                        if (einfo.getProperty(BENDSPROPERTY) == null) {
+                            einfo.setProperty(BENDSPROPERTY, new ArrayList());
+                        }
+                        ((ArrayList) einfo.getProperty(BENDSPROPERTY)).add(new Point(x, y));
                     }
-                    ((ArrayList)einfo.getProperty("BENDS61")).add(new Point(x,y));
                 }
-                readerPres.next();
+                else if (readerData.isEndElement() && readerData.getName().getLocalPart().equalsIgnoreCase("bends"))
+                {
+                   break; 
+                }
             }
         } catch (XMLStreamException ex) {
             Exceptions.printStackTrace(ex);
         }
+
     }
     
     private class ConnectorData
