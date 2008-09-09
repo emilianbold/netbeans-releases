@@ -39,6 +39,7 @@
 
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -58,8 +59,7 @@ public class AstNode {
     private NodeType nodeType;    
     private int startOffset;
     private int endOffset;
-    private boolean closed;
-    private List<AstNode> children = new LinkedList<AstNode>();
+    private List<AstNode> children = null;
     private AstNode parent = null;
     private Map<String, Object> attributes = null;
 
@@ -68,7 +68,6 @@ public class AstNode {
         this.nodeType = nodeType;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
-        this.closed = false;
     }
     
     public String name() {
@@ -88,10 +87,13 @@ public class AstNode {
     }
 
     public List<AstNode> children() {
-        return children;
+        return children == null ? Collections.EMPTY_LIST : children;
     }
     
     void addChild(AstNode child) {
+        if (children == null) {
+            children = new LinkedList<AstNode>();
+        }
         children.add(child);
         child.setParent(this);
     }
