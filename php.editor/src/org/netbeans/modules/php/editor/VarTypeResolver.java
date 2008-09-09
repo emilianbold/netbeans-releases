@@ -179,14 +179,15 @@ public final class VarTypeResolver {
                             }
                         }
                     }
-                }
+                    }
                 super.visit(node);
             }
 
             @Override
             public void visit(CatchClause node) {
                 int offset = anchor;
-                if ((offset != (-1) && offset >= node.getStartOffset())) {
+                if ((offset != (-1) && offset >= node.getStartOffset()
+                        && offset <= node.getEndOffset())) {
                     if (isValidBlock(path)) {
                         String excName = CodeUtils.extractVariableName(node.getVariable());
                         String typeName = node.getClassName().getName();
