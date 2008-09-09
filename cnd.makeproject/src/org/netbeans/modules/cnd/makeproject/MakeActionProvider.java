@@ -391,31 +391,31 @@ public class MakeActionProvider implements ActionProvider {
         for (int i = 0; i < targetNames.length; i++) {
             String targetName = targetNames[i];
             int actionEvent;
-            if (targetName.equals("build")) // NOI18N
+            if (targetName.equals("build")) { // NOI18N
                 actionEvent = ProjectActionEvent.BUILD;
-            else if (targetName.equals("build-package")) // NOI18N
+            } else if (targetName.equals("build-package")) { // NOI18N
                 actionEvent = ProjectActionEvent.BUILD;
-            else if (targetName.equals("clean")) // NOI18N
+            } else if (targetName.equals("clean")) { // NOI18N
                 actionEvent = ProjectActionEvent.CLEAN;
-            else if (targetName.equals("compile-single")) // NOI18N
+            } else if (targetName.equals("compile-single")) { // NOI18N
                 actionEvent = ProjectActionEvent.BUILD;
-            else if (targetName.equals("run")) // NOI18N
+            } else if (targetName.equals("run")) { // NOI18N
                 actionEvent = ProjectActionEvent.RUN;
-            else if (targetName.equals("run-single")) // NOI18N
+            } else if (targetName.equals("run-single")) { // NOI18N
                 actionEvent = ProjectActionEvent.RUN;
-            else if (targetName.equals("debug")) // NOI18N
+            } else if (targetName.equals("debug")) { // NOI18N
                 actionEvent = ProjectActionEvent.DEBUG;
-            else if (targetName.equals("debug-stepinto")) // NOI18N
+            } else if (targetName.equals("debug-stepinto")) { // NOI18N
                 actionEvent = ProjectActionEvent.DEBUG_STEPINTO;
-            else if (targetName.equals("debug-load-only")) // NOI18N
+            } else if (targetName.equals("debug-load-only")) { // NOI18N
                 actionEvent = ProjectActionEvent.DEBUG_LOAD_ONLY;
-            else if (targetName.equals("custom-action")) // NOI18N
+            } else if (targetName.equals("custom-action")) { // NOI18N
                 actionEvent = ProjectActionEvent.CUSTOM_ACTION;
-            else {
+            } else {
                 // All others
                 actionEvent = ProjectActionEvent.RUN;
             }
-            
+
             PlatformInfo pi = conf.getPlatformInfo();
             
             if (targetName.equals("save")) { // NOI18N
@@ -453,7 +453,7 @@ public class MakeActionProvider implements ActionProvider {
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
                             actionEvent,
-                            projectName + " (" + targetName + ")", // NOI18N
+                            getActionName(projectName, targetName, conf),
                             path,
                             conf,
                             null,
@@ -530,7 +530,7 @@ public class MakeActionProvider implements ActionProvider {
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
                             actionEvent,
-                            projectName + " (" + targetName + ")", // NOI18N
+                            getActionName(projectName, targetName, conf),
                             path,
                             conf,
                             runProfile,
@@ -549,7 +549,7 @@ public class MakeActionProvider implements ActionProvider {
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
                             actionEvent,
-                            projectName + " (" + "run" + ")", // NOI18N
+                            getActionName(projectName, "run", conf), // NOI18N
                             path,
                             conf,
                             null,
@@ -577,7 +577,7 @@ public class MakeActionProvider implements ActionProvider {
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
                             actionEvent,
-                            projectName + " (" + targetName + ")", // NOI18N
+                            getActionName(projectName, targetName, conf),
                             buildCommand,
                             conf,
                             profile,
@@ -607,7 +607,7 @@ public class MakeActionProvider implements ActionProvider {
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
                         actionEvent,
-                        projectName + " (" + targetName + ")", // NOI18N
+                        getActionName(projectName, targetName, conf),
                         buildCommand,
                         conf,
                         profile,
@@ -631,7 +631,7 @@ public class MakeActionProvider implements ActionProvider {
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
                             actionEvent,
-                            projectName + " (" + targetName + ")", // NOI18N
+                            getActionName(projectName, targetName, conf),
                             buildCommand,
                             conf,
                             profile,
@@ -686,7 +686,7 @@ public class MakeActionProvider implements ActionProvider {
                             ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                                     project,
                                     ProjectActionEvent.CLEAN,
-                                    projectName + " (" + "clean" + ")", // NOI18N
+                                    getActionName(projectName, "clean", conf), // NOI18N
                                     commandLine,
                                     conf,
                                     profile,
@@ -706,7 +706,7 @@ public class MakeActionProvider implements ActionProvider {
                             projectActionEvent = new ProjectActionEvent(
                                     project,
                                     actionEvent,
-                                    projectName + " (" + targetName + ")", // NOI18N
+                                    getActionName(projectName, targetName, conf),
                                     commandLine,
                                     conf,
                                     profile,
@@ -732,7 +732,7 @@ public class MakeActionProvider implements ActionProvider {
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
                         actionEvent,
-                        projectName + " (" + targetName + ")", // NOI18N
+                        getActionName(projectName, targetName, conf),
                         exe,
                         conf,
                         null,
@@ -741,6 +741,17 @@ public class MakeActionProvider implements ActionProvider {
             }
         }
     }
+
+    private static String getActionName(String projectName, String targetName, MakeConfiguration conf) {
+        StringBuilder actionName = new StringBuilder(projectName);
+        actionName.append(" (").append(targetName); //NOI8N
+        if (!conf.getDevelopmentHost().isLocalhost()) {
+            actionName.append(" - ").append( conf.getDevelopmentHost().getName() );
+        }
+        actionName.append(")"); // NOI18N
+        return actionName.toString();
+    }
+
     
     private boolean validateProject(MakeConfiguration conf) {
         boolean ret = false;
