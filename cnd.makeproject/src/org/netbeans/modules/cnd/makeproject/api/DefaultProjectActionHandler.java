@@ -153,18 +153,26 @@ public class DefaultProjectActionHandler implements ActionListener {
         
         private String getTabName(ProjectActionEvent[] paes) {
             String projectName = ProjectUtils.getInformation(paes[0].getProject()).getDisplayName();
-            String name = projectName + " ("; // NOI18N
+            StringBuilder name = new StringBuilder(projectName);
+            name.append(" ("); // NOI18N
             for (int i = 0; i < paes.length; i++) {
                 if (i >= 2) {
-                    name += "..."; // NOI18N
+                    name.append("..."); // NOI18N
                     break;
                 }
-                name += paes[i].getActionName();
+                name.append( paes[i].getActionName() );
                 if (i < paes.length-1)
-                    name += ", "; // NOI18N
+                    name.append( ", " ); // NOI18N
             }
-            name += ")"; // NOI18N
-            return name;
+            name.append( ")" ); // NOI18N
+            if (paes.length > 0) {
+                MakeConfiguration conf = (MakeConfiguration) paes[0].getConfiguration();
+                if (!conf.getDevelopmentHost().isLocalhost()) {
+                    String hkey = conf.getDevelopmentHost().getName();
+                    name.append(" - ").append(hkey); //NOI18N
+                }
+            }
+            return name.toString();
         }
         
         private InputOutput getTab() {
