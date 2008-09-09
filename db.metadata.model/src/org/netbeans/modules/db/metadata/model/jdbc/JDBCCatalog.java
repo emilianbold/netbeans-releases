@@ -71,6 +71,8 @@ public class JDBCCatalog extends CatalogImplementation {
     protected Map<String, Schema> schemas;
 
     public JDBCCatalog(JDBCMetadata jdbcMetadata, String name, boolean _default, String defaultSchemaName) {
+        // defaultSchemaName only makes sense for the default catalog.
+        assert defaultSchemaName == null || _default;
         this.jdbcMetadata = jdbcMetadata;
         this.name = name;
         this._default = _default;
@@ -143,8 +145,10 @@ public class JDBCCatalog extends CatalogImplementation {
                 rs.close();
             }
             if (newSchemas.isEmpty() && !jdbcMetadata.getDmd().supportsSchemasInTableDefinitions()) {
-                syntheticSchema = createJDBCSchema(null, true, true).getSchema();
-                defaultSchema = syntheticSchema;
+                syntheticSchema = createJDBCSchema(null, _default, true).getSchema();
+                if (_default) {
+                    defaultSchema = syntheticSchema;
+                }
                 LOGGER.log(Level.FINE, "Created synthetic schema {0}", syntheticSchema);
             }
         } catch (SQLException e) {
