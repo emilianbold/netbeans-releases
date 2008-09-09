@@ -128,7 +128,7 @@ do
 	if [ -x "$f/f95" ]
 	then
 	    line="$line;f95"
-	elif [-x "$f/f90" ]
+	elif [ -x "$f/f90" ]
 	then
 	    line="$line;f90"
 	fi
