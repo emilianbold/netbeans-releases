@@ -58,7 +58,7 @@ public abstract class CsmStandaloneFileProvider {
     /** A dummy provider that never returns any results.
      */
     private static final CsmStandaloneFileProvider EMPTY = new Empty();
-    
+    private static final boolean DISABLED = Boolean.getBoolean("cnd.disable.standalone.files");
     /** default instance */
     private static CsmStandaloneFileProvider defaultProvider;
     
@@ -71,7 +71,7 @@ public abstract class CsmStandaloneFileProvider {
             return defaultProvider;
         }
         defaultProvider = Lookup.getDefault().lookup(CsmStandaloneFileProvider.class);
-        return defaultProvider == null ? EMPTY : defaultProvider;
+        return (DISABLED || (defaultProvider == null)) ? EMPTY : defaultProvider;
     }
     
     /**

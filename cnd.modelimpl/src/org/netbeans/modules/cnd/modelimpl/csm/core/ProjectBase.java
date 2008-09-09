@@ -435,7 +435,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         synchronized( waitParseLock ) {
             while ( ParserQueue.instance().hasFiles(this, null) ) {
                 try {
-                    waitParseLock.wait();
+                    //FIXUP - timeout is a workaround for #146436 hang on running unit tests
+                    waitParseLock.wait(10000);
                 } catch (InterruptedException ex) {
                     // do nothing
                 }
@@ -1436,6 +1437,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private CsmFile findFileByItem(NativeFileItem nativeFile) {
+        if (!acceptNativeItem(nativeFile)) {
+            return null;
+        }
         File file = nativeFile.getFile().getAbsoluteFile();
         APTPreprocHandler preprocHandler = null;
         if (getFileContainer().getPreprocState(file) == null){

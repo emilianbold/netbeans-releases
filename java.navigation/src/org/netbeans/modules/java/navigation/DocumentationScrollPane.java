@@ -44,7 +44,6 @@ package org.netbeans.modules.java.navigation;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -430,7 +429,9 @@ public class DocumentationScrollPane extends JScrollPane {
                 final String desc = e.getDescription();
                 if (desc != null) {
                     ElementJavadoc doc = currentDocumentation.resolveLink(desc);
-                    setData(doc, false);
+                    if (doc != null) {
+                        setData(doc, false);
+                    }
                 }                    
             }
         }

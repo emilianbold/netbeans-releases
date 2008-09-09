@@ -40,6 +40,7 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
@@ -124,7 +125,6 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         Node closest = path.leaf();
 
         VariableVisitor v = rpr.getVariableVisitor();
-        Node scopeNode = v.getDefiningScope(closest);
 
         // When we sanitize the line around the caret, occurrences
         // highlighting can get really ugly
@@ -219,7 +219,16 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         if (closest != null) {
             if (AstUtilities.isNameNode(closest)) {
                 String name = closest.getString();
-                addNodes(scopeNode != null ? scopeNode : root, name, highlights);
+                List<Node> nodes = v.getVarOccurrences(closest);
+                if (nodes != null) {
+                    for (Node node : nodes) {
+                        OffsetRange range = AstUtilities.getNameRange(node);
+                        highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                    }
+                } else {
+                    Node scopeNode = v.getDefiningScope(closest);
+                    addNodes(scopeNode != null ? scopeNode : root, name, highlights);
+                }
                 closest = null;
             }
         }
