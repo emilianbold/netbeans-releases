@@ -90,6 +90,11 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getRpmHeader().getValue(), packagingConfiguration));
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            // FIXUP
+            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getRpmHeader().getValue(), packagingConfiguration));
+            packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
@@ -119,6 +124,12 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             tabbedPane.setEnabledAt(1,true);
             tabbedPane.setSelectedIndex(0);
         }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            // Add tabs
+            tabbedPane.setEnabledAt(0,true);
+            tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setSelectedIndex(0);
+        }
         else {
             assert false;
         }
@@ -142,6 +153,9 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
             packagingConfiguration.getRpmHeader().setValue(new ArrayList(packagingInfoPanel.getListData()));
+        }
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            //FIXUP
         }
         
         packagingConfiguration.getFiles().setValue(new ArrayList(packagingFilesPanel.getListData()));

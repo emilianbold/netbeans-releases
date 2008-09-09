@@ -56,6 +56,16 @@ public class AstNodeUtils {
             dump(child, INDENT);
         }
     }
+    
+    public static AstNode getRoot(AstNode node) {
+        for(;;) {
+            if(node.parent() == null) {
+                return node;
+            } else {
+                node = node.parent();
+            }
+        }
+    }
 
     public static AstNode findDescendant(AstNode node, int astOffset) {
         int so = node.startOffset();

@@ -134,4 +134,13 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
     public boolean showRequiredDebugTools() {
         return false;
     }
+
+    @Override
+    public void setEnableDevelopmentHostChange(boolean value) {
+    }
+
+    @Override
+    public boolean getEnableDevelopmentHostChange() {
+        return true;
+    }
 }

@@ -43,7 +43,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
-import org.netbeans.api.editor.EditorRegistry; 
+import org.openide.text.CloneableEditorSupport;
 
 public abstract class HintAction extends TextAction implements PropertyChangeListener {
     
@@ -104,8 +104,15 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     protected abstract void perform(JavaSource js, int[] selection);
     
     private FileObject getCurrentFile(int[] span) {
-        JTextComponent pane = EditorRegistry.lastFocusedComponent();
-        if (pane == null)
+        TopComponent tc = TopComponent.getRegistry().getActivated();
+        JTextComponent pane = null;
+
+        //XXX check if inside AWT?
+        if (SwingUtilities.isEventDispatchThread() && (tc instanceof CloneableEditorSupport.Pane)) {
+            pane = ((CloneableEditorSupport.Pane) tc).getEditorPane();
+        }
+
+        if(pane == null)
             return null;
         if (span != null) {
             span[0] = pane.getSelectionStart();
@@ -137,5 +144,5 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     public void propertyChange(PropertyChangeEvent evt) {
         updateEnabled();
     }
-    
+
 }

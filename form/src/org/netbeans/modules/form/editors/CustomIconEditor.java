@@ -198,15 +198,12 @@ public class CustomIconEditor extends javax.swing.JPanel {
         else if (setDefaultIfInvalid) {
             FileObject folder = null;
             String pkgName;
-            String fileName;
             int i = resName.lastIndexOf('/');
             if (i < 0) {
                 pkgName = null; // NOI18N
-                fileName = resName;
             }
             else {
                 pkgName = resName.substring(0, i);
-                fileName = resName.substring(i + 1);
                 cp = sourceCP;
                 folder = cp.findResource(pkgName);
                 if (folder == null) {
@@ -216,7 +213,12 @@ public class CustomIconEditor extends javax.swing.JPanel {
             }
             if (folder == null)
                 folder = propertyEditor.getDefaultResourceFolder();
-            setPackageRoot(cp.findOwnerRoot(folder));
+            FileObject root = cp.findOwnerRoot(folder);
+            if (root == null) {
+                setPackageRoot(sourceCP.findOwnerRoot(sourceFile));
+            } else {
+                setPackageRoot(root);
+            }
             setPackage(folder);
         }
     }

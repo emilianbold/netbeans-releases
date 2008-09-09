@@ -140,4 +140,18 @@ public abstract class ToolsPanelModel {
     public void SetEnableRequiredCompilerCB(boolean enabled) {}
     
     public boolean enableRequiredCompilerCB() {return true;}
+
+    private String selectedDevelopmentHost = null;
+
+    public void setSelectedDevelopmentHost(String hkey) {
+        selectedDevelopmentHost = hkey;
+    }
+
+    public String getSelectedDevelopmentHost() {
+        return selectedDevelopmentHost;
+    }
+
+    public abstract void setEnableDevelopmentHostChange(boolean value);
+
+    public abstract boolean getEnableDevelopmentHostChange();
 }

@@ -687,8 +687,11 @@ public class ConfigurationMakefileWriter {
         bw.write("{\n"); // NOI18N
         bw.write("    cp $1 $2\n"); // NOI18N
         bw.write("    checkReturnCode\n"); // NOI18N
-        bw.write("    chmod $3 $2\n"); // NOI18N
-        bw.write("    checkReturnCode\n"); // NOI18N
+        bw.write("    if [ \"$3\" != \"\" ]\n"); // NOI18N
+        bw.write("    then\n"); // NOI18N
+        bw.write("        chmod $3 $2\n"); // NOI18N
+        bw.write("        checkReturnCode\n"); // NOI18N
+        bw.write("    fi\n"); // NOI18N
         bw.write("}\n"); // NOI18N
         
         bw.write("\n"); // NOI18N
@@ -701,8 +704,11 @@ public class ConfigurationMakefileWriter {
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
             bw.write("mkdir -p " + output + "\n"); // NOI18N
         }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
             bw.write("mkdir -p " + IpeUtils.getDirName(output) + "\n"); // NOI18N
+        }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            bw.write("mkdir -p " + output + "\n"); // NOI18N
         }
         else {
             assert false;
@@ -719,6 +725,9 @@ public class ConfigurationMakefileWriter {
         }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
             writePackagingScriptBodyRPM(bw, conf);
+        }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            writePackagingScriptBodyDebian(bw, conf);
         }
         else {
             assert false;
@@ -1024,6 +1033,20 @@ public class ConfigurationMakefileWriter {
         bw.write("mv ${RPM_PATH} " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("echo RPM: " + packagingConfiguration.getOutputValue() + "/" + "${RPM_NAME}" + "\n"); // NOI18N
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Cleanup\n"); // NOI18N
+        bw.write("cd \"${TOP}\"\n"); // NOI18N
+        bw.write("rm -rf $TMPDIR\n"); // NOI18N
+    }
+    
+    
+    private void writePackagingScriptBodyDebian(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+        PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
+        List<FileElement> fileList = (List<FileElement>)packagingConfiguration.getFiles().getValue();
+        
+        
+        bw.write("echo Debian: " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N
