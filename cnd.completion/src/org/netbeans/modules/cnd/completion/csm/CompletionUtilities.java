@@ -75,7 +75,7 @@ public class CompletionUtilities {
         if (file == null || !file.isValid()) {
             return Collections.<CsmDeclaration>emptyList();
         }
-        CsmContext context = CsmOffsetResolver.findContext(file, offset);
+        CsmContext context = CsmOffsetResolver.findContext(file, offset, null);
         return CsmContextUtilities.findFunctionLocalVariables(context);
     }
     
@@ -93,7 +93,7 @@ public class CompletionUtilities {
         if (file == null || !file.isValid()) {
             return Collections.<CsmDeclaration>emptyList();
         }        
-        CsmContext context = CsmOffsetResolver.findContext(file, offset);
+        CsmContext context = CsmOffsetResolver.findContext(file, offset, null);
         return CsmContextUtilities.findFileLocalVariables(context);
     }
     
@@ -111,7 +111,7 @@ public class CompletionUtilities {
         if (file == null || !file.isValid()) {
             return null;
         }        
-        CsmContext context = CsmOffsetResolver.findContext(file, offset);
+        CsmContext context = CsmOffsetResolver.findContext(file, offset, null);
         CsmClass clazz = CsmContextUtilities.getClass(context, true, false);
         return clazz;
     }
@@ -120,7 +120,7 @@ public class CompletionUtilities {
         CsmOffsetableDeclaration out = null;
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         if (file != null) {
-            CsmContext context = CsmOffsetResolver.findContext(file, offset);
+            CsmContext context = CsmOffsetResolver.findContext(file, offset, null);
             out = CsmContextUtilities.getFunctionDefinition(context);
             if (out == null || !CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
                 out = CsmContextUtilities.getClass(context, false, false);
