@@ -622,14 +622,9 @@ public class PHPIndex {
                                 continue;
                             }
                             break;
-                        case EXACT_NAME:
-                            if (!idSign.getName().equals(identifierName)) {
-                                continue;
-                            }
-                            break;
-                            default:
-                                assert false:nameKind.toString();
-                                continue;
+                        default:
+                            assert false : nameKind.toString();
+                            continue;
                     }
                     if (kind == null) {
                         result.add(idSign.getTypeName());

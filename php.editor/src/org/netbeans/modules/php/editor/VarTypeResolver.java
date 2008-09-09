@@ -280,9 +280,9 @@ public final class VarTypeResolver {
             Set<String> typeNames = null;
             for (Entry<String, ElementKind> entrySet : memberNames.entrySet()) {
                 if (typeNames == null) {
-                    typeNames = new HashSet<String>(index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue(),NameKind.EXACT_NAME));
+                    typeNames = new HashSet<String>(index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue(),NameKind.CASE_INSENSITIVE_PREFIX));
                 } else {
-                    Set<String> names4MethName = index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue(),NameKind.EXACT_NAME);
+                    Set<String> names4MethName = index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue(),NameKind.CASE_INSENSITIVE_PREFIX);
                     typeNames.retainAll(names4MethName);
                 }
                 if (!(typeNames.size() > 1)) {
