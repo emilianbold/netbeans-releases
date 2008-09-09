@@ -99,8 +99,8 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 result = new HtmlParserResult(this, file, elements);
 
                 if (TIMERS.isLoggable(Level.FINE)) {
-                    LogRecord rec = new LogRecord(Level.FINE, "HTML parser + result"); // NOI18N
-                    rec.setParameters(new Object[] { parser, result });
+                    LogRecord rec = new LogRecord(Level.FINE, "HTML parse result"); // NOI18N
+                    rec.setParameters(new Object[] { result });
                     TIMERS.log(rec);
                 }
 

@@ -39,11 +39,16 @@
 package org.netbeans.test.web.core.syntax.performance;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.StyledDocument;
 import junit.framework.Test;
-import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditorCookie;
@@ -58,6 +63,10 @@ import org.openide.loaders.DataObject;
  */
 public class MemoryTest extends NbTestCase {
 
+    private static final int ITERATIONS_COUNT = 10;
+    private static final int TIMEOUT = 2000;
+    private TestHandler handler;
+
     public MemoryTest(String name) {
         super(name);
     }
@@ -65,32 +74,32 @@ public class MemoryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Log.enableInstances(Logger.getLogger("TIMER.j2ee.parser"), null, Level.FINEST);
+        Logger logger = Logger.getLogger("TIMER.j2ee.parser");
+        logger.setLevel(Level.FINEST);
+        handler = new TestHandler();
+        logger.addHandler(handler);
     }
 
     public static Test suite() {
         return NbModuleSuite.allModules(MemoryTest.class);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        Log.assertInstances("Leaking instances");
-        super.tearDown();
-    }
-
     public void testHTML() throws Exception {
         PerformanceTest.openNavigator();
-        processTest("performance.html", "<table></table>");
+        handler.setProcessedMessage("HTML parse result");
+        processTest("performance.html", "<table></table>\n");
     }
 
-    public void testJSP() throws Exception {
+    public void testCSSInHTML() throws Exception {
         PerformanceTest.openNavigator();
-        processTest("performance.jsp", "${\"hello\"}");
+        handler.setProcessedMessage("CSS parse result");
+        processTest("performance.html", "<style>h1{color:green}</style>\n");
     }
 
     public void testCSS() throws Exception {
         PerformanceTest.openNavigator();
-        processTest("performance.css", "selector{color:green}");
+        handler.setProcessedMessage("CSS parse result");
+        processTest("performance.css", "selector{color:green}\n");
     }
 
     private void processTest(String testName, String insertionText) throws Exception {
@@ -98,13 +107,74 @@ public class MemoryTest extends NbTestCase {
         FileObject testObject = FileUtil.createData(testFile);
         DataObject dataObj = DataObject.find(testObject);
         EditorCookie.Observable ed = dataObj.getCookie(Observable.class);
+        handler.params.clear();
+        handler.latest = null;
         StyledDocument doc = ed.openDocument();
         ed.open();
-        Thread.sleep(10000);
-        doc.insertString(0, insertionText, null);
-        Thread.sleep(10000);
+        Thread.sleep(TIMEOUT);
+        handler.params.clear();
+
+        for (int i = 0; i < ITERATIONS_COUNT; i++) {
+            doc.insertString(0, insertionText, null);
+            Thread.sleep(TIMEOUT);
+        }
+
         ed.saveDocument();
         ed.close();
-        Thread.sleep(10000);
+
+        assertClean();
+    }
+
+    private void assertClean() {
+        int size = handler.params.size();
+        assertTrue("parsing was running only for " + size + " iterations", size >= ITERATIONS_COUNT - 2);
+        System.gc();
+        System.gc();
+        Iterator<WeakReference> it = handler.params.iterator();
+        if (it.hasNext()){
+            it.next();
+        }
+        while (it.hasNext()) {
+            if (it.next().get() == null) {
+                it.remove();
+            }
+        }
+        if (handler.params.size() > 1){
+            for (WeakReference weakReference : handler.params) {
+                assertGC("there are " + handler.params.size() + " parse results still accessible", weakReference);
+            }
+        }
+    }
+
+    private class TestHandler extends Handler {
+
+        String message;
+        List<WeakReference> params = new LinkedList<WeakReference>();
+        WeakReference latest;
+
+        @Override
+        public void publish(LogRecord record) {
+            if ((message != null) && (!record.getMessage().equals(message))) {
+                return;
+            }
+            if (latest != null){
+                params.add(latest);
+            }
+            Object[] pars = record.getParameters();
+            WeakReference<Object> ref = new WeakReference<Object>(pars[0]);
+            latest = ref;
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        private void setProcessedMessage(String message) {
+            this.message = message;
+        }
     }
 }
