@@ -170,16 +170,6 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
             {
                 state = move(movingWidget, newWidgetLocation);
             }
-            
-//            if (state)
-//            {
-//                provider.movementFinished(movingWidget);
-//
-//                movingWidget = null;
-//                dragSceneLocation = null;
-//                originalSceneLocation = null;
-//                initialWidgetLocation = null;
-//            }
         }
 
         return state;
