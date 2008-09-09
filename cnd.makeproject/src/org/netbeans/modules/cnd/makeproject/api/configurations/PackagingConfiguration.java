@@ -69,12 +69,14 @@ public class PackagingConfiguration {
         getString("Tar"),
         getString("Zip"),
         getString("SCR4Package"),
-        getString("RPM")
+        getString("RPM"),
+        getString("Debian")
     };
     public static final int TYPE_TAR = 0;
     public static final int TYPE_ZIP = 1;
     public static final int TYPE_SVR4_PACKAGE = 2;
     public static final int TYPE_RPM_PACKAGE = 3;
+    public static final int TYPE_DEBIAN_PACKAGE = 4;
     private IntConfiguration type;
     private BooleanConfiguration verbose;
     private VectorConfiguration svr4Header;
@@ -180,7 +182,6 @@ public class PackagingConfiguration {
             }
         }
         if (getType().getValue() == TYPE_RPM_PACKAGE) {
-            // FIXUP
             if (rpmHeader.getValue().size() != 6) {
                 return true;
             }
@@ -189,6 +190,10 @@ public class PackagingConfiguration {
                     return true;
                 }
             }
+        }
+        if (getType().getValue() == TYPE_DEBIAN_PACKAGE) {
+            // FIXUP
+            return true;
         }
         return false;
     }
@@ -379,6 +384,9 @@ public class PackagingConfiguration {
             if (getType().getValue() == TYPE_RPM_PACKAGE) {
                 val = "/usr"; // NOI18N
             }
+            else if (getType().getValue() == TYPE_DEBIAN_PACKAGE) {
+                val = "/usr"; // NOI18N
+            }
             else if (getType().getValue() == TYPE_SVR4_PACKAGE) {
                 val = findInfoValueName("PKG"); // NOI18N
             }
@@ -420,6 +428,8 @@ public class PackagingConfiguration {
             // nothing
         } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
             // nothing
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            outputPath += "/" + outputName + ".deb"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             outputPath += "/" + outputName + ".tar"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
@@ -445,6 +455,8 @@ public class PackagingConfiguration {
             tool = "pkgmk"; // NOI18N // FIXUP 
         } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
             tool = "rpmbuild"; // NOI18N
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            tool = "dpkg-deb"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             tool = "tar"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
@@ -469,6 +481,8 @@ public class PackagingConfiguration {
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             option = ""; // NOI18N // FIXUP 
         } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            option = ""; // NOI18N
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
             option = ""; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             option = "-v"; // NOI18N
