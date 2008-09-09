@@ -182,10 +182,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private void insideSelect(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeSelectSimpleIdent(ident.lastPrefix, ident.quoted);
-        } else if (ident.fullyTypedIdent.isSimple()) {
-            completeSelectSingleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
-        } else if (ident.fullyTypedIdent.isSingleQualified()) {
-            completeSelectDoubleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+        } else {
+            completeSelectQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
         }
     }
 
@@ -193,17 +191,15 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeFromSimpleIdent(ident.lastPrefix, ident.quoted);
         } else if (ident.fullyTypedIdent.isSimple()) {
-            completeFromSingleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+            completeFromQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
         }
     }
 
     private void insideClauseAfterFrom(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeSimpleIdentBasedOnFromClause(ident.lastPrefix, ident.quoted);
-        } else if (ident.fullyTypedIdent.isSimple()) {
-            completeSingleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
-        } else if (ident.fullyTypedIdent.isSingleQualified()) {
-            completeDoubleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+        } else {
+            completeQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
         }
     }
 
@@ -229,9 +225,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void completeSelectSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
+    private void completeSelectQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
         if (fromClause != null) {
-            completeSingleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, quoted);
+            completeQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, quoted);
         } else {
             // Assume fullyTypedIdent is a table.
             Table table = resolveTable(fullyTypedIdent);
@@ -242,18 +238,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             Schema schema = resolveSchema(fullyTypedIdent);
             if (schema != null) {
                 items.addTables(schema, null, lastPrefix, quoted, substitutionOffset);
-            }
-        }
-    }
-
-    private void completeSelectDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
-        if (fromClause != null) {
-            completeDoubleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, quoted);
-        } else {
-            // Assume fullyTypedIdent is a table.
-            Table table = resolveTable(fullyTypedIdent);
-            if (table != null) {
-                items.addColumns(table, lastPrefix, quoted, substitutionOffset);
             }
         }
     }
@@ -269,7 +253,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         items.addSchemas(defaultCatalog, null, typedPrefix, quoted, substitutionOffset);
     }
 
-    private void completeFromSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
+    private void completeFromQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
         Schema schema = resolveSchema(fullyTypedIdent);
         if (schema != null) {
             // Tables in the typed schema.
@@ -323,7 +307,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         items.addSchemas(defaultCatalog, schemaNames, typedPrefix, quoted, substitutionOffset);
     }
 
-    private void completeSingleQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
+    private void completeQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
         assert fromClause != null;
         Set<Table> tables = resolveTables(fromClause.getUnaliasedTableNames());
         // Assume fullyTypedIdent is the name of a table in the default schema.
@@ -332,9 +316,11 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             // Table not found, or it is not in the FROM clause.
             foundTable = null;
             // Then assume fullyTypedIdent is an alias.
-            QualIdent aliasedTableName = fromClause.getTableNameByAlias(fullyTypedIdent.getSimpleName());
-            if (aliasedTableName != null) {
-                foundTable = resolveTable(aliasedTableName);
+            if (fullyTypedIdent.isSimple()) {
+                QualIdent aliasedTableName = fromClause.getTableNameByAlias(fullyTypedIdent.getSimpleName());
+                if (aliasedTableName != null) {
+                    foundTable = resolveTable(aliasedTableName);
+                }
             }
         }
         if (foundTable != null) {
@@ -350,15 +336,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 }
             }
             items.addTables(schema, tableNames, lastPrefix, quoted, substitutionOffset);
-        }
-    }
-
-    private void completeDoubleQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
-        assert fromClause != null;
-        Set<Table> tables = resolveTables(fromClause.getUnaliasedTableNames());
-        Table foundTable = resolveTable(fullyTypedIdent);
-        if (foundTable != null && tables.contains(foundTable)) {
-            items.addColumns(foundTable, lastPrefix, quoted, substitutionOffset);
         }
     }
 
