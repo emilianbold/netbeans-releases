@@ -1690,6 +1690,11 @@ public class TSDiagramConverter
                         //edges goes after nodes, so info should be availabel
                         einfo.setProperty("TARGETCONNECTOR", connectors.get(readerData.getAttributeValue(null, "value")));
                     }
+                    else if(readerData.getName().getLocalPart()
+                        .equalsIgnoreCase("bends"))
+                    {
+                        handleEdgeBends(einfo);
+                    }
                 }
                 
                 else if (readerData.isEndElement() && 
@@ -1797,6 +1802,28 @@ public class TSDiagramConverter
         }
         catch (XMLStreamException ex)
         {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    private void handleEdgeBends(EdgeInfo einfo)
+    {
+        try {
+            String startWith = readerPres.getLocalName();
+            //we need to go deeper and exit on the same node, or can exit before on place we found necessary info
+            while (readerPres.hasNext() && !(readerPres.isEndElement() && readerPres.getLocalName().equals(startWith))) {
+                if(readerPres.isStartElement() && readerPres.getLocalName().equals("point"))
+                {
+                    int x=(int) Double.parseDouble(readerPres.getAttributeValue(null, "x"));
+                    int y=(int) Double.parseDouble(readerPres.getAttributeValue(null, "y"));
+                    if(einfo.getProperty("BENDS61")==null)
+                    {
+                        einfo.setProperty("BENDS61", new ArrayList());
+                    }
+                    ((ArrayList)einfo.getProperty("BENDS61")).add(new Point(x,y));
+                }
+                readerPres.next();
+            }
+        } catch (XMLStreamException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
