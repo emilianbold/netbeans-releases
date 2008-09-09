@@ -105,6 +105,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             rakeTextField,
             jrubyPropsText,
         };
+
         JLabel[] configLabels = new JLabel[]{
             jLabelMainClass,
             jLabelArgs,
@@ -113,15 +114,16 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             rakeLabel,
             jrubyPropsLabel
         };
+        
         configPropsKeys = new String[] {
             RubyProjectProperties.MAIN_CLASS,
             RubyProjectProperties.APPLICATION_ARGS,
             RubyProjectProperties.RUBY_OPTIONS,
             RubyProjectProperties.RUN_WORK_DIR,
             RubyProjectProperties.RAKE_ARGS,
-            RubyProjectProperties.JRUBY_PROPS
-        
+            RubyProjectProperties.JVM_ARGS
         };
+
         assert configFields.length == configPropsKeys.length;
         
         configChanged(uiProperties.getActiveConfig());
@@ -262,7 +264,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(rakeExampleLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgsEx")); // NOI18N
 
-        jrubyPropsLabel.setLabelFor(rubyOptions);
+        jrubyPropsLabel.setLabelFor(jrubyPropsText);
         org.openide.awt.Mnemonics.setLocalizedText(jrubyPropsLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jrubyPropsLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jrubyPropsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jrubyPropsExample.text")); // NOI18N
