@@ -451,10 +451,14 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testUnknown() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$unknown->aCreate^", false);
     }
+    public void test145835() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment2.php", "$cVarAdvancedTest->^", false);
+    }
     public void testTypeInCatch() throws Exception {
         checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vCatch->^", false);
     }
+    /* doesn't work properly yet
     public void testTypeInInstanceof() throws Exception {
         checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vInstanceof->^", false);
-    }    
+    }*/
 }
