@@ -278,10 +278,6 @@ public class CompletionContextImpl extends CompletionContext {
                             typedChars = index<0?tag.getTagName():tag.getTagName().substring(0, index);
                         }
                     }
-                    if(lastTypedChar == '>') {
-                        completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
-                        break;
-                    }
                     completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
                     pathFromRoot = getPathFromRoot(element.getPrevious());
                     break;
