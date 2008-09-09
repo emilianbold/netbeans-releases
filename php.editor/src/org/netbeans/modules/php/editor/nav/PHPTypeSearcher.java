@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -72,30 +72,30 @@ public class PHPTypeSearcher implements IndexSearcher {
 
     public Set<? extends Descriptor> getTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
         PHPIndex index = PHPIndex.get(gsfIndex);
-        
+
         if (index == null) {
             return Collections.emptySet();
         }
-        
+
         //#132529: consider after this is solved:
 //        if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
 //            textForQuery = textForQuery.toLowerCase();
 //        }
-        
+
         int doubleColon = textForQuery.indexOf("::");
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
-        
+
         if (doubleColon != (-1)) {
             String className = textForQuery.substring(0, doubleColon);
             String rest = textForQuery.substring(doubleColon + 2);
-            
+
             for (IndexedClass clazz : index.getClasses(null, className, kind)) {
                 for (IndexedFunction func : index.getMethods(null, clazz.getName(), rest, kind, PHPIndex.ANY_ATTR)) {
                     result.add(new PHPTypeDescriptor(func, clazz, helper));
                 }
             }
         } else {
-            Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(textForQuery, null);
+            Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(textForQuery, null,NameKind.CASE_INSENSITIVE_PREFIX);
             for (String className : typeNamesForIdentifier) {
                 for (IndexedClass clazz : index.getClasses(null, className, kind)) {
                     for (IndexedFunction func : index.getMethods(null, clazz.getName(), textForQuery, kind, PHPIndex.ANY_ATTR)) {
@@ -133,11 +133,11 @@ public class PHPTypeSearcher implements IndexSearcher {
         private String projectName;
         private Icon projectIcon;
         private final Helper helper;
-        
+
         public PHPTypeDescriptor(IndexedElement element, Helper helper) {
             this(element, null, helper);
         }
-        
+
         public PHPTypeDescriptor(IndexedElement element, IndexedElement enclosingClass, Helper helper) {
             this.element = element;
             this.enclosingClass = enclosingClass;
@@ -178,7 +178,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 projectName = "";
             }
         }
-        
+
         public Icon getProjectIcon() {
             if (projectName == null) {
                 initProjectInfo();
