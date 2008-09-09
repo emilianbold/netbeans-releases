@@ -153,12 +153,17 @@ public abstract class BasicCompiler extends Tool {
         }
     }
 
-    protected String normalizePath(String path) {
-        path = getIncludeFilePathPrefix() + path;
+    private String normalizePath(String path) {
         if (RemoteUtils.isLocalhost(getHostKey())) {
             return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
         } else {
+            // TODO: remote paths would love to be normalized too
             return path;
         }
+    }
+
+    protected String applyPathPrefix(String path) {
+        String prefix = getIncludeFilePathPrefix();
+        return normalizePath( prefix != null ? prefix + path : path );
     }
 }

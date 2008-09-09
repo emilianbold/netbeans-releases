@@ -112,26 +112,43 @@ public class FilePreprocessorConditionState
      * adds offset of active branch to offsets array
      */
     public void onEval(APT apt, boolean result) {
+        boolean proceed = false;
+        int offset = -1;
         if (result) {
-            int offset = apt.getOffset();
-            if (size == 0) {
-                offsets[0] = offset;
-                size = 1;
-            } else {
-                int last = size-1;
-                if (offsets[last] < offset) {
-                    insert(last+1, offset);
-                } else {
-                    for (int i = last-1; i > 0; i--) {
-                        if (offset > offsets[i]) {
-                            insert(i+1, offset);
-                            return;
-                        }
-                    }
-                    insert(0, offset);
-                }
+            proceed = true;
+            offset = apt.getOffset();
+        } else {
+            APT  sibling = apt.getNextSibling();
+            if (sibling != null && sibling.getType() == APT.Type.ELSE) {
+                proceed = true;
+                offset = sibling.getOffset();
             }
         }
+        if (proceed) {
+            assert offset >= 0;
+            addOffset(offset);
+        }
+    }
+
+    private boolean addOffset(int offset) {
+        if (size == 0) {
+            offsets[0] = offset;
+            size = 1;
+        } else {
+            int last = size - 1;
+            if (offsets[last] < offset) {
+                insert(last + 1, offset);
+            } else {
+                for (int i = last - 1; i > 0; i--) {
+                    if (offset > offsets[i]) {
+                        insert(i + 1, offset);
+                        return true;
+                    }
+                }
+                insert(0, offset);
+            }
+        }
+        return false;
     }
 
     private void insert(int index, int value) {
@@ -210,11 +227,11 @@ public class FilePreprocessorConditionState
                 // on each iteration we assume
                 // that all on the left of the current position
                 // this is a subset of other
-                if (this.offsets[thisPos] == otherOffsets[thisPos]) {
+                if (this.offsets[thisPos] == otherOffsets[otherPos]) {
                     thisPos++;
                     otherPos++;
                     continue;
-                } else if (this.offsets[thisPos] < otherOffsets[thisPos]) {
+                } else if (this.offsets[thisPos] < otherOffsets[otherPos]) {
                     return false;
                 } else { // this.offsets[thisPos] > other.offsets[thisPos]
                     while (++otherPos < otherSize) {

@@ -56,8 +56,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.xml.bind.annotation.XmlType;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 
@@ -76,7 +77,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     private Set<String> imports = new HashSet<String>();
     private String className;
     private WebServiceDescriptor wsData;
-    private WsdlPort port;
+    private WSPort port;
     private final List<WSOperation> operations;
     private ClassLoader wsClassLoader;
     private String portGetterMethod;
@@ -135,7 +136,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         imports.add(importLine);
     }
     
-    public void setPort(WsdlPort port) {
+    public void setPort(WSPort port) {
         this.port = port;
         if (portGetterMethod == null) {
             portGetterMethod = port.getPortGetter();
@@ -290,7 +291,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         println("}");
     }
     
-    private void printOperations(WsdlPort port) {
+    private void printOperations(WSPort port) {
         
         // This is to keep track of the overloadded method names
         Map<String, Integer> methodNames = new HashMap<String, Integer>();

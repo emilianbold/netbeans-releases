@@ -45,8 +45,8 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.LocalSimpleType;
@@ -95,8 +95,8 @@ public class SoapClientUtils {
     }
 
     public static Map<QName,String> getSoapHandlerParameters(WSDLModel model, 
-                                                             WsdlPort wsPort, 
-                                                             WsdlOperation wsOperation) {
+                                                             WSPort wsPort,
+                                                             WSOperation wsOperation) {
         Map<QName,String> paramMap = new HashMap<QName,String>();
 
         QName portQName = new QName(wsPort.getNamespaceURI(), wsPort.getName());

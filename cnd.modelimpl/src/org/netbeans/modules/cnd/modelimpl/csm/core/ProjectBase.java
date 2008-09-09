@@ -1082,7 +1082,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             if (comparisonResult == ComparisonResult.WORSE) {
                 return csmFile;
-            } else if (comparisonResult == ComparisonResult.SAME && newStateFound.get() && csmFile.isParsed()) {
+            } else if (comparisonResult == ComparisonResult.SAME && newStateFound.get() /*&& csmFile.isParsed()*/) {
                 // it's better than rely on pcStates check -
                 // somebody could place state, but not yet calculate pcState
                 return csmFile;
@@ -1171,11 +1171,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private static void traceIncludeScheduling(
             CsmFile file, APTPreprocHandler.State newState, FilePreprocessorConditionState pcState,
             boolean clean, Collection<APTPreprocHandler.State> statesToParse, Collection<FileContainer.StatePair> statesToKeep) {
-        
-        System.err.printf("scheduling %s (1) %s valid %b context %b %s\n",
+
+        StringBuilder sb = new StringBuilder();
+        for (FileContainer.StatePair pair : statesToKeep) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            sb.append(pair.pcState);
+        }
+
+        System.err.printf("scheduling %s (1) %s valid %b context %b %s keeping [%s]\n",
                 (clean ? "reparse" : "  parse"), file.getAbsolutePath(),
-                newState.isValid(), newState.isCompileContext(), pcState);
-        
+                newState.isValid(), newState.isCompileContext(), pcState, sb);
+
         for (APTPreprocHandler.State state : statesToParse) {
             if (!newState.equals(state)) {
                 FilePreprocessorConditionState currPcState = null;
@@ -1428,6 +1436,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private CsmFile findFileByItem(NativeFileItem nativeFile) {
+        if (!acceptNativeItem(nativeFile)) {
+            return null;
+        }
         File file = nativeFile.getFile().getAbsoluteFile();
         APTPreprocHandler preprocHandler = null;
         if (getFileContainer().getPreprocState(file) == null){

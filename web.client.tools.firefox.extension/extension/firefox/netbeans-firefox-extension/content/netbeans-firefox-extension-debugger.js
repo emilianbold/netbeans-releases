@@ -338,16 +338,17 @@
                     currentFirebugContext = context;
                     releaseFirebugContext = false;
                     netBeansDebugger.onInit(netBeansDebugger);
+                    
+                    if (features.suspendOnFirstLine) {
+                        features.suspendOnFirstLine = false;
+                        suspend("firstline");
+                    }
                 }
             },
 
             // #5 Show Current Context - we didn't need this.'
             showContext: function(browser, context) {
 
-                if (features.suspendOnFirstLine) {
-                    features.suspendOnFirstLine = false;
-                    suspend("firstline");
-                }
             },
 
             // #6 Watch Window ( attachToWindow )
@@ -1273,7 +1274,7 @@
             // transmit them in UTF-8 - the default XML encoding.
             // We may need to convert the source text to UTF-8
             // here using nsIScriptableUnicodeConverter service.
-            data = data.join("\n");
+            data = "N" + data.join("\n");
 
             var sourceResponse =
               <response command="source" encoding="none"
