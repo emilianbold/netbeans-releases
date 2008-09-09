@@ -90,11 +90,7 @@ public abstract class SQLCompletionItem implements CompletionItem {
     }
 
     public static SQLCompletionItem column(QualIdent tableName, String columnName, String substitutionText, int substitutionOffset) {
-        return new QualTableColumn(tableName, columnName, substitutionText, substitutionOffset);
-    }
-
-    public static SQLCompletionItem column(String simpleTableName, String columnName, String substitutionText, int substitutionOffset) {
-        return new SimpleTableColumn(simpleTableName, columnName, substitutionText, substitutionOffset);
+        return new Column(tableName, columnName, substitutionText, substitutionOffset);
     }
 
     protected SQLCompletionItem(String substitutionText, int substitutionOffset) {
@@ -279,18 +275,18 @@ public abstract class SQLCompletionItem implements CompletionItem {
         }
     }
 
-    private static abstract class AbstractColumn extends SQLCompletionItem {
+    private static class Column extends SQLCompletionItem {
 
+        private final QualIdent tableName;
         private final String columnName;
         private String leftText;
         private String rightText;
 
-        public AbstractColumn(String columnName, String substitutionText, int substitutionOffset) {
+        public Column(QualIdent tableName, String columnName, String substitutionText, int substitutionOffset) {
             super(substitutionText, substitutionOffset);
+            this.tableName = tableName;
             this.columnName = columnName;
         }
-
-        protected abstract String getTableName();
 
         protected String getColumnName() {
             return columnName;
@@ -319,7 +315,7 @@ public abstract class SQLCompletionItem implements CompletionItem {
             if (rightText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(TABLE_COLOR);
-                sb.append(getTableName());
+                sb.append(tableName.toString());
                 sb.append(COLOR_END);
                 rightText = MessageFormat.format(NbBundle.getMessage(SQLCompletionItem.class, "MSG_Table"), sb.toString());
             }
@@ -328,37 +324,7 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
         @Override
         public String toString() {
-            return MessageFormat.format("Column {0} in table {1}", columnName, getTableName()); // NOI18N
-        }
-    }
-
-    private static final class QualTableColumn extends AbstractColumn {
-
-        private final QualIdent tableName;
-
-        public QualTableColumn(QualIdent tableName, String columnName, String substitutionText, int substitutionOffset) {
-            super(columnName, substitutionText, substitutionOffset);
-            this.tableName = tableName;
-        }
-
-        @Override
-        protected String getTableName() {
-            return tableName.toString();
-        }
-    }
-
-    private static final class SimpleTableColumn extends AbstractColumn {
-
-        private final String simpleTableName;
-
-        public SimpleTableColumn(String simpleTableName, String columnName, String quoteString, int substitutionOffset) {
-            super(columnName, quoteString, substitutionOffset);
-            this.simpleTableName = simpleTableName;
-        }
-
-        @Override
-        protected String getTableName() {
-            return simpleTableName;
+            return MessageFormat.format("Column {0} in table {1}", columnName, tableName); // NOI18N
         }
     }
 }

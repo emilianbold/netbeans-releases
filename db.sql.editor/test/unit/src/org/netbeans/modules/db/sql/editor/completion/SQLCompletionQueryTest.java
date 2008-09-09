@@ -94,6 +94,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("selectEmptyFromClause"));
         suite.addTest(new SQLCompletionQueryTest("selectAllFrom"));
         suite.addTest(new SQLCompletionQueryTest("selectSimpleFrom"));
+        suite.addTest(new SQLCompletionQueryTest("selectFromTableInNonDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromQualTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromUnqualTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromSchema"));
@@ -120,9 +121,6 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("selectSubquery"));
 
         suite.addTest(new SQLCompletionQueryTest("script"));
-
-        // Does not work yet.
-        // suite.addTest(new SQLCompletionQueryTest("selectFromTableInNonDefaultSchema", true));
 
         return suite;
     }

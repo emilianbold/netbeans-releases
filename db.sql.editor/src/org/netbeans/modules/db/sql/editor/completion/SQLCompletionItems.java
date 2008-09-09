@@ -100,42 +100,24 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         });
     }
 
-    public void addColumns(Schema schema, final Table table, String prefix, final boolean quote, final int substitutionOffset) {
-        final QualIdent qualTableName = schema.isDefault() ? null : new QualIdent(schema.getName(), table.getName());
+    public void addColumns(Table table, String prefix, final boolean quote, final int substitutionOffset) {
+        Schema schema = table.getParent();
+        Catalog catalog = schema.getParent();
+        List<String> parts = new ArrayList<String>(3);
+        if (!catalog.isDefault()) {
+            parts.add(catalog.getName());
+        }
+        if (!schema.isSynthetic() && !schema.isDefault()) {
+            parts.add(schema.getName());
+        }
+        parts.add(table.getName());
+        final QualIdent qualTableName = new QualIdent(parts);
         filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
             public void handle(Column column) {
                 String columnName = column.getName();
-                if (qualTableName != null) {
-                    items.add(SQLCompletionItem.column(qualTableName, columnName, doQuote(columnName, quote), itemOffset + substitutionOffset));
-                } else {
-                    items.add(SQLCompletionItem.column(table.getName(), columnName, doQuote(columnName, quote), itemOffset + substitutionOffset));
-                }
+                items.add(SQLCompletionItem.column(qualTableName, columnName, doQuote(columnName, quote), itemOffset + substitutionOffset));
             }
         });
-    }
-
-    public void addColumns(Catalog catalog, QualIdent tableName, String prefix, final boolean quote, final int substitutionOffset) {
-        Schema schema = null;
-        Table table = null;
-        if (tableName.isSimple()) {
-            if (!catalog.isDefault()) {
-                return;
-            }
-            schema = catalog.getDefaultSchema();
-            if (schema == null) {
-                return;
-            }
-            table = schema.getTable(tableName.getSimpleName());
-        } else if (tableName.isSingleQualified()) {
-            schema = catalog.getSchema(tableName.getFirstQualifier());
-            if (schema == null) {
-                return;
-            }
-            table = schema.getTable(tableName.getSimpleName());
-        }
-        if (table != null) {
-            addColumns(schema, table, prefix, quote, substitutionOffset);
-        }
     }
 
     public void fill(CompletionResultSet resultSet) {

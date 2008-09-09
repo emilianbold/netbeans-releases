@@ -1,5 +1,5 @@
-Column customer_id in table customer
 Column invoice_id in table invoice
 Column customer_id in table invoice
+Column customer_id in table customer
 Table invoice
 Alias cust
