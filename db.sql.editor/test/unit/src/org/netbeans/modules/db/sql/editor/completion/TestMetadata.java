@@ -53,7 +53,6 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
-import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
@@ -63,13 +62,13 @@ import org.openide.util.Utilities;
  *
  * @author Andrei Badea
  */
-public class TestMetadata implements MetadataImplementation {
+public class TestMetadata extends MetadataImplementation {
 
     private final TestCatalog catalogImpl = new TestCatalog();
-    private final Catalog defaultCatalog = MetadataFactory.createCatalog(catalogImpl);
+    private final Catalog defaultCatalog = catalogImpl.getCatalog();
 
     public static Metadata create(List<String> spec) {
-        return MetadataFactory.createMetadata(new TestMetadata(spec));
+        return new TestMetadata(spec).getMetadata();
     }
 
     public TestMetadata(String[] spec) {
@@ -109,8 +108,8 @@ public class TestMetadata implements MetadataImplementation {
                             defaultSchema = true;
                         }
                     }
-                    schemaImpl = new TestSchema(trimmed, defaultSchema, synthetic);
-                    Schema schema = MetadataFactory.createSchema(schemaImpl);
+                    schemaImpl = new TestSchema(catalogImpl, trimmed, defaultSchema, synthetic);
+                    Schema schema = schemaImpl.getSchema();
                     catalogImpl.schemas.put(trimmed, schema);
                     if (defaultSchema) {
                         if (catalogImpl.defaultSchema != null) {
@@ -123,14 +122,14 @@ public class TestMetadata implements MetadataImplementation {
                     if (schemaImpl == null) {
                         throw new IllegalArgumentException(line);
                     }
-                    tableImpl = new TestTable(trimmed);
-                    schemaImpl.tables.put(trimmed, MetadataFactory.createTable(tableImpl));
+                    tableImpl = new TestTable(schemaImpl, trimmed);
+                    schemaImpl.tables.put(trimmed, tableImpl.getTable());
                     break;
                 case 4:
                     if (schemaImpl == null || tableImpl == null) {
                         throw new IllegalArgumentException(line);
                     }
-                    tableImpl.columns.put(trimmed, MetadataFactory.createColumn(new TestColumn(trimmed)));
+                    tableImpl.columns.put(trimmed, new TestColumn(tableImpl, trimmed).getColumn());
                     break;
                 default:
                     throw new IllegalArgumentException(line);
@@ -156,7 +155,7 @@ public class TestMetadata implements MetadataImplementation {
     public void refresh() {
     }
 
-    static final class TestCatalog implements CatalogImplementation {
+    static final class TestCatalog extends CatalogImplementation {
 
         Schema defaultSchema;
         Map<String, Schema> schemas = new TreeMap<String, Schema>();
@@ -182,17 +181,23 @@ public class TestMetadata implements MetadataImplementation {
         }
     }
 
-    static final class TestSchema implements SchemaImplementation {
+    static final class TestSchema extends SchemaImplementation {
 
+        private final TestCatalog catalogImpl;
         private final String name;
         private final boolean _default;
         private final boolean synthetic;
         private final Map<String, Table> tables = new TreeMap<String, Table>();
 
-        public TestSchema(String name, boolean _default, boolean synthetic) {
+        public TestSchema(TestCatalog catalogImpl, String name, boolean _default, boolean synthetic) {
+            this.catalogImpl = catalogImpl;
             this.name = name;
             this._default = _default;
             this.synthetic = synthetic;
+        }
+
+        public Catalog getParent() {
+            return catalogImpl.getCatalog();
         }
 
         public String getName() {
@@ -216,13 +221,19 @@ public class TestMetadata implements MetadataImplementation {
         }
     }
 
-    static final class TestTable implements TableImplementation {
+    static final class TestTable extends TableImplementation {
 
+        private final TestSchema schemaImpl;
         private final String name;
         private final Map<String, Column> columns = new LinkedHashMap<String, Column>();
 
-        public TestTable(String name) {
+        public TestTable(TestSchema schemaImpl, String name) {
+            this.schemaImpl = schemaImpl;
             this.name = name;
+        }
+
+        public Schema getParent() {
+            return schemaImpl.getSchema();
         }
 
         public String getName() {
@@ -238,12 +249,18 @@ public class TestMetadata implements MetadataImplementation {
         }
     }
 
-    static final class TestColumn implements ColumnImplementation {
+    static final class TestColumn extends ColumnImplementation {
 
+        private final TestTable tableImpl;
         private final String name;
 
-        private TestColumn(String name) {
+        private TestColumn(TestTable tableImpl, String name) {
+            this.tableImpl = tableImpl;
             this.name = name;
+        }
+
+        public Table getParent() {
+            return tableImpl.getTable();
         }
 
         public String getName() {

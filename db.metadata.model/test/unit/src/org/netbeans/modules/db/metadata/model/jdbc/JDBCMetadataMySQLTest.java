@@ -100,15 +100,18 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         assertTrue(defaultCatalog.getSchemas().contains(schema));
         assertTrue(schema.isSynthetic());
         assertTrue(schema.isDefault());
+        assertSame(defaultCatalog, schema.getParent());
 
         Collection<Table> tables = schema.getTables();
         assertNames(new HashSet<String>(Arrays.asList("foo", "bar")), tables);
         Table barTable = schema.getTable("bar");
         assertTrue(tables.contains(barTable));
+        assertSame(schema, barTable.getParent());
 
         Collection<Column> columns = barTable.getColumns();
         assertNames(Arrays.asList("i+d", "foo_id", "bar_name"), columns);
         Column iPlusDColumn = barTable.getColumn("i+d");
         assertTrue(columns.contains(iPlusDColumn));
+        assertSame(barTable, iPlusDColumn.getParent());
     }
 }
