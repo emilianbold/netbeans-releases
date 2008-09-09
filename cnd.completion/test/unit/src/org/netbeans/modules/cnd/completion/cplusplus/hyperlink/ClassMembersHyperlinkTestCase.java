@@ -595,6 +595,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz145077.cc", 44, 60, "iz145077.cc", 112, 5);
     }
     
+    public void testIZ145071() throws Exception {
+        // IZ#145071 : forward declarations marked as error
+        performTest("IZ145071.cc", 4, 23, "IZ145071.cc", 4, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
