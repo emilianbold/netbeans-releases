@@ -41,6 +41,7 @@ package org.netbeans.modules.html.editor.gsf;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
@@ -71,7 +72,8 @@ import org.openide.util.NbBundle;
  */
 public class HtmlGSFParser implements Parser, PositionManager {
 
-    
+    /** logger for timers/counters */
+    private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
     private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
@@ -96,6 +98,12 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 }
 
                 result = new HtmlParserResult(this, file, elements);
+
+                if (TIMERS.isLoggable(Level.FINE)) {
+                    LogRecord rec = new LogRecord(Level.FINE, "HTML parser + result"); // NOI18N
+                    rec.setParameters(new Object[] { parser, result });
+                    TIMERS.log(rec);
+                }
 
                 //highlight unpaired tags
                 final DTD dtd = result.dtd();

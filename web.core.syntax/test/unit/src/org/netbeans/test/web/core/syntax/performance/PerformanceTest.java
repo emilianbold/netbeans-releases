@@ -38,6 +38,7 @@
  */
 package org.netbeans.test.web.core.syntax.performance;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -52,6 +53,7 @@ import javax.swing.text.StyledDocument;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.navigator.NavigatorTC;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileObject;
@@ -87,6 +89,7 @@ public class PerformanceTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        openNavigator();
         timerHandler.flush();
         failures.clear();
         waitTimeout();
@@ -210,6 +213,15 @@ public class PerformanceTest extends NbTestCase {
         @Override
         public void close() throws SecurityException {
         }
+    }
+
+    public static void openNavigator() throws Exception{
+        EventQueue.invokeAndWait(new Runnable() {
+
+            public void run() {
+                NavigatorTC.getInstance().open();
+            }
+        });
     }
 }
 
