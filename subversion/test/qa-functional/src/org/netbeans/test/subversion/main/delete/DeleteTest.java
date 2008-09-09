@@ -131,6 +131,7 @@ public class DeleteTest extends JellyTestCase {
             vo = VersioningOperator.invoke();
             JTableOperator table;
             Exception e = null;
+            Thread.sleep(1000);
             try {
                 table = vo.tabFiles();
                 assertEquals("Files should have been [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1).toString());
@@ -140,6 +141,7 @@ public class DeleteTest extends JellyTestCase {
             assertNull("Unexpected behavior - file should appear in Versioning view!!!", e);
             
             e = null;
+            Thread.sleep(1000);
             try {
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             } catch (Exception ex) {
@@ -158,6 +160,7 @@ public class DeleteTest extends JellyTestCase {
             oto.waitText("Modifications finished.");
             
             e = null;
+            Thread.sleep(1000);
             try {
                 vo = VersioningOperator.invoke();
                 table = vo.tabFiles();
@@ -167,6 +170,7 @@ public class DeleteTest extends JellyTestCase {
             assertNotNull("Unexpected behavior - file should disappear in Versioning view!!!", e);
             
             e = null;
+            Thread.sleep(1000);
             try {
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             } catch (Exception ex) {
@@ -223,6 +227,7 @@ public class DeleteTest extends JellyTestCase {
             vo = VersioningOperator.invoke();
             JTableOperator table;
             Exception e = null;
+            Thread.sleep(1000);
             try {
                 table = vo.tabFiles();
                 assertEquals("Files should have been [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1).toString());
@@ -232,6 +237,7 @@ public class DeleteTest extends JellyTestCase {
             assertNull("Unexpected behavior - file should appear in Versioning view!!!", e);
             
             e = null;
+            Thread.sleep(1000);
             try {
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             } catch (Exception ex) {
@@ -250,6 +256,7 @@ public class DeleteTest extends JellyTestCase {
             oto.waitText("finished.");
             
             e = null;
+            Thread.sleep(1000);
             try {
                 vo = VersioningOperator.invoke();
                 table = vo.tabFiles();
@@ -259,6 +266,7 @@ public class DeleteTest extends JellyTestCase {
             assertNotNull("Unexpected behavior - file should disappear in Versioning view!!!", e);
             
             e = null;
+            Thread.sleep(1000);
             try {
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             } catch (Exception ex) {

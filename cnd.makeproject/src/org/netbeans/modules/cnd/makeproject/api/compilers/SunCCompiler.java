@@ -80,11 +80,11 @@ public class SunCCompiler extends SunCCCCompiler {
                     int spaceIndex = line.indexOf(" ", includeIndex + 1); // NOI18N
                     if (spaceIndex > 0) {
                         token = line.substring(includeIndex+2, spaceIndex);
-                        systemIncludeDirectoriesList.addUnique(normalizePath(token));
+                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
                         includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
                     } else {
                         token = line.substring(includeIndex+2);
-                        systemIncludeDirectoriesList.addUnique(normalizePath(token));
+                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
                         break;
                     }
                 }

@@ -57,6 +57,7 @@
                     <request/>
                     <response>
                         <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -71,6 +72,7 @@
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -88,7 +90,7 @@
                         </request>
                         <response>
                             <representation mediaType="text/xml" element="t:statuses"/>
-                        </response>
+                        <fault mediaType="text/xml" element="t:nil-classes"/></response>
                     </method>
                 </resource>
             </resource>
@@ -104,6 +106,7 @@
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -120,6 +123,7 @@
                         </request>
                         <response>
                             <representation mediaType="text/xml" element="t:statuses"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -132,6 +136,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:statusType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -144,6 +149,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:statusType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -158,6 +164,7 @@
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -172,6 +179,7 @@
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="t:statusType"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -184,6 +192,7 @@
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -199,6 +208,7 @@
                         </request>
                         <response>
                             <representation mediaType="text/xml" element="t:statuses"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -212,6 +222,7 @@
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -221,6 +232,7 @@
                     <request/>
                     <response>
                         <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -236,6 +248,7 @@
                         </request>
                         <response>
                             <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -251,6 +264,7 @@
                 </request>
                 <response>
                     <representation mediaType="text/xml" element="t:direct-messages"/>
+                    <fault mediaType="text/xml" element="t:nil-classes"/>
                 </response>
             </method>
         </resource>
@@ -266,6 +280,7 @@
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="t:directMessageType"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -279,6 +294,7 @@
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="t:direct-messages"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -290,6 +306,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:directMessageType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -304,6 +321,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -316,6 +334,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -328,8 +347,9 @@
                         <param name="user_b" type="xsd:string" style="query" required="true"/>
                     </request>
                     <response>
-                            <representation mediaType="text/xml" element="t:boolean"/>
-                        </response>
+                        <representation mediaType="text/xml" element="t:boolean"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
                 </method>
             </resource>
         </resource>
@@ -338,8 +358,9 @@
                 <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                 <method name="GET" id="verifyCredentials">
                     <request/>
-                   <response>
+                    <response>
                         <representation mediaType="text/xml" element="t:boolean"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -358,8 +379,9 @@
                         </representation>
                     </request>
                     <response>
-                            <representation mediaType="text/xml" element="t:userType"/>
-                        </response>
+                        <representation mediaType="text/xml" element="t:userType"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
                 </method>
             </resource>
             <resource path="update_delivery_device.{format}">
@@ -371,8 +393,9 @@
                         </representation>
                     </request>
                     <response>
-                            <representation mediaType="text/xml" element="t:userType"/>
-                        </response>
+                        <representation mediaType="text/xml" element="t:userType"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
                 </method>
             </resource>
             <resource path="rate_limit_status.{format}">
@@ -381,6 +404,7 @@
                     <request/>
                     <response>
                         <representation mediaType="text/xml" element="t:hash"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -392,6 +416,7 @@
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -404,6 +429,7 @@
                 </request>
                 <response>
                     <representation mediaType="text/xml" element="t:statuses"/>
+                    <fault mediaType="text/xml" element="t:nil-classes"/>
                 </response>
             </method>
         </resource>
@@ -417,6 +443,7 @@
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
                     </response>
                 </method>
             </resource>
@@ -428,6 +455,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:statusType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -440,6 +468,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:statusType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -454,6 +483,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -466,6 +496,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -480,6 +511,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -492,6 +524,7 @@
                         <request/>
                         <response>
                             <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
                         </response>
                     </method>
                 </resource>
@@ -503,8 +536,9 @@
                 <method name="GET" id="test">
                     <request/>
                     <response>
-                            <representation mediaType="text/xml" element="t:boolean"/>
-                        </response>
+                        <representation mediaType="text/xml" element="t:boolean"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
                 </method>
             </resource>
             <resource path="downtime_schedule.{format}">
@@ -512,8 +546,9 @@
                 <method name="GET" id="downtimeSchedule">
                     <request/>
                     <response>
-                            <representation mediaType="text/xml" element="t:hash"/>
-                        </response>
+                        <representation mediaType="text/xml" element="t:hash"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
                 </method>
             </resource>
         </resource>

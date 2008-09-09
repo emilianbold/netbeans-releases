@@ -318,6 +318,8 @@ public class CompletionContextImpl extends CompletionContext {
                             (str.startsWith("\"") || str.startsWith("\'")) &&
                             (str.endsWith("\"") || str.endsWith("\'")) ) {
                             typedChars = str.substring(1, str.length()-1);
+                            if(completionAtOffset == token.getOffset()+1)
+                                typedChars = "";
                         }
                     }
                     attribute = element.getPrevious().toString();                    

@@ -235,9 +235,12 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                         continue;
                     }
                     line = cutIncludePrefix(line.trim());
-                    systemIncludeDirectoriesList.addUnique(normalizePath(line));
-                    if (getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) // NOI18N
-                        systemIncludeDirectoriesList.addUnique(normalizePath(line.substring(4)));
+                    systemIncludeDirectoriesList.addUnique(applyPathPrefix(line));
+                    if (getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) { // NOI18N
+                        // TODO: if we are fixing cygwin's include location (C:\Cygwin\lib) it seems
+                        // we shouldn't add original dir (fix later to avoid regression before release)
+                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(line.substring(4)));
+                    }
                     continue;
                 }
                 parseUserMacros(line, systemPreprocessorSymbolsList);

@@ -261,20 +261,21 @@ public final class RubyDebuggerTest extends TestBase {
         waitFor(p);
     }
 
-    public void testFinishWhenSpawnedThreadIsSuspended() throws Exception {
-        String[] testContent = {
-            "Thread.start do",
-            "    puts '1'",
-            "end"
-        };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 2);
-        Process p = startDebugging(testF);
-        Thread.sleep(3000); // TODO: rather wait for appropriate event
-        doAction(ActionsManager.ACTION_KILL);
-        waitFor(p);
-    }
+    // XXX: check and enable
+//    public void testFinishWhenSpawnedThreadIsSuspended() throws Exception {
+//        String[] testContent = {
+//            "Thread.start do",
+//            "    puts '1'",
+//            "end"
+//        };
+//        File testF = createScript(testContent);
+//        FileObject testFO = FileUtil.toFileObject(testF);
+//        addBreakpoint(testFO, 2);
+//        Process p = startDebugging(testF);
+//        Thread.sleep(3000); // TODO: rather wait for appropriate event
+//        doAction(ActionsManager.ACTION_KILL);
+//        waitFor(p);
+//    }
     
     public void testActionsFlood() throws Exception {
         // classic debugger only

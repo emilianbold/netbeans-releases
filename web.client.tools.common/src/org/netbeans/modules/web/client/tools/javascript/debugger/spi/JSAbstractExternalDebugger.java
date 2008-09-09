@@ -319,8 +319,12 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     }
     
     protected InputStream getInputStreamForURLImpl(String uri) {
+        return getInputStreamForURLImpl(uri, false);
+    } 
+    
+    protected InputStream getInputStreamForURLImpl(String uri, boolean stripBeginCharacter) {
         if (proxy != null && uri != null) {
-            byte[] bytes = proxy.getSource(uri);
+            byte[] bytes = proxy.getSource(uri, stripBeginCharacter);
             if (bytes != null) {
                 return new ByteArrayInputStream(bytes);
             }
