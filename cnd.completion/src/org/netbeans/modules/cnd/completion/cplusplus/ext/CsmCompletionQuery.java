@@ -684,6 +684,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         */
         private boolean staticOnly = false;
 
+        private boolean memberPointer = false;
+
         /**
          * stores information where there is class or variable was resolved
         */
@@ -856,7 +858,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls),
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true,this.scopeAccessedClassifier,true,sort); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly && !memberPointer, false, true,this.scopeAccessedClassifier,true,sort); // NOI18N
                         }
                         // Get all fields and methods of the cls
                         result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
@@ -934,7 +936,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls),
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true,this.scopeAccessedClassifier,true,sort); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly && !memberPointer, false, true,this.scopeAccessedClassifier,true,sort); // NOI18N
                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, "", false, true, sort);
                             res.addAll(nestedClassifiers);
                         }
@@ -1232,7 +1234,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         lastType = null;
                                         cont = false;
                                     } else {
-                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly, false, true,this.scopeAccessedClassifier,skipConstructors,sort);
+                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, true,this.scopeAccessedClassifier,skipConstructors,sort);
                                         List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
                                         res.addAll(nestedClassifiers);
                                         // add base classes as well
@@ -1439,6 +1441,19 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 }
                 break;
 
+            case CsmCompletionExpression.MEMBER_POINTER_OPEN:
+                if (item.getParameterCount() > 0) {
+                    if (item.getTokenCount() == 1) {
+                        switch (item.getTokenID(0)) {
+                            case AMP:
+                                memberPointer = true;
+                                break;
+                        }
+                    }
+                    cont = resolveExp(item.getParameter(0));
+                    memberPointer = false;
+                }
+                break;
             case CsmCompletionExpression.MEMBER_POINTER:
                 if (item.getParameterCount() > 0) {
                     lastType = resolveType(item.getParameter(0));

@@ -612,7 +612,7 @@ public final class RubyPlatform {
      * returned by this function.
      */
     private Pattern getRequiredRDebugIDEVersionPattern() {
-        return Pattern.compile("0\\.2\\..*"); // NOI18N
+        return Pattern.compile("0\\.3\\..*"); // NOI18N
     }
 
     private void checkAndReport(final String gemName, final Pattern gemVersion, final StringBuilder errors) {
@@ -659,7 +659,7 @@ public final class RubyPlatform {
             public void run() {
                 // TODO: ideally this would be e.g. '< 0.3' but then running external
                 // process has problems with the '<'. See issue 142240.
-                gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.2.2");
+                gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.3.0");
             }
         };
         if (!EventQueue.isDispatchThread()) {

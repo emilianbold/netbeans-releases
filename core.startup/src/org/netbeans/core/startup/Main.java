@@ -339,7 +339,7 @@ public final class Main extends Object {
     // start to store all caches after 15s
     Stamps.getModulesJARs().flush(15000);
   }
-    protected static void deleteRec(File f) throws IOException {
+    private static void deleteRec(File f) throws IOException {
         if (f.isDirectory()) {
             File[] kids = f.listFiles();
             if (kids == null) {

@@ -45,7 +45,11 @@ import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.DevelopmentHostCustomizer;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 public class DevelopmentHostNodeProp extends Node.Property {
     private DevelopmentHostConfiguration configuration;
@@ -59,6 +63,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
         this.canWrite = canWrite;
         this.name = name;
         this.description = description;
+        setValue("title", NbBundle.getMessage(DevelopmentHostNodeProp.class, "DLG_TITLE_Connect")); // NOI18N
     }
 
     @Override
@@ -116,7 +121,10 @@ public class DevelopmentHostNodeProp extends Node.Property {
         return new IntEditor();
     }
 
-    private class IntEditor extends PropertyEditorSupport {
+    private class IntEditor extends PropertyEditorSupport implements ExPropertyEditor {
+
+        private PropertyEnv env;
+
         @Override
         public String getJavaInitializationString() {
             return getAsText();
@@ -139,12 +147,16 @@ public class DevelopmentHostNodeProp extends Node.Property {
 
         @Override
         public boolean supportsCustomEditor() {
-            return false;
+            return true;
         }
 
         @Override
         public Component getCustomEditor() {
-            return null;
+            return new DevelopmentHostCustomizer(configuration, env);
+        }
+
+        public void attachEnv(PropertyEnv env) {
+            this.env = env;
         }
     }
 }
