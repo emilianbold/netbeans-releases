@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,6 +67,11 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         return super.validate(request) && ENABLED && !disableAsLibraryHeaderFile(request.getFile()) && request.getFile().isParsed();
     }
 
+    @Override
+    public boolean isEnabledByDefault() {
+        return !CndUtils.isReleaseMode();
+    }
+    
     @Override
     protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         long start = System.currentTimeMillis();

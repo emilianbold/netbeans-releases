@@ -416,7 +416,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 funcDecl = true;
                 if (clsDecl) isFuncInsideClass = true;
             } else if (aSTNode instanceof MethodDeclaration) {
-                methDecl = true;            
+                methDecl = true;
             } else if (aSTNode instanceof ClassDeclaration) {
                 clsDecl = true;
                 if (funcDecl) isClassInsideFunc = true;
@@ -615,27 +615,27 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
     }
-    
+
     private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
             PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
             PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
             PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT
             );
-   
+
     private String findLHSExpressionType(TokenSequence<PHPTokenId> tokenSequence,
             PHPCompletionItem.CompletionRequest request){
-        
+
         // find the beginning of the left hand side expression
-        
+
         while (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
             if (!tokenSequence.movePrevious()){
                 return null;
             }
         }
-        
+
         int startPos = tokenSequence.offset();
-        
+
         while (!CTX_DELIMITERS.contains(tokenSequence.token().id())
                 && findLHSExpressionType_skipArgs(tokenSequence)
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
@@ -655,12 +655,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             try {
                 LOGGER.fine("evaluating expression '" + request.info.getDocument().getText(
                         tokenSequence.offset(), startPos - tokenSequence.offset()) + "'");
-                
+
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-                
+
         String preceedingType = null;
         boolean staticContex = false;
         PHPTokenId tokenID = tokenSequence.token().id();
@@ -715,7 +715,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (classDecl != null) {
                         preceedingType = classDecl.getName().getName();
                     }
-                    
+
                 } else {
                     Collection<IndexedConstant> vars = getVariables(request.result, request.index,
                             request.result.getProgram(),
@@ -739,37 +739,40 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
 
-        if (preceedingType == null && tokenID == PHPTokenId.PHP_VARIABLE && varName != null && varName.length() > 0) {
+        if ((preceedingType == null || preceedingType.length() == 0) && tokenID == PHPTokenId.PHP_VARIABLE && varName != null && varName.length() > 0) {
             VarTypeResolver typeResolver = VarTypeResolver.getInstance(request, varName);
             preceedingType = typeResolver.resolveType();
+            if (preceedingType != null) {
+                return preceedingType;
+            }
         }
         if (preceedingType == null || tokenSequence.offset() == startPos){
             return preceedingType;
         }
 
         assert startPos > tokenSequence.offset();
-        
+
         return findLHSExpressionType_recursive(tokenSequence, request,
                 preceedingType, staticContex, startPos);
     }
 
      private boolean findLHSExpressionType_skipArgs(TokenSequence<PHPTokenId> tokenSequence){
-        if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
+        if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
                 && ")".equals(tokenSequence.token().text().toString())){
-            
+
             do {
                 if (!tokenSequence.movePrevious()){
                     return true;
                 }
-            } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
+            } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
                 && "(".equals(tokenSequence.token().text().toString())));
 
             tokenSequence.movePrevious();
         }
-        
+
         return true;
     }
-    
+
     private String findLHSExpressionType_recursive(TokenSequence<PHPTokenId> tokenSequence,
             PHPCompletionItem.CompletionRequest request,
             String preceedingType, boolean staticContext, int startPos){
@@ -780,7 +783,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 return null;
             }
         } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
-        
+
         String methodName = findLHSideExpressionType_extractFunctionNameFromCall(tokenSequence);
 
         if (methodName != null){
@@ -804,7 +807,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 return null;
             }
         } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
-        
+
         if (type == null || tokenSequence.offset() == startPos)
         {
             return type;
@@ -814,15 +817,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return findLHSExpressionType_recursive(tokenSequence, request,
                 type, staticContext, startPos);
     }
-    
+
     private String findLHSideExpressionType_extractFunctionNameFromCall(TokenSequence tokenSequence) {
         String functionName = tokenSequence.token().text().toString();
         int orgPos = tokenSequence.offset();
-        
+
         do {
             tokenSequence.moveNext();
         }  while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
-        
+
         if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN) {
             CharSequence tokenTxt = tokenSequence.token().text();
 
@@ -832,7 +835,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 // position the token sequence after the call
                 do {
                     tokenSequence.moveNext();
-                } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
+                } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
                         && ")".equals(tokenSequence.token().text().toString()))); //NOI18N
             } else {
                 functionName = null;
@@ -840,15 +843,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         } else {
             functionName = null;
         }
-        
+
         if (functionName == null) {
             tokenSequence.move(orgPos);
             tokenSequence.moveNext();
         }
-        
+
         return functionName;
     }
-    
+
     private void autoCompleteClassMembers(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request, boolean staticContext) {
         Document document = request.info.getDocument();
@@ -908,13 +911,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (staticContext) {
                     typeName = varName;
                 } else {
+                    assert typeName == null;
                     Collection<IndexedConstant> vars = getVariables(request.result, request.index,
                             request.result.getProgram(),
                             varName, request.anchor, request.currentlyEditedFileURL);
 
                     if (vars != null) {
-                        for (IndexedConstant var : vars){
-                            if (var.getName().equals(varName)){ // can be just a prefix
+                        for (IndexedConstant var : vars) {
+                            if (var.getName().equals(varName)) { // can be just a prefix
                                 typeName = var.getTypeName();
                                 break;
                             }

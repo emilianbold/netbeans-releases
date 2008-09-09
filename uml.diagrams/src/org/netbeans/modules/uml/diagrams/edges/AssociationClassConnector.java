@@ -74,12 +74,6 @@ public class AssociationClassConnector extends AssociationConnector
     }
 
     @Override
-    public void initialize(IPresentationElement element)
-    {
-        super.initialize(element);
-    }
-
-    @Override
     public void remove()
     {
         super.remove();

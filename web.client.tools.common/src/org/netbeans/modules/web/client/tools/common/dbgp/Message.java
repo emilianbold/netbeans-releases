@@ -193,6 +193,10 @@ public abstract class Message {
     }        
     
     protected static String getNodeValue( Node node ){
+        return replaceHtmlEntities( getNodeValueImpl(node).toString() );
+    }
+    
+    protected static StringBuilder getNodeValueImpl( Node node ){
         NodeList list = node.getChildNodes();
         StringBuilder builder = new StringBuilder();
         for ( int i=0;  i<list.getLength() ;  i++) {
@@ -204,8 +208,8 @@ public abstract class Message {
                 builder.append( child.getNodeValue() );
             }
         }
-        return replaceHtmlEntities( builder.toString() );
-    }
+        return builder;
+    }    
 
     protected static String getAttribute( Node node , String attrName ){
         Node attr = node.getAttributes().getNamedItem( attrName );
@@ -341,7 +345,7 @@ public abstract class Message {
         return null;
     }
 
-    private static String replaceHtmlEntities( String str ) {
+    protected static String replaceHtmlEntities( String str ) {
         if ( str.indexOf( "&" ) == -1 ) {
             return str;
         } else {

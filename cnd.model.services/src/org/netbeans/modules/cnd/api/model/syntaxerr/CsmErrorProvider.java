@@ -95,6 +95,10 @@ public abstract class CsmErrorProvider implements NamedEntity {
         return NamedEntityOptions.instance().isEnabled(this) && !request.isCancelled();
     }
 
+    public boolean isEnabledByDefault() {
+        return true;
+    }
+    
     protected abstract void doGetErrors(Request request, Response response);
 
     public static boolean disableAsLibraryHeaderFile(CsmFile file) {

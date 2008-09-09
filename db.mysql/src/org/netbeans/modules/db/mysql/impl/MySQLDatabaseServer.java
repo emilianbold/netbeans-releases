@@ -350,7 +350,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                         notifyChange();
                     }
                 }
-            }.postCommand();
+            }.postCommand("refreshDatabaseList"); // NOI18N
         } else {
             setDatabases(new HashMap<String,Database>());
             notifyChange();
@@ -417,7 +417,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
             }
         };
 
-        cmd.postCommand();
+        cmd.postCommand("disconnect"); // NOI8N
 
         if (!async) {
             // Sync up
@@ -491,7 +491,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
             }
         };
 
-        cmd.postCommand();
+        cmd.postCommand("reconnect"); // NOI18N
 
         if (!async) {
             // Sync up
@@ -519,7 +519,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
             }            
         };
 
-        cmd.postCommand();
+        cmd.postCommand("validateConnection"); // NOI18N
 
         try {
             cmd.syncUp();
@@ -564,7 +564,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                     refreshDatabaseList();
                 }
             }
-        }.postCommand();
+        }.postCommand("createDatabase");  // NOI18N
     }
 
 
@@ -588,7 +588,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                     refreshDatabaseList();
                 }
             }
-        }.postCommand();
+        }.postCommand("dropDatabase"); // NOI18N
     }
 
 
@@ -628,7 +628,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
             }
         };
 
-        cmd.postCommand();
+        cmd.postCommand("getUsers"); // NOI18N
 
         // Synch up
         try {
@@ -653,7 +653,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                 ps.setString(2, grantUser.getHost());
                 ps.executeUpdate();
             }
-        }.postCommand();
+        }.postCommand("grantFullDatabaseRights"); // NOI8N
     }
 
     /**
@@ -681,7 +681,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                     refreshDatabaseList();
                 }
             }
-        }.postCommand();
+        }.postCommand("start"); // NOI18N
     }
 
     public void stop() throws DatabaseException {
@@ -736,7 +736,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                 }
                 
             }
-        }.postCommand();
+        }.postCommand("stop"); // NOI18N
     }
 
     /**
@@ -865,6 +865,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
         private final BlockingQueue<Runnable> outqueue;
         private T result;
         private boolean checkConnection = false;
+        private String callingMethod = "<unknown>"; // NOI18N
 
         public DatabaseCommand(BlockingQueue<Runnable> outqueue) {
             this(outqueue, false);
@@ -891,7 +892,8 @@ public class MySQLDatabaseServer implements DatabaseServer {
             this(null, false);
         }
 
-        public void postCommand() {
+        public void postCommand(String callingMethod) {
+            this.callingMethod = callingMethod;
             if (connProcessor.isConnProcessorThread()) {
                 run();
             } else {
@@ -935,7 +937,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                     this.throwable = e;
                 } else {
                     // Since this is asynchronous, we are responsible for reporting the exception to the user.
-                    LOGGER.log(Level.INFO, null, e);
+                    LOGGER.log(Level.INFO, NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_DatabaseCommandFailed", callingMethod), e);
                     Utils.displayErrorMessage(e.getMessage());
                 }
             } finally {

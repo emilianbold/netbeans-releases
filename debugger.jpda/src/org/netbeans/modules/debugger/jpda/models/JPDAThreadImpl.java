@@ -532,7 +532,6 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             threadReference.popFrames(sf);
             cleanCachedFrames();
             setReturnVariable(null); // Clear the return var
-            notifySuspended();
         } catch (IllegalThreadStateException ex) {
             throw new IncompatibleThreadStateException("Thread exited.");
         } catch (ObjectCollectedException ex) {
@@ -551,6 +550,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             } else {
                 throw iex;
             }
+        } finally {
+            notifySuspended();
         }
     }
     

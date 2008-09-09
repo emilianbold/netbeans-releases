@@ -128,12 +128,17 @@ final class MainImpl extends Object {
         HashSet<File> processedDirs = new HashSet<File> ();
         HashSet<String> processedPaths = new HashSet<String> ();
         List<String> argsL = Arrays.asList (args);
-        int idx = argsL.indexOf ("--userdir"); // NOI18N
-        if (idx != -1 && argsL.size () > idx + 1) {
-            String user = argsL.get (idx + 1);
-            if (user != null) {
-                build_cp (new File (user), list, processedDirs, processedPaths);
+        // only nbexec.exe puts userdir into netbeans.user
+        String user = System.getProperty ("netbeans.user"); // NOI18N
+        if (user == null) {
+            // read userdir from args (for unix nbexec)
+            int idx = argsL.indexOf ("--userdir"); // NOI18N
+            if (idx != -1 && argsL.size () > idx + 1) {
+                user = argsL.get (idx + 1);
             }
+        }
+        if (user != null) {
+            build_cp (new File (user), list, processedDirs, processedPaths);
         }
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {

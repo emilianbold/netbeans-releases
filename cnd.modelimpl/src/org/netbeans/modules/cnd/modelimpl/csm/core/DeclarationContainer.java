@@ -63,10 +63,12 @@ import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.DeclarationContainerKey;
+import org.netbeans.modules.cnd.modelimpl.repository.NamespaceDeclararationContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -76,10 +78,10 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 
 /**
- * Storage for project declarations. Class was extracted from ProjectBase.
+ * Storage for project or namespace declarations.
  * @author Alexander Simon
  */
-/*package-local*/ class DeclarationContainer extends ProjectComponent implements Persistent, SelfPersistent {
+public class DeclarationContainer extends ProjectComponent implements Persistent, SelfPersistent {
     
     private SortedMap<CharSequence, Object> declarations = new TreeMap<CharSequence, Object>(CharSequenceKey.Comparator);
     private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
@@ -91,6 +93,12 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 	super(new DeclarationContainerKey(project.getUniqueName().toString()));
 	put();
     }
+
+    /** Creates a new instance of ProjectDeclarations */
+    public DeclarationContainer(CsmNamespace ns) {
+        super(new NamespaceDeclararationContainerKey(ns));
+        put();
+    }
     
     public DeclarationContainer(DataInput input) throws IOException {
 	super(input);
@@ -99,7 +107,6 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 
     public void removeDeclaration(CsmDeclaration decl) {
 	CharSequence uniqueName = CharSequenceKey.create(decl.getUniqueName());
-//	synchronized(declarations){
 	Object o = null;
 	try {
 	    declarationsLock.writeLock().lock();
@@ -144,7 +151,6 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 	    declarationsLock.writeLock().unlock();
 	}
 	removeFriend(decl);
-//	}
 	put();
     }
     
@@ -177,7 +183,6 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
         @SuppressWarnings("unchecked")
 	CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
 	assert uid != null;
-//            synchronized(declarations) {
 	try {
 	    declarationsLock.writeLock().lock();
 
@@ -218,7 +223,6 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 	    declarationsLock.writeLock().unlock();
 	}
 	putFriend(decl);
-//            }
     }
     
     private void putFriend(CsmDeclaration decl){
@@ -270,7 +274,28 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
     public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence from, CharSequence to) {
         return UIDCsmConverter.UIDsToDeclarations(getUIDsRange(from, to));
     }
-    
+
+    public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarationsUIDs() {
+        // add all declarations
+        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        try {
+            declarationsLock.readLock().lock();
+            for (Object o : declarations.values()) {
+                if (o instanceof CsmUID[]) {
+                    CsmUID[] uids = (CsmUID[]) o;
+                    for (CsmUID<CsmOffsetableDeclaration> uid : uids) {
+                        list.add(uid);
+                    }
+                } else if (o instanceof CsmUID) {
+                    list.add((CsmUID) o);
+                }
+            }
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+        return list;
+    }
+
     public Collection<CsmFriend> findFriends(CsmOffsetableDeclaration decl){
         CharSequence name = null;
         if (CsmKindUtilities.isClass(decl)) {

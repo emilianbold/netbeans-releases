@@ -52,26 +52,28 @@ import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
-import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCCatalog implements CatalogImplementation {
+public class JDBCCatalog extends CatalogImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCCatalog.class.getName());
 
-    protected final JDBCMetadata metadata;
+    protected final JDBCMetadata jdbcMetadata;
     protected final String name;
     protected final boolean _default;
     protected final String defaultSchemaName;
 
     protected Schema defaultSchema;
+    protected Schema syntheticSchema;
     protected Map<String, Schema> schemas;
 
-    public JDBCCatalog(JDBCMetadata metadata, String name, boolean _default, String defaultSchemaName) {
-        this.metadata = metadata;
+    public JDBCCatalog(JDBCMetadata jdbcMetadata, String name, boolean _default, String defaultSchemaName) {
+        // defaultSchemaName only makes sense for the default catalog.
+        assert defaultSchemaName == null || _default;
+        this.jdbcMetadata = jdbcMetadata;
         this.name = name;
         this._default = _default;
         this.defaultSchemaName = defaultSchemaName;
@@ -90,6 +92,11 @@ public class JDBCCatalog implements CatalogImplementation {
         return defaultSchema;
     }
 
+    public final Schema getSyntheticSchema() {
+        initSchemas();
+        return syntheticSchema;
+    }
+
     public final Collection<Schema> getSchemas() {
         return initSchemas().values();
     }
@@ -103,14 +110,14 @@ public class JDBCCatalog implements CatalogImplementation {
         return "JDBCCatalog[name='" + name + "',default=" + _default + "]"; // NOI18N
     }
 
-    protected JDBCSchema createSchema(String name, boolean _default, boolean synthetic) {
+    protected JDBCSchema createJDBCSchema(String name, boolean _default, boolean synthetic) {
         return new JDBCSchema(this, name, _default, synthetic);
     }
 
     protected void createSchemas() {
         Map<String, Schema> newSchemas = new LinkedHashMap<String, Schema>();
         try {
-            ResultSet rs = metadata.getDmd().getSchemas();
+            ResultSet rs = jdbcMetadata.getDmd().getSchemas();
             int columnCount = rs.getMetaData().getColumnCount();
             if (columnCount < 2) {
                 LOGGER.fine("DatabaseMetaData.getSchemas() not JDBC 3.0-compliant");
@@ -124,11 +131,11 @@ public class JDBCCatalog implements CatalogImplementation {
                     LOGGER.log(Level.FINE, "Read schema ''{0}'' in catalog ''{1}''", new Object[] { schemaName, catalogName });
                     if (MetadataUtilities.equals(catalogName, name)) {
                         if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
-                            defaultSchema = MetadataFactory.createSchema(createSchema(defaultSchemaName, true, false));
+                            defaultSchema = createJDBCSchema(defaultSchemaName, true, false).getSchema();
                             newSchemas.put(defaultSchema.getName(), defaultSchema);
                             LOGGER.log(Level.FINE, "Created default schema {0}", defaultSchema);
                         } else {
-                            Schema schema = MetadataFactory.createSchema(createSchema(schemaName, false, false));
+                            Schema schema = createJDBCSchema(schemaName, false, false).getSchema();
                             newSchemas.put(schemaName, schema);
                             LOGGER.log(Level.FINE, "Created schema {0}", schema);
                         }
@@ -137,10 +144,12 @@ public class JDBCCatalog implements CatalogImplementation {
             } finally {
                 rs.close();
             }
-            if (newSchemas.isEmpty() && !metadata.getDmd().supportsSchemasInTableDefinitions()) {
-                defaultSchema = MetadataFactory.createSchema(createSchema(null, true, true));
-                newSchemas.put(defaultSchema.getName(), defaultSchema);
-                LOGGER.log(Level.FINE, "Created fallback default schema {0}", defaultSchema);
+            if (newSchemas.isEmpty() && !jdbcMetadata.getDmd().supportsSchemasInTableDefinitions()) {
+                syntheticSchema = createJDBCSchema(null, _default, true).getSchema();
+                if (_default) {
+                    defaultSchema = syntheticSchema;
+                }
+                LOGGER.log(Level.FINE, "Created synthetic schema {0}", syntheticSchema);
             }
         } catch (SQLException e) {
             throw new MetadataException(e);
@@ -163,11 +172,7 @@ public class JDBCCatalog implements CatalogImplementation {
         }
     }
 
-    public final JDBCMetadata getMetadata() {
-        return metadata;
-    }
-
-    public final String getDefaultSchemaName() {
-        return defaultSchemaName;
+    public final JDBCMetadata getJDBCMetadata() {
+        return jdbcMetadata;
     }
 }

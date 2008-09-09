@@ -629,6 +629,10 @@ public final class LoaderPoolNode extends AbstractNode {
     
     // I/O with loaders.ser; moved from NbProjectOperation:
     public static void store() throws IOException {
+        if (modifiedLoaders.isEmpty()) {
+            return;
+        }
+
         FileObject ser = getLoaderPoolStorage(true);
         OutputStream os = ser.getOutputStream();
         try {
