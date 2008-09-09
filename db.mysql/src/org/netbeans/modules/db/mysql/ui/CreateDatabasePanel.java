@@ -439,10 +439,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_chkGrantAccessItemStateChanged
     
     private static class DatabaseComboModel implements ComboBoxModel {
-        static final List<String> SAMPLES = SampleManager.getSampleNames();
+        private final List<String> sampleNames = SampleManager.getSampleNames();
         static final String samplePrefix =
-                NbBundle.getMessage(CreateDatabasePanel.class, 
-                    "CreateNewDatabasePanel.STR_SampleDatabase") + ": ";
+                NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.STR_SampleDatabase") + ": ";
         
         String selected = null;
         final ArrayList<ListDataListener> listeners = new ArrayList<ListDataListener>();
@@ -463,14 +462,14 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
 
         public int getSize() {
-            return SAMPLES.size();
+            return sampleNames.size();
         }
 
         public Object getElementAt(int index) {
             if (index < 0) {
                 return null;
             }
-            return samplePrefix + SAMPLES.get(index).toString();
+            return samplePrefix + sampleNames.get(index).toString();
         }
 
         public void addListDataListener(ListDataListener listener) {
