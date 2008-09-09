@@ -280,9 +280,9 @@ public final class VarTypeResolver {
             Set<String> typeNames = null;
             for (Entry<String, ElementKind> entrySet : memberNames.entrySet()) {
                 if (typeNames == null) {
-                    typeNames = new HashSet<String>(index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue()));
+                    typeNames = new HashSet<String>(index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue(),NameKind.EXACT_NAME));
                 } else {
-                    Set<String> names4MethName = index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue());
+                    Set<String> names4MethName = index.typeNamesForIdentifier(entrySet.getKey(), entrySet.getValue(),NameKind.EXACT_NAME);
                     typeNames.retainAll(names4MethName);
                 }
                 if (!(typeNames.size() > 1)) {
@@ -291,7 +291,7 @@ public final class VarTypeResolver {
             }
             if (typeNames.size() == 1) {
                 retval = typeNames.iterator().next();
-            } 
+            }
         }
         return retval;
     }
