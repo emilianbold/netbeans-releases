@@ -269,6 +269,7 @@ public class WsitWidget extends AbstractTitledWidget {
                 if(WSConfiguration.PROPERTY.equals(property)) {
                     if(configWidget instanceof CheckBoxWidget) {
                         ((CheckBoxWidget)configWidget).setSelected((Boolean)newValue);
+                        scene.validate();
                         widget.revalidate(true);
                     }
                 } else if(WSConfiguration.PROPERTY_ENABLE.equals(property)) {

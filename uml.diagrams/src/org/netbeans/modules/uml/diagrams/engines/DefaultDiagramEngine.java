@@ -74,6 +74,7 @@ import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
+import org.netbeans.modules.uml.drawingarea.actions.EdgeLabelIteratorAction;
 import org.netbeans.modules.uml.drawingarea.actions.MoveControlPointAction;
 import org.netbeans.modules.uml.drawingarea.actions.NavigateLinkAction;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
@@ -286,11 +287,12 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(POPUP_ACTION);
         selectTool.addAction (new MoveControlPointAction(ActionFactory.createFreeMoveControlPointProvider (), null));
+        selectTool.addAction(new EdgeLabelIteratorAction());
         
         WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);      
         readOnly.addAction(sceneSelectAction);
         readOnly.addAction(POPUP_ACTION);
-        
+        selectTool.addAction(new EdgeLabelIteratorAction());
     }
     
     /**

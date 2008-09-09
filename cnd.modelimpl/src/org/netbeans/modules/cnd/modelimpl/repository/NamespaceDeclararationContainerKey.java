@@ -37,28 +37,40 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql.impl;
+package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.modules.db.mysql.spi.sample.SampleProvider;
-import org.openide.util.lookup.Lookups;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 
 /**
- * Encapsulates loading of sample providers
- * 
- * @author David Van Couvering
+ *
+ * @author Vladimir Voskresensky
  */
-public class SampleProviderHelper {
+public class NamespaceDeclararationContainerKey extends NamespaceKey {
 
-    static Collection<SampleProvider> getProviders() {
-        Collection<SampleProvider> providers = new ArrayList<SampleProvider>();
-
-        providers.addAll((Collection<SampleProvider>)
-                Lookups.forPath(SampleProvider.SAMPLE_PROVIDER_PATH).lookupAll(SampleProvider.class));
-
-        return providers;
+    public NamespaceDeclararationContainerKey(CsmNamespace ns) {
+        super(ns);
     }
 
+    @Override
+    public String toString() {
+        return "NSDeclContainer " + super.toString(); // NOI18N
+    }
 
+    @Override
+    public int getSecondaryAt(int level) {
+        assert level == 0;
+        return KeyObjectFactory.KEY_NS_DECLARATION_CONTAINER_KEY;
+    }
+
+    @Override
+    public void write(DataOutput aStream) throws IOException {
+        super.write(aStream);
+    }
+
+    /*package*/ NamespaceDeclararationContainerKey(DataInput aStream) throws IOException {
+        super(aStream);
+    }
 }
