@@ -748,11 +748,7 @@ public class ConfigurationMakefileWriter {
                 if (toDir != null && toDir.length() >= 0) {
                     bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
                 }
-                if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
-                    bw.write("copyFileToTmpDir " + elem.getFrom() + " ${TMPDIR}/" + elem.getTo() + "\n"); // NOI18N
-                } else {
-                    bw.write("copyFileToTmpDir " + elem.getFrom() + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
-                }
+                bw.write("copyFileToTmpDir " + elem.getFrom() + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
             }
             else if (elem.getType() == FileElement.FileType.DIRECTORY) {
                 bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
