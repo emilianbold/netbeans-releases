@@ -45,8 +45,11 @@
 package org.netbeans.modules.db.sql.execute.ui;
 
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -142,6 +145,23 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         searchTextField.getDocument().addDocumentListener((HistoryTableModel) sqlHistoryTable.getModel());
         sqlHistoryTable.getColumnModel().getColumn(0).setHeaderValue(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SQLTableTitle"));
         sqlHistoryTable.getColumnModel().getColumn(1).setHeaderValue(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_DateTableTitle"));
+        // Add mouse listener for the case when a user double-clicks on a row to insert SQL
+        sqlHistoryTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    Point origin = e.getPoint();
+                    int row = sqlHistoryTable.rowAtPoint(origin);
+                    int column = sqlHistoryTable.columnAtPoint(origin);
+                    if (row == -1 || column != 0) {
+                        return;
+                    } else {
+                        insertSQL();
+                    }
+                }
+            }
+        });
+
         // Initialize sql column data
         connectionUrlComboBox.addActionListener((HistoryTableModel) sqlHistoryTable.getModel());
         currentUrlList = new ArrayList<String>();
@@ -321,29 +341,33 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void insertSQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertSQLButtonActionPerformed
-    int rowSelected = sqlHistoryTable.getSelectedRow();
-    try {
-        // Make sure to insert the entire SQL, not just what appears in the Table
-        List<SQLHistory> sqlHistoryList = view.getSQLHistoryList();
-        int i = 0;
-        String sqlToInsert = ""; // NOI18N
-        for (SQLHistory sqlHistory : sqlHistoryList) {
-            if (rowSelected == i) {
-                sqlToInsert = sqlHistory.getSql().trim();
-            }
-            // increment for the next row
-            i++;
-        }
-        new InsertSQLUtility().insert(sqlToInsert, editorPane);
-    } catch (BadLocationException ex) {
-        Exceptions.printStackTrace(ex);
-    }
-
+    insertSQL();
 }//GEN-LAST:event_insertSQLButtonActionPerformed
 
 private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sqlLimitButtonActionPerformed
     verifySQLLimit();
 }//GEN-LAST:event_sqlLimitButtonActionPerformed
+
+
+    private void insertSQL() {
+        int rowSelected = sqlHistoryTable.getSelectedRow();
+        try {
+            // Make sure to insert the entire SQL, not just what appears in the Table
+            List<SQLHistory> sqlHistoryList = view.getSQLHistoryList();
+            int i = 0;
+            String sqlToInsert = ""; // NOI18N
+            for (SQLHistory sqlHistory : sqlHistoryList) {
+                if (rowSelected == i) {
+                    sqlToInsert = sqlHistory.getSql().trim();
+                }
+                // increment for the next row
+                i++;
+            }
+            new InsertSQLUtility().insert(sqlToInsert, editorPane);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     private void verifySQLLimit() {
         String enteredLimit = sqlLimitTextField.getText();

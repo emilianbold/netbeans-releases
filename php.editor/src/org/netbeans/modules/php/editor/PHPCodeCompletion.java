@@ -472,94 +472,104 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             startTime = System.currentTimeMillis();
         }
 
-        CompilationInfo info = completionContext.getInfo();
-        int caretOffset = completionContext.getCaretOffset();
-        String prefix = completionContext.getPrefix();
-        this.caseSensitive = completionContext.isCaseSensitive();
-        this.nameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
-
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        BaseDocument doc = (BaseDocument) completionContext.getInfo().getDocument();
 
-        PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
+        // TODO: separate the code that uses informatiom from lexer
+        // and avoid running the index/ast analysis under read lock
+        // in order to improve responsiveness
+        doc.readLock();
 
-        if (result.getProgram() == null){
-            return CodeCompletionResult.NONE;
-        }
+        try{
+            CompilationInfo info = completionContext.getInfo();
+            int caretOffset = completionContext.getCaretOffset();
+            String prefix = completionContext.getPrefix();
+            this.caseSensitive = completionContext.isCaseSensitive();
+            this.nameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
 
-        CompletionContext context = findCompletionContext(info, caretOffset);
-        LOGGER.fine("CC context: " + context);
+            PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
 
-        if (context == CompletionContext.NONE){
-            return CodeCompletionResult.NONE;
-        }
+            if (result.getProgram() == null){
+                return CodeCompletionResult.NONE;
+            }
 
-        PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
-        request.anchor = caretOffset - prefix.length();
-        request.result = result;
-        request.info = info;
-        request.prefix = prefix;
-        request.index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+            CompletionContext context = findCompletionContext(info, caretOffset);
+            LOGGER.fine("CC context: " + context);
 
-        try {
-            request.currentlyEditedFileURL = result.getFile().getFileObject().getURL().toString();
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+            if (context == CompletionContext.NONE){
+                return CodeCompletionResult.NONE;
+            }
+
+            PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
+            request.anchor = caretOffset - prefix.length();
+            request.result = result;
+            request.info = info;
+            request.prefix = prefix;
+            request.index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+
+            try {
+                request.currentlyEditedFileURL = result.getFile().getFileObject().getURL().toString();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
 
 
-        switch(context){
-            case EXPRESSION:
-                autoCompleteExpression(proposals, request);
-                break;
-            case HTML:
-                proposals.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
-                proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
-                break;
-            case CLASS_NAME:
-                autoCompleteClassNames(proposals, request);
-                break;
-            case INTERFACE_NAME:
-                autoCompleteInterfaceNames(proposals, request);
-                break;
-            case TYPE_NAME:
-                autoCompleteClassNames(proposals, request);
-                autoCompleteInterfaceNames(proposals, request);
-                break;
-            case STRING:
-                // LOCAL VARIABLES
-                proposals.addAll(getVariableProposals(request.result.getProgram(), request));
-                break;
-            case CLASS_MEMBER:
-                autoCompleteClassMembers(proposals, request, false);
-                break;
-            case STATIC_CLASS_MEMBER:
-                autoCompleteClassMembers(proposals, request, true);
-                break;
-            case PHPDOC:
-                if (PHPDOCCodeCompletion.isTypeCtx(request)){
+            switch(context){
+                case EXPRESSION:
+                    autoCompleteExpression(proposals, request);
+                    break;
+                case HTML:
+                    proposals.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
+                    proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
+                    break;
+                case CLASS_NAME:
+                    autoCompleteClassNames(proposals, request);
+                    break;
+                case INTERFACE_NAME:
+                    autoCompleteInterfaceNames(proposals, request);
+                    break;
+                case TYPE_NAME:
                     autoCompleteClassNames(proposals, request);
                     autoCompleteInterfaceNames(proposals, request);
-                } else {
-                    PHPDOCCodeCompletion.complete(proposals, request);
-                }
-                break;
-            case CLASS_CONTEXT_KEYWORDS:
-                autoCompleteKeywords(proposals, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
-                break;
-            /*case ACCESS_MODIFIER:
-                autoCompleteKeywords(proposals, request, AFTER_ACCESS_MODIFIER_KEYWORD_PROPOSAL);
-                break;
-             */
-            case METHOD_NAME:
-                autoCompleteMethodName(proposals, request);
-                break;
-            case INHERITANCE:
-                autoCompleteKeywords(proposals, request, INHERITANCE_KEYWORDS);
-                break;
-            case SERVER_ENTRY_CONSTANTS:
-                //TODO: probably better PHPCompletionItem instance should be used
-                autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
-                break;
+                    break;
+                case STRING:
+                    // LOCAL VARIABLES
+                    proposals.addAll(getVariableProposals(request.result.getProgram(), request));
+                    break;
+                case CLASS_MEMBER:
+                    autoCompleteClassMembers(proposals, request, false);
+                    break;
+                case STATIC_CLASS_MEMBER:
+                    autoCompleteClassMembers(proposals, request, true);
+                    break;
+                case PHPDOC:
+                    if (PHPDOCCodeCompletion.isTypeCtx(request)){
+                        autoCompleteClassNames(proposals, request);
+                        autoCompleteInterfaceNames(proposals, request);
+                    } else {
+                        PHPDOCCodeCompletion.complete(proposals, request);
+                    }
+                    break;
+                case CLASS_CONTEXT_KEYWORDS:
+                    autoCompleteKeywords(proposals, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
+                    break;
+                /*case ACCESS_MODIFIER:
+                    autoCompleteKeywords(proposals, request, AFTER_ACCESS_MODIFIER_KEYWORD_PROPOSAL);
+                    break;
+                 */
+                case METHOD_NAME:
+                    autoCompleteMethodName(proposals, request);
+                    break;
+                case INHERITANCE:
+                    autoCompleteKeywords(proposals, request, INHERITANCE_KEYWORDS);
+                    break;
+                case SERVER_ENTRY_CONSTANTS:
+                    //TODO: probably better PHPCompletionItem instance should be used
+                    autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
+                    break;
+            }
+        } finally {
+            doc.readUnlock();
         }
 
         if (LOGGER.isLoggable(Level.FINE)){

@@ -1058,7 +1058,9 @@ public final class JavaSource {
                     if (rq.task == task) {
                         it.remove();
                         found = true;
-                        break;
+//Some tasks are duplicated (racecondition?), remove even them.
+//todo: Prevent duplication of tasks
+//                        break;
                     }
                 }
             }

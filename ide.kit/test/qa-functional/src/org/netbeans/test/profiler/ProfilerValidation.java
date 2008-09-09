@@ -284,6 +284,7 @@ public class ProfilerValidation extends JellyTestCase {
                                         "LBL_TakeSnapshotAction"), null);
         new Waiter(new Waitable() {
             public Object actionProduced(Object takeSnapshotAction) {
+		MainWindowOperator.getDefault().toFront();
                 return ((Action)takeSnapshotAction).isEnabled() ? Boolean.TRUE : null;
             }
             public String getDescription() {

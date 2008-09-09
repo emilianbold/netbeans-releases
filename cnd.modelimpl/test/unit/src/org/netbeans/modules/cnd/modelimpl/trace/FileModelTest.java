@@ -479,6 +479,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("local_variables.cc"); // NOI18N
     }   
     
+    // #146150 unexpected token: ; message appears on extern int errno; line
+    public void testIZ146150() throws Exception {
+        performTest("IZ146150.cc"); // NOI18N
+    }   
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
