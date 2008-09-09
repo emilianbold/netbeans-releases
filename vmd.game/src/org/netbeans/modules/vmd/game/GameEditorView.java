@@ -64,6 +64,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -144,7 +145,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(GameEditorView.class);
     }
 
     public JComponent getVisualRepresentation() {

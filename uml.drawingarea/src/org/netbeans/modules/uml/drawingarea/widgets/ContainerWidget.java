@@ -57,6 +57,7 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
@@ -69,12 +70,16 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetAcceptAction;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.MoveWidgetTransferable;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget.UMLWidgetIDString;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -654,5 +659,111 @@ public class ContainerWidget extends Widget
             this.containerWidget = containerWidget;
         }
         
+    }
+    
+    
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        assert target instanceof ContainerWidget;
+        assert target.getScene() instanceof DesignerScene;
+
+        DesignerScene targetScene = (DesignerScene) target.getScene();
+        DesignerScene sourceScene = (DesignerScene) getScene();
+
+        target.setFont(getFont());
+        target.setForeground(getForeground());
+        target.setBackground(getBackground());
+        
+        // some nodes may have logic to populate contained elements during initialization,
+        // clear the container and only create the ones exist in original container
+        List<Widget> children = new ArrayList<Widget> (target.getChildren());
+        for (Widget c: children)
+        {
+            Object o = targetScene.findObject(c);
+            if (o instanceof IPresentationElement)
+                targetScene.removeNodeWithEdges((IPresentationElement)o);
+        }
+
+        // 1. clone contained inner nodes
+        List<Widget> list = new ArrayList<Widget> (getChildren());
+        for (Widget child : list)
+        {
+            if (!(child instanceof UMLNodeWidget))
+            {
+                continue;
+            }
+            IPresentationElement presentation = Util.createNodePresentationElement();
+            presentation.addSubject(((UMLNodeWidget) child).getObject().getFirstSubject());
+            Widget copy = targetScene.getEngine().addWidget(presentation, child.getPreferredLocation());
+            ((UMLNodeWidget) child).duplicate(setBounds, copy);
+            copy.setPreferredLocation(child.getPreferredLocation());
+
+            copy.removeFromParent();
+            target.addChild(copy);
+        }
+        targetScene.validate();
+
+        // 2. clone connections among contained inner nodes
+
+        for (ConnectionWidget cw : Util.getAllContainedEdges(this))
+        {
+            if (cw instanceof UMLEdgeWidget)
+            {
+                UMLEdgeWidget originalCW = (UMLEdgeWidget) cw;
+                IPresentationElement sourcePE = sourceScene.getEdgeSource(originalCW.getObject());
+                IPresentationElement targetPE = sourceScene.getEdgeTarget(originalCW.getObject());
+
+                IPresentationElement newSourcePE = null;
+                IPresentationElement newTargetPE = null;
+
+                for (Object obj : Util.getAllNodeChildren(target))
+                {
+                    if (((IPresentationElement) obj).getFirstSubject().getXMIID().equals(sourcePE.getFirstSubject().getXMIID()))
+                    {
+                        newSourcePE = (IPresentationElement) obj;
+                        break;
+                    }
+                }
+                for (Object obj : Util.getAllNodeChildren(target))
+                {
+                    if (((IPresentationElement) obj).getFirstSubject().getXMIID().equals(targetPE.getFirstSubject().getXMIID()))
+                    {
+                        newTargetPE = (IPresentationElement) obj;
+                        break;
+                    }
+                }
+
+                IPresentationElement clonedEdgePE = Util.createNodePresentationElement();
+                // Workaround for nested link. Unlike other relationships, it does not
+                // have its own designated IElement, the IPresentationElement.getFirstSubject
+                // returns an element at one end. Use this mechanism (multiple subjects) for 
+                // DefaultDiagramEngine.createConnectionWidget() to identify the connector type
+                if (((UMLEdgeWidget) cw).getWidgetID().
+                        equals(UMLWidgetIDString.NESTEDLINKCONNECTIONWIDGET.toString()))
+                {
+                    clonedEdgePE.addSubject(sourcePE.getFirstSubject());
+                    clonedEdgePE.addSubject(targetPE.getFirstSubject());
+                } else
+                {
+                    clonedEdgePE.addSubject(originalCW.getObject().getFirstSubject());
+                }
+
+                Widget clonedEdge = targetScene.addEdge(clonedEdgePE);
+
+                targetScene.setEdgeSource(clonedEdgePE, newSourcePE);
+                targetScene.setEdgeTarget(clonedEdgePE, newTargetPE);
+                Lookup lookup = clonedEdge.getLookup();
+                if (lookup != null)
+                {
+                    LabelManager manager = lookup.lookup(LabelManager.class);
+                    if (manager != null)
+                    {
+                        manager.createInitialLabels();
+                    }
+                }
+                ((UMLEdgeWidget) originalCW).duplicate(clonedEdge);
+            }
+        }   
+        targetScene.validate();
     }
 }

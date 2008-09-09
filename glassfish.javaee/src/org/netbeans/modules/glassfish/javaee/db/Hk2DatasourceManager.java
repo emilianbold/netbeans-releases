@@ -169,15 +169,9 @@ public class Hk2DatasourceManager implements DatasourceManager {
     
     private static final class AddResourcesCommand extends ServerCommand {
 
-        private final String sunResourcesXmlPath;
-        
         public AddResourcesCommand(String sunResourcesXmlPath) {
-            this.sunResourcesXmlPath = sunResourcesXmlPath;
-        }
-        
-        @Override
-        public String getCommand() {
-            return "add-resources?xml_file_name=" + sunResourcesXmlPath;
+            super("add-resources"); // NOI18N
+            query = "xml_file_name=" + sunResourcesXmlPath; // NOI18N
         }
         
     }
@@ -622,7 +616,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
     
     private static String computePoolName(String url, String vendorName, String username){
         UrlData urlData = new UrlData(url);
-        StringBuffer poolName = new StringBuffer(vendorName);
+        StringBuilder poolName = new StringBuilder(vendorName);
         String dbName = getDatabaseName(urlData);
         if (dbName != null) {
             poolName.append("_" + dbName); //NOI18N

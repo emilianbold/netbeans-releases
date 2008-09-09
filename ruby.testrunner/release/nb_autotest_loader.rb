@@ -48,7 +48,13 @@ Autotest.add_hook :run_command do |at|
   puts "%AUTOTEST% reset"
 end
 
-if require 'autotest/rspec'
+rspec = false
+begin
+  rspec = require 'autotest/rspec'
+rescue LoadError
+end
+
+if rspec
   # Loads NbRspecMediator for running specs.
   class Autotest::Rspec < Autotest
     #  remove_method :make_test_cmd

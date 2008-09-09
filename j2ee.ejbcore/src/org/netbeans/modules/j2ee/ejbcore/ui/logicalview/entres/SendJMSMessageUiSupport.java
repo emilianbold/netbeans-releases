@@ -285,14 +285,19 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
                 MdbHolder mdbHolder = (MdbHolder) value;
                 setText(mdbHolder.getMdbEjbName());
                 // tooltip
-                String type = MessageDestination.Type.QUEUE.equals(mdbHolder.getMessageDestination().getType()) ? "LBL_Queue" : "LBL_Topic"; // NOI18N
-                StringBuilder sb = new StringBuilder(mdbHolder.getProjectName());
-                sb.append(" : "); // NOI18N
-                sb.append(mdbHolder.getMdbEjbName());
-                sb.append(" ["); // NOI18N
-                sb.append(NbBundle.getMessage(MessageDestinationUiSupport.class, type));
-                sb.append("]"); // NOI18N
-                setToolTipText(sb.toString());
+                MessageDestination messageDestination = mdbHolder.getMessageDestination();
+                if (messageDestination == null) {
+                    setToolTipText(""); // NOI18N
+                } else {
+                    String type = MessageDestination.Type.QUEUE.equals(messageDestination.getType()) ? "LBL_Queue" : "LBL_Topic"; // NOI18N
+                    StringBuilder sb = new StringBuilder(mdbHolder.getProjectName());
+                    sb.append(" : "); // NOI18N
+                    sb.append(mdbHolder.getMdbEjbName());
+                    sb.append(" ["); // NOI18N
+                    sb.append(NbBundle.getMessage(MessageDestinationUiSupport.class, type));
+                    sb.append("]"); // NOI18N
+                    setToolTipText(sb.toString());
+                }
             } else {
                 setText(value != null ? value.toString() : ""); // NOI18N
                 setToolTipText(""); // NOI18N

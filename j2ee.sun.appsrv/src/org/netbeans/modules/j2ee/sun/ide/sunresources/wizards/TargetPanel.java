@@ -47,14 +47,12 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
 import org.openide.util.HelpCtx;
-import org.openide.loaders.TemplateWizard;
-import org.openide.util.NbBundle;
 
 import java.awt.Component;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 

@@ -92,6 +92,7 @@ import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -139,7 +140,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         instance = this;
         currentCompilerSet = null;
         serverUpdateCache = null;
-        serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        serverList = Lookup.getDefault().lookup(ServerList.class);
         if (serverList != null) {
             hkey = serverList.getDefaultRecord().getName();
             btEditDevHost.setEnabled(true);
@@ -153,6 +154,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );
         } 
+        
+        HelpCtx.setHelpIDString(this, "ResolveBuildTools"); // NOI18N
     }
 
     public ToolsPanel(ToolsPanelModel model) {
@@ -173,13 +176,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             requiredToolsPanel.setVisible(false); // Required Tools panel!
         }
         cbDevHost.removeItemListener(this);
+
         if (serverUpdateCache != null) {
             log.fine("TP.initialize: Initializing from serverUpdateCache");
             cbDevHost.removeAllItems();
             for (String key : serverUpdateCache.getHostKeyList()) {
                 cbDevHost.addItem(key);
             }
-            cbDevHost.setSelectedIndex(serverUpdateCache.getDefaultIndex());
+            cbDevHost.setSelectedIndex( serverUpdateCache.getDefaultIndex());
             log.fine("TP.initialize: Done");
         } else if (serverList != null) {
             log.fine("TP.initialize: Initializing from serverList");
@@ -195,8 +199,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbDevHost.setSelectedIndex(0);
             log.fine("TP.initialize: Done");
         }
+        if (model.getSelectedDevelopmentHost() != null) {
+            cbDevHost.setSelectedItem(model.getSelectedDevelopmentHost());
+        }
         cbDevHost.setRenderer(new MyDevHostListCellRenderer());
         cbDevHost.addItemListener(this);
+        cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
+        btEditDevHost.setEnabled(model.getEnableDevelopmentHostChange());
         hkey = (String) cbDevHost.getSelectedItem();
 
         btBaseDirectory.setEnabled(false);
@@ -300,6 +309,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
             serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
             hkey = (String) cbDevHost.getSelectedItem();
+            model.setSelectedDevelopmentHost(hkey);
             update(true);
         } else {
             update(false);            
@@ -335,7 +345,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
 
     private void saveCompileSetManagers(List<String> liveServers) {
-        Collection<CompilerSetManager> allCSMs = new ArrayList();
+        Collection<CompilerSetManager> allCSMs = new ArrayList<CompilerSetManager>();
         for (String copiedServer : copiedManagers.keySet()) {
             if (liveServers == null || liveServers.contains(copiedServer)) {
                 allCSMs.add(copiedManagers.get(copiedServer));
@@ -539,7 +549,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (serverList != null) {
                 record = serverList.get(hkey);
             }            
-            boolean devhostValid = serverList == null || (record != null & record.isOnline());            
+            boolean devhostValid = serverList == null || (record != null && record.isOnline());            
             String errorMsg = "";
             if (!devhostValid) {
                 errorMsg = NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey);
@@ -702,7 +712,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (serverList != null) {
                 record = serverList.get(hkey);
             }
-            boolean devhostValid = serverList == null || (record != null & record.isOnline());
+            boolean devhostValid = serverList == null || (record != null && record.isOnline());
 
             if (!initialized) {
                 valid = !(csmValid && makeValid && gdbValid && cValid && cppValid && fortranValid && devhostValid);
@@ -824,7 +834,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         return new VersionCommand(tool, path).getVersion();
     }
 
-    static Set<ChangeListener> listenerChanged = new HashSet();
+    static Set<ChangeListener> listenerChanged = new HashSet<ChangeListener>();
 
     public static void addCompilerSetChangeListener(ChangeListener l) {
         listenerChanged.add(l);
@@ -841,7 +851,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
     }
 
-    static Set<ChangeListener> listenerModified = new HashSet();
+    static Set<ChangeListener> listenerModified = new HashSet<ChangeListener>();
 
     public static void addCompilerSetModifiedListener(ChangeListener l) {
         listenerModified.add(l);
@@ -858,7 +868,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
     }
 
-    static Set<IsChangedListener> listenerIsChanged = new HashSet();
+    static Set<IsChangedListener> listenerIsChanged = new HashSet<IsChangedListener>();
 
     public static void addIsChangedListener(IsChangedListener l) {
         listenerIsChanged.add(l);

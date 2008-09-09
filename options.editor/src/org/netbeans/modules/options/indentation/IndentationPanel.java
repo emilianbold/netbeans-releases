@@ -334,7 +334,6 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
         cbExpandTabsToSpaces.setText("Expand Tabs to Spaces");
         cbExpandTabsToSpaces.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbExpandTabsToSpaces.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         lNumberOfSpacesPerIndent.setLabelFor(sNumberOfSpacesPerIndent);
         lNumberOfSpacesPerIndent.setText("Number of Spaces per Indent:");
@@ -357,15 +356,10 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                         .add(54, 54, 54))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                         .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jPanel1Layout.createSequentialGroup()
-                                .add(lRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 195, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(36, 36, 36))
-                            .add(jPanel1Layout.createSequentialGroup()
-                                .add(lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                            .add(jPanel1Layout.createSequentialGroup()
-                                .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                            .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                            .add(lRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
                             .add(sTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)

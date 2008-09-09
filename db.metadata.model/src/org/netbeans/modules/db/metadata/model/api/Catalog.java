@@ -70,6 +70,10 @@ public class Catalog extends MetadataObject {
         return impl.getDefaultSchema();
     }
 
+    public Schema getSyntheticSchema() {
+        return impl.getSyntheticSchema();
+    }
+
     /**
      * @return the schemas.
      * @throws MetadataException.

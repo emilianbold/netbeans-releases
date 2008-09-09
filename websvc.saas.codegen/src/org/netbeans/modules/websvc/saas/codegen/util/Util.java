@@ -108,7 +108,17 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthenticatio
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
+import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase.Use;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -379,22 +389,22 @@ public class Util {
     public static Class getPrimitiveType(String typeName) {
         if (primitiveTypes == null) {
             primitiveTypes = new HashMap<String, Class>();
-            primitiveTypes.put("int", Integer.class);
-            primitiveTypes.put("int[]", Integer[].class);
-            primitiveTypes.put("boolean", Boolean.class);
-            primitiveTypes.put("boolean[]", Boolean[].class);
-            primitiveTypes.put("byte", Byte.class);
-            primitiveTypes.put("byte[]", Byte[].class);
-            primitiveTypes.put("char", Character.class);
-            primitiveTypes.put("char[]", Character[].class);
-            primitiveTypes.put("double", Double.class);
-            primitiveTypes.put("double[]", Double[].class);
-            primitiveTypes.put("float", Float.class);
-            primitiveTypes.put("float[]", Float[].class);
-            primitiveTypes.put("long", Long.class);
-            primitiveTypes.put("long[]", Long[].class);
-            primitiveTypes.put("short", Short.class);
-            primitiveTypes.put("short[]", Short[].class);
+            primitiveTypes.put("int", Integer.TYPE);
+            primitiveTypes.put("int[]", int[].class);
+            primitiveTypes.put("boolean", Boolean.TYPE);
+            primitiveTypes.put("boolean[]", boolean[].class);
+            primitiveTypes.put("byte", Byte.TYPE);
+            primitiveTypes.put("byte[]", byte[].class);
+            primitiveTypes.put("char", Character.TYPE);
+            primitiveTypes.put("char[]", char[].class);
+            primitiveTypes.put("double", Double.TYPE);
+            primitiveTypes.put("double[]", double[].class);
+            primitiveTypes.put("float", Float.TYPE);
+            primitiveTypes.put("float[]", float[].class);
+            primitiveTypes.put("long", Long.TYPE);
+            primitiveTypes.put("long[]", long[].class);
+            primitiveTypes.put("short", Short.TYPE);
+            primitiveTypes.put("short[]", short[].class);
         }
         return primitiveTypes.get(typeName);
     }
@@ -1222,27 +1232,38 @@ public class Util {
         DialogDisplayer.getDefault().notify(desc);
     }
     
-    public static String createPrintStatement(String pkg, String typeName,
+    public static String createPrintStatement(List<String> pkgs, List<String> typeNames,
             DropFileType dropFileType, HttpMethodType methodType,
             boolean canGenerateJaxb, String indent) {
-        return createPrintStatement(pkg, typeName, dropFileType, methodType,
+        return createPrintStatement(pkgs, typeNames, dropFileType, methodType,
             canGenerateJaxb, VAR_NAMES_RESULT, indent);
     }
     
-    public static String createPrintStatement(String pkg, String typeName,
+    public static String createPrintStatement(List<String> pkgs, List<String> typeNames,
             DropFileType dropFileType, HttpMethodType methodType,
             boolean canGenerateJaxb, String resultVarName, String indent) {
         String methodBody = "";
         String commentStr = "//";
         if (canGenerateJaxb) {
-            if (!isPrimitive(typeName)) {
-                String resultClass = pkg + "." + Util.camelize(typeName, false);
-                methodBody += indent + resultClass + " "+resultVarName+"Obj = " +
-                    resultVarName+".getDataAsObject(" + resultClass + ".class);\n";
-            } else {
-                String resultClass = Util.camelize(typeName, false);
-                methodBody += indent + resultClass + " "+resultVarName+"Obj = " +
-                    resultVarName+".getDataAsObject(" + resultClass + ".class, " + "\"" + pkg + "\");\n";
+            for(int i=0;i<typeNames.size();i++) {
+                String pkg = pkgs.get(i);
+                String typeName = typeNames.get(i);
+                if(i>0) {
+                    methodBody += "else ";
+                }
+                if (!isPrimitive(typeName)) {
+                    String resultClass = pkg + "." + Util.camelize(typeName, false);
+                    String lft = resultClass;
+                    String rht = resultVarName+".getDataAsObject(" + resultClass + ".class)";
+                    methodBody += indent + "if(" + rht + " instanceof " + lft + ") {\n";
+                    methodBody += indent + "    " + lft + " "+resultVarName+"Obj = " + rht + ";\n}\n";
+                } else {
+                    String resultClass = Util.camelize(typeName, false);
+                    String lft = resultClass;
+                    String rht = resultVarName+".getDataAsObject(" + resultClass + ".class, \"java.lang\")";
+                    methodBody += indent + "if(" + rht + " instanceof " + lft + ") {\n";
+                    methodBody += indent + resultClass + " "+resultVarName+"Obj = " + rht +";\n}\n";
+                }
             }
         }
         methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
@@ -1381,6 +1402,11 @@ public class Util {
     public static List<ParameterInfo> getRestClientMethodParameters(RestClientSaasBean bean) {
         List<ParameterInfo> params = bean.filterParametersByAuth(bean.filterParameters(
                 new ParamFilter[]{ParamFilter.FIXED}));
+        getRestClientPutPostParameters(bean, params);
+        return params;
+    }
+    
+    public static List<ParameterInfo> getRestClientPutPostParameters(RestClientSaasBean bean, List<ParameterInfo> params) {
         HttpMethodType httpMethod = bean.getHttpMethod();
 
         if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
@@ -1399,12 +1425,33 @@ public class Util {
                         contentType = String.class;
                     }
                 }
-                if (!bean.findInputRepresentations(bean.getMethod()).isEmpty()) {
-                    params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
-                }
+            }
+            if (hasInputRepresentations(bean) && !isPutPostFormParams(bean)) {
+                params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
             }
         }
         return params;
+    }
+
+    public static boolean isPutPostFormParams(RestClientSaasBean bean) {
+        HttpMethodType httpMethod = bean.getHttpMethod();
+        if(httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
+            List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
+            for(RepresentationType rep: reps) {
+                if (rep.getParam() != null && rep.getParam().size() > 0)
+                    return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean hasInputRepresentations(RestClientSaasBean bean) {
+       List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
+       
+       if (reps == null || reps.size() == 0) 
+           return false;
+       
+       return true;
     }
 
     public static Document getDocument(FileObject f) throws IOException {
@@ -1420,4 +1467,33 @@ public class Util {
             throw new IOException("DataObject does not exist for : " + f.getPath());
         }
     }
+
+    public static boolean isRPCEncoded(WSDLModel wsdlModel){
+
+        Definitions definitions = wsdlModel.getDefinitions();
+        Collection<Binding> bindings = definitions.getBindings();
+        for (Binding binding : bindings) {
+            List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
+            for (SOAPBinding soapBinding : soapBindings) {
+                if (soapBinding.getStyle() == Style.RPC) {
+                    Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
+                    for (BindingOperation bindingOperation : bindingOperations) {
+                        BindingInput bindingInput = bindingOperation.getBindingInput();
+                        if (bindingInput != null) {
+                            List<SOAPBody> soapBodies = bindingInput.getExtensibilityElements(SOAPBody.class);
+                            if (soapBodies != null && soapBodies.size() > 0) {
+                                SOAPBody soapBody = soapBodies.get(0);
+                                if (soapBody.getUse() == Use.ENCODED) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        return false;
+    }
+
 }

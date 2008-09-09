@@ -484,7 +484,8 @@ public class MultiDataObject extends DataObject {
         fo = getPrimaryEntry ().copy (df.getPrimaryFile (), suffix);
 
         boolean fullRescan = getMultiFileLoader() == null ||
-            getMultiFileLoader().findPrimaryFile(fo) != fo;
+            getMultiFileLoader().findPrimaryFile(fo) != fo ||
+            getMultiFileLoader() == DataLoaderPool.getDefaultFileLoader();
         try {
             return fullRescan ? DataObject.find(fo) : createMultiObject (fo);
         } catch (DataObjectExistsException ex) {
@@ -739,7 +740,7 @@ public class MultiDataObject extends DataObject {
         
         try {
             // #61600: not very object oriented, but covered by DefaultVersusXMLDataObjectTest
-            if (this instanceof DefaultDataObject) {
+            if (getMultiFileLoader() == DataLoaderPool.getDefaultFileLoader()) {
                 return DataObject.find(pf);
             }
             
@@ -751,7 +752,7 @@ public class MultiDataObject extends DataObject {
 
     @Override
     protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
-        if( getLoader() instanceof UniFileLoader ) {
+        if (getLoader() instanceof UniFileLoader || getLoader() == DataLoaderPool.getDefaultFileLoader()) {
             //allow the operation for single file DataObjects
             FileObject fo = getPrimaryEntry().copyRename (df.getPrimaryFile (), name, ext);
             return DataObject.find( fo );

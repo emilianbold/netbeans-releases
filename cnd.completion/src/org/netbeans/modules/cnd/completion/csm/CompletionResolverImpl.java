@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -102,6 +103,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean sort = false;
     private QueryScope queryScope = QueryScope.GLOBAL_QUERY;
     private boolean inIncludeDirective = false;
+    private final FileReferencesContext fileReferncesContext;
 
     public boolean isSortNeeded() {
         return sort;
@@ -129,19 +131,20 @@ public class CompletionResolverImpl implements CompletionResolver {
 
     /** Creates a new instance of CompletionResolver */
     public CompletionResolverImpl(CsmFile file) {
-        this(file, false, false, false);
+        this(file, false, false, false, null);
     }
 
-    public CompletionResolverImpl(CsmFile file, boolean caseSensitive, boolean sort, boolean naturalSort) {
-        this(file, RESOLVE_CONTEXT, caseSensitive, sort, naturalSort);
+    public CompletionResolverImpl(CsmFile file, boolean caseSensitive, boolean sort, boolean naturalSort, FileReferencesContext fileReferncesContext) {
+        this(file, RESOLVE_CONTEXT, caseSensitive, sort, naturalSort, fileReferncesContext);
     }
 
-    public CompletionResolverImpl(CsmFile file, int resolveTypes, boolean caseSensitive, boolean sort, boolean naturalSort) {
+    private CompletionResolverImpl(CsmFile file, int resolveTypes, boolean caseSensitive, boolean sort, boolean naturalSort, FileReferencesContext fileReferncesContext) {
         this.file = file;
         this.resolveTypes = resolveTypes;
         this.caseSensitive = caseSensitive;
         this.naturalSort = naturalSort;
         this.sort = sort;
+        this.fileReferncesContext = fileReferncesContext;
     }
 
     public void setResolveTypes(int resolveTypes) {
@@ -174,7 +177,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (file == null) {
             return false;
         }
-        context  = CsmOffsetResolver.findContext(file, offset);
+        context  = CsmOffsetResolver.findContext(file, offset, fileReferncesContext);
         if (DEBUG) System.out.println("context for offset " + offset + " :\n" + context); //NOI18N
         initResolveMask(context, offset, strPrefix, match);
         this.hideTypes = initHideMask(context, offset, this.resolveTypes, this.queryScope, strPrefix, this.inIncludeDirective);
@@ -292,6 +295,12 @@ public class CompletionResolverImpl implements CompletionResolver {
                     }
                     resImpl.fileLocalEnumerators.add((CsmEnumerator) elem);
                     if (isEnough(strPrefix, match)) return true;
+                } if (needVars && CsmKindUtilities.isFunction(elem)) {
+                    if (resImpl.fileLocalFunctions == null) {
+                        resImpl.fileLocalFunctions = new ArrayList<CsmFunction>();
+                    }
+                    resImpl.fileLocalFunctions.add((CsmFunction) elem);
+                    if (isEnough(strPrefix, match)) return true;
                 }
             }
         }
@@ -381,13 +390,25 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (isEnough(strPrefix, match, resImpl.fileLocalMacros)) return true;
         }
         if (needFileLocalFunctions(context, offset)) {
-            resImpl.fileLocalFunctions = getFileLocalFunctions(context, strPrefix, match);
+            if (resImpl.fileLocalFunctions == null) {
+                resImpl.fileLocalFunctions = new ArrayList<CsmFunction>();
+            }
+            resImpl.fileLocalFunctions.addAll(getFileLocalFunctions(context, strPrefix, match));
             if (isEnough(strPrefix, match, resImpl.fileLocalFunctions)) return true;
         }
         // file local variables
         if (needFileLocalVars(context, offset)) {
-            resImpl.fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match, queryScope == QueryScope.LOCAL_QUERY);
+            if (fileReferncesContext != null){
+                fileReferncesContext.advance(offset);
+            }
+            resImpl.fileLocalVars = contResolver.getFileLocalVariables(context, fileReferncesContext, strPrefix, match, queryScope == QueryScope.LOCAL_QUERY);
             if (isEnough(strPrefix, match, resImpl.fileLocalVars)) return true;
+            if (resImpl.fileLocalEnumerators == null) {
+                resImpl.fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);
+                if (isEnough(strPrefix, match, resImpl.fileLocalEnumerators)) {
+                    return true;
+                }
+            }
         }
 
         if (needFileIncludedMacros(context, offset)) {
@@ -574,7 +595,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 fun = (CsmFunction)obj;
             } else {
                 int offset = ((CsmOffsetable)context.getLastObject()).getEndOffset();
-                obj = CsmDeclarationResolver.findInnerFileObject(file, offset, context);
+                obj = CsmDeclarationResolver.findInnerFileObject(file, offset, context, fileReferncesContext);
                 if (CsmKindUtilities.isFunction(obj)) {
                     fun = (CsmFunction)obj;
                 } else if (CsmKindUtilities.isClassForwardDeclaration(obj)) {
@@ -590,12 +611,13 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (CsmKindUtilities.isTemplate(fun)) {
             analyzeTemplates.add((CsmTemplate)fun);
         }
-        CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
-        clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false, false);
-        if (CsmKindUtilities.isTemplate(clazz)) {
+        CsmClass funClass = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
+        CsmClass contextClass = CsmContextUtilities.getClass(context, false, false);
+        CsmClass clazz = funClass != null ? funClass : contextClass;
+        if (clazz != null) {
             // We add template parameters to function parameters on function init,
             // so we dont need to add them to completion list again.
-            if (!CsmKindUtilities.isTemplate(fun) || clazz.equals(CsmContextUtilities.getClass(context, false, false))) {
+            if (CsmKindUtilities.isTemplate(clazz) && !analyzeTemplates.contains(clazz)) {
                 analyzeTemplates.add((CsmTemplate)clazz);
             }
             CsmScope scope = clazz.getScope();
@@ -1369,6 +1391,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             // };
             // TODO: solve this issue in a more elegant way
             resolveTypes |= RESOLVE_GLOB_VARIABLES;
+            resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
 
             assert (context != null);
             if (CsmContextUtilities.isInFunction(context, offset)) {
@@ -1382,8 +1405,6 @@ public class CompletionResolverImpl implements CompletionResolver {
             } else {
 
                 // resolve global context as well
-                resolveTypes |= RESOLVE_GLOB_VARIABLES;
-                resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
                 resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
                 resolveTypes |= RESOLVE_GLOB_NAMESPACES;
@@ -1414,22 +1435,29 @@ public class CompletionResolverImpl implements CompletionResolver {
         CsmProject prj = file.getProject();
         CsmProject inProject = (onlyInProject || contextOnly) ? prj : null;
         Collection<CsmNamespace> namespaces = new ArrayList<CsmNamespace>();
-        if (!contextOnly) {
-            namespaces.addAll(CsmUsingResolver.getDefault().findVisibleNamespaces(file, offset, inProject));
-        }
-        // add global namespace
-        CsmNamespace globNS = prj.getGlobalNamespace();
-        namespaces.add(globNS);
+
         // add all namespaces from context
         Collection<CsmNamespace> contextNSs = getContextNamespaces(context);
         namespaces.addAll(contextNSs);
         namespaces = filterNamespaces(namespaces, inProject);
+        
+        if (!contextOnly) {
+            namespaces.addAll(CsmUsingResolver.getDefault().findVisibleNamespaces(file, offset, inProject));
+        }
+        
+        if (prj != null) {
+            // add global namespace
+            CsmNamespace globNS = prj.getGlobalNamespace();
+            namespaces.add(globNS);
+        }
+        
         return namespaces;
     }
 
-    private Collection<CsmNamespace> getContextNamespaces(CsmContext context) {
+    /** it's a list, not just collection because order matters */
+    private List<CsmNamespace> getContextNamespaces(CsmContext context) {
         CsmNamespace ns = CsmContextUtilities.getNamespace(context);
-        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
+        List<CsmNamespace> out = new ArrayList<CsmNamespace>();
         while (ns != null && !ns.isGlobal()) {
             out.add(ns);
             ns = ns.getParent();

@@ -6,17 +6,6 @@
             <file name="org-netbeans-modules-groovy-support-api-GroovySettings.instance"/>
         </folder>
     </folder>
-    <folder name="Loaders">
-        <folder name="text">
-            <folder name="x-groovy">
-                <folder name="Actions">
-                    <file name="org-netbeans-modules-groovy-support-RunScriptAction.instance">
-                        <attr name="position" intvalue="150"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="Groovy">
             <attr name="position" intvalue="1350"/>

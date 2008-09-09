@@ -41,13 +41,16 @@ package org.netbeans.modules.cnd.remote.server;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteCopySupport;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,20 +77,32 @@ public class RemoteServerSetup {
     
     protected RemoteServerSetup(String hkey) {
         this.hkey = hkey;
+        Lookup.Result<SetupProvider> results = Lookup.getDefault().lookup(new Lookup.Template<SetupProvider>(SetupProvider.class));
+        Collection<? extends SetupProvider> list = results.allInstances();
+        SetupProvider[] providers = list.toArray(new SetupProvider[list.size()]);
         
         // Script setup map
         scriptSetupMap = new HashMap<String, Double>();
         scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.7)); // NOI18N
+        for (SetupProvider provider : providers) {
+            Map<String, Double> map = provider.getScriptFiles();
+            if (map != null) {
+                for (Map.Entry<String, Double> entry : map.entrySet()) {
+                    scriptSetupMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
         
         // Binary setup map
-        // TODO: this should be done in gdb module (see IZ 144053)
         binarySetupMap = new HashMap<String, String>();
-        binarySetupMap.put(REMOTE_LIB_DIR + "GdbHelper-Linux-x86.so", "bin/GdbHelper-Linux-x86.so"); // NOI18N
-        binarySetupMap.put(REMOTE_LIB_DIR + "GdbHelper-SunOS-x86.so", "bin/GdbHelper-SunOS-x86.so"); // NOI18N
-        binarySetupMap.put(REMOTE_LIB_DIR + "GdbHelper-SunOS-sparc.so", "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
-        binarySetupMap.put(REMOTE_LIB_DIR + "unbuffer-Linux-x86.so", "bin/unbuffer-Linux-x86.so"); // NOI18N
-        binarySetupMap.put(REMOTE_LIB_DIR + "unbuffer-SunOS-x86.so", "bin/unbuffer-SunOS-x86.so"); // NOI18N
-        binarySetupMap.put(REMOTE_LIB_DIR + "unbuffer-SunOS-sparc.so", "bin/unbuffer-SunOS-sparc.so"); // NOI18N
+        for (SetupProvider provider : providers) {
+            Map<String, String> map = provider.getBinaryFiles();
+            if (map != null) {
+                for (Map.Entry<String, String> entry : map.entrySet()) {
+                    binarySetupMap.put(REMOTE_LIB_DIR + entry.getKey(), entry.getValue());
+                }
+            }
+        }
         
         updateMap = new HashMap<String, List<String>>();
     }
@@ -115,54 +130,60 @@ public class RemoteServerSetup {
         
         for (String path : list) {
             if (path.equals(REMOTE_SCRIPT_DIR)) {
-                log.fine("RSS.setup: Creating ~/" + REMOTE_SCRIPT_DIR);
+                log.fine("RSS.setup: Creating ~/" + REMOTE_SCRIPT_DIR); //NO18N
                 int exit_status = RemoteCommandSupport.run(hkey,
                         "mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
                 if (exit_status == 0) {
                     for (String key : scriptSetupMap.keySet()) {
-                        log.fine("RSS.setup: Copying " + path + " to " + hkey);
+                        log.fine("RSS.setup: Copying " + path + " to " + hkey); //NO18N
                         File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
-                        RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
-                        RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key);
+                        if (file == null
+                                || !file.exists()
+                                || RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR)
+                                || RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key) != 0) { //NO18N
+                            reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, key); //NO18N
+                        }
                     }
                 } else {
-                    reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", hkey, exit_status);
+                    reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", hkey, exit_status); //NO18N
                 }
             } else if (path.equals(REMOTE_LIB_DIR)) {
-                log.fine("RSS.setup: Creating ~/" + REMOTE_LIB_DIR);
+                log.fine("RSS.setup: Creating ~/" + REMOTE_LIB_DIR); //NO18N
                 int exit_status = RemoteCommandSupport.run(hkey,
                         "mkdir -p " + REMOTE_LIB_DIR); // NOI18N
                 if (exit_status == 0) {
                     bupdate = true;
                     for (String key : binarySetupMap.keySet()) {
                         String loc = binarySetupMap.get(key);
-                        log.fine("RSS.setup: Copying" + loc + " to " + hkey);
+                        log.fine("RSS.setup: Copying" + loc + " to " + hkey); //NO18N
                         File file = InstalledFileLocator.getDefault().locate(loc, null, false);
-                        if (file != null && file.exists()) {
-                            RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_LIB_DIR);
-                        } else {
-                            reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, key);
+                        if (file == null
+                                || !file.exists()
+                                || RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_LIB_DIR)) {
+                            reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, key); //NOI18N
                         }
                     }
                 } else {
-                    reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", hkey, exit_status);
+                    reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", hkey, exit_status); //NO18N
                 }
             } else {
-                log.fine("RSS.setup: Updating \"" + path + "\" on " + hkey);
+                log.fine("RSS.setup: Updating \"" + path + "\" on " + hkey); //NO18N
                 if (binarySetupMap.containsKey(path)) {
                     bupdate = true;
                     String loc = binarySetupMap.get(path);
                     File file = InstalledFileLocator.getDefault().locate(loc, null, false);
-                    boolean brc = RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_LIB_DIR);
-                    if (brc) {
-                        reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, path);
+                    if (file == null
+                            || !file.exists()
+                            || RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_LIB_DIR)) {
+                        reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, path); //NOI18N
                     }
                 } else {
                     File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + path, null, false);
-                    boolean brc = RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
-                    int rc = RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + path + ' ' + REMOTE_SCRIPT_DIR + path);
-                    if (brc || rc != 0) {
-                        reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, path);
+                    if (file == null
+                            || !file.exists()
+                            || RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR)
+                            || RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + path + ' ' + REMOTE_SCRIPT_DIR + path) != 0) { //NOI18N
+                        reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, path); //NOI18N
                     }
                 }
             }

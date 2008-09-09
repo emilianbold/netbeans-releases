@@ -206,7 +206,10 @@ public class DebuggerProxy {
     public List<Breakpoint> getBreakpoints(List<String> breakpointIds) {
         List<Breakpoint> breakpoints = new ArrayList<Breakpoint>();
         for(String breakpointId: breakpointIds) {
-            breakpoints.add(getBreakpoint(breakpointId));
+            Breakpoint bp = getBreakpoint(breakpointId);
+            if (bp != null) {
+                breakpoints.add(bp);
+            }
         }
         return breakpoints;
     }
@@ -223,9 +226,9 @@ public class DebuggerProxy {
         return response != null ? response.getBreakpoints() : null;
     }
 
-    public byte[] getSource(String uri) {
+    public byte[] getSource(String uri, boolean stripBeginCharacter) {
         SourceResponse response = (SourceResponse) sendCommand(getCommandFactory().sourceCommand(uri));
-        return (response != null && response.isSusccess()) ? response.getSourceCode() : null;
+        return (response != null && response.isSusccess()) ? response.getSourceCode(stripBeginCharacter) : null;
     }
 
     public Message getSuspensionPoint() {
@@ -265,7 +268,7 @@ public class DebuggerProxy {
     public boolean setProperty(String name, String value, int stackDepth) {
         PropertySetResponse response = (PropertySetResponse)sendCommand(
                 getCommandFactory().propertySetCommand(name, value, stackDepth));
-        return response != null ? response.isSet() : null;
+        return response != null ? response.isSet() : false;
     }    
     
     public Property eval(String data, int stackDepth) {
@@ -292,6 +295,13 @@ public class DebuggerProxy {
                 if (message instanceof ResponseMessage) {
                     ResponseMessage response = (ResponseMessage) message;
                     assert (response.getTransactionId() == command.getTransactionId());
+                    
+                    if (message instanceof RuntimeErrorResponse) {
+                        Log.getLogger().log(Level.WARNING, "Unexpected debugger extension error: " + 
+                                ((RuntimeErrorResponse)message).getMessage());
+                        return null;
+                    }
+                    
                     return response;
                 }
                 Log.getLogger().log(Level.FINE, command.getCommandName() + " request timed-out");  //NOI18N

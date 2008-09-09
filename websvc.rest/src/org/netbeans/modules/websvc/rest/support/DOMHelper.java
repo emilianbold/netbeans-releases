@@ -139,6 +139,10 @@ public class DOMHelper {
 
         return null;
     }
+    
+    public NodeList findElements(String tag) {
+        return document.getElementsByTagName(tag);
+    }
 
     public Element findElementById(String id) {
         return document.getElementById(id);

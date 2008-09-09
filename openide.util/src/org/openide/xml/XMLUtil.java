@@ -497,7 +497,7 @@ public final class XMLUtil extends Object {
             }
         });
         try {
-            v.validate(new DOMSource(fixupNoNamespaceAttrs(data)));
+            v.validate(new DOMSource(fixupAttrs(data)));
         } catch (IOException x) {
             assert false : x;
         }
@@ -505,19 +505,21 @@ public final class XMLUtil extends Object {
             throw error[0];
         }
     }
-    private static Element fixupNoNamespaceAttrs(Element root) { // #140905
+    private static Element fixupAttrs(Element root) { // #140905
         // #6529766/#6531160: some versions of JAXP reject attributes set using setAttribute
         // (rather than setAttributeNS) even though the schema calls for no-NS attrs!
         // JDK 5 is fine; JDK 6 broken; JDK 6u2+ fixed
-        fixupNoNamespaceAttrsSingle(root);
+        // #146081: xml:base attributes mess up validation too.
         Element copy = (Element) root.cloneNode(true);
+        fixupAttrsSingle(copy);
         NodeList nl = copy.getElementsByTagName("*"); // NOI18N
         for (int i = 0; i < nl.getLength(); i++) {
-            fixupNoNamespaceAttrsSingle((Element) nl.item(i));
+            fixupAttrsSingle((Element) nl.item(i));
         }
         return copy;
     }
-    private static void fixupNoNamespaceAttrsSingle(Element e) throws DOMException {
+    private static void fixupAttrsSingle(Element e) throws DOMException {
+        e.removeAttributeNS("http://www.w3.org/XML/1998/namespace", "base"); // NOI18N
         Map<String, String> replace = new HashMap<String, String>();
         NamedNodeMap attrs = e.getAttributes();
         for (int j = 0; j < attrs.getLength(); j++) {

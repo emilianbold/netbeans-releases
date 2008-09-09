@@ -54,14 +54,26 @@ public final class FastJar {
     private static class RandomAccessFileInputStream extends InputStream {
         
         private final RandomAccessFile b;
+        private final long len;
         
-        public RandomAccessFileInputStream (RandomAccessFile b) {
+        public RandomAccessFileInputStream (RandomAccessFile b) throws IOException {
             assert b != null;
             this.b = b;
-        }        
+            this.len = b.length();
+        }
+        
+        public RandomAccessFileInputStream (RandomAccessFile b, long len) throws IOException {
+            assert b != null;
+            assert len >=0;
+            this.b = b;
+            this.len = b.getFilePointer()+len;
+        }
     
         public int read (byte[] data, int offset, int size) throws IOException {
             int rem = available();
+            if (rem == 0) {
+                return -1;
+            }
             int rlen;
             if (size<rem) {
                 rlen = size;
@@ -82,7 +94,7 @@ public final class FastJar {
         }
         
         public int available () throws IOException {
-             return (int) (this.b.length() - this.b.getFilePointer());
+             return (int) (len - this.b.getFilePointer());
         }
         
         public void close () throws IOException {
@@ -122,7 +134,14 @@ public final class FastJar {
         RandomAccessFile  f = new RandomAccessFile (file, "r");     //NOI18N
         f.seek (offset);
         ZipInputStream in = new ZipInputStream (new RandomAccessFileInputStream (f));
-        in.getNextEntry();
+        ZipEntry e = in.getNextEntry();
+        if (e != null && e.getCrc() == 0L && e.getMethod() == ZipEntry.STORED) {
+            long cp = f.getFilePointer();
+            in.close();
+            f = new RandomAccessFile (file, "r");     //NOI18N
+            f.seek (cp);
+            return new RandomAccessFileInputStream (f, e.getSize());
+        }
         return in;
     }
     

@@ -113,7 +113,8 @@ final class ModifierPanel {
 
     /** Names of accessibility */
     static final String ACCESS_NAMES[] = {
-        "<default>", "private", "protected", "public" // NOI18N
+        NbBundle.getMessage(ModifierPanel.class, "LBL_ModifierPanel_Modifier_Default"), // NOI18N
+        "private", "protected", "public" // NOI18N
     };
 
     /** Values of accessibility */

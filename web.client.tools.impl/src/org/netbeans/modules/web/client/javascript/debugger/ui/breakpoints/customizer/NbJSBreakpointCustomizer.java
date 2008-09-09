@@ -66,8 +66,6 @@ public class NbJSBreakpointCustomizer  extends JPanel implements Customizer, Con
     Breakpoint b;
 
 
-    private NbJSBreakpointCustomizer(){}
-    
 
     public static void customize(Breakpoint b) {
         JComponent c = getCustomizerPanel(b);

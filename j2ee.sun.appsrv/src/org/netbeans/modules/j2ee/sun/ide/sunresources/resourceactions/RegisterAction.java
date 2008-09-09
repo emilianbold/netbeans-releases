@@ -61,9 +61,9 @@ import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ListServerInstances;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 /**
  *

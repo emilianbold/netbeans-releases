@@ -476,6 +476,7 @@ cause it to fail.
             <include name="architecture-summary.html"/>
             <include name="**/package-summary.html"/>
             <include name="**/doc-files/**/*.html"/>
+            <!-- XXX why are not all **/*.html checked? Would then need to allow e.g. http://blogs.sun.com/geertjan/entry/swing_outline_component from OutlineView.html -->
             <!-- Make hyperlinks point to the source files, not the copied files: -->
             <!-- XXX but line numbers are wrong in several cases! -->
             <mapper type="glob" from="${javadoc.out.dir}/overview-summary.html" to="${javadoc.arch}"/>

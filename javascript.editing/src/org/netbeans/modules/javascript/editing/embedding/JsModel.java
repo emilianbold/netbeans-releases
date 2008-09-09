@@ -81,6 +81,7 @@ public class JsModel {
     
     // If you change this, update the testcase reference 
     // in javascript.hints/test/unit/data/testfiles/generated.js
+    // Also sync Rhino's Parser.java patched class
     private static final String GENERATED_IDENTIFIER = " __UNKNOWN__ "; // NOI18N
     
     private final Document doc;

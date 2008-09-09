@@ -241,7 +241,7 @@ public abstract class AbstractLabelManager implements LabelManager
                 HashSet sel=new HashSet();
                 sel.add(lPres);
                 scene.setFocusedObject(lPres);
-                scene.setSelectedObjects(sel);
+                scene.userSelectionSuggested(sel, false);
             }
         }
     }
@@ -572,6 +572,10 @@ public abstract class AbstractLabelManager implements LabelManager
 
         public void movementFinished(Widget widget)
         {
+            if (origLoc == null)
+            {
+                origLoc = widget.getLocation();
+            }
             if (origLoc != null)
             {
                 Point finalLoc = widget.getPreferredLocation();

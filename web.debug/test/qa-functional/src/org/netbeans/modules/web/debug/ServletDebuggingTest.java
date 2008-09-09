@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.web.debug;
 
+import java.awt.event.KeyEvent;
+import java.beans.EventHandler;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JDialog;
@@ -48,6 +50,8 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.SourcesOperator;
@@ -64,6 +68,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.openide.util.Exceptions;
 
 /** Test of web application debugging. Manual test specification is here:
  * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
@@ -72,27 +77,27 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class ServletDebuggingTest extends J2eeTestCase {
     // status bar tracer used to wait for state
+
     private MainWindowOperator.StatusTextTracer stt;
-    
+
     public ServletDebuggingTest(String testName) {
         super(testName);
     }
-    
+
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
                 "testSetBreakpoint",
                 "testStepInto",
                 "testStepOut",
                 "testStepOver",
                 "testApplyCodeChanges",
-                "testStopServer"
-                ).enableModules(".*").clusters(".*"));
+                "testStopServer").enableModules(".*").clusters(".*"));
     }
-        
+
     /** Print test name and initialize status bar tracer. */
     @Override
     public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
+        System.out.println("########  " + getName() + "  #######");
         stt = MainWindowOperator.getDefault().getStatusTextTracer();
         // start to track Main Window status bar
         stt.start();
@@ -106,15 +111,14 @@ public class ServletDebuggingTest extends J2eeTestCase {
             System.out.println(ex.getMessage());
         }
         servletNode = new Node(new SourcePackagesNode(SAMPLE_WEB_PROJECT_NAME),
-                               "org.netbeans.test.servlets|DivideServlet.java"); //NOI18N
+                "org.netbeans.test.servlets|DivideServlet.java"); //NOI18N
     }
-    
+
     /** Stops status bar tracer. */
     @Override
     public void tearDown() {
         stt.stop();
     }
-    
     // name of sample web application project
     private static final String SAMPLE_WEB_PROJECT_NAME = "MainTestApplication";  //NOI18N
     // line number of breakpoint
@@ -147,28 +151,27 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepInto() {
         // "Debug "DivideServlet.java""
-        String debugFileItem = 
+        String debugFileItem =
                 Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
-                                        "LBL_DebugSingleAction_Name",
-                                        new Object[] {new Integer(1), servletNode.getText()});
+                "LBL_DebugSingleAction_Name",
+                new Object[]{new Integer(1), servletNode.getText()});
         new ActionNoBlock(null, debugFileItem).perform(servletNode);
         String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
         new NbDialogOperator(setURITitle).ok();
-        Utils.confirmInformationMessage();
-        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
-        stt.waitText("DivideServlet.java:"+line); //NOI18N
-        // set sources from TestFreeformLibrary to be used for debugging
-        JemmyProperties.setCurrentTimeout("JMenuOperator.PushMenuTimeout", 60000);
-        SourcesOperator so = SourcesOperator.invoke();
-        so.useSource("TestFreeformLibrary"+File.separator+"src1", true); // NOI18N
-        so.useSource("TestFreeformLibrary"+File.separator+"src2", true); // NOI18N
-        so.close();
+        Utils.confirmClientSideDebuggingMeassage();
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        OutputTabOperator outputTab = new OutputTabOperator("MainTestApplication (debug)");
+        outputTab.waitText("BUILD SUCCESSFUL");
+        stt.waitText("DivideServlet.java:" + line); //NOI18N
         new StepIntoAction().perform();
+        MainWindowOperator.getDefault().pressKey(KeyEvent.VK_ENTER);
         stt.waitText("DivideServlet.java:"+(line+2)); //NOI18N
         new StepIntoAction().perform();
-        stt.waitText("Divider.java:"); //NOI18N
-        new EditorOperator("Divider.java").close(); //NOI18N
+        stt.waitText("DivideServlet.java:"+(line+4));
         Utils.finishDebugger();
     }
 
@@ -181,10 +184,9 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepOut() {
         new DebugAction().perform(servletNode);
-        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
-        stt.waitText("DivideServlet.java:"+line); //NOI18N
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
+        stt.waitText("DivideServlet.java:" + line); //NOI18N
         stt.clear();
         new StepOutAction().perform();
         // it stops at doGet method
@@ -203,14 +205,13 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepOver() {
         new DebugAction().perform(servletNode);
-        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
-        stt.waitText("DivideServlet.java:"+line); //NOI18N
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
+        stt.waitText("DivideServlet.java:" + line); //NOI18N
         new StepOverAction().perform();
-        stt.waitText("DivideServlet.java:"+(line+2)); //NOI18N
+        stt.waitText("DivideServlet.java:" + (line + 2)); //NOI18N
         new StepOverAction().perform();
-        stt.waitText("DivideServlet.java:"+(line+4)); //NOI18N
+        stt.waitText("DivideServlet.java:" + (line + 4)); //NOI18N
         Utils.finishDebugger();
     }
 
@@ -225,19 +226,18 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testApplyCodeChanges() {
         new DebugAction().perform(servletNode);
-        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
-        stt.waitText("DivideServlet.java:"+line); //NOI18N
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
+        stt.waitText("DivideServlet.java:" + line); //NOI18N
         stt.clear();
         EditorOperator eo = new EditorOperator("DivideServlet.java"); // NOI18N
         eo.replace("Servlet DIVIDE", "Servlet DIVIDE Changed"); //NOI18N
         new ApplyCodeChangesAction().perform();
         stt.waitText("DivideServlet.java:"); //NOI18N
         Utils.finishDebugger();
-        Utils.waitText(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet", 240000, "Servlet DIVIDE Changed");
+        Utils.waitText(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet", 240000, "Servlet DIVIDE Changed");
     }
-    
+
     /** Stop server just for clean-up.
      * - stop server and wait until it finishes
      */

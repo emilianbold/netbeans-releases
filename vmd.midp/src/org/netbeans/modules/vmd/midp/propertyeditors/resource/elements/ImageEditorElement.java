@@ -121,6 +121,12 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         return Arrays.asList(ImageCD.PROP_RESOURCE_PATH);
     }
 
+    @Override
+    public void setDesignComponent(DesignComponent component) {
+        init(component.getDocument());
+        super.setDesignComponent(component);
+    }
+
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         this.wrapper = wrapper;
         
@@ -299,19 +305,27 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     private String convertFile(FileObject fo, String relPath, boolean needCopy) {
         String relativePath;
         FileObject sourceFolder = getSourceFolder();
-        String sourcePath = sourceFolder.getPath();
+        String sourcePath = FileUtil.toFile(sourceFolder).getAbsolutePath();
 
         File file = FileUtil.toFile(fo);
         if (file == null) {
             // abstract FO - zip/jar...
-            relativePath = "/" + fo.getPath(); // NOI18N
+            if (!fo.getPath().startsWith("/", 0)) {
+                relativePath = "/" + fo.getPath(); // NOI18N
+            } else {
+                relativePath = fo.getPath();
+            }
         } else {
             String fullPath = file.getAbsolutePath();
             if (fullPath.contains(sourcePath)) {
                 // file is inside sources
                 fullPath = fo.getPath();
-                int i = fullPath.indexOf(sourcePath) + sourcePath.length();
-                relativePath = fullPath.substring(i);
+                int i = fullPath.indexOf(sourcePath) + sourcePath.length() + 1;
+                if (!fullPath.substring(i).startsWith("/")) { //NOI18N
+                    relativePath = "/" + fullPath.substring(i); //NOI18N
+                } else {
+                    relativePath = fullPath.substring(i); 
+                }
             } else if (needCopy) {
                 // somewhere outside sources - need to copy (export image)
                 File possible = new File(sourcePath + File.separator + fo.getNameExt());
@@ -339,7 +353,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     public void init(DesignDocument document) {
         documentReferences = new WeakReference<DesignDocument>(document);
     }
-
+    
     public void run() {
         if (documentReferences == null || documentReferences.get() == null) {
             return;
