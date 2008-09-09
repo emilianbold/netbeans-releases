@@ -148,6 +148,20 @@ public final class NbMavenProject {
         support = new PropertyChangeSupport(proj);
         task = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
+                    //#146171 try the hardest to avoid NPE for files/directories that
+                    // seemed to have been deleted while the task was scheduled.
+                    FileObject fo = project.getProjectDirectory();
+                    if (fo == null || !fo.isValid()) {
+                        return;
+                    }
+                    fo = fo.getFileObject("pom.xml"); //NOI18N
+                    if (fo == null) {
+                        return;
+                    }
+                    File pomFile = FileUtil.toFile(fo);
+                    if (pomFile == null) {
+                        return;
+                    }
                     MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
                     AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"), 
                             new ProgressContributor[] {
@@ -159,7 +173,7 @@ public final class NbMavenProject {
                         ProgressTransferListener.setAggregateHandle(hndl);
                         hndl.start();
                         MavenExecutionRequest req = new DefaultMavenExecutionRequest();
-                        req.setPom(FileUtil.toFile(project.getProjectDirectory().getFileObject("pom.xml"))); //NOI18N
+                        req.setPom(pomFile);
                         MavenExecutionResult res = online.readProjectWithDependencies(req); //NOI18N
                         if (res.hasExceptions()) {
                             ok = false;

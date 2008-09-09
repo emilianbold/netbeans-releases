@@ -253,7 +253,8 @@ public class CompletionContextImpl extends CompletionContext {
                         if(completionAtOffset > element.getElementOffset() + 1 &&
                            completionAtOffset <= element.getElementOffset() + 1 + tag.getTagName().length()) {
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                            typedChars = tag.getTagName();
+                            int index = completionAtOffset-element.getElementOffset()-1;
+                            typedChars = index<0?tag.getTagName():tag.getTagName().substring(0, index);
                             pathFromRoot = getPathFromRoot(element.getPrevious());
                             break;
                         }                        
@@ -273,12 +274,9 @@ public class CompletionContextImpl extends CompletionContext {
                             typedChars = null;
                         } else {
                             StartTag tag = (StartTag)element;
-                            typedChars = tag.getTagName();
+                            int index = completionAtOffset-element.getElementOffset()-1;
+                            typedChars = index<0?tag.getTagName():tag.getTagName().substring(0, index);
                         }
-                    }
-                    if(lastTypedChar == '>') {
-                        completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
-                        break;
                     }
                     completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
                     pathFromRoot = getPathFromRoot(element.getPrevious());
