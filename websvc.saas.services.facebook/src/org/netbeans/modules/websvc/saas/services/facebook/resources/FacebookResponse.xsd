@@ -804,20 +804,6 @@
             <xsd:element name="canvas_fbml_render_time_avg" type="xsd:int" minOccurs="0" />
         </xsd:all>
     </xsd:complexType>
-    <xsd:complexType name="FacebookApiException">
-        <xsd:sequence>
-            <xsd:element name="error_code" type="xsd:int" />
-            <xsd:element name="error_msg" type="xsd:string" />
-            <xsd:element name="request_args">
-                <xsd:complexType>
-                    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
-                        <xsd:element name="arg" type="arg" minOccurs="0" maxOccurs="unbounded" />
-                    </xsd:sequence>
-                    <xsd:attribute name="list" type="xsd:boolean" />
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-    </xsd:complexType>
     <xsd:element name="auth_createToken_response" type="auth_token" />
     <xsd:element name="auth_getSession_response" type="session_info" />
     <xsd:element name="auth_promoteSession_response" type="session_secret" />
@@ -1119,7 +1105,22 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="error_response" type="FacebookApiException" />
+    <xsd:element name="error_response">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="error_code" type="xsd:int" />
+                <xsd:element name="error_msg" type="xsd:string" />
+                <xsd:element name="request_args">
+                    <xsd:complexType>
+                        <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+                            <xsd:element name="arg" type="arg" minOccurs="0" maxOccurs="unbounded" />
+                        </xsd:sequence>
+                        <xsd:attribute name="list" type="xsd:boolean" />
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
 
 <!-- Missing elements -->
  
