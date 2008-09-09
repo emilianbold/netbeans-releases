@@ -53,6 +53,8 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
@@ -273,6 +275,9 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
                     TextRegion.createFixedPosition(completeInsertString.length()));
 
             doc.insertString(insertOffset, completeInsertString, null);
+            // #132615
+            // Insert a special undoable-edit marker that - once undone will release CT editing.
+            bdoc.addUndoableEdit(new TemplateInsertUndoEdit());
             
             TextRegion<?> caretTextRegion = null;
             // Go through all master parameters and create region infos for them
@@ -408,7 +413,7 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
             textSync.setCaretMarker(true);
     }
     
-    private void release() {
+    void release() {
         synchronized (this) {
             if (released) {
                 return;
@@ -490,5 +495,15 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         }
         return sb.toString();
     }
-    
+
+    private final class TemplateInsertUndoEdit extends AbstractUndoableEdit {
+
+        @Override
+        public void undo() throws CannotUndoException {
+            super.undo();
+            release();
+        }
+
+    }
+
 }

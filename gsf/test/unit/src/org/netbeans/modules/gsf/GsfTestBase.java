@@ -2834,7 +2834,7 @@ public abstract class GsfTestBase extends NbTestCase {
      * the caret) and a corresponding insert or delete (with insert:string or remove:string)
      * as the value.
      */
-    protected IncrementalParse getIncrementalResult(String relFilePath, String... edits) throws Exception {
+    protected IncrementalParse getIncrementalResult(String relFilePath, double speedupExpectation, String... edits) throws Exception {
         assertNotNull("Must provide a list of edits", edits);
         assertTrue("Should be an even number of edit events: pairs of caret, insert/remove", edits.length % 2 == 0);
 
@@ -2902,20 +2902,30 @@ public abstract class GsfTestBase extends NbTestCase {
         long fullParseEndTime = System.nanoTime();
         assertNotNull(fullParseResult);
 
-        long incrementalParseTime = incrementalEndTime-incrementalStartTime;
-        long fullParseTime = fullParseEndTime-fullParseStartTime;
-        //assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns)",
-        //        incrementalParseTime < fullParseTime);
-        // Figure out how to ensure garbage collections etc. make a fair run.
-        assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns)",
-// 2x here -- figure out how to make test stable, then remove!!                
-                incrementalParseTime < 2*fullParseTime);
+        if (speedupExpectation > 0.0) {
+            long incrementalParseTime = incrementalEndTime-incrementalStartTime;
+            long fullParseTime = fullParseEndTime-fullParseStartTime;
+            // Figure out how to ensure garbage collections etc. make a fair run.
+            assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns); speedup was " +
+                    fullParseTime/incrementalParseTime,
+                    ((double)incrementalParseTime)*speedupExpectation < fullParseTime);
+        }
 
         return new IncrementalParse(initialResult, info, incrementalResult, history, initialText, modifiedText, fullParseResult);
     }
 
-    protected void checkIncremental(String relFilePath, String... edits) throws Exception {
-        IncrementalParse parse = getIncrementalResult(relFilePath, edits);
+    /**
+     * Check incremental parsing
+     * @param relFilePath Path to test file to be parsed
+     * @param speedupExpectation The speed up we're expecting for incremental processing
+     *   over normal full-file analysis. E.g. 1.0d means we want to ensure that incremental
+     *   parsing is at least as fast as normal parsing. For small files there may be extra
+     *   overhead; you can pass 0.0d to turn off this check (but the test runs to ensure
+     *   that things are working okay.)
+     * @param edits A list of edits to perform.
+     */
+    protected void checkIncremental(String relFilePath, double speedupExpectation, String... edits) throws Exception {
+        IncrementalParse parse = getIncrementalResult(relFilePath, speedupExpectation, edits);
 
         ParserResult incrementalResult = parse.newParserResult;
         ParserResult fullParseResult = parse.fullParseResult;

@@ -1,8 +1,0 @@
-# Ensures tables from a model with no schemas show up.
-
-select |
-
---
-<no-schema>
-  customer
-  invoice
