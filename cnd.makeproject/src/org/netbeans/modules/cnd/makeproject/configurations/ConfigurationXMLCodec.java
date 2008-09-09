@@ -260,7 +260,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentPackagingConfiguration.getRpmHeader().getValue().clear();
             }
             else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-                // FIXUP
+                currentPackagingConfiguration.getDebianHeader().getValue().clear();
             }
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
@@ -332,7 +332,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     currentPackagingConfiguration.getRpmHeader().add(infoElement);
                 }
                 else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-                    // FIXUP
+                    currentPackagingConfiguration.getDebianHeader().add(infoElement);
                 }
             }
         }
