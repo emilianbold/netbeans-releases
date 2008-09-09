@@ -84,7 +84,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -142,7 +141,9 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_FIELD = "field"; //NOI18N
     static final String FIELD_METHOD = "method"; //NOI18N
     static final String FIELD_INCLUDE = "include"; //NOI18N
-    static final String FIELD_IDENTIFIER = "identifier"; //NOI18N
+    static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
+    static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
+
     static final String FIELD_VAR = "var"; //NOI18N
 
     public boolean isIndexable(ParserFile file) {
@@ -214,7 +215,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.5.3"; // NOI18N
+        return "0.5.4"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -280,18 +281,36 @@ public class PHPIndexer implements Indexer {
         private class IndexerVisitor extends DefaultTreePathVisitor{
             private List<IndexDocument> documents;
             private IndexDocument defaultDocument;
+            private final IndexDocument identifierDocument = factory.createDocument(10);
+            private Map<String, IdentifierSignature> identifiers = new HashMap<String, IdentifierSignature>();
 
             public IndexerVisitor(List<IndexDocument> documents, IndexDocument defaultDocument) {
                 this.documents = documents;
                 this.defaultDocument = defaultDocument;
+                documents.add(identifierDocument);
             }
-
+            public void addIdentifierPairs() {
+                Collection<IdentifierSignature> values = identifiers.values();
+                for (IdentifierSignature idSign : values) {
+                    identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true);
+                }
+            }            
+            @Override
+            public void visit(Identifier node) {
+                IdentifierSignature.add(node, identifiers);
+                super.visit(node);
+            }
             @Override
             public void visit(ClassDeclaration node) {
                 // create a new document for each class
                 IndexDocument classDocument = factory.createDocument(10);
                 documents.add(classDocument);
                 indexClass((ClassDeclaration) node, classDocument);
+                List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
+                IdentifierSignature.add(node, idSignatures);
+                for (IdentifierSignature idSign : idSignatures) {
+                    identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true);
+                }
                 super.visit(node);
             }
 
@@ -316,6 +335,11 @@ public class PHPIndexer implements Indexer {
                 IndexDocument ifaceDocument = factory.createDocument(10);
                 documents.add(ifaceDocument);
                 indexInterface((InterfaceDeclaration) node, ifaceDocument);
+                List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
+                IdentifierSignature.add(node, idSignatures);
+                for (IdentifierSignature idSign : idSignatures) {
+                    identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true);
+                }
                 super.visit(node);
             }
         }
@@ -326,7 +350,9 @@ public class PHPIndexer implements Indexer {
             documents.add(defaultDocument);
 
             root = result.getProgram();
-            root.accept(new IndexerVisitor(documents, defaultDocument));
+            IndexerVisitor indexerVisitor = new IndexerVisitor(documents, defaultDocument);
+            root.accept(indexerVisitor);
+            indexerVisitor.addIdentifierPairs();
 
             String processedFileURL = null;
 
@@ -375,20 +401,6 @@ public class PHPIndexer implements Indexer {
             }
             
             defaultDocument.addPair(FIELD_INCLUDE, includes.toString(), false);
-            final IndexDocument idDocument = factory.createDocument(10);
-            documents.add(idDocument);            
-            DefaultVisitor visitor = new DefaultVisitor() {
-                @Override
-                public void visit(Identifier identifier) {
-                    StringBuilder idSignature = new StringBuilder();
-                    idSignature.append(identifier.getName().toLowerCase() + ";"); //NOI18N
-                    idSignature.append(identifier.getName() + ";"); //NOI18N
-                    idSignature.append(identifier.getStartOffset() + ";"); //NOI18N
-                    idDocument.addPair(FIELD_IDENTIFIER, idSignature.toString(), true);                    
-                    super.visit(identifier);                    
-                }                
-            };
-            visitor.scan(root);
         }
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {

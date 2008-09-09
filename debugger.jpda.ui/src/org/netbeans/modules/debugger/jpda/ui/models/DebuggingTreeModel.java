@@ -110,6 +110,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+
+    private static RequestProcessor RP = new RequestProcessor("Debugging Threads Refresh", 1);
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -370,9 +372,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         }
         
         private RequestProcessor.Task createTask() {
-            RequestProcessor.Task task =
-                new RequestProcessor("Debugging Threads Refresh", 1).create(
-                                new RefreshTree());
+            RequestProcessor.Task task = RP.create(new RefreshTree());
             return task;
         }
         
@@ -435,9 +435,11 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     }
 
     
-    private void fireThreadStateChanged (Object node) {
-        if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false) ||
-            !preferences.getBoolean(SHOW_SYSTEM_THREADS, false)) {
+    private void fireThreadStateChanged (JPDAThread node) {
+        if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false)) {
+            fireNodeChanged(ROOT);
+        } else if (!preferences.getBoolean(SHOW_SYSTEM_THREADS, false)
+                   && isSystem(node)) {
 
             fireNodeChanged(ROOT);
         }
@@ -478,7 +480,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             if (t != null) {
                 synchronized (this) {
                     if (task == null) {
-                        task = RequestProcessor.getDefault().create(new Refresher());
+                        task = RP.create(new Refresher());
                     }
                     task.schedule(200);
                 }

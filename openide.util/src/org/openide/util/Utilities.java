@@ -200,10 +200,6 @@ public final class Utilities {
 
     private static ActiveQueue activeReferenceQueue;
 
-    /** reference to map that maps allowed key names to their values (String, Integer)
-    and reference to map for mapping of values to their names */
-    private static Reference<Object> namesAndValues;
-
     /** The operating system on which NetBeans runs*/
     private static int operatingSystem = -1;
     private static final String[] keywords = new String[] {
@@ -237,9 +233,6 @@ public final class Utilities {
     //
     // Support for work with actions
     //
-
-    /** type of Class or of an Exception thrown */
-    private static Object actionClassForPopupMenu;
 
     /** the found actionsGlobalContext */
     private static Lookup global;
@@ -1576,40 +1569,40 @@ widthcheck:  {
     // Key conversions
     //
 
-    /** Initialization of the names and values
-    * @return array of two hashmaps first maps
-    *   allowed key names to their values (String, Integer)
-    *  and second
-    * hashtable for mapping of values to their names (Integer, String)
-    */
-    private static synchronized HashMap[] initNameAndValues() {
-        if (namesAndValues != null) {
-            HashMap[] arr = (HashMap[]) namesAndValues.get();
+    private static final class NamesAndValues {
+        final Map<Integer,String> keyToString;
+        final Map<String,Integer> stringToKey;
+        NamesAndValues(Map<Integer,String> keyToString, Map<String,Integer> stringToKey) {
+            this.keyToString = keyToString;
+            this.stringToKey = stringToKey;
+        }
+    }
 
-            if (arr != null) {
-                return arr;
+    private static Reference<NamesAndValues> namesAndValues;
+
+    private static synchronized NamesAndValues initNameAndValues() {
+        if (namesAndValues != null) {
+            NamesAndValues nav = namesAndValues.get();
+            if (nav != null) {
+                return nav;
             }
         }
 
         Field[] fields = KeyEvent.class.getDeclaredFields();
 
-        HashMap<String,Integer> names = new HashMap<String,Integer>(((fields.length * 4) / 3) + 5, 0.75f);
-        HashMap<Integer,String> values = new HashMap<Integer,String>(((fields.length * 4) / 3) + 5, 0.75f);
+        Map<String,Integer> names = new HashMap<String,Integer>(fields.length * 4 / 3 + 5, 0.75f);
+        Map<Integer,String> values = new HashMap<Integer,String>(fields.length * 4 / 3 + 5, 0.75f);
 
-        for (int i = 0; i < fields.length; i++) {
-            if (Modifier.isStatic(fields[i].getModifiers())) {
-                String name = fields[i].getName();
-
+        for (Field f : fields) {
+            if (Modifier.isStatic(f.getModifiers())) {
+                String name = f.getName();
                 if (name.startsWith("VK_")) { // NOI18N
-
                     // exclude VK
                     name = name.substring(3);
-
                     try {
-                        int numb = fields[i].getInt(null);
-                        Integer value = new Integer(numb);
-                        names.put(name, value);
-                        values.put(value, name);
+                        int numb = f.getInt(null);
+                        names.put(name, numb);
+                        values.put(numb, name);
                     } catch (IllegalArgumentException ex) {
                     } catch (IllegalAccessException ex) {
                     }
@@ -1618,21 +1611,15 @@ widthcheck:  {
         }
 
         if (names.get("CONTEXT_MENU") == null) { // NOI18N
-
-            Integer n = new Integer(0x20C);
-            names.put("CONTEXT_MENU", n); // NOI18N
-            values.put(n, "CONTEXT_MENU"); // NOI18N
-
-            n = new Integer(0x20D);
-            names.put("WINDOWS", n); // NOI18N
-            values.put(n, "WINDOWS"); // NOI18N
+            names.put("CONTEXT_MENU", 0x20C); // NOI18N
+            values.put(0x20C, "CONTEXT_MENU"); // NOI18N
+            names.put("WINDOWS", 0x20D); // NOI18N
+            values.put(0x20D, "WINDOWS"); // NOI18N
         }
 
-        HashMap[] arr = { names, values };
-
-        namesAndValues = new SoftReference<Object>(arr);
-
-        return arr;
+        NamesAndValues nav = new NamesAndValues(values, names);
+        namesAndValues = new SoftReference<NamesAndValues>(nav);
+        return nav;
     }
 
     /** Converts a Swing key stroke descriptor to a familiar Emacs-like name.
@@ -1648,9 +1635,7 @@ widthcheck:  {
             sb.append('-');
         }
 
-        HashMap[] namesAndValues = initNameAndValues();
-
-        String c = (String) namesAndValues[1].get(Integer.valueOf(stroke.getKeyCode()));
+        String c = initNameAndValues().keyToString.get(Integer.valueOf(stroke.getKeyCode()));
 
         if (c == null) {
             sb.append(stroke.getKeyChar());
@@ -1705,7 +1690,7 @@ widthcheck:  {
 
         int needed = 0;
 
-        HashMap names = initNameAndValues()[0];
+        Map<String,Integer> names = initNameAndValues().stringToKey;
 
         int lastModif = -1;
 
@@ -1730,7 +1715,7 @@ widthcheck:  {
                     lastModif = readModifiers(el);
                 } else {
                     // last text must be the key code
-                    Integer i = (Integer) names.get(el);
+                    Integer i = names.get(el);
                     boolean wildcard = (needed & CTRL_WILDCARD_MASK) != 0;
 
                     //Strip out the explicit mask - KeyStroke won't know
@@ -1746,7 +1731,7 @@ widthcheck:  {
                             needed |= Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
                             if (isMac()) {
-                                if (!usableKeyOnMac(i.intValue(), needed)) {
+                                if (!usableKeyOnMac(i, needed)) {
                                     needed &= ~Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
                                     needed |= KeyEvent.CTRL_MASK;
                                 }
@@ -1761,7 +1746,7 @@ widthcheck:  {
                             }
                         }
 
-                        return KeyStroke.getKeyStroke(i.intValue(), needed);
+                        return KeyStroke.getKeyStroke(i, needed);
                     } else {
                         return null;
                     }
@@ -2109,11 +2094,11 @@ widthcheck:  {
 
         chooser.rescanCurrentDirectory();
 
-        final int[] retValue = new int[] { javax.swing.JFileChooser.CANCEL_OPTION };
+        final int[] retValue = {javax.swing.JFileChooser.CANCEL_OPTION};
 
         java.awt.event.ActionListener l = new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent ev) {
-                    if (ev.getActionCommand() == javax.swing.JFileChooser.APPROVE_SELECTION) {
+                    if (javax.swing.JFileChooser.APPROVE_SELECTION.equals(ev.getActionCommand())) {
                         retValue[0] = javax.swing.JFileChooser.APPROVE_OPTION;
                     }
 

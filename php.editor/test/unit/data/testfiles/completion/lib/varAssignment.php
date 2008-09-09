@@ -141,6 +141,8 @@ function mytest() {
         $fncVarA2 = $fncVarC1->cCreateA()->aCreateC()->cCreateA();
         $fncVarA2->aCreateA();//test 16
     }
+    $unknown->aCreateA();
+    $unknown->aCreateC();
     $clsVarCErr = $clsVarC;
     $clsVarCErr->//test 17
 }

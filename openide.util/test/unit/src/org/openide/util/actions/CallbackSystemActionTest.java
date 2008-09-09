@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -191,6 +191,41 @@ public class CallbackSystemActionTest extends NbTestCase {
         assertGC("We are able to clear global action", ref);
         assertGC("Even our action", ref2);
         assertGC("Even our component", ref3);
+    }
+    
+    // http://www.netbeans.org/nonav/issues/show_bug.cgi?id=144684
+    public void testConcurrentModificationException () {
+        class MyAction extends AbstractAction {
+            public int cntEnabled;
+            public int cntPerformed;
+            
+            public boolean isEnabled() {
+                cntEnabled++;
+                return true;
+            }
+            
+            public void actionPerformed(ActionEvent ev) {
+                cntPerformed++;
+            }
+        }
+        MyAction myAction = new MyAction();
+
+        
+        final ActionMap other = new ActionMap();
+        ActionMap tc = new ActionMap() {
+            @Override
+            public Action get(Object key) {
+                ActionsInfraHid.setActionMaps(other, new ActionMap ());
+                return super.get (key);
+            }
+        };
+        ActionsInfraHid.setActionMaps(other, new ActionMap ());
+        SurviveFocusChgCallbackAction a = SurviveFocusChgCallbackAction.get (SurviveFocusChgCallbackAction.class);
+        assertTrue(a.isEnabled());
+        other.put(a.getActionMapKey(), myAction);
+        ActionsInfraHid.setActionMaps(tc, new ActionMap (), new ActionMap (), new ActionMap ());
+        assertTrue(a.isEnabled());
+        
     }
     
     /** Make sure that the performer system works and controls enablement.

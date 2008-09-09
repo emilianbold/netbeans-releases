@@ -183,23 +183,29 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
             }
         }
         if (!toAdd.isEmpty() || !toDelete.isEmpty()) {
-            svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
-                    Collection<DesignComponent> components = new HashSet<DesignComponent>(svgForm.getComponents());
 
-                    for (DesignComponent component : components) {
-                        if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
-                            String id = (String) component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
-                            if (toDelete.contains(id)) {
-                                ArraySupport.remove(svgForm, SVGFormCD.PROP_COMPONENTS, component);
-                                removeSVGButtonEventSource(component, svgForm);
-                                svgForm.getDocument().deleteComponent(component);
+                    svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                        public void run() {
+                            DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
+                            Collection<DesignComponent> components = new HashSet<DesignComponent>(svgForm.getComponents());
+
+                            for (DesignComponent component : components) {
+                                if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
+                                    String id = (String) component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
+                                    if (toDelete.contains(id)) {
+                                        ArraySupport.remove(svgForm, SVGFormCD.PROP_COMPONENTS, component);
+                                        removeSVGButtonEventSource(component, svgForm);
+                                        svgForm.getDocument().deleteComponent(component);
+                                    }
+                                }
                             }
+                            addComponents(toAdd, svgForm);
                         }
-                    }
-                    addComponents(toAdd, svgForm);
+                    });
                 }
             });
             final DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(svgForm.getDocument());

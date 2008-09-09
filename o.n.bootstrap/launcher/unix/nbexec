@@ -183,18 +183,19 @@ args="--userdir \"${userdir}\" $args"
 append_jars_to_cp() {
     dir="$1"
     subpath="$2"
-    if echo "$paths" | fgrep -v "$subpath" > /dev/null ; then
-        for ex in jar zip ; do
-            if [ "`echo "${dir}"/*.$ex`" != "${dir}/*.$ex" ] ; then
-                if [ ! -z "$paths" ] ; then paths="$paths:" ; fi
-                paths="$paths$subpath"
-                for x in "${dir}"/*.$ex ; do
+    for ex in jar zip ; do
+        if [ "`echo "${dir}"/*.$ex`" != "${dir}/*.$ex" ] ; then
+            for x in "${dir}"/*.$ex ; do
+                subx=${x:${#dir}}
+                if echo "$paths" | fgrep -v "$subpath$subx" > /dev/null ; then
                     if [ ! -z "$cp" ] ; then cp="$cp:" ; fi
                     cp="$cp$x"
-                done
-            fi
-        done
-    fi
+                    if [ ! -z "$paths" ] ; then paths="$paths:" ; fi
+                    paths="$paths$subpath$subx"
+                fi
+            done
+        fi
+    done
 }
 
 construct_cp() {
