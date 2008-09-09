@@ -176,13 +176,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             requiredToolsPanel.setVisible(false); // Required Tools panel!
         }
         cbDevHost.removeItemListener(this);
+
         if (serverUpdateCache != null) {
             log.fine("TP.initialize: Initializing from serverUpdateCache");
             cbDevHost.removeAllItems();
             for (String key : serverUpdateCache.getHostKeyList()) {
                 cbDevHost.addItem(key);
             }
-            cbDevHost.setSelectedIndex(serverUpdateCache.getDefaultIndex());
+            cbDevHost.setSelectedIndex( serverUpdateCache.getDefaultIndex());
             log.fine("TP.initialize: Done");
         } else if (serverList != null) {
             log.fine("TP.initialize: Initializing from serverList");
@@ -198,8 +199,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbDevHost.setSelectedIndex(0);
             log.fine("TP.initialize: Done");
         }
+        if (model.getSelectedDevelopmentHost() != null) {
+            cbDevHost.setSelectedItem(model.getSelectedDevelopmentHost());
+        }
         cbDevHost.setRenderer(new MyDevHostListCellRenderer());
         cbDevHost.addItemListener(this);
+        cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
+        btEditDevHost.setEnabled(model.getEnableDevelopmentHostChange());
         hkey = (String) cbDevHost.getSelectedItem();
 
         btBaseDirectory.setEnabled(false);
@@ -303,6 +309,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
             serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
             hkey = (String) cbDevHost.getSelectedItem();
+            model.setSelectedDevelopmentHost(hkey);
             update(true);
         } else {
             update(false);            
