@@ -168,12 +168,12 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         if(isProjectSelection) {
             DefaultListModel model = (DefaultListModel) projectList.getModel();
             if (model.getSize() < 1) {
-                AbstractPanel.setErrorMessage(wizard, "MSG_NoProjects");
+                AbstractPanel.setInfoMessage(wizard, "MSG_NoProjects");
                 return false;
             }
         } else {
             if(wadlTextField.getText() == null || wadlTextField.getText().trim().equals("")) {
-                AbstractPanel.setErrorMessage(wizard, "MSG_NoWadlFile");
+                AbstractPanel.setInfoMessage(wizard, "MSG_NoWadlFile");
                 return false;
             } else {
                 String fileName = wadlTextField.getText().trim();
@@ -185,7 +185,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             }
         }
         if(createJmakiCheckBox.isSelected() && !isJmakiEnabled(project)) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_NoJmaki");
+            AbstractPanel.setInfoMessage(wizard, "MSG_NoJmaki");
             return false;
         }
         AbstractPanel.clearErrorMessage(wizard);

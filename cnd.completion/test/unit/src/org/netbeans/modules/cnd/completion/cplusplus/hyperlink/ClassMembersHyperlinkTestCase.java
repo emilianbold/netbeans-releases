@@ -602,6 +602,10 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz145077.cc", 128, 17, "iz145077.cc", 47, 9);
         performTest("iz145077.cc", 43, 50, "iz145077.cc", 33, 9);
         performTest("iz145077.cc", 44, 60, "iz145077.cc", 112, 5);
+        performTest("iz145077.cc", 163, 30, "iz145077.cc", 142, 9);
+        performTest("iz145077.cc", 172, 22, "iz145077.cc", 142, 9);
+        performTest("iz145077.cc", 164, 30, "iz145077.cc", 143, 9);
+        performTest("iz145077.cc", 173, 22, "iz145077.cc", 143, 9);
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

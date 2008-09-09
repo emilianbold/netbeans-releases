@@ -113,36 +113,60 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         }
     }
 
-    public static void clearErrorMessage(WizardDescriptor wizard) {
-        setErrorMessage(wizard, (String) null);
+    public static void clearMessage(WizardDescriptor wizard, MessageType type) {
+        setMessage(wizard, type, (String) null);
     }
     
-    public static void setErrorMessage(WizardDescriptor wizard, Throwable t) {
+    public static void clearErrorMessage(WizardDescriptor wizard) {
+        setMessage(wizard, MessageType.ERROR, (String) null);
+    }
+    
+    public static void clearInfoMessage(WizardDescriptor wizard) {
+        setMessage(wizard, MessageType.INFO, (String) null);
+    }
+    
+    public static void setMessage(WizardDescriptor wizard, Throwable t, MessageType type) {
         String message = "";
         if (t != null) {
             message = (t.getLocalizedMessage());
         }
-        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+        wizard.putProperty(type.getName(), message);
     }
     
-    static void setErrorMessage(WizardDescriptor wizard, String key, String... params) {
+    static void setMessage(WizardDescriptor wizard, MessageType type, String key, String... params) {
         String message = "";
         if (key != null) {
-            message = (NbBundle.getMessage(EntitySelectionPanel.class, key, params));
+            message = (NbBundle.getMessage(AbstractPanel.class, key, params));
         }
-        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+        wizard.putProperty(type.getName(), message);
+    }
+    
+    public static void setMessage(WizardDescriptor wizard, MessageType type, String key) {
+        String message = "";
+        if (key != null) {
+            message = (NbBundle.getMessage(AbstractPanel.class, key));
+        }
+        wizard.putProperty(type.getName(), message);
+    }
+
+    protected void setMessage(MessageType type, java.lang.String key) {
+        setMessage(wizardDescriptor, type, key);
     }
     
     public static void setErrorMessage(WizardDescriptor wizard, String key) {
-        String message = "";
-        if (key != null) {
-            message = (NbBundle.getMessage(EntitySelectionPanel.class, key));
-        }
-        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+        setMessage(wizard, MessageType.ERROR, key);
     }
 
     protected void setErrorMessage(java.lang.String key) {
-        setErrorMessage(wizardDescriptor, key);
+        setMessage(wizardDescriptor, MessageType.ERROR, key);
+    }
+    
+    public static void setInfoMessage(WizardDescriptor wizard, String key) {
+        setMessage(wizard, MessageType.INFO, key);
+    }
+
+    protected void setInfoMessage(java.lang.String key) {
+        setMessage(wizardDescriptor, MessageType.INFO, key);
     }
 
     public void stateChanged(javax.swing.event.ChangeEvent e) {
@@ -155,5 +179,21 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
     
     public String getName() {
         return panelName;
+    }
+    
+    public enum MessageType {
+        INFO(WizardDescriptor.PROP_INFO_MESSAGE),
+        WARNING(WizardDescriptor.PROP_WARNING_MESSAGE),
+        ERROR(WizardDescriptor.PROP_ERROR_MESSAGE);
+                
+        private String name;
+        
+        MessageType(String name) {
+            this.name = name;
+        }
+        
+        public String getName() {
+            return this.name;
+        }
     }
 }

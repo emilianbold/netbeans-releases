@@ -49,6 +49,7 @@ import org.netbeans.modules.subversion.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -117,9 +118,16 @@ public class UpdateAction extends ContextAction {
                
         File[] roots = ctx.getRootFiles();
         
-        final SVNUrl repositoryUrl; 
+        SVNUrl repositoryUrl = null;
         try {
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+            for (File root : roots) {
+                repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+                if(repositoryUrl != null) {
+                    break;
+                } else {
+                    Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{root});
+                }
+            }
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
