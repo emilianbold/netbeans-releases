@@ -4,10 +4,11 @@
 select customer.| from customers.customer
 
 --
-customers
-  customer
-    customer_id
-accounting*
-  invoice
-    invoice_id
-    customer_id
+<unknown>
+  customers
+    customer
+      customer_id
+  accounting*
+    invoice
+      invoice_id
+      customer_id

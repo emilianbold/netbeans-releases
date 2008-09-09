@@ -3,6 +3,7 @@
 select c|
 
 --
-<no-schema>
-  customer
-  invoice
+<unknown>
+  <no-schema>
+    customer
+    invoice

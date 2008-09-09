@@ -4,13 +4,14 @@
 select customer.cus| from customers.customer
 
 --
-customers*
-  customer
-    customer_id
-    address_line
-accounting
-  invoice
-    invoice_id
-    customer_id
-  customer
-    name_surname
+<unknown>
+  customers*
+    customer
+      customer_id
+      address_line
+  accounting
+    invoice
+      invoice_id
+      customer_id
+    customer
+      name_surname

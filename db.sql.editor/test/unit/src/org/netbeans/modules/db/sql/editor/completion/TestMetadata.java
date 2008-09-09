@@ -41,7 +41,7 @@ package org.netbeans.modules.db.sql.editor.completion;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,8 +64,8 @@ import org.openide.util.Utilities;
  */
 public class TestMetadata extends MetadataImplementation {
 
-    private final TestCatalog catalogImpl = new TestCatalog();
-    private final Catalog defaultCatalog = catalogImpl.getCatalog();
+    private final Map<String, Catalog> catalogs = new TreeMap<String, Catalog>(new NullStringComparator());
+    private Catalog defaultCatalog;
 
     public static Metadata create(List<String> spec) {
         return new TestMetadata(spec).getMetadata();
@@ -77,12 +77,22 @@ public class TestMetadata extends MetadataImplementation {
 
     private TestMetadata(List<String> spec) {
         parse(spec);
-        if (catalogImpl.defaultSchema == null) {
+        if (defaultCatalog == null) {
             throw new IllegalArgumentException();
+        }
+        Schema defaultSchema = defaultCatalog.getDefaultSchema();
+        if (defaultSchema != null) {
+            if (!defaultCatalog.getSchemas().contains(defaultSchema)) {
+                Schema syntheticSchema = defaultCatalog.getSyntheticSchema();
+                if (syntheticSchema != null && syntheticSchema != defaultSchema) {
+                    throw new IllegalArgumentException();
+                }
+            }
         }
     }
 
     private void parse(List<String> spec) {
+        TestCatalog catalogImpl = null;
         TestSchema schemaImpl = null;
         TestTable tableImpl = null;
         for (String line : spec) {
@@ -94,21 +104,38 @@ public class TestMetadata extends MetadataImplementation {
                 continue;
             }
             String trimmed = line.trim();
+            boolean _default = false;
+            if (trimmed.endsWith("*")) {
+                trimmed = trimmed.replace("*", "");
+                _default = true;
+            }
             switch (count) {
                 case 0:
-                    boolean defaultSchema = false;
+                    if (trimmed.equals("<unknown>")) {
+                        _default = true;
+                        trimmed = null;
+                    }
+                    catalogImpl = new TestCatalog(trimmed, _default);
+                    Catalog catalog = catalogImpl.getCatalog();
+                    if (catalogs.get(trimmed) != null) {
+                        throw new IllegalArgumentException(line);
+                    }
+                    catalogs.put(trimmed, catalog);
+                    if (_default) {
+                        if (defaultCatalog != null) {
+                            throw new IllegalArgumentException(line);
+                        }
+                        defaultCatalog = catalog;
+                    }
+                    break;
+                case 2:
                     boolean synthetic = false;
                     if (trimmed.equals("<no-schema>")) {
                         trimmed = null;
-                        defaultSchema = true;
+                        _default = true;
                         synthetic = true;
-                    } else {
-                        if (trimmed.endsWith("*")) {
-                            trimmed = trimmed.replace("*", "");
-                            defaultSchema = true;
-                        }
                     }
-                    schemaImpl = new TestSchema(catalogImpl, trimmed, defaultSchema, synthetic);
+                    schemaImpl = new TestSchema(catalogImpl, trimmed, _default, synthetic);
                     Schema schema = schemaImpl.getSchema();
                     if (synthetic) {
                         if (catalogImpl.syntheticSchema != null) {
@@ -116,23 +143,26 @@ public class TestMetadata extends MetadataImplementation {
                         }
                         catalogImpl.syntheticSchema = schema;
                     } else {
+                        if (catalogImpl.schemas.get(trimmed) != null) {
+                            throw new IllegalArgumentException(line);
+                        }
                         catalogImpl.schemas.put(trimmed, schema);
                     }
-                    if (defaultSchema) {
-                        if (catalogImpl.defaultSchema != null) {
+                    if (_default) {
+                        if (defaultCatalog != catalogImpl.getCatalog() || catalogImpl.defaultSchema != null) {
                             throw new IllegalArgumentException(line);
                         }
                         catalogImpl.defaultSchema = schema;
                     }
                     break;
-                case 2:
+                case 4:
                     if (schemaImpl == null) {
                         throw new IllegalArgumentException(line);
                     }
                     tableImpl = new TestTable(schemaImpl, trimmed);
                     schemaImpl.tables.put(trimmed, tableImpl.getTable());
                     break;
-                case 4:
+                case 6:
                     if (schemaImpl == null || tableImpl == null) {
                         throw new IllegalArgumentException(line);
                     }
@@ -149,14 +179,11 @@ public class TestMetadata extends MetadataImplementation {
     }
 
     public Collection<Catalog> getCatalogs() {
-        return Collections.singleton(defaultCatalog);
+        return catalogs.values();
     }
 
     public Catalog getCatalog(String name) {
-        if (Utilities.compareObjects(name, defaultCatalog.getName())) {
-            return defaultCatalog;
-        }
-        return null;
+        return catalogs.get(name);
     }
 
     public void refresh() {
@@ -164,16 +191,23 @@ public class TestMetadata extends MetadataImplementation {
 
     static final class TestCatalog extends CatalogImplementation {
 
+        private final String name;
+        private final boolean _default;
         Map<String, Schema> schemas = new TreeMap<String, Schema>();
         Schema defaultSchema;
         Schema syntheticSchema;
 
+        public TestCatalog(String name, boolean _default) {
+            this.name = name;
+            this._default = _default;
+        }
+
         public String getName() {
-            return null;
+            return name;
         }
 
         public boolean isDefault() {
-            return true;
+            return _default;
         }
 
         public Schema getDefaultSchema() {
@@ -277,6 +311,25 @@ public class TestMetadata extends MetadataImplementation {
 
         public String getName() {
             return name;
+        }
+    }
+
+    private static final class NullStringComparator implements Comparator<String> {
+
+        public int compare(String string1, String string2) {
+            if (string1 == null) {
+                if (string2 == null) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            } else {
+                if (string2 == null) {
+                    return 1;
+                } else {
+                    return string1.compareTo(string2);
+                }
+            }
         }
     }
 }

@@ -4,13 +4,14 @@
 select * from customers.customer, customizations.customization, discount_code cus where cus|
 
 --
-customers*
-  customer
-    customer_id
-    address_line
-  discount_code
-    id
-customizations
-  customization
-    invoice_id
-    customer_id
+<unknown>
+  customers*
+    customer
+      customer_id
+      address_line
+    discount_code
+      id
+  customizations
+    customization
+      invoice_id
+      customer_id
