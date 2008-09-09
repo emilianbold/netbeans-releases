@@ -65,6 +65,9 @@ class Plugin
   end
 
   def Plugin.method_added(sym)
+    # can't just redefine and give an alias to the uninstall method since
+    # commands/plugin can't be required here; it executes some code that
+    # will throw an exception when executed at this point
     if :uninstall == sym
       remove_method :uninstall
     end
