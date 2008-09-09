@@ -63,7 +63,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
     
     /** All per-configuration properties to be stored. */
     private static final String[] CONFIG_PROPS = {
-        MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RUN_WORK_DIR, RAKE_ARGS, JRUBY_PROPS, PLATFORM_ACTIVE
+        MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RUN_WORK_DIR, RAKE_ARGS, JVM_ARGS, PLATFORM_ACTIVE
     };
 
     /** Private per-configuration properties. */

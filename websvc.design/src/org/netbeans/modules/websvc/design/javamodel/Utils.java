@@ -467,7 +467,7 @@ public class Utils {
             // create a sample SOAP request using SAAJ API
             messageFactory = MessageFactory.newInstance();
         } catch (SOAPException ex) {
-            Logger.getLogger(Utils.class.getName()).log(Level.WARNING, 
+            Logger.getLogger(Utils.class.getName()).log(Level.FINE, 
                     NbBundle.getMessage(Utils.class, "MSG_SAAJ_PROBLEM"), //NOI18N
                     ex);
         }
@@ -537,7 +537,7 @@ public class Utils {
             // create a sample SOAP request using SAAJ API
             messageFactory = MessageFactory.newInstance();
         } catch (SOAPException ex) {
-            Logger.getLogger(Utils.class.getName()).log(Level.WARNING, 
+            Logger.getLogger(Utils.class.getName()).log(Level.FINE, 
                     NbBundle.getMessage(Utils.class, "MSG_SAAJ_PROBLEM"), //NOI18N
                     ex);
         }

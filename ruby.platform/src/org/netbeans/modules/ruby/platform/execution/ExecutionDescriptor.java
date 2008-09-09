@@ -74,7 +74,7 @@ public class ExecutionDescriptor {
     private Map<String, String> additionalEnv;
     private String[] additionalArgs;
     private String initialArgs;
-    private String jrubyProps;
+    private String jvmArgs;
     private FileObject fileObject;
     private String classPath;
     boolean showProgress = true;
@@ -200,8 +200,8 @@ public class ExecutionDescriptor {
         return this;
     }
     
-    public ExecutionDescriptor jrubyProperties(final String jrubyProps) {
-        this.jrubyProps = jrubyProps;
+    public ExecutionDescriptor jvmArguments(final String jvmArgs) {
+        this.jvmArgs = jvmArgs;
         return this;
     }
 
@@ -283,9 +283,9 @@ public class ExecutionDescriptor {
         return initialArgs == null ? null : Utilities.parseParameters(initialArgs);
     }
     
-    /** Properties to be passed to the JVM running the JRuby process. */
-    public String[] getJRubyProps() {
-        return jrubyProps == null ? null : Utilities.parseParameters(jrubyProps);
+    /** Arguments to be passed to the JVM running the JRuby process. */
+    public String[] getJVMArguments() {
+        return jvmArgs == null ? null : Utilities.parseParameters(jvmArgs);
     }
     
     public File getPwd() {

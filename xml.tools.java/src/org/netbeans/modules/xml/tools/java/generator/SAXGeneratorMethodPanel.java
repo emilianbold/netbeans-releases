@@ -156,7 +156,17 @@ public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
         table = new MethodsTable();
         table.setModel(tableModel);        
         tableScrollPane.setViewportView(table);  //install it
-
+        
+        int height = table.getRowHeight();
+    
+        // Determine highest cell in the row
+        for (int c=0; c<table.getColumnCount(); c++) {
+            TableCellRenderer r = table.getCellRenderer(0, c);
+            Component comp = table.prepareRenderer(r, 0, c);
+            int h = comp.getPreferredSize().height;
+            height = Math.max(height, h);
+        }
+        table.setRowHeight(height);
         initAccessibility();
     }
     
