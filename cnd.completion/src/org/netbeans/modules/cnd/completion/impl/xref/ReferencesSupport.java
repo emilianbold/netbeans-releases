@@ -156,7 +156,7 @@ public final class ReferencesSupport {
     }
 
     public CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset) {
-        return findReferencedObject(csmFile, doc, offset, null);
+        return findReferencedObject(csmFile, doc, offset, null, null);
     }
 
     /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, BaseDocument baseDocument, int offset, Token<CppTokenId> token) {
@@ -164,7 +164,8 @@ public final class ReferencesSupport {
         return csmOwner;
     }
 
-    /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc, final int offset, Token<CppTokenId> jumpToken) {
+    /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc, 
+                          final int offset, Token<CppTokenId> jumpToken, FileReferencesContext fileReferencesContext) {
         CsmObject csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler if offset in include sring token
@@ -197,7 +198,7 @@ public final class ReferencesSupport {
             }
             csmItem = getReferencedObject(csmFile, key);
             if (csmItem == null) {
-                csmItem = findDeclaration(csmFile, doc, jumpToken, key);
+                csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
                 putReferencedObject(csmFile, key, csmItem);
             }
         }
@@ -211,10 +212,15 @@ public final class ReferencesSupport {
 
     public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
             Token tokenUnderOffset, final int offset) {
+        return findDeclaration(csmFile, doc, tokenUnderOffset, offset, null);
+    }
+
+    private static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
+            Token tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
         // fast check, if possible
         int[] idFunBlk = null;
         CsmObject csmItem = null;
-        CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset);
+        CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset, fileReferencesContext);
         // TODO: it would be great to check position in named element, but we don't
         // support this information yet, so
 
@@ -289,11 +295,11 @@ public final class ReferencesSupport {
             }
             // check but not for function call
             if (idFunBlk != null && idFunBlk.length != 3) {
-                csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.SMART_QUERY);
+                csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.SMART_QUERY, fileReferencesContext);
             }
         }
         // then full check if needed
-        csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY);
+        csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
         // if still null try macro info from file (IZ# 130897)
         if (csmItem == null) {
             List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
@@ -307,8 +313,8 @@ public final class ReferencesSupport {
         return csmItem;
     }
 
-    public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
-            Token<CppTokenId> tokenUnderOffset, final int offset, final QueryScope queryScope) {
+    private static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
+            Token<CppTokenId> tokenUnderOffset, final int offset, final QueryScope queryScope, FileReferencesContext fileReferencesContext) {
         assert csmFile != null;
         if (tokenUnderOffset == null && doc instanceof AbstractDocument) {
             ((AbstractDocument)doc).readLock();
@@ -325,7 +331,7 @@ public final class ReferencesSupport {
         CsmObject csmObject = null;
         // support for overloaded operators
         if (tokenUnderOffset.id() == CppTokenId.OPERATOR) {
-            CsmObject foundObject = CsmOffsetResolver.findObject(csmFile, offset);
+            CsmObject foundObject = CsmOffsetResolver.findObject(csmFile, offset, fileReferencesContext);
             csmObject = foundObject;
             if (CsmKindUtilities.isFunction(csmObject)) {
                 CsmFunction decl = null;
@@ -343,7 +349,7 @@ public final class ReferencesSupport {
         }
         if (csmObject == null) {
             // try with code completion engine
-            csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, queryScope), offset);
+            csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, queryScope, fileReferencesContext), offset);
         }
         return csmObject;
     }
@@ -392,7 +398,7 @@ public final class ReferencesSupport {
             BaseDocument doc = getRefDocument(ref);
             if (doc != null) {
                 Token token = getRefTokenIfPossible(ref);
-                target = findDeclaration(ref.getContainingFile(), doc, token, offset, QueryScope.LOCAL_QUERY);
+                target = findDeclaration(ref.getContainingFile(), doc, token, offset, QueryScope.LOCAL_QUERY, null);
                 setResolvedInfo(ref, target);
             }
         }
