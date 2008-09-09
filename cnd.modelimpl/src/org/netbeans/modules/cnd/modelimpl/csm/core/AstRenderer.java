@@ -697,8 +697,9 @@ public class AstRenderer {
 
                     EnumImpl ei = null;
                     
+                    CsmClassForwardDeclaration cfdi = null;
+                    
                     for (AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling()) {
-                        CsmClassForwardDeclaration cfdi = null;
                         switch (curr.getType()) {
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
