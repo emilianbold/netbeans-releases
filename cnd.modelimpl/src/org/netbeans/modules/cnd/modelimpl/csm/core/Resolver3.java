@@ -90,7 +90,7 @@ public class Resolver3 implements Resolver {
     private CsmNamespace containingNamespace;
     private CsmClass containingClass;
     private boolean contextFound = false;
-    
+
     private CsmNamespace getContainingNamespace() {
         if( ! contextFound ) {
             findContext();
@@ -175,6 +175,8 @@ public class Resolver3 implements Resolver {
                 }
                 if (definition != null){
                     orig = definition;
+                } else {
+                    break;
                 }
             } else if (CsmKindUtilities.isTypedef(orig)) {
                 CsmType t = ((CsmTypedef)orig).getType();
@@ -725,24 +727,31 @@ public class Resolver3 implements Resolver {
     
     private CsmObject resolveInBaseClasses(CsmClass cls, CharSequence name) {
         resolveInBaseClass = true;
-        CsmObject res = _resolveInBaseClasses(cls, name, new HashSet<CsmClass>());
+        CsmObject res = _resolveInBaseClasses(cls, name, new HashSet<CsmClass>(), 0);
         resolveInBaseClass = false;
         return res;
     }
     
-    private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CsmClass> antiLoop) {
+    private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CsmClass> antiLoop, int depth) {
+        if (depth == 50) {
+            // temporary work around for IZ#146522
+            return null;
+        }
         if( cls != null && cls.isValid()) {
-            for( CsmInheritance inh : cls.getBaseClasses() ) {
-                CsmClass base = getInheritanceClass(inh);
-                if (base != null && !antiLoop.contains(base)) {
-                    antiLoop.add(base);
-                    CsmObject result = resolveInClass(base, name);
-                    if( result != null ) {
-                        return result;
-                    }
-                    result = _resolveInBaseClasses(base, name, antiLoop);
-                    if( result != null ) {
-                        return result;
+            List<CsmClass> toAnalyze = getClassesContainers(cls);
+            for (CsmClass csmClass : toAnalyze) {
+                for (CsmInheritance inh : csmClass.getBaseClasses()) {
+                    CsmClass base = getInheritanceClass(inh);
+                    if (base != null && !antiLoop.contains(base)) {
+                        antiLoop.add(base);
+                        CsmObject result = resolveInClass(base, name);
+                        if (result != null) {
+                            return result;
+                        }
+                        result = _resolveInBaseClasses(base, name, antiLoop, depth + 1);
+                        if (result != null) {
+                            return result;
+                        }
                     }
                 }
             }
@@ -780,12 +789,29 @@ public class Resolver3 implements Resolver {
 
     private CsmObject resolveInClass(CsmClass cls, CharSequence name) {
         if( cls != null && cls.isValid()) {
-            String fqn = cls.getQualifiedName() + "::" + name; // NOI18N
-            return findClassifier(fqn);
+            List<CsmClass> classesContainers = getClassesContainers(cls);
+            for (CsmClass csmClass : classesContainers) {
+                String fqn = csmClass.getQualifiedName() + "::" + name; // NOI18N
+                CsmClassifier classifier = findClassifier(fqn);      
+                if (classifier != null) {
+                    return classifier;
+                }
+            }
+
         }
         return null;
     }
 
+    private List<CsmClass> getClassesContainers(CsmClass cls) {
+        List<CsmClass> out = new ArrayList<CsmClass>();
+        CsmScope container = cls;
+        while (CsmKindUtilities.isClass(container)) {
+            out.add((CsmClass)container);
+            container = ((CsmClass)container).getScope();
+        }
+        return out;
+    }
+    
     private boolean needClassifiers() {
         return (interestedKind & CLASSIFIER) == CLASSIFIER;
     }

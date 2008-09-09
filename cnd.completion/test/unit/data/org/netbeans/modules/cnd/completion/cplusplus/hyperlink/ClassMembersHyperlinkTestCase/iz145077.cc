@@ -135,4 +135,41 @@ bool CClipFile::getTimecode()
 void function(void* ) {
 
 }
+
+class BasicFileIO {
+  public:
+    struct ReadReq {
+        void*   cb;         // specifies callback mechanism
+        const void*         reqTag;     // specifies request-specific tag
+    };
+};
+
+class BufferTypes {
+public:
+    typedef BasicFileIO::ReadReq ReadReq;
+};
+
+class IntBufferTypes : public BufferTypes {
+public:
+    class PendingReq {
+    private:
+        const void*   m_readCb;   // specifies callback mechanism
+        const void*         m_readTag;  // specifies request-specific tag
+
+
+    public:     // methods
+        void workingSet(const ReadReq& req)
+        {
+            m_readCb = &req.cb;     // ide says ok
+            m_readTag = req.reqTag; // ide says ok
+        }
+        void brokenSet(const ReadReq&);
+    };
+};
+
+void IntBufferTypes::PendingReq::brokenSet(const ReadReq& req)
+{
+    m_readCb = &req.cb;     // ide says cb can't be resolved
+    m_readTag = req.reqTag; // ide says reqTag can't be resolved
+}
 }

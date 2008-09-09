@@ -44,9 +44,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
@@ -96,10 +98,15 @@ public class IterateSelectAction extends WidgetAction.Adapter
         List < Widget > widgets = getAllSelectableWidgets(widget);
         Collections.sort(widgets, new WidgetLocationComparator());
         
+        ObjectScene scene = (ObjectScene)widget.getScene();
+        Set selectedObjects = scene.getSelectedObjects();
+
         for(int index = widgets.size() - 1; index >= 0; index--)
         {
             Widget curWidget = widgets.get(index);
-            if(curWidget != null)
+            
+            Object curObj = scene.findObject(curWidget);
+            if(selectedObjects.contains(curObj) == true)
             {
                 if(curWidget.getState().isSelected() == true)
                 {
@@ -127,12 +134,16 @@ public class IterateSelectAction extends WidgetAction.Adapter
         List < Widget > widgets = getAllSelectableWidgets(widget);
         Collections.sort(widgets, new WidgetLocationComparator());
         
+        ObjectScene scene = (ObjectScene)widget.getScene();
+        Set selectedObjects = scene.getSelectedObjects();
+
         for(int index = 0; index < widgets.size(); index++)
         {
             Widget curWidget = widgets.get(index);
             if(curWidget != null)
             {
-                if(curWidget.getState().isSelected() == true)
+                Object curObj = scene.findObject(curWidget);
+                if(selectedObjects.contains(curObj) == true)
                 {
                     if(index > 0)
                     {

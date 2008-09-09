@@ -188,6 +188,18 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
             "smart_headers_simple_1_multy", "smart_headers_simple_1.h", 4, true);
     }
 
+    public void testMixed_1() throws Exception {
+        performTrivialTest(new String[] {
+                "mixed_c.c",
+                "mixed_cpp.cc",
+            }, 
+            "mixed_1", "mixed_header.h", 2, true);
+    }
+
+    public void testElifElse() throws Exception {
+        performTrivialTest("elif_else_simple.cc", "elif_else_simple.h", 5, true);
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILURES
     

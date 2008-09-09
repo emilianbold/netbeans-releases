@@ -38,120 +38,41 @@
  */
 package org.netbeans.modules.websvc.saas.services.yahoo.resources;
 
-import com.sun.tools.xjc.XJC2Task;
 import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
+import java.util.ArrayList;
+import java.util.List;
 import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+import org.netbeans.modules.websvc.saas.kit.SchemaTest;
 
 /**
  *
  * @author lukas
  */
-public class NewsSearchResponseSchemaTest extends NbTestCase {
+public class NewsSearchResponseSchemaTest extends SchemaTest {
 
-    private static final Logger LOG = Logger.getLogger(NewsSearchResponseSchemaTest.class.getName());
-    private static String resourceName = "/org/netbeans/modules/websvc/saas/services/yahoo/resources/NewsSearchResponse.xsd"; //NOI18N
-    private static Schema schema;
-    private File file;
-
-
-    static {
-        // create a SchemaFactory capable of understanding WXS schemas
-        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        try {
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        } catch (SAXNotRecognizedException ex) {
-            Logger.getLogger(NewsSearchResponseSchemaTest.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SAXNotSupportedException ex) {
-            Logger.getLogger(NewsSearchResponseSchemaTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        // load a WXS schema, represented by a Schema instance
-        Source schemaFile = new StreamSource(NewsSearchResponseSchemaTest.class.getResourceAsStream(resourceName));
-        try {
-            schema = factory.newSchema(schemaFile);
-        } catch (SAXException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
+    private NewsSearchResponseSchemaTest() {
+        super();
     }
 
-    private NewsSearchResponseSchemaTest(String name) {
-        super(name);
+    @Override
+    protected String[] getSchemas() {
+        return new String[]{"org/netbeans/modules/websvc/saas/services/yahoo/resources/NewsSearchResponse.xsd"}; //NOI18N
     }
 
-    private NewsSearchResponseSchemaTest(String name, File f) {
-        super(name);
-        this.file = f;
+    @Override
+    protected List<File> getTestCases() {
+        File dataDir = new File(getDataDir(), "newsSearch"); //NOI18N
+        File[] testCases = dataDir.listFiles();
+        List<File> tests = new ArrayList<File>();
+        for (File f : testCases) {
+            if (f.isFile()) {
+                tests.add(f);
+            }
+        }
+        return tests;
     }
 
     public static TestSuite suite() {
-        return createTestSuite(new NewsSearchResponseSchemaTest("empty")); //NOI18N
-    }
-
-    public void validate() {
-        assertNotNull("null schema", schema); //NOI18N
-        LOG.fine("Validating: " + file.getName()); //NOI18N
-        try {
-            // parse an XML document into a DOM tree
-            DocumentBuilder parser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = parser.parse(file);
-
-            Validator validator = schema.newValidator();
-            try {
-                // validate the DOM tree
-                validator.validate(new DOMSource(document));
-            } catch (SAXException ex) {
-                fail("validation of " + file.getName() + " failed: " + ex.getLocalizedMessage()); //NOI18N
-            } catch (IOException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-        } catch (SAXException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch (ParserConfigurationException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public void testCompileSchema() throws IOException {
-        XJC2Task xjc = new XJC2Task();
-        xjc.setDestdir(getWorkDir());
-        xjc.setSchema(NewsSearchResponseSchemaTest.class.getResource(resourceName).toExternalForm());
-        xjc.execute();
-    }
-
-    private static TestSuite createTestSuite(NbTestCase t) {
-        TestSuite ts = new NbTestSuite();
-        File dataDir = new File(t.getDataDir(), "newsSearch"); //NOI18N
-        File[] testCases = dataDir.listFiles();
-        Arrays.sort(testCases);
-        for (File f : testCases) {
-            //XXX - validation is too strict, so until some way to relax it
-            //will be found validate only error response
-            if (f.isFile()) {
-                ts.addTest(new NewsSearchResponseSchemaTest("validate", f)); //NOI18N
-            }
-        }
-        ts.addTest(new NewsSearchResponseSchemaTest("testCompileSchema")); //NOI18N
-        return ts;
+        return createTestSuite(new NewsSearchResponseSchemaTest()); //NOI18N
     }
 }

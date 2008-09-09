@@ -83,15 +83,6 @@ public class HtmlIndenter {
 
         SyntaxParser parser = SyntaxParser.get(doc, languagePath);
 
-        //attach syntaxparser listener 
-        final List<SyntaxElement> fresh = new ArrayList<SyntaxElement>();
-        parser.addSyntaxParserListener(new SyntaxParserListener() {
-
-            public void parsingFinished(List<SyntaxElement> elements) {
-                fresh.addAll(elements);
-            }
-        });
-
         AstNode node = SyntaxTree.makeTree(parser.elements());
         AstNode found = AstNodeUtils.findDescendant(node, offset);
 
