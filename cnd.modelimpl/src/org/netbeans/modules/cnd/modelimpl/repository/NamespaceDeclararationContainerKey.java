@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,52 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
+
+package org.netbeans.modules.cnd.modelimpl.repository;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 
 /**
- * Represent instanceof expression
- * <pre>e.g.<pre> $a instanceof MyClass,
- * foo() instanceof $myClass,
- * $a instanceof $b->$myClass
+ *
+ * @author Vladimir Voskresensky
  */
-public class InstanceOfExpression extends Expression {
+public class NamespaceDeclararationContainerKey extends NamespaceKey {
 
-    private Expression expression;
-    private ClassName className;
-
-    public InstanceOfExpression(int start, int end, Expression expr, ClassName className) {
-        super(start, end);
-
-        if (expr == null || className == null) {
-            throw new IllegalArgumentException();
-        }
-        this.className = className;
-        this.expression = expr;
-    }
-
-    /**
-     * The expression of this instance of expression
-     * 
-     * @return expression of this instance of expression
-     */
-    public Expression getExpression() {
-        return expression;
-    }
-
-    /**
-     * @return class name
-     */
-    public final ClassName getClassName() {
-        return className;
+    public NamespaceDeclararationContainerKey(CsmNamespace ns) {
+        super(ns);
     }
 
     @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
+    public String toString() {
+        return "NSDeclContainer " + super.toString(); // NOI18N
+    }
+
+    @Override
+    public int getSecondaryAt(int level) {
+        assert level == 0;
+        return KeyObjectFactory.KEY_NS_DECLARATION_CONTAINER_KEY;
+    }
+
+    @Override
+    public void write(DataOutput aStream) throws IOException {
+        super.write(aStream);
+    }
+
+    /*package*/ NamespaceDeclararationContainerKey(DataInput aStream) throws IOException {
+        super(aStream);
     }
 }
