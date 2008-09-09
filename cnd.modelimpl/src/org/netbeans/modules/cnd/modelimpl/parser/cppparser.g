@@ -2515,19 +2515,9 @@ template_argument_list
 // It's used in predicates only.
 lazy_template_argument_list
 	:	
-        (   LITERAL_struct 
-        |   LITERAL_union 
-        |   LITERAL_class 
-        |   LITERAL_enum
-        )?
         template_param_expression
         (   
             COMMA 
-            (   LITERAL_struct 
-            |   LITERAL_union 
-            |   LITERAL_class 
-            |   LITERAL_enum
-            )?
             template_param_expression
         )*
 	;
@@ -3001,6 +2991,11 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL_void
             |   literal_complex
 
+            |   LITERAL_struct
+            |   LITERAL_union
+            |   LITERAL_class
+            |   LITERAL_enum
+
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
                         optor_simple_tokclass
@@ -3026,19 +3021,9 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
 protected
 isGreaterthanInTheRestOfExpression
     :
-        (   lazy_expression[true, true]
-        |   LITERAL_struct 
-        |   LITERAL_union 
-        |   LITERAL_class 
-        |   LITERAL_enum
-        )?
+        (lazy_expression[true, true])?
         (   COMMA 
-            (   lazy_expression[true, true]
-            |   LITERAL_struct 
-            |   LITERAL_union 
-            |   LITERAL_class 
-            |   LITERAL_enum
-            )
+            lazy_expression[true, true]
         )*
         GREATERTHAN
     ;
@@ -3079,19 +3064,9 @@ balanceLessthanGreaterthanInExpression
         (simpleBalanceLessthanGreaterthanInExpression)=> simpleBalanceLessthanGreaterthanInExpression
     |
         LESSTHAN
-        (   lazy_expression[true, false]
-        |   LITERAL_struct 
-        |   LITERAL_union 
-        |   LITERAL_class 
-        |   LITERAL_enum
-        )?
-        (   COMMA 
-            (   lazy_expression[true, false]
-            |   LITERAL_struct 
-            |   LITERAL_union 
-            |   LITERAL_class 
-            |   LITERAL_enum
-            )
+        (lazy_expression[true, false])?
+        (   COMMA
+            lazy_expression[true, false]
         )*
         GREATERTHAN
     ;
