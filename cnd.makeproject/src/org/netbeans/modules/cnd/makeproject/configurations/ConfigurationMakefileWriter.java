@@ -607,7 +607,7 @@ public class ConfigurationMakefileWriter {
     
     
     private void writePackagingScript(MakeConfiguration conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".sh"; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // UNIX path // NOI18N
         
         if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
             // Nothing to do
@@ -635,7 +635,7 @@ public class ConfigurationMakefileWriter {
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         String output = packagingConfiguration.getOutputValue();
         
-        bw.write("#!/bin/sh"); // NOI18N
+        bw.write("#!/bin/bash"); // NOI18N
         if (conf.getPackagingConfiguration().getVerbose().getValue()) {
             bw.write(" -x"); // NOI18N
         }
