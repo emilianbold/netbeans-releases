@@ -938,19 +938,9 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             }
 
             Document doc = target.getDocument();
-            if (doc == null) {
-                return;
+            if (doc != null) {
+                insert(s, target, doc);
             }
-
-            if (doc instanceof BaseDocument) {
-                ((BaseDocument) doc).atomicLock();
-            }
-
-            int start = insert(s, target, doc);
-            if (doc instanceof BaseDocument) {
-                ((BaseDocument) doc).atomicUnlock();
-            }
-
         }
 
         private int insert(String s, JEditorPane target, Document doc)
