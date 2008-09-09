@@ -60,6 +60,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private boolean findDone  = false;
     private final int offset;
     private CsmReferenceKind kind;
+    private FileReferencesContext fileReferencesContext;
     
     public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token, CsmReferenceKind kind) {
         super(doc, file, offset);
@@ -71,7 +72,8 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     public CsmObject getReferencedObject() {
         if (!findDone && isValid()) {
-            target = ReferencesSupport.instance().findReferencedObject(super.getContainingFile(), super.getDocument(), this.offset, token);
+            target = ReferencesSupport.instance().findReferencedObject(super.getContainingFile(), super.getDocument(),
+                                       this.offset, token, fileReferencesContext);
             findDone = true;
         }
         return target;
@@ -129,5 +131,8 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             this.kind = curKind;
         }
         return this.kind;
+    }
+    void setFileReferencesContext(FileReferencesContext fileReferencesContext) {
+        this.fileReferencesContext = fileReferencesContext;
     }
 }
