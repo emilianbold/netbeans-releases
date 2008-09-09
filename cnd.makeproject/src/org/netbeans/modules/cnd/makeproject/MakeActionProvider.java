@@ -267,7 +267,7 @@ public class MakeActionProvider implements ActionProvider {
             actionWorker.run();
         } else {
             String hkey = conf.getDevelopmentHost().getName();
-            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
             assert registry != null;
             ServerRecord record = registry.get(hkey);
             assert record != null;
@@ -285,7 +285,7 @@ public class MakeActionProvider implements ActionProvider {
                 message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
                 if (res == JOptionPane.YES_OPTION) {
-                    ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                    ServerList registry = Lookup.getDefault().lookup(ServerList.class);
                     assert registry != null;
                     registry.addServer(record.getName(), false, true);
                 }
@@ -901,7 +901,7 @@ public class MakeActionProvider implements ActionProvider {
         CompilerSet cs;
         String csname;
         File file;
-        ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
         boolean cRequired = conf.hasCFiles(pd);
         boolean cppRequired = conf.hasCPPFiles(pd);
         boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.hasFortranFiles(pd);
@@ -994,6 +994,8 @@ public class MakeActionProvider implements ActionProvider {
                 BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
                 bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
                 ToolsPanelModel model = new LocalToolsPanelModel();
+                model.setSelectedDevelopmentHost(hkey); // only localhost until BTA becomes more functional for remote sets
+                model.setEnableDevelopmentHostChange(false);
                 model.setCompilerSetName(null); // means don't change
                 model.setSelectedCompilerSetName(csname);
                 model.setMakeRequired(true);
@@ -1049,7 +1051,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
             } else {
                 String hkey = conf.getDevelopmentHost().getName();
-                ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
                 if(serverList != null) {
                     if (!serverList.isValidExecutable(hkey, tool)) {
                         errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL3", tool, hkey); // NOI18N
@@ -1061,7 +1063,7 @@ public class MakeActionProvider implements ActionProvider {
         if (errormsg != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
-                MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider)project.getLookup().lookup(MakeCustomizerProvider.class);
+                MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
                 if (makeCustomizerProvider != null) {
                     makeCustomizerProvider.showCustomizer("Packaging"); // NOI18N
                 }
