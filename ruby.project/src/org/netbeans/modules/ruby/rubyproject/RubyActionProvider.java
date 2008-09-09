@@ -239,14 +239,14 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
         
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
-        String jrubyProps = project.evaluator().getProperty(RubyProjectProperties.JRUBY_PROPS);
+        String jvmArgs = project.evaluator().getProperty(RubyProjectProperties.JVM_ARGS);
 
         ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
         desc.fileObject(fileObject);
-        desc.jrubyProperties(jrubyProps);
+        desc.jvmArguments(jvmArgs);
         desc.initialArgs(options);
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
