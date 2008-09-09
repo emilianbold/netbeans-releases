@@ -54,63 +54,63 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testPhpContextWithPrefix() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "^GL", false);
     }
-    
+
     public void testClassMemberVisibility1() throws Exception {
         checkCompletion("testfiles/completion/lib/class_member_visibility.php", "self::^", false);
     }
-    
+
     public void testClassMemberVisibility2() throws Exception {
         checkCompletion("testfiles/completion/lib/class_member_visibility.php", "parent::^", false);
     }
-    
+
     public void testClassMemberVisibility3() throws Exception {
         checkCompletion("testfiles/completion/lib/class_member_visibility.php", "$tst->^", false);
     }
-    
+
     public void testInterfaces1() throws Exception {
         checkCompletion("testfiles/completion/lib/interfaces.php", "$arg->^", false);
     }
-    
+
     public void testVarScope1() throws Exception {
         checkCompletion("testfiles/completion/lib/var_scope.php", "echo $^", false);
     }
-    
+
     public void testVarScope2() throws Exception {
         checkCompletion("testfiles/completion/lib/var_scope.php", "print $^", false);
     }
-    
+
     public void testCCOnMethods1() throws Exception {
         checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "$tst1->newInstance()->^", false);
     }
-    
+
     public void testCCOnMethods2() throws Exception {
         checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "TestCCOnMethods::create()->^", false);
     }
-    
+
     public void testCCOnMethods3() throws Exception {
         checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "self::create()->^", false);
     }
-    
+
     public void testCCOnMethods4() throws Exception {
         checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "parent::parentInstance()->pa^", false);
     }
-    
+
     public void testCCOnMethods5() throws Exception {
         checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "foo_TestCCOnMethods()->^", false);
     }
-    
+
     public void testCCOnMethods6() throws Exception {
         checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "foo_TestCCOnMethods()->newInstance()->n^", false);
     }
-    
+
     public void testComments1() throws Exception {
         checkCompletion("testfiles/completion/lib/comments.php", "one line ^", false);
     }
-    
+
     public void testComments2() throws Exception {
         checkCompletion("testfiles/completion/lib/comments.php", "multiline comment ^", false);
     }
-    
+
     public void testComments3() throws Exception {
         checkCompletion("testfiles/completion/lib/comments.php", "PHPDoc comment ^", false);
     }
@@ -118,27 +118,27 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testFunctionReturnType1() throws Exception {
         checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_self->^", false);
     }
-    
+
     public void testFunctionReturnType2() throws Exception {
         checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_standalone_function->^", false);
     }
-    
+
     public void testFunctionReturnType3() throws Exception {
         checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_static_method->^", false);
     }
-    
+
     public void testTypesInPHPDOC1() throws Exception {
         checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @var TypesinPHPDo^", false);
     }
-    
+
     public void testTypesInPHPDOC2() throws Exception {
         checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPD^", false);
     }
-    
+
     public void testTypesInPHPDOC3() throws Exception {
         checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPDoc des^", false);
     }
-    
+
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
@@ -146,36 +146,36 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testHTML() throws Exception {
         checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
     }
-    
+
     public void test145138_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145138.php", "echo $param^", false);
     }
-    
+
     public void test145138_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145138.php", "print $param^", false);
     }
-    
+
     public void test146176() throws Exception {
         checkCompletion("testfiles/completion/lib/issue146176.php", "echo oddlyNamedMetho^", false);
     }
-    
+
     public void test145692() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145692.php", "echo $test145692Instance->tst->t^", false);
     }
-    
+
     public void test145206_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145206.php", "echo TestIssue145206 :: ^", false);
     }
-    
+
     public void test145206_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145206.php", "echo TestIssue145206 :: c^", false);
     }
-    
+
     public void test145206_3() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145206.php",
                 "echo TestIssue145206 :: createStatic()->create() ->create() ->^", false);
     }
-    
+
     public void test145206_4() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145206.php",
                 "echo TestIssue145206 :: createStatic()->create() ->create() -> c^", false);
@@ -193,7 +193,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136744_3() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test3^", false);
     }
-    
+
     public void test144830() throws Exception {
         checkCompletion("testfiles/completion/lib/issue144830.php", "$this->^", false);
     }
@@ -213,7 +213,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test142051_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142051.php", "echo \"Name2: \".$user2->^", false);
     }
-    
+
     public void test140633() throws Exception {
         checkCompletion("testfiles/completion/lib/issue140633.php", "echo $_COOKI^", false);
     }
@@ -262,28 +262,28 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136188_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v2->^", false);
     }
-    
+
     public void test144409() throws Exception {
         checkCompletion("testfiles/completion/lib/issue144409.php", "$tmp->^", false);
     }
-    
+
     public void testOptionalArgs_1() throws Exception {
         checkCompletion("testfiles/completion/lib/optional_args.php", "TestOptionalArgsClass::test^", false);
     }
-    
+
     public void testOptionalArgs_2() throws Exception {
         checkCompletion("testfiles/completion/lib/optional_args.php", "$foo = testOptionalArgsFunc^", false);
     }
-    
+
     //#137033: Code completion for class identifier
     public void test137033_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue137033.php", "class a^", false);
     }
-    
+
     public void test137033_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue137033.php", "interface a^", false);
     }
-    
+
     public void test136188_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v3->^", false);
     }
@@ -377,11 +377,11 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test140758_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue140758.php", "echo $_SERVER[\"^", false);
     }
-    
+
     public void testSanitizedCode() throws Exception {
         checkCompletion("testfiles/sanitize/curly04.php", "$baba = $param^", false);
     }
-    
+
     public void testVarAssignment_1() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarA1=$clsVarA->^", false);
     }
@@ -451,4 +451,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testUnknown() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$unknown->aCreate^", false);
     }
+    public void testTypeInCatch() throws Exception {
+        checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vCatch->^", false);
+    }
+    public void testTypeInInstanceof() throws Exception {
+        checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vInstanceof->^", false);
+    }    
 }

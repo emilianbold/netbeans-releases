@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
-import javax.swing.text.Element;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.NameKind;
@@ -61,6 +60,7 @@ import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -69,6 +69,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
@@ -161,6 +162,39 @@ public final class VarTypeResolver {
                     }
                 }
 
+                super.visit(node);
+            }
+
+            @Override
+            public void visit(InstanceOfExpression node) {
+                int offset = anchor;
+                if ((offset != (-1) && offset >= node.getStartOffset())) {
+                    if (isValidBlock(path)) {
+                    Expression expression = node.getExpression();
+                        if (expression instanceof Variable) {
+                            String typeName = CodeUtils.extractClassName(node.getClassName());
+                            String vName = CodeUtils.extractVariableName((Variable) expression);
+                            if (vName != null && typeName != null && typeName.length() > 0 && assignments.get(vName) == null) {
+                                assignments.put(vName, Union2.<Variable, String>createSecond(typeName));
+                            }
+                        }
+                    }
+                }
+                super.visit(node);
+            }
+
+            @Override
+            public void visit(CatchClause node) {
+                int offset = anchor;
+                if ((offset != (-1) && offset >= node.getStartOffset())) {
+                    if (isValidBlock(path)) {
+                        String excName = CodeUtils.extractVariableName(node.getVariable());
+                        String typeName = node.getClassName().getName();
+                        if (excName != null && typeName != null && typeName.length() > 0) {
+                            assignments.put(excName, Union2.<Variable, String>createSecond(typeName));
+                        }
+                    }
+                }
                 super.visit(node);
             }
 
