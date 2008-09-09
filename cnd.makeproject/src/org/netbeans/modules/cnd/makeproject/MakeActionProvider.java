@@ -188,7 +188,15 @@ public class MakeActionProvider implements ActionProvider {
     private FileObject findBuildXml() {
         return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
     }
-    
+
+    private boolean isProjectDescriptorLoaded() {
+        if (projectDescriptor == null) {
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            return pdp.gotDescriptor();
+        } else {
+            return true;
+        }
+    }
     private MakeConfigurationDescriptor getProjectDescriptor() {
         if (projectDescriptor == null) {
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -202,12 +210,6 @@ public class MakeActionProvider implements ActionProvider {
     }
     
     public void invokeAction( final String command, final Lookup context) throws IllegalArgumentException {
-        // Basic info
-        ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
-        final String projectName = info.getDisplayName();
-        final MakeConfigurationDescriptor pd = getProjectDescriptor();
-        final MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
-        
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return ;
@@ -235,6 +237,12 @@ public class MakeActionProvider implements ActionProvider {
             }
             return;
         }
+
+        // Basic info
+        ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
+        final String projectName = info.getDisplayName();
+        final MakeConfigurationDescriptor pd = getProjectDescriptor();
+        final MakeConfiguration conf = (MakeConfiguration) pd.getConfs().getActive();
 
         // vv: leaving all logic to be later called from EDT
         // (although I'm not sure all of below need to be done in EDT)
@@ -816,10 +824,12 @@ public class MakeActionProvider implements ActionProvider {
     
     
     public boolean isActionEnabled( String command, Lookup context ) {
-        if (getProjectDescriptor() == null)
+        if (!isProjectDescriptorLoaded()) {
             return false;
-        if (!(getProjectDescriptor().getConfs().getActive() instanceof MakeConfiguration))
+        }
+        if (!(getProjectDescriptor().getConfs().getActive() instanceof MakeConfiguration)) {
             return false;
+        }
         MakeConfiguration conf = (MakeConfiguration)getProjectDescriptor().getConfs().getActive();
         if (command.equals(COMMAND_CLEAN)) {
             return true;
