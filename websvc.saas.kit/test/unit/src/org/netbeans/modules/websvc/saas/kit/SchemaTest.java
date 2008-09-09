@@ -84,11 +84,11 @@ public class SchemaTest extends NbTestCase {
         dbf.setNamespaceAware(true);
     }
 
-    public SchemaTest() {
+    protected SchemaTest() {
         super(""); //NOI18N
     }
 
-    protected SchemaTest(String name, String resource) {
+    private SchemaTest(String name, String resource) {
         super(name);
         schemaResource = resource;
     }
@@ -114,6 +114,11 @@ public class SchemaTest extends NbTestCase {
             }
         }
         return testCases;
+    }
+
+    @Override
+    public void setUp() throws IOException {
+        clearWorkDir();
     }
 
     public void validate() {
@@ -148,6 +153,7 @@ public class SchemaTest extends NbTestCase {
         try {
             XJC2Task xjc = new XJC2Task();
             xjc.setDestdir(getWorkDir());
+            xjc.setPackage("some.testpackage"); //NOI18N
             xjc.setSchema(ClassLoader.getSystemResource(schemaResource).toString());
             xjc.execute();
         } catch (IOException ex) {
