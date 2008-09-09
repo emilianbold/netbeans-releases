@@ -366,6 +366,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             return new MemberTypedef(ClassImpl.this, ast, type, name, curentVisibility);
         }
+        
+        @Override
+        protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
+            ClassMemberForwardDeclaration fd = new ClassMemberForwardDeclaration(ClassImpl.this, ast, curentVisibility);
+            addMember(fd);
+            fd.init(ast, ClassImpl.this);
+            return fd;
+        }
     }
 
     public static class MemberTypedef extends TypedefImpl implements CsmMember<CsmTypedef> {

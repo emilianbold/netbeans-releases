@@ -697,9 +697,8 @@ public class AstRenderer {
 
                     EnumImpl ei = null;
                     
-                    ClassForwardDeclarationImpl cfdi = null;
-
                     for (AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling()) {
+                        CsmClassForwardDeclaration cfdi = null;
                         switch (curr.getType()) {
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
@@ -722,9 +721,7 @@ public class AstRenderer {
                                 AST next = curr.getNextSibling();
                                 if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
                                     classifier = next;
-                                    cfdi = new ClassForwardDeclarationImpl(ast, file);
-                                    file.addDeclaration(cfdi);
-                                    cfdi.init(ast, container);
+                                    cfdi = createForwardClassDeclaration(ast, file, file, container);
                                 }
                                 break;
                             case CPPTokenTypes.CSM_PTR_OPERATOR:
@@ -778,11 +775,20 @@ public class AstRenderer {
         }
         return results.toArray(new CsmTypedef[results.size()]);
     }
+
+    protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
+        ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file);
+        if (container != null) {
+            container.addDeclaration(cfdi);
+        }
+        cfdi.init(ast, scope);
+        return cfdi;
+    }
     
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
         return new TypedefImpl(ast, file, container, type, name);
     }
-    
+   
     
     public static boolean renderForwardClassDeclaration(
             AST ast, 
