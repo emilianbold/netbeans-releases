@@ -551,9 +551,11 @@ public final class NbJSDebugger {
         }
     }
 
-    private synchronized void setBreakpoint(final NbJSBreakpoint bp) {
-        if (state.getState() == JSDebuggerState.State.DISCONNECTED ||
-                state.getState() == JSDebuggerState.State.NOT_CONNECTED) {
+    private void setBreakpoint(final NbJSBreakpoint bp) {
+        JSDebuggerState currentState = getState();
+        
+        if (currentState.getState() == JSDebuggerState.State.DISCONNECTED ||
+                currentState.getState() == JSDebuggerState.State.NOT_CONNECTED) {
             return;
         }
         
@@ -607,9 +609,10 @@ public final class NbJSDebugger {
         }
     }
 
-    private synchronized void removeBreakpoint(Breakpoint bp) {
-        if (state.getState() == JSDebuggerState.State.DISCONNECTED ||
-                state.getState() == JSDebuggerState.State.NOT_CONNECTED) {
+    private void removeBreakpoint(Breakpoint bp) {
+        JSDebuggerState currentState = getState();
+        if (currentState.getState() == JSDebuggerState.State.DISCONNECTED ||
+                currentState.getState() == JSDebuggerState.State.NOT_CONNECTED) {
             return;
         }
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
@@ -625,9 +628,10 @@ public final class NbJSDebugger {
         }
     }
 
-    private synchronized void updateBreakpoint(NbJSBreakpoint bp) {
-        if (state.getState() == JSDebuggerState.State.DISCONNECTED ||
-                state.getState() == JSDebuggerState.State.NOT_CONNECTED) {
+    private void updateBreakpoint(NbJSBreakpoint bp) {
+        JSDebuggerState currentState = getState();
+        if (currentState.getState() == JSDebuggerState.State.DISCONNECTED ||
+                currentState.getState() == JSDebuggerState.State.NOT_CONNECTED) {
             return;
         }
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
