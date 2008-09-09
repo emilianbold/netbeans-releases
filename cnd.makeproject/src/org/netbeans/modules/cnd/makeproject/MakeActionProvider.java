@@ -593,13 +593,13 @@ public class MakeActionProvider implements ActionProvider {
                     actionEvents.clear();
                     break;
                 }
-                String buildCommand = "bash"; // NOI18N
+                String buildCommand = "sh"; // NOI18N
                 Boolean verbose = true;
                 String args = "";
                 if (conf.getPackagingConfiguration().getVerbose().getValue()) {
                     args += "-x "; // NOI18N
                 }
-                args += "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
+                args += "nbproject/Package-" + conf.getName() + ".sh"; // NOI18N
                 RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getPlatform().getValue());
                 profile.setArgs(args);
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(

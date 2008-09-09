@@ -607,7 +607,7 @@ public class ConfigurationMakefileWriter {
     
     
     private void writePackagingScript(MakeConfiguration conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".sh"; // UNIX path // NOI18N
         
         if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
             // Nothing to do
@@ -635,7 +635,7 @@ public class ConfigurationMakefileWriter {
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         String output = packagingConfiguration.getOutputValue();
         
-        bw.write("#!/bin/bash"); // NOI18N
+        bw.write("#!/bin/sh"); // NOI18N
         if (conf.getPackagingConfiguration().getVerbose().getValue()) {
             bw.write(" -x"); // NOI18N
         }
@@ -687,8 +687,11 @@ public class ConfigurationMakefileWriter {
         bw.write("{\n"); // NOI18N
         bw.write("    cp $1 $2\n"); // NOI18N
         bw.write("    checkReturnCode\n"); // NOI18N
-        bw.write("    chmod $3 $2\n"); // NOI18N
-        bw.write("    checkReturnCode\n"); // NOI18N
+        bw.write("    if [ \"$3\" != \"\" ]\n"); // NOI18N
+        bw.write("    then\n"); // NOI18N
+        bw.write("        chmod $3 $2\n"); // NOI18N
+        bw.write("        checkReturnCode\n"); // NOI18N
+        bw.write("    fi\n"); // NOI18N
         bw.write("}\n"); // NOI18N
         
         bw.write("\n"); // NOI18N
@@ -745,7 +748,11 @@ public class ConfigurationMakefileWriter {
                 if (toDir != null && toDir.length() >= 0) {
                     bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
                 }
-                bw.write("copyFileToTmpDir " + elem.getFrom() + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+                if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                    bw.write("copyFileToTmpDir " + elem.getFrom() + " ${TMPDIR}/" + elem.getTo() + "\n"); // NOI18N
+                } else {
+                    bw.write("copyFileToTmpDir " + elem.getFrom() + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+                }
             }
             else if (elem.getType() == FileElement.FileType.DIRECTORY) {
                 bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
