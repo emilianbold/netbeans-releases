@@ -254,9 +254,13 @@ final class TaskListTopComponent extends TopComponent {
             tableScroll.setViewportView( createNoTasksMessage() );
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run() {
-                init();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        init();
+                    }
+                });
             }
         });
     }
