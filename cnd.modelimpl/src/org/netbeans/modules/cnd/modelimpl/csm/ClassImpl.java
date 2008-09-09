@@ -228,6 +228,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         }
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
+                    case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                     case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                     case CPPTokenTypes.CSM_USER_TYPE_CAST:
 			child = token.getFirstChild();
@@ -266,6 +267,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 			}
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+                    case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DEFINITION:
                     case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
 		    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
 			child = token.getFirstChild();
