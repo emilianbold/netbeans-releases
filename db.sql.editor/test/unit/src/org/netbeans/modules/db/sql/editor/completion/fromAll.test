@@ -1,7 +1,7 @@
 select from |
 
 --
-<unknown>
+myapp*
   customers*
     customer
       customer_id
@@ -10,3 +10,4 @@ select from |
       invoice_id
     purchase_order
       order_id
+anotherapp

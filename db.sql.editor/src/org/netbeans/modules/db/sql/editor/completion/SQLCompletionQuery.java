@@ -219,9 +219,11 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 }
                 // All tables in default schema.
                 items.addTables(defaultSchema, null, typedPrefix, quoted, substitutionOffset);
-                // All schemas.
-                items.addSchemas(defaultCatalog, null, typedPrefix, quoted, substitutionOffset);
             }
+            // All schemas.
+            items.addSchemas(defaultCatalog, null, typedPrefix, quoted, substitutionOffset);
+            // All catalogs.
+            items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
         }
     }
 
@@ -239,6 +241,11 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             if (schema != null) {
                 items.addTables(schema, null, lastPrefix, quoted, substitutionOffset);
             }
+            // Assume fullyTypedIdent is a catalog.
+            Catalog catalog = resolveCatalog(fullyTypedIdent);
+            if (catalog != null) {
+                completeCatalog(catalog, lastPrefix, quoted);
+            }
         }
     }
 
@@ -251,6 +258,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
         // All schemas.
         items.addSchemas(defaultCatalog, null, typedPrefix, quoted, substitutionOffset);
+        // All catalogs.
+        items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
     }
 
     private void completeFromQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
@@ -258,6 +267,11 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         if (schema != null) {
             // Tables in the typed schema.
             items.addTables(schema, null, lastPrefix, quoted, substitutionOffset);
+        }
+        Catalog catalog = resolveCatalog(fullyTypedIdent);
+        if (catalog != null) {
+            // Items in the typed catalog.
+            completeCatalog(catalog, lastPrefix, quoted);
         }
     }
 
@@ -297,14 +311,22 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         Collections.sort(sortedAliases);
         items.addAliases(sortedAliases, typedPrefix, quoted, substitutionOffset);
         // Schemas from default catalog other than the default schema, based on non-aliased table names in the FROM clause.
+        // Catalogs based on non-aliased tables names in the FROM clause.
         Set<String> schemaNames = new HashSet<String>();
+        Set<String> catalogNames = new HashSet<String>();
         for (Table table : tables) {
             Schema schema = table.getParent();
-            if (!schema.isDefault() && !schema.isSynthetic() && schema.getParent().isDefault()) {
+            Catalog catalog = schema.getParent();
+            if (!schema.isDefault() && !schema.isSynthetic() && catalog.isDefault()) {
                 schemaNames.add(schema.getName());
             }
+            if (!catalog.isDefault()) {
+                catalogNames.add(catalog.getName());
+            }
+
         }
         items.addSchemas(defaultCatalog, schemaNames, typedPrefix, quoted, substitutionOffset);
+        items.addCatalogs(metadata, catalogNames, typedPrefix, quoted, substitutionOffset);
     }
 
     private void completeQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
@@ -337,17 +359,60 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             }
             items.addTables(schema, tableNames, lastPrefix, quoted, substitutionOffset);
         }
+        // Now assume fullyTypedIdent is the name of a catalog.
+        Catalog catalog = resolveCatalog(fullyTypedIdent);
+        if (catalog != null) {
+            Set<String> syntheticSchemaTableNames = new HashSet<String>();
+            Set<String> schemaNames = new HashSet<String>();
+            for (Table table : tables) {
+                schema = table.getParent();
+                if (schema.getParent().equals(catalog)) {
+                    if (!schema.isSynthetic()) {
+                        schemaNames.add(schema.getName());
+                    } else {
+                        syntheticSchemaTableNames.add(table.getName());
+                    }
+                }
+            }
+            items.addSchemas(catalog, schemaNames, lastPrefix, quoted, substitutionOffset);
+            items.addTables(catalog.getSyntheticSchema(), syntheticSchemaTableNames, lastPrefix, quoted, substitutionOffset);
+        }
     }
 
-    private Schema resolveSchema(QualIdent schemaName) {
-        Catalog catalog = metadata.getDefaultCatalog();
-        if (schemaName.isSimple()) {
-            return catalog.getSchema(schemaName.getSimpleName());
+    private void completeCatalog(Catalog catalog, String prefix, boolean quoted) {
+        items.addSchemas(catalog, null, prefix, quoted, substitutionOffset);
+        Schema syntheticSchema = catalog.getSyntheticSchema();
+        if (syntheticSchema != null) {
+            items.addTables(syntheticSchema, null, prefix, quoted, substitutionOffset);
+        }
+    }
+
+    private Catalog resolveCatalog(QualIdent catalogName) {
+        if (catalogName.isSimple()) {
+            return metadata.getCatalog(catalogName.getSimpleName());
         }
         return null;
     }
 
+    private Schema resolveSchema(QualIdent schemaName) {
+        Schema schema = null;
+        switch (schemaName.size()) {
+            case 1:
+                Catalog catalog = metadata.getDefaultCatalog();
+                schema = catalog.getSchema(schemaName.getSimpleName());
+                break;
+            case 2:
+                catalog = metadata.getCatalog(schemaName.getFirstQualifier());
+                if (catalog != null) {
+                    schema = catalog.getSchema(schemaName.getSimpleName());
+                }
+                break;
+        }
+        return schema;
+    }
+
     private Table resolveTable(QualIdent tableName) {
+        Table table = null;
         switch (tableName.size()) {
             case 1:
                 Catalog catalog = metadata.getDefaultCatalog();
@@ -357,12 +422,32 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 }
                 break;
             case 2:
-                schema = resolveSchema(tableName.getPrefix());
+                catalog = metadata.getDefaultCatalog();
+                schema = catalog.getSchema(tableName.getFirstQualifier());
                 if (schema != null) {
-                    return schema.getTable(tableName.getSimpleName());
+                    table = schema.getTable(tableName.getSimpleName());
                 }
+                if (table == null) {
+                    catalog = metadata.getCatalog(tableName.getFirstQualifier());
+                    if (catalog != null) {
+                        schema = catalog.getSyntheticSchema();
+                        if (schema != null) {
+                            table = schema.getTable(tableName.getSimpleName());
+                        }
+                    }
+                }
+                break;
+            case 3:
+                catalog = metadata.getCatalog(tableName.getFirstQualifier());
+                if (catalog != null) {
+                    schema = catalog.getSchema(tableName.getSecondQualifier());
+                    if (schema != null) {
+                        table = schema.getTable(tableName.getSimpleName());
+                    }
+                }
+                break;
         }
-        return null;
+        return table;
     }
 
     private Set<Table> resolveTables(Set<QualIdent> tableNames) {

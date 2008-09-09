@@ -86,14 +86,18 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("selectSimple"));
         suite.addTest(new SQLCompletionQueryTest("selectQualTable"));
         suite.addTest(new SQLCompletionQueryTest("selectQualColumn"));
-        suite.addTest(new SQLCompletionQueryTest("selectDoubleQualColumn"));
         suite.addTest(new SQLCompletionQueryTest("selectQualColumnWhenTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectQualColumnWhenTableInNonDefaultSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualColumnWhenTableInSyntheticSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectDoubleQualColumn"));
+        suite.addTest(new SQLCompletionQueryTest("selectTripleQualColumn"));
 
         suite.addTest(new SQLCompletionQueryTest("selectAllFrom"));
         suite.addTest(new SQLCompletionQueryTest("selectAllWhenFromClauseEmpty"));
+        suite.addTest(new SQLCompletionQueryTest("selectAllFromTableInSyntheticSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectSimpleFrom"));
         suite.addTest(new SQLCompletionQueryTest("selectQualTableFromNonDefaultSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualTableFromTableInSyntheticSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromTableInNonDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromQualTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromTableNotInFromClause"));

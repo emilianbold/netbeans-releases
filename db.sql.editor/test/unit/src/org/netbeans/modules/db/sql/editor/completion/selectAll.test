@@ -10,3 +10,6 @@ select |
       invoice_id
     purchase_order
       order_id
+anotherapp
+  registrations
+    regdata

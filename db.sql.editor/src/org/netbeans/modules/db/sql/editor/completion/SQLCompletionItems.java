@@ -48,6 +48,7 @@ import java.util.TreeSet;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataObject;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
@@ -67,6 +68,17 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     public SQLCompletionItems(Quoter quoter, int itemOffset) {
         this.quoter = quoter;
         this.itemOffset = itemOffset;
+    }
+
+    public Set<String> addCatalogs(Metadata metadata, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
+        Set<String> result = new TreeSet<String>();
+        filterMetadata(metadata.getCatalogs(), restrict, prefix, new Handler<Catalog>() {
+            public void handle(Catalog catalog) {
+                String catalogName = catalog.getName();
+                items.add(SQLCompletionItem.catalog(catalogName, doQuote(catalogName, quote), itemOffset + substitutionOffset));
+            }
+        });
+        return result;
     }
 
     public Set<String> addSchemas(Catalog catalog, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {

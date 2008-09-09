@@ -2,10 +2,10 @@
 # only listed once (although the table is there twice), the "cus" alias is there,
 # the "unused" schema is not there.
 
-select | from customer cus inner join customer inner join accounting.invoice
+select | from customer cus inner join customer inner join accounting.invoice inner join anotherapp.registrations.regdata
 
 --
-<unknown>
+myapp*
   customers*
     customer
       customer_id
@@ -16,3 +16,6 @@ select | from customer cus inner join customer inner join accounting.invoice
     purchase_order
       order_id
   unused
+anotherapp
+  registrations
+    regdata
