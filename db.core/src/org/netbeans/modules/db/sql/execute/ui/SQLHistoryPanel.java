@@ -243,7 +243,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
 
         insertSQLButton.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Insert")); // NOI18N
         insertSQLButton.setEnabled(false);
-        insertSQLButton.setFocusTraversalPolicyProvider(true);
         insertSQLButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 insertSQLButtonActionPerformed(evt);
@@ -252,7 +251,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
 
         sqlHistoryTable.setModel(new HistoryTableModel());
         sqlHistoryTable.setGridColor(java.awt.Color.lightGray);
-        sqlHistoryTable.setNextFocusableComponent(sqlLimitTextField);
         sqlHistoryTable.setSelectionBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.selectionBackground"));
         jScrollPane1.setViewportView(sqlHistoryTable);
         sqlHistoryTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSN_History")); // NOI18N
@@ -261,11 +259,9 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlLimitLabel.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SqlLimit")); // NOI18N
 
         sqlLimitTextField.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_InitialLimit")); // NOI18N
-        sqlLimitTextField.setFocusTraversalPolicyProvider(true);
         sqlLimitTextField.setMinimumSize(new java.awt.Dimension(18, 22));
 
         sqlLimitButton.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ApplyButton")); // NOI18N
-        sqlLimitButton.setNextFocusableComponent(insertSQLButton);
         sqlLimitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sqlLimitButtonActionPerformed(evt);
