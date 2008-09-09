@@ -50,7 +50,7 @@ import java.io.OutputStream;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.swing.JEditorPane;
+
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -74,6 +74,7 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
+import org.netbeans.api.editor.EditorRegistry;
 
 
 /**
@@ -86,27 +87,45 @@ public class NbUtilities {
     private NbUtilities() {
     }
 
-    public static JEditorPane getOpenPane() {
-        // TODO - switch to the edtor registry!
-        Node[] arr = TopComponent.getRegistry().getActivatedNodes();
+    public static JTextComponent getOpenPane() {
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
 
-        if (arr.length > 0) {
-            EditorCookie ec = arr[0].getCookie(EditorCookie.class);
+        return pane;
+    }
 
-            if (ec != null) {
-                JEditorPane[] openedPanes = ec.getOpenedPanes();
+    public static JTextComponent getPaneFor(FileObject fo) {
+        JTextComponent pane = getOpenPane();
+        if (pane != null && findFileObject(pane) == fo) {
+            return pane;
+        }
 
-                if ((openedPanes != null) && (openedPanes.length > 0)) {
-                    return openedPanes[0];
-                }
+        for (JTextComponent c : EditorRegistry.componentList()) {
+            if (findFileObject(c) == fo) {
+                return c;
             }
         }
 
         return null;
     }
 
-    public static FileObject findFileObject(JTextComponent target) {
-        Document doc = target.getDocument();
+    public static BaseDocument getDocument(FileObject fileObject, boolean openIfNecessary) {
+        try {
+            DataObject dobj = DataObject.find(fileObject);
+
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            if (ec != null) {
+                return (BaseDocument)(openIfNecessary ? ec.openDocument() : ec.getDocument());
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return null;
+    }
+
+    public static FileObject findFileObject(Document doc) {
         DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
 
         if (dobj == null) {
@@ -114,6 +133,11 @@ public class NbUtilities {
         }
 
         return dobj.getPrimaryFile();
+    }
+
+    public static FileObject findFileObject(JTextComponent target) {
+        Document doc = target.getDocument();
+        return findFileObject(doc);
     }
 
     // Copied from UiUtils. Shouldn't this be in a common library somewhere?
@@ -144,14 +168,23 @@ public class NbUtilities {
                 ec.open();
                 return true;
             }
-            
+
             // Simple text search if no known offset (e.g. broken/unparseable source)
             if ((ec != null) && (search != null) && (offset == -1)) {
                 StyledDocument doc = ec.openDocument();
 
                 try {
                     String text = doc.getText(0, doc.getLength());
+                    int caretDelta = search.indexOf('^');
+                    if (caretDelta != -1) {
+                        search = search.substring(0, caretDelta) + search.substring(caretDelta+1);
+                    } else {
+                        caretDelta = 0;
+                    }
                     offset = text.indexOf(search);
+                    if (offset != -1) {
+                        offset += caretDelta;
+                    }
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
                 }
@@ -169,8 +202,7 @@ public class NbUtilities {
                         Line l = lc.getLineSet().getCurrent(line);
 
                         if (l != null) {
-                            l.show(Line.SHOW_GOTO, column);
-
+                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
                             return true;
                         }
                     }
@@ -190,12 +222,12 @@ public class NbUtilities {
 
         return false;
     }
-    
+
     public static void extractZip(final FileObject extract, final FileObject dest) throws IOException {
         File extractFile = FileUtil.toFile(extract);
         extractZip(dest, new BufferedInputStream(new FileInputStream(extractFile)));
     }
-    
+
     // Based on openide/fs' FileUtil.extractJar
     private static void extractZip(final FileObject fo, final InputStream is)
     throws IOException {
@@ -249,13 +281,15 @@ public class NbUtilities {
             }
         }
     }
-    
+
     /** Return true iff we're editing code templates */
     public static boolean isCodeTemplateEditing(Document doc) {
         // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
-        String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
-        
-        return doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == Boolean.TRUE;
+        String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N
+        String CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
+
+        return doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == Boolean.TRUE ||
+                doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
     }
     /**
      * Return substring after last dot.
@@ -273,8 +307,8 @@ public class NbUtilities {
         // semicolons. We got to get rid of them.
 
         return fqn.replace(";", "");
-    }
-    
+            }
+
     public static ClasspathInfo getClasspathInfoForFileObject ( FileObject fo) {
         
         ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
