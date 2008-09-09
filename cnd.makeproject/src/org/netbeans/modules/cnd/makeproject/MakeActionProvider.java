@@ -594,7 +594,9 @@ public class MakeActionProvider implements ActionProvider {
                     break;
                 }
                 String buildCommand = "bash"; // NOI18N
-                Boolean verbose = true;
+                if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                    buildCommand = "sh"; // NOI18N
+                }
                 String args = "";
                 if (conf.getPackagingConfiguration().getVerbose().getValue()) {
                     args += "-x "; // NOI18N
