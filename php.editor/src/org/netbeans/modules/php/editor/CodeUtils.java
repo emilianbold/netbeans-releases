@@ -55,8 +55,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
@@ -80,6 +80,16 @@ public class CodeUtils {
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
 
     private CodeUtils() {
+    }
+
+    public static String extractClassName(ClassName clsName) {
+        Expression name = clsName.getName();
+
+        assert name instanceof Identifier :
+            "unsupported type of ClassName.getClassName().getName(): "
+            + name.getClass().getName();
+
+        return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
     }
 
     public static String extractClassName(ClassInstanceCreation instanceCreation) {

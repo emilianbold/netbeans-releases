@@ -1,9 +1,10 @@
 select * from customer cust where cust.customer_id in (select distinct | from invoice)
 
 --
-customers*
-  customer
-    customer_id
-  invoice
-    invoice_id
-    customer_id
+<unknown>
+  customers*
+    customer
+      customer_id
+    invoice
+      invoice_id
+      customer_id

@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
 import org.netbeans.spi.editor.completion.*;
@@ -117,11 +118,11 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
 
     public static final CsmCompletionQuery getCompletionQuery() {
-        return new NbCsmCompletionQuery(null, CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
+        return new NbCsmCompletionQuery(null, CsmCompletionQuery.QueryScope.GLOBAL_QUERY, null);
     }
     
-    public static final CsmCompletionQuery getCompletionQuery(CsmFile csmFile, CsmCompletionQuery.QueryScope queryScope) {
-        return new NbCsmCompletionQuery(csmFile, queryScope);
+    public static final CsmCompletionQuery getCompletionQuery(CsmFile csmFile, CsmCompletionQuery.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
+        return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext);
     }
 
     static final class Query extends AsyncCompletionQuery {
@@ -231,7 +232,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                 SyntaxSupport syntSupp = Utilities.getSyntaxSupport(component);
                 if (syntSupp != null) {
                     CsmSyntaxSupport sup = (CsmSyntaxSupport) syntSupp.get(CsmSyntaxSupport.class);
-                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope);
+                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
                     NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult) query.query(component, caretOffset, sup);
                     if (res == null || (res.getData().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
                         // switch to global context
@@ -239,7 +240,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                         queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
                         if (res == null || res.isSimpleVariableExpression()) {
                             // try once more for non dereferenced expressions
-                            query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope);
+                            query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
                             res = (NbCsmCompletionQuery.CsmCompletionResult) query.query(component, caretOffset, sup);
                         }
                         if (TRACE) System.err.println("query switched to global" + getTestState());

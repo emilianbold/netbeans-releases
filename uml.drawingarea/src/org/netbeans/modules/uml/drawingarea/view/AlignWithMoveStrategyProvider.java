@@ -232,7 +232,24 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         {
             int dx = location.x - original.x;
             int dy = location.y - original.y;
-            if(dx!=0 || dy!=0)
+
+            // Determine if the new location of the widget has actually moved.
+            //
+            // Originally we used the dx and dy variables to determine if the
+            // node moved.  However, the dx and dy values are based off the
+            // original position of the widget.  In this case the "original"
+            // position of the widget is defined as the location before the move
+            // started.  Therefore if the widget is moved back to the exact
+            // coordinate as the origional location the widget will not be
+            // moved.  This is not that big of a deal when using the mouse to
+            // move because it is not very likely that the exact coordinate will
+            // occur in a single move.  However when using the keyboard to move
+            // nodes this is very likey to happen, especially on the SQD where
+            // the lifeline node can only be moved left and right.
+
+            int curDx = location.x - widget.getPreferredLocation().x;
+            int curDy = location.y - widget.getPreferredLocation().y;
+            if(curDx != 0 || curDy != 0)
             {
                 if(movingWidgets == null)
                 {

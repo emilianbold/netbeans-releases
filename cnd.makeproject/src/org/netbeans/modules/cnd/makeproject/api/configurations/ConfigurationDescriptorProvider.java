@@ -84,13 +84,11 @@ public class ConfigurationDescriptorProvider {
                         ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
                         
                         if (SwingUtilities.isEventDispatchThread()) {
-                            //System.err.println("ConfigurationDescriptorProvider Switching thead...");
-                            ProjectReader projectReader = new ProjectReader(reader, relativeOffset);
-                            RequestProcessor.Task task = RequestProcessor.getDefault().post(projectReader); 
-                            task.waitFinished();
-                            projectDescriptor = projectReader.projectDescriptor;
-                        }
-                        else {
+                            new Exception("Not allowed to use EDT for reading XML descriptor of project!").printStackTrace(System.err); // NOI18N
+                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
+                            // CHANGE YOUR LOGIC INSTEAD
+                            return null;
+                        } else {
                             try {
                                 projectDescriptor = reader.read(relativeOffset);
                             } catch (java.io.IOException x) {
@@ -109,25 +107,6 @@ public class ConfigurationDescriptorProvider {
     
     public boolean gotDescriptor() {
         return projectDescriptor != null;   
-    }
-    
-    private class ProjectReader implements Runnable {
-        public ConfigurationDescriptor projectDescriptor = null;
-        private ConfigurationXMLReader reader;
-        private String relativeOffset;
-        
-        public ProjectReader(ConfigurationXMLReader reader, String relativeOffset) {
-            this.reader = reader;
-            this.relativeOffset = relativeOffset;
-        }
-        
-        public void run() {
-            try {
-                projectDescriptor = reader.read(relativeOffset);
-            } catch (java.io.IOException x) {
-                // most likely open failed
-            }
-        }
     }
     
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {

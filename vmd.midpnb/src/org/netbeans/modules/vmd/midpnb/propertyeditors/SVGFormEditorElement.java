@@ -115,6 +115,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private JPopupMenu menu;
     private WeakReference<DesignComponent> svgFormReferences;
     private boolean needUpdate;
+    private boolean orderNeedsUpdate;
 
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
@@ -245,7 +246,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         final FileObject[] svgImageFileObject = new FileObject[1];
         final Boolean[] parseIt = new Boolean[1];
         parseIt[0] = Boolean.TRUE;
-         parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+        parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
                 PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
@@ -262,13 +263,13 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 }
             }
         });
-        
         if (parseIt[0] != null && parseIt[0]) {
             parseSVGImageItems(svgImageFileObject[0], parentComponent);
-            
+            orderSVGComponentsArray(parentComponent);
         }
-        orderSVGComponentsArray(parentComponent);
-        needUpdate = false;
+        if (orderNeedsUpdate) {
+            orderSVGComponentsArray(parentComponent);
+        }
     }
 
     private void orderSVGComponentsArray(final DesignComponent svgForm) {
@@ -479,7 +480,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 if (!fullPath.substring(i).startsWith("/")) { //NOI18N
                     relativePath = "/" + fullPath.substring(i); //NOI18N
                 } else {
-                    relativePath = fullPath.substring(i); 
+                    relativePath = fullPath.substring(i);
                 }
             } else if (needCopy) {
                 // somewhere outside sources - need to copy (export image)
@@ -506,6 +507,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     public void run() {
+        orderNeedsUpdate = false;
+        needUpdate = false;
         if (documentReferences == null || documentReferences.get() == null) {
             return;
         }
@@ -537,8 +540,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                progressBar.setVisible(
-                        isShowing);
+                progressBar.setVisible(isShowing);
             }
         });
     }
@@ -964,6 +966,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         }
 
         private void moveValue(int step) {
+            orderNeedsUpdate = true;
             TableModel model = jTable1.getModel();
             int selectedRow = jTable1.getSelectedRow();
             String typeToMoveUp = (String) model.getValueAt(selectedRow, 0);
@@ -1003,6 +1006,5 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     public void elementChanged(PropertyEditorResourceElementEvent event) {
-        
     }
 }
