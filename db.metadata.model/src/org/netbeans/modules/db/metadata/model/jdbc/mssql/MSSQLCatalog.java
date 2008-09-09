@@ -92,7 +92,7 @@ public class MSSQLCatalog extends JDBCCatalog {
             } finally {
                 rs.close();
             }
-            // Schemas always supported, so no need to try to create a fallback default schema.
+            // Schemas always supported, so no need to try to create a synthetic schema.
         } catch (SQLException e) {
             throw new MetadataException(e);
         }

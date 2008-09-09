@@ -65,6 +65,8 @@ public abstract class CatalogImplementation {
 
     public abstract Schema getDefaultSchema();
 
+    public abstract Schema getSyntheticSchema();
+
     public abstract Collection<Schema> getSchemas();
 
     public abstract Schema getSchema(String name);

@@ -89,8 +89,12 @@ public class TestMetadataTest extends MetadataTestBase {
                 "  table1",
                 "  table2"
         });
-        Schema defaultSchema = metadata.getDefaultCatalog().getDefaultSchema();
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
+        Schema defaultSchema = defaultCatalog.getDefaultSchema();
         assertTrue(defaultSchema.isSynthetic());
+        assertTrue(defaultSchema.isDefault());
+        assertSame(defaultSchema, defaultCatalog.getSyntheticSchema());
+        assertEquals(0, defaultCatalog.getSchemas().size());
         assertNames(Arrays.asList("table1", "table2"), defaultSchema.getTables());
     }
 }

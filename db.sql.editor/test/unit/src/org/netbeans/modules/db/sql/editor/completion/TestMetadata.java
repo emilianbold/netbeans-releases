@@ -110,7 +110,14 @@ public class TestMetadata extends MetadataImplementation {
                     }
                     schemaImpl = new TestSchema(catalogImpl, trimmed, defaultSchema, synthetic);
                     Schema schema = schemaImpl.getSchema();
-                    catalogImpl.schemas.put(trimmed, schema);
+                    if (synthetic) {
+                        if (catalogImpl.syntheticSchema != null) {
+                            throw new IllegalArgumentException(line);
+                        }
+                        catalogImpl.syntheticSchema = schema;
+                    } else {
+                        catalogImpl.schemas.put(trimmed, schema);
+                    }
                     if (defaultSchema) {
                         if (catalogImpl.defaultSchema != null) {
                             throw new IllegalArgumentException(line);
@@ -157,8 +164,9 @@ public class TestMetadata extends MetadataImplementation {
 
     static final class TestCatalog extends CatalogImplementation {
 
-        Schema defaultSchema;
         Map<String, Schema> schemas = new TreeMap<String, Schema>();
+        Schema defaultSchema;
+        Schema syntheticSchema;
 
         public String getName() {
             return null;
@@ -170,6 +178,10 @@ public class TestMetadata extends MetadataImplementation {
 
         public Schema getDefaultSchema() {
             return defaultSchema;
+        }
+
+        public Schema getSyntheticSchema() {
+            return syntheticSchema;
         }
 
         public Collection<Schema> getSchemas() {

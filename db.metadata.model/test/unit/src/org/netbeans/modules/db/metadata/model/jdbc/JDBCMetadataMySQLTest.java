@@ -97,9 +97,9 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         assertTrue(catalogs.contains(defaultCatalog));
 
         Schema schema = defaultCatalog.getDefaultSchema();
-        assertTrue(defaultCatalog.getSchemas().contains(schema));
         assertTrue(schema.isSynthetic());
         assertTrue(schema.isDefault());
+        assertSame(schema, defaultCatalog.getSyntheticSchema());
         assertSame(defaultCatalog, schema.getParent());
 
         Collection<Table> tables = schema.getTables();
