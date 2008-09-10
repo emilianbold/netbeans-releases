@@ -37,17 +37,18 @@
                           <Component id="portTypeComboPanel" alignment="1" pref="265" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="serviceNameLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="serviceComboPanel" pref="277" max="32767" attributes="3"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="portNameLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="servicePortTextField" pref="278" max="32767" attributes="0"/>
-                  </Group>
                   <Component id="shouldCreateServicePort" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="serviceNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="portNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="servicePortTextField" alignment="0" pref="277" max="32767" attributes="0"/>
+                          <Component id="serviceComboPanel" alignment="0" pref="277" max="32767" attributes="2"/>
+                      </Group>
+                  </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
@@ -87,7 +88,7 @@
                   <Component id="portNameLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="servicePortTextField" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
