@@ -157,11 +157,12 @@ public class ResizeElementsPanel extends javax.swing.JPanel
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        heightLabel.getAccessibleContext().setAccessibleName("");
-        heightLabel.getAccessibleContext().setAccessibleDescription("null");
-        widthLabel.getAccessibleContext().setAccessibleName("");
-        widthLabel.getAccessibleContext().setAccessibleDescription("null");
-        statusLabel.getAccessibleContext().setAccessibleName("");
+        heightLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "ACSD_HeightLabel_Name")); // NOI18N
+        heightLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "ACSD_HeightLabel_Description")); // NOI18N
+        widthLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "ACSD_WidthLabel_Name")); // NOI18N
+        widthLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "ACSD_WidthLabel_Description")); // NOI18N
+        statusLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "ACSD_STATUS_InvalidDimensions_Name")); // NOI18N
+        statusLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "ACSD_STATUS_InvalidDimensions_Description")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void widthTextFocusGained(java.awt.event.FocusEvent evt)//GEN-FIRST:event_widthTextFocusGained

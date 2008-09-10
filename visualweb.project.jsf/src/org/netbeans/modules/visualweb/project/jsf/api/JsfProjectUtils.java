@@ -273,21 +273,23 @@ public class JsfProjectUtils {
 
                     // The project.properties file should be found in the same directory
                     FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (propFile != null) {
-                        // Check Creator property
-                        boolean isJsf = fileContains(propFile, "jsf.pagebean.package"); // NOI18N
-                        setJsfProjectDir(fo, Boolean.valueOf(isJsf));
-                        return isJsf;
+                    if (propFile == null) {
+                        setJsfProjectDir(fo, Boolean.FALSE);
+                        return false;
                     }
+
+                    // Check Creator property
+                    boolean isJsf = fileContains(propFile, "jsf.pagebean.package"); // NOI18N
+                    setJsfProjectDir(fo, Boolean.valueOf(isJsf));
+                    return isJsf;
                 }
 
                 FileObject projMaven = fo.getFileObject("nb-configuration.xml"); // NOI18N
                 // Found the project root directory and got the Maven nb-configuration.xml file
                 if (projMaven != null) {
-                    if (fileContains(projMaven, RAVE_AUX_NAMESPACE)) {
-                        setJsfProjectDir(fo, Boolean.TRUE);
-                        return true;
-                    }
+                    boolean isJsf = fileContains(projMaven, RAVE_AUX_NAMESPACE);
+                    setJsfProjectDir(fo, Boolean.valueOf(isJsf));
+                    return isJsf;
                 }
             }
 

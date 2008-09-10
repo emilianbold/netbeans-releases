@@ -682,7 +682,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         try {
             return ((com.sun.jdi.BooleanValue) value).booleanValue ();
         } catch (ClassCastException e) {
-            throw new InvalidExpressionException (e);
+            throw new InvalidExpressionException ("Expecting boolean value instead of "+value.type());
         } catch (NullPointerException npe) {
             throw new InvalidExpressionException (npe);
         }
