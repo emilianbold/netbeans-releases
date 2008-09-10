@@ -242,8 +242,8 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
             Point sourceP = sourceAnchor.compute(dup.getSourceAnchorEntry()).getAnchorSceneLocation();
             list.add(sourceP);
             
-            int dx = sourceP.x - getFirstControlPoint().x;
-            int dy = sourceP.y - getFirstControlPoint().y;
+            int dx = sourceAnchor.getRelatedSceneLocation().x - getSourceAnchor().getRelatedSceneLocation().x;
+            int dy = sourceAnchor.getRelatedSceneLocation().y - getSourceAnchor().getRelatedSceneLocation().y;
             
             for (Point p: oldList)
             {

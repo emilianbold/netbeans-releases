@@ -71,8 +71,12 @@ public class DebugSingleCommand extends DebugCommand {
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
         if (isScriptSelected()) {
+            // we don't need to check anything here, because if the customizer show, then scriptSelected == false
             debugLocalCommand.invokeAction(context);
         } else {
+            if (!isUrlSet()) {
+                return;
+            }
             // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
             final FileObject startFile = fileForContext(context);
             final URL[] url = new URL[1];

@@ -52,7 +52,6 @@ import javax.swing.text.StyledDocument;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ModificationResult.CreateChange;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.cookies.EditorCookie;
@@ -70,6 +69,7 @@ import org.openide.text.PositionRef;
 public final class ModificationResult {
 
     private JavaSource js;
+    private boolean committed;
     Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
     Map<?, int[]> tag2Span = new IdentityHashMap<Object, int[]>();
     
@@ -105,26 +105,34 @@ public final class ModificationResult {
      * to commit the changes to the source files
      */
     public void commit() throws IOException {
+        if (this.committed) {
+            throw new IllegalStateException ("Calling commit on already committed Modificationesult."); //NOI18N
+        }
         try {
-            RepositoryUpdater.getDefault().lockRU();
-            for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
-                commit(me.getKey(), me.getValue(), null);
-            }
-        } finally {
-            RepositoryUpdater.getDefault().unlockRU();
-            Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
-            if (this.js != null) {
-                this.js.revalidate();
-                alreadyRefreshed.addAll(js.getFileObjects());
-            }
-            for (FileObject currentlyVisibleInEditor : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
-                if (!alreadyRefreshed.contains(currentlyVisibleInEditor)) {
-                    JavaSource source = JavaSource.forFileObject(currentlyVisibleInEditor);                
-                    if (source != null) {
-                        source.revalidate();
+            try {
+                RepositoryUpdater.getDefault().lockRU();
+                for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
+                    commit(me.getKey(), me.getValue(), null);
+                }
+            } finally {
+                RepositoryUpdater.getDefault().unlockRU();
+                Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
+                if (this.js != null) {
+                    this.js.revalidate();
+                    alreadyRefreshed.addAll(js.getFileObjects());
+                }
+                for (FileObject currentlyVisibleInEditor : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
+                    if (!alreadyRefreshed.contains(currentlyVisibleInEditor)) {
+                        JavaSource source = JavaSource.forFileObject(currentlyVisibleInEditor);                
+                        if (source != null) {
+                            source.revalidate();
+                        }
                     }
                 }
             }
+        } finally {
+            this.committed = true;
+            this.js = null;
         }
     }
             

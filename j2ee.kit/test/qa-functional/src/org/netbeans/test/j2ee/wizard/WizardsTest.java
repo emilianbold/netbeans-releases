@@ -81,7 +81,7 @@ public class WizardsTest extends J2eeTestCase {
             addTest(new NewFileWizardsTest("testQueueMdbBean", "1.4"));
             addTest(new NewFileWizardsTest("testTopicMdbBean", "1.4"));
             addTest(new NewFileWizardsTest("testServiceLocatorInEjb", "1.4"));
-            addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb", "1.4"));
+//            addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb", "1.4"));
             addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod", "1.4"));
 
             addTest(new NewProjectWizardsTest("testNewEJBModWizard", "1.4"));
@@ -91,7 +91,7 @@ public class WizardsTest extends J2eeTestCase {
 
             addTest(new NewProjectWizardsTest("testDefaultNewWebModWizard", "1.4"));
             addTest(new NewFileWizardsTest("testServiceLocatorInWeb", "1.4"));
-            addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "1.4"));
+//            addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "1.4"));
 
             addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod", "1.4"));
 

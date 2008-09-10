@@ -185,7 +185,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
     /**
      * Set to true when rowset command had changed
      */
-    private boolean refreshMetaDataFile = false; 
+    private boolean refreshMetaDataFile = true;
     
     /**
      * Store filename for deletion when rowset command changes

@@ -143,9 +143,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
 
         userField.setText(connection.getUser());
         
-        String pw = connection.getPassword();
-        passwordField.setText(pw);
-        passwordCheckBox.setSelected(pw.length() > 0);
+        passwordField.setText(connection.getPassword());
         
         String driver = connection.getDriver();
         String driverName = connection.getDriverName();

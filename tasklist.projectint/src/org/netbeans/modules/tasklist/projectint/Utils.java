@@ -44,10 +44,7 @@ package org.netbeans.modules.tasklist.projectint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -59,6 +56,8 @@ import org.openide.windows.WindowManager;
  */
 class Utils {
     
+    public static final String KEY_STATUS_BAR_LABEL = "StatusBarLabel"; //NOI18N
+            
     /** Creates a new instance of Utils */
     private Utils() {
     }

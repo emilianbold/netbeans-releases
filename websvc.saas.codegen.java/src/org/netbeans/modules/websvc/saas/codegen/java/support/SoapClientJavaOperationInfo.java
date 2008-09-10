@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.codegen.java.support;
 
 import org.netbeans.api.project.Project;
@@ -57,7 +56,12 @@ public class SoapClientJavaOperationInfo extends SoapClientOperationInfo {
 
     @Override
     public void initWsdlModelInfo() {
-        LibrariesHelper.addDefaultJaxWsClientJars(getProject(), null, getMethod().getSaas());
+        if (isRPCEncoded()) {
+            LibrariesHelper.addDefaultJaxRpcClientJars(getProject(), null, getMethod().getSaas());
+        } else {
+            LibrariesHelper.addDefaultJaxWsClientJars(getProject(), null, getMethod().getSaas());
+        }
+
     }
 
     @Override

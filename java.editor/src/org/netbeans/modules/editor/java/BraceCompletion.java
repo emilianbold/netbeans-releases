@@ -340,6 +340,8 @@ class BraceCompletion {
                         return ts.offset();
                     }
             }
+            if (!ts.moveNext())
+                break;
         }
         return rowEnd;
     }
@@ -418,7 +420,7 @@ class BraceCompletion {
         }
         boolean skipClosingBracket = false; // by default do not remove
         // Examine token at the caret offset
-        TokenSequence<JavaTokenId> javaTS = javaTokenSequence(doc, caretOffset - 1, false);
+        TokenSequence<JavaTokenId> javaTS = javaTokenSequence(doc, caretOffset, false);
         if (javaTS != null && javaTS.token().id() == rightBracketId) {
             JavaTokenId leftBracketId = matching(rightBracketId);
             // Skip all the brackets of the same type that follow the last one
@@ -491,9 +493,13 @@ class BraceCompletion {
                 // The search would stop on an extra right brace if found
                 braceBalance = 0;
                 bracketBalance = 1; // simulate one extra left bracket
-                // Relocate behind original rbracket
-                javaTS.moveIndex(lastRBracketIndex + 1);
                 finished = false;
+                // Relocate behind original rbracket and one token to right
+                if (lastRBracketIndex + 2 <= javaTS.tokenCount()) {
+                    javaTS.moveIndex(lastRBracketIndex + 2);
+                } else { // mark as finished
+                    finished = true;
+                }
                 while (!finished && javaTS.movePrevious()) {
                     JavaTokenId id = javaTS.token().id();
                     switch (id) {

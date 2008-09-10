@@ -97,7 +97,7 @@ public final class ParserQueue {
             if (ppStates.size() == 1) {
                 this.ppState = ppStates.iterator().next();
             } else {
-                this.ppState = ppStates;
+                this.ppState = new ArrayList(ppStates);
             }
             
             this.position = position;
@@ -108,12 +108,6 @@ public final class ParserQueue {
             return file;
         }
 
-        //@Deprecated
-        public APTPreprocHandler.State getPreprocState() {
-            return getPreprocStates().iterator().next(); // never empty!
-        }
-
-        //@Deprecated
         public Collection<APTPreprocHandler.State> getPreprocStates() {
             Object state = ppState;
             if (state instanceof APTPreprocHandler.State || state == null) {
@@ -163,7 +157,11 @@ public final class ParserQueue {
                 ((Collection<APTPreprocHandler.State>) this.ppState).add(oldState);
             }
             Collection<APTPreprocHandler.State> states = (Collection<APTPreprocHandler.State>) this.ppState;
-            states.addAll(ppStates);
+            for (APTPreprocHandler.State state : ppStates) {
+                if (state != FileImpl.DUMMY_STATE) {
+                    states.add(state);
+                }
+            }
         }
         
         private synchronized void setStates(Collection<APTPreprocHandler.State> ppStates) {
@@ -177,8 +175,8 @@ public final class ParserQueue {
                 System.err.println("setPreprocStateIfNeed for " + file.getAbsolutePath() +
                         " as " + tracePreprocStates(ppStates) + " with current " + tracePreprocStates(getPreprocStates())); // NOI18N
             }
-            // we don't need check here - all logic is in ProjectBase.onFileIncluded
-            this.ppState = ppStates;
+            // we don't need check here - all logic is in ProjectBase.onFileIncluded            
+            this.ppState = new ArrayList(ppStates);
         }
 
         public int compareTo(Entry that) {

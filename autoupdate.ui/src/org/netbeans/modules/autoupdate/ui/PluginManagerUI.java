@@ -252,6 +252,9 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     private void setProgressComponentInAwt (JLabel detail, JComponent progressComponent) {
         assert pProgress != null;
         assert SwingUtilities.isEventDispatchThread () : "Must be called in EQ.";
+        
+        progressComponent.setMinimumSize (progressComponent.getPreferredSize ());
+        
         pProgress.setVisible (true);
 
         java.awt.GridBagConstraints gridBagConstraints;

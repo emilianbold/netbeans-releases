@@ -42,6 +42,8 @@
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 import org.openide.util.NbBundle;
 
@@ -50,35 +52,50 @@ import org.openide.util.NbBundle;
  * @author  thp
  */
 public class PackagingNewEntryPanel extends javax.swing.JPanel {
+    private PackagingConfiguration packagingConfiguration;
 
     /** Creates new form PackagingNewEntryPanel */
-    public PackagingNewEntryPanel() {
+    public PackagingNewEntryPanel(PackagingConfiguration packagingConfiguration) {
         initComponents();
-        entryComboBox.addItem("BASEDIR"); // NOI18N
-        entryComboBox.addItem("CLASSES"); // NOI18N
-        entryComboBox.addItem("DESC"); // NOI18N
-        entryComboBox.addItem("EMAIL"); // NOI18N
-        entryComboBox.addItem("HOTLINE"); // NOI18N
-        entryComboBox.addItem("INTONLY"); // NOI18N
-        entryComboBox.addItem("ISTATES"); // NOI18N
-        entryComboBox.addItem("MAXINST"); // NOI18N
-        entryComboBox.addItem("ORDER"); // NOI18N
-        entryComboBox.addItem("PSTAMP"); // NOI18N
-        entryComboBox.addItem("RSTATES"); // NOI18N
-        entryComboBox.addItem("SUNW_ISA"); // NOI18N
-        entryComboBox.addItem("SUNW_LOC"); // NOI18N
-        entryComboBox.addItem("SUNW_PKG_DIR"); // NOI18N
-        entryComboBox.addItem("SUNW_PKG_ALLZONES"); // NOI18N
-        entryComboBox.addItem("SUNW_PKG_HOLLOW"); // NOI18N
-        entryComboBox.addItem("SUNW_PKG_THISZONE"); // NOI18N
-        entryComboBox.addItem("SUNW_PKGLIST"); // NOI18N
-        entryComboBox.addItem("SUNW_PKGTYPE"); // NOI18N
-        entryComboBox.addItem("SUNW_PKGVERS"); // NOI18N
-        entryComboBox.addItem("SUNW_PRODNAME"); // NOI18N
-        entryComboBox.addItem("SUNW_PRODVERS"); // NOI18N
-        entryComboBox.addItem("ULIMIT"); // NOI18N
-        entryComboBox.addItem("VENDOR"); // NOI18N
-        entryComboBox.addItem("VSTOCK"); // NOI18N
+        
+        this.packagingConfiguration = packagingConfiguration;
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            entryComboBox.addItem("BASEDIR"); // NOI18N
+            entryComboBox.addItem("CLASSES"); // NOI18N
+            entryComboBox.addItem("DESC"); // NOI18N
+            entryComboBox.addItem("EMAIL"); // NOI18N
+            entryComboBox.addItem("HOTLINE"); // NOI18N
+            entryComboBox.addItem("INTONLY"); // NOI18N
+            entryComboBox.addItem("ISTATES"); // NOI18N
+            entryComboBox.addItem("MAXINST"); // NOI18N
+            entryComboBox.addItem("ORDER"); // NOI18N
+            entryComboBox.addItem("PSTAMP"); // NOI18N
+            entryComboBox.addItem("RSTATES"); // NOI18N
+            entryComboBox.addItem("SUNW_ISA"); // NOI18N
+            entryComboBox.addItem("SUNW_LOC"); // NOI18N
+            entryComboBox.addItem("SUNW_PKG_DIR"); // NOI18N
+            entryComboBox.addItem("SUNW_PKG_ALLZONES"); // NOI18N
+            entryComboBox.addItem("SUNW_PKG_HOLLOW"); // NOI18N
+            entryComboBox.addItem("SUNW_PKG_THISZONE"); // NOI18N
+            entryComboBox.addItem("SUNW_PKGLIST"); // NOI18N
+            entryComboBox.addItem("SUNW_PKGTYPE"); // NOI18N
+            entryComboBox.addItem("SUNW_PKGVERS"); // NOI18N
+            entryComboBox.addItem("SUNW_PRODNAME"); // NOI18N
+            entryComboBox.addItem("SUNW_PRODVERS"); // NOI18N
+            entryComboBox.addItem("ULIMIT"); // NOI18N
+            entryComboBox.addItem("VENDOR"); // NOI18N
+            entryComboBox.addItem("VSTOCK"); // NOI18N
+        }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            entryComboBox.addItem("Patch"); // NOI18N
+            entryComboBox.addItem("%changelog"); // NOI18N
+            entryComboBox.addItem("%pre"); // NOI18N
+            entryComboBox.addItem("%post"); // NOI18N
+            entryComboBox.addItem("%preun"); // NOI18N
+            entryComboBox.addItem("%postun"); // NOI18N
+        }
+        else
+            assert false;
     }
 
     /** This method is called from within the constructor to
@@ -93,19 +110,22 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
 
         entryLabel = new javax.swing.JLabel();
         entryComboBox = new javax.swing.JComboBox();
-        entryValueTextField = new javax.swing.JTextField();
         scrollPane = new javax.swing.JScrollPane();
         docArea = new javax.swing.JTextArea();
         docArea.setBackground(getBackground());
         valueLabel = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        entryValueTextArea = new javax.swing.JTextArea();
 
-        setPreferredSize(new java.awt.Dimension(600, 400));
+        setPreferredSize(new java.awt.Dimension(600, 250));
+        setRequestFocusEnabled(false);
         setLayout(new java.awt.GridBagLayout());
 
         entryLabel.setDisplayedMnemonic('n');
         entryLabel.setLabelFor(entryComboBox);
         entryLabel.setText(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 0);
         add(entryLabel, gridBagConstraints);
 
@@ -115,24 +135,16 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 0);
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(14, 4, 0, 0);
         add(entryComboBox, gridBagConstraints);
         entryComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryComboBox.AccessibleContext.accessibleName")); // NOI18N
         entryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 16);
-        add(entryValueTextField, gridBagConstraints);
-        entryValueTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryValueTextField.AccessibleContext.accessibleDescription")); // NOI18N
-
         scrollPane.setBorder(null);
 
-        docArea.setColumns(20);
         docArea.setEditable(false);
         docArea.setLineWrap(true);
         docArea.setRows(5);
@@ -143,7 +155,7 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -153,13 +165,25 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         add(scrollPane, gridBagConstraints);
 
         valueLabel.setDisplayedMnemonic('v');
-        valueLabel.setLabelFor(entryValueTextField);
+        valueLabel.setLabelFor(entryValueTextArea);
         valueLabel.setText(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.valueLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(14, 8, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 0);
         add(valueLabel, gridBagConstraints);
+
+        entryValueTextArea.setColumns(20);
+        entryValueTextArea.setRows(5);
+        jScrollPane1.setViewportView(entryValueTextArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 16);
+        add(jScrollPane1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void entryComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_entryComboBoxActionPerformed
@@ -245,15 +269,24 @@ private void entryComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
 public InfoElement getInfoElement() {
     String name = (String)entryComboBox.getSelectedItem();
-    String value = entryValueTextField.getText();
-    return new InfoElement(name, value);
+    String value = entryValueTextArea.getText();
+    StringBuilder sb = new StringBuilder();
+    StringTokenizer tokennizer = new StringTokenizer(value, "\n"); // NOI18N
+    while (tokennizer.hasMoreTokens()) {
+        sb.append(tokennizer.nextToken());
+        if (tokennizer.hasMoreTokens()) {
+            sb.append("\\n"); // NOI18N
+        }
+    }
+    return new InfoElement(name, sb.toString());
 }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea docArea;
     private javax.swing.JComboBox entryComboBox;
     private javax.swing.JLabel entryLabel;
-    private javax.swing.JTextField entryValueTextField;
+    private javax.swing.JTextArea entryValueTextArea;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JLabel valueLabel;
     // End of variables declaration//GEN-END:variables
