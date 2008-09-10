@@ -69,18 +69,7 @@ public class InsetsEditor extends ArrayOfIntSupport {
     * which is set to method setValue(XXX)
     */
     void setValues(int[] val) {
-        if ((val[0] < 0) || (val[1] < 0) || (val[2] < 0) || (val[3] < 0)) {
-            String msg = NbBundle.getMessage(DimensionEditor.class, 
-                "CTL_NegativeSize"); //NOI18N
-            IllegalArgumentException iae = new IllegalArgumentException (
-                "Negative value"); //NOI18N
-            UIExceptions.annotateUser(iae, iae.getMessage(), msg, null,
-                                     new java.util.Date());
-            throw iae;
-
-        }
-        else
-            setValue(new Insets(val[0], val[1], val[2], val[3]));
+        setValue(new Insets(val[0], val[1], val[2], val[3]));
     }
 
     public boolean supportsCustomEditor () {
