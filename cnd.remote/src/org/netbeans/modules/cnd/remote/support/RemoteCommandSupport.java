@@ -47,7 +47,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 
 /**
