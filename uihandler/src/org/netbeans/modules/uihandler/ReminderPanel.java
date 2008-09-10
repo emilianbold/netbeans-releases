@@ -8,13 +8,10 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Cursor;
 import java.awt.Font;
-import java.awt.Image;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
