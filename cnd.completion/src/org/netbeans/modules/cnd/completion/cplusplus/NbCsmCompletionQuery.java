@@ -87,9 +87,17 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     protected CsmFinder getFinder() {
 	CsmFinder finder = null; 
         if (getCsmFile() != null) {
-            finder = new CsmFinderImpl(getCsmFile(), MIMENames.CPLUSPLUS_MIME_TYPE);
+            if (fileReferencesContext != null) {
+                finder = new CsmFinderImpl(getCsmFile(), MIMENames.CPLUSPLUS_MIME_TYPE, true);
+            } else {
+                finder = new CsmFinderImpl(getCsmFile(), MIMENames.CPLUSPLUS_MIME_TYPE);
+            }
         }
         return finder;
+    }
+
+    protected FileReferencesContext getFileReferencesContext() {
+        return fileReferencesContext;
     }
     
     private CsmFile getCsmFile() {
