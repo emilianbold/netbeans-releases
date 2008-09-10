@@ -281,7 +281,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     protected CompletionQuery.Result getResult(JTextComponent component, CsmSyntaxSupport sup, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort, boolean inIncludeDirective) {
         CompletionResolver resolver = getCompletionResolver(openingSource, sort, inIncludeDirective);
         if (resolver != null) {
-            CsmOffsetableDeclaration context = sup.getDefinition(offset);
+            CsmOffsetableDeclaration context = sup.getDefinition(offset, getFileReferencesContext());
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort);
            ctx.resolveExp(exp);
             if (ctx.result != null) {

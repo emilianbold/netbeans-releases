@@ -61,6 +61,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -358,6 +359,7 @@ public final class CsmProjectContentResolver {
         }
         Set handledLibs = new HashSet();
         Map<String, CsmObject> res = new HashMap<String, CsmObject>();
+        Collection<CsmObject> libElements = new LinkedHashSet();
         // add libararies elements
         for (Iterator it = project.getLibraries().iterator(); it.hasNext();) {
             CsmProject lib = (CsmProject) it.next();
@@ -365,10 +367,20 @@ public final class CsmProjectContentResolver {
                 handledLibs.add(lib);
                 CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort());
                 // TODO: now only direct lib is handled and not libraries of libraries of ...
-                res = mergeByFQN(res, filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match, searchNested));
+                Collection results = filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match, searchNested);
+                if (match) {
+                    libElements.addAll(results);
+                } else {
+                    res = mergeByFQN(res, results);
+                }
             }
         }
-        Collection<CsmObject> out = res.values();
+        Collection<CsmObject> out;
+        if (match) {
+            out = libElements;
+        } else {
+            out = res.values();
+        }
         if (res != null && sort) {
             List<CsmObject> sorted = new ArrayList<CsmObject>(out);
             CsmSortUtilities.sortMembers(sorted, isNaturalSort(), isCaseSensitive());
@@ -451,7 +463,7 @@ public final class CsmProjectContentResolver {
                     fillFileLocalVariables(strPrefix, match, currentFile, needFileLocalOrDeclFromUnnamedNS, false, out);
                     if (!needFileLocalOrDeclFromUnnamedNS) {
                         List<CsmVariable> cached = null;
-                        if (fileReferncesContext != null && match) {
+                        if (fileReferncesContext != null  && !fileReferncesContext.isCleaned() && match) {
                             cached = fileReferncesContext.getFileLocalIncludeVariables(strPrefix);
                         }
                         if (cached != null) {
