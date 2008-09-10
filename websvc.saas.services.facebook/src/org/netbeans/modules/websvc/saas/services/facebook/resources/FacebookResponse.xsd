@@ -919,10 +919,6 @@
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="events_getMembers_response" type="event_members" />
-    <xsd:element name="events_rsvp_response" type="xsd:int"/>
-    <xsd:element name="events_edit_response" type="xsd:int"/>
-    <xsd:element name="events_create_response" type="xsd:long"/>
-    <xsd:element name="events_cancel_response" type="xsd:int"/>
     <xsd:element name="fbml_setRefHandle_response" type="xsd:boolean" />
     <xsd:element name="fbml_refreshRefUrl_response" type="xsd:boolean" />
     <xsd:element name="fbml_refreshImgSrc_response" type="xsd:boolean" />
@@ -944,14 +940,15 @@
     <xsd:element name="feed_getRegisteredTemplateBundles_response">
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:element ref="template_bundle" maxOccurs="unbounded"/>
+                <xsd:element ref="template_bundle"  minOccurs="0" maxOccurs="unbounded"/>
             </xsd:sequence>
+            <xsd:attribute name="list" type="xsd:boolean"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="feed_registerTemplateBundle_response">
         <xsd:complexType>
             <xsd:simpleContent>
-                <xsd:extension base="xsd:integer"/>
+                <xsd:extension base="xsd:long"/>
             </xsd:simpleContent>
         </xsd:complexType>
     </xsd:element>
@@ -1259,18 +1256,6 @@
 
 <!-- Missing elements -->
     <xsd:element name="feed_publishTemplatizedAction_response" type="xsd:int"/>
-    <xsd:element name="feed_registerTemplateBundle_response" type="xsd:long"/>
-    <xsd:element name="feed_deactivateTemplateBundleByID_response" type="xsd:int"/>
-    <xsd:element name="feed_getRegisteredTemplateBundles_response">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element name="template_bundle" minOccurs="0" maxOccurs="unbounded" type="template_bundle"/>
-            </xsd:sequence>
-            <xsd:attribute name="list" type="xsd:boolean"/>
-        </xsd:complexType>
-    </xsd:element>
-    <xsd:element name="feed_getRegisteredTemplateBundleByID_response" type="template_bundle">
-    </xsd:element>
     <xsd:element name="fql_query_response">
         <xsd:complexType>
             <xsd:sequence>
