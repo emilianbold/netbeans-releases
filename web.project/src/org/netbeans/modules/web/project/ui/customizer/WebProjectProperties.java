@@ -1006,12 +1006,18 @@ final public class WebProjectProperties {
         Set<File> roots = new HashSet<File>();
         for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
             for (Object row : model.getDataVector()) {
-                roots.add((File) ((Vector) row).elementAt(0));
+                File d = (File) ((Vector) row).elementAt(0);
+                if (d.isDirectory()) {
+                    roots.add(d);
+                }
             }
         }
         try {
             String webDocRoot = WEB_DOCBASE_DIR_MODEL.getText(0, WEB_DOCBASE_DIR_MODEL.getLength());
-            roots.add(project.getAntProjectHelper().resolveFile(webDocRoot));
+            File d = project.getAntProjectHelper().resolveFile(webDocRoot);
+            if (d.isDirectory()) {
+                roots.add(d);
+            }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
