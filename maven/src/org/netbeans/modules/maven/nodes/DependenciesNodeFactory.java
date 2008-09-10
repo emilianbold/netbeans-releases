@@ -42,6 +42,7 @@ import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -70,10 +71,16 @@ public class DependenciesNodeFactory implements NodeFactory {
         return new NList(prj);
     }
     
-    private static class NList extends AbstractMavenNodeList<String> implements PropertyChangeListener {
+    private static class NList extends AbstractMavenNodeList<DependenciesNode.DependenciesChildren> implements PropertyChangeListener {
         private NbMavenProjectImpl project;
+        private DependenciesNode.DependenciesChildren compile;
+        private DependenciesNode.DependenciesChildren runtime;
+        private DependenciesNode.DependenciesChildren test;
         NList(NbMavenProjectImpl prj) {
             project = prj;
+            compile = new DependenciesNode.DependenciesChildren(project, DependenciesNode.TYPE_COMPILE);
+            runtime = new DependenciesNode.DependenciesChildren(project, DependenciesNode.TYPE_RUNTIME);
+            test = new DependenciesNode.DependenciesChildren(project, DependenciesNode.TYPE_TEST);
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
@@ -82,30 +89,35 @@ public class DependenciesNodeFactory implements NodeFactory {
             }
         }
         
-        public List<String> keys() {
-            List<String> list = new ArrayList<String>();
-            list.add(KEY_DEPENDENCIES);
-            MavenProject orig = project.getOriginalMavenProject();
-            List runtimes = new ArrayList(orig.getRuntimeArtifacts());
-            runtimes.removeAll(orig.getCompileArtifacts());
-            if (runtimes.size() > 0) {
-                list.add(KEY_RUNTIME_DEPENDENCIES);
+        public List<DependenciesNode.DependenciesChildren> keys() {
+            List<DependenciesNode.DependenciesChildren> list = new ArrayList<DependenciesNode.DependenciesChildren>();
+            compile.regenerateKeys();
+            list.add(compile);
+            if (runtime.regenerateKeys() > 0) {
+                list.add(runtime);
             }
-            List tests = new ArrayList(orig.getTestArtifacts());
-            tests.removeAll(orig.getRuntimeArtifacts());
-            if (tests.size() > 0) {
-                list.add(KEY_TEST_DEPENDENCIES);
+            if (test.regenerateKeys() > 0) {
+                list.add(test);
             }
             return list;
         }
         
-        public Node node(String key) {
-            if (KEY_DEPENDENCIES.equals(key)) {
-                return  new DependenciesNode(project, DependenciesNode.TYPE_COMPILE);
-            } else if (KEY_TEST_DEPENDENCIES.equals(key)) {
-                return  new DependenciesNode(project, DependenciesNode.TYPE_TEST);
-            } else if (KEY_RUNTIME_DEPENDENCIES.equals(key)) {
-                return  new DependenciesNode(project, DependenciesNode.TYPE_RUNTIME);
+        public Node node(DependenciesNode.DependenciesChildren key) {
+            if (key == compile) {
+                if (key.getParentNode() != null) {
+                    return key.getParentNode();
+                }
+                return  new DependenciesNode(compile, project, DependenciesNode.TYPE_COMPILE);
+            } else if (key == test) {
+                if (key.getParentNode() != null) {
+                    return key.getParentNode();
+                }
+                return  new DependenciesNode(test, project, DependenciesNode.TYPE_TEST);
+            } else if (key == runtime) {
+                if (key.getParentNode() != null) {
+                    return key.getParentNode();
+                }
+                return  new DependenciesNode(runtime, project, DependenciesNode.TYPE_RUNTIME);
             }
             assert false: "Wrong key for Dependencies NodeFactory: " + key; //NOI18N
             return null;

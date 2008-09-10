@@ -170,11 +170,14 @@ public final class ProfilesTracker {
         private final String id;
         private final String displayName;
         private final boolean isRollbackAllowed;
+        // for logging only
+        private final String profilePath;
         
-        private ProfileDescription(String id, String displayName, boolean isRollbackAllowed) {
+        private ProfileDescription(String id, String displayName, boolean isRollbackAllowed, String profilePath) {
             this.id = id;
             this.displayName = displayName;
             this.isRollbackAllowed = isRollbackAllowed;
+            this.profilePath = profilePath;
         }
         
         public boolean isRollbackAllowed() {
@@ -216,10 +219,10 @@ public final class ProfilesTracker {
     
     private void rebuild() {
         PropertyChangeEvent event = null;
-        
+
         synchronized (LOCK) {
             FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-            Map<String, List<Object []>> scan = new HashMap<String, List<Object []>>();
+            Map<String, List<Object[]>> scan = new HashMap<String, List<Object[]>>();
 
             FileObject baseFolder = sfs.findResource(mimeTypes.getBasePath());
             if (baseFolder != null && baseFolder.isFolder()) {
@@ -228,7 +231,7 @@ public final class ProfilesTracker {
 
                 // Scan mime type folders
                 Collection<String> mimes = mimeTypes.getMimeTypes();
-                for(String mime : mimes) {
+                for (String mime : mimes) {
                     locator.scan(baseFolder, mime, null, false, true, true, false, scan);
                 }
             }
@@ -237,15 +240,17 @@ public final class ProfilesTracker {
             HashMap<String, ProfileDescription> newProfilesByDisplayName = new HashMap<String, ProfileDescription>();
             for(String id : scan.keySet()) {
                 List<Object []> profileInfos = scan.get(id);
-                
+
                 // Determine profile's display name and if it can roll back user changes
                 String displayName  = null;
                 boolean canRollback = false;
+                String profilePath = null;
                 for(Object [] info : profileInfos) {
                     FileObject profileHome = (FileObject) info[0];
                     FileObject settingFile = (FileObject) info[1];
                     boolean modulesFile = ((Boolean) info[2]);
 
+                    profilePath = profileHome.getPath();
                     if (displayName == null && profileHome != null) {
                         // First try the standard way for filesystem annotations
                         displayName = Utils.getLocalizedName(profileHome, null);
@@ -255,11 +260,11 @@ public final class ProfilesTracker {
                             displayName = Utils.getLocalizedName(profileHome, id, null);
                         }
                     }
-                    
+
                     if (!canRollback) {
                         canRollback = modulesFile;
                     }
-                    
+
                     if (displayName != null && canRollback) {
                         break;
                     }
@@ -269,38 +274,47 @@ public final class ProfilesTracker {
                 // Check for duplicate display names
                 ProfileDescription maybeDupl = newProfilesByDisplayName.get(displayName);
                 if (maybeDupl != null) {
-                    LOG.warning("Ignoring profile '" + id + "', it's got the same display name as '" + maybeDupl.getId()); //NOI18N
-                    continue;
+                    // writable file for all languages in the profile's home folder
+                    String writableFile = baseFolder.getPath() + "/" + locator.getWritableFileName(null, id, null, false); //NOI18N
+                    if (writableFile.startsWith(profilePath)) {
+                        // the profile comes from the empty mimepath (all languages) and we will prefer it
+                        newProfiles.remove(maybeDupl.getId());
+                        newProfilesByDisplayName.remove(displayName);
+                        LOG.warning("Ignoring profile '" + maybeDupl.getId() + "' (" + maybeDupl.profilePath + ") in favor of '" + id + "' (" + profilePath + ") with the same display name."); //NOI18N
+                    } else {
+                        LOG.warning("Ignoring profile '" + id + "' (" + profilePath + "), it's got the same display name as '" + maybeDupl.getId() + "' (" + maybeDupl.profilePath + ")."); //NOI18N
+                        continue;
+                    }
                 }
-                
-                ProfileDescription desc = reuseOrCreate(id, displayName, canRollback);
+
+                ProfileDescription desc = reuseOrCreate(id, displayName, canRollback, profilePath);
                 newProfiles.put(id, desc);
                 newProfilesByDisplayName.put(displayName, desc);
             }
 
             // Just a sanity check
             assert newProfilesByDisplayName.size() == newProfiles.size() : "Inconsistent profile maps"; //NOI18N
-            
+
             if (!profiles.equals(newProfiles)) {
                 event = new PropertyChangeEvent(this, PROP_PROFILES, profiles, newProfiles);
                 profiles = newProfiles;
                 profilesByDisplayName = newProfilesByDisplayName;
             }
         }
-        
+
         if (event != null) {
             pcs.firePropertyChange(event);
         }
     }
 
-    private ProfileDescription reuseOrCreate(String id, String displayName, boolean rollback) {
+    private ProfileDescription reuseOrCreate(String id, String displayName, boolean rollback, String profilePath) {
         ProfileDescription desc = profiles.get(id);
         if (desc != null) {
             if (desc.getDisplayName().equals(displayName) && desc.isRollbackAllowed() == rollback) {
                 return desc;
             }
         }
-        return new ProfileDescription(id, displayName, rollback);
+        return new ProfileDescription(id, displayName, rollback, profilePath);
     }
     
     private final class Listener extends FileChangeAdapter implements PropertyChangeListener {

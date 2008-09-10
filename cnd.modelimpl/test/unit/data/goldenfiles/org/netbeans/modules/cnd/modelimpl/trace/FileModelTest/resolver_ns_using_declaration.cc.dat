@@ -42,7 +42,7 @@ NAMESPACE DEFINITOIN rnud_2 [12:1/131-34:2/524] SCOPE: resolver_ns_using_declara
                             UNIQUE NAME F:rnud_2::C::CC::CCC::boo()
                             PARAMETERS:
                             RETURNS int TEXT=int  [25:25/411-25:28/414]
-                FIELD PUBLIC cc [27:13/449-27:27/463]  TYPE: $unresolved$::C::CC::CCC TEXT=C::CC::CCC  [27:13/449-27:23/459]  INIT: null  SCOPE: CC 
+                FIELD PUBLIC cc [27:13/449-27:27/463]  TYPE: rnud_2::C::CC::CCC TEXT=C::CC::CCC  [27:13/449-27:23/459]  INIT: null  SCOPE: CC 
                 FUNCTION foo [28:13/476-28:23/486] MethodImpl SCOPE: CC 
                     DEFINITION: null
                     SIGNATURE foo()
@@ -151,7 +151,7 @@ NAMESPACE rnud_2 (rnud_2)
                             UNIQUE NAME F:rnud_2::C::CC::CCC::boo()
                             PARAMETERS:
                             RETURNS int TEXT=int  [25:25/411-25:28/414]
-                FIELD PUBLIC cc [27:13/449-27:27/463]  TYPE: $unresolved$::C::CC::CCC TEXT=C::CC::CCC  [27:13/449-27:23/459]  INIT: null  SCOPE: CC 
+                FIELD PUBLIC cc [27:13/449-27:27/463]  TYPE: rnud_2::C::CC::CCC TEXT=C::CC::CCC  [27:13/449-27:23/459]  INIT: null  SCOPE: CC 
                 FUNCTION foo [28:13/476-28:23/486] MethodImpl SCOPE: CC 
                     DEFINITION: null
                     SIGNATURE foo()

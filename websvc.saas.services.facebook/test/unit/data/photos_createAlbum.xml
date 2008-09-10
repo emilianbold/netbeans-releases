@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<photos_createAlbum_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd">
+    <aid>34595963571485</aid>
+    <cover_pid>0</cover_pid>
+    <owner>8055</owner>
+    <name>Films you will never see</name>
+    <created>1132553109</created>
+    <modified>1132553363</modified>
+    <description>No I will not make out with you</description>
+    <location>York, PA</location>
+    <link>http://www.facebook.com/album.php?aid=2002205&amp;id=8055</link>
+    <size>0</size>
+</photos_createAlbum_response>

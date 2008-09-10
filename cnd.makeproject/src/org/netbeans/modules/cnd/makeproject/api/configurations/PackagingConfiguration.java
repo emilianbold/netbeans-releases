@@ -69,12 +69,14 @@ public class PackagingConfiguration {
         getString("Tar"),
         getString("Zip"),
         getString("SCR4Package"),
-        getString("RPM")
+        getString("RPM"),
+        getString("Debian")
     };
     public static final int TYPE_TAR = 0;
     public static final int TYPE_ZIP = 1;
     public static final int TYPE_SVR4_PACKAGE = 2;
     public static final int TYPE_RPM_PACKAGE = 3;
+    public static final int TYPE_DEBIAN_PACKAGE = 4;
     private IntConfiguration type;
     private BooleanConfiguration verbose;
     private VectorConfiguration svr4Header;
@@ -104,6 +106,7 @@ public class PackagingConfiguration {
         // Init default values
         String perm = MakeOptions.getInstance().getDefExePerm();
         String packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
+        String suffix = ""; // NOI18N
 
         if (makeConfiguration.isMakefileConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
@@ -111,6 +114,9 @@ public class PackagingConfiguration {
         } else if (makeConfiguration.isApplicationConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
             packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
+            if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                suffix = ".exe"; // NOI18N
+            }
         } else if (makeConfiguration.isLibraryConfiguration()) {
             perm = MakeOptions.getInstance().getDefFilePerm();
             packageDir = "${PACKAGE_TOP_DIR}lib"; // NOI18N
@@ -120,8 +126,8 @@ public class PackagingConfiguration {
         }
         FileElement elem = new FileElement(
                 FileType.FILE,
-                "${OUTPUT_PATH}", // NOI18N
-                packageDir + "/${OUTPUT_BASENAME}", // NOI18N
+                "${OUTPUT_PATH}" + suffix, // NOI18N
+                packageDir + "/${OUTPUT_BASENAME}" + suffix, // NOI18N
                 perm,
                 MakeOptions.getInstance().getDefOwner(),
                 MakeOptions.getInstance().getDefGroup());
@@ -154,6 +160,7 @@ public class PackagingConfiguration {
         rpmHeaderList.add(new InfoElement("Release", "1", true, true)); // NOI18N
         rpmHeaderList.add(new InfoElement("Group", "Applications/System", true, true)); // NOI18N
         rpmHeaderList.add(new InfoElement("License", "BSD-type", true, true)); // NOI18N
+        rpmHeaderList.add(new InfoElement("%description", "Description...", true, true)); // NOI18N
     }
     
     public boolean isModified() {
@@ -179,7 +186,6 @@ public class PackagingConfiguration {
             }
         }
         if (getType().getValue() == TYPE_RPM_PACKAGE) {
-            // FIXUP
             if (rpmHeader.getValue().size() != 6) {
                 return true;
             }
@@ -188,6 +194,10 @@ public class PackagingConfiguration {
                     return true;
                 }
             }
+        }
+        if (getType().getValue() == TYPE_DEBIAN_PACKAGE) {
+            // FIXUP
+            return true;
         }
         return false;
     }
@@ -373,7 +383,26 @@ public class PackagingConfiguration {
         if (getTopDir().getModified()) {
             return getTopDir().getValue();
         } else {
-            String val = IpeUtils.getBaseName(getOutputValue());
+            String val = null;
+            
+            if (getType().getValue() == TYPE_RPM_PACKAGE) {
+                val = "/usr"; // NOI18N
+            }
+            else if (getType().getValue() == TYPE_DEBIAN_PACKAGE) {
+                val = "/usr"; // NOI18N
+            }
+            else if (getType().getValue() == TYPE_SVR4_PACKAGE) {
+                val = findInfoValueName("PKG"); // NOI18N
+            }
+            else if (getType().getValue() == TYPE_TAR) {
+                val = IpeUtils.getBaseName(getOutputValue());
+            }
+            else if (getType().getValue() == TYPE_ZIP) {
+                val = IpeUtils.getBaseName(getOutputValue());
+            }
+            else {
+                assert false;
+            }
             
             int i = val.lastIndexOf("."); // NOI18N
             if (i > 0) {
@@ -396,17 +425,19 @@ public class PackagingConfiguration {
     }
     
     private String getOutputDefault() {
-        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/package/"; // NOI18N 
+        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/package"; // NOI18N 
         String outputName = getOutputName();
         
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            outputPath += outputName;
+            // nothing
         } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            outputPath += outputName + ".rpm"; // NOI18N // FIXUP
+            // nothing
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            outputPath += "/" + outputName + ".deb"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
-            outputPath += outputName + ".tar"; // NOI18N
+            outputPath += "/" + outputName + ".tar"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
-            outputPath += outputName + ".zip"; // NOI18N
+            outputPath += "/" + outputName + ".zip"; // NOI18N
         } else {
             assert false;
         }
@@ -427,7 +458,9 @@ public class PackagingConfiguration {
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             tool = "pkgmk"; // NOI18N // FIXUP 
         } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            tool = "nbmbuild"; // NOI18N
+            tool = "rpmbuild"; // NOI18N
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            tool = "dpkg-deb"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             tool = "tar"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
@@ -453,6 +486,8 @@ public class PackagingConfiguration {
             option = ""; // NOI18N // FIXUP 
         } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
             option = ""; // NOI18N
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            option = ""; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             option = "-v"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
@@ -477,11 +512,6 @@ public class PackagingConfiguration {
                 return;
             }
             super.setValue(v);
-            if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-                String pkgName = IpeUtils.getBaseName((String)v);
-                InfoElement pkgElem = findInfoElement("PKG"); // NOI18N
-                pkgElem.setValue(pkgName);
-            }
         }
     }
 

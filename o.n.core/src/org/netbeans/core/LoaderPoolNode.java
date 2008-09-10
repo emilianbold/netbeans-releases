@@ -47,6 +47,7 @@ import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -628,32 +629,39 @@ public final class LoaderPoolNode extends AbstractNode {
     
     // I/O with loaders.ser; moved from NbProjectOperation:
     public static void store() throws IOException {
+        if (modifiedLoaders.isEmpty()) {
+            return;
+        }
+
         FileObject ser = getLoaderPoolStorage(true);
-        FileLock lock = ser.lock();
+        OutputStream os = ser.getOutputStream();
         try {
-            ObjectOutputStream oos = new NbObjectOutputStream(ser.getOutputStream(lock));
-            try {
-                NbObjectOutputStream.writeSafely(oos, getNbLoaderPool());
-            } finally {
-                oos.close();
-            }
+            ObjectOutputStream oos = new NbObjectOutputStream(os);
+            NbObjectOutputStream.writeSafely(oos, getNbLoaderPool());
+            oos.flush();
+            oos.close();
         } finally {
-            lock.releaseLock();
+            os.close();
         }
     }
     public static void load() throws IOException {
         FileObject ser = getLoaderPoolStorage(false);
         if (ser != null) {
-            ObjectInputStream ois = new NbObjectInputStream(ser.getInputStream());
             try {
-                NbObjectInputStream.readSafely(ois);
-            } finally {
-                ois.close();
+                ObjectInputStream ois = new NbObjectInputStream(ser.getInputStream());
+                try {
+                    NbObjectInputStream.readSafely(ois);
+                } finally {
+                    ois.close();
+                }
+            } catch (IOException x) {
+                ser.delete(); // #144158: probably not valuable, just kill it
+                throw x;
             }
         }
     }
     private static final String LOADER_POOL_NAME = "loaders.ser"; // NOI18N
-    public static FileObject getLoaderPoolStorage(boolean create) throws IOException {
+    private static FileObject getLoaderPoolStorage(boolean create) throws IOException {
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         FileObject fo = sfs.findResource(LOADER_POOL_NAME);
         if (fo == null && create) {

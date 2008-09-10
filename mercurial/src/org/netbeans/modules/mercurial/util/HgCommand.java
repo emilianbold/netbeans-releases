@@ -2463,7 +2463,12 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_REMOVE_FLAG_FORCE_CMD);
         for(File f: removeFiles){
-            command.add(f.getAbsolutePath());
+            try {
+                command.add(f.getCanonicalPath());
+            } catch (IOException ioe) {
+                Mercurial.LOG.log(Level.WARNING, null, ioe); // NOI18N
+                command.add(f.getAbsolutePath()); // don't give up
+            }
         }
 
         List<String> list = exec(command);
@@ -2486,7 +2491,12 @@ public class HgCommand {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_REMOVE_FLAG_FORCE_CMD);
-        command.add(f.getAbsolutePath());
+        try {
+            command.add(f.getCanonicalPath());
+        } catch (IOException ioe) {
+            Mercurial.LOG.log(Level.WARNING, null, ioe); // NOI18N
+            command.add(f.getAbsolutePath()); // don't give up
+        }
 
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorAlreadyTracked(list.get(0)))
@@ -2814,7 +2824,7 @@ public class HgCommand {
     private static List<String> execEnv(List<String> command, List<String> env, boolean logUsage) throws HgException{
         if( EventQueue.isDispatchThread()){
             Mercurial.LOG.log(Level.FINE, "WARNING execEnv():  calling Hg command in AWT Thread - could stall UI"); // NOI18N
-        }        
+        }
         assert ( command != null && command.size() > 0);
         if(logUsage) {
             Utils.logVCSClientEvent("HG", "CLI");

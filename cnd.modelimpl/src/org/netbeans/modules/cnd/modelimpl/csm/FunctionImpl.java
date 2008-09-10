@@ -187,15 +187,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     private void _setScope(CsmScope scope) throws AstRendererException {
-        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-        boolean assertionCondition = (this.scopeUID != null || scope == null);
-        if (!assertionCondition) {
-            throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
-                    "Cannot find function scope."); // NOI18N
-            //assert (this.scopeUID != null || scope == null);
-        }
-        this.scopeRef = null;
-
+        // for functions declared in bodies scope is CsmCompoundStatement - it is not Identifiable
+        if ((scope instanceof CsmIdentifiable)) {
+            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+            assert (scopeUID != null || scope == null);
+        } else {
+            this.scopeRef = scope;
+        }        
     }
 
     /**

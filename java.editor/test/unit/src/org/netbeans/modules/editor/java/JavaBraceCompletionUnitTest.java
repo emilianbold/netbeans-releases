@@ -77,6 +77,16 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
 
     // ------- Tests for completion of right parenthesis ')' -------------
     
+    public void testTypeRightParenWithinBraces() { // #146139
+        Context ctx = new Context(new JavaKit(),
+                "{(()|; }"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "{(()); }"
+        );
+    }
+
     public void testTypeLeftParen() {
         Context ctx = new Context(new JavaKit(), "m|");
         ctx.typeChar('(');

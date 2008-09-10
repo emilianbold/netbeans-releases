@@ -42,7 +42,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -80,13 +79,16 @@ public class DevelopmentHostConfiguration {
 
     public String getDisplayName(boolean displayIfNotFound) {
         String out = names[value];
-        if (!isLocalhost() && displayIfNotFound) {
-            CompilerSetManager csm = CompilerSetManager.getDefault(out);
-            if (csm.isUninitialized()) {
-                out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
-            }
+        if (displayIfNotFound && !isOnline()) {
+            out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
         return out;
+    }
+
+    public boolean isOnline() {
+        // localhost is always STATE_COMPLETE so isLocalhost() is assumed
+        // keeping track of online status takes more efforts and can miss sometimes
+        return !CompilerSetManager.getDefault(getName()).isUninitialized();
     }
 
     public int getValue() {
@@ -102,7 +104,7 @@ public class DevelopmentHostConfiguration {
             if (v.equals(names[i])) {
                 value = i;
                 if (firePC) {
-                    pcs.firePropertyChange(PROP_DEV_HOST, null, v);
+                    pcs.firePropertyChange(PROP_DEV_HOST, null, this);
                 }
                 return;
             }
@@ -111,13 +113,14 @@ public class DevelopmentHostConfiguration {
         // The project's configuration wants a dev host not currently defined.
         // We don't want to ask user at this moment, so we create offline host and preserve compilerset name
         // User will be asked about connection after choosing action like build for this particular project
+        // or after click on brand-new "..." button!
         addDevelopmentHost(v);
         names = getServerNames();
         setValue(v, firePC);
     }
 
     private boolean addDevelopmentHost(String host) {
-        ServerList list = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        ServerList list = Lookup.getDefault().lookup(ServerList.class);
         if (list != null) {
             list.addServer(host, false, false);
         }
@@ -183,7 +186,7 @@ public class DevelopmentHostConfiguration {
 
     private static ServerList getServerList() {
         if (serverList == null) {
-            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            serverList = Lookup.getDefault().lookup(ServerList.class);
         }
         return serverList;
     }

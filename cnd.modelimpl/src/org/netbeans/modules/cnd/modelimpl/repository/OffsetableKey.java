@@ -174,7 +174,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	//instead compare indexes.
 	//assert (this.getFileName().equals(other.getFileName()));
 	//assert (this.getProjectName().equals(other.getProjectName()));
-	assert (this.unitIndex == other.unitIndex);
+	assert (this.getUnitId() == other.getUnitId());
 	assert (this.fileNameIndex == other.fileNameIndex);
 	int ofs1 = this.startOffset;
 	int ofs2 = other.startOffset;

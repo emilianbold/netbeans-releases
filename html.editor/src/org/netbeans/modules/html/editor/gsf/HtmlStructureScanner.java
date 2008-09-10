@@ -94,7 +94,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         //return the root children
         List<StructureItem> elements = new  ArrayList<StructureItem>(1);
-        elements.addAll(new HtmlStructureItem(new HtmlElementHandle(root, info), source).getNestedItems());
+        elements.addAll(new HtmlStructureItem(new HtmlElementHandle(root, info.getFileObject()), source).getNestedItems());
         
         return elements;
         
@@ -168,7 +168,7 @@ public class HtmlStructureScanner implements StructureScanner {
         
         private HtmlStructureItem(HtmlElementHandle handle, TranslatedSource source) {
             this.handle = handle;
-            this.source= source;
+            this.source = source;
         }
 
         public String getName() {
@@ -246,7 +246,7 @@ public class HtmlStructureScanner implements StructureScanner {
                 for(AstNode child : handle.node().children()) {
                     if(child.type() == AstNode.NodeType.TAG 
                             || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                        HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.compilationInfo());
+                        HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.getFileObject());
                         items.add(new HtmlStructureItem(childHandle, source));
                     }
                 }

@@ -52,7 +52,11 @@ made subject to such option by the copyright holder.
             <version major="7" minor="13"/>
             <date day="3" month="9" year="2008"/>
             <author login="jskrivanek"/>
-            <compatibility addition="yes"/>
+            <compatibility addition="yes">
+                <p>
+                    If you have a <code>MIMEResolver</code> subclass, be sure to use the new super constructor.
+                </p>
+            </compatibility>
             <description>
                 <p>
                     To speed up MIME type recognition it is added an extra parameter

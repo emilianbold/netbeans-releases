@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.CompilerSettings;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -627,6 +628,9 @@ public class DwarfSource implements SourceFileProperties{
                 if (f.exists() && f.canRead() && !f.isDirectory()){
                     List<String> l = grepSourceFile(f.getAbsolutePath());
                     for (String i : l){
+                        if (i.indexOf("..")>0 || i.startsWith("/") || i.indexOf(":")>0) { // NOI18N
+                            continue;
+                        }
                         if (i.indexOf('/')>0){ // NOI18N
                             int n = i.lastIndexOf('/'); // NOI18N
                             String relativeDir = i.substring(0,n);
@@ -641,8 +645,15 @@ public class DwarfSource implements SourceFileProperties{
         }
         List<String> secondLevel = new ArrayList<String>();
         for(String sub : res) {
-            for(String s : grepSystemFolder(path+sub)){
-                secondLevel.add(s);
+            File subFolder = new File(path+sub);
+            try {
+                if (subFolder.getCanonicalFile().getAbsolutePath().startsWith(path + sub)) {
+                    for (String s : grepSystemFolder(path + sub)) {
+                        secondLevel.add(s);
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         for(String s: secondLevel){

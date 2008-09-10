@@ -44,6 +44,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -138,9 +139,6 @@ import org.xml.sax.SAXException;
 public class Installer extends ModuleInstall implements Runnable {
     static final long serialVersionUID = 1L;
 
-    /**
-     *
-     */
     static final String USER_CONFIGURATION = "UI_USER_CONFIGURATION";   // NOI18N
     private static UIHandler ui = new UIHandler(false);
     private static UIHandler handler = new UIHandler(true);
@@ -158,9 +156,32 @@ public class Installer extends ModuleInstall implements Runnable {
     private static Object[] selectedExcParams;
 
     private static boolean logMetricsEnabled = false;
+    /** Flag to store status of last metrics upload */
+    private static boolean logMetricsUploadFailed = false;
+    
     private static String USAGE_STATISTICS_ENABLED = "usageStatisticsEnabled"; // NOI18N
     private static String CORE_PREF_NODE = "org/netbeans/core"; // NOI18N
     private static Preferences corePref = NbPreferences.root().node (CORE_PREF_NODE);
+
+    private JButton metricsEnable = new JButton();
+    private JButton metricsCancel = new JButton();
+
+    private static final String CMD_METRICS_ENABLE = "MetricsEnable";   // NOI18N
+    private static final String CMD_METRICS_CANCEL = "MetricsCancel";   // NOI18N
+
+    /** Action listener for Usage Statistics Reminder dialog */
+    private ActionListener l = new ActionListener () {
+        public void actionPerformed (ActionEvent ev) {
+            cmd = ev.getActionCommand();
+            if (CMD_METRICS_ENABLE.equals(cmd)) {
+                corePref.putBoolean(USAGE_STATISTICS_ENABLED, true);
+            } else if (CMD_METRICS_CANCEL.equals(cmd)) {
+                corePref.putBoolean(USAGE_STATISTICS_ENABLED, false);
+            }
+        }
+    };
+
+    private String cmd;
 
     static final String METRICS_LOGGER_NAME = "org.netbeans.ui.metrics"; // NOI18N
     private static Pattern ENCODING = Pattern.compile(
@@ -204,8 +225,11 @@ public class Installer extends ModuleInstall implements Runnable {
         all.addHandler(handler);
         logsSize = prefs.getInt("count", 0);
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
+        logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", Boolean.FALSE); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
+        usageStatisticsReminder();
+        
         System.setProperty("nb.show.statistics.ui",USAGE_STATISTICS_ENABLED);
         logMetricsEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED,Boolean.FALSE);
         if (logMetricsEnabled) {
@@ -241,6 +265,75 @@ public class Installer extends ModuleInstall implements Runnable {
         if (logsSize >= UIHandler.MAX_LOGS) {
             WindowManager.getDefault().invokeWhenUIReady(this);
         }
+    }
+
+    private void usageStatisticsReminder () {
+        metricsEnable.addActionListener(l);
+        metricsEnable.setActionCommand(CMD_METRICS_ENABLE);
+        //registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
+        Mnemonics.setLocalizedText(metricsEnable, NbBundle.getMessage(
+                Installer.class, "LBL_MetricsEnable"));
+        metricsEnable.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(Installer.class,"ACSN_MetricsEnable"));
+        metricsEnable.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(Installer.class,"ACSD_MetricsEnable"));
+
+        metricsCancel.addActionListener(l);
+        metricsCancel.setActionCommand(CMD_METRICS_CANCEL);
+        //registerLater.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterLater"));
+        Mnemonics.setLocalizedText(metricsCancel, NbBundle.getMessage(
+                Installer.class, "LBL_MetricsCancel"));
+        metricsCancel.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(Installer.class,"ACSN_MetricsCancel"));
+        metricsCancel.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(Installer.class,"ACSD_MetricsCancel"));
+
+        boolean keyExists = false;
+        String [] keys = null;
+        try {
+            keys = corePref.keys();
+            for (int i = 0; i < keys.length; i++) {
+                if (USAGE_STATISTICS_ENABLED.equals(keys[i])) {
+                    keyExists = true;
+                    break;
+                }
+            }
+        } catch (BackingStoreException exc) {
+            Exceptions.printStackTrace(exc);
+            //Not able to confirm if key exists or not
+            keyExists = true;
+        }
+        if (!keyExists) {
+            //If key does not exist yet ask user
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                public void run() {
+                    showDialog();
+                }
+            });
+        }
+    }
+
+    private void showDialog () {
+        DialogDescriptor descriptor = new DialogDescriptor(
+            new ReminderPanel(),
+            NbBundle.getMessage(Installer.class, "Metrics_title"),
+            true,
+                new Object[] {metricsEnable, metricsCancel},
+                null,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        Dialog dlg = null;
+        try {
+            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.setResizable(false);
+            dlg.setVisible(true);
+        } finally {
+            if (dlg != null) {
+                dlg.dispose();
+            }
+        }
+        //NbConnection.updateStatus(cmd,NbInstaller.PRODUCT_ID);
     }
 
     public void run() {
@@ -333,7 +426,31 @@ public class Installer extends ModuleInstall implements Runnable {
                 MetricsHandler.waitFlushed();
                 closeLogStreamMetrics();
                 File f = logFileMetrics(0);
-                f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
+                File f1 = logFileMetrics(1);
+                if (f1.exists()) {
+                    if (logMetricsUploadFailed) {
+                        //If last metrics upload failed first check size of backup file
+                        if (f1.length() > MetricsHandler.MAX_LOGS_SIZE) {
+                            //Size is over limit delete file
+                            f1.delete();
+                            if (!f.renameTo(f1)) {
+                                LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                            }
+                        } else {
+                            //Size is below limit, append data
+                            appendFile(f, f1);
+                        }
+                    } else {
+                        f1.delete();
+                        if (!f.renameTo(f1)) {
+                            LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                        }
+                    }
+                } else {
+                    if (!f.renameTo(f1)) {
+                        LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                    }
+                }
                 logsSizeMetrics = 0;
                 if (preferencesWritable) {
                     prefs.putInt("countMetrics", logsSizeMetrics);
@@ -349,6 +466,36 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         } catch (IOException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    /** Apend content of source to target */
+    private static void appendFile (File source, File target) {
+        try {
+            FileInputStream is = null;
+            FileOutputStream os = null;
+            try {
+                is = new FileInputStream(source);
+                BufferedInputStream bis = new BufferedInputStream(is);
+
+                os = new FileOutputStream(target, true);
+                BufferedOutputStream bos = new BufferedOutputStream(os);
+
+                int c;
+                while ((c = bis.read()) != -1) {
+                    bos.write(c);
+                }
+                bos.flush();
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
+                if (os != null) {
+                    os.close();
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -1450,17 +1597,30 @@ public class Installer extends ModuleInstall implements Runnable {
             }
 
             try {
+                if (dataType == DataType.DATA_METRICS) {
+                    logMetricsUploadFailed = false;
+                }
                 nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs, dataType);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, null, ex);
-                String txt;
-                if (!report){
-                    txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
-                }else{
-                    txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
+                if (dataType == DataType.DATA_METRICS) {
+                    logMetricsUploadFailed = true;
                 }
-                NotifyDescriptor nd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notifyLater(nd);
+                if (dataType != DataType.DATA_METRICS) {
+                    String txt;
+                    if (!report) {
+                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
+                    } else {
+                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
+                    }
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                }
+            }
+            if (dataType == DataType.DATA_METRICS) {
+                if (preferencesWritable) {
+                    prefs.putBoolean("metrics.upload.failed", logMetricsUploadFailed); // NOI18N
+                }
             }
             if (nextURL != null) {
                 clearLogs();
@@ -1794,6 +1954,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         log.setUseParentHandlers(true);
                         log.setLevel(Level.FINEST);
                         log.addHandler(metrics);
+                        MetricsHandler.setFlushOnRecord(false);
                     } else {
                         MetricsHandler.flushImmediatelly();
                         closeLogStreamMetrics();

@@ -62,7 +62,7 @@ public class FileModelTest extends TraceModelTestBase {
 
     @Override
     protected void setUp() throws Exception {
-    System.setProperty("parser.report.errors", "true");
+        System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
     }
@@ -468,6 +468,21 @@ public class FileModelTest extends TraceModelTestBase {
     public void testIZ144968() throws Exception {
         performTest("IZ144968.cc"); // NOI18N
     }
+    
+    // #144009 wrong error highlighting for inline structure
+    public void testIZ144009() throws Exception {
+        performTest("IZ144009.cc"); // NOI18N
+    }   
+
+    // #145963 can't resolve template class implementations
+    public void testLocalVariables() throws Exception {
+        performTest("local_variables.cc"); // NOI18N
+    }   
+    
+    // #146150 unexpected token: ; message appears on extern int errno; line
+    public void testIZ146150() throws Exception {
+        performTest("IZ146150.cc"); // NOI18N
+    }   
 
     /////////////////////////////////////////////////////////////////////
     // FAILS

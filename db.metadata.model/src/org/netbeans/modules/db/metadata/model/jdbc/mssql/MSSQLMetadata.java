@@ -58,7 +58,7 @@ public class MSSQLMetadata extends JDBCMetadata {
     }
 
     @Override
-    protected MSSQLCatalog createCatalog(String catalogName, boolean _default, String defaultSchemaName) {
+    protected MSSQLCatalog createJDBCCatalog(String catalogName, boolean _default, String defaultSchemaName) {
         return new MSSQLCatalog(this, catalogName, _default, defaultSchemaName);
     }
 }

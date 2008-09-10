@@ -60,7 +60,7 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
     protected ProjectFileNameBasedKey(String prjName, String fileName) {
 	super(prjName);
 	assert fileName != null;
-	this.fileNameIndex = KeyUtilities.getFileIdByName(unitIndex, fileName);
+	this.fileNameIndex = KeyUtilities.getFileIdByName(getUnitId(), fileName);
     }
     
     protected ProjectFileNameBasedKey(FileImpl file) {
@@ -103,12 +103,12 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
     }
     
     protected String getFileName() {
-	return KeyUtilities.getFileNameById(unitIndex, this.fileNameIndex);
+	return KeyUtilities.getFileNameById(getUnitId(), this.fileNameIndex);
     }
     
     /** A special safe method, mainly for toString / tracing */
     protected String getFileNameSafe() {
-	return KeyUtilities.getFileNameByIdSafe(unitIndex, this.fileNameIndex);
+	return KeyUtilities.getFileNameByIdSafe(getUnitId(), this.fileNameIndex);
     }
     
     @Override

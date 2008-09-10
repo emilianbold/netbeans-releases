@@ -122,7 +122,7 @@ public final class ClassPathSupport {
         //Map warMap = ( webModuleLibraries != null ) ? callback.createWarIncludesMap( antProjectHelper, webModuleLibraries) : new LinkedHashMap();
         
         String pe[] = PropertyUtils.tokenizePath( propertyValue == null ? "": propertyValue ); // NOI18N        
-        List items = new ArrayList( pe.length );        
+        List<Item> items = new ArrayList<Item>( pe.length );        
         for( int i = 0; i < pe.length; i++ ) {
             //String property = ProjectProperties.getAntPropertyName( pe[i] );
             

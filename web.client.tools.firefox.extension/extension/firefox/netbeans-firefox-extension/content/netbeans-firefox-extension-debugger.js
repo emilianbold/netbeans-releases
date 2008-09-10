@@ -338,16 +338,17 @@
                     currentFirebugContext = context;
                     releaseFirebugContext = false;
                     netBeansDebugger.onInit(netBeansDebugger);
+                    
+                    if (features.suspendOnFirstLine) {
+                        features.suspendOnFirstLine = false;
+                        suspend("firstline");
+                    }
                 }
             },
 
             // #5 Show Current Context - we didn't need this.'
             showContext: function(browser, context) {
 
-                if (features.suspendOnFirstLine) {
-                    features.suspendOnFirstLine = false;
-                    suspend("firstline");
-                }
             },
 
             // #6 Watch Window ( attachToWindow )
@@ -1045,6 +1046,7 @@
 
     // 7. run until
     function runUntil(url, lineno) {
+        lineno = parseInt(lineno);
         var src;
 
         if (currentFirebugContext) {
@@ -1272,7 +1274,7 @@
             // transmit them in UTF-8 - the default XML encoding.
             // We may need to convert the source text to UTF-8
             // here using nsIScriptableUnicodeConverter service.
-            data = data.join("\n");
+            data = "N" + data.join("\n");
 
             var sourceResponse =
               <response command="source" encoding="none"
@@ -1582,8 +1584,9 @@
         const delayShutdownIfDebugging = function() {
             disable();
             NetBeans.Debugger.shutdown();
-            // #144937 - why did we close the window on shutdown anyway?
-            //window.close();
+            // XXX not closing the browser window causes strange problems so subsequent
+            // debug sessions do not work correctly - should be fixed some other way if possible
+            window.close();
         };
 
         if (debugging) {
