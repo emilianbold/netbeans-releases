@@ -87,7 +87,14 @@ public class ConfigurationDescriptorProvider {
                             new Exception("Not allowed to use EDT for reading XML descriptor of project!").printStackTrace(System.err); // NOI18N
                             // PLEASE DO NOT ADD HACKS like Task.waitFinished()
                             // CHANGE YOUR LOGIC INSTEAD
-                            return null;
+
+                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
+                            try {
+                                projectDescriptor = reader.read(relativeOffset);
+                            } catch (java.io.IOException x) {
+                                // most likely open failed
+                            }
+                            return projectDescriptor;
                         } else {
                             try {
                                 projectDescriptor = reader.read(relativeOffset);

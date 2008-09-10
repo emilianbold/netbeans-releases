@@ -54,17 +54,15 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -76,24 +74,24 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
     private MatcherContext context;
     private LanguagePath htmlLanguagePath;
-    private FileObject fileObject;
     private static final String BLOCK_COMMENT_START = "<!--"; //NOI18N
     private static final String BLOCK_COMMENT_END = "-->"; //NOI18N
 
+    static boolean testMode = false;
+    
     public HTMLBracesMatching() {
-        this(null, null, null);
+        this(null, null);
     }
 
-    private HTMLBracesMatching(MatcherContext context, FileObject fileObject, LanguagePath htmlLanguagePath) {
+    private HTMLBracesMatching(MatcherContext context, LanguagePath htmlLanguagePath) {
         this.context = context;
-        this.fileObject = fileObject;
         this.htmlLanguagePath = htmlLanguagePath;
     }
 
     public int[] findOrigin() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
-            if (MatcherContext.isTaskCanceled()) {
+            if (!testMode && MatcherContext.isTaskCanceled()) {
                 return null;
             }
             TokenHierarchy th = TokenHierarchy.get(context.getDocument());
@@ -155,7 +153,7 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
     }
 
     public int[] findMatches() throws InterruptedException, BadLocationException {
-        if (MatcherContext.isTaskCanceled()) {
+        if (!testMode && MatcherContext.isTaskCanceled()) {
             return null;
         }
 
@@ -172,9 +170,12 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                 }
 
                 public void run(CompilationController parameter) throws Exception {
-                    if (MatcherContext.isTaskCanceled()) {
+                    if (!testMode && MatcherContext.isTaskCanceled()) {
                         return;
                     }
+                    
+                    parameter.toPhase(Phase.PARSED);
+                    
                     HtmlParserResult result = (HtmlParserResult) parameter.getEmbeddedResult(HTMLKit.HTML_MIME_TYPE, context.getSearchOffset());
                     if(result == null) {
                         ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()};
@@ -251,16 +252,20 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
         context.getDocument().render(new Runnable() {
             public void run() {
                 TokenHierarchy<Document> hierarchy = TokenHierarchy.get(context.getDocument());
+                
+                //test if the html sequence is the top level one
+                if(hierarchy.tokenSequence().language() == HTMLTokenId.language()) {
+                    ret[0] = new HTMLBracesMatching(context, hierarchy.tokenSequence().languagePath());
+                    return ;
+                }
+                
+                //test for embeedded html 
                 List<TokenSequence<?>> ets = hierarchy.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
                 for (TokenSequence ts : ets) {
                     Language language = ts.language();
                     if (language == HTMLTokenId.language()) {
-                        DataObject od = NbEditorUtilities.getDataObject(context.getDocument());
-                        if (od != null) {
-                            ret[0] = new HTMLBracesMatching(context, od.getPrimaryFile(), ts.languagePath());
-                        } else {
-                            break;
-                        }
+                        ret[0] = new HTMLBracesMatching(context, ts.languagePath());
+                        return ;
                     }
                 }
                 // We might be trying to search at the end or beginning of a document. In which

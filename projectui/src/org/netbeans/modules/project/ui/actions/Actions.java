@@ -154,7 +154,7 @@ public class Actions implements ActionsFactory {
     public static Action javadocProject() {
         return new ProjectAction (
             "javadoc", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name" ).trim(), // NOI18N
+            NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name" ), // NOI18N
             null, 
             null ); 
     }
