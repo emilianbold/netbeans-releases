@@ -82,27 +82,35 @@ public class WrapperBookmarkAction extends NodeAction {
     }
 
     public void performAction(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length == 1) {
-            EditorCookie ec = (EditorCookie)activatedNodes[0].getCookie(EditorCookie.class);
-            if (ec != null) {
-                JEditorPane panes[] = ec.getOpenedPanes();
-                if (panes != null && panes.length > 0) {
-                    JEditorPane pane = panes[0];
-                    ActionEvent paneEvt = new ActionEvent(pane, 0, "");
-                    originalAction.actionPerformed(paneEvt);
+        JEditorPane editorPane = getEditorPane (activatedNodes);
+        if (editorPane != null) {
+            ActionEvent paneEvt = new ActionEvent (editorPane, 0, "");
+            originalAction.actionPerformed (paneEvt);
         }
     }
+    
+    protected boolean enable (Node[] activatedNodes) {
+        return getEditorPane (activatedNodes) != null;
     }
     
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length == 1) {
-            EditorCookie ec = (EditorCookie)activatedNodes[0].getCookie(EditorCookie.class);
+    private static JEditorPane getEditorPane (Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            Set<JEditorPane> editors = new HashSet<JEditorPane> ();
+            for (Node node : activatedNodes) {
+                EditorCookie ec = node.getCookie(EditorCookie.class);
                 if (ec != null) {
                     JEditorPane panes[] = ec.getOpenedPanes();
-                return panes != null && panes.length > 0;
+                    if (panes != null && panes.length > 0) {
+                        System.out.println(panes [0]);
+                        editors.add (panes [0]);
                     }
                 }
             }
+            if (editors.size () == 1)
+                return editors.iterator ().next ();
+        }
+        return null;
+    }
 
     public org.openide.util.HelpCtx getHelpCtx() {
         return null;
