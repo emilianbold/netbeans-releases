@@ -435,7 +435,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         // file local variables
         if (needFileLocalVars(context, offset)) {
-            if (fileReferncesContext != null){
+            if (fileReferncesContext != null && !fileReferncesContext.isCleaned()){
                 fileReferncesContext.advance(offset);
             }
             resImpl.fileLocalVars = contResolver.getFileLocalVariables(context, fileReferncesContext, strPrefix, match, queryScope == QueryScope.LOCAL_QUERY);
@@ -449,11 +449,29 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
 
         if (needFileIncludedMacros(context, offset)) {
-            resImpl.fileProjectMacros = contResolver.getFileIncludedProjectMacros(context, strPrefix, match);
+            if (fileReferncesContext != null && !fileReferncesContext.isCleaned()) {
+                fileReferncesContext.advance(offset);
+                CsmMacro macro = fileReferncesContext.findIncludedMacro(strPrefix);
+                if (macro != null) {
+                    resImpl.fileProjectMacros = new ArrayList<CsmMacro>(1);
+                    resImpl.fileProjectMacros.add(macro);
+                }
+            } else {
+                resImpl.fileProjectMacros = contResolver.getFileIncludedProjectMacros(context, strPrefix, match);
+            }
             if (isEnough(strPrefix, match, resImpl.fileProjectMacros)) return true;
         }
         if (needFileIncludedLibMacros(context, offset)) {
-            resImpl.fileLibMacros = contResolver.getFileIncludeLibMacros(context, strPrefix, match);
+            if (fileReferncesContext != null && !fileReferncesContext.isCleaned()) {
+                fileReferncesContext.advance(offset);
+                CsmMacro macro = fileReferncesContext.findIncludedMacro(strPrefix);
+                if (macro != null) {
+                    resImpl.fileLibMacros = new ArrayList<CsmMacro>(1);
+                    resImpl.fileLibMacros.add(macro);
+                }
+            } else {
+                resImpl.fileLibMacros = contResolver.getFileIncludeLibMacros(context, strPrefix, match);
+            }
             if (isEnough(strPrefix, match, resImpl.fileLibMacros)) return true;
         }
         if (needGlobalMacros(context, offset)) {
@@ -1424,7 +1442,11 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (strPrefix.length() == 0) {
                 resolveTypes |= RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_PRJ_MACROS;
             } else {
-                resolveTypes |= RESOLVE_FILE_LOCAL_MACROS | RESOLVE_GLOB_MACROS | RESOLVE_LIB_MACROS;
+                if (fileReferncesContext == null) {
+                    resolveTypes |= RESOLVE_FILE_LOCAL_MACROS | RESOLVE_GLOB_MACROS | RESOLVE_LIB_MACROS;
+                } else {
+                    resolveTypes |= RESOLVE_FILE_LOCAL_MACROS  | RESOLVE_FILE_PRJ_MACROS | RESOLVE_FILE_LIB_MACROS;
+                }
             }
 
             // resolve classes always

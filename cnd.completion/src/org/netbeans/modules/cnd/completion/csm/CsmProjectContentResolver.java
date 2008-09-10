@@ -463,7 +463,7 @@ public final class CsmProjectContentResolver {
                     fillFileLocalVariables(strPrefix, match, currentFile, needFileLocalOrDeclFromUnnamedNS, false, out);
                     if (!needFileLocalOrDeclFromUnnamedNS) {
                         List<CsmVariable> cached = null;
-                        if (fileReferncesContext != null && match) {
+                        if (fileReferncesContext != null  && !fileReferncesContext.isCleaned() && match) {
                             cached = fileReferncesContext.getFileLocalIncludeVariables(strPrefix);
                         }
                         if (cached != null) {
