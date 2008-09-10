@@ -1,8 +1,8 @@
-#
+# 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-#
-# Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
-#
+# 
+# Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+# 
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common
 # Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
 # License Header, with the fields enclosed by brackets [] replaced by
 # your own identifying information:
 # "Portions Copyrighted [year] [name of copyright owner]"
-#
-# Contributor(s):
-#
-# The Original Software is NetBeans. The Initial Developer of the Original
-# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-# Microsystems, Inc. All Rights Reserved.
-#
+# 
 # If you wish your version of this file to be governed by only the CDDL
 # or only the GPL Version 2, indicate your decision by adding
 # "[Contributor] elects to include this software in this distribution
@@ -37,9 +31,44 @@
 # However, if you add GPL Version 2 code and therefore, elected the GPL
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
-#
+# 
+# Contributor(s):
+# 
+# Portions Copyrighted 2008 Sun Microsystems, Inc.
 
-#System file system
-Templates/J2EE=Java EE
-Templates/J2EE/EJB21=EJB 2.1
-Templates/J2EE/EJB30=EJB 3.0
+# Opens the Rails plugin class so that the uninstall
+# method does not actually remove the plugin folder; this
+# left for the IDE -- see #142698
+class Plugin
+
+  def method_missing(meth, *args, &blk)
+    return super unless meth == :uninstall
+    do_uninstall
+  end
+
+  def do_uninstall
+    # othewise identical to the original Plugin#uninstall method, 
+    # just the rm_r path is commented out here
+    path = "#{rails_env.root}/vendor/plugins/#{name}"
+    if File.directory?(path)
+      puts "Removing 'vendor/plugins/#{name}'" if $verbose
+      run_uninstall_hook
+      #      rm_r path -- the IDE should do this
+    else
+      puts "Plugin doesn't exist: #{path}"
+    end
+    # clean up svn:externals
+    externals = rails_env.externals
+    externals.reject!{|n,u| name == n or name == u}
+    rails_env.externals = externals
+  end
+
+  def Plugin.method_added(sym)
+    # can't just redefine and give an alias to the uninstall method since
+    # commands/plugin can't be required here; it executes some code that
+    # will throw an exception when executed at this point
+    if :uninstall == sym
+      remove_method :uninstall
+    end
+  end
+end

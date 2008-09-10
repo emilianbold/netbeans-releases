@@ -66,13 +66,12 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -88,6 +87,7 @@ import org.openide.util.Utilities;
  * @author Tor Norbye
  */
 public class PluginManager {
+    private static final String PLUGIN_CUSTOMIZER = "plugin.rb";
 
     private RailsProject project;
     /** Share over invocations of the dialog since these are slow to compute */
@@ -360,7 +360,8 @@ public class PluginManager {
         }
         
         argList.addAll(RubyExecution.getRubyArgs(platform));
-        
+        // see #142698
+        argList.add("-r" + getPluginCustomizer().getAbsolutePath()); //NOI18N
         argList.add(pluginCmd);
         argList.add(command);
         
@@ -467,7 +468,18 @@ public class PluginManager {
         }
         
         boolean succeeded = exitCode == 0;
-        
+        // see #142698
+        if (succeeded && "remove".equals(command) && commandArgs != null && commandArgs[0] != null) { //NOI18N
+            FileObject plugin = project.getProjectDirectory().getFileObject("vendor/plugins/" + commandArgs[0]); //NOI18N
+            if (plugin != null) {
+                try {
+                    plugin.delete();
+                } catch (IOException ex) {
+                    succeeded = false;
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         return succeeded;
     }
     
@@ -822,4 +834,16 @@ public class PluginManager {
         
         return cacheFolder;
     }
+    
+    private static synchronized File getPluginCustomizer() {
+        File pluginScript = InstalledFileLocator.getDefault().locate(
+                PLUGIN_CUSTOMIZER, "org.netbeans.modules.ruby.railsproject", false);  // NOI18N
+
+        if (pluginScript == null) {
+            throw new IllegalStateException("Could not locate " + PLUGIN_CUSTOMIZER); // NOI18N
+
+        }
+        return pluginScript;
+    }
+
 }
