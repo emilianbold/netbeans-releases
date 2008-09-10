@@ -497,7 +497,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                         NotifyDescriptor.ERROR_MESSAGE));
                     return null;
                 } else {
-                    return FileUtil.getRelativePath(fo, root)+File.separatorChar;
+                    return FileUtil.getRelativePath(fo, root)+"/"; // NOI18N
                 }
             }
         } else if (volume.equals(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
@@ -516,7 +516,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 }
                 else {
                     assert fo.equals(root) || FileUtil.isParentOf(fo, root) : fo.toString()+" is not parent of "+root; // NOI18N
-                    return FileUtil.getRelativePath(fo, root)+File.separatorChar;
+                    return FileUtil.getRelativePath(fo, root)+"/"; // NOI18N
                 }
             }
         }

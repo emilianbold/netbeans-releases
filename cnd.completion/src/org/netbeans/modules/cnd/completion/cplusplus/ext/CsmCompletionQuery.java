@@ -120,6 +120,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
     abstract protected QueryScope getCompletionQueryScope();
 
+    abstract protected FileReferencesContext getFileReferencesContext();
+
     public static enum QueryScope {
         LOCAL_QUERY,
         SMART_QUERY,
@@ -1667,7 +1669,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             if (!isConstructor) {
                                 // It could be default constructor call without "new"
                                 CsmClassifier cls = null;
-                                cls = sup.getClassFromName(mtdName, true);
+                                cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
                                 if (cls == null) {
                                     cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0));
                                 }

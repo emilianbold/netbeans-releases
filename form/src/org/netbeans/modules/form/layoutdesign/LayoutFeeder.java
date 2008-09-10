@@ -252,10 +252,14 @@ class LayoutFeeder implements LayoutConstants {
             if (preserveOriginal) { // resized in this dimension only
                 inclusion1 = originalPos1;
                 if (found != originalPos1) {
-                    if (newPos != null)
+                    if (newPos != null) {
                         inclusion2 = found;
-                    if (found.parent == originalPos1.parent && found.newSubGroup)
-                        originalPos1.newSubGroup = true;
+                    }
+                    LayoutInterval origParent = originalPos1.parent;
+                    if ((found.parent == origParent && found.newSubGroup)
+                          || (origParent.isSequential() && origParent.getParent() == found.parent)) {
+                        inclusion1.newSubGroup = true;
+                    }
                 }
             }
             else {
@@ -723,6 +727,11 @@ class LayoutFeeder implements LayoutConstants {
         int alignment = aEdge;
         assert alignment == CENTER || alignment == BASELINE;
         layoutModel.setIntervalAlignment(addingInterval, alignment);
+
+        if (addingInterval.getParent() != null) {
+            // hack: resized interval in center/baseline has not been removed
+            return;
+        }
 
         if (aSnappedParallel.isParallel() && aSnappedParallel.getGroupAlignment() == alignment) {
             layoutModel.addInterval(addingInterval, aSnappedParallel, -1);
@@ -2615,11 +2624,11 @@ class LayoutFeeder implements LayoutConstants {
         boolean nextTo;
         if (iDesc1.parent.isParentOf(iDesc2.parent)) {
             commonGroup = iDesc1.parent;
-            nextTo = iDesc1.neighbor != null || iDesc2.snappedNextTo != null;
+            nextTo = iDesc1.neighbor != null || iDesc2.snappedNextTo != null || iDesc2.parent.isSequential();
         }
         else if (iDesc2.parent.isParentOf(iDesc1.parent)) {
             commonGroup = iDesc2.parent;
-            nextTo = iDesc2.neighbor != null || iDesc1.snappedNextTo != null;
+            nextTo = iDesc2.neighbor != null || iDesc1.snappedNextTo != null || iDesc1.parent.isSequential();
         }
         else {
             commonGroup = LayoutInterval.getFirstParent(iDesc1.parent, SEQUENTIAL);
@@ -2995,7 +3004,16 @@ class LayoutFeeder implements LayoutConstants {
 
         if (iDesc.parent.isSequential()) {
             int startIndex = iDesc.alignment == LEADING ? iDesc.index : 0;
-            int endIndex = iDesc.alignment == LEADING ? iDesc.parent.getSubIntervalCount() - 1 : iDesc.index - 1;
+            int endIndex;
+            if (iDesc.alignment == LEADING) {
+                endIndex = iDesc.parent.getSubIntervalCount() - 1;
+            } else {
+                endIndex = iDesc.index - 1;
+                if (endIndex >= iDesc.parent.getSubIntervalCount()) {
+                    // if comming from original position the original index might be too high
+                    endIndex = iDesc.parent.getSubIntervalCount() - 1;
+                }
+            }
             return startIndex > endIndex
                    || !LayoutUtils.contentOverlap(addingSpace, iDesc.parent, startIndex, endIndex, dimension^1);
         }
