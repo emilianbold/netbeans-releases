@@ -89,7 +89,8 @@ public class InputKeyResources extends ListResourceBundle
         
         {"key.3.keyCode", String.valueOf(KeyEvent.VK_ENTER)}, 
         {"key.3.modifiers", String.valueOf(KeyEvent.CTRL_DOWN_MASK)},
-        {"key.3.command", DiagramInputkeyMapper.CTRL_ENTER_ACTION }, 
+        {"key.3.mac_modifiers", String.valueOf(KeyEvent.META_DOWN_MASK)},
+        {"key.3.command", DiagramInputkeyMapper.ADD_TO_DIAGRAM }, 
         {"key.3.focus", WHEN_IN_FOCUSED_WINDOW}
         
 //     more examples:

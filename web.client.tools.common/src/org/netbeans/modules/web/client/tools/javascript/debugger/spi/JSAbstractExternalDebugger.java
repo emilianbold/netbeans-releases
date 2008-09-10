@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 import java.util.logging.Logger;
@@ -91,6 +92,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     protected DebuggerProxy proxy;
     protected SuspensionPointHandler suspensionPointHandler;
     protected HttpMessageHandler httpMessageHandler;
+    private AtomicBoolean finished = new AtomicBoolean();
 
     public JSAbstractExternalDebugger(URI uri, HtmlBrowser.Factory browser) {
         super(uri, browser);
@@ -206,9 +208,9 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         if (getDebuggerState() == JSDebuggerState.NOT_CONNECTED) {
             return;
         }
-        if (terminate) {
+        if (terminate && !finished.getAndSet(true)) {
             // Disable the debugger
-            setBooleanFeature(Feature.Name.ENABLE, false);
+            //setBooleanFeature(Feature.Name.ENABLE, false);
 
             if (proxy != null) {
                 proxy.stopDebugging();
@@ -319,8 +321,12 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     }
     
     protected InputStream getInputStreamForURLImpl(String uri) {
+        return getInputStreamForURLImpl(uri, false);
+    } 
+    
+    protected InputStream getInputStreamForURLImpl(String uri, boolean stripBeginCharacter) {
         if (proxy != null && uri != null) {
-            byte[] bytes = proxy.getSource(uri);
+            byte[] bytes = proxy.getSource(uri, stripBeginCharacter);
             if (bytes != null) {
                 return new ByteArrayInputStream(bytes);
             }

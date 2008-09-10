@@ -97,7 +97,9 @@ public class EditorViewElement implements MultiViewElement, Serializable {
         if (topComponent == null) {
             JComponent visualRepresentation = view.getVisualRepresentation();
             if (visualRepresentation != null) {
-                HelpCtx.setHelpIDString(visualRepresentation, view.getHelpCtx().getHelpID());
+                if (view.getHelpCtx() != null){
+                    HelpCtx.setHelpIDString(visualRepresentation, view.getHelpCtx().getHelpID());
+                }
                 topComponent = kind == DataEditorView.Kind.CODE 
                         ? new CodeEditorTopComponent(context, lookup, visualRepresentation) 
                         : new EditorTopComponent(context, lookup, visualRepresentation);

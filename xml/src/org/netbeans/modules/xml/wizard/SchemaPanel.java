@@ -439,6 +439,17 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
          DefaultTableCellRenderer renderer =  new DefaultTableCellRenderer();
          renderer.setToolTipText(NbBundle.getMessage(SchemaPanel.class, "TIP_COMBO_COL"));
          rootColumn.setCellRenderer(renderer);
+         
+         int height = schemaTable.getRowHeight();
+    
+        // Determine highest cell in the row
+        for (int c=0; c<schemaTable.getColumnCount(); c++) {
+            TableCellRenderer r = schemaTable.getCellRenderer(0, c);
+            Component comp = schemaTable.prepareRenderer(r, 0, c);
+            int h = comp.getPreferredSize().height;
+            height = Math.max(height, h);
+        }
+         schemaTable.setRowHeight(height);
     }
     
     public void tableChanged(TableModelEvent e) {

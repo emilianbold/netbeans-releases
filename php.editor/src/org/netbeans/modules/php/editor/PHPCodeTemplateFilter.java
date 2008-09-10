@@ -65,7 +65,7 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
         if (fo != null) {  // fo can be null, see issue #144856
             SourceModel model = SourceModelFactory.getInstance().getModel(fo);
 
-            if (!model.isScanInProgress()){
+            if (model != null && !model.isScanInProgress()){
                 try {
                     model.runUserActionTask(this, false);
                 } catch (IOException ex) {

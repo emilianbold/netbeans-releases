@@ -206,7 +206,9 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         }
         List<Entry<Integer, Unit>> entries = new ArrayList<Entry<Integer, Unit>>(units.entrySet());
         for (Entry<Integer, Unit> entry: entries) {
-            closeUnit(RepositoryAccessor.getTranslator().getUnitName(entry.getKey()), false, null);
+            // iz #146241 IllegalStateException in the case revious session terminated with ^C in console
+            // if there are projects that aren't yet closed => the data might be corrupted! => clean untit
+            closeUnit(RepositoryAccessor.getTranslator().getUnitName(entry.getKey()), true, null);
         }
         
         try {

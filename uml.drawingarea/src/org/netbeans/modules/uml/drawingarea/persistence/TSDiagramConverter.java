@@ -67,21 +67,17 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.TSDiagramDetails;
-import org.netbeans.modules.uml.core.metamodel.dynamics.CombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
-import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Message;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
@@ -99,7 +95,6 @@ import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.SQDMessageConnectProvider;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
-import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo.NodeLabel;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -127,6 +122,7 @@ import org.openide.util.Exceptions;
 public class TSDiagramConverter
 {
     public static final String ELEMENT = "ELEMENT";
+    private static final String BENDSPROPERTY = "BENDS61";
     private static final String PRESENTATIONELEMENT = "PRESENTATION";
     private static final String SHOWMESSAGETYPE = "ShowMessageType";
     private static final String TSLABELTYPE = "TYPE";
@@ -215,6 +211,7 @@ public class TSDiagramConverter
         createNodesPresentationElements();
         findEdgesElements();
         handleLabelsInfo(peidToEdgeLabelMap);
+        handleBendPointsInfo();
         if(diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
         {
             normalizeSQDDiagram();
@@ -713,10 +710,7 @@ public class TSDiagramConverter
             }
             else
             {
-                if(connWidget instanceof UMLEdgeWidget)
-                {
-                   ((UMLEdgeWidget)connWidget).initialize(peToUse);
-                }
+
             }
         return connWidget;
     }
@@ -957,6 +951,44 @@ public class TSDiagramConverter
             loc.x-=minX-margin;
             loc.y=maxY+margin-loc.y;
             ninfo.setPosition(loc);
+        }
+    }
+    
+    private void handleBendPointsInfo()
+    {
+        Collection<EdgeInfo> einfos = presIdEdgeInfoMap.values();
+        int margin=60;
+        for (EdgeInfo einfo : einfos)
+        {
+            if(einfo.getProperty(BENDSPROPERTY)!=null)
+            {
+                ArrayList<Point> points=new ArrayList<Point>();
+                Point point0=new Point(0,0);
+                if(einfo.getSourcePE()!=null && presIdNodeInfoMap.get(einfo.getSourcePE().getXMIID())!=null)
+                {
+                    point0=presIdNodeInfoMap.get(einfo.getSourcePE().getXMIID()).getPosition();
+                }
+                points.add(point0);
+                
+                ArrayList<Point> tmp=(ArrayList<Point>) einfo.getProperty(BENDSPROPERTY);
+                for(int i=tmp.size()-1;i>=0;i--)
+                {
+                    Point p=tmp.get(i);
+                    Point loc=new Point(p);
+                    loc.x-=minX-margin;
+                    loc.y=maxY+margin-loc.y;
+                    points.add(loc);
+                }
+                
+                Point pointN=new Point(0,0);
+                if(einfo.getTargetPE()!=null && presIdNodeInfoMap.get(einfo.getTargetPE().getXMIID())!=null)
+                {
+                    pointN=presIdNodeInfoMap.get(einfo.getTargetPE().getXMIID()).getPosition();
+                }
+                points.add(pointN);
+                //
+                einfo.setWayPoints(points);
+            }
         }
     }
     
@@ -1698,6 +1730,11 @@ public class TSDiagramConverter
                         //edges goes after nodes, so info should be availabel
                         einfo.setProperty("TARGETCONNECTOR", connectors.get(readerData.getAttributeValue(null, "value")));
                     }
+                    else if(readerData.getName().getLocalPart()
+                        .equalsIgnoreCase("bends"))
+                    {
+                        handleEdgeBends(einfo);
+                    }
                 }
                 
                 else if (readerData.isEndElement() && 
@@ -1807,6 +1844,30 @@ public class TSDiagramConverter
         {
             Exceptions.printStackTrace(ex);
         }
+    }
+    private void handleEdgeBends(EdgeInfo einfo)
+    {
+        try {
+            while (readerData.hasNext()) {
+                if (XMLStreamConstants.START_ELEMENT == readerData.next()) {
+                    if (readerData.getName().getLocalPart().equals("point")) {
+                        int x = (int) Double.parseDouble(readerData.getAttributeValue(null, "x"));
+                        int y = (int) Double.parseDouble(readerData.getAttributeValue(null, "y"));
+                        if (einfo.getProperty(BENDSPROPERTY) == null) {
+                            einfo.setProperty(BENDSPROPERTY, new ArrayList());
+                        }
+                        ((ArrayList) einfo.getProperty(BENDSPROPERTY)).add(new Point(x, y));
+                    }
+                }
+                else if (readerData.isEndElement() && readerData.getName().getLocalPart().equalsIgnoreCase("bends"))
+                {
+                   break; 
+                }
+            }
+        } catch (XMLStreamException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
     
     private class ConnectorData

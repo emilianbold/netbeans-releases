@@ -46,7 +46,7 @@
     <xsd:element name="tags">
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:element name="tag">
+                <xsd:element name="tag" minOccurs="0" maxOccurs="unbounded">
                     <xsd:complexType>
                         <xsd:attribute name="count" type="xsd:int"/>
                         <xsd:attribute name="tag" type="xsd:string"/>
@@ -67,9 +67,14 @@
                         <xsd:attribute name="others" type="xsd:string"/>
                         <xsd:attribute name="tag" type="xsd:string"/>
                         <xsd:attribute name="time" type="xsd:dateTime"/>
+                        <xsd:attribute name="meta" type="xsd:string"/>
+                        <xsd:attribute name="url" type="xsd:string"/>
                     </xsd:complexType>
                 </xsd:element>
             </xsd:sequence>
+            <xsd:attribute name="tag" type="xsd:string"/>
+            <xsd:attribute name="user" type="xsd:string"/>
+            <xsd:attribute name="dt" type="xsd:date"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="dates">
@@ -82,6 +87,8 @@
                     </xsd:complexType>
                 </xsd:element>
             </xsd:sequence>
+            <xsd:attribute name="tag" type="xsd:string"/>
+            <xsd:attribute name="user" type="xsd:string"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="result">
@@ -107,7 +114,8 @@
     </xsd:element>
     <xsd:element name="update">
         <xsd:complexType>
-            <xsd:attribute name="time" type="xsd:string"/>
+            <xsd:attribute name="time" type="xsd:dateTime"/>
+            <xsd:attribute name="inboxnew" type="xsd:int"/>
         </xsd:complexType>
     </xsd:element>
 </xsd:schema>

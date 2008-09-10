@@ -122,12 +122,12 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     
     /** the last position of the exception dialog window */
     private static Rectangle lastBounds;
+    
+    private static int extraH = 0, extraW = 0;
 
     /** Constructor.
     */
     private NotifyExcPanel () {
-        setPreferredSize(new Dimension(SIZE_PREFERRED_WIDTH,SIZE_PREFERRED_HEIGHT));
-
         java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(NotifyExcPanel.class);
         next = new JButton ();
         Mnemonics.setLocalizedText(next, bundle.getString("CTL_NextException"));
@@ -177,6 +177,8 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         descriptor.setModal( isModalDialogPresent() 
                 && WindowManager.getDefault().getMainWindow().isVisible() );
         
+        setPreferredSize(new Dimension(SIZE_PREFERRED_WIDTH + extraW, SIZE_PREFERRED_HEIGHT + extraH));
+
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         if( null != lastBounds )
             dialog.setBounds( lastBounds );
@@ -211,6 +213,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 try {
                     Object o = ((Callable<?>)h).call();
                     assert o instanceof JButton;
+                    JButton b = (JButton) o;
+                    extraH += b.getPreferredSize ().height;
+                    extraW += b.getPreferredSize ().width;
                     arr.add(o);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);

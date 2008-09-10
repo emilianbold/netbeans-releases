@@ -86,6 +86,10 @@ public final class DotClassPath {
     List<DotClassPathEntry> getSourceRoots() {
         return sourceRoots;
     }
+
+    void updateSourceRoots(List<DotClassPathEntry> sourceRoots) {
+        this.sourceRoots = sourceRoots;
+    }
     
     /**
      * Returns container classpath entry for JRE.

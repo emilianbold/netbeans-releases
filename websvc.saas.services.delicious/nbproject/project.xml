@@ -9,13 +9,12 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.apache.tools.ant.module</code-name-base>
+                        <code-name-base>org.netbeans.modules.websvc.saas.kit</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
+                        <test/>
                     </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.libs.jaxb</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
+
                 </test-type>
             </test-dependencies>
             <public-packages/>

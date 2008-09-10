@@ -85,9 +85,10 @@ public class ClassPathParserTest extends NbTestCase {
         Set<Variable> variables = new HashSet<Variable>();
         variables.add(new Variable("SOME_ROOT", "/tmp"));
         ProjectParser.parse(new File(getDataDir(), "external-source-roots.project"), natures, links, variables);
-        assertEquals(2, links.size());
+        assertEquals(3, links.size());
         assertEquals(new Link("java-app-src", false, "/home/david/projs/JavaApplication1/src"), links.get(0));
         assertEquals(new Link("src2", false, "/tmp/JavaApplication2/src"), links.get(1));
+        assertEquals(new Link("my_jars", false, "/tmp/libs"), links.get(2));
         
         DotClassPath cp = DotClassPathParser.parse(new File(getDataDir(), "external-source-roots.classpath"), links);
         assertEquals("3 sources entry", 3, cp.getSourceRoots().size());
@@ -97,6 +98,9 @@ public class ClassPathParserTest extends NbTestCase {
         assertEquals("/tmp/JavaApplication2/src", entry.getProperty("path"));
         entry = cp.getSourceRoots().get(2);
         assertEquals("/home/david/projs/JavaApplication1/src", entry.getProperty("path"));
+        assertEquals("1 cp entry", 1, cp.getClassPathEntries().size());
+        entry = cp.getClassPathEntries().get(0);
+        assertEquals("/tmp/libs/commons-lang-2.1.jar", entry.getProperty("path"));
     }
     
 }

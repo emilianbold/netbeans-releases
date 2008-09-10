@@ -121,13 +121,8 @@ public class DerbyWaiter {
                     }
                 } else if (drvsArray.length > 0) {
                     // Register sample database
-                    if (ConnectionManager.getDefault().getConnection("jdbc:derby://localhost:1527/travel [travel on TRAVEL]") == null) {
-                        SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "startup/samples/travel.zip", true, "localhost", 1527); //NOI18N
-                    }
-                    if (ConnectionManager.getDefault().getConnection("jdbc:derby://localhost:1527/vir [vir on VIR]") == null) {
-                        SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "startup/samples/vir.zip", true, "localhost", 1527); //NOI18N
-                    }
-
+                    SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "startup/samples/travel.zip", true, "localhost", 1527); //NOI18N                    
+                    SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "startup/samples/vir.zip", true, "localhost", 1527); //NOI18N
                     JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);
                 }
 

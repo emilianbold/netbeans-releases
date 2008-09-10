@@ -665,6 +665,9 @@ public abstract class CommonConfigurationXMLCodec
             }
             xes.elementClose(PACK_INFOS_LIST_ELEMENT);
         }
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            // FIXUP
+        }
 	xes.elementClose(PACK_ELEMENT);
     }
     
