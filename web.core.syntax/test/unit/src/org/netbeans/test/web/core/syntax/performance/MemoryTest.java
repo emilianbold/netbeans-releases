@@ -39,7 +39,9 @@
 package org.netbeans.test.web.core.syntax.performance;
 
 import java.io.File;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -118,6 +120,10 @@ public class MemoryTest extends NbTestCase {
             doc.insertString(0, insertionText, null);
             Thread.sleep(TIMEOUT);
         }
+        for (int i = 0; i < ITERATIONS_COUNT; i++) {
+            doc.remove(0, insertionText.length());
+            Thread.sleep(TIMEOUT);
+        }
 
         ed.saveDocument();
         ed.close();
@@ -126,24 +132,52 @@ public class MemoryTest extends NbTestCase {
     }
 
     private void assertClean() {
-        int size = handler.params.size();
-        assertTrue("parsing was running only for " + size + " iterations", size >= ITERATIONS_COUNT - 2);
-        System.gc();
-        System.gc();
-        Iterator<WeakReference> it = handler.params.iterator();
-        if (it.hasNext()){
-            it.next();
-        }
+        ArrayList<WeakReference> refs = new ArrayList<WeakReference>(handler.params);
+        Iterator<WeakReference> it = refs.iterator();
         while (it.hasNext()) {
-            if (it.next().get() == null) {
+            if (isFree(it.next())) {
                 it.remove();
             }
         }
-        if (handler.params.size() > 1){
-            for (WeakReference weakReference : handler.params) {
-                assertGC("there are " + handler.params.size() + " parse results still accessible", weakReference);
+        int size = refs.size();
+        if (size > 3) {
+            System.err.println("there are " + size + " pending references to parse results");
+            assertGC("there are " + size + " parse results still accessible", refs.get(2));
+        }
+    }
+
+    private boolean isFree(Reference<?> ref) {
+        List<byte[]> alloc = new ArrayList<byte[]>();
+        int size = 100000;
+        for (int i = 0; i < 50; i++) {
+            if (ref.get() == null) {
+                return true;
+            }
+            try {
+                System.gc();
+            } catch (OutOfMemoryError error) {
+                // OK
+            }
+            try {
+                System.runFinalization();
+            } catch (OutOfMemoryError error) {
+                // OK
+            }
+            try {
+                alloc.add(new byte[size]);
+                size = (int) (((double) size) * 1.3);
+            } catch (OutOfMemoryError error) {
+                size = size / 2;
+            }
+            try {
+                if (i % 3 == 0) {
+                    Thread.sleep(321);
+                }
+            } catch (InterruptedException t) {
+                // ignore
             }
         }
+        return false;
     }
 
     private class TestHandler extends Handler {
@@ -157,7 +191,7 @@ public class MemoryTest extends NbTestCase {
             if ((message != null) && (!record.getMessage().equals(message))) {
                 return;
             }
-            if (latest != null){
+            if (latest != null) {
                 params.add(latest);
             }
             Object[] pars = record.getParameters();
