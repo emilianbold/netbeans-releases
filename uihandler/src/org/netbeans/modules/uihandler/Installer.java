@@ -228,7 +228,9 @@ public class Installer extends ModuleInstall implements Runnable {
         logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", Boolean.FALSE); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
-        usageStatisticsReminder();
+        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+            usageStatisticsReminder();
+        }
         
         System.setProperty("nb.show.statistics.ui",USAGE_STATISTICS_ENABLED);
         logMetricsEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED,Boolean.FALSE);
@@ -266,8 +268,29 @@ public class Installer extends ModuleInstall implements Runnable {
             WindowManager.getDefault().invokeWhenUIReady(this);
         }
     }
-
+    
     private void usageStatisticsReminder () {
+        boolean keyExists = false;
+        String [] keys = null;
+        try {
+            keys = corePref.keys();
+            for (int i = 0; i < keys.length; i++) {
+                if (USAGE_STATISTICS_ENABLED.equals(keys[i])) {
+                    keyExists = true;
+                    break;
+                }
+            }
+        } catch (BackingStoreException exc) {
+            Exceptions.printStackTrace(exc);
+            //Not able to confirm if key exists or not
+            keyExists = true;
+        }
+
+        if (keyExists) {
+            //If key exists do not ask user
+            return;
+        }
+
         metricsEnable.addActionListener(l);
         metricsEnable.setActionCommand(CMD_METRICS_ENABLE);
         //registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
@@ -288,29 +311,11 @@ public class Installer extends ModuleInstall implements Runnable {
         metricsCancel.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(Installer.class,"ACSD_MetricsCancel"));
 
-        boolean keyExists = false;
-        String [] keys = null;
-        try {
-            keys = corePref.keys();
-            for (int i = 0; i < keys.length; i++) {
-                if (USAGE_STATISTICS_ENABLED.equals(keys[i])) {
-                    keyExists = true;
-                    break;
-                }
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            public void run() {
+                showDialog();
             }
-        } catch (BackingStoreException exc) {
-            Exceptions.printStackTrace(exc);
-            //Not able to confirm if key exists or not
-            keyExists = true;
-        }
-        if (!keyExists) {
-            //If key does not exist yet ask user
-            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-                public void run() {
-                    showDialog();
-                }
-            });
-        }
+        });
     }
 
     private void showDialog () {
