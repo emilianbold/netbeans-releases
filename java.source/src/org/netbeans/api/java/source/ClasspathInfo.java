@@ -121,8 +121,8 @@ public final class ClasspathInfo {
 	this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
 	this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
         if (srcCp == null) {
-            this.cachedSrcClassPath = this.srcClassPath = ClassPathSupport.createClassPath(new URL[0]);
-            this.outputClassPath = ClassPathSupport.createClassPath(new URL[0]);
+            this.cachedSrcClassPath = this.srcClassPath = EMPTY_PATH;
+            this.outputClassPath = EMPTY_PATH;
         }
         else {
             this.srcClassPath = srcCp;
