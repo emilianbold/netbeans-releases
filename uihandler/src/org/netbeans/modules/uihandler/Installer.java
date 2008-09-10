@@ -228,7 +228,9 @@ public class Installer extends ModuleInstall implements Runnable {
         logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", Boolean.FALSE); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
-        usageStatisticsReminder();
+        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+            usageStatisticsReminder();
+        }
         
         System.setProperty("nb.show.statistics.ui",USAGE_STATISTICS_ENABLED);
         logMetricsEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED,Boolean.FALSE);
