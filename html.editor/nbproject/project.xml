@@ -248,6 +248,15 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.css.editor</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.mozilla.rhino.patched</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.html.editor</code-name-base>
                         <recursive/>
                         <compile-dependency/>
