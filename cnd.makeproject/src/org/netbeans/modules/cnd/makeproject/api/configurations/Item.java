@@ -510,4 +510,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return path;
+    }
+
 }
