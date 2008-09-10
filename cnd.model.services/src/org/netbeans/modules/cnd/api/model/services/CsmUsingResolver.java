@@ -47,8 +47,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -161,7 +159,7 @@ public abstract class CsmUsingResolver {
      */
     public static Collection<CsmNamespace> extractNamespaces(Collection<CsmUsingDirective> decls) {
         // TODO check the correctness of order
-        Collection<Pair> namespaces = new LinkedList<Pair>();
+        Collection<Pair> namespaces = new LinkedHashSet<Pair>();
         for (CsmUsingDirective decl : decls) {
             CsmNamespace ref = decl.getReferencedNamespace();
             if (ref != null) {
@@ -176,7 +174,7 @@ public abstract class CsmUsingResolver {
                 }
             }
         }
-        Collection<CsmNamespace> out = new LinkedList<CsmNamespace>();
+        Collection<CsmNamespace> out = new LinkedHashSet<CsmNamespace>();
         for(Pair p : namespaces){
             for(CsmNamespace ns : findNamespacesInProject(p.proj, p.fqn)){
                 out.remove(ns);
