@@ -46,6 +46,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -158,7 +161,7 @@ public abstract class CsmUsingResolver {
      */
     public static Collection<CsmNamespace> extractNamespaces(Collection<CsmUsingDirective> decls) {
         // TODO check the correctness of order
-        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
+        Collection<Pair> namespaces = new LinkedList<Pair>();
         for (CsmUsingDirective decl : decls) {
             CsmNamespace ref = decl.getReferencedNamespace();
             if (ref != null) {
@@ -166,9 +169,18 @@ public abstract class CsmUsingResolver {
                 if(file != null) {
                     CsmProject proj = file.getProject();
                     if(proj != null) {
-                        out.addAll(findNamespacesInProject(proj, ref.getQualifiedName()));
+                        Pair p = new Pair(ref,proj);
+                        namespaces.remove(p);
+                        namespaces.add(p);
                     }
                 }
+            }
+        }
+        Collection<CsmNamespace> out = new LinkedList<CsmNamespace>();
+        for(Pair p : namespaces){
+            for(CsmNamespace ns : findNamespacesInProject(p.proj, p.fqn)){
+                out.remove(ns);
+                out.add(ns);
             }
         }
         return out;
@@ -210,7 +222,10 @@ public abstract class CsmUsingResolver {
                     out.add(namespace);
                 }
                 scannedProjects.add(proj);
-                out.addAll(findNamespacesInProjects(proj.getLibraries(), namespaceQualifiedName, scannedProjects));
+                Collection<CsmProject> libs = proj.getLibraries();
+                if (!libs.isEmpty()) {
+                    out.addAll(findNamespacesInProjects(libs, namespaceQualifiedName, scannedProjects));
+                }
             }
         }        
         return out;
@@ -266,4 +281,27 @@ public abstract class CsmUsingResolver {
             return Collections.<CsmNamespaceAlias>emptyList();
         }        
     }    
+
+    private static class Pair {
+        private final CharSequence fqn;
+        private CsmProject proj;
+        private Pair(CsmNamespace ref, CsmProject proj){
+            this.fqn = ref.getQualifiedName();
+            this.proj = proj;
+        }
+
+        @Override
+        public int hashCode() {
+            return fqn.hashCode()+proj.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Pair) {
+                Pair p = (Pair)obj;
+                return fqn.equals(p.fqn) && proj.equals(p.proj);
+            }
+            return false;
+        }
+    }
 }
