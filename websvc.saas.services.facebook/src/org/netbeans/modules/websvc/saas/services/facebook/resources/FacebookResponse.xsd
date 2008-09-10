@@ -890,6 +890,34 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
+    <xsd:element name="events_cancel_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="events_create_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:time"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="events_edit_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="events_rsvp_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="events_getMembers_response" type="event_members" />
     <xsd:element name="events_rsvp_response" type="xsd:int"/>
     <xsd:element name="events_edit_response" type="xsd:int"/>
@@ -898,7 +926,35 @@
     <xsd:element name="fbml_setRefHandle_response" type="xsd:boolean" />
     <xsd:element name="fbml_refreshRefUrl_response" type="xsd:boolean" />
     <xsd:element name="fbml_refreshImgSrc_response" type="xsd:boolean" />
-    <xsd:element name="fbml_uploadNativeStrings_response" type="xsd:boolean" />
+    <xsd:element name="feed_deactivateTemplateBundleByID_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="feed_getRegisteredTemplateBundleByID_response">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="TemplateBundleType"/>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="template_bundle" type="TemplateBundleType"/>
+    <xsd:element name="feed_getRegisteredTemplateBundles_response">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="template_bundle" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="feed_registerTemplateBundle_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:integer"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="feed_publishStoryToUser_response" type="xsd:boolean" />
     <xsd:element name="feed_publishActionOfUser_response" type="xsd:boolean" />
     <xsd:element name="friends_areFriends_response">
@@ -1053,7 +1109,13 @@
     </xsd:element>
     <xsd:element name="users_isAppAdded_response" type="xsd:boolean" />
     <xsd:element name="users_hasAppPermission_response" type="xsd:boolean" />
-    <xsd:element name="users_isAppUser_response" type="xsd:boolean" />
+    <xsd:element name="users_isAppUser_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="users_getLoggedInUser_response" type="uid" />
     <xsd:element name="users_setStatus_response" type="xsd:boolean" />
     <xsd:element name="pages_getInfo_response">
@@ -1233,7 +1295,13 @@
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="liveMessage_send_response" type="xsd:int" />
+    <xsd:element name="liveMessage_send_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="data_getCookie_response" >
         <xsd:complexType>
             <xsd:sequence>
@@ -1254,4 +1322,42 @@
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="auth_expireSession_response" type="xsd:int" />
+    
+    <xsd:complexType name="TemplateBundleType">
+        <xsd:sequence>
+            <xsd:element name="one_line_story_templates">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="one_line_story_template"/>
+                    </xsd:sequence>
+                    <xsd:attribute name="list" type="xsd:string"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="short_story_templates">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="short_story_template">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="template_title" type="xsd:string"/>
+                                    <xsd:element name="template_body" type="xsd:string"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                    <xsd:attribute name="list" type="xsd:string"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="full_story_template">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="template_title" type="xsd:string"/>
+                        <xsd:element name="template_body" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="time_created" type="xsd:time"/>
+            <xsd:element name="template_bundle_id" type="xsd:int"/>
+        </xsd:sequence>
+    </xsd:complexType>
 </xsd:schema>
