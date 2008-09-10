@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,54 +31,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.editor.test;
+package org.netbeans.modules.editor.bracesmatching.api;
 
-import junit.framework.Assert;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import javax.swing.text.Document;
+import org.netbeans.modules.editor.bracesmatching.SpiAccessor;
+import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 
 /**
- * @author Marek Fukala
+ *
+ * @author marekfukala
  */
-public class TestBase extends NbTestCase {
-
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
+public class BracesMatchingTestUtils {
     
+    public static MatcherContext createMatcherContext(Document document, int offset, boolean backward, int lookahead) {
+        return SpiAccessor.get().createCaretContext(document, offset, backward, lookahead);
     }
-
-    public static class Lkp extends ProxyLookup {
-        
-        private static Lkp DEFAULT;
-        
-        public Lkp() {
-            Assert.assertNull(DEFAULT);
-            DEFAULT = this;
-        }
-        
-        public static void initLookups(Object[] objs) {
-            ClassLoader loader = Lkp.class.getClassLoader();
-            DEFAULT.setLookups(new Lookup [] {
-                Lookups.fixed(new RepositoryImpl()),
-                Lookups.metaInfServices(loader),
-                Lookups.singleton(loader)
-            });
-        }
-    }
-    
-    public TestBase(String name) {
-        super(name);
-    }
-
-    @Override
-    public void setUp() {
-        Lkp.initLookups(new Object[]{});
-    }
-    
     
 }
