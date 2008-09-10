@@ -65,6 +65,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /** Class which contains info about classpath
@@ -208,6 +209,8 @@ public final class ClasspathInfo {
     }
     
     public static ClasspathInfo create(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {        
+        Parameters.notNull("bootPath", bootPath);       //NOI18N
+        Parameters.notNull("classPath", classPath);     //NOI18N
         return create (bootPath, classPath, sourcePath, null, false, false, false);
     }
        
