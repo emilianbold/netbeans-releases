@@ -279,15 +279,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
             btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(key));
 
-            boolean enablePathMapper = false;
-            if (buttonsEnabled && !RemoteUtils.isLocalhost(key)) {
-                ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-                if (registry.get(key)!=null)  {
-                    enablePathMapper = true;
-                }
-            }
-
-            btPathMapper.setEnabled(enablePathMapper);
+            btPathMapper.setEnabled(buttonsEnabled && !RemoteUtils.isLocalhost(key) && record.isOnline());
             if (!record.isOnline()) {
                 showReason(record.getReason());
                 btRetry.setEnabled(true);
