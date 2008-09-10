@@ -408,7 +408,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
                 String comment = "\n";// NOI18N
 
                 for (String param : parameters) {
-                    comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N
+                    comment += "@param $PARAM$ \n".replace("$PARAM$", param);// NOI18N
 
                 }
                 comment += "@return an instance of " + type;// NOI18N

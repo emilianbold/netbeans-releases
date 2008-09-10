@@ -1023,6 +1023,12 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
             extension = name.substring(index + 1);
             name = name.substring(0, index);
         }
+        // XXX #131857 If the file already exists, try to delete it first
+        // (in order to get replaced).
+        FileObject oldFile = parentFileObject.getFileObject(name, extension);
+        if (oldFile != null) {
+            oldFile.delete();
+        }
         FileObject copy = source.copy(parentFileObject, name, extension);
         URI uri = relativize(copy);
         return uri;
