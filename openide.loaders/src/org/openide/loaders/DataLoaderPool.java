@@ -632,10 +632,10 @@ implements java.io.Serializable {
     }
 
     /** Factory method to create default implementation of a factory for
-     * data objects. It takes the class of the <code>DataObject</code> and
+     * data objects. It takes the class of the {@link DataObject} and
      * is ready to call its constructor. The constructor needs to take two
-     * arguments: FileObject and MultiDataLoader. It can throw IOException as
-     * is usual among DataObject constructors.
+     * arguments: {@link FileObject} and {@link MultiFileLoader}. It can throw {@link IOException} as
+     * is usual among {@link DataObject} constructors.
      * <p>
      * You can also invoke this method from a layer by following definition:
      * <pre>
