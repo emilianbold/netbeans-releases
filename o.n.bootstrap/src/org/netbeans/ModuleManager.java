@@ -421,7 +421,6 @@ public final class ModuleManager {
     private static final class SystemClassLoader extends JarClassLoader {
 
         private final PermissionCollection allPermissions;
-        private boolean empty = true;
         int size;
 
         public SystemClassLoader(List<File> files, ClassLoader[] parents, Set<Module> modules) throws IllegalArgumentException {
