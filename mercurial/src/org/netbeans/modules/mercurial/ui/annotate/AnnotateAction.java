@@ -104,6 +104,8 @@ public class AnnotateAction extends ContextAction {
                     return true;
                 }
             } else {
+                // XXX won't work properly when staus not chached yet. we should at least force a cahce.refresh
+                // at this point
                 return true;
             }
         } else {
