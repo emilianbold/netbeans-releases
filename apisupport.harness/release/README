@@ -344,8 +344,9 @@ Source root for a test type:
 {project.dir}/test/unit/src  - source root for unit test
 
 
-For example you have three modules with code name bases A,B,C. A depends on B, B
-depends on C. You want to add test dependencies to unit test type of module D:
+For example you have three modules with code name bases A,B,C. A has runtime
+dependency on B, B on C. You want to add test dependencies to unit test type
+of module D:
 
 Use case 1: Runtime dependency on module.
 
@@ -385,6 +386,8 @@ Use case 3: Compile and runtime dependency on a module its recursive runtime cla
 
 Runtime classpath is A + B + C + D.
 Compile classpath is A + B + C + D.
+Note one feature of recursive compile-time dependency: modules B and C are added
+to compile classpath as well, even if A has only runtime dependency on B and B on C.
 
 Use case 4: Compile and runtime dependency on a module, its recursive runtime classpath 
 and tests.
