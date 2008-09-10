@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
@@ -75,7 +76,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     
     private ExecutionDescriptor descriptor;
     
-    private RubySession session;
+    private RubySession rubySession;
     
     static {
         String path = "ruby/debug-commons-0.9.5/classic-debug.rb"; // NOI18N
@@ -98,10 +99,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     public Process debug() {
         Process p = null;
         try {
-            session = startDebugging(descriptor);
-            if (session != null) {
-                session.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
-                p = session.getProxy().getDebugTarged().getProcess();
+            rubySession = startDebugging(descriptor);
+            if (rubySession != null) {
+                rubySession.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
+                p = rubySession.getProxy().getDebugTarged().getProcess();
             }
         } catch (IOException e) {
             getFinishAction().run();
@@ -117,9 +118,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     public Runnable getFinishAction() {
         return new Runnable() {
             public void run() {
-                if (session != null) { // #131563
-                    session.getActionProvider().doAction(ActionsManager.ACTION_KILL);
-                    session = null;
+                if (rubySession != null) { // #131563
+                    rubySession.getActionProvider().doAction(ActionsManager.ACTION_KILL);
+                    rubySession = null;
                 }
             }
         };
@@ -261,10 +262,14 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         DebuggerInfo di = DebuggerInfo.create(
                 "RubyDebuggerInfo", new Object[] { sp, rubySession }); // NOI18N
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
-        DebuggerEngine[] es = dm.startDebugging(di);
+        DebuggerEngine[] de = dm.startDebugging(di);
+        assert de.length == 1 : "one debugger engine";
+        Session session = de[0].lookupFirst(null, Session.class);
+        assert session != null : "non-null Session in the lookup";
+        rubySession.setSession(session);
         
         RubyDebuggerActionProvider provider =
-                es[0].lookupFirst(null, RubyDebuggerActionProvider.class);
+                de[0].lookupFirst(null, RubyDebuggerActionProvider.class);
         assert provider != null;
         rubySession.setActionProvider(provider);
         proxy.addRubyDebugEventListener(provider);
