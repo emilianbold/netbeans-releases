@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.VersionException;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
@@ -431,7 +432,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentFolder = null;
             }
         } else if (element.equals(SOURCE_ENCODING_ELEMENT)) {
-            ((MakeConfigurationDescriptor)projectDescriptor).setSourceEncoding(currentText);
+            ((MakeProject)((MakeConfigurationDescriptor)projectDescriptor).getProject()).setSourceEncoding(currentText);
         } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
             currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
