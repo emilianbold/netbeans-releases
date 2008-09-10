@@ -86,10 +86,10 @@ public class ArchetypeProviderImpl {
         props.setProperty("archetypeArtifactId", arch.getArtifactId()); //NOI18N
         props.setProperty("archetypeGroupId", arch.getGroupId()); //NOI18N
         props.setProperty("archetypeVersion", arch.getVersion()); //NOI18N
-        props.setProperty("basedir", directory.getAbsolutePath());
+        props.setProperty("basedir", directory.getAbsolutePath());//NOI18N
         
         @SuppressWarnings("unchecked")
-        HashMap<String, String> additional = (HashMap<String, String>)wiz.getProperty("additionalProps");
+        HashMap<String, String> additional = (HashMap<String, String>)wiz.getProperty("additionalProps");//NOI18N
         if (additional != null) {
             for (String key : additional.keySet()) {
                 props.setProperty(key, additional.get(key));
@@ -108,7 +108,7 @@ public class ArchetypeProviderImpl {
         
         //ExecutionRequest.setInteractive seems to have no influence on archetype plugin.
         config.setInteractive(false);
-        props.setProperty("archetype.interactive", "false");
+        props.setProperty("archetype.interactive", "false");//NOI18N
         config.setProperties(props);
         
         config.setTaskDisplayName(NbBundle.getMessage(ArchetypeProviderImpl.class, "RUN_Maven"));
@@ -134,7 +134,7 @@ public class ArchetypeProviderImpl {
         JarFile jf = null;
         try {
             jf = new JarFile(fil);
-            ZipEntry entry = jf.getJarEntry("META-INF/maven/archetype-metadata.xml");
+            ZipEntry entry = jf.getJarEntry("META-INF/maven/archetype-metadata.xml");//NOI18N
             if (entry != null) {
                 InputStream in = jf.getInputStream(entry);
                 Reader rd = new InputStreamReader(in);
