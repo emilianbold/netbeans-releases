@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.errors;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -145,7 +147,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
         for (ImportTree it : imports) {
             String toString = it.getQualifiedIdentifier().toString();
-            if (candidates.getA().contains(toString)) {
+            if (candidates != null && candidates.getA().contains(toString)) {
                 return Collections.<Fix>emptyList();
             }
         }
