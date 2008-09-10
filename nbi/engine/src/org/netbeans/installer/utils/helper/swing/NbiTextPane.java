@@ -57,13 +57,13 @@ public class NbiTextPane extends JTextPane {
         
         putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, true);
         
-        if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {
-            setOpaque(true);
-            Color bc = getBackground();
-            if (bc != null) {
-                setBackground(new Color(bc.getRed(), bc.getGreen(), bc.getBlue(), 0));
-            }
-        }
+        //if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {
+        //    setOpaque(true);
+        //    Color bc = getBackground();
+        //    if (bc != null) {
+        //        setBackground(new Color(bc.getRed(), bc.getGreen(), bc.getBlue(), 0));
+        //    }
+        //}
     }
     
     @Override
