@@ -516,6 +516,8 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 return new String[] { "NativeMethodException" };
             } catch (InternalException ex) {
                 return new String [] {ex.getMessage ()};
+            } catch (InvalidStackFrameException isfex) {
+                return new String [] {"No current thread"};
             }
         } // synchronized
     }

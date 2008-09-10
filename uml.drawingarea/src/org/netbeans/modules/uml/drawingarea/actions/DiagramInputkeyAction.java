@@ -115,8 +115,9 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
             // cancel all selected objects on scene if any
             Set<Object> selectedObjs = (Set<Object>) scene.getSelectedObjects();
             if ( selectedObjs != null && selectedObjs.size() > 0)
-            {
-                scene.setSelectedObjects(Collections.EMPTY_SET);
+            {   
+                scene.userSelectionSuggested (Collections.EMPTY_SET, false);
+                scene.setFocusedObject(null);
                 scene.clearLockedSelected();
                 
                 // cancel context palette

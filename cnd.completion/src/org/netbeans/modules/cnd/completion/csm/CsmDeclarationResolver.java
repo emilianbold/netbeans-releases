@@ -118,7 +118,7 @@ public class CsmDeclarationResolver {
         // add file scope to context
         CsmContextUtilities.updateContext(file, offset, context);
         CsmObject lastObject = null;
-        if (fileContext != null) {
+        if (fileContext != null && !fileContext.isCleaned()) {
             fileContext.advance(offset);
             lastObject = fileContext.findInnerFileDeclaration(offset);
             if (lastObject == null) {
