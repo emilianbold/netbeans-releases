@@ -632,7 +632,7 @@ public class ConfigurationMakefileWriter {
         
     private void writePackagingScriptBody(BufferedWriter bw, MakeConfiguration conf) throws IOException {
         String tmpDirName = "tmp-packaging"; // NOI18N
-        String tmpdir = getObjectDir(conf) + "/" + tmpDirName;
+        String tmpdir = getObjectDir(conf) + "/" + tmpDirName; // NOI18N
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         String output = packagingConfiguration.getOutputValue();
         
