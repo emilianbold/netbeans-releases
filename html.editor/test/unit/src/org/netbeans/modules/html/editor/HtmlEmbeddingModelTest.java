@@ -41,7 +41,13 @@ import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.editor.ext.html.parser.SyntaxParserListener;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.html.editor.test.TestBase;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.Source;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -57,76 +63,64 @@ public class HtmlEmbeddingModelTest extends TestBase {
     public HtmlEmbeddingModelTest(String name) {
         super(name);
     }
+    
+    private Document document;
 
-    public void testLazyEmbeddingCreation() throws IOException, BadLocationException, InterruptedException {
-        FileSystem memFS = FileUtil.createMemoryFileSystem();
-        FileObject fo = memFS.getRoot().createData("test", "html");
-        assertNotNull(fo);
+    @Override
+    public void setUp() {
+        try {
+            super.setUp();
 
-        DataObject dobj = DataObject.find(fo);
-        assertNotNull(dobj);
+            FileSystem memFS = FileUtil.createMemoryFileSystem();
+            FileObject fo = memFS.getRoot().createData("test", "html");
+            assertNotNull(fo);
 
-        EditorCookie cookie = dobj.getCookie(EditorCookie.class);
-        assertNotNull(cookie);
+            DataObject dobj = DataObject.find(fo);
+            assertNotNull(dobj);
 
-        Document document = cookie.openDocument();
-        assertEquals(0, document.getLength());
+            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+            assertNotNull(cookie);
 
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        Language l = registry.getLanguageByMimeType("text/html");
-        assertNotNull(l);
+            document = cookie.openDocument();
+            assertEquals(0, document.getLength());
 
-        final long start = System.currentTimeMillis();
-        
-        //wait for the parser to finish so we can shorten the delay during
-        //we wait for the embedding to be created.
-        SyntaxParser parser = SyntaxParser.get(document, LanguagePath.get(HTMLTokenId.language()));
-        final Object lock = new Object();
-        parser.addSyntaxParserListener(new SyntaxParserListener() {
-            public void parsingFinished(List<SyntaxElement> elements) {
-                synchronized (lock) {
-                    System.out.println("parsed in " + (System.currentTimeMillis() - start) + " ms.");
-                    //wait for a while so the probability that the embedding updater haven't run yet is smaller
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                        //ignore
-                    }
-                    lock.notifyAll();
-                }
-            }
-        });
-        document.insertString(0, "<a href=\"javascript:alert('hello')\"/> <div style=\"color: red\"/>", null);
-        //                        0123456789012345678901234567890123456789012345678901234567890123456789
-        //                        0         1         2         3         4         5         6
-        
-        synchronized (lock) {
-            lock.wait(5000); //5 sec timeout
+            LanguageRegistry registry = LanguageRegistry.getInstance();
+            Language l = registry.getLanguageByMimeType("text/html");
+            assertNotNull(l);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Error setting up tests", ex);
         }
-        
-        //test the embeddings
-        TokenHierarchy th = TokenHierarchy.get(document);
-        List<TokenSequence> embedded = th.embeddedTokenSequences(22, false);
-        boolean found = false;
-        for (TokenSequence ts : embedded) {
-            if (ts.language().mimeType().equals("text/javascript")) {
-                found = true;
-                break;
-            }
-        }
-
-        assertTrue("No javascript embedding created", found);
-
-        embedded = th.embeddedTokenSequences(52, false);
-        found = false;
-        for (TokenSequence ts : embedded) {
-            if (ts.language().mimeType().equals("text/x-css")) {
-                found = true;
-                break;
-            }
-        }
-
-        assertTrue("No css embedding created", found);
 
     }
+
+    public void testVirtualSourceOnPureHTML() throws BadLocationException, IOException {
+        String content = "<html><head></head><body>hello</body></html>";
+        setDocumentText(content);
+        
+        Source source = Source.forDocument(document);
+        final ParserResult[] result = new ParserResult[1];
+        source.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {
+            }
+            public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(Phase.PARSED);
+                result[0] = parameter.getEmbeddedResult("text/html", 0);
+            }
+        }, false);
+        
+        ParserResult pr = result[0];
+        
+        assertNotNull(pr);
+        
+        TranslatedSource translatedSource = pr.getTranslatedSource();
+        assertNull(translatedSource);
+        
+        
+    }
+    
+    private void setDocumentText(String text) throws BadLocationException {
+        document.remove(0, document.getLength());
+        document.insertString(0, text, null);
+    }
+    
 }

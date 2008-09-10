@@ -231,10 +231,12 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
         JTextField tfFont, tfStyle, tfSize;
         JList lFont, lStyle, lSize;
+        boolean escaped = false;
 
         static final long serialVersionUID =8377025140456676594L;
 
         FontPanel () {
+            escaped = false;
             setLayout (new BorderLayout ());
             setBorder(new EmptyBorder(12, 12, 0, 11));
             
@@ -309,15 +311,28 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             tfSize.addKeyListener( new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
-                    if ( e.getKeyCode() == KeyEvent.VK_ENTER )
+                    if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
                         setValue ();
+                    } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                        escaped = true;
+                    }
                 }
             });
             
             tfSize.addFocusListener (new FocusAdapter () {
                 @Override
                  public void focusLost (FocusEvent evt) {
-                     setValue ();
+                    if (escaped) {
+                        return ;
+                    }
+                    Component c = evt.getOppositeComponent ();
+                    if (c != null && c instanceof JButton) {
+                        if (((JButton) c).getText ().equals (NbBundle.getMessage (FontEditor.class, "CTL_OK"))) { // NOI18N
+                            setValue ();
+                        }
+                    } else {
+                        setValue ();
+                    }
                  }
             });
             la.setConstraints (tfSize, c);
@@ -420,22 +435,22 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                 lSize.clearSelection();
         }
 
-        void setValue () {
+        private void setValue () {
             int size = 12;
             try {
                 size = Integer.parseInt (tfSize.getText ());
                 if (size <= 0) {
-                    IllegalStateException ise = new IllegalStateException ();
-                    UIExceptions.annotateUser (ise, null,
-                            size == 0 ? NbBundle.getMessage (FontEditor.class, "CTL_InvalidValue") : // NOI18N
+                    IllegalArgumentException iae = new IllegalArgumentException ();
+                    UIExceptions.annotateUser (iae, null,
+                            size == 0 ? NbBundle.getMessage (FontEditor.class, "CTL_InvalidValueWithParam", tfSize.getText ()) : // NOI18N
                                 NbBundle.getMessage (FontEditor.class, "CTL_NegativeSize"), // NOI18N
                             null, null);
-                    throw ise;
+                    throw iae;
                 }
                 updateSizeList(size);
             } catch (NumberFormatException e) {
                 UIExceptions.annotateUser (e, null,
-                        NbBundle.getMessage (FontEditor.class, "CTL_InvalidValue"), // NOI18N
+                        NbBundle.getMessage (FontEditor.class, "CTL_InvalidValueWithExc", e), // NOI18N
                         null, null);
                 throw e;
             }

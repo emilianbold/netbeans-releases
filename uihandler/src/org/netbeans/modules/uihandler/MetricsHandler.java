@@ -58,7 +58,7 @@ public class MetricsHandler extends Handler {
     private static boolean flushOnRecord;
     static final int MAX_LOGS = 400;
     /** Maximum allowed size of backup log file 10MB */
-    static final long MAX_LOGS_SIZE = 10485760;
+    static final long MAX_LOGS_SIZE = 10L * 1024L * 1024L;
     
     public MetricsHandler() {
         setLevel(Level.FINEST);
