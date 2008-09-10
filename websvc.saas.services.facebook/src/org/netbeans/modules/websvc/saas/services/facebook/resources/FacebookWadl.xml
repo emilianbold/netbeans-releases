@@ -779,7 +779,7 @@ This method does not require a session key. However if you call this method with
                         </doc>
                     </param>
                     <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
-                    <param name="template_bundle_id" required="true" style="query" type="xsd:int">
+                    <param name="template_bundle_id" required="true" style="query" type="xsd:integer">
                         <doc xml:lang="en">The template bundle ID used to identify a previously registered template bundle. The ID is the one returned by a previous call to feed.registerTemplateBundle. 
                         </doc>
                     </param>
@@ -835,7 +835,7 @@ This method does not require a session key. However if you call this method with
                         </doc>
                     </param>
                     <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
-                    <param name="template_bundle_id" required="true" style="query" type="xsd:int">
+                    <param name="template_bundle_id" required="true" style="query" type="xsd:integer">
                         <doc xml:lang="en">The template bundle ID used to identify a previously registered template bundle. The ID is the one returned by a previous call to feed.registerTemplateBundle. 
                         </doc>
                     </param>
@@ -1089,7 +1089,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
                         </doc>
                     </param>
                     <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
-                    <param name="recipient" required="true" style="query" type="xsd:int">
+                    <param name="recipient" required="true" style="query" type="xsd:integer">
                         <doc xml:lang="en">The template bundle ID used to identify a previously registered template bundle. The ID is the one returned by a previous call to feed.registerTemplateBundle. 
                         </doc>
                     </param>
