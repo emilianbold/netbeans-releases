@@ -198,6 +198,9 @@ final class Importer {
         
         // create ENV variables in build.properties
         eclProject.setupEnvironmentVariables(projectImportProblems);
+        
+        // remove invalid source roots:
+        eclProject.removeInvalidSourceRoots(projectImportProblems);
     }
         
     private Project importProjectStage1(EclipseProject eclProject, List<String> importProblems, List<String> projectImportProblems) throws IOException {

@@ -358,7 +358,7 @@ public class SimplifiedJSPServlet {
         TagData fooArg = new TagData((Object[][])null);
 
         for (String prefix : prefixes) {
-            List<TagInfo> tags = syntaxSupport.getAllTags(prefix);
+            List<TagInfo> tags = syntaxSupport.getAllTags(prefix, false); //do not require fresh data - #146762
 
             for (TagInfo tag : tags) {
                 VariableInfo vars[] = tag.getVariableInfo(fooArg);

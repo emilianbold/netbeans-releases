@@ -68,11 +68,12 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author eu155513
  */
-public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, CsmInstantiation {
+public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T>, CsmInstantiation {
     protected final CsmOffsetableDeclaration declaration;
     protected final Map<CsmTemplateParameter, CsmType> mapping;
+    private String fullName = null;
 
-    public Instantiation(CsmOffsetableDeclaration declaration, CsmType instType) {
+    private Instantiation(CsmOffsetableDeclaration declaration, CsmType instType) {
         this.declaration = declaration;
         this.mapping = new HashMap<CsmTemplateParameter, CsmType>();
         // create mapping map
@@ -86,7 +87,8 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                     if (CsmKindUtilities.isType(defaultValue)) {
                         CsmType defaultType = (CsmType) defaultValue;
                         defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmScope) declaration));
-                        defaultType = Instantiation.createType(defaultType, this);
+                        // See IZ 146522 (we need to create a new Instantiation with all parameters up to the current one)
+                        defaultType = Instantiation.createType(defaultType, new Instantiation(this.declaration, new HashMap<CsmTemplateParameter, CsmType>(this.mapping)));
                         if (defaultType != null) {
                             mapping.put(param, defaultType);
                         }
@@ -96,9 +98,37 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
     }
     
-    public Instantiation(CsmOffsetableDeclaration declaration, Map<CsmTemplateParameter, CsmType> mapping) {
+    private Instantiation(CsmOffsetableDeclaration declaration, Map<CsmTemplateParameter, CsmType> mapping) {
         this.declaration = declaration;
         this.mapping = mapping;
+    }
+
+    // FIX for 146522, we compare toString value until better solution is found
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof CsmObject)) {
+            return false;
+        }
+        CsmObject csmobj = (CsmObject) obj;
+        if (CsmKindUtilities.isInstantiation(csmobj)) {
+            return getFullName().equals(((Instantiation)csmobj).getFullName());
+        } else if (CsmKindUtilities.isTemplate(csmobj) ||
+                   CsmKindUtilities.isTemplateInstantiation(csmobj)) {
+            return this.getUniqueName().equals(((CsmDeclaration)csmobj).getUniqueName());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return getFullName().hashCode();
+    }
+
+    private synchronized String getFullName() {
+        if (fullName == null) {
+            fullName = toString();
+        }
+        return fullName;
     }
 
     public CsmOffsetableDeclaration getTemplateDeclaration() {

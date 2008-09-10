@@ -150,9 +150,10 @@ final class DotClassPathParser {
     }
     
     private static String resolveLink(String value, List<Link> links) {
+        String[] v = EclipseUtils.splitVariable(value);
         for (Link l : links) {
-            if (l.getName().equals(value)) {
-                return l.getLocation();
+            if (l.getName().equals(v[0])) {
+                return l.getLocation() + v[1];
             }
         }
         return null;

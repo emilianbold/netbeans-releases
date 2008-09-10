@@ -76,7 +76,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.netbeans.modules.db.sql.history.SQLHistoryException;
 import org.netbeans.modules.db.sql.history.SQLHistoryModel;
@@ -130,14 +129,12 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     private void setupSQLSaveLimit() {
         // SQL statments save limit
         String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""); // NOI18N
-        if (savedLimit != null) {
+        if (null != savedLimit && !savedLimit.equals(SAVE_STATEMENTS_CLEARED)) {
             sqlLimitTextField.setText(savedLimit);
         } else {
-            sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
-        }
-        // Make sure the save limit is considered
-        if (savedLimit.equals(SAVE_STATEMENTS_CLEARED)) {
+            sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED);
             savedLimit = SAVE_STATEMENTS_MAX_LIMIT_ENTERED;
+            NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", SAVE_STATEMENTS_MAX_LIMIT_ENTERED);  // NOI18N
         }
     }
 

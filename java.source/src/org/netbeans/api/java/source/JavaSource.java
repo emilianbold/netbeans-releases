@@ -1195,6 +1195,15 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
 
+        //for dev builds, fill stack trace for CompletionFailures (see #146026):
+        boolean assertsEnabled = false;
+
+        assert assertsEnabled = true;
+
+        if (assertsEnabled) {
+            options.add("-XDide");   // NOI18N
+        }
+
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {            
             //The ToolProvider.defaultJavaCompiler will use the context classloader to load the javac implementation
