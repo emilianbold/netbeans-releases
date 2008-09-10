@@ -123,6 +123,11 @@ public class FindSourceTargetAction extends NodeAction
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
 
     private class FindSourceAction extends AbstractAction
     {
