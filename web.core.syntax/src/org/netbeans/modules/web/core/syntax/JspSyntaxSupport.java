@@ -237,11 +237,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return prefixMapper;
     }
     
-    private Map getTagLibraries() {
+    private Map getTagLibraries(boolean requiresFresh) {
         //refresh tag libraries mappings - this call causes the WebAppParseSupport to refresh taglibs mapping
         getTagLibraryMappings();
-        //force the parser to update the parse information for the file
-        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, false, true, true);
+        //if requiresFresh force the parser to update the parse information for the file
+        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, false, true, requiresFresh);
         if (result != null) {
             PageInfo pi = result.getPageInfo();
             if(pi == null) {
@@ -273,12 +273,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return tinfos;
     }
     
-    private TagLibraryInfo getTagLibrary(String prefix) {
+    private TagLibraryInfo getTagLibrary(String prefix, boolean requiresFresh) {
         Map mapper = getPrefixMapper();
         if (mapper != null) {
             Object uri = mapper.get(prefix);
             if (uri != null) {
-                Map taglibs = getTagLibraries();
+                Map taglibs = getTagLibraries(requiresFresh);
                 if (taglibs != null) {
                     return (TagLibraryInfo)taglibs.get(uri);
                 }
@@ -511,7 +511,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
      * Assumes that complPrefix does not include the 'jsp prefix'.
      */
     public final List getTags(String tagPrefix, String complPrefix) {
-        return filterList(getAllTags(tagPrefix), complPrefix);
+        return filterList(getAllTags(tagPrefix, true), complPrefix);
     }
     
     /** Gets attributes for tag whose prefix + name
@@ -617,7 +617,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     /**  Returns a list of strings - tag names available for a particular prefix.
      */
-    protected List getAllTags(String prefix) {
+    protected List getAllTags(String prefix, boolean requiresFresh) {
         List items = new ArrayList();
         
         // standard JSP tags (jsp:)
@@ -629,7 +629,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
         
-        TagLibraryInfo info = getTagLibrary(prefix);
+        TagLibraryInfo info = getTagLibrary(prefix, requiresFresh);
         TagInfo[] tags = null;
         if (info != null) {
             tags = getAllTagInfos(info);
@@ -676,7 +676,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
         
-        TagLibraryInfo info = getTagLibrary(prefix);
+        TagLibraryInfo info = getTagLibrary(prefix, true);
         if (info != null) {
             TagInfo tagInfo = info.getTag(tag);
             if (tagInfo == null) {
@@ -1798,7 +1798,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 String name = image.substring(image.indexOf(':')+1);
                 TagInfo ti = null;
                 
-                TagLibraryInfo tli = getTagLibrary(prefix);
+                TagLibraryInfo tli = getTagLibrary(prefix, true);
                 if (tli != null) {
                     ti = tli.getTag(name);
                     if (ti == null) {
