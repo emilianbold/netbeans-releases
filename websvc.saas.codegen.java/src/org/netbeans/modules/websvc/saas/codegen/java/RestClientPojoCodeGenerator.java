@@ -73,6 +73,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SessionKeyAuthent
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -202,13 +203,14 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
     private void setJaxbWrapper() {
         List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
         if (!repTypesFromWadl.isEmpty()) {
-            QName qName = repTypesFromWadl.get(0);
-            String nsUri = qName.getNamespaceURI();
-            getBean().setOutputWrapperName(qName.getLocalPart());
-            getBean().setOutputWrapperPackageName(
-                    (getBean().getGroupName() + "." +
-                    getBean().getDisplayName()).toLowerCase() +
-                    "." + nsUri.substring(nsUri.lastIndexOf(":") + 1).toLowerCase());
+            for(QName qName: repTypesFromWadl) {
+                String nsUri = qName.getNamespaceURI();
+                getBean().addOutputWrapperName(qName.getLocalPart());
+                getBean().addOutputWrapperPackageName(
+                        (getBean().getGroupName() + "." +
+                        getBean().getDisplayName()).toLowerCase() +
+                        "." + nsUri.substring(nsUri.lastIndexOf(":") + 1).toLowerCase());
+            }
         }
     }
 
@@ -222,8 +224,6 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         String paramDecl = "";
 
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
-        String indent = "        ";
-        String indent2 = "             ";
         List<ParameterInfo> params = getServiceMethodParameters();
         clearVariablePatterns();
         updateVariableNames(params);
@@ -231,93 +231,68 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         paramUse += Util.getHeaderOrParameterUsage(renamedParams);
         paramDecl += getHeaderOrParameterDeclaration(renamedParams);
 
-        String methodBody = "\n"+indent + "try {\n";
+        String methodBody = "\n"+INDENT + "try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += indent2 + REST_RESPONSE + " "+getResultPattern()+" = " + getBean().getSaasServiceName() +
+        methodBody += INDENT_2 + REST_RESPONSE + " "+getResultPattern()+" = " + getBean().getSaasServiceName() +
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += Util.createPrintStatement(
-                getBean().getOutputWrapperPackageName(),
-                getBean().getOutputWrapperName(),
+                getBean().getOutputWrapperPackageNames(),
+                getBean().getOutputWrapperNames(),
                 getDropFileType(),
                 getBean().getHttpMethod(),
-                getBean().canGenerateJAXBUnmarshaller(), getResultPattern(), indent2);
-        methodBody += indent + "} catch (Exception ex) {\n";
-        methodBody += indent2 + "ex.printStackTrace();\n";
-        methodBody += indent + "}\n";
+                getBean().canGenerateJAXBUnmarshaller(), getResultPattern(), INDENT_2);
+        methodBody += INDENT + "} catch (Exception ex) {\n";
+        methodBody += INDENT_2 + "ex.printStackTrace();\n";
+        methodBody += INDENT + "}\n";
 
         return methodBody;
     }
 
     protected String getServiceMethodBody() throws IOException {
-        String fixedCode = getFixedParameterDeclaration();
-
-        String pathParamsCode = "";
-        if (getBean().getTemplateParameters() != null && getBean().getTemplateParameters().size() > 0) {
-            pathParamsCode = getTemplateParameterDefinition(getBean().getTemplateParameters(), Constants.PATH_PARAMS, false);
-        }
-        String queryParamsCode = "";
-        if (getBean().getQueryParameters() != null &&
-                getBean().getQueryParameters().size() > 0) {
-            queryParamsCode = Util.getHeaderOrParameterDefinition(getBean().getQueryParameters(), Constants.QUERY_PARAMS, false);
-        }
-
         String methodBody = "";
-        methodBody += "        " + fixedCode;
+        methodBody += INDENT + getFixedParameterDeclaration();
 
         //Insert authentication code before new "+Constants.REST_CONNECTION+"() call
-        methodBody += "             " +
-                getAuthenticationGenerator().getPreAuthenticationCode() + "\n";
+        methodBody += INDENT_2 + getAuthenticationGenerator().getPreAuthenticationCode() + "\n";
 
         //Insert parameter declaration
-        methodBody += "        " + pathParamsCode;
-        methodBody += "        " + queryParamsCode;
+        methodBody += INDENT + getTemplateParameterDefinition(
+                getBean().getTemplateParameters(), Constants.PATH_PARAMS, false);
+        methodBody += "        " + Util.getHeaderOrParameterDefinition(
+                getBean().getQueryParameters(), Constants.QUERY_PARAMS, false);
 
-        methodBody += "             " + Constants.REST_CONNECTION + " conn = new " + Constants.REST_CONNECTION + "(\"" + getBean().getUrl() + "\"";
-        if (!pathParamsCode.trim().equals("")) {
-            methodBody += ", " + Constants.PATH_PARAMS + ", " + (queryParamsCode.trim().equals("") ? "null" : Constants.QUERY_PARAMS);
-        } else if (!queryParamsCode.trim().equals("")) {
-            methodBody += ", " + Constants.QUERY_PARAMS;
-        }
+        methodBody += INDENT_2 + Constants.REST_CONNECTION + 
+                " conn = new " + Constants.REST_CONNECTION + "(\"" + getBean().getUrl() + "\"";
+        methodBody += ", " + Constants.PATH_PARAMS;
+        methodBody += ", " + (!Util.isPutPostFormParams(getBean())?Constants.QUERY_PARAMS:"null");
         methodBody += ");\n";
 
         //Insert authentication code after new "+Constants.REST_CONNECTION+"() call
-        methodBody += "             " +
-                getAuthenticationGenerator().getPostAuthenticationCode() + "\n";
+        methodBody += INDENT_2 + getAuthenticationGenerator().getPostAuthenticationCode() + "\n";
 
         HttpMethodType httpMethod = getBean().getHttpMethod();
         String headerUsage = "null";
         if (getBean().getHeaderParameters() != null && getBean().getHeaderParameters().size() > 0) {
             headerUsage = Constants.HEADER_PARAMS;
-            methodBody += "        " + Util.getHeaderOrParameterDefinition(getBean().getHeaderParameters(), Constants.HEADER_PARAMS, false, httpMethod);
+            methodBody += INDENT + Util.getHeaderOrParameterDefinition(
+                    getBean().getHeaderParameters(), Constants.HEADER_PARAMS, false, httpMethod);
         }
-
-        boolean hasRequestRep = !getBean().findInputRepresentations(getBean().getMethod()).isEmpty();
+        
         //Insert the method call
-        String returnStatement = "return conn";
-        if (httpMethod == HttpMethodType.GET) {
-            methodBody += "             " + returnStatement + ".get(" + headerUsage + ");\n";
-        } else if (httpMethod == HttpMethodType.PUT) {
-            if (hasRequestRep) {
-                methodBody += "             " + returnStatement + ".put(" + headerUsage + ", " + Constants.PUT_POST_CONTENT + ");\n";
-            } else {
-                methodBody += "             " + returnStatement + ".put(" + headerUsage + ");\n";
-            }
-        } else if (httpMethod == HttpMethodType.POST) {
-            if (hasRequestRep) {
-                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.PUT_POST_CONTENT + ");\n";
-            } else {
-                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.QUERY_PARAMS + ");\n";
-            }
-        } else if (httpMethod == HttpMethodType.DELETE) {
-            methodBody += "             " + returnStatement + ".delete(" + headerUsage + ");\n";
+        methodBody += INDENT_2 + "return conn." + httpMethod.prefix() + "(" + headerUsage;
+        if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
+            if (Util.isPutPostFormParams(getBean())) {
+                methodBody += ", " + Constants.QUERY_PARAMS;
+            } else if (Util.hasInputRepresentations(getBean())) {
+                methodBody += ", " + Constants.PUT_POST_CONTENT;
+            } 
         }
-
+        methodBody += ");\n";
         return methodBody;
     }
 
     protected String getFixedParameterDeclaration() {
         String fixedCode = "";
-        List<ParameterInfo> inputParams = getBean().getInputParameters();
         List<ParameterInfo> signParams = null;
 
         SaasAuthenticationType authType = getBean().getAuthenticationType();
@@ -430,10 +405,10 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
                 String bodyText = "{ \n" + getServiceMethodBody() + "\n }";
 
 
-                String comment = "Retrieves representation of an instance of " + getBean().getQualifiedClassName() + "\n";// NOI18N
+                String comment = "\n";// NOI18N
 
                 for (String param : parameters) {
-                    comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N
+                    comment += "@param $PARAM$ \n".replace("$PARAM$", param);// NOI18N
 
                 }
                 comment += "@return an instance of " + type;// NOI18N

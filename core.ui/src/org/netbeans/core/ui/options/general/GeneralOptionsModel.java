@@ -47,19 +47,23 @@ import org.openide.util.NbPreferences;
 
 class GeneralOptionsModel {
     
-    private static String USAGE_STATISTICS_ENABLED = "usageStatisticsEnabled";
-
     private static Preferences getProxyPreferences () {
         return NbPreferences.root ().node ("org/netbeans/core");
     }
-
+    
     boolean getUsageStatistics () {
-        return getProxyPreferences ().getBoolean(USAGE_STATISTICS_ENABLED,Boolean.FALSE);
+        String key = System.getProperty("nb.show.statistics.ui");
+        if (key != null) {
+            return getProxyPreferences ().getBoolean(key, Boolean.FALSE);
+        } else {
+            return false;
+        }
     }
 
     void setUsageStatistics (boolean use) {
-        if (use != getUsageStatistics()) {
-            getProxyPreferences  ().putBoolean(USAGE_STATISTICS_ENABLED, use);
+        String key = System.getProperty("nb.show.statistics.ui");
+        if ((key != null) && (use != getUsageStatistics())) {
+            getProxyPreferences  ().putBoolean(key, use);
         }
     }
     

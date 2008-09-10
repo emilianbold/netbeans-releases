@@ -49,23 +49,29 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
-import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 
 /**
  *
  * @author Alexander Simon
  */
-public class MemberResolverImpl extends CsmMemberResolver {
+public final class MemberResolverImpl {
+    private final Resolver resolver;
 
-    @Override
+    public MemberResolverImpl(Resolver resolver){
+        this.resolver = resolver;
+    }
+    
     public Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name) {
-        cls = CsmBaseUtilities.getOriginalClassifier(cls);
+        cls = ResolverFactory.createResolver((CsmOffsetable) cls, resolver).getOriginalClassifier(cls);
         if (CsmKindUtilities.isClass(cls)){
             List<CsmMember> res = new ArrayList<CsmMember>();
             getClassMembers((CsmClass)cls, name, res);
@@ -106,7 +112,6 @@ public class MemberResolverImpl extends CsmMemberResolver {
         }
     }
     
-    @Override
     public Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name) {
         Iterator<CsmMember> it =  getDeclarations(cls, name);
         List<CsmClassifier> res = new ArrayList<CsmClassifier>();

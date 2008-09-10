@@ -693,9 +693,14 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
         FileObject projectDirectory = p.getProjectDirectory();
         FileObject nbprojectFolder = projectDirectory.getFileObject("nbproject", null);
         if (nbprojectFolder == null) {
-            LOG.warning("Unable to create access the follow folder: " + nbprojectFolder);
-            System.err.println("Unable to create access the follow folder:" + nbprojectFolder);
-            return null;
+            // Maven project
+            if (projectDirectory.getFileObject("pom", "xml") != null) {
+                nbprojectFolder = projectDirectory;
+            } else {
+                LOG.warning("Unable to create access the follow folder: " + nbprojectFolder);
+                System.err.println("Unable to create access the follow folder:" + nbprojectFolder);
+                return null;
+            }
         }
 
         String filename = configFile.getName() + ".NavData";

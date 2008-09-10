@@ -575,6 +575,8 @@ public final class MainWindow extends JFrame {
             g = getGraphics();
         }
         super.paint(g);
+
+        WindowManagerImpl.getInstance().mainWindowPainted();
     }
 
     /** Overrides parent version to return fake dummy graphic in certain time

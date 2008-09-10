@@ -50,5 +50,5 @@ token #48 WHITESPACE
 token #49 PHP_STRING b
 token #50 PHP_SEMICOLON ;
 token #51 WHITESPACE \n
-token #52 PHP_CLOSETAG ?>\n
-token #53 T_INLINE_HTML --EXPECT--\nok!\nok!\nok!\n
+token #52 PHP_CLOSETAG ?>
+token #53 T_INLINE_HTML \n--EXPECT--\nok!\nok!\nok!\n

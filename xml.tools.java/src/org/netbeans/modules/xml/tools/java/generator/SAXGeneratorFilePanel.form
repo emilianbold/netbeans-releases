@@ -29,39 +29,36 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="saveCheckBox" alignment="0" min="-2" pref="475" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Group type="102" alignment="0" attributes="1">
-                              <Component id="saveLabel" min="-2" pref="230" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="saveTextField" max="32767" attributes="0"/>
+                  <Component id="saveCheckBox" alignment="0" pref="700" max="32767" attributes="0"/>
+                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                      <Group type="102" alignment="0" attributes="1">
+                          <Component id="saveLabel" pref="230" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="saveTextField" max="32767" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="1">
+                          <Component id="parsletImplLabel" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="parsletImplTextField" max="32767" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="1">
+                          <Component id="parsletLabel" pref="230" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="parsletTextField" max="32767" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="handlerImplLabel" alignment="0" max="32767" attributes="0"/>
+                              <Component id="interfaceLabel" alignment="0" pref="138" max="32767" attributes="0"/>
+                              <Component id="stubLabel" alignment="0" pref="230" max="32767" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="1">
-                              <Component id="parsletImplLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="parsletImplTextField" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="1">
-                              <Component id="parsletLabel" min="-2" pref="230" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="parsletTextField" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="handlerImplLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="interfaceLabel" alignment="0" min="-2" pref="138" max="-2" attributes="0"/>
-                                  <Component id="stubLabel" alignment="0" min="-2" pref="230" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="stubTextField" max="32767" attributes="1"/>
-                                  <Component id="handlerImplTextField" max="32767" attributes="1"/>
-                                  <Component id="interfaceTextField" alignment="0" min="-2" pref="275" max="-2" attributes="3"/>
-                              </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="stubTextField" max="32767" attributes="1"/>
+                              <Component id="handlerImplTextField" max="32767" attributes="1"/>
+                              <Component id="interfaceTextField" alignment="0" pref="275" max="32767" attributes="3"/>
                           </Group>
                       </Group>
-                      <EmptySpace pref="185" max="32767" attributes="0"/>
                   </Group>
                   <Component id="descTextArea" alignment="0" min="-2" pref="696" max="-2" attributes="0"/>
               </Group>
@@ -115,7 +112,7 @@
                       <Component id="saveTextField" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="35" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -220,7 +217,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="handlerImplLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Handler Implementation:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorCustomizer.implementationLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="org.netbeans.modules.xml.tools.generator.ValidatingTextField" name="handlerImplTextField">

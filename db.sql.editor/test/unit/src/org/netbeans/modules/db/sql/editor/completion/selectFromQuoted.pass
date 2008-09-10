@@ -1,5 +1,0 @@
-Column customer_id in table accounting.customer
-Column invoice_id in table accounting.invoice
-Column customer_id in table accounting.invoice
-Alias foo
-Schema accounting

@@ -339,6 +339,16 @@ made subject to such option by the copyright holder.
      method.
    </p>
   </usecase>
+ <usecase id="test-connection" name="Test a database connection for validity">
+   <p>
+    You may want to test to make sure the underlying physical JDBC connection
+    obtained from a DatabaseConnection is either valid or null.  This is done using the
+    <a href="@TOP@org/netbeans/api/db/explorer/DatabaseConnection.html#getJDBCConnection(boolean)">
+        DatabaseConnection.getJDBCConnection(boolean test)</a>
+    method, which validates the underlying connection before returning it.  If the
+    connection is invalid, it marks the DatabaseConnection as disconnected and returns null.
+   </p>
+  </usecase>
   <usecase id="connections-combo-box" name="Displaying the database connections in the UI">
    <p>
     A component which provides database functionality (such as the SQL Editor

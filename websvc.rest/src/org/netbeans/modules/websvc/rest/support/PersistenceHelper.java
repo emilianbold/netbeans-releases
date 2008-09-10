@@ -42,13 +42,14 @@
 package org.netbeans.modules.websvc.rest.support;
 
 import java.io.IOException;
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -58,25 +59,55 @@ import org.w3c.dom.NodeList;
  */
 public class PersistenceHelper {
     private static final String PERSISTENCE_UNIT_TAG = "persistence-unit";      //NOI18N
+    
     private static final String PROPERTIES_TAG = "properties";      //NOI18N
+    
     private static final String NAME_ATTR = "name";                 //NOI18N
+    
     private static final String EXCLUDE_UNLISTED_CLASSES_TAG = "exclude-unlisted-classes";      //NOI18N
+    
     private static final String TRANSACTION_TYPE_ATTR = "transaction-type";         //NOI18N
+    
     private static final String RESOURCE_LOCAL_VALUE = "RESOURCE_LOCAL";        //NOI18N
+    
     private static final String JTA_DATA_SOURCE_TAG = "jta-data-source";        //NOI18N
+    
     private static final String NON_JTA_DATA_SOURCE_TAG = "non-jta-data-source";        //NOI18N
-
+    
+    private static final String CLASS_TAG = "class";    //NOI18N
+    
+    private static final String PROVIDER_TAG = "provider";  //NOI18N
+    
+    private static final String DEFAULT_PROVIDER = "oracle.toplink.essentials.PersistenceProvider"; //NOI18N
    
-    public static PersistenceUnit getPersistenceUnit(Project project) {
-        FileObject fobj = getPersistenceXML(project);
+    private Project project;
+    private DOMHelper helper;
+    
+    public PersistenceHelper(Project project) {
+        this.project = project;
+        
+        FileObject fobj = getPersistenceXML();
         
         if (fobj != null) {
-            DOMHelper helper = new DOMHelper(fobj);
-        
+            helper = new DOMHelper(fobj);
+        }
+    }
+    
+    public PersistenceUnit getPersistenceUnit() {
+        if (helper != null) {
             Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);  
             
             if (puElement != null) {
                 String puName = puElement.getAttribute(NAME_ATTR);
+                
+                String provider;
+                NodeList nodes = puElement.getElementsByTagName(PROVIDER_TAG);
+                if (nodes.getLength() > 0) {
+                    provider = helper.getValue((Element) nodes.item(0));
+                } else {
+                    provider = DEFAULT_PROVIDER;
+                }
+                
                 Datasource datasource = null;
                 
                 NodeList nodeList = puElement.getElementsByTagName(JTA_DATA_SOURCE_TAG);
@@ -86,7 +117,7 @@ public class PersistenceHelper {
                     datasource = RestUtils.getDatasource(project, jndiName);
                 }
                 
-                return new PersistenceUnit(puName, datasource);
+                return new PersistenceUnit(puName, provider, datasource);
             }
         }
         
@@ -94,25 +125,25 @@ public class PersistenceHelper {
     }
     
     
-    public static void modifyPersistenceXml(Project project, boolean useResourceLocalTx) throws IOException {
-        FileObject fobj = getPersistenceXML(project);
-        DOMHelper helper = new DOMHelper(fobj);
-       
+    public void configure(Collection<String> classNames, boolean useResourceLocalTx) throws IOException {
+        if (helper == null) return;
+        
+        // Required by Spring
+        setDefaultProvider();
+        
+        // Required for Spring + Hibernate
+        addEntityClasses(classNames);
+        
         // Need to do this for Tomcat
-        unsetExcludeEnlistedClasses(helper);
+        unsetExcludeEnlistedClasses();
         
         if (useResourceLocalTx)
-            switchToResourceLocalTransaction(helper);
+            switchToResourceLocalTransaction();
        
         helper.save();
     }
     
-    public static void unsetExcludeEnlistedClasses(Project project) throws IOException{
-        FileObject fobj = getPersistenceXML(project);
-        unsetExcludeEnlistedClasses(new DOMHelper(fobj));
-    }
-    
-    private static void unsetExcludeEnlistedClasses(DOMHelper helper) throws IOException {
+    private void unsetExcludeEnlistedClasses() throws IOException {
         Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
         NodeList nodes = puElement.getElementsByTagName(EXCLUDE_UNLISTED_CLASSES_TAG);
     
@@ -124,7 +155,7 @@ public class PersistenceHelper {
         }
     }
      
-    private static void switchToResourceLocalTransaction(DOMHelper helper)  throws IOException {
+    private void switchToResourceLocalTransaction()  throws IOException {
         Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
         puElement.setAttribute(TRANSACTION_TYPE_ATTR, RESOURCE_LOCAL_VALUE);
         
@@ -139,18 +170,33 @@ public class PersistenceHelper {
         }
     }
     
-   
-    public static Element getPropertiesElement(Document document) {
-       NodeList nodeList = document.getElementsByTagName(PROPERTIES_TAG);
+    private void addEntityClasses(Collection<String> classNames) throws IOException {
+        List<String> toAdd = new ArrayList<String>(classNames);   
+        Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
+        NodeList nodes = puElement.getElementsByTagName(CLASS_TAG);
+        int length = nodes.getLength();
         
-        if (nodeList.getLength() > 0) {
-            return (Element) nodeList.item(0);
+        for (int i = 0; i < length; i++) {
+            toAdd.remove(helper.getValue((Element) nodes.item(i)));
         }
         
-        return null;
-    }      
+        for (String className : toAdd) {   
+            puElement.insertBefore(helper.createElement(CLASS_TAG, className),
+                    helper.findElement(PROPERTIES_TAG));
+        }
+    }
     
-    private static FileObject getPersistenceXML(Project project) {
+    private void setDefaultProvider() throws IOException {
+        Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
+        NodeList nodes = puElement.getElementsByTagName(PROVIDER_TAG);
+        
+        if (nodes.getLength() == 0) {
+            puElement.insertBefore(helper.createElement(PROVIDER_TAG, DEFAULT_PROVIDER),
+                    puElement.getFirstChild());
+        }
+    }
+    
+    private FileObject getPersistenceXML() {
         RestSupport rs = RestUtils.getRestSupport(project);
         if (rs != null) {
             return rs.getPersistenceXml();
@@ -160,15 +206,21 @@ public class PersistenceHelper {
     
     public static class PersistenceUnit {
         private String name;
+        private String provider;
         private Datasource datasource;
         
-        public PersistenceUnit(String name, Datasource datasource) {
+        public PersistenceUnit(String name, String provider, Datasource datasource) {
             this.name = name;
+            this.provider = provider;
             this.datasource = datasource;
         }
         
         public String getName() {
             return name;
+        }
+        
+        public String getProvider() {
+            return provider;
         }
         
         public Datasource getDatasource() {

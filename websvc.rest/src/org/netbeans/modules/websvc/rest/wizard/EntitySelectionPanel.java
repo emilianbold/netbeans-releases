@@ -73,7 +73,7 @@ public final class EntitySelectionPanel extends AbstractPanel {
         Project project = Templates.getProject(wizardDescriptor);
         RestSupport support = project.getLookup().lookup(RestSupport.class);
         if(support == null) {
-            setErrorMessage("MSG_EntitySelectionPanel_NotWebProject");
+            setInfoMessage("MSG_EntitySelectionPanel_NotWebProject");
             return false;
         } else {
             /*if(!support.hasSwdpLibrary()) {
@@ -81,7 +81,7 @@ public final class EntitySelectionPanel extends AbstractPanel {
                 return false;
             }*/
             if (getPersistenceUnit(project) == null) {
-                setErrorMessage("MSG_EntitySelectionPanel_NoPersistenceUnit");
+                setInfoMessage("MSG_EntitySelectionPanel_NoPersistenceUnit");
                 return false;
             }
         }
@@ -103,7 +103,7 @@ public final class EntitySelectionPanel extends AbstractPanel {
     static PersistenceUnit getPersistenceUnit(WizardDescriptor wizard, Project project) {
         PersistenceUnit pu = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
         if (pu == null) {
-            pu = PersistenceHelper.getPersistenceUnit(project);
+            pu = new PersistenceHelper(project).getPersistenceUnit();
             wizard.putProperty(WizardProperties.PERSISTENCE_UNIT, pu);
         }
         return pu;

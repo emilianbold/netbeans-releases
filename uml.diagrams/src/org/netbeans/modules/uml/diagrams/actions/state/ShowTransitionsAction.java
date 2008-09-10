@@ -124,6 +124,11 @@ public class ShowTransitionsAction extends SceneNodeAction
         return null;
     }
 
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
 //    @Override
 //    protected boolean enable(Node[] activatedNodes)
 //    {

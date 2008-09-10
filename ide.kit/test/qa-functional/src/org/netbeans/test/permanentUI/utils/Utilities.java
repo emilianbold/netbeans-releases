@@ -153,13 +153,13 @@ public class Utilities {
             String submenuName = scanner.nextLine();
             int to;
             if ((to = submenuName.indexOf(">")) != -1) {
-                parsedMenu.setName(submenuName.substring(0, submenuName.lastIndexOf(">")).trim());
+                parsedMenu.setName(submenuName.substring(0, to).trim());
             } else {
                 throw new IllegalStateException("Wrong file: missing header - submenu name                 > [x] submenu item                  B");
             }
 
             ArrayList<NbMenuItem> submenu = new ArrayList<NbMenuItem>();
-            submenu.add(parseMenuLineText(submenuName.substring(to)));
+            submenu.add(parseMenuLineText(submenuName.substring(to+1)));
             while (scanner.hasNextLine()) {
                 submenu.add(parseMenuLineText(scanner.nextLine().trim()));
             }

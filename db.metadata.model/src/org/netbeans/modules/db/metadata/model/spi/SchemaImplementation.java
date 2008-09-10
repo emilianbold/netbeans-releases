@@ -40,21 +40,35 @@
 package org.netbeans.modules.db.metadata.model.spi;
 
 import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
  *
  * @author Andrei Badea
  */
-public interface SchemaImplementation {
+public abstract class SchemaImplementation {
 
-    String getName();
+    private Schema schema;
 
-    boolean isDefault();
+    public final Schema getSchema() {
+        if (schema == null) {
+            schema = MetadataAccessor.getDefault().createSchema(this);
+        }
+        return schema;
+    }
 
-    boolean isSynthetic();
+    public abstract Catalog getParent();
 
-    Collection<Table> getTables();
+    public abstract String getName();
 
-    Table getTable(String name);
+    public abstract boolean isDefault();
+
+    public abstract boolean isSynthetic();
+
+    public abstract Collection<Table> getTables();
+
+    public abstract Table getTable(String name);
 }

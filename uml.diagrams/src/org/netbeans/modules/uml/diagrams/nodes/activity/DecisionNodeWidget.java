@@ -48,13 +48,13 @@ import java.awt.Rectangle;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
-import org.netbeans.modules.uml.drawingarea.view.ResourceType;
+import org.netbeans.modules.uml.drawingarea.widgets.ResizeToContentMarker;
 
 /**
  *
  * @author thuy
  */
-public class DecisionNodeWidget extends ControlNodeWidget
+public class DecisionNodeWidget extends ControlNodeWidget implements ResizeToContentMarker
 {
     public static final int MIN_NODE_WIDTH =  20;
     public static final int MIN_NODE_HEIGHT = 30;

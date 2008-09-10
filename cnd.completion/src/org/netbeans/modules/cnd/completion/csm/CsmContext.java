@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -57,7 +58,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  */
 public class CsmContext {
     // offset for which the context is looking for or last off
-    private int offset;
+    private final int offset;
     
     // path of context as ordered list of context entries
     private List/*<CsmContextEntry>*/ context;
@@ -135,6 +136,10 @@ public class CsmContext {
 
     public Iterator iterator() {
         return context.iterator();
+    }
+
+    public ListIterator reverseIterator() {
+        return ((ArrayList)context).listIterator(context.size());
     }
 
     public int getOffset() {

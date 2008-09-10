@@ -50,18 +50,34 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformNodeProp;
 public class PlatformConfiguration extends IntConfiguration implements PropertyChangeListener {
     
     private PlatformNodeProp pnp;
+    private DevelopmentHostConfiguration dhconf;
 
-    public PlatformConfiguration(int def, String[] names) {
+    public PlatformConfiguration(DevelopmentHostConfiguration dhconf, int def, String[] names) {
         super(null, def, names, null);
         pnp = null;
+        this.dhconf = dhconf;
+    }
+
+    private PlatformConfiguration(PlatformConfiguration conf) {
+        super(null, conf.getDefault(), conf.getNames(), null);
+        setValue(conf.getValue());
+        setModified(conf.getModified());
+        pnp = conf.pnp;
+        dhconf = conf.dhconf;
     }
     
     public void setPlatformNodeProp(PlatformNodeProp pnp) {
         this.pnp = pnp;
     }
 
+    @Override
+    public String getName() {
+        return dhconf.isOnline() ? super.getName() : "";
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
-        String hkey = evt.getNewValue().toString();
+        dhconf = (DevelopmentHostConfiguration) evt.getNewValue();
+        String hkey = dhconf.getName();
         int platform = CompilerSetManager.getDefault(hkey).getPlatform();
         if (platform == -1) {
             // TODO: CompilerSet is not reliable about platform; it must be.
@@ -70,11 +86,20 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
         setValue(platform);
     }
 
+    public boolean isDevHostOnline() {
+        return dhconf.isOnline();
+    }
+
+    // Clone and Assign
+    public void assign(PlatformConfiguration conf) {
+        super.assign(conf);
+        pnp = conf.pnp;
+        dhconf = conf.dhconf;
+    }
+
     @Override
     public Object clone() {
-	PlatformConfiguration clone = new PlatformConfiguration(getDefault(), getNames());
-	clone.setValue(getValue());
-	clone.setModified(getModified());
-	return clone;
+        PlatformConfiguration clone = new PlatformConfiguration(this);
+        return clone;
     }
 }

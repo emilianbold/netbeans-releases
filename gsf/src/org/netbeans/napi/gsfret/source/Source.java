@@ -918,7 +918,7 @@ long vsStart = System.currentTimeMillis();
                         Collection<? extends TranslatedSource> translations = null;
 
                         boolean incremental = false;
-                        if (model instanceof IncrementalEmbeddingModel) {
+                        if (model instanceof IncrementalEmbeddingModel && (source.files == null || source.files.size() <= 1)) {
                             incremental = true;
                             IncrementalEmbeddingModel incrementalModel = (IncrementalEmbeddingModel)model;
                             translations = source.recentEmbeddingTranslations.get(model);
@@ -969,7 +969,7 @@ long parseStart = System.currentTimeMillis();
 // </editor-fold>
                             SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
                             ParserResult result = null;
-                            if (incrementalParser != null) {
+                            if (incrementalParser != null && (source.files == null || source.files.size() <= 1)) {
                                 ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                                 if (previousResult != null) {
                                     ParserResult ir = incrementalParser.parse(file, reader, null, source.editHistory, previousResult);
@@ -1010,7 +1010,7 @@ long parseStart = System.currentTimeMillis();
                         SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
 
                         ParserResult result = null;
-                        if (incrementalParser != null) {
+                        if (incrementalParser != null && (source.files == null || source.files.size() <= 1)) {
                             ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                             if (previousResult != null) {
                                 result = incrementalParser.parse(file, reader, null, source.editHistory, previousResult);

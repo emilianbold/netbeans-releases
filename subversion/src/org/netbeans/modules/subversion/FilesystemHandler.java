@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.*;
@@ -82,6 +83,10 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public boolean beforeDelete(File file) {
         Subversion.LOG.fine("beforeDelete " + file);
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping delete due to missing client");
+            return false;
+        }
         if (SvnUtils.isPartOfSubversionMetadata(file)) return true;
         // calling cache results in SOE, we must check manually
         return hasMetadata(file.getParentFile());
@@ -151,6 +156,10 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public boolean beforeMove(File from, File to) {
         Subversion.LOG.fine("beforeMove " + from +  " -> " + to);
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping move due to missing client");
+            return false;
+        }
         File destDir = to.getParentFile();
         if (from != null && destDir != null) {
             // a direct cache call could, because of the synchrone beforeMove handling,
@@ -223,6 +232,10 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public boolean beforeCreate(File file, boolean isDirectory) {
         Subversion.LOG.fine("beforeCreate " + file);
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping create due to missing client");
+            return false;
+        }
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             synchronized(invalidMetadata) {
                 File p = file;
@@ -273,6 +286,10 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterChange(final File file) {
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping afterChange due to missing client");
+            return;
+        }
         Subversion.LOG.fine("afterChange " + file);
         Utils.post(new Runnable() {
             public void run() {

@@ -81,7 +81,7 @@ public final class CompletionSettings implements PreferenceChangeListener {
         }
         return instance;
     }
-    
+
     public boolean completionAutoPopup() {
         initialize();
         return completionAutoPopup;
@@ -95,6 +95,15 @@ public final class CompletionSettings implements PreferenceChangeListener {
     public boolean documentationAutoPopup() {
         initialize();
         return docsAutoPopup;
+    }
+
+    /**
+     * Whether documentation popup should be displayed next to completion popup
+     * @return true if yes
+     */
+    boolean documentationPopupNextToCC() {
+        initialize();
+        return docsNextCC;
     }
     
     public int documentationAutoPopupDelay() {
@@ -163,6 +172,7 @@ public final class CompletionSettings implements PreferenceChangeListener {
         SimpleValueNames.COMPLETION_PANE_MAX_SIZE,
         SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION,
         SimpleValueNames.JAVADOC_AUTO_POPUP,
+        SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC,
         SimpleValueNames.JAVADOC_AUTO_POPUP_DELAY,
         SimpleValueNames.JAVADOC_PREFERRED_SIZE,
     }));
@@ -177,12 +187,13 @@ public final class CompletionSettings implements PreferenceChangeListener {
     private Dimension completionPaneMaxSize;
     private boolean completionInstantSubstitution;
     private boolean docsAutoPopup;
+    private boolean docsNextCC;
     private int docsAutoPopupDelay;
     private Dimension docsPreferredSize;
     
     private CompletionSettings() {
     }
-    
+
     private synchronized void initialize() {
         if (preferences == null) {
             Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
@@ -200,6 +211,7 @@ public final class CompletionSettings implements PreferenceChangeListener {
         completionPaneMaxSize = parseDimension(prefs.get(SimpleValueNames.COMPLETION_PANE_MAX_SIZE, null), new Dimension(400, 300));
         completionInstantSubstitution = prefs.getBoolean(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, true);
         docsAutoPopup = prefs.getBoolean(SimpleValueNames.JAVADOC_AUTO_POPUP, true);
+        docsNextCC = prefs.getBoolean(SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC, false);
         docsAutoPopupDelay = prefs.getInt(SimpleValueNames.JAVADOC_AUTO_POPUP_DELAY, 200);
         docsPreferredSize = parseDimension(prefs.get(SimpleValueNames.JAVADOC_PREFERRED_SIZE, null), new Dimension(500, 300));
     }

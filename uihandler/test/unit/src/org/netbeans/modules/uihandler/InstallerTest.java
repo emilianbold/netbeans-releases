@@ -48,6 +48,7 @@ import java.io.InputStream;
 import javax.swing.JButton;
 import javax.xml.parsers.ParserConfigurationException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -220,6 +221,35 @@ public class InstallerTest extends NbTestCase {
         assertEquals("There is the default", 1, buttons.length);
         assertEquals("3rd is default", def, buttons[0]);
         assertEquals("Ahoj", dd.getTitle());
+    }
+    public void testLoggingIssue145167() throws Exception {
+        Logger logger = Logger.getLogger("org.netbeans.ui.logger.Installer");
+        final List<LogRecord> recs = new ArrayList<LogRecord>();
+        logger.addHandler(new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                recs.add(record);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+        String page = "<html><head><title>Ahoj</title></head><body><form action='' method='POST'>" +
+                "\n" +
+                "</form></body></html>";
+        InputStream is = new ByteArrayInputStream(page.getBytes());
+        JButton def = new JButton("Default");
+        DialogDescriptor dd = new DialogDescriptor(null, "MyTit");
+        Installer.parseButtons(is, def, dd);
+        is.close();
+        assertEquals(1, recs.size());
+        assertTrue(recs.get(0).getMessage().contains("invalid action from doc"));
     }
     public void testNoTitle() throws Exception {
         String page = "<html><head></head><body><form action='http://xyz.cz' method='POST'>" +

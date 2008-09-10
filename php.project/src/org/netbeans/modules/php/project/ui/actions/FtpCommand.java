@@ -94,7 +94,8 @@ public abstract class FtpCommand extends Command {
 
     @Override
     public final boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return isRemoteConfigSelected() && getRemoteConfiguration() != null && TASK.isFinished();
+        // WARNING context can be null, see RunCommand.invokeAction()
+        return isRemoteConfigSelected(false) && getRemoteConfiguration() != null && TASK.isFinished();
     }
 
     protected abstract Runnable getContextRunnable(Lookup context);

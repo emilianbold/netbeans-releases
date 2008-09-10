@@ -43,7 +43,9 @@ package org.netbeans.performance.j2se.refactoring;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -52,6 +54,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.openide.filesystems.FileObject;
@@ -62,10 +65,11 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jiri Prox
  */
-public class MoveClassPerfTest extends RefactoringTestCase {
+public class MoveClassPerfTest extends RefactoringTestCase implements NbPerformanceTest {
 
     private final MyHandler handler;
-    
+    private List<PerformanceData> data = new ArrayList<PerformanceData>();
+
     public MoveClassPerfTest(String name) {
         super(name);
         handler = new MyHandler();
@@ -103,6 +107,16 @@ public class MoveClassPerfTest extends RefactoringTestCase {
         });
         long prepare = handler.get("refactoring.prepare");
         long doIt = handler.get("refactoringSession.doRefactoring");
+        NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
+        d.name = "refactoring.prepare";
+        d.value = prepare;
+        d.unit = "ms";
+        d.runOrder = 0;
+        data.add(d);
+        d.name = "refactoringSession.doRefactoring";
+        d.value = doIt;
+        d.unit = "ms";
+        d.runOrder = 0;
         System.err.println("usages collection: " + prepare);
         System.err.println("do refactoring: " + doIt);
     }
@@ -116,6 +130,10 @@ public class MoveClassPerfTest extends RefactoringTestCase {
         OpenProjects.getDefault().open(new Project[]{p}, false);
         assertNotNull("Project is not opened", p);
         return projdir;
+    }
+
+    public PerformanceData[] getPerformanceData() {
+        return data.toArray(new PerformanceData[0]);
     }
 
     private static class MyHandler extends Handler {

@@ -475,6 +475,7 @@ public final class Product extends RegistryNode implements StatusInterface {
             default:
                 // default, nothing should be done here
         }
+        setStatus(Status.NOT_INSTALLED);
         LogManager.logUnindent("... finished rollbacking of " + getDisplayName() + "(" + getUid() + "/" + getVersion()+")");
     }
     

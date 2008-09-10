@@ -44,8 +44,6 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
-import org.netbeans.modules.websvc.saas.model.wadl.Method;
-import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -75,8 +73,15 @@ public class ResourceNodeChildren extends Children.Keys<Object> {
 
     private void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
-        keys.addAll(resource.getResourcesAndMethods());
-        setKeys(keys.toArray());
+        List<WadlSaasResource> resources = resource.getChildResources();
+        Collections.sort(resources);
+        keys.addAll(resources);
+        
+        List<WadlSaasMethod> methods = resource.getMethods();
+        Collections.sort(methods);
+        keys.addAll(methods);
+  
+        setKeys(keys);
     }
     
     @Override

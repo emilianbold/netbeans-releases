@@ -176,7 +176,10 @@ public final class ModuleDeactivator extends Object {
     // delete file and empty dirs too
     private static void doDelete (File f) {
         assert f != null : "Invalid file " + f + " for delete.";
-        if (f.exists () && ! f.delete ()) {
+        if (! f.exists ()) {
+            return ;
+        }
+        if (! f.delete ()) {
             // updater_nb.jar is locked on windows, don't throw AE here
             //assert false : f + " cannot be deleted";
             f.deleteOnExit ();
@@ -201,7 +204,11 @@ public final class ModuleDeactivator extends Object {
                     }
                 }
             }
-            res = d.delete ();
+            if (ModuleUpdater.isWindows ()) {
+                res = ModuleUpdater.trickyDeleteOnWindows (d);
+            } else {
+                res = d.delete ();
+            }
         } else {
             res = d.delete ();
         }

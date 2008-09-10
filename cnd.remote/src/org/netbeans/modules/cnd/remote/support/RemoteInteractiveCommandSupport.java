@@ -93,15 +93,7 @@ public class RemoteInteractiveCommandSupport extends RemoteConnectionSupport {
         StringBuilder cmdline = new StringBuilder();
 
         if (env != null) {
-            for (String ev : env.keySet()) {
-                // The following code is important! But ChannelExec.setEnv(...) was added after JSch 0.1.24,
-                // so it can't be used until we get an updated version of JSch.
-                //echannel.setEnv(var, val); // not in 0.1.24
-
-                //as a workaround
-                cmdline.append( "export " + ev + "=\"" + env.get(ev) + "\";" ); // NOI18N
-            }
-
+            cmdline.append(ShellUtils.prepareExportString(key, env));
         }
         cmdline.append(cmd);
 
@@ -111,5 +103,16 @@ public class RemoteInteractiveCommandSupport extends RemoteConnectionSupport {
         echannel.setErrStream(out);
         echannel.connect();
         return echannel;
+    }
+
+    int waitFor() {
+        while (channel != null && !channel.isClosed() && channel.isConnected()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+            }
+        }
+        return getExitStatus();
+
     }
 }

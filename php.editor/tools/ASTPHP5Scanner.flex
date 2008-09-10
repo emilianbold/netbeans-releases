@@ -108,6 +108,17 @@ import java_cup.runtime.*;
     }
     //private AST ast;
 
+    private int bracket = 0;
+    
+    /**
+     * Returns balance beween '{' and '}'. If it's equesl 0, 
+     * then number of '{' == number of '}', if > 0 then '{' > '}' and
+     * if return number < 0 then '{' < '}'
+     */
+    public int getCurlyBalance() {
+        return bracket;
+    }
+
     /*public void setAST(AST ast) {
     	this.ast = ast;
     }
@@ -704,6 +715,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 
 <ST_IN_SCRIPTING>"{" {
     pushState(ST_IN_SCRIPTING);
+    bracket++;
     return createSymbol(ASTPHP5Symbols.T_CURLY_OPEN);
 
 }
@@ -718,6 +730,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
     if (!stack.isEmpty()) {
         popState();
     }
+    bracket--;
     return createSymbol(ASTPHP5Symbols.T_CURLY_CLOSE);
 }
 
@@ -862,8 +875,8 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
     ">"                     {return createSymbol(ASTPHP5Symbols.T_LGREATER);}
     "?"                     {return createSymbol(ASTPHP5Symbols.T_QUESTION_MARK);}
     "@"                     {return createSymbol(ASTPHP5Symbols.T_AT);}
-    "{"                     {return createSymbol(ASTPHP5Symbols.T_CURLY_OPEN);}
-    "}"                     {return createSymbol(ASTPHP5Symbols.T_CURLY_CLOSE);}
+    "{"                     {bracket++; return createSymbol(ASTPHP5Symbols.T_CURLY_OPEN);}
+    "}"                     {bracket--; return createSymbol(ASTPHP5Symbols.T_CURLY_CLOSE);}
     "\""                     {return createSymbol(ASTPHP5Symbols.T_QUATE);}
     "`"                     {return createSymbol(ASTPHP5Symbols.T_BACKQUATE);}
 }
