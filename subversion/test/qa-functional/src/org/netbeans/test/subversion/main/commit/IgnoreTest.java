@@ -84,6 +84,7 @@ public class IgnoreTest extends JellyTestCase {
         try {
             VersioningOperator vo = VersioningOperator.invoke();
             OutputOperator.invoke();
+            TestKit.showStatusLabels();
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             comOperator = new Operator.DefaultStringComparator(true, true);
@@ -117,11 +118,12 @@ public class IgnoreTest extends JellyTestCase {
             TestKit.waitForScanFinishedAndQueueEmpty();
             
             oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             TestKit.createNewElement(PROJECT_NAME, "javaapp", "NewClass");
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
             node.performPopupAction("Subversion|Ignore");
+            Thread.sleep(2000);
             oto.waitText("finished.");
+            oto.clear();
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
@@ -141,10 +143,11 @@ public class IgnoreTest extends JellyTestCase {
             
             //unignore file
             oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
             node.performPopupAction("Subversion|Unignore");
+            Thread.sleep(2000);
             oto.waitText("finished.");
+            oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
             nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
             color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
@@ -154,10 +157,11 @@ public class IgnoreTest extends JellyTestCase {
             
             //verify content of Versioning view
             oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
             node.performPopupAction("Subversion|Show Changes");
+            Thread.sleep(2000);
             oto.waitText("Refreshing... finished.");
+            oto.clear();
             Thread.sleep(1000);
             vo = VersioningOperator.invoke();
             TableModel model = vo.tabFiles().getModel();
@@ -175,7 +179,8 @@ public class IgnoreTest extends JellyTestCase {
         try {
             VersioningOperator vo = VersioningOperator.invoke();
             OutputOperator.invoke();
-            
+            TestKit.showStatusLabels();
+
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -209,11 +214,12 @@ public class IgnoreTest extends JellyTestCase {
             TestKit.waitForScanFinishedAndQueueEmpty();
             
             oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             TestKit.createNewPackage(PROJECT_NAME, "xx");
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node.performPopupAction("Subversion|Ignore");
+            Thread.sleep(2000);
             oto.waitText("finished.");
+            oto.clear();
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
@@ -231,10 +237,11 @@ public class IgnoreTest extends JellyTestCase {
             
             //unignore file
             oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node.performPopupAction("Subversion|Unignore");
+            Thread.sleep(2000);
             oto.waitText("finished.");
+            oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
             status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
@@ -242,10 +249,11 @@ public class IgnoreTest extends JellyTestCase {
             
             //verify content of Versioning view
             oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node.performPopupAction("Subversion|Show Changes");
+            Thread.sleep(2000);
             oto.waitText("Refreshing... finished.");
+            oto.clear();
             Thread.sleep(1000);
             vo = VersioningOperator.invoke();
             TableModel model = vo.tabFiles().getModel();
@@ -263,6 +271,7 @@ public class IgnoreTest extends JellyTestCase {
         try {
             VersioningOperator vo = VersioningOperator.invoke();
             OutputOperator.invoke();
+            TestKit.showStatusLabels();
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             comOperator = new Operator.DefaultStringComparator(true, true);
@@ -296,13 +305,13 @@ public class IgnoreTest extends JellyTestCase {
             TestKit.waitForScanFinishedAndQueueEmpty();
             
             oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             TestKit.createNewElements(PROJECT_NAME, "xx", "NewClass");
-            
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             Node node2 = new Node(new SourcePackagesNode(PROJECT_NAME), "xx|NewClass");
             node.performPopupAction("Subversion|Ignore");
+            Thread.sleep(2000);
             oto.waitText("finished.");
+            oto.clear();
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node2 = new Node(new SourcePackagesNode(PROJECT_NAME), "xx|NewClass");
@@ -315,10 +324,11 @@ public class IgnoreTest extends JellyTestCase {
             
             //unignore file
             oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node.performPopupAction("Subversion|Unignore");
+            Thread.sleep(2000);
             oto.waitText("finished.");
+            oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node2 = new Node(new SourcePackagesNode(PROJECT_NAME), "xx|NewClass");
             nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
@@ -332,10 +342,11 @@ public class IgnoreTest extends JellyTestCase {
             
             //verify content of Versioning view
             oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node.performPopupAction("Subversion|Show Changes");
+            Thread.sleep(2000);
             oto.waitText("Refreshing... finished.");
+            oto.clear();
             Thread.sleep(1000);
             vo = VersioningOperator.invoke();
             TableModel model = vo.tabFiles().getModel();

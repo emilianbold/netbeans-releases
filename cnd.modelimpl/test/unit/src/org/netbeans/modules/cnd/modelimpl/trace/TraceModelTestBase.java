@@ -187,6 +187,16 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         performTest(new String[]{flags, testFile.getAbsolutePath()}, goldenDataFileName, goldenErrFileName, params);
     }
 
+    protected void performTest(String[] source, String goldenNameBase, Object... params) throws Exception {
+        String[] absFiles = new String[source.length];
+        for (int i = 0; i < source.length; i++) {
+            absFiles[i] = getDataFile(source[i]).getAbsolutePath();            
+        }
+        String goldenDataFileName = goldenNameBase + ".dat";
+        String goldenErrFileName = goldenNameBase + ".err";
+        performTest(absFiles, goldenDataFileName, goldenErrFileName, params);
+    }
+
     protected void performTest(String source, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {
         File testFile = getDataFile(source);
         performTest(new String[]{testFile.getAbsolutePath()}, goldenDataFileName, goldenErrFileName, params);
@@ -215,11 +225,16 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         // first of all check err, because if not failed (often) => dat diff will be created
         if (goldenErrFileName != null) {
             goldenErrFile = getGoldenFile(goldenErrFileName);
-            if (CndCoreTestUtils.diff(error, goldenErrFile, null)) {
-                errTheSame = false;
-                // copy golden
-                goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
-                CndCoreTestUtils.copyToWorkDir(goldenErrFile, goldenErrFileCopy); // NOI18N
+            if (goldenErrFile.exists()) {
+                if (CndCoreTestUtils.diff(error, goldenErrFile, null)) {
+                    errTheSame = false;
+                    // copy golden
+                    goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
+                    CndCoreTestUtils.copyToWorkDir(goldenErrFile, goldenErrFileCopy); // NOI18N
+                }
+            } else {
+                // golden err.file doesn't exist => err.file should be empty
+                errTheSame = (error.length() == 0);
             }
         }
 
@@ -233,7 +248,13 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenDataFileCopy); // NOI18N
         }
         if (outTheSame) {
-            assertTrue("ERR Difference - check: diff " + error + " " + goldenErrFileCopy, errTheSame); // NOI18N
+            if (!errTheSame) {
+                if (goldenErrFile.exists()) {
+                    assertTrue("ERR Difference - check: diff " + error + " " + goldenErrFileCopy, false); // NOI18N
+                } else {
+                    assertTrue("ERR Difference - error should be emty: " + error, false); // NOI18N
+                }
+            }
         } else if (errTheSame) {
             assertTrue("OUTPUT Difference - check: diff " + output + " " + goldenDataFileCopy, outTheSame); // NOI18N
         } else {

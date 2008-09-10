@@ -261,7 +261,6 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         if(downloadState == DownloadState.COMPLETED) {
             setDownloadState(DownloadState.AVAILABLE);
         }
-        fireChangeEvent();
     }
        
     private static class DirFilter extends javax.swing.filechooser.FileFilter {

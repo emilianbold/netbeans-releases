@@ -55,6 +55,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.DesignComponentInspectorFolder;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
@@ -77,10 +78,13 @@ import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
+import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerSupport;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD.SVGButtonEventSourceOrder;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -143,7 +147,21 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
         }
 
         public String getDisplayName(DesignComponent component, NameType nameType) {
-            return getButtonName(component);
+            switch (nameType) {
+                case PRIMARY:
+                    DesignComponent displayable = component.readProperty (PROP_SVGBUTTON).getComponent ();
+                    if (displayable == null)
+                        return NbBundle.getMessage(EventHandlerSupport.class, "DISP_Handler_Clear_Display"); // NOI18N
+
+                    String displayableName = ClassSupport.resolveDisplayName (displayable);
+                    return NbBundle.getMessage(EventHandlerSupport.class, "DISP_Handler_Go_to_displayable", displayableName); // NOI18N
+                case SECONDARY:
+                    return NbBundle.getMessage(EventHandlerSupport.class, "TYPE_Action"); // NOI18N
+                case TERTIARY:
+                    return null;
+                default:
+                    throw Debug.illegalState ();
+            }
         }
 
         public boolean isEditable(DesignComponent component) {

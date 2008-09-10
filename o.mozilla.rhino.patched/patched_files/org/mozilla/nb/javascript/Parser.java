@@ -66,6 +66,13 @@ import java.util.List;
 
 public class Parser
 {
+    // <netbeans>
+    // Keep in sync with JsModel.GENERATED_IDENTIFIER
+    // but NOTE -- there should be NO SPACES AROUND the identifier here - the
+    // parser strips the spaces during parsing.
+    private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
+    // </netbeans>
+
     // TokenInformation flags : currentFlaggedToken stores them together
     // with token type
 // <netbeans>
@@ -661,6 +668,17 @@ return null;
                     name = "";
                     memberExprNode = memberExprTail(false, memberExprHead);
                 }
+                // <netbeans>
+                // Detect and prevent scenarios like issue 133469
+                int peekedToken = peekToken();
+                if (peekedToken != Token.LP && GENERATED_IDENTIFIER.equals(name)) {
+                    if (matchToken(Token.NAME)) {
+                        name = ts.getString();
+                        funcNameNode = Node.newString(Token.FUNCNAME, name);
+                        setSourceOffsets(funcNameNode, getStartOffset());
+                    }
+                }
+                // </netbeans>
                 mustMatchToken(Token.LP, "msg.no.paren.parms");
             }
         } else if (matchToken(Token.LP)) {
@@ -1640,6 +1658,32 @@ return null;
             break;
           default:
             if ((ttFlagged & TI_AFTER_EOL) == 0) {
+                // <netbeans>
+                // Autoinsert a ";" when dealing with __UNKNOWN__ identifiers -
+                // this typically happens in for dynamically generated JavaScript
+                // from templating languages, see for example issue 133173
+                if (pn != null && pn.getType() == Token.EXPR_VOID &&
+                        pn.hasChildren()) {
+                    Node child = pn.getFirstChild();
+                    if (child.getType() == Token.NAME &&
+                        (GENERATED_IDENTIFIER.equals(child.getString()))) {
+                        break;
+                    } else if (child.getType() == Token.SETNAME && child.hasChildren()) {
+                        // Handle the case where there is a assignment on the left
+                        // as well, e.g. x = __UNKNOWN__ __UNKNOWN__ - in this case
+                        // the structure of the EXPR_VOID is slightly different
+                        Node grandChild = child.getFirstChild();
+                        if (grandChild != null) {
+                            Node rhs = grandChild.getNext();
+                            if (rhs != null && rhs.getType() == Token.NAME &&
+                                    (GENERATED_IDENTIFIER).equals(rhs.getString())) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                // </netbeans>
+
                 // Report error if no EOL or autoinsert ; otherwise
                 reportError("msg.no.semi.stmt");
             }

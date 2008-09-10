@@ -50,6 +50,31 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testTemplateParamsInNestedClasses() throws Exception {
+        // IZ#144881: template parameter is not resolved in nested class
+
+        performTest("templateParameters.h", 104, 9, "templateParameters.h", 100, 10);// _Tp
+        performTest("templateParameters.h", 105, 9, "templateParameters.h", 100, 10);// _Tp
+        performTest("templateParameters.h", 106, 9, "templateParameters.h", 100, 10);// _Tp
+
+        performTest("templateParameters.h", 103, 25, "templateParameters.h", 100, 24);// _Alloc
+        performTest("templateParameters.h", 109, 15, "templateParameters.h", 100, 24);// _Alloc
+    }
+
+    public void checkPtrOperator() throws Exception {
+        // noIZ:fixed ptr operator handling
+        performTest("checkPtrOperator.cc", 16, 15, "checkPtrOperator.cc", 11, 9);
+    }
+
+    public void testIZ146030_3() throws Exception {
+        // IZ#146030: set of problems for declarations in Loki
+        // usecase 3)
+        performTest("accessMember.cc", 9, 37, "accessMember.cc", 4, 5);
+        performTest("accessMember.cc", 10, 45, "accessMember.cc", 4, 5);
+        performTest("accessMember.cc", 14, 32, "accessMember.cc", 5, 5);
+        performTest("accessMember.cc", 15, 33, "accessMember.cc", 5, 5);
+    }
+    
     public void testIZ146030_5() throws Exception {
         // IZ#146030: set of problems for declarations in Loki
         // usecase 5)
@@ -577,6 +602,10 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz145077.cc", 128, 17, "iz145077.cc", 47, 9);
         performTest("iz145077.cc", 43, 50, "iz145077.cc", 33, 9);
         performTest("iz145077.cc", 44, 60, "iz145077.cc", 112, 5);
+        performTest("iz145077.cc", 163, 30, "iz145077.cc", 142, 9);
+        performTest("iz145077.cc", 172, 22, "iz145077.cc", 142, 9);
+        performTest("iz145077.cc", 164, 30, "iz145077.cc", 143, 9);
+        performTest("iz145077.cc", 173, 22, "iz145077.cc", 143, 9);
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

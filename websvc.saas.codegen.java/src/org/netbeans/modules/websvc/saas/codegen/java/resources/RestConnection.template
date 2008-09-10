@@ -32,6 +32,11 @@ import java.util.logging.Logger;
  */
 public class ${name} {
 
+    static {
+        //set the identification of the client
+        System.setProperty("http.agent", System.getProperty("user.name") + " (from NetBeans IDE)");
+    }
+
     private HttpURLConnection conn;
     private String date;
 
@@ -84,7 +89,16 @@ public class ${name} {
         conn.setRequestMethod("GET");
         return connect(headers, null);
     }
-    
+
+    public RestResponse head() throws IOException {
+        return get(null);
+    }
+
+    public RestResponse head(String[][] headers) throws IOException {
+        conn.setRequestMethod("HEAD");
+        return connect(headers, null);
+    }
+
     public RestResponse put(String[][] headers) throws IOException {
         return put(headers, (InputStream) null);
     }
@@ -182,7 +196,7 @@ public class ${name} {
                 StringBuffer buf = new StringBuffer();
                 while ((line = rd.readLine()) != null) {
                     buf.append(line);
-                    System.out.print(line);
+                    buf.append('\n');
                 }
                 errMsg = buf.toString();
             } finally {

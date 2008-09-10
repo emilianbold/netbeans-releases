@@ -144,6 +144,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
                
             result = createConnection(server, dbname, user);
+
+            if (result == null) {
+                boolean delete = Utils.displayConfirmDialog(NbBundle.getMessage(CreateDatabasePanel.class, 
+                        "CreateDatabasePanel.MSG_ConfirmDeleteDatabase", dbname));
+
+                if (delete) {
+                    server.dropDatabase(dbname);
+                }
+
+                return null;
+            }
             
             // Need a final variable for the anonymous class.
             final DatabaseConnection dbconn = result;

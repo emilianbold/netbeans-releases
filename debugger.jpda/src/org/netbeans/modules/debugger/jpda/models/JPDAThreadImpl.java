@@ -694,6 +694,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
     
     public void notifySuspended() {
+        notifySuspended(true);
+    }
+
+    private void notifySuspended(boolean doFire) {
         Boolean suspendedToFire = null;
         synchronized (this) {
             try {
@@ -711,7 +715,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 threadName = threadReference.name();
             }
         }
-        if (suspendedToFire != null) {
+        if (suspendedToFire != null && doFire) {
             pch.firePropertyChange(PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
@@ -723,6 +727,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private boolean methodInvoking;
     private boolean methodInvokingDisabledUntilResumed;
     private boolean resumedToFinishMethodInvocation;
+    private boolean unsuspendedStateWhenInvoking;
     
     public void notifyMethodInvoking() throws PropertyVetoException {
         List<PropertyChangeEvent> evts;
@@ -735,12 +740,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_AlreadyInvoking"), null);
             }
-            if (!isSuspended()) {
+            if (!isThreadSuspended()) {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NoCurrentContext"), null);
             }
             methodInvoking = true;
-            evts = notifyToBeRunning(false, false);
+            unsuspendedStateWhenInvoking = !isSuspended();
+            if (unsuspendedStateWhenInvoking) {
+                // Do not notify running state when was not suspended.
+                evts = Collections.emptyList();
+            } else {
+                evts = notifyToBeRunning(false, false);
+            }
             watcher = new SingleThreadWatcher(this);
         }
         for (PropertyChangeEvent evt : evts) {
@@ -750,6 +761,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public void notifyMethodInvokeDone() {
         SingleThreadWatcher watcherToDestroy = null;
+        boolean wasUnsuspendedStateWhenInvoking;
         synchronized (this) {
             // HACK becuase of JDI, we've resumed this thread so that method invocation can be finished.
             // We need to suspend the thread immediately so that it does not continue after the invoke has finished.
@@ -759,6 +771,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 resumedToFinishMethodInvocation = false;
             }
             methodInvoking = false;
+            wasUnsuspendedStateWhenInvoking = unsuspendedStateWhenInvoking;
+            unsuspendedStateWhenInvoking = false;
             this.notifyAll();
             watcherToDestroy = watcher;
             watcher = null;
@@ -766,7 +780,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         if (watcherToDestroy != null) {
             watcherToDestroy.destroy();
         }
-        notifySuspended();
+        // Do not notify suspended state when was already unsuspended when started invoking.
+        if (!wasUnsuspendedStateWhenInvoking) {
+            notifySuspended();
+        }
     }
     
     public synchronized boolean isMethodInvoking() {

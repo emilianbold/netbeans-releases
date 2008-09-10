@@ -490,6 +490,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 an.updateInError(toRefresh);
                             }
                         }
+                        JavaTaskProvider.refresh(fo);
                     }
                 }
             }
@@ -2532,7 +2533,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             CachingArchiveProvider.getDefault().clearArchive(root);                       
             File cacheFolder = Index.getClassFolder(root);
             FileObjects.deleteRecursively(cacheFolder);
-            final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser(); 
+            ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(root, false);
+            if (uq == null) {
+                return ; //IDE is exiting, indeces are already closed.
+            }
+            final BinaryAnalyser ba = uq.getBinaryAnalyser();
             if (ba != null) {   //ba == null => IDE is exiting, indexing will be done on IDE restart
                 //todo: may also need interruption.
                 try {
@@ -3064,6 +3069,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
                             //check for classes living elsewhere:
                             for (TypeElement topLevel : types) {
+                                if (topLevel==null) {
+                                    //workaround for 6443073
+                                    //see Symbol.java:601
+                                    //see JavacTaskImpl.java:367
+                                    //see also #144315
+                                    continue;
+                                }
+
                                 if (!expectedTopLevelClassName.equals(topLevel.getSimpleName().toString())) {
                                     List<String> classes = new LinkedList<String>();
                                     JavacElements elements = JavacElements.instance(jt.getContext());

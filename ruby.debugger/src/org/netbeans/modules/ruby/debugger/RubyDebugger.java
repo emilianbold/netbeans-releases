@@ -158,8 +158,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             if (descriptor.getInitialArgs() != null) {
                 additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
             }
-            if (descriptor.getJRubyProps() != null) {
-                additionalOptions.addAll(Arrays.asList(descriptor.getJRubyProps()));
+            if (descriptor.getJVMArguments() != null) {
+                additionalOptions.addAll(Arrays.asList(descriptor.getJVMArguments()));
             }
             if (!additionalOptions.isEmpty()) {
                 debugDesc.setAdditionalOptions(additionalOptions);

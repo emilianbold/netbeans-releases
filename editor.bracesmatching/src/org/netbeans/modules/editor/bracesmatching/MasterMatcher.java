@@ -368,24 +368,28 @@ public final class MasterMatcher {
         }
     }
 
-    private static Collection<? extends BracesMatcherFactory> findFactories(Document document, int offset, boolean backward) {
-        MimePath mimePath = null;
-
-        TokenHierarchy<? extends Document> th = TokenHierarchy.get(document);
-        if (th.isActive()) {
-            List<TokenSequence<?>> sequences = th.embeddedTokenSequences(offset, backward);
-            if (!sequences.isEmpty()) {
-                String path = sequences.get(sequences.size() - 1).languagePath().mimePath();
-                mimePath = MimePath.parse(path);
+    private static Collection<? extends BracesMatcherFactory> findFactories(final Document document,
+            final int offset, final boolean backward
+    ) {
+        final MimePath[] mimePath = { null };
+        document.render(new Runnable() {
+            public void run() {
+                TokenHierarchy<? extends Document> th = TokenHierarchy.get(document);
+                if (th.isActive()) {
+                    List<TokenSequence<?>> sequences = th.embeddedTokenSequences(offset, backward);
+                    if (!sequences.isEmpty()) {
+                        String path = sequences.get(sequences.size() - 1).languagePath().mimePath();
+                        mimePath[0] = MimePath.parse(path);
+                    }
+                } else {
+                    String mimeType = (String) document.getProperty("mimeType"); //NOI18N
+                    mimePath[0] = mimeType != null ? MimePath.parse(mimeType) : MimePath.EMPTY;
+                }
             }
-        } else {
-            String mimeType = (String) document.getProperty("mimeType"); //NOI18N
-            mimePath = mimeType != null ? MimePath.parse(mimeType) : MimePath.EMPTY;
-        }
-
-        Collection<? extends BracesMatcherFactory> factories = mimePath == null ?
+        });
+        Collection<? extends BracesMatcherFactory> factories = mimePath[0] == null ?
             Collections.<BracesMatcherFactory>emptyList() :
-            MimeLookup.getLookup(mimePath).lookupAll(BracesMatcherFactory.class);
+            MimeLookup.getLookup(mimePath[0]).lookupAll(BracesMatcherFactory.class);
         
 //        System.out.println("@@@ '" + (mimePath == null ? "null" : mimePath.getPath()) + "', offset = " + offset + ", backward = " + backward + " -> {");
 //        for(BracesMatcherFactory f : factories) {

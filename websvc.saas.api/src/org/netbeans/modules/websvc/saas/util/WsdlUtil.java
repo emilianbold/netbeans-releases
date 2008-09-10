@@ -154,6 +154,9 @@ public class WsdlUtil {
                 start = urlPath.lastIndexOf(System.getProperty("path.separator")); // NOI18N
                 start = (start < 0) ? urlPath.lastIndexOf("/") : start; // NOI18N
             } else {
+                if(urlPath.endsWith("/")){
+                    urlPath = urlPath.substring(0, urlPath.length() - 1);
+                }
                 start = urlPath.lastIndexOf("/");
             }
             start++;

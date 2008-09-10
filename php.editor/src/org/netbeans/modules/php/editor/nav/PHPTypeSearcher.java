@@ -56,6 +56,7 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
 import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.NbUtilities;
@@ -94,6 +95,20 @@ public class PHPTypeSearcher implements IndexSearcher {
                 }
             }
         } else {
+            Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(textForQuery, null);
+            for (String className : typeNamesForIdentifier) {
+                for (IndexedClass clazz : index.getClasses(null, className, kind)) {
+                    for (IndexedFunction func : index.getMethods(null, clazz.getName(), textForQuery, kind, PHPIndex.ANY_ATTR)) {
+                        result.add(new PHPTypeDescriptor(func, clazz, helper));
+                    }
+                    for (IndexedConstant constanst : index.getAllProperties(null, clazz.getName(), textForQuery, kind, PHPIndex.ANY_ATTR)) {
+                        result.add(new PHPTypeDescriptor(constanst, clazz, helper));
+                    }
+                    for (IndexedConstant constanst : index.getAllClassConstants(null, clazz.getName(), textForQuery, kind)) {
+                        result.add(new PHPTypeDescriptor(constanst, clazz, helper));
+                    }
+                }
+            }
             for (IndexedElement el : index.getFunctions(null, textForQuery, kind)) {
                 result.add(new PHPTypeDescriptor(el, helper));
             }

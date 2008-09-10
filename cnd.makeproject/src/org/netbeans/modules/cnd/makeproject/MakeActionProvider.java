@@ -594,7 +594,9 @@ public class MakeActionProvider implements ActionProvider {
                     break;
                 }
                 String buildCommand = "bash"; // NOI18N
-                Boolean verbose = true;
+                if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                    buildCommand = "sh"; // NOI18N
+                }
                 String args = "";
                 if (conf.getPackagingConfiguration().getVerbose().getValue()) {
                     args += "-x "; // NOI18N
@@ -723,6 +725,7 @@ public class MakeActionProvider implements ActionProvider {
                 } else if (conf.isApplicationConfiguration()) {
                     exe = conf.getLinkerConfiguration().getOutputValue();
                 }
+                exe = conf.expandMacros(exe);
                 // Always absolute
                 if (exe.length() > 0)
                     exe = IpeUtils.toAbsolutePath(conf.getBaseDir(), exe);

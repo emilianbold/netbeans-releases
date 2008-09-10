@@ -98,7 +98,7 @@ public class AstRenderer {
                 }
                 case CPPTokenTypes.CSM_ENUM_DECLARATION:
                 {
-                    CsmEnum csmEnum = EnumImpl.create(token, currentNamespace, file);
+                    CsmEnum csmEnum = EnumImpl.create(token, currentNamespace, file, !isRenderingLocalContext());
                     container.addDeclaration(csmEnum);
                     renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                     break;
@@ -283,6 +283,40 @@ public class AstRenderer {
 	return false;
     }
            
+    /**
+     * Parser don't use a symbol table, so local constructs like
+     * int a(b) 
+     * are parsed as if they were variables.
+     * At the moment of rendering, we check whether this is a variable of a function
+     * @return true if it's a function, otherwise false (it's a variable)
+     */
+    protected boolean isVariableLikeFunc(AST ast) {
+        AST astParmList = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARMLIST);
+	if( astParmList != null ) {
+            for( AST node = astParmList.getFirstChild(); node != null; node = node.getNextSibling() ) {
+                if (node.getType() != CPPTokenTypes.CSM_PARAMETER_DECLARATION) {
+                    return false;
+                }
+                AST child = node.getFirstChild();
+                if (child != null) {
+                    if (child.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                        return true;
+                    } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                        CsmType type = TypeFactory.createType(child, file, null, 0);
+                        if (type != null && type.getClassifier().isValid()) {
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }                
+            }
+        }
+        return false;
+    }
+
     /**
      * Determines whether the given parameter can actually be a reference to a variable,
      * not a parameter
@@ -671,7 +705,7 @@ public class AstRenderer {
                             case CPPTokenTypes.LITERAL_enum:
                                 if (AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null) {
                                     if (container instanceof CsmScope) {
-                                        ei = EnumImpl.create(curr, (CsmScope) container, file);
+                                        ei = EnumImpl.create(curr, (CsmScope) container, file, !isRenderingLocalContext());
                                         if (container instanceof MutableDeclarationsContainer) {
                                             ((MutableDeclarationsContainer) container).addDeclaration(ei);
                                         }

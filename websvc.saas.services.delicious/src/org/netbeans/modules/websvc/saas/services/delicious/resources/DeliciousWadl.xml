@@ -83,6 +83,8 @@ More at: http://del.icio.us/help/api/posts
                             <doc>Filter by this URL.
                             </doc>
                         </param>
+                        <param name="hashes" type="xsd:string" style="query" required="false"/>
+                        <param name="meta" type="xsd:string" style="query" required="false"/>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="del:posts"/>
@@ -117,10 +119,20 @@ if you need to fetch this information at all.
 More at: http://del.icio.us/help/api/posts
                     </doc>
                     <request>
-                        <param name="tag" type="xsd:string" style="query" required="false">
-                            <doc>Optional. Filter by this tag.
-                            </doc>
-                        </param>
+                        <param name="tag" type="xsd:string" style="query" required="false"/>
+                        <param name="start" type="xsd:string" style="query" required="false"/>
+                        <param name="results" type="xsd:string" style="query" required="false"/>
+                        <param name="fromdt" type="xsd:string" style="query" required="false"/>
+                        <param name="todt" type="xsd:string" style="query" required="false"/>
+                        <param name="meta" type="xsd:string" style="query" required="false"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="del:posts"/>
+                    </response>
+                </method>
+                <method name="GET" id="allPostsHashes">
+                    <request>
+                        <param fixed="" name="hashes" type="xsd:string" style="query" required="true"/>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="del:posts"/>
@@ -225,6 +237,20 @@ https://api.del.icio.us/help/api/tags.
                     </response>
                 </method>
             </resource>
+            <resource path="delete">
+                <method name="GET" id="deleteTag">
+                    <doc>
+Returns a list of tags and number of times used by a user. See 
+https://api.del.icio.us/help/api/tags.
+                    </doc>
+                    <request>
+                        <param name="tag" type="xsd:string" style="query" required="true"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="del:result"/>
+                    </response>
+                </method>
+            </resource>
             <resource path="rename">
                 <method name="GET" id="renameTags">
                     <doc>
@@ -251,7 +277,9 @@ https://api.del.icio.us/help/api/tags.
 Retrieve all of a user's bundles. See 
 https://api.del.icio.us/help/api/bundles.
                         </doc>
-                        <request/>
+                        <request>
+                            <param name="bundle" type="xsd:string" style="query" required="false"/>
+                        </request>
                         <response>
                             <representation mediaType="text/xml" element="del:bundles"/>
                         </response>
