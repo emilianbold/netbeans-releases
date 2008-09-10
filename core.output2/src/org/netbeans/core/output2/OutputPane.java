@@ -84,7 +84,9 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
     }
 
     protected void postPopupMenu(Point p, Component src) {
-        findOutputTab().postPopupMenu(p, src);
+        if (src.isShowing()) {
+            findOutputTab().postPopupMenu(p, src);
+        }
     }
 
     public void setMouseLine (int line, Point p) {

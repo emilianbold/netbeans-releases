@@ -43,10 +43,11 @@ package org.netbeans.modules.db.explorer;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
@@ -69,6 +70,7 @@ import org.openide.util.lookup.Lookups;
  * @author Andrei Badea
  */
 public class ConnectionList {
+    private static Logger LOGGER = Logger.getLogger(ConnectionList.class.getName());
     
     private static ConnectionList DEFAULT;
     
@@ -161,9 +163,11 @@ public class ConnectionList {
             throw new NullPointerException();
         }
         
-        assert(connectionCache.containsKey(dbconn.getName()));
-
-        connectionCache.remove(dbconn.getName());
+        if (!connectionCache.containsKey(dbconn.getName())) {
+            LOGGER.log(Level.INFO, "The connection " + dbconn.getName() + " is not in our connection list cache");
+        } else {
+            connectionCache.remove(dbconn.getName());
+        }
 
         try {
             DatabaseConnectionConvertor.remove(dbconn);

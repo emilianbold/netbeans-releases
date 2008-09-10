@@ -252,6 +252,11 @@ function params() {
                     PARAMS="${PARAMS} $1"
                     XREF="y"
                     ;;
+            --threads)
+                    shift
+                    echo "using $1 parser threads"
+                    DEFS="${DEFS} -Dcnd.modelimpl.parser.threads=$1"
+                    ;;
             --quite|--q*) 
                     QUITE="y"
                     ;;

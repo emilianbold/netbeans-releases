@@ -15,15 +15,15 @@
 <%-- Java completion for HttpSession object methods --%>
 <%--CC
 <% request.getSession().|
-void setAttribute (String arg0 , Object arg1 )
-<% request.getSession().setAttribute(arg0, arg1);
+void setAttribute (String name , Object value )
+<% request.getSession().setAttribute(name, value);
 --%>
 
 <%-- Java completion for session object --%>
 <%--CC
 <% session.|
-Object getAttribute (String arg0 )
-<% session.getAttribute(arg0)
+Object getAttribute (String name )
+<% session.getAttribute(name)
 --%>
 
 <%-- completion for methods and fields in scriptlet declaration --%>

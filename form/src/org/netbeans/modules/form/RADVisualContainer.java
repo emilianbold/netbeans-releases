@@ -348,7 +348,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
         for (int i=0; i < initComponents.length; i++) {
             RADComponent metacomp = initComponents[i];
-            if (i == 0 && !isMenuTypeComponent() && canHaveMenu(metacomp.getBeanClass())) {
+            if (!isMenuTypeComponent() && canHaveMenu(metacomp.getBeanClass())) {
                 containerMenu = metacomp;
             } else {
                 subComponents.add((RADVisualComponent)metacomp);

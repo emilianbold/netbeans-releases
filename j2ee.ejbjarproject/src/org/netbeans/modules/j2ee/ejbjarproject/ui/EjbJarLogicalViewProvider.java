@@ -395,8 +395,6 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     fireIconChange();
                     fireOpenedIconChange();
                     fireDisplayNameChange(null, null);
-                    //to refresh library references in private.properties
-                    new EjbJarProjectProperties (project, updateHelper, evaluator, resolver).save();
                 }
             }
             
@@ -429,10 +427,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             }
 
             public void actionPerformed(ActionEvent e) {
-                String j2eeSpec = EjbJarProjectProperties.getProperty(
-                        EjbJarProjectProperties.J2EE_PLATFORM,
-                        helper,
-                        AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String j2eeSpec = project.evaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM);
                 if (j2eeSpec == null) {
                     j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
                     Logger.getLogger(EjbJarLogicalViewProvider.class.getName()).warning(
@@ -482,7 +477,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
 
             private void checkMissingServer() {
                 boolean old = brokenServer;
-                String servInstID = EjbJarProjectProperties.getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE, helper, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                String servInstID = project.evaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
                 brokenServer = BrokenServerSupport.isBroken(servInstID);
                 if (old != brokenServer) {
                     fireIconChange();

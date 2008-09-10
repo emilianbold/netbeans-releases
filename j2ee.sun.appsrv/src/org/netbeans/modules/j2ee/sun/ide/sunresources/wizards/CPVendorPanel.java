@@ -60,11 +60,11 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceConfigurator;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.openide.util.HelpCtx;
 import org.openide.loaders.TemplateWizard;
 
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;

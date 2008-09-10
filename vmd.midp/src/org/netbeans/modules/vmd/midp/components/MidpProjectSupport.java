@@ -315,7 +315,6 @@ public final class MidpProjectSupport {
                 if (ext.equalsIgnoreCase(currentExt)) {
                     String relativePath = FileUtil.getRelativePath(root, current);
                     bank.put(current, "/" + relativePath); // NOI18N
-//                    System.out.println(current.getPath() + " -> " + "/" + relativePath); // NOI18N
                 }
             }
         }

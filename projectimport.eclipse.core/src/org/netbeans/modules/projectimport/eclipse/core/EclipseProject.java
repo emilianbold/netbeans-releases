@@ -60,6 +60,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Represents Eclipse project structure.
@@ -123,6 +124,19 @@ public final class EclipseProject implements Comparable {
         this.prjFile = new File(projectDir, PROJECT_FILE);
     }
 
+    void removeInvalidSourceRoots(List<String> projectImportProblems) {
+        List<DotClassPathEntry> projectSources = new ArrayList<DotClassPathEntry>();
+        for (DotClassPathEntry e : getSourceRoots()) {
+            if (new File(e.getAbsolutePath()).exists()) {
+                projectSources.add(e);
+            } else {
+                projectImportProblems.add(
+                    NbBundle.getMessage(EclipseProject.class, "MSG_InvalidSourceRoot", e.getRawPath())); //NOI18N
+            }
+        }
+        cp.updateSourceRoots(projectSources);
+    }
+
     void setFacets(Facets projectFacets) {
         this.projectFacets = projectFacets;
     }
@@ -134,6 +148,11 @@ public final class EclipseProject implements Comparable {
     void setLinks(List<Link> links) {
         this.links = links;
     }
+
+    List<Link> getLinks() {
+        return links;
+    }
+
 
     void setNatures(Set<String> natures) {
         this.natures = natures;

@@ -38,13 +38,13 @@
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="shellList" min="-2" pref="162" max="-2" attributes="1"/>
+                              <Component id="shellList" min="-2" max="-2" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="descBrowser" pref="298" max="32767" attributes="0"/>
+                              <Component id="descBrowser" pref="204" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="shellListLabel" min="-2" max="-2" attributes="1"/>
-                              <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -109,14 +109,14 @@
                   <Component id="appNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="appNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="shellListLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="descBrowser" min="0" pref="0" max="32767" attributes="2"/>
-                  <Component id="shellList" alignment="0" pref="86" max="32767" attributes="2"/>
+                  <Component id="shellList" alignment="0" pref="88" max="32767" attributes="2"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="libFolderCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">

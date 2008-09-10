@@ -40,7 +40,6 @@ package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -48,7 +47,6 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -68,19 +66,15 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
-import org.netbeans.modules.uml.diagrams.actions.CompositeWidgetSelectProvider;
 import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
-import org.netbeans.modules.uml.diagrams.nodes.CompositeWidget;
+import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
 import org.netbeans.modules.uml.diagrams.nodes.ContainerNode;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
-import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
-import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
-import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.openide.util.NbBundle;
 
@@ -88,7 +82,7 @@ import org.openide.util.NbBundle;
  *
  * @author Thuy
  */
-public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeWidget
+public class ActivityPartitionWidget extends CompositeNodeWidget
 {
 
     private Scene scene;
@@ -96,20 +90,14 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
     private UMLNameWidget nameWidget;
     private Widget partitionPanel;
     private static ResourceBundle bundle = NbBundle.getBundle(ContainerNode.class);
-    private SeparatorWidget.Orientation orientation = SeparatorWidget.Orientation.VERTICAL;
+    private SeparatorWidget.Orientation orientation = SeparatorWidget.Orientation.HORIZONTAL;
     private ArrayList<IElement> elements = new ArrayList<IElement>();
     private ArrayList<CompartmentWidget> compartmentWidgets = new ArrayList<CompartmentWidget>();
 
     public ActivityPartitionWidget(Scene scene)
     {
-        super(scene, false);
+        super(scene);
         this.scene = scene;
-        
-        // initialize context palette
-        DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
-        paletteModel.initialize("UML/context-palette/Activity");
-        addToLookup(paletteModel);
-        addToLookup(new CompositeWidgetSelectProvider(this));
     }
 
     @Override
@@ -161,8 +149,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         partitionPanel.setMinimumSize(new Dimension(100, 85));
         partitionPanel.setForeground(null);
         
-        // TODO: need to find a way to figure out the exisiting orientation of sub parttition
-        setOrientation(SeparatorWidget.Orientation.VERTICAL); 
+        setOrientation(orientation); 
         if (!PersistenceUtil.isDiagramLoading())
         {
             initializeSubPartitions(partitionElement);
@@ -187,7 +174,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
     public void setOrientation(SeparatorWidget.Orientation orientation)
     {
         this.orientation = orientation;
-        if (orientation == SeparatorWidget.Orientation.VERTICAL)
+        if (orientation == SeparatorWidget.Orientation.HORIZONTAL)
         {
             partitionPanel.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
         } else
@@ -196,25 +183,10 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         }
         for (CompartmentWidget widget : compartmentWidgets)
         {
-            widget.updateOrientation(orientation == SeparatorWidget.Orientation.VERTICAL);
+            widget.updateOrientation(isHorizontalLayout());
         }
     }
 
-    public boolean hasRowPartition()
-    {
-        return isVerticalLayout();
-    }
-
-    public boolean isVerticalLayout()
-    {
-        return (getOrientation() == SeparatorWidget.Orientation.HORIZONTAL);
-    }
-
-    public void addSubPartition(IActivityPartition subPart)
-    {
-        SubPartitionWidget subPartWidget = createSubPartitionWidget(subPart);
-        addSubPartition(subPartWidget);
-    }
 
     public void addSubPartition(SubPartitionWidget subPartWidget)
     {
@@ -231,40 +203,17 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         scene.validate();
     }
 
-    public int getSubPartitionCount()
-    {
-        if (parentPartition != null)
-        {
-            ETList<IActivityPartition> partitions = parentPartition.getSubPartitions();
-            return (partitions != null ? partitions.size() : 0);
-        }
-        return 0;
-    }
 
-    public void removeSubPartition(Widget subPartWidget)
+    public void removeCompartment(CompartmentWidget subPartWidget)
     {
         if (subPartWidget != null)
         {
-            // get the representing object
             if (scene instanceof ObjectScene)
             {
-                Object obj = ((ObjectScene) scene).findObject(subPartWidget);
-
-                if (obj instanceof IPresentationElement)
-                {
-                    IElement elem = ((IPresentationElement) obj).getFirstSubject();
-                    if (elem instanceof IActivityPartition)
-                    {
-                        // remove sub partition from the model
-                        removeSubPartition((IActivityPartition) elem);
-                    }
-                }
                 compartmentWidgets.remove(subPartWidget);
                 updateDividers();
             }
-            // remove sub partition widget from parent widget.
-            //partitionPanel.removeChild(subPartWidget);
-            if (this.getSubPartitionCount() == 0)
+            if ( compartmentWidgets.size() == 0)
             {
                 SubPartitionWidget w = new SubPartitionWidget(scene, null, this);
                 addSubPartition(w);
@@ -275,34 +224,6 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
                 scene.validate();
             }
         }
-    }
-
-    private void removeSubPartition(IActivityPartition subPart)
-    {
-        if (subPart != null)
-        {
-            // remove the elemen from model
-            subPart.delete();
-            // remove the element from parent 
-            this.getParentPartition().removeSubPartition(subPart);
-        }
-    }
-
-    public void removeSubPartitionWidgets()
-    {
-        List<Widget> children = partitionPanel.getChildren();
-        if (children != null && children.size() > 0)
-        {
-            for (int i = 0; i < children.size(); i++)
-            {
-                Widget w = children.get(i);
-                if (w instanceof SubPartitionWidget)
-                {
-                    partitionPanel.removeChild(w);
-                }
-            }
-        }
-        compartmentWidgets.clear();
     }
 
 
@@ -341,11 +262,9 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
             ETList<IActivityPartition> partitions = parentPartition.getSubPartitions();
             if (partitions != null && partitions.size() > 0)
             {
-                IActivityPartition subPart = null;
                 for (int i = 0; i < partitions.size(); i++)
                 {
-                    subPart = partitions.get(i);
-                    addSubPartition(subPart);
+                    addCompartment(partitions.get(i));
                 }
             }
             else // there's no subPartition, create one
@@ -353,7 +272,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
                 TypedFactoryRetriever<IActivityPartition> ret = new TypedFactoryRetriever<IActivityPartition>();
                 IActivityPartition subPartition = ret.createType("ActivityPartition");
                 parentPartition.addSubPartition(subPartition);
-                addSubPartition(subPartition);              
+                addCompartment(subPartition);              
             }
         }
     }
@@ -387,31 +306,12 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         return subPartWidget;
     }
 
-    public IActivityPartition getParentPartition()
+    public IActivityPartition getElement()
     {
         return parentPartition;
     }
 
-    public SubPartitionWidget getSubPartitionWidget(IActivityPartition subPart)
-    {
-        if (subPart != null)
-        {
-            List<Widget> children = partitionPanel.getChildren();
-            if (children != null && children.size() > 0)
-            {
-                for (int i = 0; i < children.size(); i++)
-                {
-                    Widget w = children.get(i);
-                    if (w instanceof SubPartitionWidget)
-                    {
-                        if (PersistenceUtil.getModelElement(w).isSame(subPart))
-                            return (SubPartitionWidget)w;
-                    }
-                }
-            }
-        }
-        return null;
-    }
+
     IElementLocator locator = new ElementLocator();
     
     @Override
@@ -426,14 +326,14 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         {
             if ((elt.getOwner() instanceof IActivity
                     || elt.getOwner() instanceof IPackage)
-                     && (this.getSubPartitionWidget((IActivityPartition)elt) == null))//last condition is for partition with NO sub-partitions
+                     && (findCompartmentWidget(elt) == null))//last condition is for partition with NO sub-partitions
             {
                 String or = nodeReader.getProperties().get("Orientation").toString();
                 this.setOrientation(SeparatorWidget.Orientation.valueOf(or));
                 initializeSubPartitions((IActivityPartition)elt);
                 super.load(nodeReader);                
             }
-            SubPartitionWidget subPart = getSubPartitionWidget((IActivityPartition) elt);
+            CompartmentWidget subPart = findCompartmentWidget(elt);
             if (subPart != null)
             {
                 //fix the size/location/properties
@@ -444,29 +344,6 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         }
     }
 
-    @Override
-    public void addContainedChild(Widget widget)
-    {
-        //this is only to add contained elements when there is an empty activity partition
-        if (compartmentWidgets != null && compartmentWidgets.size() == 1)
-        {
-            widget.removeFromParent();
-            compartmentWidgets.get(0).getContainerWidget().addChild(widget);
-        }
-        else
-        {
-            super.addContainedChild(widget);
-        }
-    }
-
-    @Override
-    public void save(NodeWriter nodeWriter)
-    {
-        HashMap map = nodeWriter.getProperties();
-        map.put("Orientation", this.getOrientation().toString());
-        nodeWriter.setProperties(map);
-        super.save(nodeWriter);
-    }
 
     private class MainViewWidget extends CustomizableWidget
     {
@@ -505,8 +382,11 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         @Override
         public void notifyAdded()
         {
-            UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
-            relationshipD.discoverCommonRelations(elements);
+            if(!PersistenceUtil.isDiagramLoading())
+            {
+                UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
+                relationshipD.discoverCommonRelations(elements);
+            }
         }
     }
 
@@ -517,34 +397,36 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
 
     public boolean isHorizontalLayout()
     {
-        return !isVerticalLayout();
-    }
-
-    public void removeCompartment(CompartmentWidget widget)
-    {
-        removeSubPartition(widget);
+        return getOrientation() == SeparatorWidget.Orientation.HORIZONTAL;
     }
 
 
-    public void addChildrenInBounds()
+    @Override
+    public String getContextPalettePath()
     {
-        for (CompartmentWidget w : compartmentWidgets)
-        {
-            w.getContainerWidget().calculateChildren(false);//only add, do not check removal
-        }
+        return "UML/context-palette/Activity";
     }
 
     @Override
-    protected void notifyFontChanged(Font font) {
-        if(font==null || nameWidget==null)return;
-        nameWidget.setNameFont(font);
-        for(Widget w:partitionPanel.getChildren())
-        {
-            if(w instanceof SubPartitionWidget)
-            {
-                w.setFont(font);
-            }
-        }
-        revalidate();
+    public UMLNameWidget getNameWidget()
+    {
+        return nameWidget;
+    }
+
+    @Override
+    public CompartmentWidget addCompartment(IElement element)
+    {
+        assert element instanceof IActivityPartition;
+        IActivityPartition subPart = (IActivityPartition)element;
+        SubPartitionWidget subPartWidget = createSubPartitionWidget(subPart);
+        addSubPartition(subPartWidget);
+        return subPartWidget;
+    }
+
+    @Override
+    public void clear()
+    {
+        compartmentWidgets.clear();
+        partitionPanel.removeChildren();
     }
 }

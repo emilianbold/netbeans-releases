@@ -300,6 +300,11 @@ public class GsfCompletionProvider implements CompletionProvider {
                             if (documentation != null)
                                 resultSet.setDocumentation(documentation);
                         }
+
+                        if (results != null && results.size() == 0) {
+                            isFilterable = false;
+                        }
+
                         if (anchorOffset > -1)
                             resultSet.setAnchorOffset(anchorOffset);
                     }

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -56,6 +57,7 @@ import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 import org.w3c.dom.Element;
 
 /**
@@ -171,11 +173,17 @@ final class JavaFreeformFileBuiltQuery implements FileBuiltQueryImplementation, 
         }
     }
     
-    public synchronized Status getStatus(FileObject fo) {
-        if (delegateTo == null)
-            delegateTo = createDelegateTo();
-        
-        return delegateTo.getStatus(fo);
+    public Status getStatus(final FileObject fo) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Status>() {
+            public Status run() {
+                synchronized (JavaFreeformFileBuiltQuery.this) {
+                    if (delegateTo == null) {
+                        delegateTo = createDelegateTo();
+                    }
+                    return delegateTo.getStatus(fo);
+                }
+            }
+        });
     }
     
     static List<String> findBuiltToNames(Element compilationUnitEl) {

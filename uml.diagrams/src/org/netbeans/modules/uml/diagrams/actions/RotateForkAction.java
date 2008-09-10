@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.uml.diagrams.actions;
 
+import java.awt.event.KeyEvent;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.State;
+import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.diagrams.nodes.JoinForkWidget;
 
@@ -82,4 +85,28 @@ public class RotateForkAction extends WidgetAction.LockedAdapter
     protected boolean isLocked() {
         return (joinFork != null);
     }
+
+    @Override
+    public State keyPressed(Widget widget, WidgetKeyEvent event)
+    {
+        State retVal = State.REJECTED;
+        
+        if((event.isControlDown() == true) && 
+                ((event.getKeyChar() == KeyEvent.VK_ENTER) ||
+                 (event.getKeyChar() == '\r')))
+        {
+            if (widget != null && widget instanceof JoinForkWidget)
+            {
+               JoinForkWidget fork = (JoinForkWidget ) widget;
+               fork.rotate();
+               fork = null;
+               
+               retVal = State.CONSUMED;
+            }
+        }
+        
+        return retVal;
+    }
+    
+    
 }

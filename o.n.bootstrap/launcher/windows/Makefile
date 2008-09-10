@@ -51,7 +51,7 @@ CFLAGS = -s -mno-cygwin
 all : nbexec.exe
 
 nbexec.exe : nbexec.cpp
-	gcc $(CFLAGS) $(LIBS) nbexec.cpp -o nbexec.exe
+	g++ $(CFLAGS) $(LIBS) nbexec.cpp -o nbexec.exe
 
 clean :
 	-rm *.res *.obj *.pdb *.ilk *~ 2>NUL

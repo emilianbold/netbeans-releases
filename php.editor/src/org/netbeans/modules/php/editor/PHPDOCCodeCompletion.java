@@ -38,20 +38,22 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -59,8 +61,11 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
+import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -71,12 +76,13 @@ public class PHPDOCCodeCompletion {
     private static final String TAGS[] = new String[]{
         "abstract", "access", "author", "category", "copyright", "deprecated", "example", "final",
         "filesource", "global", "ignore", "internal", "license", "link", "method", "name", "package",
-        "param", "property", "return", "see", "since", "static", "staticvar", "subpackage", "todo",
-        "tutorial", "uses", "var", "version"
+        "param", "property", "property-read", "property-write", "return", "see", "since", "static",
+        "staticvar", "subpackage", "todo", "tutorial", "uses", "var", "version"
     };
     private static final Map<String, String> CUSTOM_TEMPLATES = new TreeMap<String, String>();
     private static String docURLBase;
-        
+    private static Collection<PHPDocCommentTokenId> TYPE_TOKENS = Arrays.asList(PHPDocCommentTokenId.PHPDOC_RETURN,
+            PHPDocCommentTokenId.PHPDOC_VAR, PHPDocCommentTokenId.PHPDOC_PARAM);
 
     static {
         File file = InstalledFileLocator.getDefault().locate("docs/phpdocdesc.zip", null, true); //NoI18N
@@ -90,9 +96,42 @@ public class PHPDOCCodeCompletion {
                 }
         }
     }
+    
+    static boolean isTypeCtx(PHPCompletionItem.CompletionRequest request){
+        Document document = request.info.getDocument();
+        TokenHierarchy th = TokenHierarchy.get(document);
+        TokenSequence<PHPTokenId> topLevelTS = th.tokenSequence();
+        topLevelTS.move(request.anchor);
+        topLevelTS.moveNext();
+        TokenSequence<PHPDocCommentTokenId> tokenSequence = topLevelTS.embedded(PHPDocCommentTokenId.language());
+        tokenSequence.move(request.anchor);
+        if (tokenSequence.movePrevious()) {
+
+            if (TYPE_TOKENS.contains(tokenSequence.token().id())) {
+                int offset = tokenSequence.offset() + tokenSequence.token().length();
+                try {
+                    // text between PHPDoc directive and begining of the prefix, should only contain white spaces
+                    String txt = document.getText(offset, request.anchor - offset);
+
+                    for (int i = 0; i < txt.length(); i++) {
+                        if (!Character.isWhitespace(txt.charAt(i))) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        
+        return false;
+    }
 
     public static void complete(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
+        
         
         if (!(request.prefix.length() == 0 || request.prefix.startsWith("@"))){
             return;

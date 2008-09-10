@@ -71,34 +71,34 @@ import java.util.logging.Logger;
 * <P>
 * Examples of use:
 *
-* <p><code><PRE>
-* Mutex m = new Mutex ();
+* <pre>
+* Mutex m = new Mutex();
 *
 * // Grant write access, compute an integer and return it:
-* return (Integer)m.writeAccess (new Mutex.Action () {
-*   public Object run () {
-*     return new Integer (1);
-*   }
+* return m.writeAccess(new Mutex.Action&lt;Integer>(){
+*     public Integer run() {
+*         return 1;
+*     }
 * });
 *
-* // Obtain read access, do some computation, possibly throw an IOException:
+* // Obtain read access, do some computation,
+* // possibly throw an IOException:
 * try {
-*   m.readAccess (new Mutex.ExceptionAction () {
-*     public Object run () throws IOException {
-*       if (...) throw new IOException ();
-*
-*       return null;
-*     }
-*   });
+*     m.readAccess(new Mutex.ExceptionAction&lt;Void>() {
+*         public Void run() throws IOException {
+*             if (...) throw new IOException();
+*             return null;
+*         }
+*     });
 * } catch (MutexException ex) {
-*   throw (IOException)ex.getException ();
+*     throw (IOException) ex.getException();
 * }
 *
 * // check whether you are already in read access
-* if (m.isReadAccess ()) {
-*   // do your work
+* if (m.isReadAccess()) {
+*     // do your work
 * }
-* </PRE></code>
+* </pre>
 *
 * @author Ales Novak
 */

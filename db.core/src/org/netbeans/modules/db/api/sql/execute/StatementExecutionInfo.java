@@ -49,4 +49,5 @@ public interface StatementExecutionInfo {
     public String getSQL();
     public boolean hasExceptions();
     public Collection<Throwable> getExceptions();
+    public long getExecutionTime();
 }

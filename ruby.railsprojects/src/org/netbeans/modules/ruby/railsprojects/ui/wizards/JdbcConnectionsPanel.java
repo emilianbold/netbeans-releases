@@ -241,8 +241,12 @@ private void createProductionDbActionPerformed(java.awt.event.ActionEvent evt) {
         }
         DatabaseConnection result = null;
         if (mysql.isConnected()) {
-            result = CreateDatabasePanel.showCreateDatabaseDialog(mysql);
-            updateConnectionCombos();
+            try {
+                result = CreateDatabasePanel.showCreateDatabaseDialog(mysql);
+                updateConnectionCombos();
+            } catch (DatabaseException dbe) {
+                Utils.displayErrorMessage(dbe.getMessage());
+            }
         }
         return result;
     }

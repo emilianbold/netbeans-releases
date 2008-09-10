@@ -48,9 +48,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
+import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
-import org.netbeans.modules.db.sql.loader.SQLExecutionLoggerImpl;
 
 /**
  * Support execution of SQL scripts without bringing up the editor
@@ -59,13 +59,10 @@ import org.netbeans.modules.db.sql.loader.SQLExecutionLoggerImpl;
  */
 public class SQLExecutor {
     private static Logger LOGGER = Logger.getLogger(SQLExecutor.class.getName());
+
     /**
-     * Execute SQL and log summary information about the
-     * results and any errors to an output window.
-     *
-     * Note this is a very basic implementation.  Subsequent extensions could
-     * include getting results back, passing in a logger, etc., but trying to
-     * keep things simple for now.
+     * Execute SQL and log summary information about the results and any errors
+     * are logged to the error log file. 
      *
      * This method should not be called on the AWT event thread; to do so will
      * cause an exception to be thrown.
@@ -78,8 +75,35 @@ public class SQLExecutor {
      */
     public static SQLExecutionInfo execute(DatabaseConnection dbconn, String sql)
             throws DatabaseException {
+        return execute(dbconn, sql, new LogFileLogger());
+    }
+
+    /**
+     * Execute SQL.
+     *
+     * Note this is a very basic implementation.  Subsequent extensions could
+     * include getting results back, passing in a logger, etc., but trying to
+     * keep things simple for now.
+     *
+     * This method should not be called on the AWT event thread; to do so will
+     * cause an exception to be thrown.
+     *
+     * @param dbconn the database connection to use when executing the SQL
+     * @param sql the SQL which contains one or more valid SQL statements
+     * @param logger this object is notified with execution information when execution
+     *    of each statement completes and when the entire execution completes or is cancelled.
+     *
+     * @throws IllegalStateException if this is executed on the AWT event thread
+     * @throws DatabaseException if the database connection is not connected
+     */
+    public static SQLExecutionInfo execute(DatabaseConnection dbconn, String sql, SQLExecuteLogger logger)
+            throws DatabaseException {
         if (SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("You can not run this method on the event dispatching thread."); // NOI18N
+        }
+
+        if (logger == null) {
+            throw new NullPointerException();
         }
 
         try {
@@ -92,7 +116,7 @@ public class SQLExecutor {
 
 
         SQLExecutionResults results = SQLExecuteHelper.execute(sql, 0, sql.length(),
-                dbconn, new SQLExecutionLoggerImpl(""));
+                dbconn, new LoggerProxy(logger));
 
         return new SQLExecutionInfoImpl(results);
     }
@@ -147,6 +171,32 @@ public class SQLExecutor {
 
         public Collection<Throwable> getExceptions() {
             return result.getExceptions();
+        }
+
+        public long getExecutionTime() {
+            return result.getExecutionTime();
+        }
+
+    }
+
+
+    private static class LoggerProxy implements SQLExecutionLogger {
+        private final SQLExecuteLogger delegate;
+
+        public LoggerProxy(SQLExecuteLogger delegate) {
+            this.delegate = delegate;
+        }
+
+        public void log(SQLExecutionResult result) {
+            delegate.log(new StatementExecutionInfoImpl(result));
+        }
+
+        public void finish(long executionTime) {
+            delegate.finish(executionTime);
+        }
+
+        public void cancel() {
+            delegate.cancel();
         }
 
     }

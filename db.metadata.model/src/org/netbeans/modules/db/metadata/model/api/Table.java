@@ -54,6 +54,10 @@ public class Table extends MetadataObject {
         this.impl = impl;
     }
 
+    public Schema getParent() {
+        return impl.getParent();
+    }
+
     public String getName() {
         return impl.getName();
     }

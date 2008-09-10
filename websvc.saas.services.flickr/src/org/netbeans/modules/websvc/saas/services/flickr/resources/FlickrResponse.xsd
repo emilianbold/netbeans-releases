@@ -217,6 +217,7 @@
                                     <xsd:attribute name="admin" type="xsd:boolean"/>
                                     <xsd:attribute name="photos" type="xsd:int"/>
                                     <xsd:attribute name="iconserver" type="xsd:int"/>
+                                    <xsd:attribute name="privacy" type="xsd:int"/>
                                 </xsd:complexType>
                             </xsd:element>
                         </xsd:sequence>
@@ -246,10 +247,10 @@
                 <xsd:element name="user" minOccurs="0">
                     <xsd:complexType>
                         <xsd:sequence>
-                            <xsd:element name="username" type="xsd:string"/>
+                            <xsd:element name="username" type="xsd:string" minOccurs="0"/>
                             <xsd:element name="bandwidth" minOccurs="0">
                                 <xsd:complexType>
-                                    <xsd:attribute name="maxbytes" type="xsd:int"/>
+                                    <xsd:attribute name="maxbytes" type="xsd:double"/>
                                     <xsd:attribute name="maxkb" type="xsd:int"/>
                                     <xsd:attribute name="usedbytes" type="xsd:int"/>
                                     <xsd:attribute name="usedkb" type="xsd:int"/>
@@ -280,11 +281,11 @@
                     <xsd:complexType>
                         <xsd:sequence>
                             <xsd:element name="username" type="xsd:string" minOccurs="0"/>
-                            <xsd:element name="realname" type="xsd:string"/>
-                            <xsd:element name="mbox_sha1sum" type="xsd:string"/>
-                            <xsd:element name="location" type="xsd:string"/>
-                            <xsd:element name="photosurl" type="xsd:string"/>
-                            <xsd:element name="profileurl" type="xsd:string"/>
+                            <xsd:element name="realname" type="xsd:string" minOccurs="0"/>
+                            <xsd:element name="mbox_sha1sum" type="xsd:string" minOccurs="0"/>
+                            <xsd:element name="location" type="xsd:string" minOccurs="0"/>
+                            <xsd:element name="photosurl" type="xsd:string" minOccurs="0"/>
+                            <xsd:element name="profileurl" type="xsd:string" minOccurs="0"/>
                             <xsd:element name="photos" minOccurs="0">
                                 <xsd:complexType>
                                     <xsd:sequence>
@@ -536,6 +537,7 @@
                                             <xsd:attribute name="authorname" type="xsd:string"/>
                                             <xsd:attribute name="datecreate" type="xsd:int"/>
                                             <xsd:attribute name="permalink" type="xsd:string"/>
+                                            <xsd:attribute name="date_create" type="xsd:int"/>
                                         </xsd:extension>
                                     </xsd:simpleContent>
                                 </xsd:complexType>
@@ -569,6 +571,15 @@
                         <xsd:sequence>
                             <xsd:element name="title" minOccurs="0" type="xsd:string"/>
                             <xsd:element name="description" minOccurs="0" type="xsd:string"/>
+                            <xsd:element name="photo" minOccurs="0" maxOccurs="unbounded">
+                                <xsd:complexType>
+                                    <xsd:attribute name="id" type="xsd:string"/>
+                                    <xsd:attribute name="secret" type="xsd:string"/>
+                                    <xsd:attribute name="server" type="xsd:string"/>
+                                    <xsd:attribute name="title" type="xsd:string"/>
+                                    <xsd:attribute name="isprimary" type="xsd:boolean"/>
+                                </xsd:complexType>
+                            </xsd:element>
                         </xsd:sequence>
                         <xsd:attribute name="id" type="xsd:string"/>
                         <xsd:attribute name="url" type="xsd:string"/>
@@ -577,12 +588,15 @@
                         <xsd:attribute name="photos" type="xsd:int"/>
                         <xsd:attribute name="secret" type="xsd:string"/>
                         <xsd:attribute name="page" type="xsd:int"/>
+                        <xsd:attribute name="pages" type="xsd:int"/>
+                        <xsd:attribute name="perpage" type="xsd:int"/>
+                        <xsd:attribute name="total" type="xsd:int"/>
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="photosets" minOccurs="0">
                     <xsd:complexType>
                         <xsd:sequence>
-                            <xsd:element name="photoset" minOccurs="0">
+                            <xsd:element name="photoset" minOccurs="0" maxOccurs="unbounded">
                                 <xsd:complexType>
                                     <xsd:sequence>
                                         <xsd:element name="title" minOccurs="0" type="xsd:string"/>
@@ -595,6 +609,7 @@
                                     <xsd:attribute name="photos" type="xsd:int"/>
                                     <xsd:attribute name="server" type="xsd:int"/>
                                     <xsd:attribute name="farm" type="xsd:int"/>
+                                    <xsd:attribute name="secret" type="xsd:string"/>
                                 </xsd:complexType>
                             </xsd:element>
                         </xsd:sequence>
@@ -606,11 +621,16 @@
                         <xsd:sequence>
                             <xsd:element name="place" minOccurs="0" maxOccurs="unbounded">
                                 <xsd:complexType>
-                                    <xsd:attribute name="place_id" type="xsd:string"/>
-                                    <xsd:attribute name="place_url" type="xsd:string"/>
-                                    <xsd:attribute name="place_type" type="xsd:string"/>
-                                    <xsd:attribute name="latitude" type="xsd:float"/>
-                                    <xsd:attribute name="longitude" type="xsd:float"/>
+                                    <xsd:simpleContent>
+                                        <xsd:extension base="xsd:string">
+                                            <xsd:attribute name="place_id" type="xsd:string"/>
+                                            <xsd:attribute name="place_url" type="xsd:string"/>
+                                            <xsd:attribute name="place_type" type="xsd:string"/>
+                                            <xsd:attribute name="latitude" type="xsd:float"/>
+                                            <xsd:attribute name="longitude" type="xsd:float"/>
+                                            <xsd:attribute name="woeid" type="xsd:string"/>
+                                        </xsd:extension>
+                                    </xsd:simpleContent>
                                 </xsd:complexType>
                             </xsd:element>
                         </xsd:sequence>
@@ -695,6 +715,14 @@
                         <xsd:attribute name="count" type="xsd:int"/>
                     </xsd:complexType>
                 </xsd:element>
+                <xsd:element name="tags" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="tag" minOccurs="0" maxOccurs="unbounded" type="tagType"/>
+                        </xsd:sequence>
+                        <xsd:attribute name="source" type="xsd:string"/>
+                    </xsd:complexType>
+                </xsd:element>
                 <xsd:element name="who" minOccurs="0">
                     <xsd:complexType>
                         <xsd:sequence>
@@ -713,7 +741,7 @@
                 <xsd:element name="clusters" minOccurs="0">
                     <xsd:complexType>
                         <xsd:sequence>
-                            <xsd:element name="cluster">
+                            <xsd:element name="cluster" minOccurs="0" maxOccurs="unbounded">
                                 <xsd:complexType>
                                     <xsd:sequence>
                                         <xsd:element name="tag" minOccurs="0" maxOccurs="unbounded" type="tagType"/>
@@ -792,7 +820,7 @@
                         <xsd:sequence>
                             <xsd:element name="token">
                                 <xsd:simpleType>
-                                    <xsd:restriction base="xsd:long"/>
+                                    <xsd:restriction base="xsd:string"/>
                                 </xsd:simpleType>
                             </xsd:element>
                             <xsd:element name="perms">
@@ -836,13 +864,12 @@
             <xsd:attribute name="stat" type="xsd:string"/>
         </xsd:complexType>
     </xsd:element>
-    <xsd:complexType name="tagType">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
-                <xsd:attribute name="count" type="xsd:int"/>
-                <xsd:attribute name="score" type="xsd:int"/>
-                <xsd:attribute name="clean" type="xsd:string"/>
-            </xsd:extension>
-        </xsd:simpleContent>
+    <xsd:complexType name="tagType" mixed="true">
+        <xsd:sequence>
+            <xsd:element name="raw" minOccurs="0" maxOccurs="unbounded" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attribute name="count" type="xsd:int"/>
+        <xsd:attribute name="score" type="xsd:int"/>
+        <xsd:attribute name="clean" type="xsd:string"/>
     </xsd:complexType>
 </xsd:schema>

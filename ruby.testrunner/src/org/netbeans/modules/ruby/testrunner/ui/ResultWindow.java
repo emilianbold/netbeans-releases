@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
-import com.sun.java.swing.SwingUtilities2;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -192,7 +191,8 @@ public final class ResultWindow extends TopComponent {
         
         open();
         requestVisible();
-        requestActive();
+        // don't activate, see #145382
+        //requestActive();
     }
     
     /**

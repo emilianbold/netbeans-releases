@@ -51,11 +51,11 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
@@ -85,119 +85,129 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
     // --------------------------------------------
 
     public int[] findOrigin() throws InterruptedException, BadLocationException {
-        Language language = null;
+        ((AbstractDocument) context.getDocument()).readLock();
         try {
-            language = LanguagesManager.getDefault().getLanguage(topLevelMimeType);
-        } catch (LanguageDefinitionNotFoundException e) {
-            // ignore, handled later
-        }
-        TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-        
-        if (language == null || th == null) {
-            // ?? no lexer for the language, all Schliemann languages should have
-            // a lexer
-            return defaultFindOrigin(context);
-        }
-        
-        int caretOffset = context.getSearchOffset();
-        boolean searchBack = context.isSearchingBackward();
-        List<TokenSequence<?>> sequences = th.embeddedTokenSequences(caretOffset, searchBack);
-
-        for(int i = sequences.size() - 1; i >= 0; i--) {
-            TokenSequence<?> ts = sequences.get(i);;
-            /** @todo can ts.language() equals language ?*/
-            //if (ts.language().equals(language)) {
-            if (ts.language().mimeType().equals(language.getMimeType())) {
-                seq = ts;
-                if (i > 0) {
-                    TokenSequence<?> outerSeq = sequences.get(i - 1);
-                    seqStart = outerSeq.offset();
-                    seqEnd = outerSeq.offset() + outerSeq.token().length();
-                } else {
-                    // seq is the top level sequence, ie the whole document is just javadoc
-                    seqStart = 0;
-                    seqEnd = context.getDocument().getLength();
-                }
-                break;
+            Language language = null;
+            try {
+                language = LanguagesManager.getDefault().getLanguage(topLevelMimeType);
+            } catch (LanguageDefinitionNotFoundException e) {
+                // ignore, handled later
             }
-        }
+            TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
 
-        if (seq == null) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("TokenSequence with wrong language " + language); //NOI18N
+            if (language == null || th == null) {
+                // ?? no lexer for the language, all Schliemann languages should have
+                // a lexer
+                return defaultFindOrigin(context);
             }
-            return null;
-        }
-        
-        Map<String, Set<String>>[] pairsMaps = getPairsMap(language);
-        if (pairsMaps == null) {
-            return defaultFindOrigin(context);
-        }
 
-        seq.move(caretOffset);
-        if (seq.moveNext()) {
-            boolean [] bckwrd = new boolean[1];
-            
-            String tokenText = seq.token().text().toString();
-            String trimedTokenText = tokenText.trim();
-            if (isOrigin(pairsMaps, trimedTokenText, bckwrd)) {
-                if (seq.offset() < caretOffset || !searchBack) {
-                    originText = trimedTokenText;
-                    backwards = bckwrd[0];
-                    pairsMap = backwards ? pairsMaps[1] : pairsMaps[0];
-                    int offset = seq.offset() + tokenText.indexOf(trimedTokenText);
-                    int length = trimedTokenText.length();
-                    return new int [] { offset, offset + length };
+            int caretOffset = context.getSearchOffset();
+            boolean searchBack = context.isSearchingBackward();
+            List<TokenSequence<?>> sequences = th.embeddedTokenSequences(caretOffset, searchBack);
+
+            for(int i = sequences.size() - 1; i >= 0; i--) {
+                TokenSequence<?> ts = sequences.get(i);
+                /** @todo can ts.language() equals language ?*/
+                //if (ts.language().equals(language)) {
+                if (ts.language().mimeType().equals(language.getMimeType())) {
+                    seq = ts;
+                    if (i > 0) {
+                        TokenSequence<?> outerSeq = sequences.get(i - 1);
+                        seqStart = outerSeq.offset();
+                        seqEnd = outerSeq.offset() + outerSeq.token().length();
+                    } else {
+                        // seq is the top level sequence, ie the whole document is just javadoc
+                        seqStart = 0;
+                        seqEnd = context.getDocument().getLength();
+                    }
+                    break;
                 }
             }
 
-            while(moveTheSequence(seq, searchBack, context.getLimitOffset())) {
-                tokenText = seq.token().text().toString();
-                trimedTokenText = tokenText.trim();
+            if (seq == null) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("TokenSequence with wrong language " + language); //NOI18N
+                }
+                return null;
+            }
+
+            Map<String, Set<String>>[] pairsMaps = getPairsMap(language);
+            if (pairsMaps == null) {
+                return defaultFindOrigin(context);
+            }
+
+            seq.move(caretOffset);
+            if (seq.moveNext()) {
+                boolean [] bckwrd = new boolean[1];
+
+                String tokenText = seq.token().text().toString();
+                String trimedTokenText = tokenText.trim();
                 if (isOrigin(pairsMaps, trimedTokenText, bckwrd)) {
-                    originText = trimedTokenText;
-                    backwards = bckwrd[0];
-                    pairsMap = backwards ? pairsMaps[1] : pairsMaps[0];
-                    int offset = seq.offset() + tokenText.indexOf(trimedTokenText);
-                    int length = trimedTokenText.length();
-                    return new int [] { offset, offset + length };
+                    if (seq.offset() < caretOffset || !searchBack) {
+                        originText = trimedTokenText;
+                        backwards = bckwrd[0];
+                        pairsMap = backwards ? pairsMaps[1] : pairsMaps[0];
+                        int offset = seq.offset() + tokenText.indexOf(trimedTokenText);
+                        int length = trimedTokenText.length();
+                        return new int [] { offset, offset + length };
+                    }
+                }
+
+                while(moveTheSequence(seq, searchBack, context.getLimitOffset())) {
+                    tokenText = seq.token().text().toString();
+                    trimedTokenText = tokenText.trim();
+                    if (isOrigin(pairsMaps, trimedTokenText, bckwrd)) {
+                        originText = trimedTokenText;
+                        backwards = bckwrd[0];
+                        pairsMap = backwards ? pairsMaps[1] : pairsMaps[0];
+                        int offset = seq.offset() + tokenText.indexOf(trimedTokenText);
+                        int length = trimedTokenText.length();
+                        return new int [] { offset, offset + length };
+                    }
                 }
             }
+
+            return null;
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
         }
-        
-        return null;
     }
 
     public int[] findMatches() throws InterruptedException, BadLocationException {
-        // Use the default matcher if no better was available
-        if (defaultMatcher != null) {
-            return defaultMatcher.findMatches();
-        }
-        
-        // Proper matching using the pairs supplied by the language definition
-        assert seq != null : "No token sequence"; //NOI18N
-        
-        List<String> unresolved = new ArrayList<String>();
-        unresolved.add(originText);
-        while(moveTheSequence(seq, backwards, -1)) {
-            String tokenText = seq.token().text().toString();
-            String trimedTokenText = tokenText.trim();
-            int depth = unresolved.size() - 1;
-            String currentOrigin = unresolved.get(depth);
-            Set<String> matchingTexts = pairsMap.get(currentOrigin);
-            if (matchingTexts != null && matchingTexts.contains(trimedTokenText)) {
-                unresolved.remove(depth);
-                if (unresolved.size() == 0) {                    
-                    int offset = seq.offset() + tokenText.indexOf(trimedTokenText);
-                    int length = trimedTokenText.length();
-                    return new int [] { offset, offset + length };
-                }
-            } else if (pairsMap.containsKey(trimedTokenText)) {
-                unresolved.add(trimedTokenText);
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            // Use the default matcher if no better was available
+            if (defaultMatcher != null) {
+                return defaultMatcher.findMatches();
             }
+
+            // Proper matching using the pairs supplied by the language definition
+            assert seq != null : "No token sequence"; //NOI18N
+
+            List<String> unresolved = new ArrayList<String>();
+            unresolved.add(originText);
+            while(moveTheSequence(seq, backwards, -1)) {
+                String tokenText = seq.token().text().toString();
+                String trimedTokenText = tokenText.trim();
+                int depth = unresolved.size() - 1;
+                String currentOrigin = unresolved.get(depth);
+                Set<String> matchingTexts = pairsMap.get(currentOrigin);
+                if (matchingTexts != null && matchingTexts.contains(trimedTokenText)) {
+                    unresolved.remove(depth);
+                    if (unresolved.size() == 0) {                    
+                        int offset = seq.offset() + tokenText.indexOf(trimedTokenText);
+                        int length = trimedTokenText.length();
+                        return new int [] { offset, offset + length };
+                    }
+                } else if (pairsMap.containsKey(trimedTokenText)) {
+                    unresolved.add(trimedTokenText);
+                }
+            }
+
+            return null;
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
         }
-        
-        return null;
     }
     
     // --------------------------------------------

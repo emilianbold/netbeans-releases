@@ -63,7 +63,7 @@ public class WsdlAddOperationProvider implements AddOperationActionProvider {
             String packageName = getPackageName(fileObject);
             if (packageName != null) {
                 Service service = getService(support, packageName);
-                if (service != null && service.getWsdlUrl() != null) return new AddOperationAction(service, fileObject);
+                if (service != null && service.getWsdlUrl() != null && !service.isUseProvider()) return new AddOperationAction(service, fileObject);
             }
         }
         return null;

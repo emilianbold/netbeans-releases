@@ -106,7 +106,6 @@ public class SVGButtonCD extends ComponentDescriptor {
                     continue;
                 }
                 eventHandler = component.readProperty(EventSourceCD.PROP_EVENT_HANDLER).getComponent();
-                System.out.println(eventHandler);
                 if (eventHandler != null) {
                     break;
                 }

@@ -166,7 +166,7 @@ public class PreviewScene extends GraphScene<IPresentationElement, IPresentation
                             else
                             {
                                 pe.addSubject(element);
-
+                                
                                 initConstructors(p + "/" + types[i], pe);
                                 if (map.containsKey(element.getExpandedElementType()))
                                 {
@@ -237,6 +237,10 @@ public class PreviewScene extends GraphScene<IPresentationElement, IPresentation
         try
         {
             NodeWidgetFactory c = map.get(element.getFirstSubject().getExpandedElementType());
+            if (c == null) 
+            {
+                c = map.get(element.getFirstSubject().getElementType());
+            }
             UMLNodeWidget widget = (UMLNodeWidget) c.createNode(this);
             widget.initializeNode(element, true);
             return widget;

@@ -49,19 +49,19 @@ import java.util.*;
  *
  * @author mkuchtiak
  */
-public class WsdlModel {
-    
+public class WsdlModel  implements org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModel{
+
     private Model model;
-    
+
     /** Creates a new instance of WsdlModel */
     WsdlModel(Model model) {
         this.model=model;
     }
-    
+
     public Object /*com.sun.tools.ws.processor.model.Model*/ getInternalJAXWSModel() {
         return model;
     }
-    
+
     public List<WsdlService> getServices() {
         List<WsdlService> wsdlServices = new ArrayList<WsdlService> ();
         if (model==null) return wsdlServices;
@@ -70,7 +70,7 @@ public class WsdlModel {
             wsdlServices.add(new WsdlService(s));
         return wsdlServices;
     }
-    
+
     public WsdlService getServiceByName(String serviceName) {
         List<Service> services = model.getServices();
         for (Service s:services)

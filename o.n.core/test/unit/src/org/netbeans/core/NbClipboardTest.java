@@ -42,6 +42,14 @@ package org.netbeans.core;
 
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.FlavorEvent;
+import java.awt.datatransfer.FlavorListener;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
@@ -161,6 +169,49 @@ public class NbClipboardTest extends NbTestCase {
         }
     }
     
+    public void testBusySystemClipboard139616() {
+        BusyClipboard busyClipboard = new BusyClipboard();
+        NbClipboard nbClipboard = new NbClipboard(busyClipboard);
+        Transferable data = new Transferable() {
+
+            public DataFlavor[] getTransferDataFlavors() {
+                return new DataFlavor[] { DataFlavor.stringFlavor };
+            }
+
+            public boolean isDataFlavorSupported(DataFlavor flavor) {
+                return DataFlavor.stringFlavor.equals(flavor);
+            }
+
+            public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+                if( !isDataFlavorSupported(flavor) )
+                    throw new UnsupportedFlavorException(flavor);
+                return "unit_test";
+            }
+        };
+        final Object LOCK = new Object();
+        busyClipboard.addFlavorListener(new FlavorListener() {
+
+            public void flavorsChanged(FlavorEvent e) {
+                synchronized( LOCK ) {
+                    LOCK.notifyAll();
+                }
+            }
+        });
+        nbClipboard.setContents(data, null);
+        
+        synchronized( LOCK ) {
+            try {
+                LOCK.wait(10*1000);
+                assertEquals(2, busyClipboard.setContentsCounter);
+                assertSame(data, busyClipboard.getContents(this));
+            } catch( InterruptedException e ) {
+                fail( "clipboard content was not updated" );
+            }
+        }
+    }
+    
+    
+    
     private static void waitEQ(final Window w) throws Exception {
         class R implements Runnable {
             boolean visible;
@@ -173,5 +224,25 @@ public class NbClipboardTest extends NbTestCase {
         while (!r.visible) {
             SwingUtilities.invokeAndWait(r);
         }
+    }
+    
+    private static class BusyClipboard extends Clipboard {
+
+        public BusyClipboard() {
+            super( "unit_test" );
+        }
+        private boolean pretendToBeBusy = true;
+        private int setContentsCounter = 0;
+
+        @Override
+        public synchronized void setContents(Transferable contents, ClipboardOwner owner) {
+            setContentsCounter++;
+            if( pretendToBeBusy ) {
+                pretendToBeBusy = false;
+                throw new IllegalStateException();
+            }
+            super.setContents(contents, owner);
+        }
+        
     }
 }
