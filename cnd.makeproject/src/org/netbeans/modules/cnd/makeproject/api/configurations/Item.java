@@ -129,11 +129,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     
     public void moveTo(String newPath) {
         Folder f = getFolder();
-        // FIXUP: update all configurations with settings from old item....
         String oldPath = getAbsPath();
-        f.removeItem(this);
         Item item = new Item(newPath);
         f.addItem(item);
+        copyItemConfigurations(this, item);
+        f.removeItem(this);
         f.renameItemAction(oldPath,  item);
     }
     
@@ -262,7 +262,26 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return itemConfigurations;
     }
-    
+
+    /**
+     * Copies configuration from <code>src</code> item to <code>dst</code> item.
+     * Both items must be assigned to folders to correctly operate with
+     * their configurations. Otherwise NPEs will be thrown.
+     *
+     * @param src  item to copy configuration from
+     * @param dst  item to copy configuration to
+     */
+    private static void copyItemConfigurations(Item src, Item dst) {
+        MakeConfigurationDescriptor makeConfigurationDescriptor = src.getMakeConfigurationDescriptor();
+        if (makeConfigurationDescriptor != null) {
+            for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+                ItemConfiguration newConf = new ItemConfiguration(conf, dst);
+                newConf.assignValues(src.getItemConfiguration(conf));
+                conf.addAuxObject(newConf);
+            }
+        }
+    }
+
     public FileObject getFileObject() {
         File file = getCanonicalFile();
         FileObject fo = null;
@@ -491,4 +510,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return path;
+    }
+
 }

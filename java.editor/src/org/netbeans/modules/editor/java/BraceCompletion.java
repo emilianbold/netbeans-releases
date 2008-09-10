@@ -104,6 +104,7 @@ class BraceCompletion {
     TokenSequence<JavaTokenId> ts) throws BadLocationException {
         int eolOffset = Utilities.getRowEnd(doc, caretOffset);
         int lastParenPos = caretOffset;
+        int index = ts.index();
         // Move beyond semicolon
         while (ts.moveNext() && ts.offset() <= eolOffset) {
             Token<JavaTokenId> token = ts.token();
@@ -117,6 +118,9 @@ class BraceCompletion {
                     return; //
             }
         }
+        // Restore ts position
+        ts.moveIndex(index);
+        ts.moveNext();
         if (isForLoopSemicolon(ts) || posWithinAnyQuote(doc, caretOffset)) {
             return;
         }

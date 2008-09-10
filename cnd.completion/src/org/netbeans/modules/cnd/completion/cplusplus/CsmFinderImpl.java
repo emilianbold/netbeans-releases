@@ -90,13 +90,19 @@ public class CsmFinderImpl implements CsmFinder {
     public CsmFinderImpl(FileObject fo, String mimeType){
         this.fo = fo;
         this.mimeType = mimeType;
-        caseSensitive = getCaseSensitive();
+        caseSensitive = _getCaseSensitive();
     }
         
     public CsmFinderImpl(CsmFile csmFile, String mimeType){
         this.csmFile = csmFile;
         this.mimeType = mimeType;
-        caseSensitive = getCaseSensitive();
+        caseSensitive = _getCaseSensitive();
+    }
+
+    public CsmFinderImpl(CsmFile csmFile, String mimeType, boolean caseSensitive){
+        this.csmFile = csmFile;
+        this.mimeType = mimeType;
+        this.caseSensitive = caseSensitive;
     }
 
     public CsmFile getCsmFile() {
@@ -104,6 +110,10 @@ public class CsmFinderImpl implements CsmFinder {
     }
     
     private boolean getCaseSensitive() {
+        return caseSensitive;
+    }
+
+    private boolean _getCaseSensitive() {
         return CsmCompletionUtils.isCaseSensitive(mimeType);
     }
     

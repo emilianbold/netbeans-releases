@@ -263,31 +263,31 @@ public class JsfProjectUtils {
 
         while (fo != null) {
             if (fo.isFolder()) {
-                final FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
+                FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
                 // Found the project root directory and got the project.xml file
                 if (projXml != null) {
                     if (fileContains(projXml, RAVE_AUX_NAMESPACE)) {
                         setJsfProjectDir(fo, Boolean.TRUE);
                         return true;
                     }
+
+                    // The project.properties file should be found in the same directory
+                    FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if (propFile != null) {
+                        // Check Creator property
+                        boolean isJsf = fileContains(propFile, "jsf.pagebean.package"); // NOI18N
+                        setJsfProjectDir(fo, Boolean.valueOf(isJsf));
+                        return isJsf;
+                    }
                 }
 
-                final FileObject projMaven = fo.getFileObject("nb-configuration.xml"); // NOI18N
+                FileObject projMaven = fo.getFileObject("nb-configuration.xml"); // NOI18N
                 // Found the project root directory and got the Maven nb-configuration.xml file
                 if (projMaven != null) {
                     if (fileContains(projMaven, RAVE_AUX_NAMESPACE)) {
                         setJsfProjectDir(fo, Boolean.TRUE);
                         return true;
                     }
-                }
-
-                final FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                // Found the project root directory and got the project.properties file
-                if (propFile != null) {
-                    // Check Creator property
-                    boolean isJsf = fileContains(propFile, "jsf.pagebean.package"); // NOI18N
-                    setJsfProjectDir(fo, Boolean.valueOf(isJsf));
-                    return isJsf;
                 }
             }
 

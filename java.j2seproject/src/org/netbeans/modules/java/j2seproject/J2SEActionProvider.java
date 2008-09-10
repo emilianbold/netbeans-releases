@@ -81,6 +81,8 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -1240,11 +1242,13 @@ class J2SEActionProvider implements ActionProvider {
         String              pathType
     ) {
         StringBuilder sb = new StringBuilder ();
-        sb.append ("File: ").append (fileObject);
-        sb.append ("\nPath Type: ").append (pathType);
-        sb.append ("\nClassPathProviders: ");
+        sb.append ("File: ").append (fileObject);                                                                       //NOI18N
+        sb.append ("\nPath Type: ").append (pathType);                                                                  //NOI18N
+        final Project owner = FileOwnerQuery.getOwner(fileObject);
+        sb.append ("\nOwner: ").append (owner == null ? "" : ProjectUtils.getInformation(owner).getDisplayName());      //NOI18N
+        sb.append ("\nClassPathProviders: ");                                                                           //NOI18N
         for (ClassPathProvider impl  : Lookup.getDefault ().lookupResult (ClassPathProvider.class).allInstances ())
-            sb.append ("\n  ").append (impl);
+            sb.append ("\n  ").append (impl);                                                                           //NOI18N
         return sb.toString ();
     }
 
