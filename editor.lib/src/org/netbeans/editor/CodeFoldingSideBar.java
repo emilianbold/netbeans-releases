@@ -301,9 +301,25 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     viewRect = viewShape.getBounds();
                     y = viewRect.y + viewRect.height;
                     boolean isSingleLineFold = startViewIndex == endViewIndex;
+                    //emi: the check bellow seems to be redundant, fold.isCollaped determines isSingleLineFold to be true
                     if (fold.isCollapsed() || isSingleLineFold){
+                        boolean foldedSinglePaint = fold.isCollapsed(); //parents end here too ?
+                        if(foldedSinglePaint){
+                            //see if the parents ends on the same line and mark it as SINGLE_PAINT_MARK 
+                            int off = fold.getEndOffset();
+                            int rowEnd = javax.swing.text.Utilities.getRowEnd(component, off);
+                            Fold parent = fold.getParent();
+                            while(parent!=null && !FoldUtilities.isRootFold(parent)){
+                                if(rowEnd!=javax.swing.text.Utilities.getRowEnd(component, parent.getEndOffset())){
+                                    foldedSinglePaint = false;
+                                    break;
+                                }
+                                parent = parent.getParent();
+                            }
+                        }
+                        boolean singleMarkKind = fold.isCollapsed() ? foldedSinglePaint : isSingleLineFold;
                         map.put(new Integer(viewRect.y), 
-                            new CodeFoldingSideBar.PaintInfo((isSingleLineFold?SINGLE_PAINT_MARK:PAINT_MARK), level, viewRect.y, viewRect.height, fold.isCollapsed()));
+                            new CodeFoldingSideBar.PaintInfo((singleMarkKind?SINGLE_PAINT_MARK:PAINT_MARK), level, viewRect.y, viewRect.height, fold.isCollapsed()));
                         return;
                     }
 
@@ -534,7 +550,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     }
                     if (paintInfo.getInnerLevel() > 0){ //[PENDING]
                         g.drawLine(lineX, y, lineX, markY);
-                        g.drawLine(lineX, markY + markSize, lineX, y + height);
+                        if (paintOperation != CodeFoldingSideBar.SINGLE_PAINT_MARK) g.drawLine(lineX, markY + markSize, lineX, y + height);
                     }
                     visibleMarks.add(new Mark(markX, markY, markSize, isFolded));
                 } else if (paintOperation == PAINT_LINE){

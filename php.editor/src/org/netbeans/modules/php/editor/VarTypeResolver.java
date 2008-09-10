@@ -167,10 +167,11 @@ public final class VarTypeResolver {
 
             @Override
             public void visit(InstanceOfExpression node) {
-                int offset = anchor;
+                //TODO: doesn't work properly yet, commented out because offers type also in wrong contexts
+                /*int offset = anchor;
                 if ((offset != (-1) && offset >= node.getStartOffset())) {
                     if (isValidBlock(path)) {
-                    Expression expression = node.getExpression();
+                        Expression expression = node.getExpression();
                         if (expression instanceof Variable) {
                             String typeName = CodeUtils.extractClassName(node.getClassName());
                             String vName = CodeUtils.extractVariableName((Variable) expression);
@@ -179,7 +180,7 @@ public final class VarTypeResolver {
                             }
                         }
                     }
-                    }
+                }*/
                 super.visit(node);
             }
 
@@ -223,8 +224,8 @@ public final class VarTypeResolver {
 
             @Override
             public void visit(MethodInvocation node) {
-                if ((blockOfCaret.getStartOffset() <= node.getStartOffset() &&
-                        blockOfCaret.getEndOffset() >= node.getEndOffset())) {
+                int offset = anchor;                
+                if ((offset != (-1) && offset >= node.getStartOffset())) {
                     if (isValidBlock(path)) {
 
                         VariableBase dispatcher = node.getDispatcher();
