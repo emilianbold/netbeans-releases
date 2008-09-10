@@ -52,11 +52,10 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.diagrams.actions.DeleteCompartmentWidgetAction;
+import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
 import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.diagrams.nodes.state.CompositeStateWidget;
-
-import org.netbeans.modules.uml.diagrams.nodes.state.RegionWidget;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
@@ -120,7 +119,7 @@ public class RegionsAction extends SceneNodeAction implements ContextAwareAction
         popupMenu.setEnabled(scene.isReadOnly() == false);
 
         CompositeStateWidget widget = getCompositeStateWidget();
-        if ((widget.getRegionWidgets().size() == 1))
+        if ((widget.getCompartmentWidgets().size() == 1))
         {
             popupMenu.add(new AddColumnAction(loc("CTL_AddRegionColumn")));
             popupMenu.add(new AddRowAction(loc("CTL_AddRegionRow")));
@@ -129,7 +128,7 @@ public class RegionsAction extends SceneNodeAction implements ContextAwareAction
             popupMenu.add(widget.isHorizontalLayout() ? 
                 new AddColumnAction(loc("CTL_AddRegionColumn")) : new AddRowAction(loc("CTL_AddRegionRow")));
         
-        for (RegionWidget w : widget.getRegionWidgets())
+        for (CompartmentWidget w : widget.getCompartmentWidgets())
         {
             if (w.isSelected())
             {
