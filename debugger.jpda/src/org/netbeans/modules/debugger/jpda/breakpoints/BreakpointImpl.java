@@ -62,6 +62,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -169,7 +170,16 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
     protected abstract void setRequests ();
     
     protected void remove () {
-        removeAllEventRequests ();
+        if (SwingUtilities.isEventDispatchThread()) {
+            // One can not want to access the requests in AWT EQ
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    removeAllEventRequests ();
+                }
+            });
+        } else {
+            removeAllEventRequests ();
+        }
         breakpoint.removePropertyChangeListener(this);
         setValidity(Breakpoint.VALIDITY.UNKNOWN, null);
     }

@@ -66,7 +66,9 @@ public class CustomizerJSLibraries extends JPanel {
     private final ProjectCustomizer.Category category;
     private final Project project;
     private final JavaScriptLibraryListModel listModel;
-    private final PropertyChangeListener libraryChangeListener;
+    private final PropertyChangeListener libraryChangeListener;    
+    private final String RUBY_PROJECT = "org.netbeans.modules.ruby.railsprojects.RailsProject"; // NOI18N
+    private final String RUBY_DEFAULT_JS_LIB_NAME = "prototype";        
     
     /** Creates new form JavaScriptLibrariesCustomizer */
     public CustomizerJSLibraries(ProjectCustomizer.Category category, Project project) {
@@ -205,7 +207,17 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
             currentLibs.add(library);
         }
     }
-
+    
+    /* If it's a ruby project do not display the prototype js library, it's */
+    /* included by default and not managed by the js library mananger. */
+    Project p = project.getLookup().lookup(Project.class);
+    if (p == null) {
+        p = project;
+    }
+    String projectClassName = p.getClass().getName();
+    if (projectClassName.equals(RUBY_PROJECT)) {
+        currentLibs.add(manager.getLibrary(RUBY_DEFAULT_JS_LIB_NAME));
+    }    
     LibraryChooser.Filter filter = JSLibraryProjectUtils.createDefaultFilter(currentLibs);
     List<JSLibraryData> addedLibraries = JSLibraryProjectUtils.displayAddLibraryDialog(project, filter);
 

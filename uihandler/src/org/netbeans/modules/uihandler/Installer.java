@@ -1727,6 +1727,7 @@ public class Installer extends ModuleInstall implements Runnable {
             notifyAll();
         }
         protected void showURL(URL u) {
+            LOG.log(Level.FINE, "opening URL: " + u); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(u);
         }
         protected void saveUserName() {

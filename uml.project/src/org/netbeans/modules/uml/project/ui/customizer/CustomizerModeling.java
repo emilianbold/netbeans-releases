@@ -78,7 +78,7 @@ public class CustomizerModeling extends javax.swing.JPanel
         projectLocation.setText(pf == null ? "" : pf.getPath()); // NOI18N
         String modelingMode = uiProperties.getCurrentProjectMode();
         
-        if (modelingMode.equals(UMLProject.PROJECT_MODE_ANALYSIS_STR)) 
+        if (modelingMode != null && modelingMode.equals(UMLProject.PROJECT_MODE_ANALYSIS_STR)) 
              disableAllComponents();
         
         testBroken();        

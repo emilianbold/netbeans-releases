@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateP
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -118,6 +119,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     abstract protected CsmFinder getFinder();
 
     abstract protected QueryScope getCompletionQueryScope();
+
+    abstract protected FileReferencesContext getFileReferencesContext();
 
     public static enum QueryScope {
         LOCAL_QUERY,
@@ -278,7 +281,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     protected CompletionQuery.Result getResult(JTextComponent component, CsmSyntaxSupport sup, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort, boolean inIncludeDirective) {
         CompletionResolver resolver = getCompletionResolver(openingSource, sort, inIncludeDirective);
         if (resolver != null) {
-            CsmOffsetableDeclaration context = sup.getDefinition(offset);
+            CsmOffsetableDeclaration context = sup.getDefinition(offset, getFileReferencesContext());
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort);
            ctx.resolveExp(exp);
             if (ctx.result != null) {
@@ -1666,7 +1669,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             if (!isConstructor) {
                                 // It could be default constructor call without "new"
                                 CsmClassifier cls = null;
-                                cls = sup.getClassFromName(mtdName, true);
+                                cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
                                 if (cls == null) {
                                     cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0));
                                 }
