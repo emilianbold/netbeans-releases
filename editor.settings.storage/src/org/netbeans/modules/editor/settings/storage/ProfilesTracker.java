@@ -171,13 +171,13 @@ public final class ProfilesTracker {
         private final String displayName;
         private final boolean isRollbackAllowed;
         // for logging only
-        private final String profilePath;
+        private final String profileOrigin;
         
-        private ProfileDescription(String id, String displayName, boolean isRollbackAllowed, String profilePath) {
+        private ProfileDescription(String id, String displayName, boolean isRollbackAllowed, String profileOrigin) {
             this.id = id;
             this.displayName = displayName;
             this.isRollbackAllowed = isRollbackAllowed;
-            this.profilePath = profilePath;
+            this.profileOrigin = profileOrigin;
         }
         
         public boolean isRollbackAllowed() {
@@ -244,21 +244,26 @@ public final class ProfilesTracker {
                 // Determine profile's display name and if it can roll back user changes
                 String displayName  = null;
                 boolean canRollback = false;
-                String profilePath = null;
+                String profileOrigin = null;
                 for(Object [] info : profileInfos) {
                     FileObject profileHome = (FileObject) info[0];
                     FileObject settingFile = (FileObject) info[1];
                     boolean modulesFile = ((Boolean) info[2]);
 
-                    profilePath = profileHome.getPath();
-                    if (displayName == null && profileHome != null) {
-                        // First try the standard way for filesystem annotations
-                        displayName = Utils.getLocalizedName(profileHome, null);
+                    if (profileHome != null) {
+                        profileOrigin = profileHome.getPath();
 
-                        // Then try the crap way introduced with Tools-Options
                         if (displayName == null) {
-                            displayName = Utils.getLocalizedName(profileHome, id, null);
+                            // First try the standard way for filesystem annotations
+                            displayName = Utils.getLocalizedName(profileHome, null);
+
+                            // Then try the crap way introduced with Tools-Options
+                            if (displayName == null) {
+                                displayName = Utils.getLocalizedName(profileHome, id, null);
+                            }
                         }
+                    } else {
+                        profileOrigin = settingFile.getPath();
                     }
 
                     if (!canRollback) {
@@ -276,18 +281,18 @@ public final class ProfilesTracker {
                 if (maybeDupl != null) {
                     // writable file for all languages in the profile's home folder
                     String writableFile = baseFolder.getPath() + "/" + locator.getWritableFileName(null, id, null, false); //NOI18N
-                    if (writableFile.startsWith(profilePath)) {
+                    if (writableFile.startsWith(profileOrigin)) {
                         // the profile comes from the empty mimepath (all languages) and we will prefer it
                         newProfiles.remove(maybeDupl.getId());
                         newProfilesByDisplayName.remove(displayName);
-                        LOG.warning("Ignoring profile '" + maybeDupl.getId() + "' (" + maybeDupl.profilePath + ") in favor of '" + id + "' (" + profilePath + ") with the same display name."); //NOI18N
+                        LOG.warning("Ignoring profile '" + maybeDupl.getId() + "' (" + maybeDupl.profileOrigin + ") in favor of '" + id + "' (" + profileOrigin + ") with the same display name."); //NOI18N
                     } else {
-                        LOG.warning("Ignoring profile '" + id + "' (" + profilePath + "), it's got the same display name as '" + maybeDupl.getId() + "' (" + maybeDupl.profilePath + ")."); //NOI18N
+                        LOG.warning("Ignoring profile '" + id + "' (" + profileOrigin + "), it's got the same display name as '" + maybeDupl.getId() + "' (" + maybeDupl.profileOrigin + ")."); //NOI18N
                         continue;
                     }
                 }
 
-                ProfileDescription desc = reuseOrCreate(id, displayName, canRollback, profilePath);
+                ProfileDescription desc = reuseOrCreate(id, displayName, canRollback, profileOrigin);
                 newProfiles.put(id, desc);
                 newProfilesByDisplayName.put(displayName, desc);
             }
@@ -307,14 +312,14 @@ public final class ProfilesTracker {
         }
     }
 
-    private ProfileDescription reuseOrCreate(String id, String displayName, boolean rollback, String profilePath) {
+    private ProfileDescription reuseOrCreate(String id, String displayName, boolean rollback, String profileOrigin) {
         ProfileDescription desc = profiles.get(id);
         if (desc != null) {
             if (desc.getDisplayName().equals(displayName) && desc.isRollbackAllowed() == rollback) {
                 return desc;
             }
         }
-        return new ProfileDescription(id, displayName, rollback, profilePath);
+        return new ProfileDescription(id, displayName, rollback, profileOrigin);
     }
     
     private final class Listener extends FileChangeAdapter implements PropertyChangeListener {

@@ -77,6 +77,36 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
 
     // ------- Tests for completion of right parenthesis ')' -------------
     
+    public void testTypeSemicolonInForLoop() { // #146139
+        Context ctx = new Context(new JavaKit(),
+                "for (int i = 0|)"
+        );
+        ctx.typeChar(';');
+        ctx.assertDocumentTextEquals(
+                "for (int i = 0;|)"
+        );
+    }
+
+    public void testTypeSecondSemicolonInForLoop() { // #146139
+        Context ctx = new Context(new JavaKit(),
+                "for (int i = 0; i <= 0|)"
+        );
+        ctx.typeChar(';');
+        ctx.assertDocumentTextEquals(
+                "for (int i = 0; i <= 0;|)"
+        );
+    }
+
+    public void testTypeSemicolonInArgs() { // #146139
+        Context ctx = new Context(new JavaKit(),
+                "m(|)"
+        );
+        ctx.typeChar(';');
+        ctx.assertDocumentTextEquals(
+                "m();|"
+        );
+    }
+
     public void testTypeRightParenWithinBraces() { // #146139
         Context ctx = new Context(new JavaKit(),
                 "{(()|; }"
