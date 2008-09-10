@@ -145,7 +145,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
         for (ImportTree it : imports) {
             String toString = it.getQualifiedIdentifier().toString();
-            if (candidates.getA().contains(toString)) {
+            if (candidates != null && candidates.getA().contains(toString)) {
                 return Collections.<Fix>emptyList();
             }
         }
