@@ -305,6 +305,24 @@ public class FileStatusCache {
 , false);
         }
     }
+
+    /**
+     * Returns the versioning status of a file in case it's already cached
+     *
+     * @param file file to get status for
+     * @return FileInformation structure containing the file status or null if value not cached yet
+     * @see FileInformation
+     */
+    public FileInformation getCachedStatus(File file) {
+        if (file.isDirectory() && (hg.isAdministrative(file) || HgUtils.isIgnored(file)))
+            return FileStatusCache.FILE_INFORMATION_EXCLUDED_DIRECTORY;
+        File dir = file.getParentFile();
+        if (dir == null) {
+            return FileStatusCache.FILE_INFORMATION_NOTMANAGED; //default for filesystem roots
+        }
+        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
+        return files.get(file);
+    }
     
     /**
      * Looks up cached file status.
