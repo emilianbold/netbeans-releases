@@ -48,7 +48,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.Resource;
  *
  * @author nam
  */
-public class WadlSaasResource {
+public class WadlSaasResource implements Comparable<WadlSaasResource> {
 
     private final WadlSaas saas;
     private final WadlSaasResource parent;
@@ -92,20 +92,21 @@ public class WadlSaasResource {
         if (methods == null) {
             initChildren();
         }
-        return Collections.unmodifiableList(methods);
+        return new ArrayList<WadlSaasMethod>(methods);
     }
 
     public List<WadlSaasResource> getChildResources() {
         if (childResources == null) {
             initChildren();
         }
-        return Collections.unmodifiableList(childResources);
+        return new ArrayList<WadlSaasResource>(childResources);
+    }
+  
+    public String toString() {
+        return resource.getPath();
     }
     
-    public List<Object> getResourcesAndMethods() {
-        List<Object> result = new ArrayList<Object>();
-        result.addAll(getChildResources());
-        result.addAll(getMethods());
-        return result; 
+    public int compareTo(WadlSaasResource saasResource) {
+        return resource.getPath().compareTo(saasResource.getResource().getPath());
     }
 }

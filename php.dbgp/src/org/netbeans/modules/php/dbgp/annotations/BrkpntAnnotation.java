@@ -97,8 +97,8 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
                 TokenSequence<TokenId> ts = th.tokenSequence();
                 boolean isValid = false;
                 ts.move(startOffset);
-                ts.moveNext();
-                for (; !isValid && ts.offset() < endOffset;) {
+                boolean moveNext = ts.moveNext();
+                for (; moveNext && !isValid && ts.offset() < endOffset;) {
                     TokenId id = ts.token().id();
                     if (id == PHPTokenId.PHPDOC_COMMENT
                             || id == PHPTokenId.PHPDOC_COMMENT_END

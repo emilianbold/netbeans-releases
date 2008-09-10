@@ -191,5 +191,5 @@ token #189 WHITESPACE
 token #190 PHP_CONSTANT_ENCAPSED_STRING "ok\n"
 token #191 PHP_SEMICOLON ;
 token #192 WHITESPACE \n
-token #193 PHP_CLOSETAG ?>\n
-token #194 T_INLINE_HTML --EXPECT--\n6\nstring(0) ""\n10\nstring(0) ""\n14\nstring(4) "test"\n19\nstring(4) "test"\n24\nstring(20) "test1\ntest2\n\ntest3\n\n"\n34\nstring(20) "test1\ntest2\n\ntest3\n\n"\n44\nok\n
+token #193 PHP_CLOSETAG ?>
+token #194 T_INLINE_HTML \n--EXPECT--\n6\nstring(0) ""\n10\nstring(0) ""\n14\nstring(4) "test"\n19\nstring(4) "test"\n24\nstring(20) "test1\ntest2\n\ntest3\n\n"\n34\nstring(20) "test1\ntest2\n\ntest3\n\n"\n44\nok\n

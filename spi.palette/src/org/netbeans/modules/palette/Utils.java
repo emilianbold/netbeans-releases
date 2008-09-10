@@ -245,6 +245,12 @@ public final class Utils {
                 ERR.log( Level.INFO, ioE.getLocalizedMessage(), ioE );
             }
         }
+
+        @Override
+        public boolean isEnabled() {
+            NewType[] newTypes = paletteNode.getNewTypes();
+            return null != newTypes && newTypes.length > 0;
+        }
     }
     
     /**

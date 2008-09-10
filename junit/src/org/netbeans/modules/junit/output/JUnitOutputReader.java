@@ -632,7 +632,8 @@ final class JUnitOutputReader {
             return null;
         }
 
-        File resultsDir = getFile(todirAttr, event);
+        File resultsDir = (todirAttr != null) ? getFile(todirAttr, event)
+                                              : getBaseDir(event);
         return findAbsolutePath(resultsDir, taskStruct, event);
     }
 
@@ -661,13 +662,8 @@ final class JUnitOutputReader {
                         if ((commaIndex != -1)
                                 && formatter.substring(0, commaIndex).equals(XML_FORMATTER_CLASS_NAME)) {
                             String fullReportFileName = formatter.substring(commaIndex + 1);
-                            int lastSlashIndex = fullReportFileName.lastIndexOf(File.separatorChar);
-                            if (lastSlashIndex != -1) {
-                                todirPath = fullReportFileName.substring(0, lastSlashIndex);
-                                if (todirPath.length() == 0) {
-                                    todirPath = null;
-                                }
-                            } else {
+                            todirPath = new File(fullReportFileName).getParent();
+                            if (todirPath == null) {
                                 todirPath = ".";                        //NOI18N
                             }
                         }
@@ -693,9 +689,11 @@ final class JUnitOutputReader {
         String forkAttr = taskStruct.getAttribute("fork");              //NOI18N
         if ((forkAttr != null) && AntProject.toBoolean(event.evaluate(forkAttr))) {
             String dirAttr = taskStruct.getAttribute("dir");            //NOI18N
-            path = combine(getFile(dirAttr, event), path);
-            if (isAbsolute(path)) {
-                return path;
+            if (dirAttr != null) {
+                path = combine(getFile(dirAttr, event), path);
+                if (isAbsolute(path)) {
+                    return path;
+                }
             }
         }
 
@@ -703,13 +701,8 @@ final class JUnitOutputReader {
     }
     
     private static File combine(File parentPath, File path) {
-        if (path == null) {
-            return parentPath;
-        }
-        if (parentPath == null) {
-            return path;
-        }
-        return new File(parentPath, path.getPath());
+        return (path != null) ? new File(parentPath, path.getPath())
+                              : parentPath;
     }
 
     private static boolean isAbsolute(File path) {
@@ -717,8 +710,7 @@ final class JUnitOutputReader {
     }
 
     private static File getFile(String attrValue, AntEvent event) {
-        return (attrValue != null) ? new File(event.evaluate(attrValue))
-                                   : null;
+        return new File(event.evaluate(attrValue));
     }
 
     private static File getBaseDir(AntEvent event) {

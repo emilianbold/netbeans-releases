@@ -64,19 +64,10 @@
     </folder>
 
     <folder name="Shortcuts">
-        <file name="O-D.shadow">
-          <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.instance"/>
-        </file>
         <file name="DS-F9.shadow">
-          <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-nodes-actions-ShowBpelMapperAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-nodes-actions-ShowBpelMapperAction.instance"/>
         </file>
-        <file name="O-L.shadow">
-          <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-nodes-actions-GoToLoggingAction.instance"/>
-        </file>
-        <file name="O-O.shadow">
-          <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-nodes-actions-GoToSourceAction.instance"/>
-        </file>
-      </folder>
+    </folder>
 
     <folder name="Editors">
         <folder name="text">

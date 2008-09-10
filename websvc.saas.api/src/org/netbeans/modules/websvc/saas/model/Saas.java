@@ -63,7 +63,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author nam
  */
-public class Saas {
+public class Saas implements Comparable<Saas> {
 
     public static final String PROP_PARENT_GROUP = "parentGroup";
     public static final String PROP_STATE = "saasState";
@@ -242,7 +242,8 @@ public class Saas {
                 }
             }
         }
-        return Collections.unmodifiableList(saasMethods);
+        
+        return new ArrayList<SaasMethod>(saasMethods);
     }
 
     protected SaasMethod createSaasMethod(Method method) {
@@ -429,5 +430,9 @@ public class Saas {
         }
         
         return needsSave;
+    }
+    
+    public int compareTo(Saas saas) {
+        return getDisplayName().compareTo(saas.getDisplayName());
     }
 }

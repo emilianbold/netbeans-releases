@@ -41,6 +41,15 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+
 /**
  * pre-integration tests for parser
  * @author Vladimir Voskresensky
@@ -53,7 +62,7 @@ public class FileModelTest extends TraceModelTestBase {
 
     @Override
     protected void setUp() throws Exception {
-    System.setProperty("parser.report.errors", "true");
+        System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
     }
@@ -339,6 +348,22 @@ public class FileModelTest extends TraceModelTestBase {
     public void testIZ144276() throws Exception {
         // IZ 144276 : StackOverflowError on typedef C::C C;
         performTest("IZ144276.cc"); // NOI18N
+        for(CsmProject p : getModel().projects()){
+            for(CsmFile f : p.getAllFiles()){
+                for (CsmDeclaration d : f.getDeclarations()){
+                    if (CsmKindUtilities.isTypedef(d)) {
+                        CsmType t = ((CsmTypedef)d).getType();
+                        if (t != null) {
+                            t.isTemplateBased();
+                            CsmClassifier c = t.getClassifier();
+                            if (c != null) {
+                                CsmBaseUtilities.getOriginalClassifier(c);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void testArrayCast() throws Exception {
@@ -443,6 +468,21 @@ public class FileModelTest extends TraceModelTestBase {
     public void testIZ144968() throws Exception {
         performTest("IZ144968.cc"); // NOI18N
     }
+    
+    // #144009 wrong error highlighting for inline structure
+    public void testIZ144009() throws Exception {
+        performTest("IZ144009.cc"); // NOI18N
+    }   
+
+    // #145963 can't resolve template class implementations
+    public void testLocalVariables() throws Exception {
+        performTest("local_variables.cc"); // NOI18N
+    }   
+    
+    // #146150 unexpected token: ; message appears on extern int errno; line
+    public void testIZ146150() throws Exception {
+        performTest("IZ146150.cc"); // NOI18N
+    }   
 
     /////////////////////////////////////////////////////////////////////
     // FAILS
@@ -451,6 +491,14 @@ public class FileModelTest extends TraceModelTestBase {
 	
         public Failed(String testName) {
             super(testName);
+        }
+
+//        public void testParserRecover() throws Exception {
+//            performTest("parser_recover.cc");
+//        }
+
+        public void testPreProcDefinedKeyword() throws Exception {
+            performTest("preproc_defined_keyword.cc");        
         }
 
 	@Override

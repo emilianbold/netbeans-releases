@@ -72,6 +72,10 @@ public class PhpMimeResolver extends MIMEResolver {
     //html signs
     private static final Set<String> resolvedExt = new HashSet<String>();
 
+    public PhpMimeResolver() {
+        super(MIME_TYPE);
+    }
+
     @Override
     public String findMIMEType(FileObject fo) {
         String ext = fo.getExt();
@@ -120,7 +124,9 @@ public class PhpMimeResolver extends MIMEResolver {
                 inputStream.close();
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            IOException wrappedEx = new IOException("IOException while resolving FileObject "+fo);  //NOI18N
+            wrappedEx.initCause(ex);
+            Exceptions.printStackTrace(wrappedEx);
         }
         return returnMimeType(fo, UNKNOWN_MIME_TYPE);
     }

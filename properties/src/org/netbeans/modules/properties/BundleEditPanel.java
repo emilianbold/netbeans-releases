@@ -170,12 +170,26 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     /** Stops editing if editing is in run. */
     protected void stopEditing() {
+        saveEditorValue(true);
+    }
+
+    /**
+     */
+    protected void saveEditorValue(boolean stopEditing) {
         if (!table.isEditing()) {
             return;
         }
         TableCellEditor cellEdit = table.getCellEditor();
         if (cellEdit != null) {
-            cellEdit.stopCellEditing();
+            if (stopEditing) {
+                cellEdit.stopCellEditing();
+            } else {
+                int row = table.getEditingRow();
+                int col = table.getEditingColumn();
+                if ((row != -1) && (col != -1)) {
+                    table.setValueAt(cellEdit.getCellEditorValue(), row, col);
+                }
+            }
         }
     }
     

@@ -40,17 +40,31 @@
 package org.netbeans.modules.db.metadata.model.spi;
 
 import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
  *
  * @author Andrei Badea
  */
-public interface TableImplementation {
+public abstract class TableImplementation {
 
-    String getName();
+    private Table table;
 
-    Collection<Column> getColumns();
+    public final Table getTable() {
+        if (table == null) {
+            table = MetadataAccessor.getDefault().createTable(this);
+        }
+        return table;
+    }
 
-    Column getColumn(String name);
+    public abstract Schema getParent();
+
+    public abstract String getName();
+
+    public abstract Collection<Column> getColumns();
+
+    public abstract Column getColumn(String name);
 }

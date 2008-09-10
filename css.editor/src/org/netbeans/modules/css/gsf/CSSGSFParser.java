@@ -42,6 +42,9 @@ import org.netbeans.modules.css.parser.CssParserResultHolder;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -62,6 +65,8 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  */
 public class CSSGSFParser implements Parser, PositionManager {
 
+    /** logger for timers/counters */
+    private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
     private static String asString(CharSequence sequence) {
         if (sequence instanceof String) {
             return (String) sequence;
@@ -114,6 +119,12 @@ public class CSSGSFParser implements Parser, PositionManager {
 
             } catch (IOException ioe) {
                 job.listener.exception(ioe);
+            }
+
+            if (TIMERS.isLoggable(Level.FINE)) {
+                LogRecord rec = new LogRecord(Level.FINE, "CSS parse result"); // NOI18N
+                rec.setParameters(new Object[] { result });
+                TIMERS.log(rec);
             }
 
             ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);

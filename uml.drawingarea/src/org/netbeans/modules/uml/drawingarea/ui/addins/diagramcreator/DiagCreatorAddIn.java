@@ -71,9 +71,7 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.IStructuredClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
@@ -122,12 +120,17 @@ import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
 import org.netbeans.modules.uml.ui.swing.projecttree.JProjectTree;
 import org.openide.util.Exceptions;
 import java.awt.Point;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
+import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
+import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
+import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.UIDiagram;
+import org.openide.windows.TopComponent;
 
 /**
  * @author sumitabhk
@@ -686,7 +689,10 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
              List<INamedElement> children = classifier.getOwnedElements();
              for(INamedElement child : children)
              {
-                 if (child instanceof IClassifier)
+                 // using IClassifier is not exclusive enought because it will 
+                 // pick up ISourceFileArtifacts as well.  
+                 if ((child instanceof IClassifier) && 
+                     !(child instanceof ISourceFileArtifact))
                  {
                      retObj.add((IClassifier) child);
                  }
@@ -1086,35 +1092,66 @@ catch (IOException ex) {
                                                               ETList < IElement > pElements, 
                                                               ETList<IPresentationElement> newPES)
 	{
+          DesignerScene scene=null;
+          DiagramEngine engine = null;
+
+          if(pDiagram instanceof UIDiagram)
+          {
+              scene=((UIDiagram)pDiagram).getScene();
+              engine = scene.getEngine();
+          }
 		// We need to stagger the nodes so nested links work, 
 		// if we don't layout here the nodes are on top of each other and the
 		// Relationship discovery thinks the packages are contained. Bug DT 2533 reported by Sun
                 if(pDiagram.getDiagramKind()==IDiagramKind.DK_SEQUENCE_DIAGRAM)
                 {
-                    //we do not have specific sqd layeot, may be yet
+                    //we do not have specific sqd layeot, may be yet, so all necessary layout is here
+                    Point lifelinePoint=null;
+                    for(int i=0;i<newPES.size();i++)
+                    {
+                        IPresentationElement pe=newPES.get(i);
+                        if(pe.getFirstSubject() instanceof ILifeline)
+                        {
+                            ILifeline ll=(ILifeline) pe.getFirstSubject();
+                            System.out.println("REP CL:"+ll.getRepresentingClassifier().getName());
+                            Widget w=scene.findWidget(pe);
+                            if(lifelinePoint==null)
+                            {
+                                lifelinePoint=w.getPreferredLocation();
+                            }
+                            else
+                            {
+                                w.setPreferredLocation(new Point(lifelinePoint.x-w.getBounds().x,lifelinePoint.y));
+                            }
+                            System.out.println("POINT:"+lifelinePoint);
+                            lifelinePoint.x=w.getPreferredLocation().x+w.getBounds().x+w.getBounds().width+30;//right side+30
+                        }
+                    }
+                    scene.validate();
+                    for(int i=0;i<newPES.size();i++)
+                    {
+                        IPresentationElement pe=newPES.get(i);
+                        if(pe.getFirstSubject() instanceof ILifeline)
+                        {
+                            TopComponent tc=scene.getTopComponent();
+                            if(tc instanceof SQDDiagramTopComponent)
+                            {
+                                ((SQDDiagramTopComponent)tc).getTrackBar().addPresentationElement(pe);
+                            }
+                        }
+                    }
                 }
                 else 
                 {
                     performLayout(pDiagram, false);
                 }
 		
-		// process post drop handling
-//		IDiagramEngine diaEngine = TypeConversions.getDiagramEngine(pDiagram);
-//		if (diaEngine != null)
-//		{
-//			// This discovers relationships.
-//			diaEngine.postOnDrop(pElements, false);
-//		}
-                
-                DiagramEngine engine = null;
-
                 if (pDiagram instanceof UIDiagram)
                 {
-                    DesignerScene scene = ((UIDiagram) pDiagram).getScene();
                     engine = scene.getEngine();
                     engine.postDrop(pElements);
                 }
-		
+                
 		IPresentationElement lastPresEle = newPES != null && newPES.size() > 0 ? newPES.get(newPES.size() -1) : null;
 		if (lastPresEle != null)
 		{
@@ -1160,14 +1197,11 @@ catch (IOException ex) {
                   ensureEnd.beginProgress(message, 0, count, 0);
                   int i = 0;
                   ETList < IElement > pOrginalElements = new ETArrayList < IElement > ();
-                  if(pDiagram.getDiagramKind()!=IDiagramKind.DK_SEQUENCE_DIAGRAM)pOrginalElements.addAll(pElements);
-                  else
-                  {
-                        //use reverse oprder of elements on sqd, so it will not require layout efforts, all will be done by trackbar bumping (old elements are bumped by new one, so first should be added last)
-                        for(int k=pElements.size()-1;k>=0;k--)pOrginalElements.add(pElements.get(k));
-                  }
+                  pOrginalElements.addAll(pElements);
+
                   ETList<IPresentationElement> newPES = new ETArrayList<IPresentationElement>();
 						
+                  Point point=new Point(60,60);
 	          for (Iterator < IElement > iter = pOrginalElements.iterator(); iter.hasNext(); i++)
                   {
                      IElement cpElem = iter.next();
@@ -1175,17 +1209,19 @@ catch (IOException ex) {
                      IPresentationElement pEle = createPresentationElement(cpElem, engine);
                      if(pEle==null)continue;
                      
-                     Point point=new Point(60,60);
-//                     Widget addedW=
-                     scene.getEngine().addWidget(pEle, point);
-//                     if(addedW  instanceof UMLNodeWidget)
-//                     {
-//                         ((UMLNodeWidget)addedW).initializeNode(pEle);
-//                     }
-                     
+                      if(pDiagram.getDiagramKind()==IDiagramKind.DK_SEQUENCE_DIAGRAM)
+                      {
+                            ((SQDDiagramEngineExtension)engine).doNotUseTrackbar();//if cast fails smth wrong with engine usege on sqd
+                      }
+                     Widget addedW=scene.getEngine().addWidget(pEle, point);
+                     if(addedW!=null)newPES.add(pEle);
+                     else
+                     {
+                         cpElem.removePresentationElement(pEle);//widget wasn't added, need to remove pres element
+                     }
                      // TODO: Able to show things in the icon state.
                      
-                      // Fix J543:  Attempting to free more memory by removing elements from the list
+                     // Fix J543:  Attempting to free more memory by removing elements from the list
                      iter.remove();
 
                      ensureEnd.setPos(i);

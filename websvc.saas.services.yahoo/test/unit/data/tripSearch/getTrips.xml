@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Result id="507115" xmlns="urn:yahoo:travel" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:yahoo:travel http://api.travel.yahoo.com/TripService/V1.1/GetTripResponse.xsd">
+    <YahooID>Yahoo! Trip Planner Team</YahooID>
+    <Title>Tracing the Da Vinci Code</Title>
+    <Summary>Experience Europe through the sites and cities in the Da Vinci Code.
+Filmed in the summer and autumn of 2005 in Paris, the United Kingdom, and Malta.  The production had over 140 sets (the average film has around 50).  The movie will be released in approximately 70 countries on May 19, 2006, and will be translated into 10 different languages.
+    </Summary>
+    <CreateDate>2006-03-15 14:52:26</CreateDate>
+    <UpdateDate>2006-07-29 07:01:56</UpdateDate>
+    <Duration>8</Duration>
+    <intl>us</intl>
+    <Image>
+        <Url>http://l.yimg.com/a/i/travel/yh/guidespoi/d3/100x100_d366c17276dd0e13b2324bbf323131d7.jpg</Url>
+        <Width>100</Width>
+        <Height>75</Height>
+    </Image>
+    <Destination>
+        <Title>Paris</Title>
+        <Item id="1213609">
+            <Url>http://travel.yahoo.com/p-hotel-360448-ritz_paris-i</Url>
+            <Url />
+            <Url />
+            <Address>
+                <Address1>15 Place Vendome</Address1>
+                <Address2 />
+                <City>Paris</City>
+                <State />
+                <Country>France</Country>
+                <Postalcode>75001</Postalcode>
+                <Neighborhood>1st Arrondissement</Neighborhood>
+            </Address>
+            <GeoCode precision="address">
+                <Latitude>48.867989</Latitude>
+                <Longitude>2.328894</Longitude>
+            </GeoCode>
+            <Image>
+                <Url>http://us.f2.yahoofs.com/travel/img_86/19249543_100x100_4991ba4df824bd8036fc173a741aade0.jpg?tr_____DSC0UGg5t</Url>
+                <Width>66</Width>
+                <Height>100</Height>
+            </Image>
+            <CreateDate>2006-03-20 20:22:10</CreateDate>
+            <UpdateDate>2006-03-20 20:22:10</UpdateDate>
+            <Note />
+            <Category>Hotel</Category>
+            <Title>Hotel Ritz</Title>
+            <Summary>Located in the stylish Place Vendôme, this exclusive hotel was built in 1898 by Hardouin-Mansart (who designed the Palace of Versailles), and has always attracted a glittering and glamorous clientele....</Summary>
+            <Phone />
+            <UserRating>4</UserRating>
+        </Item>
+        <Item id="1210061">
+            <Url>http://travel.yahoo.com/p-travelguide-191501740-paris_vacations-i</Url>
+            <Url />
+            <Url />
+            <Address>
+                <Address1 />
+                <Address2 />
+                <City>Paris</City>
+                <State />
+                <Country>France</Country>
+                <Postalcode />
+                <Neighborhood />
+            </Address>
+            <GeoCode precision="city">
+                <Latitude>48.856926</Latitude>
+                <Longitude>2.341210</Longitude>
+            </GeoCode>
+            <Image>
+                <Url>http://l.yimg.com/a/i/travel/tg/lp/e6/100x100_e6e387ef9ba5c4d75520270e07333c9e.jpg</Url>
+                <Width>100</Width>
+                <Height>65</Height>
+            </Image>
+            <CreateDate>2006-03-20 11:56:28</CreateDate>
+            <UpdateDate>2006-03-20 11:56:28</UpdateDate>
+            <Note>Paris! City of Lights, Love, Wine, Art, Fashion, History....and Mystery! Unlock pieces of the Da Vinci Code beneath the surface of grand Paris.</Note>
+            <Category>City</Category>
+            <Title>Paris</Title>
+            <Summary />
+            <Phone />
+            <UserRating>4</UserRating>
+        </Item>
+        <Item id="1209986">
+            <Url>http://travel.yahoo.com/p-travelguide-2775906-musee_du_louvre_paris-i</Url>
+            <Url>http://www.louvre.fr</Url>
+            <Url />
+            <Address>
+                <Address1>99 Rue de Rivoli</Address1>
+                <Address2 />
+                <City>Paris</City>
+                <State />
+                <Country>France</Country>
+                <Postalcode>75001</Postalcode>
+                <Neighborhood>1st Arrondissement</Neighborhood>
+            </Address>
+            <GeoCode precision="address">
+                <Latitude>48.861629</Latitude>
+                <Longitude>2.338508</Longitude>
+            </GeoCode>
+            <Image>
+                <Url>http://l.yimg.com/a/i/travel/tg/lp/18/100x100_1860f9bc691331e76ea2d995c2b226a9.jpg</Url>
+                <Width>65</Width>
+                <Height>100</Height>
+            </Image>
+            <CreateDate>2006-03-20 11:39:55</CreateDate>
+            <UpdateDate>2006-03-20 11:39:55</UpdateDate>
+            <Note>The production was one of the very few who have been able to shoot inside the Grand Galerie at the Louvre after the museum was closed at the end of the day.
+Was originally constructed as a fortress in the late 12th century
+Transformed into a palace for King Francois I in 1546, and later King Louis XIV, it became a museum in 1793
+The glass Pyramid rising out of the center of the Cour Napoléon was constructed by Chinese-American architect Ioeh Ming Pei in 1989.
+            </Note>
+            <Category>Things to do</Category>
+            <Title>Louvre Auditorium</Title>
+            <Summary>Distinguished architect I. M. Pei has constructed this 450-seat, oak paneled auditorium. It fuses state-of-the-art audiovisual technology with world-class architecture evolving into one of the Louvre&apos;s grandest structures. The auditorium...</Summary>
+            <Phone />
+            <UserRating>4</UserRating>
+        </Item>
+        <Item id="1213610">
+            <Url>http://travel.yahoo.com/p-travelguide-2776006-champs_elysee_paris-i</Url>
+            <Url>http://www.champselysees.org/</Url>
+            <Url />
+            <Address>
+                <Address1>Champs-Elysee</Address1>
+                <Address2 />
+                <City>Paris</City>
+                <State />
+                <Country>France</Country>
+                <Postalcode />
+                <Neighborhood />
+            </Address>
+            <GeoCode precision="unknown">
+                <Latitude />
+                <Longitude />
+            </GeoCode>
+            <Image>
+                <Url />
+                <Width />
+                <Height />
+            </Image>
+            <CreateDate>2006-03-20 20:22:31</CreateDate>
+            <UpdateDate>2006-03-20 20:22:31</UpdateDate>
+            <Note />
+            <Category>Things to do</Category>
+            <Title>Champs-Elysee</Title>
+            <Summary>This one mile by 235 feet wide stretch is one of the most popular avenues in Europe. It&apos;s a blend of old world along with the trendiest of today. There...</Summary>
+            <Phone />
+            <UserRating>0</UserRating>
+        </Item>
+        <Item id="1209987">
+            <Url>http://travel.yahoo.com/p-travelguide-2775958-tour_eiffel_paris-i</Url>
+            <Url>http://www.tour-eiffel.fr/</Url>
+            <Url />
+            <Address>
+                <Address1>Champ de Mars</Address1>
+                <Address2 />
+                <City>Paris</City>
+                <State />
+                <Country>France</Country>
+                <Postalcode>75007</Postalcode>
+                <Neighborhood>7th Arrondissement</Neighborhood>
+            </Address>
+            <GeoCode precision="street">
+                <Latitude>48.856667</Latitude>
+                <Longitude>2.306790</Longitude>
+            </GeoCode>
+            <Image>
+                <Url>http://l.yimg.com/a/i/travel/tg/lp/2a/100x100_2afec2b73118e25e183a7aa75d44e3db.jpg</Url>
+                <Width>64</Width>
+                <Height>100</Height>
+            </Image>
+            <CreateDate>2006-03-20 11:39:56</CreateDate>
+            <UpdateDate>2006-03-20 11:39:56</UpdateDate>
+            <Note>To shoot at the foot of the tower required the production to stop traffic. The police would not allow traffic to cease until after 1:00AM.</Note>
+            <Category>Things to do</Category>
+            <Title>Tour Eiffel (Eiffel Tower)</Title>
+            <Summary>Paris just wouldn&apos;t be Paris without the Eiffel Tower. Designed by Gustave Eiffel for the 1889 World Fair, at 300m it was then the world&apos;s tallest building. Not everyone was...</Summary>
+            <Phone />
+            <UserRating>4</UserRating>
+        </Item>
+        <GeoCode precision="unknown">
+            <Latitude />
+            <Longitude />
+        </GeoCode>
+        <AirportCode>par</AirportCode>
+        <WeatherCode>FRXX0076</WeatherCode>
+    </Destination>
+    <Destination>
+        <Title>London</Title>
+        <Item id="1210078">
+            <Url>http://travel.yahoo.com/p-travelguide-191501822-london_vacations-i</Url>
+            <Url />
+            <Url />
+            <Address>
+                <Address1 />
+                <Address2 />
+                <City>London</City>
+                <State>England</State>
+                <Country>United Kingdom</Country>
+                <Postalcode />
+                <Neighborhood />
+            </Address>
+            <GeoCode precision="city">
+                <Latitude>51.506325</Latitude>
+                <Longitude>-0.127144</Longitude>
+            </GeoCode>
+            <Image>
+                <Url>http://l.yimg.com/a/i/travel/tg/lp/11/100x100_11a0caa51101549dcc10bbcbe25f068c.jpg</Url>
+                <Width>100</Width>
+                <Height>65</Height>
+            </Image>
+            <CreateDate>2006-03-20 11:57:09</CreateDate>
+            <UpdateDate>2006-03-20 11:57:09</UpdateDate>
+            <Note />
+            <Category>City</Category>
+            <Title>London</Title>
+            <Summary />
+            <Phone />
+            <UserRating>4</UserRating>
+        </Item>
+        <Item id="1210093">
+            <Url>http://travel.yahoo.com/p-travelguide-2798159-westminster_abbey_london-i</Url>
+            <Url>http://www.westminster-abbey.org/</Url>
+            <Url />
+            <Address>
+                <Address1>20 Dean&apos;s Yard</Address1>
+                <Address2 />
+                <City>London</City>
+                <State />
+                <Country>United Kingdom</Country>
+                <Postalcode>SW1P 3PA</Postalcode>
+                <Neighborhood>Westminster/St James</Neighborhood>
+            </Address>
+            <GeoCode precision="zip">
+                <Latitude>51.497784</Latitude>
+                <Longitude>-0.127126</Longitude>
+            </GeoCode>
+            <Image>
+                <Url>http://l.yimg.com/us.yimg.com/i/travel/tg/poi/aa/100x100_aa2bbcf6bf936ec5cdb3b38ca0fb0c22.gif</Url>
+                <Width>60</Width>
+                <Height>100</Height>
+            </Image>
+            <CreateDate>2006-03-20 11:58:34</CreateDate>
+            <UpdateDate>2006-03-20 11:58:34</UpdateDate>
+            <Note>Although the exterior street scenes just outside the Abbey were shot adjacent to Westminster Abbey, the interior of the Abbey and the Chapter House were both shot at Lincoln Cathedral, some three hours north of London.
+While shooting in Lincoln Cathedral the production included many church patrons in their shots.
+            </Note>
+            <Category>Things to do</Category>
+            <Title>Westminster Abbey</Title>
+            <Summary>Westminster Abbey is regarded as a Medieval architectural masterpiece. It has been the venue for most of the country&apos;s coronations since 1066 and for numerous other Royal occasions. At present,...</Summary>
+            <Phone />
+            <UserRating>4</UserRating>
+        </Item>
+        <Item id="1213619">
+            <Url>http://travel.yahoo.com/p-travelguide-2798233-st_james_s_park_and_green_park_london-i</Url>
+            <Url>http://www.royalparks.gov.uk/parks/st_james_park/</Url>
+            <Url />
+            <Address>
+                <Address1>Horse Guards Road</Address1>
+                <Address2 />
+                <City>London</City>
+                <State />
+                <Country>United Kingdom</Country>
+                <Postalcode>SW1A 2BJ</Postalcode>
+                <Neighborhood>Westminster/St James</Neighborhood>
+            </Address>
+            <GeoCode precision="street">
+                <Latitude>51.503838</Latitude>
+                <Longitude>-0.129073</Longitude>
+            </GeoCode>
+            <Image>
+                <Url>http://l.yimg.com/us.yimg.com/i/travel/tg/poi/68/100x100_68a7e2de68d204d89e10971f43dccde1.jpg</Url>
+                <Width>100</Width>
+                <Height>55</Height>
+            </Image>
+            <CreateDate>2006-03-20 20:24:26</CreateDate>
+            <UpdateDate>2006-03-20 20:24:26</UpdateDate>
+            <Note />
+            <Category>Things to do</Category>
+            <Title>Green Park</Title>
+            <Summary>The Green Park is located in central London, close to the Broad Walk and Constitution Hill. It attracts as many visitors, both tourists and locals, as St. James Park next...</Summary>
+            <Phone />
+            <UserRating>4</UserRating>
+        </Item>
+        <GeoCode precision="unknown">
+            <Latitude />
+            <Longitude />
+        </GeoCode>
+        <AirportCode>lon</AirportCode>
+        <WeatherCode>UKXX0085</WeatherCode>
+    </Destination>
+    <Author>Yahoo! Trip Planner Team</Author>
+    <Attribution>
+Portions may be copyright (c) NorthStar Travel Media LLC, Travelocity, wCities, Inc., WorldRes
+    </Attribution>
+</Result><!-- ws02.search.re2.yahoo.com compressed/chunked Fri Sep  5 13:42:12 PDT 2008 -->

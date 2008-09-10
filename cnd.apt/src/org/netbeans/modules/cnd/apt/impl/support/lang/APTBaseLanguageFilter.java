@@ -103,7 +103,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     }
 
     private Token onID(Token token) {
-        Integer newType = filter.get(APTUtils.getTokenTextKey(token));
+        Integer newType = filter.get(token.getText());
         if (newType != null) {
             int ttype = newType.intValue();
             token = new FilterToken((APTToken)token, ttype);

@@ -106,13 +106,17 @@ public final class GoToSourceSupport {
                     JEditorPane[] panes = editorSupport[0].getOpenedPanes();
                     
                     if (panes != null && panes.length >= 1) {
-                        JEditorPane pane = panes[0];
+                        final JEditorPane pane = panes[0];
                         pane.setVisible(true);
                         Iterable<GuardedSection> iterable = GuardedSectionManager.getInstance(document).getGuardedSections();
                         
-                        for (GuardedSection section : iterable) {
+                        for (final GuardedSection section : iterable) {
                             if (presenter[0].matches(section)) {
-                                pane.setCaretPosition(section.getCaretPosition().getOffset());
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        pane.setCaretPosition(section.getCaretPosition().getOffset());
+                                    }
+                                });
                                 break;
                             }
                         }

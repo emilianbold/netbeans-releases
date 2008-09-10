@@ -96,7 +96,7 @@ class AddDomainHostPortPanel implements WizardDescriptor.FinishablePanel,
                     "MSG_EnterHost"));                                     //NOI18N
             return false;            
         }
-        if (h.indexOf("://") > -1) {
+        if (h.indexOf("://") > -1) {  //NOI18N
             // IZ 77187
             wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(AddDomainHostPortPanel.class, 
@@ -108,7 +108,7 @@ class AddDomainHostPortPanel implements WizardDescriptor.FinishablePanel,
         wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         wiz.putProperty(AddDomainWizardIterator.HOST, h);
-        wiz.putProperty(AddDomainWizardIterator.PORT, p+"");
+        wiz.putProperty(AddDomainWizardIterator.PORT, p+"");  //NOI18N
         return true;
     }
     

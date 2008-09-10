@@ -103,8 +103,7 @@ public class HtmlParserResult extends ParserResult {
 
                 public void visit(AstNode node) {
                     if (node.type() == AstNode.NodeType.DECLARATION) {
-                        SyntaxElement.Declaration declaration = (SyntaxElement.Declaration) node.element();
-                        String publicID = declaration.getPublicIdentifier();
+                        String publicID = (String)node.getAttribute("public_id"); //NOI18N
                         if (publicID != null) {
                             DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
                             if (dtd != null) {

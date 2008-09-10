@@ -38,6 +38,8 @@
  */
 package org.netbeans.jellytools.modules.j2ee;
 
+import java.io.File;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import org.netbeans.jellytools.JellyTestCase;
@@ -104,6 +106,19 @@ public class J2eeTestCaseTest extends JellyTestCase {
         assertEquals("both TD tests and emptyTest", 2, t.countTestCases());
     }
 
+    public void testGlassfishPreferedFromTomcat() throws IOException {
+        System.setProperty("glassfish.home", getWorkDirPath());
+        new File(getWorkDir(), "domains/domain1").mkdirs();
+        System.setProperty("tomcat.home", getDataDir().getPath());
+
+        Configuration conf = NbModuleSuite.createConfiguration(VerifyGlassfish.class);
+        conf = J2eeTestCase.addServerTests(conf).gui(false);
+        Test t = NbModuleSuite.create(conf);
+        t.run(new TestResult());
+        assertEquals("glassfish registered", GLASSFISH.name(), System.getProperty("registered"));
+    }
+
+
     public void testCreateAllModulesServerSuite() {
         System.setProperty("tomcat.home", getWorkDirPath());
         Test t = J2eeTestCase.createAllModulesServerSuite(ANY, TD.class, "testA", "testB");
@@ -156,4 +171,19 @@ public class J2eeTestCaseTest extends JellyTestCase {
         public void testB() {
         }
     }
+
+    public static class VerifyGlassfish extends J2eeTestCase {
+
+        public VerifyGlassfish(String str) {
+            super(str);
+        }
+
+        public void testA() {
+            if (isRegistered(GLASSFISH) && !isRegistered(TOMCAT)){
+                System.setProperty("registered", GLASSFISH.name());
+            }
+        }
+
+    }
+
 }

@@ -166,15 +166,15 @@ public abstract class BasicVisualPanel extends JPanel {
         }
         
         protected boolean isSuiteWizard() {
-            return getData().getWizardType() == NewNbModuleWizardIterator.Type.SUITE || getData().getWizardType() == NewNbModuleWizardIterator.Type.APPLICATION;
+            return NewNbModuleWizardIterator.isSuiteWizard(getData().getWizardType());
         }
         
         protected boolean isSuiteComponentWizard() {
-            return getData().getWizardType() == NewNbModuleWizardIterator.Type.SUITE_COMPONENT;
+            return NewNbModuleWizardIterator.isSuiteComponentWizard(getData().getWizardType());
         }
 
         protected boolean isLibraryWizard() {
-            return getData().getWizardType() == NewNbModuleWizardIterator.Type.LIBRARY_MODULE;
+            return NewNbModuleWizardIterator.isLibraryWizard(getData().getWizardType());
         }
         
     }
