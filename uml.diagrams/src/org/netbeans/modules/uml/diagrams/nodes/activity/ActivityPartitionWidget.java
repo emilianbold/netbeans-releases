@@ -382,8 +382,11 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         @Override
         public void notifyAdded()
         {
-            UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
-            relationshipD.discoverCommonRelations(elements);
+            if(!PersistenceUtil.isDiagramLoading())
+            {
+                UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
+                relationshipD.discoverCommonRelations(elements);
+            }
         }
     }
 
