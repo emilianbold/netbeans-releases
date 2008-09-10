@@ -77,7 +77,7 @@ public class ShellUtils {
     }
 
     private static final String cshBinz = "setenv PATH /bin:/usr/bin:$PATH; "; //NOI18N
-    private static final String shBinz = "PATH=/bin:/usr/bin "; //NOI18N
+    private static final String shBinz = "PATH=/bin:/usr/bin:$PATH "; //NOI18N
 
     static String getPrefix(String hkey) {
         return RemoteHostInfoProvider.getHostInfo(hkey).isCshShell() ? cshBinz : shBinz;
