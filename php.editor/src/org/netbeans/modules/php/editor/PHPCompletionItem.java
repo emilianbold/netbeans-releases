@@ -215,6 +215,9 @@ abstract class PHPCompletionItem implements CompletionProposal {
         public String getCustomInsertTemplate() {
             StringBuilder builder = new StringBuilder();
             KeywordCompletionType type = PHPCodeCompletion.PHP_KEYWORDS.get(getName());
+            if (type == null) {
+                return null;
+            }
             switch(type) {
                 case SIMPLE:
                     builder.append(getName());
@@ -447,6 +450,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+
     static class FunctionItem extends PHPCompletionItem {
         private int optionalArgCount = 0;
 
@@ -578,6 +582,28 @@ abstract class PHPCompletionItem implements CompletionProposal {
                     }
                 }
             }
+        }
+    }
+
+    static class FunctionDeclarationItem extends FunctionItem {
+        public FunctionDeclarationItem(IndexedFunction function, CompletionRequest request, int optionalArgCount) {
+            super(function, request, optionalArgCount);
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder template = new StringBuilder();
+            String modifierStr = getFunction().getModifiersString();
+            String functionSignature = getFunction().getFunctionSignature();
+            if (modifierStr.length() != 0) {
+                template.append(modifierStr);
+            }
+            template.append(" ").append("function");//NOI18N
+            template.append(" ").append(functionSignature);//NOI18N
+            template.append(" ").append("{\n");//NOI18N
+            template.append("${cursor};\n");//NOI18N
+            template.append("}");//NOI18N
+            return template.toString();
         }
     }
 
