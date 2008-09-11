@@ -306,6 +306,15 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                  invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
                                   "MSG_Progress_Clone_InvalidURL_Err");
                 return;
+            } catch (RuntimeException re) {
+                Throwable t = re.getCause();
+                if(t != null) {
+                    invalidMsg = t.getLocalizedMessage();
+                } else {
+                    invalidMsg = re.getLocalizedMessage();
+                }
+                Mercurial.LOG.log(Level.INFO, invalidMsg, re);
+                return;
             } finally {
                 if(isCanceled()) {
                     valid(org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Canceled")); // NOI18N
