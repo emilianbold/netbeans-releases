@@ -93,8 +93,8 @@ public class ShellUtils {
         return cmdline.toString();
     }
 
-    private static final String BashExport = "export"; //NOI8N
-    private static final String CshExport = "setenv"; //NOI8N
+    private static final String BashExport = "export"; //NOI18N
+    private static final String CshExport = "setenv"; //NOI18N
     
     private static String getExportCommand(boolean isCshShell) {
         return (isCshShell ? CshExport : BashExport) + " "; //NOI18N
