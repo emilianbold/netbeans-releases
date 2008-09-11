@@ -1900,6 +1900,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     }
                     if (js != null) {
                         js.k24 = false;
+                        Request _request = request; 
+                        request = null;
+                        currentRequest.cancelCompleted(_request);
                     }                   
                 }
                 lastEditorRef = new WeakReference<JTextComponent>(editor);
