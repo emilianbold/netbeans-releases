@@ -51,7 +51,6 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
-//import org.netbeans.modules.cnd.debugger.gdb.GdbThread;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.openide.util.NbBundle;
@@ -125,7 +124,12 @@ public class DebuggerOutput extends LazyActionsManagerListener implements Proper
                 ioManager.closeStream();
             }
         } else if (debuggerState.equals(GdbDebugger.STATE_STOPPED)) {
-            print("CTL_Debugger_stopped", new String[] { }, null); // NOI18N
+            String sig = debugger.getSignal();
+            if (sig != null) {
+                print("CTL_Debugger_stopped_by_signal", new String[] { sig }, null); // NOI18N
+            } else {
+                print("CTL_Debugger_stopped", new String[] { }, null); // NOI18N
+            }
         }
     }
 

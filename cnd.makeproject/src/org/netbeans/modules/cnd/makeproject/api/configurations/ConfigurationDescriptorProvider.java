@@ -118,30 +118,14 @@ public class ConfigurationDescriptorProvider {
                             // CHANGE YOUR LOGIC INSTEAD
 
                             // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
-                            try {
-                                newDescriptor = reader.read(relativeOffset);
-                                if (projectDescriptor == null) {
-                                    projectDescriptor = newDescriptor;
-                                } else {
-                                    projectDescriptor.assign(newDescriptor);
-                                }
-                            } catch (java.io.IOException x) {
-                                // most likely open failed
-                            }
-                            return projectDescriptor;
-                        } else {
-                            try {
-                                newDescriptor = reader.read(relativeOffset);
-                                if (projectDescriptor == null) {
-                                    projectDescriptor = newDescriptor;
-                                } else {
-                                    projectDescriptor.assign(newDescriptor);
-                                }
-                            } catch (java.io.IOException x) {
-                                // most likely open failed
-                            }
+                            // return null;
                         }
-
+                        try {
+                            projectDescriptor = reader.read(relativeOffset);
+                        } catch (java.io.IOException x) {
+                            // most likely open failed
+                        }
+                        
                         hasTried = true;
                         recordMetrics(USG_PROJECT_OPEN_CND, projectDescriptor);
                     }
