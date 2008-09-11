@@ -80,7 +80,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     private Collection<DbNodeLoader> nodeLoaders;
     
     // maps nodes to their associated RegisteredNodeInfo instance
-    private HashMap<Node, RegisteredNodeInfo> _nodeMap = new HashMap<Node, RegisteredNodeInfo>();
+    private HashMap<Node, RegisteredNodeInfo> nodeMap = new HashMap<Node, RegisteredNodeInfo>();
 
     private static Logger LOGGER = 
             Logger.getLogger(RootNodeInfo.class.getName());
@@ -197,13 +197,13 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         return infos;
     }
 
-    private RegisteredNodeInfo getRegisteredNodeInfo(Node node)
+    private synchronized RegisteredNodeInfo getRegisteredNodeInfo(Node node)
     {
-        RegisteredNodeInfo info = _nodeMap.get(node);
+        RegisteredNodeInfo info = nodeMap.get(node);
         if (info == null)
         {
             info = new RegisteredNodeInfo(this, node);
-            _nodeMap.put(node, info);
+            nodeMap.put(node, info);
             
             node.addNodeListener(
                 new NodeAdapter()
@@ -212,7 +212,11 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
                     public void nodeDestroyed(NodeEvent ev) 
                     {
                         Node node = ev.getNode();
-                        _nodeMap.remove(node);
+                        
+                        synchronized (nodeMap)
+                        {
+                            nodeMap.remove(node);
+                        }
                     }
                 }
             );
