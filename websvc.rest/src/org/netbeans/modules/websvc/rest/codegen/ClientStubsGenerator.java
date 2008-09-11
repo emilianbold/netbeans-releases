@@ -1000,7 +1000,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         private String pluralize(String word) {
             String plural = Util.pluralize(word);
             if(plural.endsWith("ss"))
-                plural = plural.substring(0, plural.length()-2)+"Collection";
+                plural = plural.substring(0, plural.length()-2)+Constants.COLLECTION;
             return plural;
         }
         

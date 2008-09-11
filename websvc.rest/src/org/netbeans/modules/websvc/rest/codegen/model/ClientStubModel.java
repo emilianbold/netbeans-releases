@@ -656,8 +656,8 @@ public class ClientStubModel {
                 for (Node dNode : dynamicR) {
                     Resource r = createResource(doc, dNode);
                     String rName = r.getName();
-                    if(rName.endsWith("Collection"))
-                        rName = rName.substring(0, rName.indexOf("Collection"))+"s";
+                    if(rName.endsWith(Constants.COLLECTION))
+                        rName = rName.substring(0, rName.indexOf(Constants.COLLECTION))+"s";
                     if(staticRMap.get(rName) == null)
                         addResource(r);
                 }
