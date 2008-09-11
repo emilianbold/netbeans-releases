@@ -118,8 +118,6 @@ public class TestSession {
                 report.failures += 1;
             } else if (testcase.getStatus() == Status.PENDING) {
                 report.pending += 1;
-            } else {
-                report.detectedPassedTests += 1;
             }
         }
         addReportToSessionResult(report);
