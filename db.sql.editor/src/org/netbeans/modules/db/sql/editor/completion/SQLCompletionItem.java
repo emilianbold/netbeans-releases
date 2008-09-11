@@ -91,8 +91,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
         return new Table(tableName, substitutionText, substitutionOffset);
     }
 
-    public static SQLCompletionItem alias(String alias, String substitutionText, int substitutionOffset) {
-        return new Alias(alias, substitutionText, substitutionOffset);
+    public static SQLCompletionItem alias(String alias, QualIdent tableName, String substitutionText, int substitutionOffset) {
+        return new Alias(alias, tableName, substitutionText, substitutionOffset);
     }
 
     public static SQLCompletionItem column(QualIdent tableName, String columnName, String substitutionText, int substitutionOffset) {
@@ -292,10 +292,13 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final class Alias extends SQLCompletionItem {
 
         private final String alias;
+        private final QualIdent tableName;
+        private String rightText;
 
-        public Alias(String alias, String substitutionText, int substitutionOffset) {
+        public Alias(String alias, QualIdent tableName, String substitutionText, int substitutionOffset) {
             super(substitutionText, substitutionOffset);
             this.alias = alias;
+            this.tableName = tableName;
         }
 
         @Override
@@ -310,12 +313,19 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
         @Override
         protected String getRightHtmlText() {
-            return null;
+            if (rightText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(TABLE_COLOR);
+                sb.append(tableName.toString());
+                sb.append(COLOR_END);
+                rightText = MessageFormat.format(NbBundle.getMessage(SQLCompletionItem.class, "MSG_Alias"), sb.toString());
+            }
+            return rightText;
         }
 
         @Override
         public String toString() {
-            return MessageFormat.format("Alias {0}", alias); // NOI18N
+            return MessageFormat.format("Alias {0} to {1}", alias, tableName); // NOI18N
         }
     }
 

@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -290,12 +291,15 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 allTables.add(table);
             }
         }
-        Catalog defaultCatalog = metadata.getDefaultCatalog();
+        // Aliases.
+        Map<String, QualIdent> sortedAliases = new TreeMap<String, QualIdent>(aliases);
+        items.addAliases(sortedAliases, typedPrefix, quoted, substitutionOffset);
         // Columns from aliased and non-aliased tables in the FROM clause.
         for (Table table : allTables) {
             items.addColumns(table, typedPrefix, quoted, substitutionOffset);
         }
         // Tables from default schema, restricted to non-aliased table names in the FROM clause.
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
         Schema defaultSchema = defaultCatalog.getDefaultSchema();
         if (defaultSchema != null) {
             Set<String> simpleTableNames = new HashSet<String>();
@@ -306,10 +310,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             }
             items.addTables(defaultSchema, simpleTableNames, typedPrefix, quoted, substitutionOffset);
         }
-        // Aliases.
-        List<String> sortedAliases = new ArrayList<String>(aliases.keySet());
-        Collections.sort(sortedAliases);
-        items.addAliases(sortedAliases, typedPrefix, quoted, substitutionOffset);
         // Schemas from default catalog other than the default schema, based on non-aliased table names in the FROM clause.
         // Catalogs based on non-aliased tables names in the FROM clause.
         Set<String> schemaNames = new HashSet<String>();
