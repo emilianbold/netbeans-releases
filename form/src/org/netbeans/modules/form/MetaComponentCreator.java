@@ -1409,17 +1409,7 @@ public class MetaComponentCreator {
             }
         } else if (comp instanceof JMenuItem) {
             if ("".equals(((JMenuItem)comp).getText())) { // NOI18N
-                String value;
-                if (comp instanceof JCheckBoxMenuItem) {
-                    value = FormUtils.getBundleString("FMT_LAB_JCheckBoxMenuItem"); // NOI18N
-                } else if (comp instanceof JMenu) {
-                    value = FormUtils.getBundleString("FMT_LAB_JMenu"); // NOI18N
-                } else if (comp instanceof JRadioButtonMenuItem) {
-                    value = FormUtils.getBundleString("FMT_LAB_JRadioButtonMenuItem"); // NOI18N
-                } else {
-                    value = FormUtils.getBundleString("FMT_LAB_JMenuItem"); // NOI18N
-                }
-                changes.put("text", value); // NOI18N
+                changes.put("text", varName); // NOI18N
             }
             if(comp instanceof JCheckBoxMenuItem) {
                 changes.put("selected", new Boolean(true)); // NOI18N

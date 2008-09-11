@@ -228,7 +228,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     Point lastPoint = null;
     public void setNewLocation (Widget widget, Point location) {
         
-        if(location != null)
+        if(location != null && original != null)
         {
             int dx = location.x - original.x;
             int dy = location.y - original.y;

@@ -85,7 +85,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private String          viewType;
     private JComponent      view;
-    private List models = new ArrayList(11);
     
     
     public ViewModelListener (
@@ -154,7 +153,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         columnModels =          cp.lookup (viewType, ColumnModel.class);
         mm =                    cp.lookup (viewType, Model.class);
         
-        models.clear();
+        List models = new ArrayList(11);
         models.add(treeModels);
         models.add(treeModelFilters);
         models.add(treeExpansionModels);
