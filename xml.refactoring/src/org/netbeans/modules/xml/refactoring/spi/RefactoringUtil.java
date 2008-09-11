@@ -288,8 +288,13 @@ public class RefactoringUtil {
         FileObject parent = current.getParent();
         assert (parent != null) : "Source file has no parent folder";
         
-        if (newName == null || newName.trim().length() == 0 || 
-            parent.getFileObject(newName, current.getExt()) != null) 
+        boolean nameNotChanged = false; 
+        FileObject obj = parent.getFileObject(newName, current.getExt());
+        if(obj != null) {
+            nameNotChanged = obj.getName().equals(newName);
+        }
+            
+        if (newName == null || newName.trim().length() == 0 || nameNotChanged) 
         {
             return new ErrorItem(model,
                     NbBundle.getMessage(RefactoringUtil.class, "MSG_NewNameDuplicate"),
