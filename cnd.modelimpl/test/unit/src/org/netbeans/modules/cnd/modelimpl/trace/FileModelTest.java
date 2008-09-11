@@ -489,6 +489,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("methods_with_function_as_return_type.cc"); // NOI18N
     }   
 
+    // #145071 : forward declarations marked as error
+    public void testForwardDeclarations() throws Exception {        
+        performTest("forward_declarations.cc"); // NOI18N
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
