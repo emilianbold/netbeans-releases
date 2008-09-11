@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -109,7 +110,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
 
     private static final List<String> CLASS_CONTEXT_KEYWORD_PROPOSAL =
-            Arrays.asList(new String[] {"abstract","const","function", "private",
+            Arrays.asList(new String[] {"abstract","const","function", "private", "final",
             "protected", "public", "static", "var"});//NOI18N
     private static final List<String> INHERITANCE_KEYWORDS =
             Arrays.asList(new String[] {"extends","implements"});//NOI18N
@@ -213,6 +214,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             new PHPTokenId[]{PHPTokenId.PHP_ABSTRACT},
             new PHPTokenId[]{PHPTokenId.PHP_ABSTRACT,PHPTokenId.WHITESPACE},
             new PHPTokenId[]{PHPTokenId.PHP_ABSTRACT,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_FINAL},
+            new PHPTokenId[]{PHPTokenId.PHP_FINAL,PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_FINAL,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
             new PHPTokenId[]{PHPTokenId.PHP_CURLY_OPEN},
             new PHPTokenId[]{PHPTokenId.PHP_CURLY_CLOSE},
             new PHPTokenId[]{PHPTokenId.PHP_CURLY_CLOSE,PHPTokenId.WHITESPACE},
@@ -569,13 +573,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
                     break;
                 case CLASS_NAME:
-                    autoCompleteClassNames(proposals, request);
+                    autoCompleteClassNames(proposals, request,false);
                     break;
                 case INTERFACE_NAME:
                     autoCompleteInterfaceNames(proposals, request);
                     break;
                 case TYPE_NAME:
-                    autoCompleteClassNames(proposals, request);
+                    autoCompleteClassNames(proposals, request,false);
                     autoCompleteInterfaceNames(proposals, request);
                     break;
                 case STRING:
@@ -590,7 +594,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case PHPDOC:
                     if (PHPDOCCodeCompletion.isTypeCtx(request)){
-                        autoCompleteClassNames(proposals, request);
+                        autoCompleteClassNames(proposals, request,false);
                         autoCompleteInterfaceNames(proposals, request);
                     } else {
                         PHPDOCCodeCompletion.complete(proposals, request);
@@ -598,11 +602,33 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case CLASS_CONTEXT_KEYWORDS:
                     autoCompleteKeywords(proposals, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
+                    ClassDeclaration enclosingClass = findEnclosingClass(info, caretOffset);
+                    if (enclosingClass != null) {
+                        Identifier superClass = enclosingClass.getSuperClass();
+                        if (superClass != null) {
+                            String clsName = enclosingClass.getName().getName();
+                            Set<String> insideNames = new HashSet<String>();
+                            Collection<IndexedFunction> methods = request.index.getMethods(
+                                    request.result, clsName, request.prefix,
+                                    NameKind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
+                            for (IndexedFunction meth : methods) {
+                                insideNames.add(meth.getName());
+                            }
+                            String superClsName = superClass.getName();
+                            Collection<IndexedFunction> superMethods = request.index.getAllMethods(
+                                    request.result, superClsName, request.prefix,
+                                    NameKind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+                            for (IndexedFunction superMeth : superMethods) {
+                                if (superMeth.getName().startsWith(request.prefix)
+                                        && !superMeth.isFinal() && !insideNames.contains(superMeth.getName())) {                                    
+                                    for (int i = 0; i <= superMeth.getOptionalArgs().length; i++) {
+                                        proposals.add(new PHPCompletionItem.FunctionDeclarationItem(superMeth, request, i));
+                                    }
+                                }
+                            }
+                        }                        
+                    }
                     break;
-                /*case ACCESS_MODIFIER:
-                    autoCompleteKeywords(proposals, request, AFTER_ACCESS_MODIFIER_KEYWORD_PROPOSAL);
-                    break;
-                 */
                 case METHOD_NAME:
                     autoCompleteMethodName(proposals, request);
                     break;
@@ -626,9 +652,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return new PHPCompletionResult(completionContext, proposals);
     }
 
-    private void autoCompleteClassNames(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
+    private void autoCompleteClassNames(List<CompletionProposal> proposals, 
+            PHPCompletionItem.CompletionRequest request,boolean endWithDoubleColon) {
         for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, nameKind)) {
-            proposals.add(new PHPCompletionItem.ClassItem(clazz, request));
+            proposals.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon));
         }
     }
 
@@ -1058,7 +1085,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         PHPIndex index = request.index;
         if (request.prefix.length() == 0) {
-            Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram(), request.prefix, request.anchor, request.currentlyEditedFileURL);
+            Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram(),
+                    request.prefix, request.anchor, request.currentlyEditedFileURL).vars;
+            
             Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
 
             for (IndexedConstant var : localVars){
@@ -1076,7 +1105,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     proposals.add(new PHPCompletionItem.ConstantItem((IndexedConstant)element, request));
                 }
                 else if (element instanceof IndexedClass) {
-                    proposals.add(new PHPCompletionItem.ClassItem((IndexedClass)element, request));
+                    proposals.add(new PHPCompletionItem.ClassItem((IndexedClass)element, request, true));
                 }
                 else if (element instanceof IndexedVariable) {
                     IndexedConstant topLevelVar = (IndexedConstant) element;
@@ -1112,7 +1141,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             // CLASS NAMES
             // TODO only show classes with static elements
-            autoCompleteClassNames(proposals, request);
+            autoCompleteClassNames(proposals, request,true);
 
             // LOCAL VARIABLES
             proposals.addAll(getVariableProposals(request.result.getProgram(), request));
@@ -1153,23 +1182,25 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     public Collection<IndexedConstant> getVariables(PHPParseResult context,  PHPIndex index, Program program,
             String namePrefix, int position, String localFileURL){
-        Collection<IndexedConstant> localVars = getLocalVariables(program, namePrefix, position, localFileURL);
+        LocalVariables localVars = getLocalVariables(program, namePrefix, position, localFileURL);
         Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
 
-        for (IndexedConstant var : localVars){
+        for (IndexedConstant var : localVars.vars){
             allVars.put(var.getName(), var);
         }
 
-        for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, NameKind.PREFIX)){
-            if (!localFileURL.equals(topLevelVar.getFilenameUrl())){
-                IndexedConstant localVar = allVars.get(topLevelVar.getName());
+        if (localVars.globalContext){
+            for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, NameKind.PREFIX)){
+                if (!localFileURL.equals(topLevelVar.getFilenameUrl())){
+                    IndexedConstant localVar = allVars.get(topLevelVar.getName());
 
-                 if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
-                    IndexedConstant original = allVars.put(topLevelVar.getName(), topLevelVar);
-                    if (original != null && localVars.contains(original)) {
-                        allVars.put(original.getName(), original);
-                    }
-                 }
+                     if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
+                        IndexedConstant original = allVars.put(topLevelVar.getName(), topLevelVar);
+                        if (original != null && localVars.vars.contains(original)) {
+                            allVars.put(original.getName(), original);
+                        }
+                     }
+                }
             }
         }
 
@@ -1275,9 +1306,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             // do not enter!
         }
     }
+    
+    private class LocalVariables{
+        Collection<IndexedConstant> vars;
+        boolean globalContext;
+    }
 
-    private Collection<IndexedConstant> getLocalVariables(Program program, String namePrefix, int position, String localFileURL){
-        Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();;
+    private LocalVariables getLocalVariables(Program program, String namePrefix, int position, String localFileURL){
+        Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();
+        boolean globalContext = true;
         ASTNode varScopeNode = program;
 
         ASTNode hierarchy[] = Utils.getNodeHierarchyAtOffset(program, position);
@@ -1291,6 +1328,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         if (varScopeNode instanceof FunctionDeclaration) {
             FunctionDeclaration functionDeclaration = (FunctionDeclaration) varScopeNode;
+            globalContext = false;
             // add parameters to the result
 
             for (FormalParameter param : functionDeclaration.getFormalParameters()) {
@@ -1319,7 +1357,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         VarFinder varFinder = new VarFinder(localVars, namePrefix, localFileURL);
         varScopeNode.accept(varFinder);
-        return localVars.values();
+        LocalVariables result = new LocalVariables();
+        result.globalContext = globalContext;
+        result.vars = localVars.values(); 
+        
+        return result;
     }
 
     public String document(CompilationInfo info, ElementHandle element) {

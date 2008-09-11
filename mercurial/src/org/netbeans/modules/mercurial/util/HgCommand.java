@@ -2759,8 +2759,6 @@ public class HgCommand {
      * Gets hg status command output line for a given file
      */
     private static List<String> doSingleStatusCmd(File repository, String cwd, String filename)  throws HgException{
-        String statusLine = null;
-
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -2774,7 +2772,14 @@ public class HgCommand {
         // In 0.9.3 hg status does not give back copy information unless we
         // use relative paths from repository. This is fixed in 0.9.4.
         // See http://www.selenic.com/mercurial/bts/issue545.
-        command.add(new File(cwd, filename).getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
+        String filePath = new File(cwd, filename).getAbsolutePath();
+        String repoPath = repository.getAbsolutePath();
+        if(repoPath.length() >= filePath.length()) {
+            Mercurial.LOG.log(Level.WARNING, "Please report! Wrong repository path: {0}, {1}, {2}", new Object[] {repository, cwd, filename});
+            command.add(filePath);
+        } else {
+            command.add(filePath.substring(repoPath.length() + 1));
+        }
 
         return exec(command);
     }
