@@ -19,4 +19,10 @@ public class ${name} {
     /** Creates a new instance of ${name} */
     public ${name}() {
     }
+
+    private static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch(Throwable th) {}
+    }
 }
