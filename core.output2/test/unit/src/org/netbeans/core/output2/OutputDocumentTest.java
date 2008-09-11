@@ -108,7 +108,8 @@ public class OutputDocumentTest extends NbTestCase {
 //                System.currentTimeMillis();
 //            }
 //        });
-        Thread.currentThread().sleep(1500);
+        ow.flush();
+        //Thread.currentThread().sleep(1500);
         
         DocumentEvent de = od.getEvent();
         assertTrue ("Event should have been fired", de != null);

@@ -140,7 +140,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             BufferedWriter bw = null;
             String name = null;
             try {
-                File file = File.createTempFile("tmplog", ".log");
+                File file = File.createTempFile("tmplog", ".log"); // NOI18N
                 if (file.exists()){
                     file.delete();
                 }

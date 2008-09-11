@@ -166,7 +166,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         if (home == null) {
             return null;
         }
-        return home + "/" + RemoteServerSetup.REMOTE_LIB_DIR;
+        return home + "/" + RemoteServerSetup.REMOTE_LIB_DIR; // NOI18N
     }
 
     @Override

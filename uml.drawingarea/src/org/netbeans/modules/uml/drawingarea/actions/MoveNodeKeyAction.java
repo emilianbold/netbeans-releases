@@ -243,11 +243,11 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
                             retVal = scene.findWidget(select);
                             break;
                         }
-//                        else
-//                        {
-//                            //we have an edge label selected here..
-//                            retVal = scene.findWidget(select);
-//                        }
+                        else
+                        {
+                            //we have an edge label selected here..
+                            retVal = scene.findWidget(select);
+                        }
                     }
                 }
             }
