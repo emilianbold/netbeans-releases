@@ -2991,29 +2991,28 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     static final class DocPositionRegion extends PositionRegion {
         
-        private final Document doc;
+        private final Reference<Document> doc;
         
         public DocPositionRegion (final Document doc, final int startPos, final int endPos) throws BadLocationException {
             super (doc,startPos,endPos);
             assert doc != null;
-            this.doc = doc;
-        }
-        
-        public Document getDocument () {
-            return this.doc;
-        }
+            this.doc = new WeakReference<Document>(doc);
+        }                
         
         public String getText () {
             final String[] result = new String[1];
-            this.doc.render(new Runnable() {
-                public void run () {
+            final Document _doc = doc.get();
+            if (_doc != null) {
+                _doc.render(new Runnable() {
+                    public void run () {
                     try {
-                        result[0] = doc.getText(getStartOffset(), getLength());
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                            result[0] = _doc.getText(getStartOffset(), getLength());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
-                }
-            });
+                });
+            }
             return result[0];
         }
         
