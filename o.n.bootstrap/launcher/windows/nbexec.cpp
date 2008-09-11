@@ -294,23 +294,29 @@ bool runAutoUpdater(bool firstStart, const char * root) {
     strcat(tmp, "\\update\\download\\install_later.xml");
     HANDLE laterFile = FindFirstFile(tmp, &ffd);
 
-    if (INVALID_HANDLE_VALUE != nbmFiles && (firstStart || INVALID_HANDLE_VALUE == laterFile))
+    FindClose(nbmFiles);
+    FindClose(laterFile);
+
+    if (INVALID_HANDLE_VALUE != nbmFiles && (firstStart || INVALID_HANDLE_VALUE == laterFile)) 
         return true;
 
     strcpy(tmp, root);
     strcat(tmp, "\\update\\deactivate\\deactivate_later.txt");
     laterFile = FindFirstFile(tmp, &ffd);
+    FindClose(laterFile);
     if (firstStart || (INVALID_HANDLE_VALUE == laterFile)) {
         strcpy(tmp, root);
         strcat(tmp, "\\update\\deactivate\\to_disable.txt");
         laterFile = FindFirstFile(tmp, &ffd);
         if (INVALID_HANDLE_VALUE != laterFile) {
+            FindClose(laterFile);
             return true;
         }
         strcpy(tmp, root);
         strcat(tmp, "\\update\\deactivate\\to_uninstall.txt");
         laterFile = FindFirstFile(tmp, &ffd);
         if (INVALID_HANDLE_VALUE != laterFile) {
+            FindClose(laterFile);
             return true;
         }
     }
@@ -512,13 +518,17 @@ static char *findJavaExeInDirectory(char *dir) {
     WIN32_FIND_DATA ffd;
 
     strcat(strcpy(javapath, dir), "\\jre\\bin\\java.exe");
-    if (INVALID_HANDLE_VALUE == FindFirstFile(javapath, &ffd)) {
+    HANDLE hFind = FindFirstFile(javapath, &ffd);
+    if (INVALID_HANDLE_VALUE == hFind) {
         strcat(strcpy(javapath, dir), "\\bin\\java.exe");
-        if (INVALID_HANDLE_VALUE == FindFirstFile(javapath, &ffd)) {
+        hFind = FindFirstFile(javapath, &ffd);
+        if (INVALID_HANDLE_VALUE == hFind) {
             free(javapath);
             return NULL;
         }
+        FindClose(hFind);
     }
+    FindClose(hFind);
     return javapath;
 }
 

@@ -208,7 +208,7 @@ public class LayoutTestUtils implements LayoutConstants {
                                 Collections.<TypeParameterTree>emptyList(),
                                 Collections.<VariableTree>emptyList(),
                                 Collections.<ExpressionTree>emptyList(),
-                                code.toString(),
+                                "{\n" + code.toString() + "}", // NOI18N
                                 null
                                 );
                         ClassTree classCopy = make.addClassMember(classTree, method);

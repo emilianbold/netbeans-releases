@@ -78,6 +78,7 @@ import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -96,19 +97,6 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     public static final String VAR_NAMES_SERVICE = "service";
     public static final String VAR_NAMES_PORT = "port";
 
-     // {0} = fully qualified service class name ( e.g. "org.netbeans.FooSeWebService")
-    // {1} = service variable name ( e.g. "fooService")
-    // {2} = fully qualified port name (as type, e.g. com.service.FooPort)
-    // {3} = port varialbe name (e.g., "port")
-    // {4} = port getter method (e.g., getFooPort)
-    // {5} = operation name
-    // {6} = argument array
-    private static final String INVOKE_JAXRPC_BODY =
-            "\t\tjavax.naming.InitialContext ic = new javax.naming.InitialContext();\n" +
-            "\t\t{0} {1} = ({0}) ic.lookup(\"java:comp/env/service/{0}\");\n" +
-            "\t\t{2} {3} = {1}.{4}();\n" +
-            "\t\t{3}.{5}({6});\n" ;
-  
     public SoapClientPojoCodeGenerator() {
         setDropFileType(Constants.DropFileType.JAVA_CLIENT);
     }
@@ -196,10 +184,9 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         }
         SoapClientOperationInfo[] operations = getBean().getOperationInfos();
         for (SoapClientOperationInfo info : operations) {
-            if(!info.isRPCEncoded()){
-            methodBody += getWSInvocationCode(info);
-            }
-            else{
+            if (!info.isRPCEncoded()) {
+                methodBody += getWSInvocationCode(info);
+            } else {
                 methodBody += getWSInvocationCodeForJaxrpc(info);
             }
         }
@@ -225,8 +212,6 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
             return "unknown"; // NOI18N
         }
     }
-
-   
     // replace dots in a class/var name
     private static StringBuffer removeDots(final StringBuffer name) {
         int dotIndex;
@@ -237,30 +222,70 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         return name;
     }
 
-  
-     // {0} = fully qualified service class name ( e.g. "org.netbeans.FooSeWebService")
+    // {0} = fully qualified service class name ( e.g. "org.netbeans.FooSeWebService")
     // {1} = service variable name ( e.g. "fooService")
     // {2} = fully qualified port name (as type, e.g. com.service.FooPort)
     // {3} = port varialbe name (e.g., "port")
     // {4} = port getter method (e.g., getFooPort)
     // {5} = operation name
-    private String getWSInvocationCodeForJaxrpc(SoapClientOperationInfo info) throws IOException{
+    // {6} = argument array
+    // {7} = result statement (return type and variable, e.g., MyClass myvar =
+    private String getWSInvocationCodeForJaxrpc(SoapClientOperationInfo info) throws IOException {
         String serviceClassName = info.getService().getJavaName();
+        String serviceLookup = serviceClassName.substring(serviceClassName.lastIndexOf(".") + 1);
         String serviceName = info.getServiceName();
-        if(serviceName == null || serviceName.length() ==0){
-            serviceName = "service";
+        if (serviceName == null || serviceName.length() == 0) {
+            serviceName = "service";  //NOI18N
         }
         String serviceVarName = varFromName(serviceName);
         String servicePortClassName = info.getPort().getJavaName();
         String portVarName = varFromName(info.getPortName());
-        String portDelegateName = "get" + info.getPortName(); //NOI18N
-        String serviceOperationName = info.getOperationName();        
-        Object[] args = new String[]{serviceClassName, serviceVarName, servicePortClassName, portVarName,
-        portDelegateName, serviceOperationName};
+        String portGetterName = info.getPort().getPortGetter();
+        String serviceOperationName = info.getOperation().getJavaMethod().getName();
+    
+        List<WSParameter> outArguments = info.getOutputParameters();
+        updateVariableNamesForWS(outArguments);
+        String responseType = "Object"; //NOI18N
+        String argumentInitializationPart = "";
+        String argumentDeclarationPart = "";
+        String resultStatement = "";
+        String resultTypeName = "";
+        String resultVariable = "";
+        StringBuffer argumentBuffer2 = new StringBuffer("");
+        try {
+            StringBuffer argumentBuffer1 = new StringBuffer();
+            for (int i = 0; i < outArguments.size(); i++) {
+                String argumentTypeName = outArguments.get(i).getTypeName();
+                String argumentName = findNewName(getVariableDecl(outArguments.get(i)), outArguments.get(i).getName());
+                argumentBuffer1.append(INDENT_2 + argumentTypeName + " " + argumentName +
+                        " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
+            }
 
-        String operationInvocation = MessageFormat.format(this.INVOKE_JAXRPC_BODY, args);
+            List<WSParameter> parameters = info.getOperation().getParameters();
+            updateVariableNamesForWS(parameters);
+            for (int i = 0; i < parameters.size(); i++) {
+                String argument = findNewName(getVariableDecl(parameters.get(i)), parameters.get(i).getName());
+                argumentBuffer2.append(i > 0 ? ", " + argument : argument); //NOI18N
+            }
+            argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" +
+                    HINT_INIT_ARGUMENTS + argumentBuffer1.toString() : "");
+            resultTypeName = info.getOperation().getReturnTypeName();
+            resultVariable = "result";  //NOI18N
+            argumentDeclarationPart = argumentBuffer2.toString();
+            if(!resultTypeName.equals("void")){  //NOI18N
+                resultStatement = resultTypeName + " " + resultVariable + " =";  //NOI18N
+            }
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
+        }
+
+        Object[] args = new String[]{serviceClassName, serviceVarName, servicePortClassName, portVarName,
+            portGetterName, serviceOperationName, argumentDeclarationPart, serviceLookup, resultStatement
+        };
+        String operationInvocation = MessageFormat.format(INVOKE_JAXRPC_BODY, args);
         return operationInvocation;
     }
+
     /**
      * Add JAXWS client code for invoking the given operation at current position.
      */
@@ -404,6 +429,21 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     // {6} = java method arguments (e.g. "int x, int y")
     // {7} = response type (e.g. FooResponse)
     private static final String JAVA_STATIC_STUB_ASYNC_CALLBACK = "\ntry '{' // Call Web Service Operation(async. callback)\n" + "   {0} {10} = new {0}();\n" + "   {1} {11} = {10}.{2}();\n" + "   {3}" + "       public void handleResponse(javax.xml.ws.Response<{7}> {9}Resp) '{'\n" + "           try '{'\n" + "               // TODO process asynchronous response here\n" + "               System.out.println(\"Result = \"+ {9}Resp.get());\n" + "           '}' catch(Exception ex) '{'\n" + "               // TODO handle exception\n" + "           '}'\n" + "       '}'\n" + "   '}';\n" + "   {4} {9} = {11}.{5}({6});\n" + "   while(!{9}.isDone()) '{'\n" + "       // do something\n" + "       Thread.sleep(100);\n" + "   '}'\n" + "'}' catch (Exception ex) '{'\n" + "   // TODO handle custom exceptions here\n" + "'}'\n"; //NOI18N
+
+    // {0} = fully qualified service class name ( e.g. "org.netbeans.FooSeWebService")
+    // {1} = service variable name ( e.g. "fooService")
+    // {2} = fully qualified port name (as type, e.g. com.service.FooPort)
+    // {3} = port varialbe name (e.g., "port")
+    // {4} = port getter method (e.g., getFooPort)
+    // {5} = operation name
+    // {6} = argument array
+    // {7} = lookup object
+    // {8} = result statement (return type and variable, e.g., MyClass myvar =
+    private static final String INVOKE_JAXRPC_BODY =
+            "\t\tjavax.naming.InitialContext ic = new javax.naming.InitialContext();\n" +
+            "\t\t{0} {1} = ({0}) ic.lookup(\"java:comp/env/service/{7}\");\n" +
+            "\t\t{2} {3} = {1}.{4}();\n" +
+            "\t\t{8} {3}.{5}({6});\n";
 
     /**
      * Determines the initialization value of a variable of type "type"
@@ -558,8 +598,6 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         }
         return name; //NOI18N
     }
-
-
 
     private ClassTree addSetHeaderParamsMethod(WorkingCopy copy, ClassTree tree, String portJavaType) {
         Modifier[] modifiers = JavaUtil.PRIVATE;

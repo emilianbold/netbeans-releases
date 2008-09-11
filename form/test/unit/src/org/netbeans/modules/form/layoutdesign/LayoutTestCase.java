@@ -115,10 +115,11 @@ public abstract class LayoutTestCase extends TestCase {
                     String methodCount = m.getName().substring(9); // "doChanges".length()
                     
                     String currentLayout = getCurrentLayoutDump();
-                    // Equiv. to Tiger's code: currentLayout.replace("\n", System.getProperty("line.separator"));
-                    currentLayout = Pattern.compile("\n").matcher(currentLayout) // NOI18N
-                        .replaceAll(System.getProperty("line.separator")); // NOI18N
                     String expectedLayout = getExpectedLayoutDump(methodCount);
+                    String lineSep = System.getProperty("line.separator"); // NOI18N
+                    if (lineSep.length() > 1) {
+                        expectedLayout = expectedLayout.replace(lineSep, "\n"); // NOI18N
+                    }
 
                     System.out.print("Comparing ... ");
 

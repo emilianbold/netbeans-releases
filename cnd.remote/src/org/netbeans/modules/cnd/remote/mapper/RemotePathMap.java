@@ -187,7 +187,7 @@ public class RemotePathMap implements PathMap {
                     out.write(validationLine);
                     out.close();
                     // check existance
-                    if ( 0 == RemoteCommandSupport.run(hkey, "cat " + validationFile.getAbsolutePath() + " | grep " + validationLine)) {
+                    if ( 0 == RemoteCommandSupport.run(hkey, "cat " + validationFile.getAbsolutePath() + " | grep " + validationLine)) { // NOI18N
                         synchronized(map) {
                             map.put(lpath, lpath);
                         }

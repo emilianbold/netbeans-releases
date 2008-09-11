@@ -410,7 +410,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         if (configureProjectPanelVisual.isProjectFolderUsed()) {
             // project folder used => validate relativity of sources and project folder
-            if (PropertyUtils.relativizeFile(FileUtil.normalizeFile(getProjectFolderFile()), sources) == null) {
+            File projectFolder = getProjectFolderFile();
+            if (projectFolder != null
+                    && PropertyUtils.relativizeFile(FileUtil.normalizeFile(projectFolder), sources) == null) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAndProjectCannotBeRelativized");
             }
         } else {

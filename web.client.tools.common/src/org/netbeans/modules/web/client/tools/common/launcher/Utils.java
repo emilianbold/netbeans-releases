@@ -60,10 +60,7 @@ public class Utils {
         FileObject tmpFolderFileObject = FileUtil.toFileObject(tmpFolder);
         FileObject tmpdebuggerDotHtmlFileObject;
         try {
-            tmpdebuggerDotHtmlFileObject = FileUtil.copyFile(
-                    getDebuggerLauncherFileObject(),
-                    tmpFolderFileObject,
-                    "modules.ext.debugger---"
+            String fileName = "modules.ext.debugger---"
                     // Must match with port paramater name in
                     // extensions/firefox/netbeans-firefox-extension/content/netbeans-firefox-extension-debugger-launcher.js
                     + "netbeans-debugger-port="
@@ -72,7 +69,15 @@ public class Utils {
                     // Must match with sessionId paramater name in
                     // extensions/firefox/netbeans-firefox-extension/content/netbeans-firefox-extension-debugger-launcher.js
                     + "netbeans-debugger-session-id="
-                    + sessionId);
+                    + sessionId;
+            // XXX #131857 If the file is already there, reuse it.
+            tmpdebuggerDotHtmlFileObject = tmpFolderFileObject.getFileObject(fileName);
+            if (tmpdebuggerDotHtmlFileObject == null) {
+                tmpdebuggerDotHtmlFileObject = FileUtil.copyFile(
+                        getDebuggerLauncherFileObject(),
+                        tmpFolderFileObject,
+                        fileName);
+            }
             File tmpdebuggerDotHtmlFile = FileUtil.toFile(tmpdebuggerDotHtmlFileObject);
             tmpdebuggerDotHtmlFile.deleteOnExit();
             

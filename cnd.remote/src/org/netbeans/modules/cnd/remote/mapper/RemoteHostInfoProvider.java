@@ -166,13 +166,13 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         if (home == null) {
             return null;
         }
-        return home + "/" + RemoteServerSetup.REMOTE_LIB_DIR;
+        return home + "/" + RemoteServerSetup.REMOTE_LIB_DIR; // NOI18N
     }
 
     @Override
     public boolean fileExists(String key, String path) {
         RemoteCommandSupport support = new RemoteCommandSupport(key,
-                "/usr/bin/test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
+                "test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
         return support.run() == 0;
     }
 
