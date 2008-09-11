@@ -286,10 +286,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             fo = GlobalPathRegistry.getDefault().findResource(relativePath);
         } else {
             synchronized (this) {
-                if (!global) {
-                    fo = smartSteppingSourcePath.findResource(relativePath);
-                                                                    if (verbose) System.out.println ("SPPI:   fo " + fo);
-                } else {
+                fo = smartSteppingSourcePath.findResource(relativePath);
+                                                                if (verbose) System.out.println ("SPPI:   fo " + fo);
+                if (fo == null && global) {
                     fo = originalSourcePath.findResource(relativePath);
                                                                     if (verbose) System.out.println ("SPPI:   fo " + fo);
                 }
