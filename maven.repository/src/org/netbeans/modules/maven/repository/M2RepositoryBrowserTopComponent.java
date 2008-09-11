@@ -92,7 +92,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
         map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
         map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
-        map.put("delete", ExplorerUtils.actionDelete(manager, true));
+        map.put("delete", ExplorerUtils.actionDelete(manager, true)); //NOI18N
         associateLookup(ExplorerUtils.createLookup(manager, map));
         pnlBrowse.add(btv, BorderLayout.CENTER);
         btnIndex.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/repository/refreshRepo.png"))); //NOI18N
@@ -227,7 +227,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
 
 private void btnAddRepoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddRepoActionPerformed
     final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
-    DialogDescriptor dd = new DialogDescriptor(rrui, NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_ADD"));
+    DialogDescriptor dd = new DialogDescriptor(rrui, NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "LBL_Add_Repo"));
     dd.setClosingOptions(new Object[]{
                 rrui.getButton(),
                 DialogDescriptor.CANCEL_OPTION
@@ -253,7 +253,7 @@ private void btnAddRepoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFindActionPerformed
     hideFind();
     final FindInRepoPanel pnl = new FindInRepoPanel();
-    final DialogDescriptor dd = new DialogDescriptor(pnl, "Find In Repositories");
+    final DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "TIT_Find_In_Repositories"));
     Object ret = DialogDisplayer.getDefault().notify(dd);
     if (ret == DialogDescriptor.OK_OPTION) {
         showFind(pnl.getQuery(), dd);

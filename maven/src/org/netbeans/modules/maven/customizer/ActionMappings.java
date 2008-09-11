@@ -169,7 +169,7 @@ public class ActionMappings extends javax.swing.JPanel {
         titles.put(ActionProvider.COMMAND_RUN_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Run_file"));
         titles.put(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ActionMappings.class, "COM_Test_project"));
         titles.put(ActionProvider.COMMAND_TEST_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Test_file"));
-        titles.put("profile", NbBundle.getMessage(ActionMappings.class, "COM_Run_project"));
+        titles.put("profile", NbBundle.getMessage(ActionMappings.class, "COM_Profile_project"));
         comConfiguration.setEditable(false);
         comConfiguration.setRenderer(new DefaultListCellRenderer() {
             @Override
