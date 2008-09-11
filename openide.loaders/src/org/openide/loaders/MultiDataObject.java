@@ -146,13 +146,13 @@ public class MultiDataObject extends DataObject {
     * @return true if the object can be deleted
     */
     public boolean isDeleteAllowed() {
-        return !getPrimaryFile ().isReadOnly () && !existReadOnlySecondary();
+        return getPrimaryFile().canWrite() && !existReadOnlySecondary();
     }
     
     private boolean existReadOnlySecondary() {
         synchronized ( synchObjectSecondary() ) {
             for (FileObject f : getSecondary().keySet()) {
-                if (f.isReadOnly()) {
+                if (!f.canWrite()) {
                     return true;
                 }
             }
@@ -198,14 +198,14 @@ public class MultiDataObject extends DataObject {
     * @return true if the object can be moved
     */
     public boolean isMoveAllowed() {
-        return !getPrimaryFile ().isReadOnly () && !existReadOnlySecondary();
+        return getPrimaryFile().canWrite() && !existReadOnlySecondary();
     }
 
     /* Getter for rename action.
     * @return true if the object can be renamed
     */
     public boolean isRenameAllowed () {
-        return !getPrimaryFile ().isReadOnly () && !existReadOnlySecondary();
+        return getPrimaryFile().canWrite() && !existReadOnlySecondary();
     }
 
     /* Help context for this object.
@@ -230,6 +230,7 @@ public class MultiDataObject extends DataObject {
     * @return the node representation
     * @see DataNode
     */
+    @Override
     protected Node createNodeDelegate () {
         DataNode dataNode = (DataNode) super.createNodeDelegate ();
         return dataNode;
@@ -422,6 +423,7 @@ public class MultiDataObject extends DataObject {
     * @exception IOException if it is not possible to set the template
     *   state.
     */
+    @Override
     protected FileLock takePrimaryFileLock () throws IOException {
         return getPrimaryEntry ().takeLock ();
     }
@@ -1063,16 +1065,18 @@ public class MultiDataObject extends DataObject {
         */
         private transient WeakReference<FileLock> lock;
 
+        @SuppressWarnings("deprecation")
         protected Entry (FileObject file) {
             this.file = file;
-	    if (!isImportant()) {
+            if (!isImportant()) {
                 file.setImportant(false);
-	    }
+            }
         }
 
         /** A method to change the entry file to some else.
         * @param newFile
         */
+        @SuppressWarnings("deprecation")
         final void changeFile (FileObject newFile) {
             assert newFile != null : "NPE for " + file;
             if (newFile.equals (file)) {
@@ -1085,7 +1089,7 @@ public class MultiDataObject extends DataObject {
             this.file = newFile;
             
             // release lock for old file
-            FileLock l = lock == null ? null : (FileLock)lock.get ();
+            FileLock l = lock == null ? null : lock.get();
             if (l != null && l.isValid ()) {
                 if (ERR.isLoggable(Level.FINE)) {
                     ERR.fine("releasing old lock: " + this + " was: " + l);
@@ -1199,11 +1203,13 @@ public class MultiDataObject extends DataObject {
             return l != null && l.isValid ();
         }
 
+        @Override
         public boolean equals(Object o) {
             if (! (o instanceof Entry)) return false;
             return getFile ().equals(((Entry) o).getFile ());
         }
 
+        @Override
         public int hashCode() {
             return getFile ().hashCode();
         }
@@ -1220,6 +1226,7 @@ public class MultiDataObject extends DataObject {
         }
     }    
 
+    @Override
     void notifyFileDeleted (FileEvent fe) {
         removeFile (fe.getFile ());
         if (fe.getFile ().equals (getPrimaryFile ())) {
@@ -1292,7 +1299,7 @@ public class MultiDataObject extends DataObject {
                         entry = m.getPrimaryEntry ();
                     } else {
                         // secondary entry
-                        Entry e = (Entry)m.findSecondaryEntry (file);
+                        Entry e = m.findSecondaryEntry(file);
                         if (e == null) {
                             throw new InvalidObjectException (obj.toString ());
                         }

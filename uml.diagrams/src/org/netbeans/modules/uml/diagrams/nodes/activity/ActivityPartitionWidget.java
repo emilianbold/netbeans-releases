@@ -47,7 +47,6 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -71,7 +70,6 @@ import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
 import org.netbeans.modules.uml.diagrams.nodes.ContainerNode;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
-import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
@@ -205,40 +203,17 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         scene.validate();
     }
 
-    public int getSubPartitionCount()
-    {
-        if (parentPartition != null)
-        {
-            ETList<IActivityPartition> partitions = parentPartition.getSubPartitions();
-            return (partitions != null ? partitions.size() : 0);
-        }
-        return 0;
-    }
 
-    public void removeSubPartition(Widget subPartWidget)
+    public void removeCompartment(CompartmentWidget subPartWidget)
     {
         if (subPartWidget != null)
         {
-            // get the representing object
             if (scene instanceof ObjectScene)
             {
-                Object obj = ((ObjectScene) scene).findObject(subPartWidget);
-
-                if (obj instanceof IPresentationElement)
-                {
-                    IElement elem = ((IPresentationElement) obj).getFirstSubject();
-                    if (elem instanceof IActivityPartition)
-                    {
-                        // remove sub partition from the model
-                        removeSubPartition((IActivityPartition) elem);
-                    }
-                }
                 compartmentWidgets.remove(subPartWidget);
                 updateDividers();
             }
-            // remove sub partition widget from parent widget.
-            //partitionPanel.removeChild(subPartWidget);
-            if (this.getSubPartitionCount() == 0)
+            if ( compartmentWidgets.size() == 0)
             {
                 SubPartitionWidget w = new SubPartitionWidget(scene, null, this);
                 addSubPartition(w);
@@ -249,34 +224,6 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
                 scene.validate();
             }
         }
-    }
-
-    private void removeSubPartition(IActivityPartition subPart)
-    {
-        if (subPart != null)
-        {
-            // remove the elemen from model
-            subPart.delete();
-            // remove the element from parent 
-            this.getParentPartition().removeSubPartition(subPart);
-        }
-    }
-
-    public void removeSubPartitionWidgets()
-    {
-        List<Widget> children = partitionPanel.getChildren();
-        if (children != null && children.size() > 0)
-        {
-            for (int i = 0; i < children.size(); i++)
-            {
-                Widget w = children.get(i);
-                if (w instanceof SubPartitionWidget)
-                {
-                    partitionPanel.removeChild(w);
-                }
-            }
-        }
-        compartmentWidgets.clear();
     }
 
 
@@ -359,31 +306,12 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         return subPartWidget;
     }
 
-    public IActivityPartition getParentPartition()
+    public IActivityPartition getElement()
     {
         return parentPartition;
     }
 
-    public SubPartitionWidget getSubPartitionWidget(IActivityPartition subPart)
-    {
-        if (subPart != null)
-        {
-            List<Widget> children = partitionPanel.getChildren();
-            if (children != null && children.size() > 0)
-            {
-                for (int i = 0; i < children.size(); i++)
-                {
-                    Widget w = children.get(i);
-                    if (w instanceof SubPartitionWidget)
-                    {
-                        if (PersistenceUtil.getModelElement(w).isSame(subPart))
-                            return (SubPartitionWidget)w;
-                    }
-                }
-            }
-        }
-        return null;
-    }
+
     IElementLocator locator = new ElementLocator();
     
     @Override
@@ -398,14 +326,14 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         {
             if ((elt.getOwner() instanceof IActivity
                     || elt.getOwner() instanceof IPackage)
-                     && (this.getSubPartitionWidget((IActivityPartition)elt) == null))//last condition is for partition with NO sub-partitions
+                     && (findCompartmentWidget(elt) == null))//last condition is for partition with NO sub-partitions
             {
                 String or = nodeReader.getProperties().get("Orientation").toString();
                 this.setOrientation(SeparatorWidget.Orientation.valueOf(or));
                 initializeSubPartitions((IActivityPartition)elt);
                 super.load(nodeReader);                
             }
-            SubPartitionWidget subPart = getSubPartitionWidget((IActivityPartition) elt);
+            CompartmentWidget subPart = findCompartmentWidget(elt);
             if (subPart != null)
             {
                 //fix the size/location/properties
@@ -416,15 +344,6 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         }
     }
 
-
-    @Override
-    public void save(NodeWriter nodeWriter)
-    {
-        HashMap map = nodeWriter.getProperties();
-        map.put("Orientation", this.getOrientation().toString());
-        nodeWriter.setProperties(map);
-        super.save(nodeWriter);
-    }
 
     private class MainViewWidget extends CustomizableWidget
     {
@@ -463,8 +382,11 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         @Override
         public void notifyAdded()
         {
-            UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
-            relationshipD.discoverCommonRelations(elements);
+            if(!PersistenceUtil.isDiagramLoading())
+            {
+                UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
+                relationshipD.discoverCommonRelations(elements);
+            }
         }
     }
 
@@ -476,11 +398,6 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
     public boolean isHorizontalLayout()
     {
         return getOrientation() == SeparatorWidget.Orientation.HORIZONTAL;
-    }
-
-    public void removeCompartment(CompartmentWidget widget)
-    {
-        removeSubPartition(widget);
     }
 
 
