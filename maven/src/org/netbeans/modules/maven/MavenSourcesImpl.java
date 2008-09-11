@@ -217,7 +217,7 @@ public class MavenSourcesImpl implements Sources {
             File[] roots = project.getOtherRoots(test);
             for (File f : roots) {
                 FileObject folder = FileUtil.toFileObject(f);
-                if (folder != null) {
+                if (folder != null && folder.isFolder()) { //#146753
                     toReturn.add(new OtherGroup(project, folder, "Resource" + (test ? "Test":"Main") + folder.getNameExt(), folder.getName())); //NOI18N
                 }
             }
