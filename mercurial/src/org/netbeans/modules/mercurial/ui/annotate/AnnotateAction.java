@@ -94,7 +94,7 @@ public class AnnotateAction extends ContextAction {
         if (context.getRootFiles().size() > 0 && activatedEditorCookie(nodes) != null) {
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
             File file = activatedFile(nodes);
-            FileInformation info  = cache.getCachedStatus(file, false);
+            FileInformation info  = cache.getCachedStatus(file);
             if(info != null) {
                 int status = info.getStatus();
                 if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY ||
