@@ -114,8 +114,10 @@ public class CompilerSetScriptManager implements ScriptManager {
         }
     }
 
+    public static final String SCRIPT = ".netbeans/6.5/cnd2/scripts/getCompilerSets.bash"; // NOI18N
+
     public String getScript() {
-        return ".netbeans/6.5/cnd2/scripts/getCompilerSets.bash"; // NOI18N
+        return SCRIPT;
     }
     
     public String getPlatform() {
