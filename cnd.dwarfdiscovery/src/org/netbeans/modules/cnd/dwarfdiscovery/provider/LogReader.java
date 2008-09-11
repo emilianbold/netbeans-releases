@@ -146,7 +146,7 @@ public class LogReader {
             int end = line.indexOf(MAKE_DELIMITER);
             workDir = (end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim();
             if (TRACE) message = "**>> by [ " + LABEL_CD + "] "; //NOI18N
-            if (workDir.startsWith("/")){
+            if (workDir.startsWith("/")){ // NOI18N
                 baseWorkingDir = workDir;
             }
         } else if (line.startsWith("/") && line.indexOf(" ") < 0) {  //NOI18N
@@ -158,7 +158,7 @@ public class LogReader {
             return false;
         }
 
-        if (!workDir.startsWith(".") && (new File(workDir).exists())) {
+        if (!workDir.startsWith(".") && (new File(workDir).exists())) { // NOI18N
             if (TRACE) System.err.print(message);
             setWorkingDir(workDir);
             return true;
