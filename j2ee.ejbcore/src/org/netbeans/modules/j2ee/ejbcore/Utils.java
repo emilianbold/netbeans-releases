@@ -367,6 +367,9 @@ public class Utils {
             }
         });
 
+        if (ejbReferenceEjbClassFO == null) {
+            return null;
+        }
         Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
         AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
         boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);

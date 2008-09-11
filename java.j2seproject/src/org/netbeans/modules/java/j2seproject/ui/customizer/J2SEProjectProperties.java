@@ -75,6 +75,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -91,6 +92,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Petr Hrebejk
@@ -102,6 +104,7 @@ public class J2SEProjectProperties {
     private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+    private static final String COS_MARK = ".netbeans_automatic_build";     //NOI18N
     private Integer javacDebugBooleanKind;
     private Integer doJarBooleanKind;
     private Integer javadocPreviewBooleanKind;
@@ -175,6 +178,9 @@ public class J2SEProjectProperties {
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     // Main build.xml location
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+    
+    //NB 6.1 tracking of files modifications
+    public static final String TRACK_FILE_CHANGES="track.file.changes"; //NOI18N
 
     
     // Well known paths
@@ -419,6 +425,18 @@ public class J2SEProjectProperties {
                         }
                     }
                     storeProperties();
+                    //Delete COS mark
+                    if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
+                        FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(evaluator.getProperty(BUILD_CLASSES_DIR));
+                        if (buildClasses != null) {
+                            FileObject mark = buildClasses.getFileObject(COS_MARK);
+                            if (mark != null) {
+                                final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+                                assert ap != null;
+                                ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
+                            }
+                        }
+                    }
                     return true;
                 }
             });

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.gsfret.editor.fold;
 
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -50,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -310,7 +310,7 @@ public class GsfFoldManager implements FoldManager {
             
             long startTime = System.currentTimeMillis();
 
-            List<FoldInfo> folds = new ArrayList();
+            TreeSet<FoldInfo> folds = new TreeSet<FoldInfo>();
             boolean success = gsfFoldScan(fm, info, folds);
             if (!success || isCancelled()) {
                 return;
@@ -329,7 +329,7 @@ public class GsfFoldManager implements FoldManager {
          * 
          * @return true If folds were found, false if cancelled
          */
-        private boolean gsfFoldScan(GsfFoldManager manager, CompilationInfo info, List<FoldInfo> folds) {
+        private boolean gsfFoldScan(GsfFoldManager manager, CompilationInfo info, TreeSet<FoldInfo> folds) {
             BaseDocument doc = (BaseDocument)info.getDocument();
             if (doc == null) {
                 return false;
@@ -353,7 +353,7 @@ public class GsfFoldManager implements FoldManager {
             return success;
         }
 
-        private boolean checkInitialFold(GsfFoldManager manager, CompilationInfo info, List<FoldInfo> folds) {
+        private boolean checkInitialFold(GsfFoldManager manager, CompilationInfo info, TreeSet<FoldInfo> folds) {
             try {
                 TokenHierarchy<?> th = info.getTokenHierarchy();
                 if (th == null) {
@@ -417,11 +417,11 @@ public class GsfFoldManager implements FoldManager {
             return true;
         }
         
-        private void scan(GsfFoldManager manager, CompilationInfo info, List<FoldInfo> folds, BaseDocument doc, Language language) {
+        private void scan(GsfFoldManager manager, CompilationInfo info, TreeSet<FoldInfo> folds, BaseDocument doc, Language language) {
             addTree(manager, folds, info, doc, language);
         }
         
-        private void addTree(GsfFoldManager manager, List<FoldInfo> result, CompilationInfo info,
+        private void addTree(GsfFoldManager manager, TreeSet<FoldInfo> result, CompilationInfo info,
            BaseDocument doc, Language language) {
             StructureScanner scanner = language.getStructure();
             if (scanner != null) {
@@ -456,7 +456,7 @@ public class GsfFoldManager implements FoldManager {
             }
         }
         
-        private void addFold(OffsetRange range, List<FoldInfo> folds, BaseDocument doc, 
+        private void addFold(OffsetRange range, TreeSet<FoldInfo> folds, BaseDocument doc,
                 boolean collapseByDefault, FoldTemplate template) {
             if (range != OffsetRange.NONE) {
                 int start = range.getStart();
@@ -476,10 +476,10 @@ public class GsfFoldManager implements FoldManager {
     private class CommitFolds implements Runnable {
         
         private boolean insideRender;
-        private List<FoldInfo> infos;
+        private TreeSet<FoldInfo> infos;
         private long startTime;
         
-        public CommitFolds(List<FoldInfo> infos) {
+        public CommitFolds(TreeSet<FoldInfo> infos) {
             this.infos = infos;
         }
         
@@ -504,7 +504,8 @@ public class GsfFoldManager implements FoldManager {
                     }
                     
                     Map<FoldInfo, Fold> added   = new TreeMap<FoldInfo, Fold>();
-                    List<FoldInfo>      removed = new ArrayList<FoldInfo>(currentFolds.keySet());
+                    // TODO - use map duplication here instead?
+                    TreeSet<FoldInfo> removed = new TreeSet<FoldInfo>(currentFolds.keySet());
                     int documentLength = document.getLength();
                     
                     for (FoldInfo i : infos) {

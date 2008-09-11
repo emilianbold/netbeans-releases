@@ -57,12 +57,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.editor.GuardedException;
+import org.netbeans.modules.editor.hints.HintsUI;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -199,6 +203,14 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                                             copy.getDocument().insertString(insertOffset, " {}", null);
                                             offset = insertOffset + 1;
                                             repeat[0] = true;
+                                        } catch (GuardedException e) {
+                                            final JTextComponent component = HintsUI.getDefault().getComponent();
+                                            SwingUtilities.invokeLater(new Runnable() {
+                                                public void run() {
+                                                    String message = NbBundle.getMessage(HintsUI.class, "ERR_CannotApplyGuarded");
+                                                    org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                                                }
+                                            });
                                         } catch (BadLocationException e) {
                                             Exceptions.printStackTrace(e);
                                         } catch (IOException e) {

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+    <folder name="DTDs">
+        <folder name="GlassFish">
+            <file name="sun-resources_1_2.dtd" url="impl/resources/sun-resources_1_2.dtd">
+<!-- Argh! Someone gave sun-resources_1_2.dtd and sun-resources_1_3.dtd the same
+     public id.  Define only the system id and match on that instead.
+  -->
+                <attr name="systemId" stringvalue="http://www.sun.com/software/appserver/dtds/sun-resources_1_2.dtd"/>
+            </file>
+            <file name="sun-resources_1_3.dtd" url="impl/resources/sun-resources_1_3.dtd">
+                <attr name="systemId" stringvalue="http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

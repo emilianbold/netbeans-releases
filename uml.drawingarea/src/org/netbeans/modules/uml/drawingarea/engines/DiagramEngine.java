@@ -161,6 +161,7 @@ abstract public class DiagramEngine {
         WidgetAction acceptAction = new DiagramSceneAcceptAction(provider);
                 
         WidgetAction.Chain selectTool = scene.createActions(DesignerTools.SELECT);
+        selectTool.addAction(lockSelectionAction);
         selectTool.addAction(sceneSelectAction);
         selectTool.addAction(scene.createRectangularSelectAction());
         selectTool.addAction(ActionFactory.createZoomAction());

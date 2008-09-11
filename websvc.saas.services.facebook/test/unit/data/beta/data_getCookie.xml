@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data_getCookie_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd">
+    <uid>508508326</uid>
+    <name>Foo</name>
+    <value>Bar</value>
+    <expires>0</expires>
+    <path>/tmp/</path>
+</data_getCookie_response>

@@ -1017,6 +1017,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	removeBtn.setEnabled(false);
 	upArrow.setEnabled(false);
 	downArrow.setEnabled(false);
+    changeBtn.setEnabled(list != null && list.getSelectedIndex() >= 0);
 
 	if (itemsRequired && list.getModel().getSize() == 0) {
 	    nextButton.setEnabled(false);

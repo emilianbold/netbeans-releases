@@ -39,5 +39,5 @@ token #37 PHP_CURLY_CLOSE }
 token #38 PHP_CONSTANT_ENCAPSED_STRING "
 token #39 PHP_SEMICOLON ;
 token #40 WHITESPACE \n\n
-token #41 PHP_CLOSETAG ?>\n
-token #42 T_INLINE_HTML --EXPECT--\nThis is heredoc test #1.\nThis is heredoc test #2.\n
+token #41 PHP_CLOSETAG ?>
+token #42 T_INLINE_HTML \n--EXPECT--\nThis is heredoc test #1.\nThis is heredoc test #2.\n

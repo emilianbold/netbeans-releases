@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.subversion.client;
 
-import org.netbeans.modules.subversion.client.MissingClient;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.FileInputStream;
@@ -249,7 +248,8 @@ public class SvnClientExceptionHandler {
         AcceptCertificatePanel acceptCertificatePanel = new AcceptCertificatePanel();
         acceptCertificatePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N
         acceptCertificatePanel.certificatePane.setText(getCertMessage(cert, hostString));
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N        
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N
+        dialogDescriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.subversion.serverCertificateVerification"));
         JButton permanentlyButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_AcceptPermanently")); // NOI18N
         JButton temporarilyButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_AcceptTemp")); // NOI18N
         JButton rejectButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_Reject")); // NOI18N
@@ -455,7 +455,6 @@ public class SvnClientExceptionHandler {
     
     private void showDialog(DialogDescriptor dialogDescriptor) {
         dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
         dialogDescriptor.setValid(false);     
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
@@ -576,7 +575,8 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
-               msg.indexOf("can't get password") > - 1;                                     // NOI18N
+               msg.indexOf("can't get password") > - 1 ||                                   // NOI18N
+               msg.indexOf("can't get username or password") > - 1;                         // NOI18N
     }
 
     private static boolean isNoCertificate(String msg) {

@@ -74,6 +74,7 @@ public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
     private static final String MANUAL_LOCAL_STEP1_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualLocalStep1Message"); // NOI18N
     private static final String MANUAL_DIRECT_STEP2_WINDOWS_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectStep2WindowsMessage"); // NOI18N
     private static final String MANUAL_DIRECT_STEP2_UNIXES_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectStep2UnixesMessage"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP2_MAC_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectStep2MacMessage"); // NOI18N
     private static final String MANUAL_DIRECT_STEP3_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectStep3Message"); // NOI18N
     private static final String MANUAL_DIRECT_STOP_APPLET_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectStopAppletMessage"); // NOI18N
     private static final String MANUAL_DIRECT_RESTORE_SETTINGS_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectRestoreSettingsMessage"); // NOI18N
@@ -163,6 +164,16 @@ public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
                                                                                                                                                                      .isRemote(),
                                                                                                                  attachSettings
                                                                                                                                                                        .getPort())
+                                               }));
+        } else if (IntegrationUtils.PLATFORM_MAC_OS.equals(targetOS)) {
+            hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_MAC_MESSAGE,
+                                               new Object[] {
+                                                   IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(targetOS,
+                                                                                                                 getTargetJava(),
+                                                                                                                 attachSettings
+                                                                                                                                                                               .isRemote(),
+                                                                                                                 attachSettings
+                                                                                                                                                                                 .getPort())
                                                }));
         } else {
             hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_UNIXES_MESSAGE,

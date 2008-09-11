@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -53,22 +54,28 @@ import org.openide.util.NbBundle;
  */
 public class RunCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_RUN;
-    public static final String DISPLAY_NAME=NbBundle.getMessage(RunCommand.class, "LBL_RunProject");
+    public static final String DISPLAY_NAME = NbBundle.getMessage(RunCommand.class, "LBL_RunProject");
     private final RunLocalCommand localCommand;
-    
+
     /**
      * @param project
      */
     public RunCommand(PhpProject project) {
         super(project);
-        localCommand = new RunLocalCommand(project);        
+        localCommand = new RunLocalCommand(project);
     }
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
         if (isScriptSelected()) {
+            // we don't need to check anything here, because if the customizer show, then scriptSelected == false
             localCommand.invokeAction(null);
         } else {
+            if (!isIndexFileSet() || !isUrlSet()) {
+                // property not set yet
+                return;
+            }
+            eventuallyUploadFiles();
             try {
                 showURLForProjectFile();
             } catch (MalformedURLException ex) {

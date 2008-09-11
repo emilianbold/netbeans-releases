@@ -180,8 +180,12 @@ public class ShowViewAction extends SceneNodeAction
         }
         else 
         {
-            JMenuItem item =  new Actions.SubMenu(this, new ShowViewMenuModel(), false);
-            Actions.connect(item, (Action)this, true);
+            // If the menu item is not valid we want to not display the menu item
+            // If we return null a warning will be written to the log file by
+            // org.openide.util.Utilities.  However if we return an empty
+            // JInlineMenu the menu will not appear.
+            JInlineMenu item = new JInlineMenu();
+            retVal = item;
         }
         
         return retVal;

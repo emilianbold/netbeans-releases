@@ -69,8 +69,8 @@ public class TargetMappingCategoryProvider implements org.netbeans.spi.project.u
         FreeformProject project = context.lookup(FreeformProject.class);
         assert project != null;
         if (project.usesAntScripting()) {
-            return org.netbeans.spi.project.ui.support.ProjectCustomizer.Category.create("targetMapping", 
-                    NbBundle.getMessage(TargetMappingPanel.class, "LBL_ProjectCustomizer_Category_Targets"), null);
+            return org.netbeans.spi.project.ui.support.ProjectCustomizer.Category.create("targetMapping",   //NOI18N
+                    NbBundle.getMessage(TargetMappingPanel.class, "LBL_ProjectCustomizer_Category_Targets"), null);  //NOI18N
         }
         return null;
     }

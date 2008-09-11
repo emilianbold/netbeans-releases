@@ -628,7 +628,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (evt.getNewValue().equals(STATE_READY)) {
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     gdb.break_insert("dlopen"); // NOI18N
-                } else {
+                } else if (gdbVersion < 6.8) {
                     gdb.gdb_set("stop-on-solib-events", "1"); // NOI18N
                 }
                 if (continueAfterFirstStop) {
@@ -764,7 +764,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     private String getMacDylibAddress(String path, String info) {
         String line;
-        int start = info.startsWith("shlib-info=") ? 11 : 0;
+        int start = info.startsWith("shlib-info=") ? 11 : 0; // NOI18N
         int next = info.indexOf(",shlib-info="); // NOI18N
         
         while ((line = info.substring(start, next > 0 ? next : info.length())) != null) {
@@ -1160,17 +1160,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
 
             // Now process the version information
-            int first = msg.indexOf('.');
-            int next = msg.indexOf('.', first + 1);
-            try {
-                if (next == -1) {
-                    gdbVersion = Double.parseDouble(msg.substring(8));
-                } else {
-                    gdbVersion = Double.parseDouble(msg.substring(8, next));
-                }
-            } catch (NumberFormatException ex) {
-                log.warning("GdbDebugger: Failed to parse version string");
-            }
+            gdbVersion = parseGdbVersionString(msg.substring(8));
             if (msg.contains("cygwin")) { // NOI18N
                 cygwin = true;
             }
@@ -1662,7 +1652,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         setStopped();
                     }
                 }
-                if (dlopenPending) { // who stops here?
+                if (dlopenPending) { // who stops here? (Linux - see IZ #145868)
                     dlopenPending = false;
                     checkSharedLibs();
                 }
@@ -1747,25 +1737,25 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             int start = 0;
             int next
                     ;
-            while ((next = info.indexOf("shlib-info=", start + 1)) > 0) {
+            while ((next = info.indexOf("shlib-info=", start + 1)) > 0) { // NOI18N
                 map = GdbUtils.createMapFromString(info.substring(start + 12, next - 2));
-                path = map.get("path");
-                addr = map.get("dyld-addr");
+                path = map.get("path"); // NOI18N
+                addr = map.get("dyld-addr"); // NOI18N
                 if (path != null && addr != null) {
                     shtab.put(path, new ShareInfo(path, addr));
                 }
                 start = next;
             }
             map = GdbUtils.createMapFromString(info.substring(start + 12, info.length() - 1));
-            path = map.get("path");
-            addr = map.get("dyld-addr");
+            path = map.get("path"); // NOI18N
+            addr = map.get("dyld-addr"); // NOI18N
             if (path != null && addr != null) {
                 shtab.put(path, new ShareInfo(path, addr));
             }
         } else {
-            for (String line : info.split("\\\\n")) {
+            for (String line : info.split("\\\\n")) { // NOI18N
                 if (line.charAt(0) == '0') {
-                    String[] s = line.split("\\s+", 4);
+                    String[] s = line.split("\\s+", 4); // NOI18N
                     shtab.put(s[3], new ShareInfo(s[3], s[0]));
                 }
             }
@@ -1842,9 +1832,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     checkNextFrame = true;
                 } else {
                     gdb.stack_select_frame(i);
-                    gdb.gdb_set("stop-on-solib-event"  , "0"); // NOI18N
-                    gdb.exec_finish();
-                    gdb.gdb_set("stop-on-solib-event"  , "1"); // NOI18N
+                    if (gdbVersion < 6.8) {
+                        gdb.gdb_set("stop-on-solib-event"  , "0"); // NOI18N
+                        gdb.exec_finish();
+                        gdb.gdb_set("stop-on-solib-event"  , "1"); // NOI18N
+                    } else {
+                        gdb.exec_finish();
+                    }
                     gdb.exec_next();
                     state = oldState;
                 return;
@@ -2535,6 +2529,33 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return pae.getID() == DEBUG_ATTACH;
     }
     
+    private double parseGdbVersionString(String msg) {
+        double ver = 0.0;
+        int first = msg.indexOf('.');
+        int last = first + 1;
+        
+        try {
+            while (last < msg.length() && Character.isDigit(msg.charAt(last))) {
+                last++;
+            }
+            ver = Double.parseDouble(msg.substring(0, last));
+        } catch (Exception ex) {
+            log.warning("GdbDebugger: Failed to parse version string [" + ex.getClass().getName() + "]");
+            if (msg.contains("6.5")) { // NOI18N
+                ver = 6.5;
+            } else if (msg.contains("6.6")) { // NOI18N
+                ver = 6.6;
+            } else if (msg.contains("6.7")) { // NOI18N
+                ver = 6.7;
+            } else if (msg.contains("6.8")) { // NOI18N
+                ver = 6.8;
+            } else {
+                log.warning("GdbDebugger: Failed to guess version string");
+            }
+        }
+        return ver;
+    }
+    
     public class ShareInfo {
         
         private String path;
@@ -2587,7 +2608,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         conf = (MakeConfiguration) o;
                         if (conf.isDynamicLibraryConfiguration()) {
                             String proot = FileUtil.getFileDisplayName(proj.getProjectDirectory());
-                            String output = proot + "/" + conf.getLinkerConfiguration().getOutputValue();
+                            String output = proot + "/" + conf.getLinkerConfiguration().getOutputValue(); // NOI18N
                             output = conf.expandMacros(output); // expand macros (FIXUP: needs verification)
                             if (output.equals(path)) {
                                 this.project = proj;

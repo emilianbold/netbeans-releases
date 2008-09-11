@@ -351,10 +351,11 @@ BOOL DbgpConnection::readCommand(char *cmdString) {
 
 void DbgpConnection::processCommand(char *cmdString, DbgpConnection *pDbgpConnection) {
     TCHAR *str;
+
     if(!UTF8toUnicode(cmdString, &str)) {
         return;
     }
-
+    Utils::log(4, _T("Processing command - %s\n"), str);
     //Utils::log(4, _T("Command: %s\n"), cmdString);
     tstring cmdStr = str;
     size_t firstSpacePos = cmdStr.find(_T(" "));

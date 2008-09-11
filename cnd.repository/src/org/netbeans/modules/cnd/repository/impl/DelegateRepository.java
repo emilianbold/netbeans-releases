@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
@@ -112,8 +110,8 @@ public final class DelegateRepository implements Repository {
     }
 
     
-    public void openUnit(String unitName) {
-        delegate.openUnit(unitName);
+    public void openUnit(int unitId, String unitName) {
+        delegate.openUnit(unitId, unitName);
     }
     
     public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {

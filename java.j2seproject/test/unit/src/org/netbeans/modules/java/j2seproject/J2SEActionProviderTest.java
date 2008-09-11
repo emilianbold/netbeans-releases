@@ -124,7 +124,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj","foo.Main","manifest.mf",null); //NOI18N
         EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079
+        ep.put(J2SEProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079       
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         pm = ProjectManager.getDefault();
@@ -135,13 +135,13 @@ public class J2SEActionProviderTest extends NbTestCase {
 //        projdir.createData("build.xml");
         build = projdir.createFolder("build");
         build.createFolder("classes");
-        FileObject pkg = sources.createFolder("foo");        
+        FileObject pkg = sources.getFileObject("foo");        
         FileObject fo = pkg.createData("Bar.java");
         sourcePkg1 = DataFolder.findFolder (pkg);
         pkg = sources.createFolder("foo2");
         sourcePkg2 = DataFolder.findFolder (pkg);
         someSource1 = DataObject.find(fo);
-        fo = sources.getFileObject("foo").createData("Main.java");
+        fo = sources.getFileObject("foo").getFileObject("Main.java");
         createMain(fo);
         someSource2 = DataObject.find(fo);
         fo = sources.getFileObject("foo").createData("Third.java");
@@ -494,12 +494,19 @@ public class J2SEActionProviderTest extends NbTestCase {
                 props = new Properties();
                 props.setProperty("config", "test");
                 write(props, projdirFO, "nbproject/private/config.properties");
-                ProjectManager.getDefault().saveProject(proj);
+                ProjectManager.getDefault().saveProject(proj);                
+                return null;
+            }
+        });
+        
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void> () {
+            public Void run () throws Exception {
                 List<ProjectConfiguration> configs = new ArrayList<ProjectConfiguration>(pcp.getConfigurations());
                 pcp.setActiveConfiguration(configs.get(1));
                 return null;
             }
-        });
+        });        
+        
         J2SEActionProvider ap = proj.getLookup().lookup(J2SEActionProvider.class);
         PropertyEvaluator eval = proj.evaluator();
         String config = eval.getProperty("config");
@@ -533,34 +540,38 @@ public class J2SEActionProviderTest extends NbTestCase {
     }
     
     public void testIsActionEnabled() throws Exception {    
-        implTestIsActionEnabled();
+        implTestIsActionEnabled(false);
+        implTestIsActionEnabled(true);
     }
 
     public void testIsActionEnabledMultiRoot() throws Exception {
         FileObject newRoot = SourceRootsTest.addSourceRoot(helper, projdir, "src.other.dir","other");
-        implTestIsActionEnabled();
+        implTestIsActionEnabled(false);
         Lookup context = Lookups.fixed(sourcePkg1, DataFolder.findFolder(newRoot));
         boolean enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
         assertFalse ("COMMAND_COMPILE_SINGLE must be disabled on multiple src packages from different roots", enabled);
     }
 
-    private void implTestIsActionEnabled () throws Exception {
+    private void implTestIsActionEnabled (boolean cos) throws Exception {
         Lookup context;
         boolean enabled;
 
-        // test COMMAND_COMPILE_SINGLE
+        //First test actions when COS disabled
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE, cos ? "false":"true");
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);       
 
         context = Lookups.fixed(someSource1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertTrue("COMMAND_COMPILE_SINGLE must be enabled on one source", enabled);
+        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on one source", !cos, enabled);
 
         context = Lookups.fixed(someSource1, someSource2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertTrue("COMMAND_COMPILE_SINGLE must be enabled on multiple sources", enabled);
+        assertEquals("COMMAND_COMPILE_SINGLE must be enabled on multiple sources", !cos, enabled);
 
         context = Lookups.fixed(someTest1, someTest2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertTrue("COMMAND_COMPILE_SINGLE must be enabled on multiple tests", enabled);
+        assertEquals("COMMAND_COMPILE_SINGLE must be enabled on multiple tests",!cos, enabled);
 
         context = Lookups.fixed(someSource1, someTest1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
@@ -568,28 +579,28 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(sourcePkg1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on one src package", enabled);
+        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on one src package",!cos, enabled);
 
         context = Lookups.fixed(sourcePkg1, sourcePkg2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on multiple src packages", enabled);
+        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on multiple src packages", !cos, enabled);
 
         context = Lookups.fixed(sourcePkg1, someSource1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on mixed src packages/files", enabled);
+        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on mixed src packages/files", !cos, enabled);
 
 
         context = Lookups.fixed(testPkg1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on one test package", enabled);
+        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on one test package", !cos, enabled);
 
         context = Lookups.fixed(testPkg1, testPkg2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on multiple test packages", enabled);
+        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on multiple test packages", !cos, enabled);
 
         context = Lookups.fixed(testPkg1, someTest1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on mixed test packages/files", enabled);
+        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on mixed test packages/files", !cos, enabled);
 
         context = Lookups.fixed(DataFolder.findFolder(projdir));
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
@@ -656,7 +667,7 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(someTest1);
         enabled = actionProvider.isActionEnabled(JavaProjectConstants.COMMAND_DEBUG_FIX, context);
-        assertTrue("COMMAND_DEBUG_FIX must be enabled on one test", enabled);
+        assertEquals("COMMAND_DEBUG_FIX must be enabled on one test", !cos, enabled);
 
         context = Lookups.fixed(someTest1, someTest2);
         enabled = actionProvider.isActionEnabled(JavaProjectConstants.COMMAND_DEBUG_FIX, context);
@@ -664,7 +675,7 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(someSource1);
         enabled = actionProvider.isActionEnabled(JavaProjectConstants.COMMAND_DEBUG_FIX, context);
-        assertTrue("COMMAND_DEBUG_FIX must be enabled on one source", enabled);
+        assertEquals("COMMAND_DEBUG_FIX must be enabled on one source", !cos, enabled);
 
         context = Lookups.fixed(someSource1, someSource2);
         enabled = actionProvider.isActionEnabled(JavaProjectConstants.COMMAND_DEBUG_FIX, context);
@@ -720,13 +731,16 @@ public class J2SEActionProviderTest extends NbTestCase {
     }
 
     public void testBuildWithDirtyList() throws Exception { // #104508
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put(J2SEProjectProperties.TRACK_FILE_CHANGES, "true");
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         Properties p = new Properties();
         assertEquals("[jar]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
         assertEquals("{}", p.toString());
         TestFileUtils.touch(someSource1.getPrimaryFile(), null);
         assertEquals("[jar]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
         assertEquals("{}", p.toString());
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.put(J2SEProjectProperties.DO_JAR, "false");
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
@@ -763,9 +777,12 @@ public class J2SEActionProviderTest extends NbTestCase {
     }
     public void testBuildWithDirtyListFirstTime() throws Exception { // #119777
         J2SEProject prj = (J2SEProject) pp;
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put(J2SEProjectProperties.TRACK_FILE_CHANGES, "true");
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         // Use a new instance, since the old one will already have a dirty list from setUp():
         actionProvider = new J2SEActionProvider(prj, prj.getUpdateHelper());
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.put(J2SEProjectProperties.DO_DEPEND, "false");
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         Properties p = new Properties();

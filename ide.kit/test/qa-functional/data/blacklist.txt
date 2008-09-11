@@ -24,7 +24,14 @@ org.netbeans.modules.uml.project.UMLProjectDataObject$Loader
 
 # org.netbeans.modules.java.jarloader.JarDataLoader
 
-
+org.netbeans.modules.profiler.categories.Categorization
+org.netbeans.modules.profiler.categories.Category
+org.netbeans.modules.profiler.categories.CategoryBuilder
+org.netbeans.modules.profiler.categories.CategoryContainer
+org.netbeans.modules.profiler.nbmodule.LookupProviderImpl
+org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider
+org.netbeans.modules.profiler.utilities.Visitable
+org.netbeans.modules.profiler.utilities.Visitor
 
 # issue 136587:
  org.netbeans.modules.cnd.loaders.CndAbstractDataLoader

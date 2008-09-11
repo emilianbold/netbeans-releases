@@ -31,5 +31,5 @@ token #29 PHP_CURLY_CLOSE }
 token #30 PHP_CONSTANT_ENCAPSED_STRING "
 token #31 PHP_SEMICOLON ;
 token #32 WHITESPACE \n\n
-token #33 PHP_CLOSETAG ?>\n
-token #34 T_INLINE_HTML --EXPECT--\nThis is nowdoc test #s $a, $b, $c['c'], and $d->d.\nThis is nowdoc test #s $a, $b, $c['c'], and $d->d.\n
+token #33 PHP_CLOSETAG ?>
+token #34 T_INLINE_HTML \n--EXPECT--\nThis is nowdoc test #s $a, $b, $c['c'], and $d->d.\nThis is nowdoc test #s $a, $b, $c['c'], and $d->d.\n

@@ -917,8 +917,9 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         ISVNStatus[] newStatuses = getStatus(file, rec, false);
         for (ISVNStatus newStatus : newStatuses) {
             ISVNStatus oldStatus = oldStatusMap.get(newStatus.getFile());
-            if(oldStatus.getTextStatus() != newStatus.getTextStatus() ||
-               oldStatus.getPropStatus() != newStatus.getPropStatus()) 
+            if( (oldStatus == null && newStatus != null) ||
+                 oldStatus.getTextStatus() != newStatus.getTextStatus() ||
+                 oldStatus.getPropStatus() != newStatus.getPropStatus())
             {
                 notificationHandler.notifyListenersOfChange(newStatus.getPath()); /// onNotify(cmd.getAbsoluteFile(s.getFile().getAbsolutePath()), null);   
             }            

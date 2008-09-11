@@ -65,7 +65,7 @@ public class WeakListenersTest extends NbTestCase {
     }
 
     protected int timeOut() {
-        return 5000;
+        return 45000;
     }
 
     protected Level logLevel() {

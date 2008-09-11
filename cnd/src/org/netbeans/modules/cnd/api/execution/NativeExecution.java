@@ -159,12 +159,12 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
         
         @Override
         public int executeCommand(File runDirFile, String executable, String arguments, String[] envp, PrintWriter out, Reader in, boolean unbuffer) throws IOException, InterruptedException {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public void stop() {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
     }
 }

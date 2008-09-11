@@ -61,6 +61,7 @@ import javax.swing.plaf.UIResource;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -72,17 +73,16 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-// XXX upload files combobox is invisible for NB 6.5
 /**
  * @author Tomas Mysik
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -55934465454591271L;
+    private static final long serialVersionUID = -55933465454591271L;
     private static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
             new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
     private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
             new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration"));
-    private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.MANUALLY;
+    private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     private final PhpProject project;
     private final JLabel[] labels;
@@ -102,7 +102,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         this.category = category;
 
         initComponents();
-        hideUploadFilesFields();
 
         labels = new JLabel[] {
             urlLabel,
@@ -181,12 +180,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         updateRemoteConnectionHint();
     }
 
-    private void hideUploadFilesFields() {
-        uploadFilesLabel.setVisible(false);
-        uploadFilesComboBox.setVisible(false);
-        uploadFilesHintLabel.setVisible(false);
-    }
-
     @Override
     protected RunAsType getRunAsType() {
         return RunAsType.REMOTE;
@@ -235,7 +228,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(project.getWebRootDirectory()), indexFile, args);
+        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(ProjectPropertiesSupport.getWebRootDirectory(project)), indexFile, args);
         if (err != null) {
             validateCategory(err);
             return;

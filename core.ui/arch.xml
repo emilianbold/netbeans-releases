@@ -1031,6 +1031,12 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="resources-preferences">
+    <api type="import" group="property"  name="nb.show.statistics.ui" category="private">
+        System property "nb.show.statistics.ui" controls if UI for Usage statistics is displayed in General panel.
+        If this property is non null (for IDE) UI is shown. This property contains key of preference used
+        to save status - true if usage statistics are collected and uploaded, false if not.
+        Key is "usageStatisticsEnabled" and is described below.
+    </api>
     <api type="export" group="preferences"  name="org.netbeans.core.usageStatisticsEnabled" category="private">
         Key "usageStatisticsEnabled" is read to be displayed in General tab of Options dialog. If user
         changes its value it is stored. UI Gesture Collector uses this key to control if metrics logging is

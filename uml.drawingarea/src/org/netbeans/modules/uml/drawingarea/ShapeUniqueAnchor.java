@@ -40,10 +40,13 @@
  */
 package org.netbeans.modules.uml.drawingarea;
 
+import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.List;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.anchor.Anchor;
-import java.awt.*;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -297,6 +300,35 @@ public final class ShapeUniqueAnchor extends Anchor
      
         requiresRecalculation = false;
     }
+
+    @Override
+    public Point getOppositeSceneLocation(Entry entry)
+    {
+        Point retVal = super.getOppositeSceneLocation(entry);
+        
+        // If the connection widget has connection points we need to find the 
+        // connection point that is closes to the related widget.
+        //
+        // There are always two, one for the source and target ends.
+        ConnectionWidget connection = entry.getAttachedConnectionWidget();
+        if((connection != null) && (connection.getControlPoints().size() > 2))
+        {
+            List < Point > points = connection.getControlPoints();
+            if(entry.isAttachedToConnectionSource() == true)
+            {
+                // The source end starts from the start of the collection of points.
+                retVal = points.get(1);
+            }
+            else
+            {
+                // The target end starts from the end of the collection of points.
+                retVal = points.get(points.size() - 2);
+            }
+        }
+        
+        return retVal;
+    }
+    
     
     private Entry[] toArray(final HashMap<Entry, Float> map)
     {

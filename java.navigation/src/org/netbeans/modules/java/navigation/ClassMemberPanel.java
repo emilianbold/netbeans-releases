@@ -47,6 +47,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -56,23 +57,33 @@ public class ClassMemberPanel implements NavigatorPanel {
 
     private ClassMemberPanelUI component;
 
-    private static ClassMemberPanel INSTANCE;   //Always accessed in event dispatch thread
+    private static volatile ClassMemberPanel INSTANCE;   //Apparently not accessed in event dispatch thread in CaretListeningTask
+    
+    private static final RequestProcessor RP = new RequestProcessor(ClassMemberPanel.class.getName(),1);
     
     public ClassMemberPanel() {
     }
 
-    public void panelActivated(Lookup context) {
+    public void panelActivated(final Lookup context) {
         assert context != null;
         INSTANCE = this;
-        // System.out.println("Panel Activated");
-        ClassMemberNavigatorJavaSourceFactory.getInstance().setLookup(context, getClassMemberPanelUI());
         getClassMemberPanelUI().showWaitNode();
+        RP.post( new Runnable () {
+            public void run () {
+                ClassMemberNavigatorJavaSourceFactory.getInstance().setLookup(context, getClassMemberPanelUI());
+            }
+        });
     }
 
     public void panelDeactivated() {
         getClassMemberPanelUI().showWaitNode(); // To clear the ui
-        ClassMemberNavigatorJavaSourceFactory.getInstance().setLookup(Lookup.EMPTY, null);
         INSTANCE = null;
+        //Even the setLookup(EMPTY) is fast, has to be called in RP to keep ordering
+        RP.post( new Runnable () {
+            public void run () {
+                ClassMemberNavigatorJavaSourceFactory.getInstance().setLookup(Lookup.EMPTY, null);
+            }
+        });
     }
 
     public Lookup getLookup() {

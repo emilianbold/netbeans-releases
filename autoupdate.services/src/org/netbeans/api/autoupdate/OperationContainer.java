@@ -271,7 +271,6 @@ public final class OperationContainer<Support> {
      * <code>null</code> if the <code>UpdateElement</code> is already present in the container
      */
     public OperationInfo<Support> add(UpdateUnit updateUnit,UpdateElement updateElement) {
-        //UpdateUnit updateUnit = UpdateManagerImpl.getInstance().getUpdateUnit(updateElement.getCodeName());
         upToDate = false;
         return impl.add (updateUnit, updateElement);
     }
@@ -285,7 +284,7 @@ public final class OperationContainer<Support> {
     public OperationInfo<Support> add(UpdateElement updateElement) {
         upToDate = false;
         UpdateUnit updateUnit = updateElement.getUpdateUnit ();
-        return impl.add (updateUnit, updateElement);
+        return add (updateUnit, updateElement);
     }
     
     

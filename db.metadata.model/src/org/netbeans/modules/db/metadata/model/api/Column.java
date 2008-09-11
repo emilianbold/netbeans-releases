@@ -53,6 +53,10 @@ public class Column extends MetadataObject {
         this.impl = impl;
     }
 
+    public Table getParent() {
+        return impl.getParent();
+    }
+
     public String getName() {
         return impl.getName();
     }

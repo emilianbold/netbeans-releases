@@ -127,6 +127,8 @@ public class ConnectUsingDriverAction extends DatabaseAction {
         private NewConnectionPanel basePanel = null;
         private SchemaPanel schemaPanel = null;
         
+        private DatabaseConnection cinfo = null;
+        
         public void showDialog(String driverName, String driverClass) {
             showDialog(driverName, driverClass, null, null, null);
         }
@@ -171,7 +173,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                 selectedDriverClass = driverClass;
             }
             
-            final DatabaseConnection cinfo = new DatabaseConnection();
+            cinfo = new DatabaseConnection();
             cinfo.setDriverName(selectedDriverName);
             cinfo.setDriver(selectedDriverClass);
             if (user != null) {
@@ -211,42 +213,53 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                     if (event.getPropertyName().equals("connecting")) { // NOI18N
                         fireConnectionStarted();
                     }
-                    if (event.getPropertyName().equals("failed")) { // NOI18N
+                    else if (event.getPropertyName().equals("failed")) { // NOI18N
+                        setConnected(false);
                         fireConnectionFailed();
                     }
-                    if (event.getPropertyName().equals("connected")) { //NOI18N
-                        if (retrieveSchemas(schemaPanel, cinfo, cinfo.getUser()))
-                            cinfo.setSchema(schemaPanel.getSchema());
-                        else {
-                            //switch to schema panel
-                            fireConnectionFinished();
-                            dlg.setSelectedComponent(schemaPanel);
-                            return;
-                        }
-                        
+                    else if (event.getPropertyName().equals("connected")) { //NOI18N
+                        setConnected(true);
+                        boolean result = retrieveSchemas(schemaPanel, cinfo, cinfo.getUser());
                         fireConnectionFinished();
 
-                        //connected by "Get Schemas" button in the schema panel => don't create connection node
-                        //and don't close the connect dialog
-                        if (advancedPanel && !okPressed)
-                            return;
+                        if (result)
+                        {
+                            cinfo.setSchema(schemaPanel.getSchema());
+                        }
+                        else {
 
-                        try {
-                            ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(cinfo);
-                        } catch (DatabaseException exc) {
-                            Logger.getLogger("global").log(Level.INFO, null, exc);
-                            DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
-                            try {
-                                cinfo.getConnection().close();
-                            } catch (SQLException e) {
-                                //unable to close db connection
+                            if (!schemaPanel.schemasAvailable())
+                            {
+                                try
+                                {
+                                    ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(cinfo);
+                                }
+                                catch (DatabaseException dbe)
+                                {
+                                    Logger.getLogger("global").log(Level.INFO, null, dbe);
+                                    DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), dbe.getMessage()); // NOI18N
+                                    try {
+                                        cinfo.getConnection().close();
+                                        cinfo.setConnection(null);
+                                    } catch (SQLException e) {
+                                        //unable to close db connection
+                                        cinfo.setConnection(null);
+                                    } finally {
+                                    }
+                                }
+                                
+                                if (dlg != null)
+                                {
+                                    dlg.close();
+                                    return;
+                                }
                             }
-                            return;
                         }
-                        if (dlg != null) {
-                            dlg.close();
-//                        removeListeners(cinfo);
-                        }
+                        
+                        //switch to schema panel
+                        dlg.setSelectedComponent(schemaPanel);
+                        return;
+                        
                     } else
                         okPressed = false;
                 }
@@ -306,14 +319,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         } catch (DatabaseException exc) {
                             Logger.getLogger("global").log(Level.INFO, null, exc);
                             DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
-                            try {
-                                cinfo.getConnection().close();
-                                cinfo.setConnection(null);
-                            } catch (SQLException e) {
-                                //unable to close db connection
-                                cinfo.setConnection(null);
-                            } finally {
-                            }
+                            closeConnection();
                         }
                         return;
                     }
@@ -362,6 +368,30 @@ public class ConnectUsingDriverAction extends DatabaseAction {
             // in case a task is underway...
             basePanel.terminateProgress();
             schemaPanel.terminateProgress();
+        }
+        
+        @Override
+        public void closeConnection()
+        {
+            if (cinfo != null)
+            {
+                Connection conn = cinfo.getConnection();
+                if (conn != null)
+                {
+                    try 
+                    {
+                        conn.close();
+                        cinfo.setConnection(null);
+                    } 
+                    catch (SQLException e) 
+                    {
+                        //unable to close db connection
+                        cinfo.setConnection(null);
+                    }
+                }
+            }
+            
+            setConnected(false);
         }
         
         @Override

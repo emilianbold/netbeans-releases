@@ -43,8 +43,10 @@ package org.netbeans.modules.cnd.highlight.semantic;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
@@ -91,7 +93,35 @@ public final class SemanticHighlighter extends HighlighterBase {
         return bag;
     }
 
-    private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.highlighting.times");
+    private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.highlighting.times"); // NOI18N
+    private static final int MAX_LINE_NUMBER;
+    static {
+        String limit = System.getProperty("cnd.semantic.line.limit"); // NOI18N
+        int userInput = 4000;
+        if (limit != null) {
+            try {
+                userInput = Integer.parseInt(limit);
+            } catch (Exception e) {
+                // skip
+            }
+        }
+        MAX_LINE_NUMBER = userInput;
+    }
+
+    public static boolean isVeryBigDocument(Document doc) {
+        if (!(doc instanceof BaseDocument) || MAX_LINE_NUMBER < 0) {
+            return false;
+        }
+        try {
+            if (doc.getLength() < MAX_LINE_NUMBER) {
+                return false;
+            }
+            return Utilities.getLineOffset((BaseDocument)doc, doc.getLength() - 1) > MAX_LINE_NUMBER;
+        } catch (BadLocationException ex) {
+            // skip
+            return true;
+        }
+    }
 
     private void update(final Interrupter interruptor) {
         BaseDocument doc = getDocument();
@@ -100,8 +130,8 @@ public final class SemanticHighlighter extends HighlighterBase {
             newBag.clear();
             final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
             long start = System.currentTimeMillis();
-            if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() have started for file " + csmFile.getAbsolutePath());
             if (csmFile != null && csmFile.isParsed()) {
+                if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() have started for file " + csmFile.getAbsolutePath());
                 final List<SemanticEntity> entities = new ArrayList<SemanticEntity>(SemanticEntitiesProvider.instance().get());
                 final List<ReferenceCollector> collectors = new ArrayList<ReferenceCollector>(entities.size());
                 // the following loop deals with entities without collectors
@@ -127,7 +157,8 @@ public final class SemanticHighlighter extends HighlighterBase {
                 // to show inactive code and macros first
                 getHighlightsBag(doc).setHighlights(newBag);
                 // here we invoke the collectors
-                if (!entities.isEmpty()) {
+                // but not for huge documents
+                if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
                     CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
                         public void visit(CsmReferenceContext context) {
                             CsmReference ref = context.getReference();
@@ -144,9 +175,9 @@ public final class SemanticHighlighter extends HighlighterBase {
                         addHighlights(newBag, collectors.get(i).getReferences(), entities.get(i));
                     }
                 }
+                if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + csmFile.getAbsolutePath());
             }
             getHighlightsBag(doc).setHighlights(newBag);
-            if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + csmFile.getAbsolutePath());
         }
     }
 

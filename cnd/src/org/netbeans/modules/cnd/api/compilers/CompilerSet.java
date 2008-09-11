@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
 import org.netbeans.modules.cnd.settings.CppSettings;
@@ -123,7 +122,7 @@ public class CompilerSet {
         }
         
         public boolean isMinGWCompiler(){
-            return "MinGW".equals(sval);
+            return "MinGW".equals(sval); // NOI18N
         }
 
         public String getCommandFolder(int platform){
@@ -140,14 +139,14 @@ public class CompilerSet {
                 synchronized(unknown) {
                     unknownFlavor = unknown.get(platform);
                     if (unknownFlavor == null) {
-                        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("GNU", platform);
+                        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("GNU", platform); // NOI18N
                         if (d == null) {
                             List<ToolchainDescriptor> list = ToolchainManager.getInstance().getToolchains(platform);
                             if (list.size()>0){
                                 d = list.get(0);
                             }
                         }
-                        unknownFlavor = new CompilerFlavor("Unknown", d);
+                        unknownFlavor = new CompilerFlavor("Unknown", d); // NOI18N
                         unknown.put(platform, unknownFlavor);
                     }
                 }
@@ -168,6 +167,9 @@ public class CompilerSet {
             if (version <=43) {
                 if (flavor.equals("Sun")) { // NOI18N
                     return "SunStudio"; // NOI18N
+                }
+                else if (flavor.equals("SunExpress")) { // NOI18N
+                    return "SunStudioExpress"; // NOI18N
                 }
                 else if (flavor.equals("Sun12")) { // NOI18N
                     return "SunStudio_12"; // NOI18N
@@ -223,9 +225,6 @@ public class CompilerSet {
     
     public static final String None = "None"; // NOI18N
     
-//    private static HashMap<String, CompilerSet> csmap = new HashMap();
-//    private static HashMap<String, CompilerSet> basemap = new HashMap();
-    
     private CompilerFlavor flavor;
     private String name;
     private String displayName;
@@ -239,16 +238,6 @@ public class CompilerSet {
     private CompilerProvider compilerProvider;
     private String driveLetterPrefix = "/"; // NOI18N
     
-//    private String[] noCompDNames = {
-//        NbBundle.getMessage(CompilerSet.class, "LBL_NoCCompiler"), // NOI18N
-//        NbBundle.getMessage(CompilerSet.class, "LBL_NoCppCompiler"), // NOI18N
-//        NbBundle.getMessage(CompilerSet.class, "LBL_NoFortranCompiler"), // NOI18N
-//        NbBundle.getMessage(CompilerSet.class, "LBL_NoCustomBuildTool"), // NOI18N
-//        NbBundle.getMessage(CompilerSet.class, "LBL_NoAssembler"), // NOI18N
-//        NbBundle.getMessage(CompilerSet.class, "LBL_NoMakeTool"), // NOI18N
-//        NbBundle.getMessage(CompilerSet.class, "LBL_NoDebuggerTool") // NOI18N
-//    };
-    
     /** Creates a new instance of CompilerSet */
     protected CompilerSet(CompilerFlavor flavor, String directory, String name) {
         addDirectory(directory);
@@ -258,7 +247,6 @@ public class CompilerSet {
             compilerProvider = new DefaultCompilerProvider();
         }
         driveLetterPrefix = flavor.getToolchainDescriptor().getDriveLetterPrefix();
-        //flavor = getBestSunStudioFlavor(flavor, directory);
         
         if (name != null) {
             this.name = name;
@@ -393,12 +381,6 @@ public class CompilerSet {
         return displayName;
     }
     
-//    private static HashMap<String, Tool> cache = new HashMap();
-    
-//    public Tool addTool(String name, String path, int kind) {
-//        return addTool(CompilerSetManager.LOCALHOST, name, path, kind);
-//    }
-    
     public Tool addTool(String hkey, String name, String path, int kind) {
         if (findTool(kind) != null) {
             return null;
@@ -493,14 +475,9 @@ public class CompilerSet {
                 return tool;
         }
         Tool t;
-    //        if (kind == Tool.MakeTool || kind == Tool.DebuggerTool) {
-                // Fixup: all tools should go here ....
-            t = compilerProvider.createCompiler(CompilerSetManager.LOCALHOST, getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), "");
-    //        }
-    //        else {
-    //            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
-    //        }
-            t.setCompilerSet(this);
+        // Fixup: all tools should go here ....
+        t = compilerProvider.createCompiler(CompilerSetManager.LOCALHOST, getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
+        t.setCompilerSet(this);
         synchronized( tools ) { // synchronize this only unpredictable tools modification
             tools.add(t);
         }
@@ -535,33 +512,6 @@ public class CompilerSet {
             return (List<Tool>)tools.clone();
         }
     }
-//    
-//    public String[] getToolGenericNames() {
-//        ArrayList names = new ArrayList();
-//        
-//        for (Tool tool : tools) {
-//            if (tool.getKind() == Tool.Assembler ||
-//                tool.getKind() == Tool.CCCompiler ||
-//                tool.getKind() == Tool.CCompiler ||
-//                tool.getKind() == Tool.CustomTool ||
-//                (tool.getKind() == Tool.FortranCompiler && !CppSettings.getDefault().isFortranEnabled())
-//                )
-//                names.add(tool.getGenericName());
-//        }
-//        return (String[])names.toArray(new String[names.size()]);
-//    }
-//
-//    public int getToolKind(String genericName) {
-//        int kind = -1;
-//        for (int i = 0; i < tools.size(); i++) {
-//            Tool tool = tools.get(i);
-//            if (tools.get(i).getGenericName().equals(genericName)) {
-//                kind = tools.get(i).getKind();
-//                break;
-//            }
-//        }
-//        return kind;
-//    }
     
     public String getDynamicLibrarySearchOption() {
         return dynamicLibrarySearchOption;

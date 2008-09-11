@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -62,13 +63,15 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     public PHPCodeTemplateFilter(JTextComponent component, int offset) {
         this.caretOffset = offset;
         FileObject fo = NbUtilities.findFileObject(component);
-        SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+        if (fo != null) {  // fo can be null, see issue #144856
+            SourceModel model = SourceModelFactory.getInstance().getModel(fo);
 
-        if (!model.isScanInProgress()){
-            try {
-                model.runUserActionTask(this, false);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (model != null && !model.isScanInProgress()){
+                try {
+                    model.runUserActionTask(this, false);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -88,12 +91,19 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     }
 
     public void run(CompilationInfo parameter) throws Exception {
-        PHPCodeCompletion.CompletionContext context = PHPCodeCompletion.findCompletionContext(parameter, caretOffset);
+        BaseDocument document = (BaseDocument) parameter.getDocument();
+        document.readLock();
+        
+        try{
+            PHPCodeCompletion.CompletionContext context = PHPCodeCompletion.findCompletionContext(parameter, caretOffset);
 
-        switch(context){
-            case EXPRESSION:
-                accept = true;
-                break;
+            switch(context){
+                case EXPRESSION:
+                    accept = true;
+                    break;
+            }
+        } finally {
+            document.readUnlock();
         }
     }
 

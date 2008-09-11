@@ -369,6 +369,8 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void resolveToolTip(final CompilationController controller) throws IOException {
             Env env = getCompletionEnvironment(controller, false);
+            if (env == null)
+                return;
             Tree lastTree = null;
             int offset = env.getOffset();
             TreePath path = env.getPath();
@@ -499,7 +501,14 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void resolveDocumentation(CompilationController controller) throws IOException {            
             controller.toPhase(Phase.RESOLVED);
-            Element el = element != null ? element.resolve(controller) : controller.getTrees().getElement(getCompletionEnvironment(controller, false).getPath());
+            Element el = null;
+            if (element != null) {
+                el = element.resolve(controller);
+            } else {
+                Env e = getCompletionEnvironment(controller, false);
+                if (e != null)
+                    el = controller.getTrees().getElement(e.getPath());
+            }
             if (el != null) {
                 switch (el.getKind()) {
                 case ANNOTATION_TYPE:
@@ -519,6 +528,8 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void resolveCompletion(CompilationController controller) throws IOException {
             Env env = getCompletionEnvironment(controller, true);
+            if (env == null)
+                return;
             results = new ArrayList<JavaCompletionItem>();
             anchorOffset = controller.getPositionConverter().getOriginalPosition(env.getOffset());
             TreePath path = env.getPath();
@@ -3614,7 +3625,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         ret = new HashSet<TypeMirror>();
                         Types types = controller.getTypes();
                         ret.add(controller.getTypes().getPrimitiveType(TypeKind.INT));
-                        ret.add(types.getDeclaredType(controller.getElements().getTypeElement("java.lang.Enum")));
+                        TypeElement te = controller.getElements().getTypeElement("java.lang.Enum"); //NOI18N
+                        if (te != null)
+                            ret.add(types.getDeclaredType(te));
                         return ret;
                     case METHOD_INVOCATION:
                         MethodInvocationTree mi = (MethodInvocationTree)tree;
@@ -4170,6 +4183,8 @@ public class JavaCompletionProvider implements CompletionProvider {
         private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
             controller.toPhase(Phase.PARSED);
             int offset = controller.getPositionConverter().getJavaSourcePosition(caretOffset);
+            if (offset < 0)
+                return null;
             String prefix = null;
             if (upToOffset && offset > 0) {
                 TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());

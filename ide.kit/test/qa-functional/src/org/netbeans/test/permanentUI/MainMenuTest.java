@@ -433,12 +433,12 @@ public class MainMenuTest extends JellyTestCase {
         final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
         ArrayList<NbMenuItem> newSubmenu = Utilities.filterOutSeparators(permanentMenu.getSubmenu()); //TODO: fix the getMainMenuItem(.) to return even separators
         permanentMenu.setSubmenu(newSubmenu); //TODO: remove when getMainMenuItem(.) fixed
-        System.out.println("GOLDEN FILE:");            
-        Utilities.printMenuStructure(System.out, permanentMenu, "--", 100);
+//        System.out.println("GOLDEN FILE:");
+//        Utilities.printMenuStructure(System.out, permanentMenu, "  ", 100);
         try {
             goldenFile = new PrintStream(permuiLogsFile);
 
-            Utilities.printMenuStructure(goldenFile, permanentMenu, "---", 1);
+            Utilities.printMenuStructure(goldenFile, permanentMenu, "   ", 1);
 
             ideFile = new PrintStream(menuItemsLogFile);
             //pushMainMenuItem(submenuPath);
@@ -449,13 +449,13 @@ public class MainMenuTest extends JellyTestCase {
             //Utilities.printMenuStructure(System.out, mainM, "---", 100);
 
             NbMenuItem submenuItem = Utilities.getMenuByName(submenuItems[submenuItems.length-1], mainM);
-            System.out.println("IDE MENU:");
-            Utilities.printMenuStructure(System.out, submenuItem, "---", 100);
-            Utilities.printMenuStructure(ideFile, submenuItem, "---", 2);
-            //System.out.println("-------------SUBMENU-----------------");
-            //Utilities.printMenuStructure(System.out, submenuItem, "---", 100);
             assertNotNull("Cannot find submenu " + submenuPath, submenuItem);//is there such submenu?
             submenuItem.setMnemo((char)0); //remove the mnemonic of the submenu item because it is not in the perm ui spec too
+            //System.out.println("IDE MENU:");
+            //Utilities.printMenuStructure(System.out, submenuItem, "   ", 100);
+            Utilities.printMenuStructure(ideFile, submenuItem, "   ", 2);
+            //System.out.println("-------------SUBMENU-----------------");
+            //Utilities.printMenuStructure(System.out, submenuItem, "---", 100);
             assertFile(Utilities.compareNbMenuItems(submenuItem, permanentMenu, 1), menuItemsLogFile, permuiLogsFile, diffFile);
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();

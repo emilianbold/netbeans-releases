@@ -123,6 +123,9 @@
     <!-- Options window -->
     <!-- <mapID target="org.netbeans.modules.subversion.options.SvnOptionsController" url="svnmodule/csh/svn_options.html" /> -->
 
+    <!-- Server Certificate Verification dialog -->
+    <mapID target="org.netbeans.modules.subversion.serverCertificateVerification" url="svnmodule/csh/svn_cert_verification.html" />    
+
     <!-- Subversion Manage Connection Settings dialog (accessed from Options window) -->
     <!-- TODO: Request new target (currently: org.openide.util.HelpCtx.DEFAULT_HELP) -->
 

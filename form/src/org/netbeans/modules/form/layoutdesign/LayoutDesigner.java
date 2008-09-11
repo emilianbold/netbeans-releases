@@ -781,25 +781,44 @@ public class LayoutDesigner implements LayoutConstants {
         try {
             LayoutFeeder layoutFeeder = new LayoutFeeder(operations, dragger, addingInts);
 
-            // remove the components from original location if still there
-            // (in case of resizing the feeder needed to know the original positions)
-            for (LayoutComponent comp : components) {
-                if (comp.getParent() != null) {
+            if (dragger.isResizing()) {
+                assert components.length == 1;
+                // there's just one component resized, stays in the same container,
+                // don't remove it, just the intervals
+                for (int dim=0; dim < DIM_COUNT; dim++) {
+                    LayoutInterval compInt = addingInts[dim];
+                    if (compInt.getParent() != null
+                            && compInt.getAlignment() != CENTER && compInt.getAlignment() != BASELINE) {
+                        layoutModel.removeInterval(compInt);
+                        // hack: Don't remove resized interval in center or baseline,
+                        // it might not be possible to restore.
+                        // LayoutFeeder.addSimplyAligned will check it.
+                    }
+                }
+                for (LayoutComponent comp : components) {
                     if (dragger.isResizing(HORIZONTAL)) {
                         layoutModel.removeComponentFromLinkSizedGroup(comp, HORIZONTAL);
                     }
                     if (dragger.isResizing(VERTICAL)) {
                         layoutModel.removeComponentFromLinkSizedGroup(comp, VERTICAL);
                     }
-                    layoutModel.removeComponentAndIntervals(comp, false);
+                }
+            } else {
+                // moved components need to be removed from their original location
+                for (LayoutComponent comp : components) {
+                    if (comp.getParent() != null) {
+                        layoutModel.removeComponentAndIntervals(comp, false);
+                    }
                 }
             }
 
             modelListener.deactivate(); // do not react on model changes during adding
 
             // add the components to the model (to the target container)
-            for (LayoutComponent comp : components) {
-                layoutModel.addComponent(comp, targetContainer, -1);
+            if (!dragger.isResizing()) {
+                for (LayoutComponent comp : components) {
+                    layoutModel.addComponent(comp, targetContainer, -1);
+                }
             }
 
             // add the components' intervals

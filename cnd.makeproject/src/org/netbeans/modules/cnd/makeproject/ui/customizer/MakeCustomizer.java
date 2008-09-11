@@ -116,6 +116,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     private Configuration[] configurationItems;
     private Configuration[] selectedConfigurations;
     private int lastComboboxIndex = -1;
+    private ProjectPropPanel projectPropPanel = null;
     
     /** Creates new form MakeCustomizer */
     public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, Item item, Folder folder, Vector controls) {
@@ -333,6 +334,10 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             if (selectedNodeName != null)
                 currentCategoryView.selectNode(selectedNodeName);
         }
+    }
+    
+    public void save() {
+        projectPropPanel.save();
     }
     
     
@@ -778,7 +783,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null );
     }
     
-    private JPanel projectPropPanel = null;
     class GeneralCustomizerNode extends CustomizerNode {
         public GeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
@@ -874,7 +878,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectProperties"); // NOI18N
+            return new HelpCtx("ProjectPropsBuild"); // NOI18N
         }
     }
     
@@ -1067,7 +1071,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         @Override
         public HelpCtx getHelpCtx() {
-            return null; //return new HelpCtx("ProjectPropsArchiverGeneral"); // NOI18N // FIXUP
+            return new HelpCtx("ProjectPropsPackaging"); // NOI18N // FIXUP
         }
     }
     

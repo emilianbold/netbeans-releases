@@ -70,8 +70,11 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -433,8 +436,9 @@ public class CsmContextUtilities {
     
     private static boolean isInContext(CsmContext context, CsmObject obj) {
         // XXX: in fact better to start from end
-        for (Iterator it = context.iterator(); it.hasNext();) {
-            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
+        //for (Iterator it = context.iterator(); it.hasNext();) {
+        for (ListIterator it = context.reverseIterator(); it.hasPrevious();) {
+            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.previous();
             if (obj.equals(elem.getScope())) {
                 return true;
             }
@@ -580,7 +584,13 @@ public class CsmContextUtilities {
 
     public static boolean isInType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
-        return (CsmKindUtilities.isType(last) || CsmKindUtilities.isTypedef(last))
-                && CsmOffsetUtilities.isInObject(last, offset);
+        CsmType type = null;
+        if (CsmKindUtilities.isTypedef(last)) {
+            type = ((CsmTypedef)last).getType();
+        } else if (CsmKindUtilities.isType(last)) {
+            type = (CsmType) last;
+        }
+        // in instantianiton everything is possible
+        return (type != null) && !type.isInstantiation() && CsmOffsetUtilities.isInObject(type, offset);
     }
 }
