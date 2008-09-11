@@ -171,3 +171,6 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-spi-quicksearch}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-spi-quicksearch"/>
 <link href="${javadoc.docs.org-netbeans-modules-websvc-wsstackapi}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-websvc-wsstackapi"/>
 <link href="${javadoc.docs.org-netbeans-swing-outline}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-swing-outline"/>
+<link href="${javadoc.docs.org-netbeans-modules-maven}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-maven"/>
+<link href="${javadoc.docs.org-netbeans-modules-maven-indexer}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-maven-indexer"/>
+<link href="${javadoc.docs.org-netbeans-modules-maven-embedder}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-maven-embedder"/>
