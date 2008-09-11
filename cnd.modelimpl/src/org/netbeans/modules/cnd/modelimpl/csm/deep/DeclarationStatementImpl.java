@@ -203,7 +203,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 			break;
 		    }
                     case CPPTokenTypes.CSM_GENERIC_DECLARATION:
-                        CsmTypedef[] typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope());
+                        CsmTypedef[] typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope(), null);
 			if( typedefs != null && typedefs.length > 0 ) {
 			    for (int i = 0; i < typedefs.length; i++) {
 				declarators.add(typedefs[i]);
@@ -212,6 +212,12 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                 }
 	    }
 	}
+
+        @Override
+        protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
+            // TODO : implement local forward decls support
+            return null;
+        }
 
 // Never used 
 //	/**
