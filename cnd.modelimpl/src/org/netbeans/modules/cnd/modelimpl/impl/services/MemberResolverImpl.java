@@ -71,12 +71,14 @@ public final class MemberResolverImpl {
     }
     
     public Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name) {
-        cls = ResolverFactory.createResolver((CsmOffsetable) cls, resolver).getOriginalClassifier(cls);
-        if (CsmKindUtilities.isClass(cls)){
-            List<CsmMember> res = new ArrayList<CsmMember>();
-            getClassMembers((CsmClass)cls, name, res);
-            getSuperClasses((CsmClass)cls, name, res, new HashSet<CsmClass>());
-            return res.iterator();
+        if (CsmKindUtilities.isOffsetable(cls)) {
+            cls = ResolverFactory.createResolver((CsmOffsetable) cls, resolver).getOriginalClassifier(cls);
+            if (CsmKindUtilities.isClass(cls)){
+                List<CsmMember> res = new ArrayList<CsmMember>();
+                getClassMembers((CsmClass)cls, name, res);
+                getSuperClasses((CsmClass)cls, name, res, new HashSet<CsmClass>());
+                return res.iterator();
+            }
         }
         return Collections.<CsmMember>emptyList().iterator();
     }       

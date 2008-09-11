@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.repository.util.Pair;
  * @author Nickolay Dalmatov
  * @author Vladimir Kvashin
  */
-public class MemoryCache {
+public final class MemoryCache {
     private static final boolean STATISTIC = false;
     
     private static class SoftValue extends SoftReference {
@@ -96,8 +96,8 @@ public class MemoryCache {
     }
     
     private final SlicedMap cache = new SlicedMap();
-    private Lock refQueueLock;
-    private ReferenceQueue refQueue;
+    private final Lock refQueueLock;
+    private final ReferenceQueue refQueue;
     
     // Cache statistics
     private int readCnt = 0;
