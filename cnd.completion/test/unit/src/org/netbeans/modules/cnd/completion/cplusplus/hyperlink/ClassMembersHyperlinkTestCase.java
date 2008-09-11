@@ -61,7 +61,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("templateParameters.h", 109, 15, "templateParameters.h", 100, 24);// _Alloc
     }
 
-    public void checkPtrOperator() throws Exception {
+    public void testPtrOperator() throws Exception {
         // noIZ:fixed ptr operator handling
         performTest("checkPtrOperator.cc", 16, 15, "checkPtrOperator.cc", 11, 9);
     }
