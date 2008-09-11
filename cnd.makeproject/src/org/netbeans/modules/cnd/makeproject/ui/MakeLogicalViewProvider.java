@@ -97,6 +97,8 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.NodeFactorySupport;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -111,6 +113,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -125,6 +128,8 @@ import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openidex.search.SearchInfo;
 
 /**
@@ -135,7 +140,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private final Project project;
     private FilterNode projectNode = null;
     private final SubprojectProvider spp;
-
+    private static final Boolean ASYNC_ROOT_NODE = Boolean.getBoolean("cnd.async.root");
+    private static final Logger log = Logger.getLogger("cnd.async.root");
     private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); // NOI18N
     static final String PRIMARY_TYPE = "application"; // NOI18N
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
@@ -149,10 +155,18 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     public Node createLogicalView() {
-        if (getMakeConfigurationDescriptor() == null)
-            return new MakeLogicalViewRootNodeBroken();
-        else
-            return new MakeLogicalViewRootNode(getMakeConfigurationDescriptor().getLogicalFolders());
+        if (ASYNC_ROOT_NODE) {
+            log.fine("creating async root node in EDT? " + SwingUtilities.isEventDispatchThread());
+            InstanceContent ic = new InstanceContent();
+            ic.add(project);
+            return new MakeLogicalViewRootNode(project, ic);
+        } else {
+            if (getMakeConfigurationDescriptor() == null) {
+                return new MakeLogicalViewRootNodeBroken();
+            } else {
+                return new MakeLogicalViewRootNode(getMakeConfigurationDescriptor().getLogicalFolders());
+            }
+        }
     }
 
     private boolean findPathMode = false;
@@ -405,6 +419,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private Image icon;
         private Lookup lookup;
         private Action brokenLinksAction;
+        private final InstanceContent ic;
         private boolean brokenLinks;
         private boolean brokenIncludes;
         private Folder folder;
@@ -416,6 +431,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 project,
                 new FolderSearchInfo(folder),
             }));
+            ic = new InstanceContent();
+            ic.add(project);
+            ic.add(folder);
+            ic.add(new FolderSearchInfo(folder));
             this.folder = folder;
             setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
             setName( ProjectUtils.getInformation( project ).getDisplayName() );
@@ -435,6 +454,26 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 //            if (LogicalViewNodeProviders.getInstance().getProviders().size() < 1)
 //                LogicalViewNodeProviders.getInstance().addProvider(new ExperimentsLogicalViewNodeProvider());
 //            // Test Logical View Providers
+        }
+
+        public MakeLogicalViewRootNode(Project project, InstanceContent ic) {
+            super(Children.create(new AsyncLogicalViewChildFactory(project, ic), true), new AbstractLookup(ic));
+            this.ic = ic;
+            this.folder = null;
+            setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
+            setName(ProjectUtils.getInformation(project).getDisplayName());
+
+            brokenIncludesResult = Lookup.getDefault().lookup(new Lookup.Template<BrokenIncludes>(BrokenIncludes.class));
+            brokenIncludesResult.addLookupListener(this);
+            resultChanged(null);
+
+            brokenLinks = hasBrokenLinks();
+            brokenIncludes = hasBrokenIncludes(project);
+            brokenLinksAction = new BrokenLinksAction();
+            // Handle annotations
+            setForceAnnotation(true);
+//            updateAnnotationFiles();
+
         }
 
         public Folder getFolder() {
@@ -725,6 +764,103 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
+    private final class AsyncLogicalViewChildFactory extends ChildFactory<Node> {
+
+        private final Project project;
+        private final InstanceContent ic;
+        private boolean inited = false;
+        public AsyncLogicalViewChildFactory(Project project, InstanceContent ic) {
+            assert ic != null;
+            this.ic = ic;
+            this.project = project;
+            assert this.project != null;
+        }
+
+        @Override
+        protected boolean createKeys(List<Node> toPopulate) {
+            toPopulate.addAll(createNodeList().keys());
+            return true;
+        }
+
+        @Override
+        protected Node createNodeForKey(Node key) {
+            return key;
+        }
+
+        @SuppressWarnings("unchecked")
+        NodeList<Node> createNodeList() {
+            List<Node> list = new ArrayList<Node>();
+            assert project != null;
+            log.fine("creating node out of EDT");
+            assert !SwingUtilities.isEventDispatchThread();
+            MakeConfigurationDescriptor projDescriptor = getMakeConfigurationDescriptor();
+            if (!inited) {
+                inited = true;
+                if (projDescriptor != null) {
+                    Folder logical = projDescriptor.getLogicalFolders();
+                    ic.add(logical);
+                    ic.add(new FolderSearchInfo(logical));
+                }
+            }
+            if (projDescriptor != null) {
+                Folder logical = projDescriptor.getLogicalFolders();
+
+                Collection elems = logical.getElements();
+                for (Object key : elems) {
+                    Node node = null;
+                    if (key instanceof Folder) {
+                        Folder folder = (Folder) key;
+                        if (folder.isProjectFiles()) {
+                            //FileObject srcFileObject = project.getProjectDirectory().getFileObject("src");
+                            FileObject srcFileObject = project.getProjectDirectory();
+                            DataObject srcDataObject;
+                            try {
+                                srcDataObject = DataObject.find(srcFileObject);
+                            } catch (DataObjectNotFoundException e) {
+                                throw new AssertionError(e);
+                            }
+                            node = new LogicalFolderNode(((DataFolder) srcDataObject).getNodeDelegate(), folder);
+                        } else {
+                            node = new ExternalFilesNode(folder);
+                        }
+                    } else {
+                        assert (key instanceof Item);
+                        Item item = (Item) key;
+                        DataObject fileDO = item.getDataObject();
+                        if (fileDO != null) {
+                            // TODO
+                            node = new ViewItemNode(null, logical, item, fileDO);
+                        } else {
+                            // TODO
+                            node = new BrokenViewItemNode(null, logical, item);
+                        }
+                    }
+                    list.add(node);
+                }
+                if ("root".equals(logical.getName())) { // NOI18N
+                    LogicalViewNodeProvider[] providers = LogicalViewNodeProviders.getInstance().getProvidersAsArray();
+                    if (providers.length > 0) {
+                        for (int i = 0; i < providers.length; i++) {
+                            AbstractNode node = providers[i].getLogicalViewNode(project);
+                            if (node != null) {
+                                list.add(node);
+                            }
+                        }
+                    }
+                }
+            }
+//            List<FileObject> includePath = PhpSourcePath.getIncludePath(project.getProjectDirectory());
+//            for (FileObject fileObject : includePath) {
+//                if (fileObject != null && fileObject.isFolder()) {
+//                    DataFolder df = DataFolder.findFolder(fileObject);
+//                    list.add(new IncludePathNode(df, project));
+//                }
+//            }
+            Node[] nodes = list.toArray(new Node[list.size()]);
+            return NodeFactorySupport.fixedNodeList(nodes);
+        }
+    }
+
     private class LogicalViewChildren extends BaseMakeViewChildren {
         public LogicalViewChildren(Folder folder) {
             super(folder);
@@ -790,7 +926,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         return makeConfigurationDescriptor;
     }
 
-
+    
     /** Yet another cool filter node just to add properties action
      */
     /* FIXUP
