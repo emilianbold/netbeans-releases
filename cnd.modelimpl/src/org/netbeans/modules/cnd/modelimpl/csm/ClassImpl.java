@@ -197,7 +197,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             if( renderVariable(token, null, null) ) {
                                 break;
                             }
-                            typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this);
+                            typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this, null);
                             if( typedefs != null && typedefs.length > 0 ) {
                                 for (int i = 0; i < typedefs.length; i++) {
                                     // It could be important to register in project before add as member...
@@ -212,7 +212,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                             if (fd != null){
                                 addMember(fd);
-                                fd.init(token, ClassImpl.this);
+                                fd.init(token, ClassImpl.this, !isRenderingLocalContext());
                                 break;
                             }
                         }
@@ -222,7 +222,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                             if (fd != null){
                                 addMember(fd);
-                                fd.init(token, ClassImpl.this);
+                                fd.init(token, ClassImpl.this, !isRenderingLocalContext());
                                 break;
                             }
                         }
@@ -371,7 +371,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
             ClassMemberForwardDeclaration fd = new ClassMemberForwardDeclaration(ClassImpl.this, ast, curentVisibility);
             addMember(fd);
-            fd.init(ast, ClassImpl.this);
+            fd.init(ast, ClassImpl.this, !isRenderingLocalContext());
             return fd;
         }
     }
@@ -485,8 +485,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }
 
         @Override
-        protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope) {
-            CsmClass cls = super.createForwardClassIfNeed(ast, scope);
+        protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
+            CsmClass cls = super.createForwardClassIfNeed(ast, scope, registerInProject);
             if (cls != null) {
                 classDefinition = cls.getUID();
                 RepositoryUtils.put(this);
