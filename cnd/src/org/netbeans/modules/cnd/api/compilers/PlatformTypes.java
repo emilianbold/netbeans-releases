@@ -87,28 +87,28 @@ public class PlatformTypes {
         String out;
         switch (platform) {
             case PLATFORM_SOLARIS_SPARC:
-                out = "PLATFORM_SOLARIS_SPARC";
+                out = "PLATFORM_SOLARIS_SPARC"; // NOI18N
                 break;
             case PLATFORM_SOLARIS_INTEL:
-                out = "PLATFORM_SOLARIS_INTEL";
+                out = "PLATFORM_SOLARIS_INTEL"; // NOI18N
                 break;
             case PLATFORM_LINUX:
-                out = "PLATFORM_LINUX";
+                out = "PLATFORM_LINUX"; // NOI18N
                 break;
             case PLATFORM_WINDOWS:
-                out = "PLATFORM_WINDOWS";
+                out = "PLATFORM_WINDOWS"; // NOI18N
                 break;
             case PLATFORM_MACOSX:
-                out = "PLATFORM_MACOSX";
+                out = "PLATFORM_MACOSX"; // NOI18N
                 break;
             case PLATFORM_GENERIC:
-                out = "PLATFORM_GENERIC";
+                out = "PLATFORM_GENERIC"; // NOI18N
                 break;
             case PLATFORM_NONE:
-                out = "PLATFORM_NONE";
+                out = "PLATFORM_NONE"; // NOI18N
                 break;
             default:
-                 out = "Error";
+                 out = "Error"; // NOI18N
         }
         return out;
     }

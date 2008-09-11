@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -58,6 +59,7 @@ import org.openide.util.Exceptions;
 public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTask<CompilationInfo> {
     private boolean accept = false;
     private int caretOffset;
+    private PHPCodeCompletion.CompletionContext context;
 
     public PHPCodeTemplateFilter(JTextComponent component, int offset) {
         this.caretOffset = offset;
@@ -79,9 +81,11 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     public boolean accept(CodeTemplate template) {
         if (template.getContexts().contains("php-code")) //NOI18N
         {
+            if (context == PHPCodeCompletion.CompletionContext.CLASS_CONTEXT_KEYWORDS) {
+                return template.getAbbreviation().equals("fnc");//NOI18N
+            }
             return accept;
         }
-
         return true;
     }
 
@@ -90,12 +94,21 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     }
 
     public void run(CompilationInfo parameter) throws Exception {
-        PHPCodeCompletion.CompletionContext context = PHPCodeCompletion.findCompletionContext(parameter, caretOffset);
-
-        switch(context){
-            case EXPRESSION:
-                accept = true;
-                break;
+        BaseDocument document = (BaseDocument) parameter.getDocument();
+        document.readLock();
+        
+        try{
+            context = PHPCodeCompletion.findCompletionContext(parameter, caretOffset);
+            switch(context){
+                case EXPRESSION:
+                    accept = true;
+                    break;
+                case CLASS_CONTEXT_KEYWORDS:
+                    accept = true;
+                    break;
+            }
+        } finally {
+            document.readUnlock();
         }
     }
 

@@ -64,6 +64,7 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 
@@ -136,6 +137,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
 
     abstract protected CsmFinder getFinder();
+    abstract protected FileReferencesContext getFileReferencesContext();
 
     @Override
     protected void documentModified(DocumentEvent evt) {
@@ -284,8 +286,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     }
 
     /** Get the class or function definition that belongs to the given position */
-    public CsmOffsetableDeclaration getDefinition(int pos) {
-        return CompletionUtilities.findFunDefinitionOrClassOnPosition(getDocument(), pos);
+    public CsmOffsetableDeclaration getDefinition(int pos, FileReferencesContext fileContext) {
+        return CompletionUtilities.findFunDefinitionOrClassOnPosition(getDocument(), pos, fileContext);
     }
 
     public boolean isStaticBlock(int pos) {
@@ -582,7 +584,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     protected Map buildLocalVariableMap(int offset) {
         int methodStartPos = getMethodStartPosition(offset);
         if (methodStartPos >= 0 && methodStartPos < offset) {
-            List res  = CompletionUtilities.findFunctionLocalVariables(getDocument(), offset);
+            List res  = CompletionUtilities.findFunctionLocalVariables(getDocument(), offset, null);
             return list2Map(res);
         }
         return null;
