@@ -687,7 +687,7 @@ public class SvnClientExceptionHandler {
     
     private static boolean isOutOfDate(String msg) {
         msg = msg.toLowerCase();       
-        return msg.indexOf("out of date") > -1;                                             // NOI18N
+        return msg.indexOf("out of date") > -1 || msg.indexOf("out-of-date") > -1;                                             // NOI18N
     }
     
     private static boolean isNoSvnClient(String msg) {
