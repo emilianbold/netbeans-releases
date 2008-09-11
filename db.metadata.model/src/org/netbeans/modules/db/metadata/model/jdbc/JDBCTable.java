@@ -50,25 +50,29 @@ import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
-import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCTable implements TableImplementation {
+public class JDBCTable extends TableImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCTable.class.getName());
 
-    private final JDBCSchema schema;
+    private final JDBCSchema jdbcSchema;
     private final String name;
 
     private Map<String, Column> columns;
 
-    public JDBCTable(JDBCSchema schema, String name) {
-        this.schema = schema;
+    public JDBCTable(JDBCSchema jdbcSchema, String name) {
+        this.jdbcSchema = jdbcSchema;
         this.name = name;
+    }
+
+    public final Schema getParent() {
+        return jdbcSchema.getSchema();
     }
 
     public final String getName() {
@@ -88,18 +92,18 @@ public class JDBCTable implements TableImplementation {
         return "JDBCTable[name='" + name + "']"; // NOI18N
     }
 
-    protected JDBCColumn createColumn(String name) {
-        return new JDBCColumn(name);
+    protected JDBCColumn createJDBCColumn(String name) {
+        return new JDBCColumn(this, name);
     }
 
     protected void createColumns() {
         Map<String, Column> newColumns = new LinkedHashMap<String, Column>();
         try {
-            ResultSet rs = schema.getCatalog().getMetadata().getDmd().getColumns(schema.getCatalog().getName(), schema.getName(), name, "%"); // NOI18N
+            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getColumns(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, "%"); // NOI18N
             try {
                 while (rs.next()) {
                     String columnName = rs.getString("COLUMN_NAME"); // NOI18N
-                    Column column = MetadataFactory.createColumn(new JDBCColumn(columnName));
+                    Column column = createJDBCColumn(columnName).getColumn();
                     newColumns.put(columnName, column);
                     LOGGER.log(Level.FINE, "Created column {0}", column);
                 }

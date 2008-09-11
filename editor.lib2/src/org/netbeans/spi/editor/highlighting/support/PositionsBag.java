@@ -88,11 +88,11 @@ public final class PositionsBag extends AbstractHighlightsContainer {
 
     private static final Logger LOG = Logger.getLogger(PositionsBag.class.getName());
     
-    private Document document;
-    private boolean mergeHighlights;
+    private final Document document;
+    private final boolean mergeHighlights;
 
-    private GapList<Position> marks = new GapList<Position>();
-    private GapList<AttributeSet> attributes = new GapList<AttributeSet>();
+    private final GapList<Position> marks = new GapList<Position>();
+    private final GapList<AttributeSet> attributes = new GapList<AttributeSet>();
     private long version = 0;
     
     /**

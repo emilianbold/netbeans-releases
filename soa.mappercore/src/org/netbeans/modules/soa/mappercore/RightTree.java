@@ -38,7 +38,9 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -56,12 +58,14 @@ import javax.swing.ScrollPaneLayout;
 import javax.swing.ToolTipManager;
 import javax.swing.ViewportLayout;
 import javax.swing.border.Border;
+import javax.swing.text.Position.Bias;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
+import org.netbeans.modules.soa.mappercore.search.Navigation;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
 import org.openide.util.NbBundle;
 
@@ -70,11 +74,11 @@ import org.openide.util.NbBundle;
  * @author anjeleevich
  */
 public class RightTree extends MapperPanel implements
-        FocusListener, Autoscroll {
+        FocusListener, Autoscroll, Searchable {
 
     private RightTreeEventHandler eventHandler;
     private JScrollPane scrollPane;
-    private ScrollPaneWrapper scrollPaneWrapper;
+    private JComponent scrollPaneWrapper;
     private CellRendererPane cellRendererPane;
     private JLabel childrenLabel;
     private RightTreeCellRenderer treeCellRenderer = new DefaultRightTreeCellRenderer();
@@ -103,7 +107,9 @@ public class RightTree extends MapperPanel implements
         scrollPane.getHorizontalScrollBar().setUnitIncrement(10);
         scrollPane.getVerticalScrollBar().setUnitIncrement(10);
 
-        scrollPaneWrapper = new ScrollPaneWrapper(scrollPane);
+        //scrollPaneWrapper = new ScrollPaneWrapper(scrollPane);
+        scrollPaneWrapper = new Navigation(this, scrollPane,
+                new ScrollPaneWrapper(scrollPane));
 
         cellRendererPane = new CellRendererPane();
 
@@ -1068,5 +1074,157 @@ public class RightTree extends MapperPanel implements
                         - node.getContentHeight() / 2));
             }
         }
+    }
+
+    public TreePath getNextMatch(String prefix, int startingRow, Bias bias) {
+        if (prefix == null) {
+            return null;
+        }
+
+        MapperModel model = getMapper().getModel();
+        MapperContext context = getMapper().getContext();
+
+        if (model == null || context == null) {
+            return null;
+        }
+
+        prefix = prefix.trim();
+
+        if (prefix.length() == 0) {
+            return null;
+        }
+
+        prefix = prefix.toLowerCase();
+
+        List<TreePath> pathList = new ArrayList<TreePath>();
+        collectVisibleTreePathes(pathList, null, null, getRoot(),
+                new int[] { -1 });
+
+        if (bias == Bias.Forward) {
+            for (int row = startingRow + 1; row < pathList.size(); row++) {
+                TreePath treePath = pathList.get(row);
+                Object object = treePath.getLastPathComponent();
+                String text = context.getRightDysplayText(model, object);
+                text = (text == null) ? "" : text.trim().toLowerCase(); // NOI18N
+
+                if (text.startsWith(prefix)) {
+                    return treePath;
+                }
+            }
+        } else {
+            for (int row = startingRow - 1; row >= 0; row--) {
+                TreePath treePath = pathList.get(row);
+                Object object = treePath.getLastPathComponent();
+                String text = context.getRightDysplayText(model, object);
+                text = (text == null) ? "" : text.trim().toLowerCase(); // NOI18N
+
+                if (text.startsWith(prefix)) {
+                    return treePath;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public int[] getSelectionRows() {
+        TreePath treePath = getSelectionModel().getSelectedPath();
+
+        if (treePath == null) {
+            return null;
+        }
+
+        int row = getRowForPath(treePath);
+        if (row < 0) {
+            return null;
+        }
+
+        return new int[] { row };
+    }
+
+    public int getRowForPath(TreePath path) {
+        return collectVisibleTreePathes(null, null, path, getRoot(),
+                new int[] { -1 });
+    }
+
+
+    public void scrollPathToVisible(TreePath path) {
+
+    }
+
+    public void setSelectionPath(TreePath path) {
+        getSelectionModel().setSelected(path);
+    }
+
+    public void clearSelection() {
+        getSelectionModel().setSelected(null);
+    }
+
+    private int collectVisibleTreePathes(List<TreePath> rowsList,
+            Map<TreePath, Integer> rowsMap, TreePath stopPath,
+            MapperNode node, int[] row)
+    {
+        if (node == null) {
+            return -1;
+        }
+
+        TreePath treePath = node.getTreePath();
+
+        if (node.getParent() != null) {
+            row[0]++;
+
+            if (rowsList != null) {
+                rowsList.add(treePath);
+            }
+
+            if (rowsMap != null) {
+                rowsMap.put(treePath, row[0]);
+            }
+        }
+
+        if (stopPath != null && treePath.equals(stopPath)) {
+            return row[0];
+        }
+
+        if (!node.isLeaf() && node.isExpanded()) {
+            int childCount = node.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                int stopRow = collectVisibleTreePathes(rowsList,
+                        rowsMap, stopPath, node.getChild(i), row);
+
+                if (stopRow >= 0) {
+                    return stopRow;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    public JComponent getSearchableComponent() {
+        return this;
+    }
+
+    public int getRowCount() {
+        return calculateRowCount(getRoot(), 0);
+    }
+
+    private int calculateRowCount(MapperNode node, int count) {
+        if (node == null) {
+            return count;
+        }
+
+        if (node.getParent() != null) {
+            count++;
+        }
+
+        if (!node.isLeaf() && node.isExpanded()) {
+            int childCount = node.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                count = calculateRowCount(node.getChild(i), count);
+            }
+        }
+
+        return count;
     }
 }

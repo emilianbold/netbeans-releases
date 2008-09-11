@@ -54,9 +54,15 @@ import org.openide.util.Utilities;
  */
 public final class RuntimeHelper {
 
-    public static final String WIN_EXECUTABLE = "\\bin\\grails.bat"; // NOI18N
+    public static final String GRAILS_HOME_PROPERTY = "GRAILS_HOME"; // NOI18N
 
-    public static final String NIX_EXECUTABLE = "/bin/grails"; // NOI18N
+    public static final String WIN_EXECUTABLE_FILE = "grails.bat"; // NOI18N
+
+    public static final String WIN_EXECUTABLE = "\\bin\\" + WIN_EXECUTABLE_FILE; // NOI18N
+
+    public static final String NIX_EXECUTABLE_FILE = "grails"; // NOI18N
+
+    public static final String NIX_EXECUTABLE = "/bin/" + NIX_EXECUTABLE_FILE; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(RuntimeHelper.class.getName());
 
@@ -99,7 +105,7 @@ public final class RuntimeHelper {
     }
 
     public static File getSystemDefaultRuntime() {
-        String grailsHome = System.getenv("GRAILS_HOME"); // NOI18N
+        String grailsHome = System.getenv(GRAILS_HOME_PROPERTY);
         if (grailsHome == null) {
             return null;
         }

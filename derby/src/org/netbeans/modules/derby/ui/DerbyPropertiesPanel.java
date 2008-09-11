@@ -44,17 +44,27 @@ package org.netbeans.modules.derby.ui;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverListener;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.derby.DerbyOptions;
+import org.netbeans.modules.derby.RegisterDerby;
 import org.netbeans.modules.derby.Util;
+import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Despite the name, serves as a settings dialog for Derby (not only
@@ -112,6 +122,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
                     continue;
                 }
             }
+            new RegisterSampleDatabase();
             DerbyOptions.getDefault().setSystemHome(panel.getDerbySystemHome());
             DerbyOptions.getDefault().setLocation(panel.getInstallLocation());
             return true;
@@ -348,4 +359,51 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     public javax.swing.JTextPane messageLabel;
     // End of variables declaration//GEN-END:variables
     
+    
+    private static class RegisterSampleDatabase {
+
+        private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
+        private static final String CONN_NAME = "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/sample [app on APP]";  // NOI18N
+        private boolean registered;
+
+        RegisterSampleDatabase() {
+            if (JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET).length == 0) {
+                JDBCDriverManager.getDefault().addDriverListener(jdbcDriverListener);
+            }
+        }
+        private final JDBCDriverListener jdbcDriverListener = new JDBCDriverListener() {
+            public void driversChanged() {
+                registerDatabase();
+            }
+        };
+
+        void registerDatabase() {
+            synchronized (this) {
+                if (registered) {
+                    return;
+                }
+
+                // We do this ahead of time to prevent another thread from
+                // double-registering the connections.
+                registered = true;
+            }
+
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        JDBCDriver[] drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
+                        if ((drvsArray.length > 0) && (ConnectionManager.getDefault().getConnection(CONN_NAME) == null)) {
+                            DerbyDatabases.createSampleDatabase();
+                        }
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    } catch (DatabaseException de) {
+                        Exceptions.printStackTrace(de);
+                    } finally {
+                        JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);
+                    }
+                }
+            });
+        }
+    }
 }

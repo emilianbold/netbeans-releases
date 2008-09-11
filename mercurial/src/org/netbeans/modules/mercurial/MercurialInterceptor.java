@@ -80,11 +80,17 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.fine("beforeDelete " + file);
         if (file == null) return false;
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
-        
+
+        // we don't care about ignored files
+        // IMPORTANT: false means mind checking the sharability as this might cause deadlock situations
+        if(HgUtils.isIgnored(file, false)) return false; // XXX what about other events?
         return true;
     }
 
     public void doDelete(File file) throws IOException {
+        // XXX runnig hg rm for each particular file when removing a whole firectory might no be neccessery:
+        //     just delete it via file.delete and call, group the files in afterDelete and schedule a delete
+        //     fo the parent or for a bunch of files at once. 
         Mercurial.LOG.fine("doDelete " + file);
         if (file == null) return;
         Mercurial hg = Mercurial.getInstance();

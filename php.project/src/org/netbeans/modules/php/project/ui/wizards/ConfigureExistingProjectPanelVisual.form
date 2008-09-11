@@ -55,7 +55,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="sourcesLabel" alignment="3" min="-2" pref="15" max="-2" attributes="1"/>
+                  <Component id="sourcesLabel" alignment="3" min="-2" max="-2" attributes="1"/>
                   <Component id="sourcesBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="sourcesTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>

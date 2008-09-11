@@ -39,16 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-#include <iostream.h>
+#include <iostream>
+
 int main(int argc, char**argv) {
     // Prints welcome message...
-    cout << "Welcome ...\n";
+    std::cout << "Welcome ..." << std::endl;
 
     // Prints arguments...
     if (argc > 1) {
-        cout << "\nArguments:\n";
+        std::cout << std::endl << "Arguments:" << std::endl;
         for (int i = 1; i < argc; i++) {
-            cout << i << ": " << argv[i] << "\n";
+            std::cout << i << ": " << argv[i] << std::endl;
         }
     }
     

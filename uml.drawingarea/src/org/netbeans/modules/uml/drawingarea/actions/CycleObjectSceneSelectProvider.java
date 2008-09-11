@@ -47,6 +47,8 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
@@ -138,6 +140,13 @@ public class CycleObjectSceneSelectProvider implements CycleFocusProvider
             }
         }
         
+        ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
+        if(manager != null)
+        {
+            manager.cancelPalette();
+        }
+        
+        Util.makeSureWidgetIsVisible(scene.findWidget(bestObject));
         scene.setFocusedObject(bestObject);
         scene.userSelectionSuggested(Collections.singleton(bestObject), false);
         return true;

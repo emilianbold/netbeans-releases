@@ -236,9 +236,14 @@ final class WorkspaceParser {
         // information we need (we have to do this here because project's
         // classpath needs at least project's names and abs. paths during
         // parsing
+        // Load first all .project files to init any links project may have
+        // and then .classpath files.
         for (EclipseProject project : workspace.getProjects()) {
             project.setWorkspace(workspace);
-            ProjectFactory.getInstance().load(project);
+            ProjectFactory.getInstance().loadDotProject(project);
+        }
+        for (EclipseProject project : workspace.getProjects()) {
+            ProjectFactory.getInstance().loadDotClassPath(project);
         }
         
         for (EclipseProject project : workspace.getProjects()) {

@@ -42,25 +42,21 @@
 package org.netbeans.modules.websvc.saas.codegen.j2ee.support;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.java.support.LibrariesHelper;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaUtil;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.saas.codegen.java.support.SoapClientJavaOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
-import org.netbeans.modules.websvc.saas.codegen.util.Util;
 
 
 /**
  *
  * @author ayubskhan
  */
-public class SoapClientJ2eeOperationInfo extends SoapClientOperationInfo {
+public class SoapClientJ2eeOperationInfo extends SoapClientJavaOperationInfo {
     
     private List<ParameterInfo> headerParams;
 
@@ -69,17 +65,12 @@ public class SoapClientJ2eeOperationInfo extends SoapClientOperationInfo {
     }
 
     @Override
-    public void initWsdlModelInfo() {
-        LibrariesHelper.addDefaultJaxWsClientJars(getProject(), null, getMethod().getSaas());
-    }
-
-    @Override
     public List<ParameterInfo> getSoapHeaderParameters() {
         if (headerParams == null) {
             headerParams = new java.util.ArrayList<ParameterInfo>();
             Map<QName,String> params = SoapClientUtils.getSoapHandlerParameters(
-                    getXamWsdlModel(), (WsdlPort)getPort(), 
-                    (WsdlOperation)getOperation());
+                    getXamWsdlModel(), getPort(), 
+                    (WSOperation)getOperation());
             for (Map.Entry<QName,String> entry : params.entrySet()) {
                 Class type = getType(getProject(), entry.getValue());
                 ParameterInfo info = new ParameterInfo(entry.getKey(), type, entry.getValue());
@@ -88,10 +79,5 @@ public class SoapClientJ2eeOperationInfo extends SoapClientOperationInfo {
             }
         }
         return headerParams;
-    }
-
-    @Override
-    public Class getType(Project project, String typeName) {
-        return JavaUtil.getType(project, typeName);
     }
 }

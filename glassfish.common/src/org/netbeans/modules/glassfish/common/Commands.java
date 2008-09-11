@@ -70,25 +70,13 @@ public class Commands {
     /**
      * Command to start a server domain
      */
-    public static final ServerCommand START = new ServerCommand() {
-        
-        @Override
-        public String getCommand() { 
-            return "start-domain"; // NOI18N
-        } 
-        
+    public static final ServerCommand START = new ServerCommand("start-domain") { // NOI18N
     };
     
     /**
      * Command to stop a server domain
      */
-    public static final ServerCommand STOP = new ServerCommand() {
-        
-        @Override
-        public String getCommand() { 
-            return "stop-domain"; // NOI18N
-        } 
-        
+    public static final ServerCommand STOP = new ServerCommand("stop-domain") { // NOI18N
     };
     
     /**
@@ -105,6 +93,7 @@ public class Commands {
         }
         
         public ListAppsCommand(final String container) {
+            super("list-applications"); // NOI18N
             this.container = container;
         }
         
@@ -124,11 +113,6 @@ public class Commands {
             } else {
                 return Collections.emptyMap();
             }
-        }
-        
-        @Override
-        public String getCommand() { 
-            return "list-applications"; // NOI18N
         }
         
         @Override
@@ -247,14 +231,14 @@ public class Commands {
      */
     public static final class ListResourcesCommand extends ServerCommand {
 
-        private final String command;
         private final String cmdSuffix;
         private Manifest list;
         private List<ResourceDesc> resList;
 
-        public ListResourcesCommand(String resourceCommandSuffix) {
-            command = "list-" + resourceCommandSuffix + "s"; // NOI18N
-            cmdSuffix = resourceCommandSuffix;
+        public ListResourcesCommand(String resourceCmdSuffix) {
+            super("list-" + resourceCmdSuffix + "s"); // NOI18N
+
+            cmdSuffix = resourceCmdSuffix;
         }
         
         public List<ResourceDesc> getResourceList() {
@@ -263,11 +247,6 @@ public class Commands {
             } else {
                 return Collections.emptyList();
             }
-        }
-        
-        @Override
-        public String getCommand() { 
-            return command;
         }
         
         @Override
@@ -324,32 +303,23 @@ public class Commands {
      */
     public static final class DeployCommand extends ServerCommand {
         
-        private final String path;
-        private final String name;
-        private final String contextRoot;
-        
         public DeployCommand(final String path, final String name, final String contextRoot) {
-            this.path = path;
-            this.name = name;
-            this.contextRoot = contextRoot;
-        }
-        
-        @Override
-        public String getCommand() { 
+            super("deploy"); // NOI18N
+            
             StringBuilder cmd = new StringBuilder(128);
-            cmd.append("deploy?path="); // NOI18N
+            cmd.append("path="); // NOI18N
             cmd.append(path);
             if(name != null && name.length() > 0) {
-                cmd.append("?name="); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "name="); // NOI18N
                 cmd.append(name);
             }
             if(contextRoot != null && contextRoot.length() > 0) {
-                cmd.append("?contextroot="); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
-            cmd.append("?force=true");
-            return cmd.toString();
-        } 
+            cmd.append(PARAM_SEPARATOR + "force=true");
+            query = cmd.toString();
+        }
         
     }
     
@@ -358,24 +328,17 @@ public class Commands {
      */
     public static final class RedeployCommand extends ServerCommand {
         
-        private final String name;
-        private final String contextRoot;
-        
         public RedeployCommand(final String name, final String contextRoot) {
-            this.name = name;
-            this.contextRoot = contextRoot;
-        }
-        
-        @Override
-        public String getCommand() { 
+            super("redeploy"); // NOI18N
+            
             StringBuilder cmd = new StringBuilder(128);
-            cmd.append("redeploy?name="); // NOI18N
+            cmd.append("name="); // NOI18N
             cmd.append(name);
             if(contextRoot != null && contextRoot.length() > 0) {
-                cmd.append("?contextroot="); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
-            return cmd.toString();
+            query = cmd.toString();
         }
         
     }
@@ -385,15 +348,9 @@ public class Commands {
      */
     public static final class UndeployCommand extends ServerCommand {
         
-        private final String name;
-        
         public UndeployCommand(final String name) {
-            this.name = name;
-        }
-        
-        @Override
-        public String getCommand() { 
-            return "undeploy?name=" + name; // NOI18N
+            super("undeploy"); // NOI18N
+            query = "name=" + name;
         }
         
     }
@@ -403,32 +360,19 @@ public class Commands {
      */
     public static final class UnregisterCommand extends ServerCommand {
         
-        private final String name;
-        private final String resourceCmdSuffix;
-        private final String cmdPropertyName;
-        private final boolean cascade;
-        
         public UnregisterCommand(final String name, final String resourceCmdSuffix,
                 final String cmdPropertyName, final boolean cascade) {
-            this.name = name;
-            this.resourceCmdSuffix = resourceCmdSuffix;
-            this.cmdPropertyName = cmdPropertyName;
-            this.cascade = cascade;
-        }
-        
-        @Override
-        public String getCommand() { 
+            super("delete-" + resourceCmdSuffix); // NOI18N
+
             StringBuilder cmd = new StringBuilder(128);
-            cmd.append("delete-"); // NOI18N
-            cmd.append(resourceCmdSuffix);
             if(cascade) {
-                cmd.append("?cascade=true");
+                cmd.append("cascade=true");
+                cmd.append(PARAM_SEPARATOR);
             }
-            cmd.append('?');
             cmd.append(cmdPropertyName);
             cmd.append('=');
             cmd.append(name);
-            return cmd.toString();
+            query = cmd.toString();
         }
         
     }
@@ -441,11 +385,7 @@ public class Commands {
         private Manifest info;
         
         public VersionCommand() {
-        }
-
-        @Override
-        public String getCommand() {
-            return "version";
+            super("version"); // NOI18N
         }
 
         @Override
@@ -470,6 +410,7 @@ public class Commands {
         private String domainRoot;
         
         public LocationCommand() {
+            super("__locations"); // NOI18N
         }
         
         public String getInstallRoot() {
@@ -478,11 +419,6 @@ public class Commands {
 
         public String getDomainRoot() {
             return domainRoot;
-        }
-
-        @Override
-        public String getCommand() {
-            return "__locations";
         }
 
         @Override

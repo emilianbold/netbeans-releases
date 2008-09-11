@@ -116,6 +116,7 @@ import org.openide.DialogDisplayer;
 
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.ide.ShortCircuitProgressObject;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DomainEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -1279,7 +1280,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     public ResourceConfiguratorInterface getResourceConfigurator() {
         if(resourceConfigurator == null){
-            org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator r = new org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator();
+            org.netbeans.modules.j2ee.sun.api.restricted.ResourceConfigurator r = new org.netbeans.modules.j2ee.sun.api.restricted.ResourceConfigurator();
             r.setDeploymentManager(this);
             resourceConfigurator = r;
 //            try{
@@ -1615,129 +1616,4 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     }
     //</editor-fold>
     
-    /**
-     * ProgressObject for use in cases where we need to short circuit the flow of
-     * method calls between the plugin and the server's jsr-88 implementation class.
-     *
-     * This allows the plugin's jsr-88 "interface" to work-around bugs in the
-     * server's jsr-88 implementation.
-     */
-// <editor-fold defaultstate="collapsed" desc=" ShortCircuitProgressObject code ">
-    static class ShortCircuitProgressObject implements ProgressObject {
-        
-        private CommandType ct;
-        private String message;
-        private StateType st;
-        private TargetModuleID[] tmids;
-        
-        ProgressEventSupport pes = new ProgressEventSupport(this);
-        
-        /**
-         *
-         * @param ct
-         * @param message
-         * @param st
-         * @param tmids
-         */
-        ShortCircuitProgressObject(CommandType ct, String message, StateType st, TargetModuleID[] tmids) {
-            this.ct = ct;
-            this.message = message;
-            this.st = st;
-            this.tmids = tmids;
-        }
-        
-        /**
-         *
-         * @return
-         */
-        public DeploymentStatus getDeploymentStatus() {
-            return new DeploymentStatus() {
-                public ActionType getAction() {
-                    return ActionType.EXECUTE;
-                }
-                public CommandType getCommand() {
-                    return ct;
-                }
-                public String getMessage() {
-                    return message;
-                }
-                public StateType getState() {
-                    return st;
-                }
-                public boolean isCompleted() {
-                    return st.equals(StateType.COMPLETED);
-                }
-                public boolean isFailed() {
-                    return st.equals(StateType.FAILED);
-                }
-                public boolean isRunning() {
-                    return st.equals(StateType.RUNNING);
-                }
-            };
-        }
-        
-        /**
-         *
-         * @return
-         */
-        public TargetModuleID[] getResultTargetModuleIDs() {
-            return tmids;
-        }
-        
-        /**
-         *
-         * @param targetModuleID
-         * @return
-         */
-        public ClientConfiguration getClientConfiguration(TargetModuleID targetModuleID) {
-            return null;
-        }
-        
-        /**
-         *
-         * @return
-         */
-        public boolean isCancelSupported() {
-            return false;
-        }
-        
-        /**
-         *
-         * @throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException
-         */
-        public void cancel() throws OperationUnsupportedException {
-        }
-        
-        /**
-         *
-         * @return
-         */
-        public boolean isStopSupported() {
-            return false;
-        }
-        
-        /**
-         *
-         * @throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException
-         */
-        public void stop() throws OperationUnsupportedException {
-        }
-        
-        /**
-         *
-         * @param progressListener
-         */
-        public void addProgressListener(ProgressListener progressListener) {
-            pes.addProgressListener(progressListener);
-        }
-        
-        /**
-         *
-         * @param progressListener
-         */
-        public void removeProgressListener(ProgressListener progressListener) {
-            pes.removeProgressListener(progressListener);
-        }
-    }
-//</editor-fold>
 }

@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.MoveProvider;
@@ -241,11 +242,32 @@ public abstract class AbstractLabelManager implements LabelManager
                 HashSet sel=new HashSet();
                 sel.add(lPres);
                 scene.setFocusedObject(lPres);
-                scene.setSelectedObjects(sel);
+                scene.userSelectionSuggested(sel, false);
             }
         }
     }
 
+    public boolean isLabelSelected(String name, LabelType type)
+    {
+        if (type == null)
+            type = LabelType.EDGE;
+        String completeName = name + "_" + type.toString();
+        Widget lW=labelMap.get(completeName);
+        if(lW!=null && lW.isVisible())
+        {
+            DesignerScene scene=(DesignerScene) lW.getScene();
+            Object lPres=scene.findObject(lW);
+            if(lPres!=null)
+            {
+                Set<IPresentationElement> selObjs = (Set<IPresentationElement>) scene.getSelectedObjects();
+                if (selObjs != null && selObjs.contains(lPres))
+                    return true;
+            }
+        }
+        return false;
+    }
+   
+    
     public void hideLabel(String name)
     {
         hideLabel(name, LabelType.EDGE);
@@ -513,7 +535,12 @@ public abstract class AbstractLabelManager implements LabelManager
                 setBackground(UIManager.getColor("List.selectionBackground"));
                 setForeground(UIManager.getColor("List.selectionForeground"));
 
-                setBorder(SELECTED_BORDER);
+                setBorder(SELECTED_BORDER);               
+                
+                if(this.getPreferredLocation() == null)
+                {
+                    setPreferredLocation(new Point(0,0));//getConnector().convertSceneToLocal(this.getLocation()));
+                }
             }
             else if((previousState.isSelected() == true) && (state.isSelected() == false))
             {
@@ -572,6 +599,10 @@ public abstract class AbstractLabelManager implements LabelManager
 
         public void movementFinished(Widget widget)
         {
+            if (origLoc == null)
+            {
+                origLoc = widget.getLocation();
+            }
             if (origLoc != null)
             {
                 Point finalLoc = widget.getPreferredLocation();

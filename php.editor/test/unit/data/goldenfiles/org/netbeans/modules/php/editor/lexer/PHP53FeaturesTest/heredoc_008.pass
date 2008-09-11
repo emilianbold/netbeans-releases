@@ -27,5 +27,5 @@ token #25 PHP_CURLY_CLOSE }
 token #26 PHP_CONSTANT_ENCAPSED_STRING "
 token #27 PHP_SEMICOLON ;
 token #28 WHITESPACE \n\n
-token #29 PHP_CLOSETAG ?>\n
-token #30 T_INLINE_HTML --EXPECT--\n
+token #29 PHP_CLOSETAG ?>
+token #30 T_INLINE_HTML \n--EXPECT--\n

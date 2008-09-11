@@ -113,7 +113,7 @@ public abstract class DesignerPaneBaseUI extends ComponentUI {
      *
      * @return the caret object
      */
-    protected DesignerCaret createCaret() {
+    DesignerCaret createCaret() {
         DesignerCaret caret = new DesignerCaret();
         
         String prefix = getPropertyPrefix();

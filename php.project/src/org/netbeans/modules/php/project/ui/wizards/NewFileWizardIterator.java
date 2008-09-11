@@ -93,7 +93,9 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             } 
         }
         if (ext != null && ext.length() > 0) {
-            wizardProps.put("name", fname.substring(0, fname.length() - ext.length()-1));//NOI18N
+            String name = fname.substring(0, fname.length() - ext.length()-1);
+            name = name.replaceAll("\\W", "");//NOI18N
+            wizardProps.put("name", name);//NOI18N
         }        
         DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard), wizardProps);
 
@@ -107,6 +109,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             Project project = Templates.getProject(wizard);
             assert project instanceof PhpProject;
             PhpProject phpProject = (PhpProject) project;
+            // XXX - sources directory is remembered in project
             FileObject srcDir = getFileObject(phpProject.getHelper(), PhpProjectProperties.SRC_DIR);
             if (srcDir != null) {
                 targetFolder = srcDir;

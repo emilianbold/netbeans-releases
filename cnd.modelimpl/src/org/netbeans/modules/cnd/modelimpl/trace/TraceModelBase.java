@@ -39,7 +39,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -79,7 +81,7 @@ public class TraceModelBase {
 	model = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
 	if (model == null) {
 	    model = new ModelImpl();
-	}
+        }
 	model.startup();
 	currentIncludePaths = quoteIncludePaths;
     }
@@ -91,10 +93,22 @@ public class TraceModelBase {
     }
 
     protected final void shutdown() {
+        waitModelTasks();
 	model.shutdown();
+        waitModelTasks();
 	RepositoryUtils.cleanCashes();
     }
 
+    private void waitModelTasks(){
+        Cancellable task = model.enqueueModelTask(new Runnable(){
+            public void run() {
+            }
+        }, "wait finished other tasks");
+        if (task instanceof Task) {
+            ((Task)task).waitFinished();
+        }
+    }
+    
     public void processArguments(final String... args) {
 	for (int i = 0; i < args.length; i++) {
 	    if (args[i].startsWith("--")) { // NOI18N

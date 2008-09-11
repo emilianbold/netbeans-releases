@@ -63,6 +63,8 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
@@ -88,13 +90,19 @@ public class CsmFinderImpl implements CsmFinder {
     public CsmFinderImpl(FileObject fo, String mimeType){
         this.fo = fo;
         this.mimeType = mimeType;
-        caseSensitive = getCaseSensitive();
+        caseSensitive = _getCaseSensitive();
     }
         
     public CsmFinderImpl(CsmFile csmFile, String mimeType){
         this.csmFile = csmFile;
         this.mimeType = mimeType;
-        caseSensitive = getCaseSensitive();
+        caseSensitive = _getCaseSensitive();
+    }
+
+    public CsmFinderImpl(CsmFile csmFile, String mimeType, boolean caseSensitive){
+        this.csmFile = csmFile;
+        this.mimeType = mimeType;
+        this.caseSensitive = caseSensitive;
     }
 
     public CsmFile getCsmFile() {
@@ -102,6 +110,10 @@ public class CsmFinderImpl implements CsmFinder {
     }
     
     private boolean getCaseSensitive() {
+        return caseSensitive;
+    }
+
+    private boolean _getCaseSensitive() {
         return CsmCompletionUtils.isCaseSensitive(mimeType);
     }
     
@@ -161,9 +173,8 @@ public class CsmFinderImpl implements CsmFinder {
 
     public CsmClassifier getExactClassifier(String classFullName) {
         // System.out.println ("getExactClassifier: " + classFullName); //NOI18N
-        CsmClassifier cls = csmFile.getProject().findClassifier(classFullName);
-//        Type cls = JavaModel.getDefaultExtent().getType().resolve(classFullName);
-//        if (cls instanceof UnresolvedClass)
+//        CsmClassifier cls = csmFile.getProject().findClassifier(classFullName);
+        CsmClassifier cls = CsmClassifierResolver.getDefault().findClassifierUsedInFile(classFullName, csmFile, true);
         return cls;
     }
     
@@ -846,5 +857,17 @@ public class CsmFinderImpl implements CsmFinder {
             }
         }
         return out;
+    }
+
+    public List<CsmClass> findBaseClasses(CsmOffsetableDeclaration contextDeclaration, CsmClassifier c, String name, boolean exactMatch, boolean sort) {
+        c = CsmBaseUtilities.getOriginalClassifier(c);
+        if (CsmKindUtilities.isClass(c)) {
+            CsmClass clazz = (CsmClass)c;
+            CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
+            List<CsmClass> classClassifiers = contResolver.getBaseClasses(clazz, contextDeclaration, name, exactMatch);
+            return classClassifiers;
+        } else {
+            return new ArrayList<CsmClass>();
+        }
     }
 }

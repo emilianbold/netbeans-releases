@@ -113,9 +113,11 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
         
         Sources sources = ProjectUtils.getSources( project );
-                        
-        folders = sources.getSourceGroups( Sources.TYPE_GENERIC );
-        
+
+        if (folders == null) {
+            folders = sources.getSourceGroups( Sources.TYPE_GENERIC );
+        }
+
         if ( folders.length < 2 ) {
             // one source group i.e. hide Location
             locationLabel.setVisible( false );

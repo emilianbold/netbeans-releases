@@ -190,7 +190,7 @@ public class EditorTestLookup extends ProxyLookup {
             services = repository.getDefaultFileSystem().getRoot().createFolder("Services");
         }
         
-        DEFAULT_LOOKUP.setLookup(lookupContent, cl, services, exclude);
+        EditorTestLookup.setLookup(lookupContent, cl, services, exclude);
     }
 
     private static FileSystem createLocalFileSystem(File mountPoint, String[] resources) throws IOException {
@@ -234,7 +234,7 @@ public class EditorTestLookup extends ProxyLookup {
             setDelegates(orig);
         }
 
-        public FileSystem.Status getStatus() {
+        public @Override FileSystem.Status getStatus() {
             return this;
         }
         
@@ -244,12 +244,34 @@ public class EditorTestLookup extends ProxyLookup {
                 String bundleName = (String)fo.getAttribute ("SystemFileSystem.localizingBundle"); // NOI18N
                 if (bundleName != null) {
                     bundleName = org.openide.util.Utilities.translate(bundleName);
-                    ResourceBundle b = NbBundle.getBundle(bundleName);
+//                    System.out.println("~~~ looking up annotateName for '" + fo.getPath() + "', localizingBundle='" + bundleName + "'");
+                    
                     try {
+                        ResourceBundle b = NbBundle.getBundle(bundleName);
                         return b.getString (fo.getPath());
                     } catch (MissingResourceException ex) {
                         // ignore--normal
-                        ex.printStackTrace();
+
+//                        System.out.println("~~~ No annotateName for '" + fo.getPath() + "', localizingBundle='" + bundleName + "'");
+//                        ex.printStackTrace();
+//
+//                        ClassLoader c = Lookup.getDefault().lookup(ClassLoader.class);
+//                        if (c == null) {
+//                            c = ClassLoader.getSystemClassLoader();
+//                        }
+//                        try {
+//                            String s = bundleName.replace('.', '/') + ".properties";
+//                            URL r = c.getResource(s);
+//                            System.out.println("~~~ '" + s + "' -> " + r);
+//
+//                            Enumeration<URL> e = c.getResources(s);
+//                            while (e.hasMoreElements()) {
+//                                URL url = e.nextElement();
+//                                System.out.println("  -> " + url);
+//                            }
+//                        } catch (IOException ioe) {
+//                            ioe.printStackTrace();
+//                        }
                     }
                 }
             }

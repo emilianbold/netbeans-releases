@@ -52,6 +52,26 @@ private:
 int NewClass::AAA = 10;
 int NewClass::BBB(AAA);
 
+
+
+// IZ 139425 : Wrong rendering of declarations with const qualifier
+class C1{
+public:
+    C1(int i){
+        
+    }
+};
+
+int t = 1;
+
+C1 c1(t);
+const C1 c2(t);
+int foo() {
+    C1 c3(t);
+    const C1 c4(t);
+}
+
+
 //
 // Functions
 //
@@ -68,3 +88,7 @@ int main(int argc, char** argv) {
     foo = zxczxc;
     return foo;
 }
+
+//Some more variables
+int pBa(*bbbb);
+int ba(&bbbbb);

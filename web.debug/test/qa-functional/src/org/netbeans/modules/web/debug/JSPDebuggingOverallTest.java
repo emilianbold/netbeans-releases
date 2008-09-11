@@ -242,7 +242,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
      */
     public void testDebugReload() {
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
-        Utils.cancelClientSideDebuggingMeassage();
+        Utils.confirmClientSideDebuggingMeassage();
         // check breakpoint reached
         // wait status text "Thread main stopped at SampleClass1.java:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
@@ -292,7 +292,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     public void testDebugAfterBreakpoint() {
         // start debugging
         new DebugProjectAction().perform();
-        Utils.cancelClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         // check the first breakpoint reached
@@ -304,7 +303,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         Utils.finishDebugger();
         // start debugger again
         new DebugProjectAction().perform();
-        Utils.cancelClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         stt.waitText("index.jsp:"+line); // NOI18N
@@ -324,7 +322,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     public void testDebugAndStopServer() {
         // start debugging
         new DebugProjectAction().perform();
-        Utils.cancelClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         // check the first breakpoint reached
@@ -346,7 +343,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         serverNode.stop();
         // start debugger again
         new DebugProjectAction().perform();
-        Utils.cancelClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         stt.waitText("index.jsp:"+line);
@@ -385,7 +381,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
         Action runProjectAction = new Action(null, runProjectItem);
         runProjectAction.perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
-        Utils.cancelClientSideDebuggingMeassage();
         outputOper = new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME);
         outputOper.waitText(suspendedMessage);
         outputOper.close();
@@ -425,7 +420,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         final int lineJSP = Utils.setBreakpoint(eoPage, "incl/simpleInclude.jsp"); // NOI18N
         // "Debug File"
         new Action(null, new DebugAction().getPopupPath()).perform(pageNode);
-        Utils.cancelClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/incl/simpleInclude.jsp");
         stt.waitText("simpleInclude.jsp:"+lineJSP); //NOI18N
@@ -446,10 +440,10 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         // wait pointer in editor (three annotations there)
         new Waiter(new Waitable() {
             public Object actionProduced(Object editorOper) {
-                return ((EditorOperator)editorOper).getAnnotations(lineJSP).length == 3 ? Boolean.TRUE : null;
+                return ((EditorOperator)editorOper).getAnnotations(lineJSP).length == 2 ? Boolean.TRUE : null;
             }
             public String getDescription() {
-                return("Wait 3 annotations in editor."); // NOI18N
+                return("Wait 2 annotations in editor."); // NOI18N
             }
         }).waitAction(eoPage);
         //ContainerOperator debugToolbarOper = Utils.getDebugToolbar();
@@ -457,7 +451,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         // wait until Debug toolbar dismiss
         //debugToolbarOper.waitComponentVisible(false);
         new ContinueAction().perform();
-        Utils.cancelClientSideDebuggingMeassage();
         so.close();
     }
     

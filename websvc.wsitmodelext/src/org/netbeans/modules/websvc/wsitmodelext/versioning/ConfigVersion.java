@@ -41,12 +41,24 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.versioning;
 
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.openide.util.NbBundle;
 
 public enum ConfigVersion {
-    CONFIG_1_0, 
-    CONFIG_1_3;
-    
+    CONFIG_1_0 {
+        public final boolean isSupported(WSStackVersion jaxWsVersion) {
+            return true;
+        }
+    },
+    CONFIG_1_3 {
+        public final boolean isSupported(WSStackVersion jaxWsVersion) {
+            if (jaxWsVersion.compareTo(WSStackVersion.valueOf(2, 1, 4, 1)) >= 0) {
+                return true;
+            }
+            return false;
+        }
+    };
+
     @Override
     public String toString() {
         return NbBundle.getMessage(ConfigVersion.class, this.name());
@@ -55,5 +67,6 @@ public enum ConfigVersion {
     public final static ConfigVersion getDefault() {
         return CONFIG_1_3;
     }
-    
+
+    public abstract boolean isSupported(WSStackVersion jaxWsVersion);
 }

@@ -56,7 +56,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 
 public class CKit extends CCKit {

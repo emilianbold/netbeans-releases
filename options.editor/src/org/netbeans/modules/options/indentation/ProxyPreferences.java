@@ -64,6 +64,7 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.openide.util.WeakListeners;
 
 /**
@@ -78,31 +79,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
 
     @Override
     public void put(String key, String value) {
-        EventBag<PreferenceChangeListener, PreferenceChangeEvent> bag = null;
-
-        synchronized (tree.treeLock()) {
-            checkNotNull(key, "key"); //NOI18N
-            checkNotNull(value, "value"); //NOI18N
-            checkRemoved();
-            
-            String orig = get(key, null);
-            if (orig == null || !orig.equals(value)) {
-                if (LOG.isLoggable(Level.WARNING)) {
-                    LOG.fine("Overwriting '" + key + "' = '" + value + "'"); //NOI18N
-                }
-                
-                data.put(key, value);
-                removedKeys.remove(key);
-                
-                bag = new EventBag<PreferenceChangeListener, PreferenceChangeEvent>();
-                bag.addListeners(prefListeners);
-                bag.addEvent(new PreferenceChangeEvent(this, key, value));
-            }
-        }
-
-        if (bag != null) {
-            firePrefEvents(Collections.singletonList(bag));
-        }
+        _put(key, value, String.class.getName());
     }
 
     @Override
@@ -112,26 +89,26 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
             checkRemoved();
             
             if (removedKeys.contains(key)) {
-                if (LOG.isLoggable(Level.WARNING)) {
+                if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Key '" + key + "' removed, using default '" + def + "'"); //NOI18N
                 }
                 return def;
             } else {
-                String value = data.get(key);
-                if (value != null) {
-                    if (LOG.isLoggable(Level.WARNING)) {
-                        LOG.fine("Key '" + key + "' modified, local value '" + value + "'"); //NOI18N
+                TypedValue typedValue = data.get(key);
+                if (typedValue != null) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Key '" + key + "' modified, local value '" + typedValue.getValue() + "'"); //NOI18N
                     }
-                    return value;
+                    return typedValue.getValue();
                 } else if (delegate != null) {
-                    value = delegate.get(key, def);
-                    if (LOG.isLoggable(Level.WARNING)) {
+                    String value = delegate.get(key, def);
+                    if (LOG.isLoggable(Level.FINE)) {
                         LOG.fine("Key '" + key + "' undefined, original value '" + value + "'"); //NOI18N
                     }
                     return value;
                 } else {
-                    if (LOG.isLoggable(Level.WARNING)) {
-                        LOG.fine("Key '" + key + "' undefined, '" + name + "' is a new node, using default '" + value + "'"); //NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Key '" + key + "' undefined, '" + name + "' is a new node, using default '" + def + "'"); //NOI18N
                     }
                     return def;
                 }
@@ -201,7 +178,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
 
     @Override
     public void putInt(String key, int value) {
-        put(key, Integer.toString(value));
+        _put(key, Integer.toString(value), Integer.class.getName());
     }
 
     @Override
@@ -219,7 +196,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
 
     @Override
     public void putLong(String key, long value) {
-        put(key, Long.toString(value));
+        _put(key, Long.toString(value), Long.class.getName());
     }
 
     @Override
@@ -237,7 +214,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
 
     @Override
     public void putBoolean(String key, boolean value) {
-        put(key, Boolean.toString(value));
+        _put(key, Boolean.toString(value), Boolean.class.getName());
     }
 
     @Override
@@ -252,7 +229,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
 
     @Override
     public void putFloat(String key, float value) {
-        put(key, Float.toString(value));
+        _put(key, Float.toString(value), Float.class.getName());
     }
 
     @Override
@@ -270,7 +247,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
 
     @Override
     public void putDouble(String key, double value) {
-        put(key, Double.toString(value));
+        _put(key, Double.toString(value), Double.class.getName());
     }
 
     @Override
@@ -288,7 +265,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
 
     @Override
     public void putByteArray(String key, byte[] value) {
-        put(key, Base64.encode(value));
+        _put(key, Base64.encode(value), value.getClass().getName());
     }
 
     @Override
@@ -452,7 +429,29 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("Writing " + absolutePath() + "/" + key + "=" + data.get(key));
                         }
-                        delegate.put(key, data.get(key));
+                        
+                        TypedValue typedValue = data.get(key);
+                        if (String.class.getName().equals(typedValue.getJavaType())) {
+                            delegate.put(key, typedValue.getValue());
+
+                        } else if (Integer.class.getName().equals(typedValue.getJavaType())) {
+                            delegate.putInt(key, Integer.parseInt(typedValue.getValue()));
+
+                        } else if (Long.class.getName().equals(typedValue.getJavaType())) {
+                            delegate.putLong(key, Long.parseLong(typedValue.getValue()));
+
+                        } else if (Boolean.class.getName().equals(typedValue.getJavaType())) {
+                            delegate.putBoolean(key, Boolean.parseBoolean(typedValue.getValue()));
+
+                        } else if (Float.class.getName().equals(typedValue.getJavaType())) {
+                            delegate.putFloat(key, Float.parseFloat(typedValue.getValue()));
+
+                        } else if (Double.class.getName().equals(typedValue.getJavaType())) {
+                            delegate.putDouble(key, Double.parseDouble(typedValue.getValue()));
+
+                        } else {
+                            delegate.putByteArray(key, Base64.decode(typedValue.getValue()));
+                        }
                     }
                 }
                 data.clear();
@@ -642,7 +641,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
     private final Tree tree;
     private boolean removed;
     
-    private final Map<String, String> data = new HashMap<String, String>();
+    private final Map<String, TypedValue> data = new HashMap<String, TypedValue>();
     private final Set<String> removedKeys = new HashSet<String>();
     private final Map<String, ProxyPreferences> children = new HashMap<String, ProxyPreferences>();
     private final Set<String> removedChildren = new HashSet<String>();
@@ -669,6 +668,34 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
             delegate.addNodeChangeListener(weakNodeListener);
         }
         this.tree = tree;
+    }
+
+    private void _put(String key, String value, String javaType) {
+        EventBag<PreferenceChangeListener, PreferenceChangeEvent> bag = null;
+
+        synchronized (tree.treeLock()) {
+            checkNotNull(key, "key"); //NOI18N
+            checkNotNull(value, "value"); //NOI18N
+            checkRemoved();
+            
+            String orig = get(key, null);
+            if (orig == null || !orig.equals(value)) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Overwriting '" + key + "' = '" + value + "'"); //NOI18N
+                }
+                
+                data.put(key, new TypedValue(value, javaType));
+                removedKeys.remove(key);
+                
+                bag = new EventBag<PreferenceChangeListener, PreferenceChangeEvent>();
+                bag.addListeners(prefListeners);
+                bag.addEvent(new PreferenceChangeEvent(this, key, value));
+            }
+        }
+
+        if (bag != null) {
+            firePrefEvents(Collections.singletonList(bag));
+        }
     }
 
     private ProxyPreferences node(String pathName, boolean create, List<EventBag<NodeChangeListener, NodeChangeEvent>> events) {
@@ -829,7 +856,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
             prefEvents.add(prefBag);
 
             for(String key : data.keySet()) {
-                prefBag.addEvent(new PreferenceChangeEvent(this, key, delegate.get(key, data.get(key))));
+                prefBag.addEvent(new PreferenceChangeEvent(this, key, delegate.get(key, data.get(key).getValue())));
             }
         } // else there is no corresponding node in the orig hierarchy and this node
           // will be reported as removed
