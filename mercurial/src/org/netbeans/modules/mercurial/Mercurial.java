@@ -383,6 +383,8 @@ public class Mercurial {
     }
 
     public void versionedFilesChanged() {
+        LOG.fine("cleaning unversioned parents cache");
+        unversionedParents.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
 

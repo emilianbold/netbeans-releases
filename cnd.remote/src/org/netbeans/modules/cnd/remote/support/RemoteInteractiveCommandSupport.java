@@ -93,11 +93,11 @@ public class RemoteInteractiveCommandSupport extends RemoteConnectionSupport {
         StringBuilder cmdline = new StringBuilder();
 
         if (env != null) {
-            cmdline.append(ShellUtils.prepareExportString(key, env));
+            cmdline.append(ShellUtils.prepareExportString(env));
         }
         cmdline.append(cmd);
 
-        echannel.setCommand(cmdline.toString());
+        echannel.setCommand(ShellUtils.wrapCommand(key, cmdline.toString()));
         echannel.setInputStream(in);
         echannel.setOutputStream(out);
         echannel.setErrStream(out);

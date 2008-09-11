@@ -764,7 +764,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     private String getMacDylibAddress(String path, String info) {
         String line;
-        int start = info.startsWith("shlib-info=") ? 11 : 0;
+        int start = info.startsWith("shlib-info=") ? 11 : 0; // NOI18N
         int next = info.indexOf(",shlib-info="); // NOI18N
         
         while ((line = info.substring(start, next > 0 ? next : info.length())) != null) {
@@ -1737,25 +1737,25 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             int start = 0;
             int next
                     ;
-            while ((next = info.indexOf("shlib-info=", start + 1)) > 0) {
+            while ((next = info.indexOf("shlib-info=", start + 1)) > 0) { // NOI18N
                 map = GdbUtils.createMapFromString(info.substring(start + 12, next - 2));
-                path = map.get("path");
-                addr = map.get("dyld-addr");
+                path = map.get("path"); // NOI18N
+                addr = map.get("dyld-addr"); // NOI18N
                 if (path != null && addr != null) {
                     shtab.put(path, new ShareInfo(path, addr));
                 }
                 start = next;
             }
             map = GdbUtils.createMapFromString(info.substring(start + 12, info.length() - 1));
-            path = map.get("path");
-            addr = map.get("dyld-addr");
+            path = map.get("path"); // NOI18N
+            addr = map.get("dyld-addr"); // NOI18N
             if (path != null && addr != null) {
                 shtab.put(path, new ShareInfo(path, addr));
             }
         } else {
-            for (String line : info.split("\\\\n")) {
+            for (String line : info.split("\\\\n")) { // NOI18N
                 if (line.charAt(0) == '0') {
-                    String[] s = line.split("\\s+", 4);
+                    String[] s = line.split("\\s+", 4); // NOI18N
                     shtab.put(s[3], new ShareInfo(s[3], s[0]));
                 }
             }
@@ -2608,7 +2608,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         conf = (MakeConfiguration) o;
                         if (conf.isDynamicLibraryConfiguration()) {
                             String proot = FileUtil.getFileDisplayName(proj.getProjectDirectory());
-                            String output = proot + "/" + conf.getLinkerConfiguration().getOutputValue();
+                            String output = proot + "/" + conf.getLinkerConfiguration().getOutputValue(); // NOI18N
                             output = conf.expandMacros(output); // expand macros (FIXUP: needs verification)
                             if (output.equals(path)) {
                                 this.project = proj;
