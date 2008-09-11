@@ -84,7 +84,6 @@
 				<tocitem text="Creating an Empty Diagram" target="uml_diagrams_creating_diagrams_empty" />
 				<tocitem text="Creating a Scoped Diagram" target="uml_diagrams_creating_diagrams_scoped" />
 				<tocitem text="Creating a Diagram From Selected Elements" target="uml_diagrams_creating_diagram_from_selected_elements" />
-				<tocitem text="Creating a Dependency Diagram for a Classifier" target="uml_diagrams_creating_diagram_dependency" />
 			</tocitem>
 			<tocitem text="Opening and Closing Diagrams" target="uml_diagrams_opening_closing" />
 			<tocitem text="Creating Diagram Elements" target="uml_diagrams_creating_diagram_elements" />

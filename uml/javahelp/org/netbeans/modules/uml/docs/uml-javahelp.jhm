@@ -111,7 +111,6 @@
 	<mapID target="uml_diagrams_component_ww_components_dependencies" url="diagrams/component_ww_components_dependencies.html"/>
 	<mapID target="uml_diagrams_component_ww_diagram_elements" url="diagrams/component_ww_diagram_elements.html"/>
 	<mapID target="uml_diagrams_component_ww_ports_interfaces" url="diagrams/component_ww_ports_interfaces.html"/>
-	<mapID target="uml_diagrams_creating_diagram_dependency" url="diagrams/creating_diagram_dependency.html"/>
 	<mapID target="uml_diagrams_creating_diagram_elements" url="diagrams/creating_diagram_elements.html"/>
 	<mapID target="uml_diagrams_creating_diagram_from_selected_elements" url="diagrams/creating_diagram_from_selected_elements.html"/>
 	<mapID target="uml_diagrams_creating_diagrams" url="diagrams/creating_diagrams.html"/>
@@ -139,7 +138,6 @@
 	<mapID target="uml_diagrams_editing_diagram_elements_renaming" url="diagrams/editing_diagram_elements_renaming.html"/>
 	<mapID target="uml_diagrams_editing_diagram_elements_selecting_all" url="diagrams/editing_diagram_elements_selecting_all.html"/>
 	<mapID target="uml_diagrams_editing_diagram_elements_selecting_all_similar" url="diagrams/editing_diagram_elements_selecting_all_similar.html"/>
-	<mapID target="uml_diagrams_editing_diagram_elements_using_redefine_db" url="diagrams/editing_diagram_elements_using_redefine_db.html"/>
 	<mapID target="uml_diagrams_generating_code" url="diagrams/generating_code.html"/>
 	<mapID target="uml_diagrams_source_code_synchronization" url="diagrams/source_code_synchronization.html"/>
 	<mapID target="uml_diagrams_labeling_class_diagram_elements" url="diagrams/labeling_class_diagram_elements.html"/>
