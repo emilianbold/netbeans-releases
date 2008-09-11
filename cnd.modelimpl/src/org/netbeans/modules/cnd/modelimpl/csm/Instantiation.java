@@ -249,7 +249,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
             } else if (member instanceof CsmClass) {
                 return new Class((CsmClass)member, getMapping());
             } else if (member instanceof CsmClassForwardDeclaration) {
-                return new ClassForward((CsmClassForwardDeclaration)member, this);
+                return new ClassForward((CsmClassForwardDeclaration)member, getMapping());
             } else if (member instanceof CsmEnum) {
                 // no need to instantiate enums?
                 return member;
@@ -535,11 +535,10 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
     }
     
     private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember<CsmClassForwardDeclaration> {
-        private CsmClassForwardDeclaration forward;
+        private CsmClass csmClass = null;
 
-        public ClassForward(CsmClassForwardDeclaration forward, CsmInstantiation instantiation) {
-            super(forward, instantiation.getMapping());
-            this.forward = forward;
+        public ClassForward(CsmClassForwardDeclaration forward, Map<CsmTemplateParameter, CsmType> mapping) {
+            super(forward, mapping);
         }
 
         public CsmClass getContainingClass() {
@@ -554,13 +553,16 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
             return ((CsmMember)declaration).isStatic();
         }
 
-        @Override
-        public String toString() {
-            return "INSTANTIATION OF TYPEDEF: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
+        public CsmClass getCsmClass() {
+            if (csmClass == null) {
+                csmClass = (CsmClass)Instantiation.create((CsmTemplate)((CsmClassForwardDeclaration)declaration).getCsmClass(), getMapping());
+            }
+            return csmClass;
         }
 
-        public CsmClass getCsmClass() {
-            return forward.getCsmClass();
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF CLASS FORWARD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
 

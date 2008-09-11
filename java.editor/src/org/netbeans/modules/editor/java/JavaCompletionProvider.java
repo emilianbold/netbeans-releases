@@ -3705,7 +3705,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
                         int idEndPos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
-                        if (idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
+                        if (idEndPos < 0 || idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
                             break;
                         argTypes = getArgumentsUpToPos(env, nc.getArguments(), idEndPos, lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset);
                         if (argTypes != null) {

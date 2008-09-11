@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.refactoring.java.plugins;
-
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePathScanner;
-import javax.lang.model.element.*;
-import org.netbeans.api.java.source.CompilationInfo;
+package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 /**
  *
- * @author Jan Becicka
+ * @author eu155513
  */
-public class LocalVarScanner extends TreePathScanner<Boolean, Element> {
-
-    private CompilationInfo info;
-    private String newName;
-    boolean result = false;
-    public LocalVarScanner(CompilationInfo workingCopy, String newName) {
-        this.info = workingCopy;
-        this.newName = newName;
+public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
+    public InstantiationHyperlinkTestCase(String testName) {
+        super(testName);
     }
 
-    @Override
-    public Boolean visitVariable(VariableTree variable, Element element) {
-        if (newName!=null && variable.getName().toString().equals(newName)) {
-            result= true;
-        }
-        return super.visitVariable(variable, element);
-    }
-    @Override
-    public Boolean visitIdentifier(IdentifierTree node, Element p) {
-        Element current = info.getTrees().getElement(getCurrentPath());
-        if (newName==null) {
-            if (current !=null && current.equals(p)) {
-                result = true;
-            }
-        } else if (current != null && current.getKind() == ElementKind.FIELD && node.getName().toString().equals(newName)) {
-            result = true;
-        }
-        return super.visitIdentifier(node, p);
-    }
-    
-    public boolean hasRefernces() {
-        return result;
+    public void testClassForward() throws Exception {
+        // IZ144869 : fixed instantiation of class forward declaration
+        performTest("classForward.h", 21, 12, "classForward.h", 16, 5);
     }
 }
