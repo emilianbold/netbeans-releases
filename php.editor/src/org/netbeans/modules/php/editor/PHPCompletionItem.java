@@ -327,13 +327,32 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class ClassItem extends PHPCompletionItem {
+        private boolean endWithDoubleColon;
         ClassItem(IndexedClass clazz, CompletionRequest request) {
+            this(clazz, request, false);
+        }
+        ClassItem(IndexedClass clazz, CompletionRequest request, boolean endWithDoubleColon) {
             super(clazz, request);
+            this.endWithDoubleColon = endWithDoubleColon;
         }
 
         public ElementKind getKind() {
             return ElementKind.CLASS;
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            if (endWithDoubleColon) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(getName());
+                builder.append("::${cursor}"); //NOI18N
+                return builder.toString();
+
+            }
+            return super.getCustomInsertTemplate();
+        }
+
+
     }
     
     static class InterfaceItem extends PHPCompletionItem {

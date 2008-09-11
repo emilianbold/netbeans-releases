@@ -569,13 +569,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
                     break;
                 case CLASS_NAME:
-                    autoCompleteClassNames(proposals, request);
+                    autoCompleteClassNames(proposals, request,false);
                     break;
                 case INTERFACE_NAME:
                     autoCompleteInterfaceNames(proposals, request);
                     break;
                 case TYPE_NAME:
-                    autoCompleteClassNames(proposals, request);
+                    autoCompleteClassNames(proposals, request,false);
                     autoCompleteInterfaceNames(proposals, request);
                     break;
                 case STRING:
@@ -590,7 +590,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case PHPDOC:
                     if (PHPDOCCodeCompletion.isTypeCtx(request)){
-                        autoCompleteClassNames(proposals, request);
+                        autoCompleteClassNames(proposals, request,false);
                         autoCompleteInterfaceNames(proposals, request);
                     } else {
                         PHPDOCCodeCompletion.complete(proposals, request);
@@ -626,9 +626,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return new PHPCompletionResult(completionContext, proposals);
     }
 
-    private void autoCompleteClassNames(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
+    private void autoCompleteClassNames(List<CompletionProposal> proposals, 
+            PHPCompletionItem.CompletionRequest request,boolean endWithDoubleColon) {
         for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, nameKind)) {
-            proposals.add(new PHPCompletionItem.ClassItem(clazz, request));
+            proposals.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon));
         }
     }
 
@@ -1076,7 +1077,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     proposals.add(new PHPCompletionItem.ConstantItem((IndexedConstant)element, request));
                 }
                 else if (element instanceof IndexedClass) {
-                    proposals.add(new PHPCompletionItem.ClassItem((IndexedClass)element, request));
+                    proposals.add(new PHPCompletionItem.ClassItem((IndexedClass)element, request, true));
                 }
                 else if (element instanceof IndexedVariable) {
                     IndexedConstant topLevelVar = (IndexedConstant) element;
@@ -1112,7 +1113,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             // CLASS NAMES
             // TODO only show classes with static elements
-            autoCompleteClassNames(proposals, request);
+            autoCompleteClassNames(proposals, request,true);
 
             // LOCAL VARIABLES
             proposals.addAll(getVariableProposals(request.result.getProgram(), request));
