@@ -2759,8 +2759,6 @@ public class HgCommand {
      * Gets hg status command output line for a given file
      */
     private static List<String> doSingleStatusCmd(File repository, String cwd, String filename)  throws HgException{
-        String statusLine = null;
-
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
