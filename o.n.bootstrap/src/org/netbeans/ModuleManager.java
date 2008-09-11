@@ -45,11 +45,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -445,6 +447,21 @@ public final class ModuleManager {
          */
         protected @Override PermissionCollection getPermissions(CodeSource cs) {
             return allPermissions;
+        }
+
+        private static final Set<String> JRE_PROVIDED_FACTORIES = new HashSet<String>(Arrays.asList(
+                "META-INF/services/javax.xml.parsers.SAXParserFactory", // NOI18N
+                "META-INF/services/javax.xml.parsers.DocumentBuilderFactory", // NOI18N
+                "META-INF/services/javax.xml.transform.TransformerFactory", // NOI18N
+                "META-INF/services/javax.xml.validation.SchemaFactory")); // NOI18N
+        @Override
+        public InputStream getResourceAsStream(String name) {
+            if (JRE_PROVIDED_FACTORIES.contains(name)) {
+                // #146082: prefer JRE versions of JAXP factories when available.
+                return ClassLoader.getSystemResourceAsStream(name); // will normally be null
+            } else {
+                return super.getResourceAsStream(name);
+            }
         }
 
     }
