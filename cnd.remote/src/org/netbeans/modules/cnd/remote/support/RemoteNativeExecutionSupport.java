@@ -114,7 +114,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         if (envp != null) {
             command.append(ShellUtils.prepareExportString(envp));
         }
-        command.append(exe).append(" ").append(args).append(" 2>&1");
+        command.append(exe).append(" ").append(args).append(" 2>&1"); // NOI18N
         command.insert(0, dircmd);
 
         String theCommand = ShellUtils.wrapCommand(key, command.toString());

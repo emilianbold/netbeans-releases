@@ -295,13 +295,13 @@ public class CompilerSetManager {
     public static int computeLocalPlatform() {
         String os = System.getProperty("os.name"); // NOI18N
 
-        if (os.equals("SunOS")) {
+        if (os.equals("SunOS")) { // NOI18N
             return System.getProperty("os.arch").equals("x86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
-        } else if (os.startsWith("Windows ")) {
+        } else if (os.startsWith("Windows ")) { // NOI18N
             return PlatformTypes.PLATFORM_WINDOWS;
-        } else if (os.toLowerCase().contains("linux")) {
+        } else if (os.toLowerCase().contains("linux")) { // NOI18N
             return PlatformTypes.PLATFORM_LINUX;
-        } else if (os.toLowerCase().contains("mac")) {
+        } else if (os.toLowerCase().contains("mac")) { // NOI18N
             return PlatformTypes.PLATFORM_MACOSX;
         } else {
             return PlatformTypes.PLATFORM_GENERIC;
@@ -561,13 +561,13 @@ public class CompilerSetManager {
 
     private static void completeCompilerSet(String hkey, CompilerSet cs, List<CompilerSet> sets) {
         if (cs.getTool(Tool.CCompiler) == null) {
-            cs.addTool(hkey, "", "", Tool.CCompiler);
+            cs.addTool(hkey, "", "", Tool.CCompiler); // NOI18N
         }
         if (cs.getTool(Tool.CCCompiler) == null) {
-            cs.addTool(hkey, "", "", Tool.CCCompiler);
+            cs.addTool(hkey, "", "", Tool.CCCompiler); // NOI18N
         }
         if (cs.getTool(Tool.FortranCompiler) == null) {
-            cs.addTool(hkey, "", "", Tool.FortranCompiler);
+            cs.addTool(hkey, "", "", Tool.FortranCompiler); // NOI18N
         }
         if (cs.findTool(Tool.MakeTool) == null) {
             Tool other = null;
@@ -592,7 +592,7 @@ public class CompilerSetManager {
             }
         }
         if (cs.getTool(Tool.MakeTool) == null) {
-                cs.addTool(hkey, "", "", Tool.MakeTool);
+                cs.addTool(hkey, "", "", Tool.MakeTool); // NOI18N
         }
         if (cs.findTool(Tool.DebuggerTool) == null) {
             String path;
@@ -606,7 +606,7 @@ public class CompilerSetManager {
                 cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.DebuggerTool);
         }
         if (cs.getTool(Tool.DebuggerTool) == null) {
-                cs.addTool(hkey, "", "", Tool.DebuggerTool);
+                cs.addTool(hkey, "", "", Tool.DebuggerTool); // NOI18N
         }
 
     }
@@ -956,14 +956,14 @@ public class CompilerSetManager {
     @Override
     public String toString() {
         StringBuilder out = new StringBuilder();
-        out.append("CSM for ").append(hkey);
-        out.append(" with toolchains:[");
+        out.append("CSM for ").append(hkey); // NOI18N
+        out.append(" with toolchains:["); // NOI18N
         for (CompilerSet compilerSet : sets) {
-            out.append(compilerSet.getName()).append(" ");
+            out.append(compilerSet.getName()).append(" "); // NOI18N
         }
-        out.append("]");
-        out.append(" platform:").append(PlatformTypes.toString(platform));
-        out.append(" in state ").append(state.toString());
+        out.append("]"); // NOI18N
+        out.append(" platform:").append(PlatformTypes.toString(platform)); // NOI18N
+        out.append(" in state ").append(state.toString()); // NOI18N
         return out.toString();
     }
 }

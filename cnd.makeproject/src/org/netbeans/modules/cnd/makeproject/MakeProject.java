@@ -60,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
@@ -129,6 +130,7 @@ public final class MakeProject implements Project, AntProjectListener {
     private Set<String> headerExtensions = MakeProject.createExtensionSet();
     private Set<String> cExtensions = MakeProject.createExtensionSet();
     private Set<String> cppExtensions = MakeProject.createExtensionSet();
+    private String sourceEncoding = null;
 
     MakeProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -153,6 +155,7 @@ public final class MakeProject implements Project, AntProjectListener {
         readProjectExtension(data, HEADER_EXTENSIONS, headerExtensions);
         readProjectExtension(data, C_EXTENSIONS, cExtensions);
         readProjectExtension(data, CPP_EXTENSIONS, cppExtensions);
+        sourceEncoding = getSourceEncodingFromProjectXml();
 
         if (templateListener == null) {
             DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
@@ -226,7 +229,7 @@ public final class MakeProject implements Project, AntProjectListener {
             new MakeProjectOperations(this),
             new FolderSearchInfo(projectDescriptorProvider),
             new MakeProjectType(),
-            new MakeProjectEncodingQueryImpl(projectDescriptorProvider),
+            new MakeProjectEncodingQueryImpl(this),
             new RemoteProjectImpl()
         });
     }
@@ -508,6 +511,40 @@ public final class MakeProject implements Project, AntProjectListener {
             }
         });
     }
+    
+    
+    /*
+     * Return source encoding if in project.xml (only project version >= 50)
+     */
+    public String getSourceEncodingFromProjectXml() {
+        Element data = helper.getPrimaryConfigurationData(true);
+
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                return node.getTextContent();
+            }
+        }
+        
+        return null;
+    }
+    
+    public String getSourceEncoding() {
+        if (sourceEncoding == null) {
+            // Read configurations.xml. That's where encoding is stored for project version < 50)
+            projectDescriptorProvider.getConfigurationDescriptor();
+        }
+        if (sourceEncoding == null) {
+            sourceEncoding = FileEncodingQuery.getDefaultEncoding().name();
+        }
+        return sourceEncoding;
+    }
+    
+    public void setSourceEncoding(String sourceEncoding) {
+        this.sourceEncoding = sourceEncoding;
+    }
+    
     // Private innerclasses ----------------------------------------------------
 
 /*

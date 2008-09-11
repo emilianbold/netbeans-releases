@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -93,16 +94,21 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     }
 
     public void run(CompilationInfo parameter) throws Exception {
-        context = PHPCodeCompletion.findCompletionContext(parameter, caretOffset);
-
-        switch(context){
-            case EXPRESSION:
-                accept = true;
-                break;
-            case CLASS_CONTEXT_KEYWORDS:
-                accept = true;
-                break;
-                
+        BaseDocument document = (BaseDocument) parameter.getDocument();
+        document.readLock();
+        
+        try{
+            context = PHPCodeCompletion.findCompletionContext(parameter, caretOffset);
+            switch(context){
+                case EXPRESSION:
+                    accept = true;
+                    break;
+                case CLASS_CONTEXT_KEYWORDS:
+                    accept = true;
+                    break;
+            }
+        } finally {
+            document.readUnlock();
         }
     }
 

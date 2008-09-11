@@ -47,7 +47,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Map;
-import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 
 /**
  * Run a remote command. This remote command should <b>not</b> expect input. The output
@@ -147,7 +146,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
             String pathName = "PATH";//PlatformInfo.getDefault(key).getPathName();//NOI18N
             if (env == null || env.get(pathName) == null) {
-                cmdline.append(ShellUtils.prepareExportString(new String[] {pathName + "=/bin:/usr/bin"}));//NOI18N
+                cmdline.append(ShellUtils.prepareExportString(new String[] {pathName + "=/bin:/usr/bin:$PATH"}));//NOI18N
             }
         } else {
             assert env==null || env.size() == 0; // if one didn't want command to be changed but provided env he should be aware of doing something wrong

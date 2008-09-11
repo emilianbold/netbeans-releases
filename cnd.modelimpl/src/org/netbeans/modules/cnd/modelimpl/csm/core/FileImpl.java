@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -152,7 +153,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     };
     
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)  
-    private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
+    private Object projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
 
     /** 
@@ -231,7 +232,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	state = State.INITIAL;
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
-        this.projectRef = null;
+        this.projectRef = new WeakReference(project); 
         this.fileType = fileType;
         if (nativeFileItem != null){
             project.putNativeFileItem(getUID(), nativeFileItem);
@@ -250,12 +251,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private ProjectBase _getProject(boolean assertNotNull) {
         projectLock.readLock().lock();
         try {
-            ProjectBase prj = this.projectRef;
+            ProjectBase prj = null;
+            if (projectRef instanceof ProjectBase) {
+                prj = (ProjectBase)projectRef;
+            } else if (projectRef instanceof Reference) {
+                prj = ((Reference<ProjectBase>)projectRef).get();
+            }
             if (prj == null) {
                 prj = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
                 if (assertNotNull) {
                     assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
                 }
+                projectRef = new WeakReference<ProjectBase>(prj);
             }
             return prj;
         } finally {
