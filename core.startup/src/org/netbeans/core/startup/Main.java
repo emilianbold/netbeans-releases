@@ -240,10 +240,6 @@ public final class Main extends Object {
 
 
 // 5. initialize GUI 
-    StartLog.logStart ("XML Factories"); //NOI18N
-    
-    org.netbeans.core.startup.SAXFactoryImpl.install();
-    org.netbeans.core.startup.DOMFactoryImpl.install();
     //Bugfix #35919: Log message to console when initialization of local
     //graphics environment fails eg. due to incorrect value of $DISPLAY
     //on X Windows (Linux, Solaris). In such case IDE will not start
