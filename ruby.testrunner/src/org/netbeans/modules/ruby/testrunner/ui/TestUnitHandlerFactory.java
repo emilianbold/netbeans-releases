@@ -71,6 +71,8 @@ public class TestUnitHandlerFactory {
         result.add(new TestLoggerHandler());
         result.add(new TestMiscHandler());
         result.add(new SuiteMiscHandler());
+//        result.add(new SessionStartingHandler());
+//        result.add(new SessionFinishedHandler());
         return result;
     }
 
@@ -229,9 +231,7 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report result = session.getReport();
-            result.elapsedTimeMillis = toMillis(matcher.group(1));
-            manager.displayReport(session, result);
+            manager.displayReport(session, session.getReport(toMillis(matcher.group(1))));
         }
     }
 
@@ -316,4 +316,56 @@ public class TestUnitHandlerFactory {
                 LOGGER.log(level, matcher.group(2));
         }
     }
+
+    static class SessionStartingHandler extends TestRecognizerHandler {
+
+        private String output;
+
+        public SessionStartingHandler() {
+            super("%SESSION_STARTING%"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            output = NbBundle.getMessage(TestUnitHandlerFactory.class, "MSG_TestSessionStarting", session.getName());
+            manager.displayOutput(session, output, false);
+        }
+
+        @Override
+        RecognizedOutput getRecognizedOutput() {
+            return new FilteredOutput(output);
+        }
+    }
+
+    static class SessionFinishedHandler extends TestRecognizerHandler {
+
+        private List<String> output;
+
+        public SessionFinishedHandler() {
+            super("%SESSION_FINISHED%"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            output = new ArrayList<String>(2);
+            output.add(NbBundle.getMessage(TestUnitHandlerFactory.class, 
+                    "MSG_TestSessionFinished", session.getSessionResult().getElapsedTime() / 1000l));
+            output.add(NbBundle.getMessage(TestUnitHandlerFactory.class, 
+                    "MSG_TestSessionFinishedSummary",
+                    session.getSessionResult().getTotal(), 
+                    session.getSessionResult().getFailed(),
+                    session.getSessionResult().getErrors()));
+            
+//            for (String line : output) {
+//                manager.displayOutput(session, line, false);
+//            }
+        }
+
+        @Override
+        RecognizedOutput getRecognizedOutput() {
+//            return new FilteredOutput(output.toArray(new String[output.size()]));
+            return new FilteredOutput();
+        }
+    }
+
 }

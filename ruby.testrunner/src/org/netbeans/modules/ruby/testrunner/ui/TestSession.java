@@ -40,6 +40,8 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 
 /**
@@ -64,10 +66,14 @@ public class TestSession {
     private String suiteName;
     private final FileLocator fileLocator;
     private final SessionType sessionType;
+    private final String name;
+    private final SessionResult result;
 
-    public TestSession(FileLocator fileLocator, SessionType sessionType) {
+    public TestSession(String name, FileLocator fileLocator, SessionType sessionType) {
+        this.name = name;
         this.fileLocator = fileLocator;
         this.sessionType = sessionType;
+        this.result = new SessionResult();
     }
 
     /**
@@ -100,8 +106,9 @@ public class TestSession {
      * 
      * @return
      */
-    Report getReport() {
+    Report getReport(long timeInMillis) {
         Report report = new Report(suiteName, fileLocator);
+        report.elapsedTimeMillis = timeInMillis;
         for (Report.Testcase testcase : testCases) {
             report.reportTest(testcase);
             report.totalTests += 1;
@@ -115,7 +122,16 @@ public class TestSession {
                 report.detectedPassedTests += 1;
             }
         }
+        addReportToSessionResult(report);
         return report;
+    }
+
+    private void addReportToSessionResult(Report report) {
+        result.elapsedTime(report.elapsedTimeMillis);
+        result.failed(report.failures);
+        result.passed(report.detectedPassedTests);
+        result.pending(report.pending);
+        result.errors(report.errors);
     }
 
     String getSuiteName() {
@@ -130,4 +146,73 @@ public class TestSession {
         return ++failuresCount;
     }
 
+    FileLocator getFileLocator() {
+        return fileLocator;
+    }
+
+    String getName() {
+        return name;
+    }
+
+    SessionResult getSessionResult() {
+        return result;
+    }
+
+
+    /**
+     * The results for the whole session, i.e. the cumulative result 
+     * of all reports that were generated for the session.
+     */
+    static final class SessionResult {
+
+        private int passed;
+        private int failed;
+        private int errors;
+        private int pending;
+        private long elapsedTime;
+        
+        private int failed(int failedCount) {
+            return failed += failedCount;
+        }
+
+        private int errors(int errorCount) {
+            return errors += errorCount;
+        }
+
+        private int passed(int passedCount) {
+            return passed += passedCount;
+        }
+
+        private int pending(int pendingCount) {
+            return pending += pendingCount;
+        }
+
+        private long elapsedTime(long time) {
+            return elapsedTime += time;
+        }
+
+        public int getErrors() {
+            return errors;
+        }
+
+        public int getFailed() {
+            return failed;
+        }
+
+        public int getPassed() {
+            return passed;
+        }
+
+        public int getPending() {
+            return pending;
+        }
+
+        public int getTotal() {
+            return getPassed() + getFailed() + getErrors() + getPending();
+        }
+
+        public long getElapsedTime() {
+            return elapsedTime;
+        }
+    }
 }
