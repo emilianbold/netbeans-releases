@@ -43,10 +43,10 @@ package org.netbeans.modules.mercurial.ui.status;
 
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.versioning.spi.VCSContext;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.mercurial.Mercurial;
+import javax.swing.ImageIcon;
+import org.openide.util.Utilities;
 
 /**
  * Open the mercurial view. It focuses recently opened
@@ -59,7 +59,8 @@ import org.netbeans.modules.mercurial.Mercurial;
 public class OpenVersioningAction extends ShowAllChangesAction {
 
     public OpenVersioningAction() {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        putValue("noIconInMenu", Boolean.FALSE); // NOI18N
+        setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/mercurial/resources/icons/versioning-view.png"))); // NOI18N
     }
 
     public String getName() {
