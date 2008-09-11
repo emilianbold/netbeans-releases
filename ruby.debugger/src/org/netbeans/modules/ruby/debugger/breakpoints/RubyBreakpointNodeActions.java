@@ -52,8 +52,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
 /**
- * Provides actions for nodes representing {@link RubyBreakpoint} in the
- * Breapoint view.
+ * Provides actions for nodes representing {@link RubyLineBreakpoint} in the
+ * Breakpoint view.
  */
 public final class RubyBreakpointNodeActions implements NodeActionsProviderFilter {
     
@@ -85,7 +85,7 @@ public final class RubyBreakpointNodeActions implements NodeActionsProviderFilte
     }
     
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof RubyBreakpoint) {
+        if (node instanceof RubyLineBreakpoint) {
             RubyLineBreakpoint bp = (RubyLineBreakpoint) node;
             EditorUtil.showLine(EditorUtil.getLineAnnotable(bp.getFilePath(), bp.getLineNumber() - 1));
         } else {
@@ -95,7 +95,7 @@ public final class RubyBreakpointNodeActions implements NodeActionsProviderFilte
     
     public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
         Action[] origActions = original.getActions(node);
-        if (node instanceof RubyBreakpoint) {
+        if (node instanceof RubyLineBreakpoint) {
             Action[] actions = new Action[origActions.length + 3];
             actions[0] = GO_TO_SOURCE_ACTION;
             actions[1] = null;

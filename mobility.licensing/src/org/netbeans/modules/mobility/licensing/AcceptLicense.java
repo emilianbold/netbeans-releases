@@ -68,6 +68,8 @@ import org.openide.util.Utilities;
 /**
  * Displays LicensePanel to user. User must accept license to continue.
  * if user does not accept license IllegalStateException is thrown.
+ * <p>
+ * removed from manifest.mf: OpenIDE-Module-Install: org/netbeans/modules/mobility/licensing/AcceptLicense.class
  *
  * @author  Marek Slama, Adam Sotona
  */

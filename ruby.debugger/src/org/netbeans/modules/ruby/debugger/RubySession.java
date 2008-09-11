@@ -144,11 +144,19 @@ public final class RubySession {
     
     void stepOver() {
         try {
+            stepOver(forceNewLine());
+        } catch (RubyDebuggerException e) {
+            Util.severe("Cannot step over", e); // NOI18N
+        }
+    }
+
+    void stepOver(boolean forceNewLine) {
+        try {
             beforeProceed();
             if (!activeThread.canStepOver()) {
                 return;
             }
-            activeThread.stepOver(forceNewLine());
+            activeThread.stepOver(forceNewLine);
             state = State.RUNNING;
         } catch (RubyDebuggerException e) {
             Util.severe("Cannot step over", e); // NOI18N

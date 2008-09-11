@@ -124,17 +124,20 @@ public interface Constants {
     public static final String ACTION_PROPERTY_JPDALISTEN = "jpda.listen";
 
     /**
-     * 
+     * when present, will deploy the web/ejb/ear project to an app server
+     * defined in netbeans.
+     * only meaningful value is "true"
      */
     public static final String ACTION_PROPERTY_DEPLOY = "netbeans.deploy"; //NOI18N
 
     /**
-     *
+     * denotes wheater the netbeans app server deployment shall be performed in 
+     * debug mode. Optional property, complementary to ACTION_PROPERTY_DEPLOY.
      */
     public static final String ACTION_PROPERTY_DEPLOY_DEBUG_MODE = "netbeans.deploy.debugmode"; //NOI18N
 
     /**
-     *
+     * Optional property, complementary to ACTION_PROPERTY_DEPLOY.
      */
     public static final String ACTION_PROPERTY_DEPLOY_REDEPLOY = "netbeans.deploy.forceRedeploy"; //NOI18N
     
