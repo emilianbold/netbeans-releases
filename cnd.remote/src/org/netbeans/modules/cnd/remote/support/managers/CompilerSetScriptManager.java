@@ -68,7 +68,7 @@ public class CompilerSetScriptManager implements ScriptManager {
         this.support = support;
     }
 
-    private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0);
+    private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0); // NOI18N
 
     public void runScript() {
         if (!support.isFailedOrCancelled()) {
