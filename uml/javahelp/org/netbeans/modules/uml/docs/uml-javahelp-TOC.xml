@@ -134,13 +134,10 @@
 					<tocitem text="Reordering and Moving Operations" target="uml_diagrams_class_reordering_moving_operations" />
 				</tocitem>
 				<tocitem text="Working With Attributes" target="uml_diagrams_class_ww_attributes">
-					<tocitem text="Hiding and Showing Attributes in a Class Diagram" target="uml_diagrams_class_hiding_showing_attributes" />
 					<tocitem text="Creating Attributes" target="uml_diagrams_class_creating_attributes" />
 					<tocitem text="Renaming Attributes" target="uml_diagrams_class_renaming_attributes" />
 					<tocitem text="Reordering and Moving Attributes" target="uml_diagrams_class_reordering_moving_attributes" />
 				</tocitem>
-				<tocitem text="Using the Compartment Customize Dialog Box" target="uml_diagrams_class_using_compartment_customize_db" />
-			</tocitem>
 				<tocitem text="Working With Ports and Interfaces" target="uml_diagrams_component_ww_ports_interfaces">
 					<tocitem text="Adding Interfaces to Component Elements" target="uml_diagrams_component_adding_interfaces_to_components" />
 					<tocitem text="Connecting an Interface to a Component Element" target="uml_diagrams_component_connecting_interface_to_component" />

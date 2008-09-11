@@ -85,12 +85,10 @@
 	<mapID target="uml_diagrams_associating_elements" url="diagrams/associating_elements.html"/>
 	<mapID target="uml_diagrams_class_creating_attributes" url="diagrams/class_creating_attributes.html"/>
 	<mapID target="uml_diagrams_class_creating_operations" url="diagrams/class_creating_operations.html"/>
-	<mapID target="uml_diagrams_class_hiding_showing_attributes" url="diagrams/class_hiding_showing_attributes.html"/>
 	<mapID target="uml_diagrams_class_renaming_attributes" url="diagrams/class_renaming_attributes.html"/>
 	<mapID target="uml_diagrams_class_renaming_operations" url="diagrams/class_renaming_operations.html"/>
 	<mapID target="uml_diagrams_class_reordering_moving_attributes" url="diagrams/class_reordering_moving_attributes.html"/>
 	<mapID target="uml_diagrams_class_reordering_moving_operations" url="diagrams/class_reordering_moving_operations.html"/>
-      <mapID target="uml_diagrams_class_using_compartment_customize_db" url="diagrams/class_using_compartment_customize_db.html"/>
 	<mapID target="uml_diagrams_class_ww_attributes" url="diagrams/class_ww_attributes.html"/>
 	<mapID target="uml_diagrams_class_ww_diagram_elements" url="diagrams/class_ww_diagram_elements.html"/>
 	<mapID target="uml_diagrams_class_ww_operations" url="diagrams/class_ww_operations.html"/>
