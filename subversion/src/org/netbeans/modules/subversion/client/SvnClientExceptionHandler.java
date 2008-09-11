@@ -657,7 +657,12 @@ public class SvnClientExceptionHandler {
         msg = msg.toLowerCase();
         return msg.indexOf("file not found: revision") > -1 ||                                                  // NOI18N
               (msg.indexOf("unable to find repository location for") > -1 && msg.indexOf("in revision") > -1);  // NOI18N
-    }      
+    }
+    
+    public static boolean isPathNotFound(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf("path not found") > -1;  // NOI18N
+    }
         
     private static boolean isAlreadyAWorkingCopy(String msg) {   
         msg = msg.toLowerCase();       
