@@ -190,6 +190,8 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
         table.setModel(tableModel);        
         tableScrollPane.setViewportView(table);  //install it
         
+        //set some height margin to take care of [] 
+        int margin = 5;
         int height = table.getRowHeight();
     
         // Determine highest cell in the row
@@ -199,8 +201,8 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
             int h = comp.getPreferredSize().height;
             height = Math.max(height, h);
         }
-        table.setRowHeight(height);
-        initAccessibility();
+        table.setRowHeight(height + margin);
+        
         initAccessibility();
     }
 
