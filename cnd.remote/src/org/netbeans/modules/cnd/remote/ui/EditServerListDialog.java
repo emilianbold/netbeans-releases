@@ -92,7 +92,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         initComponents();
         initServerList(cache);
         desc = null;
-        lbReason.setText(" "); // this keeps the dialog from resizing
+        lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
         tfReason.setVisible(false);
         pbarStatusPanel.setVisible(false);
         initListeners();
@@ -297,7 +297,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
     
     private void hideReason() {
-        lbReason.setText(" ");
+        lbReason.setText(" "); // NOI18N
         tfReason.setVisible(false);
     }
     

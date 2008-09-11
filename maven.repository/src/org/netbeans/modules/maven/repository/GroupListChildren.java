@@ -66,7 +66,7 @@ public class GroupListChildren extends Children.Keys {
 
             @Override
             public Image getIcon(int arg0) {
-                return Utilities.loadImage("org/netbeans/modules/maven/repository/wait.gif");
+                return Utilities.loadImage("org/netbeans/modules/maven/repository/wait.gif"); //NOI18N
             }
          
         };

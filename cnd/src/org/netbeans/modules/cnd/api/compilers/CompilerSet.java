@@ -122,7 +122,7 @@ public class CompilerSet {
         }
         
         public boolean isMinGWCompiler(){
-            return "MinGW".equals(sval);
+            return "MinGW".equals(sval); // NOI18N
         }
 
         public String getCommandFolder(int platform){
@@ -139,14 +139,14 @@ public class CompilerSet {
                 synchronized(unknown) {
                     unknownFlavor = unknown.get(platform);
                     if (unknownFlavor == null) {
-                        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("GNU", platform);
+                        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("GNU", platform); // NOI18N
                         if (d == null) {
                             List<ToolchainDescriptor> list = ToolchainManager.getInstance().getToolchains(platform);
                             if (list.size()>0){
                                 d = list.get(0);
                             }
                         }
-                        unknownFlavor = new CompilerFlavor("Unknown", d);
+                        unknownFlavor = new CompilerFlavor("Unknown", d); // NOI18N
                         unknown.put(platform, unknownFlavor);
                     }
                 }
@@ -476,7 +476,7 @@ public class CompilerSet {
         }
         Tool t;
         // Fixup: all tools should go here ....
-        t = compilerProvider.createCompiler(CompilerSetManager.LOCALHOST, getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), "");
+        t = compilerProvider.createCompiler(CompilerSetManager.LOCALHOST, getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
         t.setCompilerSet(this);
         synchronized( tools ) { // synchronize this only unpredictable tools modification
             tools.add(t);
