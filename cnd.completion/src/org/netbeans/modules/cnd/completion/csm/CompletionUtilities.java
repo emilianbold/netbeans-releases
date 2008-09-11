@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 
@@ -70,12 +71,12 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 public class CompletionUtilities {
 
 
-    public static List/*<CsmDeclaration*/ findFunctionLocalVariables(BaseDocument doc, int offset) {
+    public static List/*<CsmDeclaration*/ findFunctionLocalVariables(BaseDocument doc, int offset, FileReferencesContext fileReferncesContext) {
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         if (file == null || !file.isValid()) {
             return Collections.<CsmDeclaration>emptyList();
         }
-        CsmContext context = CsmOffsetResolver.findContext(file, offset, null);
+        CsmContext context = CsmOffsetResolver.findContext(file, offset, fileReferncesContext);
         return CsmContextUtilities.findFunctionLocalVariables(context);
     }
     
@@ -115,12 +116,15 @@ public class CompletionUtilities {
         CsmClass clazz = CsmContextUtilities.getClass(context, true, false);
         return clazz;
     }
-
     public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(BaseDocument doc, int offset) {
+        return findFunDefinitionOrClassOnPosition(doc, offset, null);
+    }
+
+    public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(BaseDocument doc, int offset, FileReferencesContext fileReferncesContext) {
         CsmOffsetableDeclaration out = null;
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         if (file != null) {
-            CsmContext context = CsmOffsetResolver.findContext(file, offset, null);
+            CsmContext context = CsmOffsetResolver.findContext(file, offset, fileReferncesContext);
             out = CsmContextUtilities.getFunctionDefinition(context);
             if (out == null || !CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
                 out = CsmContextUtilities.getClass(context, false, false);

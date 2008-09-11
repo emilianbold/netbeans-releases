@@ -61,7 +61,7 @@ public class Unbuffer {
         if (unbufferName == null) {
             return null;
         }
-        File file = InstalledFileLocator.getDefault().locate("bin/" + unbufferName, null, false);
+        File file = InstalledFileLocator.getDefault().locate("bin/" + unbufferName, null, false); // NOI18N
         if (file != null && file.exists()) {
             return fixPath(file.getAbsolutePath());
         } else {

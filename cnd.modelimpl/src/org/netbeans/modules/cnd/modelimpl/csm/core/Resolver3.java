@@ -734,7 +734,7 @@ public class Resolver3 implements Resolver {
     
     private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CsmClass> antiLoop, int depth) {
         if (depth == 50) {
-            // temporary work around for IZ#146522
+            new Exception("Too many loops in resolver!!!").printStackTrace(System.err); // NOI18N
             return null;
         }
         if( cls != null && cls.isValid()) {

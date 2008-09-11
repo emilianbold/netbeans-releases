@@ -89,7 +89,6 @@ public class RemoteClient implements Cancellable {
     private final InputOutput io;
     private final String baseRemoteDirectory;
     private FTPClient ftpClient;
-    private String cwd;
     private volatile boolean cancelled = false;
 
     /**
@@ -629,20 +628,9 @@ public class RemoteClient implements Cancellable {
 
     private boolean cdRemoteDirectory(String directory, boolean create) throws IOException, RemoteException {
         LOGGER.fine("Changing directory to " + directory);
-        if (directory.equals(cwd)) {
-            LOGGER.fine("CWD already set to " + directory + ", ignoring");
-            return true;
-        }
         boolean success = ftpClient.changeWorkingDirectory(directory);
         if (!success && create) {
-            success = createAndCdRemoteDirectory(directory);
-        }
-        if (success) {
-            LOGGER.fine("CWD set to " + directory);
-            cwd = directory;
-        } else {
-            LOGGER.fine("CD not successful, CWD reseted");
-            cwd = null;
+            return createAndCdRemoteDirectory(directory);
         }
         return success;
     }

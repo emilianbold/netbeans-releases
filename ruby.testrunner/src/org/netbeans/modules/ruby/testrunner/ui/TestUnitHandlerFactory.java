@@ -229,9 +229,7 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report result = session.getReport();
-            result.elapsedTimeMillis = toMillis(matcher.group(1));
-            manager.displayReport(session, result);
+            manager.displayReport(session, session.getReport(toMillis(matcher.group(1))));
         }
     }
 
@@ -316,4 +314,6 @@ public class TestUnitHandlerFactory {
                 LOGGER.log(level, matcher.group(2));
         }
     }
+
 }
+

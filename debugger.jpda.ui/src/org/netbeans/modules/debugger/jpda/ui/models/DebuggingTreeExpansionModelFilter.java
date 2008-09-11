@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,16 +69,17 @@ import org.openide.util.WeakSet;
  */
 public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilter {
     
-    private static Map<JPDADebugger, DebuggingTreeExpansionModelFilter> FILTERS = new WeakHashMap<JPDADebugger, DebuggingTreeExpansionModelFilter>();
+    private static final Map<JPDADebugger, DebuggingTreeExpansionModelFilter> FILTERS = new WeakHashMap<JPDADebugger, DebuggingTreeExpansionModelFilter>();
     
-    private Set<Object> expandedNodes = new WeakSet<Object>();
-    private Set<Object> expandedExplicitely = new WeakSet<Object>();
-    private List<ModelListener> listeners = new ArrayList<ModelListener>();
-    private JPDADebugger debugger;
+    private final Set<Object> expandedNodes = new WeakSet<Object>();
+    private final Set<Object> expandedExplicitely = new WeakSet<Object>();
+    private final List<ModelListener> listeners = new ArrayList<ModelListener>();
+    private final Reference<JPDADebugger> debuggerRef;
     
     
     public DebuggingTreeExpansionModelFilter(ContextProvider lookupProvider) {
-        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        JPDADebugger debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        this.debuggerRef = new WeakReference(debugger);
         synchronized (FILTERS) {
             FILTERS.put(debugger, this);
         }
@@ -123,6 +126,8 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
      * @return default state (collapsed, expanded) of given node
      */
     public boolean isExpanded (TreeExpansionModel original, Object node) throws UnknownTypeException {
+        JPDADebugger debugger = debuggerRef.get();
+        if (debugger == null) return false;
         Set nodesInDeadlock = DebuggingNodeModel.getNodesInDeadlock(debugger);
         if (nodesInDeadlock != null) {
             synchronized (nodesInDeadlock) {

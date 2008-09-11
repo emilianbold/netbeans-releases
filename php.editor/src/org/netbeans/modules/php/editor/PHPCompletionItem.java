@@ -49,6 +49,7 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.php.editor.PHPCodeCompletion.KeywordCompletionType;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
@@ -208,6 +209,41 @@ abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public ImageIcon getIcon() {
             return keywordIcon;
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder builder = new StringBuilder();
+            KeywordCompletionType type = PHPCodeCompletion.PHP_KEYWORDS.get(getName());
+            switch(type) {
+                case SIMPLE:
+                    builder.append(getName());
+                    break;
+                case ENDS_WITH_SPACE:
+                    builder.append(getName());
+                    builder.append(" ${cursor}"); //NOI18N
+                    break;
+                case CURSOR_INSIDE_BRACKETS:
+                    builder.append(getName());
+                    builder.append(" (${cursor})"); //NOI18N
+                    break;
+                case ENDS_WITH_CURLY_BRACKETS:
+                    builder.append(getName());
+                    builder.append(" {${cursor}"); //NOI18N
+                    break;
+                case ENDS_WITH_SEMICOLON:
+                    builder.append(getName());
+                    builder.append(";"); //NOI18N
+                    break;
+                case ENDS_WITH_COLON:
+                    builder.append(getName());
+                    builder.append(" ${cursor}:"); //NOI18N
+                    break;
+                default:
+                    assert false : type.toString();
+                    break;
+            }
+            return builder.toString();
         }
     }
 
