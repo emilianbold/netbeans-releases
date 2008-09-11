@@ -66,6 +66,10 @@ do
                 echo "Redirecting cache to $1"
                 PARAMS="${PARAMS} -J-Dcnd.repository.cache.path="$1""
                 ;;
+        --nopersist)
+                echo "Setting persistence OFF"
+                PARAMS="${PARAMS} -J-Dcnd.modelimpl.persistent=false"
+                ;;
         --nb)
 		shift
                 echo "Using NB from $1"
