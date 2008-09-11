@@ -78,7 +78,7 @@ public final class MemoryCache {
         private final Lock r = cacheLock.readLock();
     }
     
-    private static final int SLICE_SIZE = 16;
+    private static final int SLICE_SIZE = 19;
     private static final class SlicedMap {
         private final Slice slices[] = new Slice[SLICE_SIZE];
         private SlicedMap(){
@@ -87,7 +87,10 @@ public final class MemoryCache {
             }
         }
         private Slice getSilce(Key key){
-            int i = key.hashCode() & 0xF;
+            int i = key.hashCode()%SLICE_SIZE;
+            if (i < 0){
+                i+=SLICE_SIZE;
+            }
             return slices[i];
         }
         private Slice getSilce(int i){

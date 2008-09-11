@@ -1085,7 +1085,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         PHPIndex index = request.index;
         if (request.prefix.length() == 0) {
-            Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram(), request.prefix, request.anchor, request.currentlyEditedFileURL);
+            Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram(),
+                    request.prefix, request.anchor, request.currentlyEditedFileURL).vars;
+            
             Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
 
             for (IndexedConstant var : localVars){
@@ -1180,23 +1182,25 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     public Collection<IndexedConstant> getVariables(PHPParseResult context,  PHPIndex index, Program program,
             String namePrefix, int position, String localFileURL){
-        Collection<IndexedConstant> localVars = getLocalVariables(program, namePrefix, position, localFileURL);
+        LocalVariables localVars = getLocalVariables(program, namePrefix, position, localFileURL);
         Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
 
-        for (IndexedConstant var : localVars){
+        for (IndexedConstant var : localVars.vars){
             allVars.put(var.getName(), var);
         }
 
-        for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, NameKind.PREFIX)){
-            if (!localFileURL.equals(topLevelVar.getFilenameUrl())){
-                IndexedConstant localVar = allVars.get(topLevelVar.getName());
+        if (localVars.globalContext){
+            for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, NameKind.PREFIX)){
+                if (!localFileURL.equals(topLevelVar.getFilenameUrl())){
+                    IndexedConstant localVar = allVars.get(topLevelVar.getName());
 
-                 if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
-                    IndexedConstant original = allVars.put(topLevelVar.getName(), topLevelVar);
-                    if (original != null && localVars.contains(original)) {
-                        allVars.put(original.getName(), original);
-                    }
-                 }
+                     if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
+                        IndexedConstant original = allVars.put(topLevelVar.getName(), topLevelVar);
+                        if (original != null && localVars.vars.contains(original)) {
+                            allVars.put(original.getName(), original);
+                        }
+                     }
+                }
             }
         }
 
@@ -1302,9 +1306,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             // do not enter!
         }
     }
+    
+    private class LocalVariables{
+        Collection<IndexedConstant> vars;
+        boolean globalContext;
+    }
 
-    private Collection<IndexedConstant> getLocalVariables(Program program, String namePrefix, int position, String localFileURL){
-        Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();;
+    private LocalVariables getLocalVariables(Program program, String namePrefix, int position, String localFileURL){
+        Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();
+        boolean globalContext = true;
         ASTNode varScopeNode = program;
 
         ASTNode hierarchy[] = Utils.getNodeHierarchyAtOffset(program, position);
@@ -1318,6 +1328,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         if (varScopeNode instanceof FunctionDeclaration) {
             FunctionDeclaration functionDeclaration = (FunctionDeclaration) varScopeNode;
+            globalContext = false;
             // add parameters to the result
 
             for (FormalParameter param : functionDeclaration.getFormalParameters()) {
@@ -1346,7 +1357,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         VarFinder varFinder = new VarFinder(localVars, namePrefix, localFileURL);
         varScopeNode.accept(varFinder);
-        return localVars.values();
+        LocalVariables result = new LocalVariables();
+        result.globalContext = globalContext;
+        result.vars = localVars.values(); 
+        
+        return result;
     }
 
     public String document(CompilationInfo info, ElementHandle element) {

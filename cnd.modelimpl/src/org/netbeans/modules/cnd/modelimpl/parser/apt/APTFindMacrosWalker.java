@@ -234,7 +234,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         }        
     }
 
-    private class MacroReference extends OffsetableBase implements CsmReference {
+    private static class MacroReference extends OffsetableBase implements CsmReference {
 
         private CsmObject ref;
         private final String macroName;
