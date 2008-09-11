@@ -241,7 +241,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         //refresh tag libraries mappings - this call causes the WebAppParseSupport to refresh taglibs mapping
         getTagLibraryMappings();
         //if requiresFresh force the parser to update the parse information for the file
-        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, false, true, requiresFresh);
+        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, false, requiresFresh, requiresFresh);
         if (result != null) {
             PageInfo pi = result.getPageInfo();
             if(pi == null) {
