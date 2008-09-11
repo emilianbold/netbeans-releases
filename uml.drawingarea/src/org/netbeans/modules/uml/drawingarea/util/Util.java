@@ -42,6 +42,7 @@ package org.netbeans.modules.uml.drawingarea.util;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,6 +52,7 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -70,6 +72,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -375,5 +378,31 @@ public class Util
     
      public static Point center (Rectangle rectangle) {
         return new Point (rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2);
+    }
+     
+     
+    
+    public static boolean isPaletteExecute(WidgetKeyEvent event)
+    {
+        boolean retVal = false;
+        
+        if(Utilities.isMac() == true)
+        {
+            if((event.isMetaDown() == true) && 
+                (event.getKeyCode() == KeyEvent.VK_ENTER))
+            {
+               retVal = true; 
+            }
+        }
+        else
+        {
+            if((event.isControlDown() == true) && 
+                (event.getKeyCode() == KeyEvent.VK_ENTER))
+            {
+               retVal = true; 
+            }
+        }
+        
+        return retVal;
     }
 }
