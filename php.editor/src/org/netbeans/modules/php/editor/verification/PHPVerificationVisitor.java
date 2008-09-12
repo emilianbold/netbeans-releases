@@ -268,7 +268,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
                 Variable var = (Variable) node.getDispatcher();
                 String varName = CodeUtils.extractVariableName(var);
                 
-                if (varName.startsWith("$")) { //NOI18N
+                if (varName != null && varName.startsWith("$")) { //NOI18N
                     VariableWrapper wrapper = context.variableStack.getVariableWraper(varName.substring(1));
 
                     if (wrapper != null) {
