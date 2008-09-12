@@ -200,7 +200,7 @@ public class MultilineEditableCompartmentWidget extends UMLMultilineLabelWidget
             
             // In the case of only allowing the edit control grow down, I want
             // to make sure that the widget is the same hieght after the edit.
-            setPreferredSize(editor.getSize());
+//            setPreferredSize(editor.getSize());
 //            revalidate();
              if (widget != null)
             {
