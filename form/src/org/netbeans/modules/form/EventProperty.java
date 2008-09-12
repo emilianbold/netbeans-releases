@@ -105,6 +105,12 @@ class EventProperty extends PropertySupport.ReadWrite {
         return selectedEventHandler;
     }
 
+    void resetSelectedEventHandler(String candidate) {
+        if ((selectedEventHandler != null) && (selectedEventHandler.equals(candidate))) {
+            selectedEventHandler = null;
+        }
+    }
+
     /** Setter for the value of the property. It accepts String (for adding
      * new or renaming the last selected event handler), or Change object
      * (describing multiple changes in event handlers), or null (to refresh

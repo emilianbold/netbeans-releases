@@ -45,6 +45,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 import java.io.File;
+import org.netbeans.modules.clearcase.Clearcase;
 
 /**
  *
@@ -58,9 +59,12 @@ public class CheckoutActionPanel extends javax.swing.JPanel {
     public CheckoutActionPanel(File file, ClearcaseModuleConfig.OnDemandCheckout odc) {
         initComponents();
         Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CheckoutActionPanel.class, "CheckoutActionPanel.jLabel1.text", file.getName()));
+        
         rbHijack.setSelected(odc == ClearcaseModuleConfig.OnDemandCheckout.Hijack);
         rbReserved.setSelected(odc == ClearcaseModuleConfig.OnDemandCheckout.Reserved);
         rbUnreserved.setSelected(odc == ClearcaseModuleConfig.OnDemandCheckout.Unreserved);
+
+        rbHijack.setEnabled(Clearcase.getInstance().getTopmostSnapshotViewAncestor(file) != null);
     }
     
     /** This method is called from within the constructor to

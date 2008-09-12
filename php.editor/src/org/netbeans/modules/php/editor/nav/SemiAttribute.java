@@ -57,6 +57,8 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
@@ -177,7 +179,11 @@ public class SemiAttribute extends DefaultVisitor {
             } else if (rightSideExpression instanceof FieldAccess) {
                 FieldAccess access = (FieldAccess) rightSideExpression;
                 Variable field = access.getField();
-                node2Element.put(vb, scopes.peek().enterWrite(extractVariableName(field), Kind.VARIABLE, access, at));
+                String name =extractVariableName(field);
+
+                if (name != null) {
+                    node2Element.put(vb, scopes.peek().enterWrite(name, Kind.VARIABLE, access, at));
+                }
             } 
 
             String name = extractVariableName((Variable) vb);
@@ -458,12 +464,15 @@ public class SemiAttribute extends DefaultVisitor {
                 ClassElement ce = (ClassElement) ell;
                 if (ce != null && (contextClassName == null || contextClassName.equals(ce.getName()))) {
                     String name = extractVariableName(node.getField());
-                    AttributedElement thisEl = ce.lookup(name, Kind.VARIABLE);
-                    if (thisEl != null) {
-                        node2Element.put(node.getClassName(), ce);
-                        node2Element.put(node, thisEl);
-                        node2Element.put(node.getField(), thisEl);
-                        break;
+
+                    if (name != null) {
+                        AttributedElement thisEl = ce.lookup(name, Kind.VARIABLE);
+                        if (thisEl != null) {
+                            node2Element.put(node.getClassName(), ce);
+                            node2Element.put(node, thisEl);
+                            node2Element.put(node.getField(), thisEl);
+                            break;
+                        }
                     }
                 }
             }
@@ -489,7 +498,7 @@ public class SemiAttribute extends DefaultVisitor {
         if (node.getName() instanceof Variable && node.getIndex() instanceof Scalar) {
             String variableName = extractVariableName((Variable) node.getName());
 
-            if ("GLOBALS".equals(variableName)) {
+            if (variableName != null && "GLOBALS".equals(variableName)) {
                 Scalar v = (Scalar) node.getIndex();
 
                 if (v.getScalarType() == Type.STRING) {
@@ -719,18 +728,16 @@ public class SemiAttribute extends DefaultVisitor {
         return null;
     }
 
+    @CheckForNull
+    //TODO converge this method with CodeUtils.extractVariableName()
     public static String extractVariableName(Variable var) {
-        if (var.getName() instanceof Identifier) {
-            Identifier id = (Identifier) var.getName();
-            return id.getName();
-        } else {
-            if (var.getName() instanceof Variable) {
-                Variable name = (Variable) var.getName();
-                return extractVariableName(name);
-            }
+        String varName = CodeUtils.extractVariableName(var);
+        
+        if (varName != null && varName.startsWith("$")){ //NOI18N
+            return varName.substring(1);
         }
-
-        return null;
+        
+        return varName;
     }
 
     private ClassElement resolveTypeSimple(Dispatch node) {

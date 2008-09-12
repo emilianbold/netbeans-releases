@@ -70,8 +70,6 @@ import java.util.List;
 
 public class cc_0001 extends cc
 {
-  static final protected int COMPLETE_CC_LIST_SIZE = 5192;
-    
   static final String TEST_PHP_NAME = "PhpProject1";
 
   public cc_0001( String arg0 )
@@ -84,7 +82,7 @@ public class cc_0001 extends cc
     return NbModuleSuite.create(
       NbModuleSuite.createConfiguration( cc_0001.class ).addTest(
           "CreateApplication",
-          "CtrlSpaceAfterComment" // Issue 141854
+          "Issue141854"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -96,12 +94,12 @@ public class cc_0001 extends cc
   {
     startTest( );
 
-    CreatePHPApplicationInternal( );
+    CreatePHPApplicationInternal( TEST_PHP_NAME );
 
     endTest( );
   }
 
-  public void CtrlSpaceAfterComment( ) throws Exception
+  public void Issue141854( ) throws Exception
   {
     startTest( );
 
@@ -121,7 +119,9 @@ public class cc_0001 extends cc
     List list = jCompl.getCompletionItems( );
     // Magic CC number for complete list
     if( COMPLETE_CC_LIST_SIZE != list.size( ) )
-      fail( "Invalid CC list size: " + list.size( ) );
+      fail( "Invalid CC list size: " + list.size( ) + ", expected: " + COMPLETE_CC_LIST_SIZE );
+
+    jCompl.hideAll( );
 
     endTest( );
   }
