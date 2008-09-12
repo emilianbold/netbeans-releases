@@ -123,13 +123,6 @@ public class SampleManager {
                 throw new DatabaseException(Utils.getMessage("MSG_NoSuchSample", sampleName));
         }
         
-        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(
-                SampleManager.class, "MSG_CreatingSampleDBProgressLabel", sampleName));
-        ph.start();
-        try {
-            provider.create(sampleName, dbconn);
-        } finally {
-            ph.finish();
-        }
+        provider.create(sampleName, dbconn);
     }
 }

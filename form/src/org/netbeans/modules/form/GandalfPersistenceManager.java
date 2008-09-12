@@ -3020,28 +3020,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 comp.getAuxValue(JavaCodeGenerator.AUX_CODE_GENERATION)))
         {   // the component has a serialized instance => deserialize it
             try {
-                String serFile = (String) comp.getAuxValue(
-                                          JavaCodeGenerator.AUX_SERIALIZE_TO);
-                if (serFile == null)
-                    serFile = formFile.getName() + "_" + comp.getName(); // NOI18N
-
-                ClassPath sourcePath = ClassPath.getClassPath(formFile, ClassPath.SOURCE);
-                String serName = sourcePath.getResourceName(formFile.getParent());
-                if (!"".equals(serName)) // NOI18N
-                    serName += "."; // NOI18N
-                serName += serFile;
-
-                Object instance = null;
-                try {
-                    instance = Beans.instantiate(sourcePath.getClassLoader(true), serName);
-                } catch (ClassNotFoundException cnfe) {
-                    ClassPath executionPath = ClassPath.getClassPath(formFile, ClassPath.EXECUTE);
-                    instance = Beans.instantiate(executionPath.getClassLoader(true), serName);
-                }
-
-                comp.setInstance(instance);
-            }
-            catch (Exception ex) { // ignore
+                comp.setInstance(comp.createDefaultDeserializedInstance());
+            } catch (Exception ex) { // ignore
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
