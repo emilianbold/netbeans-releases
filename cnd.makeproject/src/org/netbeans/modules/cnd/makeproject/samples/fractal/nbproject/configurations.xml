@@ -87,29 +87,6 @@
         <itemTool>3</itemTool>
       </item>
     </conf>
-    <conf name="TestCoverage" type="1">
-      <compileType>
-        <cCompilerTool>
-          <developmentMode>3</developmentMode>
-        </cCompilerTool>
-        <ccCompilerTool>
-          <developmentMode>3</developmentMode>
-        </ccCompilerTool>
-        <linkerTool>
-          <linkerLibItems>
-          </linkerLibItems>
-          <commandLine>-xprofile=tcov</commandLine>
-        </linkerTool>
-      </compileType>
-      <item path="fractal.cc">
-        <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
-      </item>
-      <item path="readme.txt">
-        <itemTool>3</itemTool>
-      </item>
-    </conf>
     <conf name="DianogsableRelease" type="1">
       <compileType>
         <cCompilerTool>
