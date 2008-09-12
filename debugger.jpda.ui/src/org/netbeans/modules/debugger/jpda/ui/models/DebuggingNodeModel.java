@@ -164,15 +164,15 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             if (t == currentThread && (!DebuggingTreeExpansionModelFilter.isExpanded(debugger, node) ||
                     !t.isSuspended())) {
                 return BoldVariablesTableModelFilterFirst.toHTML(
-                        getDisplayName(t, showPackageNames),
+                        getDisplayName(t, showPackageNames, this),
                         true, false, c);
             } else {
                 if (c != null) {
                     return BoldVariablesTableModelFilterFirst.toHTML(
-                        getDisplayName(t, showPackageNames),
+                        getDisplayName(t, showPackageNames, this),
                         false, false, c);
                 } else {
-                    return getDisplayName(t, showPackageNames);
+                    return getDisplayName(t, showPackageNames, this);
                 }
             }
         }
@@ -207,16 +207,24 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         throw new UnknownTypeException(node.toString());
     }
+
+    /**
+     * Map of threads and their frame descriptions.
+     * These are loaded lazily, since we must not load call stack frames in AWT EQ.
+     */
+    private static final Map<JPDAThread, String> frameDescriptionsByThread = new WeakHashMap<JPDAThread, String>();
     
     public static String getDisplayName(JPDAThread t, boolean showPackageNames) throws UnknownTypeException {
-        String frame = null;
-        if (t.isSuspended () && (t.getStackDepth () > 0)) {
-            try { 
-                CallStackFrame[] sf = t.getCallStack (0, 1);
-                if (sf.length > 0) {
-                    frame = CallStackNodeModel.getCSFName (null, sf[0], showPackageNames);
-                }
-            } catch (AbsentInformationException e) {
+        return getDisplayName(t, showPackageNames, null);
+    }
+
+    public static String getDisplayName(JPDAThread t, boolean showPackageNames, DebuggingNodeModel model) throws UnknownTypeException {
+        String frame;
+        synchronized (frameDescriptionsByThread) {
+            frame = frameDescriptionsByThread.get(t);
+            if (t.isSuspended()) {
+                // Load it in any case to assure refreshes
+                loadFrameDescription(frame, t, showPackageNames, model);
             }
         }
         String name = t.getName();
@@ -271,6 +279,38 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Unknown", name);
         }
          */
+    }
+
+    private static RequestProcessor RPFD = new RequestProcessor("Frame Description", 1);
+
+    private static void loadFrameDescription(final String oldFrame,
+                                             final JPDAThread t,
+                                             final boolean showPackageNames,
+                                             final DebuggingNodeModel model) {
+        RPFD.post(new Runnable() {
+            public void run() {
+                String frame = null;
+                synchronized (t) {
+                    if (t.isSuspended () && (t.getStackDepth () > 0)) {
+                        try {
+                            CallStackFrame[] sf = t.getCallStack (0, 1);
+                            if (sf.length > 0) {
+                                frame = CallStackNodeModel.getCSFName (null, sf[0], showPackageNames);
+                            }
+                        } catch (AbsentInformationException e) {
+                        }
+                    }
+                }
+                if (oldFrame == null && frame != null || oldFrame != null && !oldFrame.equals(frame)) {
+                    synchronized (frameDescriptionsByThread) {
+                        frameDescriptionsByThread.put(t, frame);
+                    }
+                    if (model != null) {
+                        model.fireDisplayNameChanged(t);
+                    }
+                }
+            }
+        });
     }
 
     public static String getIconBase(JPDAThread thread) {

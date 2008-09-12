@@ -80,7 +80,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
  *
  * @author Miloslav Metelka
  */
-public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNotify {
+public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNotify, Runnable {
 
     // -J-Dorg.netbeans.lib.editor.codetemplates.CodeTemplateInsertHandler.level=FINE
     private static final Logger LOG = Logger.getLogger(CodeTemplateInsertHandler.class.getName());
@@ -114,6 +114,10 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
     private boolean completionInvoke;
     
     private TextRegion completeTextRegion;
+
+    private String completeInsertString;
+
+    private Formatter formatter;
     
     private TextSyncGroup textSyncGroup;
     
@@ -245,22 +249,45 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         Document doc = component.getDocument();
         outerHandler = (CodeTemplateInsertHandler)doc.getProperty(CT_HANDLER_DOC_PROPERTY);
         doc.putProperty(CT_HANDLER_DOC_PROPERTY, this);
-        
-        String completeInsertString = getInsertText();
+        // Build insert string outside of the atomic lock
+        completeInsertString = getInsertText();
+
 
         BaseDocument bdoc = (doc instanceof BaseDocument)
                 ? (BaseDocument)doc
                 : null;
         // Need to lock formatter first because CT's multiline text will be reformatted
-        Formatter formatter = null;
+        formatter = null;
         if (bdoc != null) {
-             formatter = bdoc.getFormatter();
+            formatter = bdoc.getFormatter();
             if (formatter != null) {
                 formatter.reformatLock();
             }
-            ((BaseDocument)doc).atomicLock();
         }
         try {
+            if (bdoc != null) {
+                bdoc.runAtomicAsUser(this);
+            } else { // Otherwise run without atomic locking
+                this.run();
+            }
+        } finally {
+            if (bdoc != null) {
+                if (formatter != null) {
+                    formatter.reformatUnlock();
+                }
+                formatter = null;
+            }
+            completeInsertString = null;
+        }
+    }
+
+    public void run() {
+        try {
+            Document doc = component.getDocument();
+            BaseDocument bdoc = (doc instanceof BaseDocument)
+                    ? (BaseDocument) doc
+                    : null;
+
             // First check if there is a caret selection and if so remove it
             Caret caret = component.getCaret();
             if (Utilities.isSelectionShowing(caret)) {
@@ -277,7 +304,9 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
             doc.insertString(insertOffset, completeInsertString, null);
             // #132615
             // Insert a special undoable-edit marker that - once undone will release CT editing.
-            bdoc.addUndoableEdit(new TemplateInsertUndoEdit());
+            if (bdoc != null) {
+                bdoc.addUndoableEdit(new TemplateInsertUndoEdit());
+            }
             
             TextRegion<?> caretTextRegion = null;
             // Go through all master parameters and create region infos for them
@@ -299,7 +328,7 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
             
             textRegionManager().addTextSyncGroup(textSyncGroup, insertOffset);
             
-            if (doc instanceof BaseDocument) {
+            if (bdoc != null) {
                 formatter.reformat(bdoc, insertOffset,
                         insertOffset + completeInsertString.length());
             }
@@ -307,13 +336,6 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         } catch (BadLocationException e) {
             LOG.log(Level.WARNING, "Invalid offset", e); // NOI18N
         } finally {
-            if (bdoc != null) {
-                bdoc.atomicUnlock();
-                if (formatter != null) {
-                    formatter.reformatUnlock();
-                }
-            }
-            
             // Mark inserted
             this.inserted = true;
             resetCachedInsertText();

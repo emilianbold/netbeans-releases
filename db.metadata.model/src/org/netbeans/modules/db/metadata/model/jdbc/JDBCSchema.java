@@ -113,7 +113,7 @@ public class JDBCSchema extends SchemaImplementation {
         LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
         Map<String, Table> newTables = new LinkedHashMap<String, Table>();
         try {
-            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getTables(jdbcCatalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
+            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getTables(jdbcCatalog.getName(), name, "%", new String[] { "TABLE", "SYSTEM TABLE" }); // NOI18N
             try {
                 while (rs.next()) {
                     String tableName = rs.getString("TABLE_NAME"); // NOI18N

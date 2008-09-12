@@ -266,7 +266,7 @@ public final class Utils {
         public void actionPerformed(ActionEvent event) {
             Index order = (Index)paletteNode.getCookie(Index.class);
             if (order != null) {
-                final Node[] nodes = paletteNode.getChildren().getNodes( DefaultModel.canBlock() );
+                final Node[] nodes = order.getNodes();
                 Arrays.sort( nodes, new Comparator<Node>() {
                     public int compare(Node n1, Node n2) {
                         return n1.getDisplayName().compareTo( n2.getDisplayName() );
@@ -274,7 +274,7 @@ public final class Utils {
                 } );
                 int[] perm = new int[nodes.length];
                 for( int i=0; i<perm.length; i++ ) {
-                    perm[i] = order.indexOf( nodes[i] );
+                    perm[order.indexOf( nodes[i] )] = i;
                 }
                 order.reorder( perm );
             }
@@ -436,7 +436,7 @@ public final class Utils {
         public void actionPerformed(ActionEvent event) {
             Index order = (Index)categoryNode.getCookie(Index.class);
             if (order != null) {
-                final Node[] nodes = categoryNode.getChildren().getNodes( DefaultModel.canBlock() );
+                final Node[] nodes = order.getNodes();
                 Arrays.sort( nodes, new Comparator<Node>() {
                     public int compare(Node n1, Node n2) {
                         return n1.getDisplayName().compareTo( n2.getDisplayName() );
@@ -444,7 +444,7 @@ public final class Utils {
                 } );
                 int[] perm = new int[nodes.length];
                 for( int i=0; i<perm.length; i++ ) {
-                    perm[i] = order.indexOf( nodes[i] );
+                    perm[order.indexOf( nodes[i] )] = i;
                 }
                 order.reorder( perm );
             }
