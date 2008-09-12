@@ -175,7 +175,18 @@ public class MultilineLabelWidget extends LabelWidget
                 {
                     line = new String();
                 }
-                x = (getSize().width- fontMetrics.stringWidth(line)) / 2;
+                switch (getAlignment())
+                {
+                    case LEFT:
+                        x = 0;
+                        break;
+                    case RIGHT:
+                        x = getSize().width- fontMetrics.stringWidth(line);
+                        break;
+                    case CENTER:
+                    default:
+                        x = (getSize().width- fontMetrics.stringWidth(line)) / 2;
+                }
                 g.drawString(line, x, y);
 
                 y += lines.getHeight(index);

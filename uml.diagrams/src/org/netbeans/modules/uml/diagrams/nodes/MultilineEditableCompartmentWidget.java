@@ -115,7 +115,7 @@ public class MultilineEditableCompartmentWidget extends UMLMultilineLabelWidget
                                                String propDisplayName)
     {
         super(scene, text, propId, propDisplayName);
-
+        setAlignment(Alignment.CENTER);
         EditControlEditorProvider provider = new EditControlEditorProvider(baseGraphWidget,
                 baseModelWidget);
         WidgetAction action = ActionFactory.createInplaceEditorAction(provider);
