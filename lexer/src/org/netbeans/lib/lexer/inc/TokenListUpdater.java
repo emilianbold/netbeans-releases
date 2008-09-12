@@ -266,8 +266,9 @@ public final class TokenListUpdater {
                 logModification(tokenList, eventInfo, false);
                 LOG.info("relexIndex=" + relexIndex + ", relexOffset=" + relexOffset +
                         ", relexState=" + relexState + ", indexAndTokenOffset: [" +
-                        indexAndTokenOffset[0] + ", " + indexAndTokenOffset[1] + "]"
+                        indexAndTokenOffset[0] + ", " + indexAndTokenOffset[1] + "]\n"
                         );
+                LOG.info("\n\n" + eventInfo.modificationDescription(true) + "\n");
 
             }
             LexerInputOperation<T> lexerInputOperation

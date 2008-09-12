@@ -102,7 +102,6 @@ public class CreateCompositeApplication extends PerformanceTestCase {
         index=1;
         
         closeAllModal();
-        MainWindowOperator.getDefault().maximize();
     }
     
     public void prepare(){
