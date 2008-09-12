@@ -150,6 +150,8 @@ public class MySQLDatabaseServer implements DatabaseServer {
 
     public void setHost(String host) {
         OPTIONS.setHost(host);
+        updateDisplayName();
+        notifyChange();
     }
 
     public String getPort() {
@@ -163,6 +165,8 @@ public class MySQLDatabaseServer implements DatabaseServer {
 
     public void setPort(String port) {
         OPTIONS.setPort(port);
+        updateDisplayName();
+        notifyChange();
     }
 
     public String getUser() {
@@ -176,6 +180,8 @@ public class MySQLDatabaseServer implements DatabaseServer {
 
     public void setUser(String adminUser) {
         OPTIONS.setAdminUser(adminUser);
+        updateDisplayName();
+        notifyChange();
     }
 
     public synchronized String getPassword() {
