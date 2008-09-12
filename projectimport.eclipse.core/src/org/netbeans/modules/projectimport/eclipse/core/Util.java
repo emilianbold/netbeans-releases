@@ -63,7 +63,7 @@ import org.xml.sax.SAXParseException;
  */
 public class Util {
 
-    private static final Logger USG_LOGGER = Logger.getLogger("rg.netbeans.ui.metrics.projects"); // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.projects"); // NOI18N
 
     private Util() {}
 

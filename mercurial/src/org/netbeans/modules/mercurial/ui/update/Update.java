@@ -79,12 +79,15 @@ public class Update implements PropertyChangeListener {
     } 
     
     public boolean showDialog() {
-        DialogDescriptor dialogDescriptor;
-        dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_UpdateDialog", repository.getName())); // NOI18N
-        dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel,
+              org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_UpdateDialog", repository.getName()), // NOI18N
+              true,
+              new Object[] {okButton, cancelButton},
+              okButton,
+              DialogDescriptor.DEFAULT_ALIGN,
+              new HelpCtx(this.getClass()),
+              null);
         
-        dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
         dialogDescriptor.setValid(false);
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     

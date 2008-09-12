@@ -125,9 +125,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE});
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
             new PHPTokenId[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
             new PHPTokenId[]{PHPTokenId.PHP_CATCH, PHPTokenId.PHP_TOKEN},
             new PHPTokenId[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
             new PHPTokenId[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_STRING},
             new PHPTokenId[]{PHPTokenId.PHP_NEW},
             new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
             new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
@@ -241,10 +243,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE};
 
-    public static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
+    static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
 
-    public final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
+    final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
     static {
         PHP_KEYWORDS.put("__FILE__", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("__LINE__", KeywordCompletionType.SIMPLE);
@@ -295,7 +297,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private final static String[] PHP_KEYWORD_FUNCTIONS = {
         "echo", "include", "include_once", "require", "require_once"}; //NOI18N
 
-    private final static String[] PHP_CLASS_KEYWORDS = {
+    final static String[] PHP_CLASS_KEYWORDS = {
         "$this->", "self::", "parent::"
     };
 
@@ -1084,69 +1086,25 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // end: KEYWORDS
 
         PHPIndex index = request.index;
-        if (request.prefix.length() == 0) {
-            Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram(),
-                    request.prefix, request.anchor, request.currentlyEditedFileURL).vars;
-            
-            Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
-
-            for (IndexedConstant var : localVars){
-                allVars.put(var.getName(), var);
-            }
-
-            for (IndexedElement element : index.getAll(request.result, request.prefix, nameKind)) {
-                if (element instanceof IndexedFunction) {
-                    IndexedFunction function = (IndexedFunction) element;
-                    for (int i = 0; i <= function.getOptionalArgs().length; i++) {
-                        proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
-                    }
-                }
-                else if (element instanceof IndexedConstant) {
-                    proposals.add(new PHPCompletionItem.ConstantItem((IndexedConstant)element, request));
-                }
-                else if (element instanceof IndexedClass) {
-                    proposals.add(new PHPCompletionItem.ClassItem((IndexedClass)element, request, true));
-                }
-                else if (element instanceof IndexedVariable) {
-                    IndexedConstant topLevelVar = (IndexedConstant) element;
-                    if (!request.currentlyEditedFileURL.equals(topLevelVar.getFilenameUrl())){
-                        IndexedConstant localVar = allVars.get(topLevelVar.getName());
-                        if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()) {
-                            IndexedConstant original = allVars.put(topLevelVar.getName(), topLevelVar);
-                            if (original != null && localVars.contains(original)) {
-                                allVars.put(original.getName(), original);
-                            }
-                        }
-                    }
-                }
-            }
-
-            for (IndexedConstant var : allVars.values()){
-                CodeUtils.resolveFunctionType(request.result, index, allVars, var);
-                proposals.add(new PHPCompletionItem.VariableItem(var, request));
+        // FUNCTIONS
+        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
+            for (int i = 0; i <= function.getOptionalArgs().length; i++) {
+                proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
             }
         }
-        else {
-            // FUNCTIONS
-            for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
-                for (int i = 0; i <= function.getOptionalArgs().length; i++) {
-                    proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
-                }
-            }
 
-            // CONSTANTS
-            for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
-                proposals.add(new PHPCompletionItem.ConstantItem(constant, request));
-            }
-
-            // CLASS NAMES
-            // TODO only show classes with static elements
-            autoCompleteClassNames(proposals, request,true);
-
-            // LOCAL VARIABLES
-            proposals.addAll(getVariableProposals(request.result.getProgram(), request));
+        // CONSTANTS
+        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
+            proposals.add(new PHPCompletionItem.ConstantItem(constant, request));
         }
 
+        // CLASS NAMES
+        // TODO only show classes with static elements
+        autoCompleteClassNames(proposals, request,true);
+
+        // LOCAL VARIABLES
+        proposals.addAll(getVariableProposals(request.result.getProgram(), request));
+        
         // Special keywords applicable only inside a class
         ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
         if (classDecl != null) {
@@ -1216,13 +1174,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String namePrefix, String localFileURL, String type) {
 
         String varName = CodeUtils.extractVariableName(var);
-        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
+        if (varName != null) {
+            String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
 
-        if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-            IndexedConstant ic = new IndexedConstant(varName, null,
-                    null, localFileURL, var.getStartOffset(), 0, type);
+            if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
+                IndexedConstant ic = new IndexedConstant(varName, null,
+                        null, localFileURL, var.getStartOffset(), 0, type);
 
-            localVars.put(varName, ic);
+                localVars.put(varName, ic);
+            }
         }
     }
 
@@ -1319,6 +1279,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         ASTNode hierarchy[] = Utils.getNodeHierarchyAtOffset(program, position);
 
+        //getNodeHierarchyAtOffset obviously return null
+        if (hierarchy == null) {
+            LocalVariables result = new LocalVariables();
+            result.globalContext = globalContext;
+            result.vars = localVars.values();
+            return result;
+        }
         for (ASTNode node : hierarchy){
             if (node instanceof FunctionDeclaration){
                 varScopeNode = node;
@@ -1341,13 +1308,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 if (parameterName instanceof Variable) {
                     String varName = CodeUtils.extractVariableName((Variable) parameterName);
-                    String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
+                    if (varName != null) {
+                        String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
 
-                    if (isPrefix(varName, namePrefix)) {
-                        IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, localFileURL, -1, 0, type);
+                        if (isPrefix(varName, namePrefix)) {
+                            IndexedConstant ic = new IndexedConstant(varName, null,
+                                    null, localFileURL, -1, 0, type);
 
-                        localVars.put(varName, ic);
+                            localVars.put(varName, ic);
+                        }
                     }
                 }
             }

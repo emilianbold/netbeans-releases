@@ -236,8 +236,9 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
                                 }
 
                                 attributeSet = embeddedMimeType.equals(JAVASCRIPT_MIME_TYPE) ? javascriptBackground : cssBackground;
-
-                                return true;
+                                if (attributeSet != null) {
+                                    return true;
+                                }
                             } catch (BadLocationException ex) {
                                 LOG.log(Level.INFO, "An error occured when creating coloured background for CSS and JavaScript.", ex); //NOI18N
                             }

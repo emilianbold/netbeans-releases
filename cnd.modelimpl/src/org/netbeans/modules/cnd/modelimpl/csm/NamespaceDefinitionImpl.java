@@ -231,8 +231,12 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         
         assert this.name != null;
         output.writeUTF(this.name.toString());
+
+        if (getName().length() == 0) {
+            writeUID(output);
+        }
     }  
-    
+
     public NamespaceDefinitionImpl(DataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -245,5 +249,9 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         
         this.name = NameCache.getManager().getString(input.readUTF());
         assert this.name != null;
+
+        if (getName().length() == 0) {
+            readUID(input);
+        }
     }      
 }
