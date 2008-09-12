@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -109,7 +110,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
 
     private static final List<String> CLASS_CONTEXT_KEYWORD_PROPOSAL =
-            Arrays.asList(new String[] {"abstract","const","function", "private",
+            Arrays.asList(new String[] {"abstract","const","function", "private", "final",
             "protected", "public", "static", "var"});//NOI18N
     private static final List<String> INHERITANCE_KEYWORDS =
             Arrays.asList(new String[] {"extends","implements"});//NOI18N
@@ -213,6 +214,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             new PHPTokenId[]{PHPTokenId.PHP_ABSTRACT},
             new PHPTokenId[]{PHPTokenId.PHP_ABSTRACT,PHPTokenId.WHITESPACE},
             new PHPTokenId[]{PHPTokenId.PHP_ABSTRACT,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_FINAL},
+            new PHPTokenId[]{PHPTokenId.PHP_FINAL,PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_FINAL,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
             new PHPTokenId[]{PHPTokenId.PHP_CURLY_OPEN},
             new PHPTokenId[]{PHPTokenId.PHP_CURLY_CLOSE},
             new PHPTokenId[]{PHPTokenId.PHP_CURLY_CLOSE,PHPTokenId.WHITESPACE},
@@ -598,11 +602,33 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case CLASS_CONTEXT_KEYWORDS:
                     autoCompleteKeywords(proposals, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
+                    ClassDeclaration enclosingClass = findEnclosingClass(info, caretOffset);
+                    if (enclosingClass != null) {
+                        Identifier superClass = enclosingClass.getSuperClass();
+                        if (superClass != null) {
+                            String clsName = enclosingClass.getName().getName();
+                            Set<String> insideNames = new HashSet<String>();
+                            Collection<IndexedFunction> methods = request.index.getMethods(
+                                    request.result, clsName, request.prefix,
+                                    NameKind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
+                            for (IndexedFunction meth : methods) {
+                                insideNames.add(meth.getName());
+                            }
+                            String superClsName = superClass.getName();
+                            Collection<IndexedFunction> superMethods = request.index.getAllMethods(
+                                    request.result, superClsName, request.prefix,
+                                    NameKind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+                            for (IndexedFunction superMeth : superMethods) {
+                                if (superMeth.getName().startsWith(request.prefix)
+                                        && !superMeth.isFinal() && !insideNames.contains(superMeth.getName())) {                                    
+                                    for (int i = 0; i <= superMeth.getOptionalArgs().length; i++) {
+                                        proposals.add(new PHPCompletionItem.FunctionDeclarationItem(superMeth, request, i));
+                                    }
+                                }
+                            }
+                        }                        
+                    }
                     break;
-                /*case ACCESS_MODIFIER:
-                    autoCompleteKeywords(proposals, request, AFTER_ACCESS_MODIFIER_KEYWORD_PROPOSAL);
-                    break;
-                 */
                 case METHOD_NAME:
                     autoCompleteMethodName(proposals, request);
                     break;
@@ -1190,13 +1216,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String namePrefix, String localFileURL, String type) {
 
         String varName = CodeUtils.extractVariableName(var);
-        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
+        if (varName != null) {
+            String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
 
-        if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-            IndexedConstant ic = new IndexedConstant(varName, null,
-                    null, localFileURL, var.getStartOffset(), 0, type);
+            if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
+                IndexedConstant ic = new IndexedConstant(varName, null,
+                        null, localFileURL, var.getStartOffset(), 0, type);
 
-            localVars.put(varName, ic);
+                localVars.put(varName, ic);
+            }
         }
     }
 
@@ -1315,13 +1343,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 if (parameterName instanceof Variable) {
                     String varName = CodeUtils.extractVariableName((Variable) parameterName);
-                    String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
+                    if (varName != null) {
+                        String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
 
-                    if (isPrefix(varName, namePrefix)) {
-                        IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, localFileURL, -1, 0, type);
+                        if (isPrefix(varName, namePrefix)) {
+                            IndexedConstant ic = new IndexedConstant(varName, null,
+                                    null, localFileURL, -1, 0, type);
 
-                        localVars.put(varName, ic);
+                            localVars.put(varName, ic);
+                        }
                     }
                 }
             }

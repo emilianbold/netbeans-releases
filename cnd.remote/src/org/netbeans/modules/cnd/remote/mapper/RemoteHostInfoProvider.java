@@ -70,7 +70,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
             if (home == null) {
                 RemoteCommandSupport support = new RemoteCommandSupport(hkey, "pwd"); // NOI18N
                 if (support.run() == 0) {
-                    home = support.toString().trim();
+                    home = support.getOutput().trim();
                 }
             }
             return home;
@@ -88,7 +88,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
                 envCache = new HashMap<String, String>();
                 RemoteCommandSupport support = new RemoteCommandSupport(hkey, "env"); // NOI18N
                 if (support.run() == 0) {
-                    String val = support.toString();
+                    String val = support.getOutput();
                     String[] lines = val.split("\n"); // NOI18N
                     for (int i = 0; i < lines.length; i++) {
                         int pos = lines[i].indexOf('=');
@@ -116,7 +116,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
                 RemoteCommandSupport support = new RemoteCommandSupport(hkey, "uname -sm"); //NOI18N
                 int result;
                 if (support.run() == 0) {
-                    result = recognizePlatform(support.toString());
+                    result = recognizePlatform(support.getOutput());
                 } else {
                     result = PlatformTypes.PLATFORM_GENERIC;
                 }

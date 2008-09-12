@@ -108,7 +108,7 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick
  */
 public class LayerUtils {
-    
+
     private LayerUtils() {}
     
     /**
@@ -668,8 +668,18 @@ public class LayerUtils {
      * Get the platform JARs associated with a standalone module project.
      */
     public static Set<File> getPlatformJarsForStandaloneProject(Project project) {
+        NbPlatform platform = getPlatformForProject(project);
+        return getPlatformJars(platform, null, null, null);
+    }
+
+    /**
+     * Returns platform for project with fallback to default platform.
+     * 
+     * @param Project, must contain {@link NbModuleProvider} in lookup.
+     * @return Platform for project
+     */
+    public static NbPlatform getPlatformForProject(Project project) {
         NbModuleProvider mod = project.getLookup().lookup(NbModuleProvider.class);
-        //TODO create a utility method to do this if needed in more places
         NbPlatform platform = null;
         File platformDir = mod.getActivePlatformLocation();
         if (platformDir != null) {
@@ -678,7 +688,7 @@ public class LayerUtils {
         if (platform == null || !platform.isValid()) {
             platform = NbPlatform.getDefaultPlatform();
         }
-        return getPlatformJars(platform, null, null, null);
+        return platform;
     }
     
     public static Set<File> getPlatformJarsForSuiteComponentProject(Project project, SuiteProject suite) {

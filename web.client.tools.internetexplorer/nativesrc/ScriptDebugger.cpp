@@ -872,6 +872,7 @@ HRESULT ScriptDebugger::startSession() {
         registerForDebugAppNodeEvents();
 
         hr = spRemoteDebugApp->ConnectDebugger(this);
+        Utils::log(1, _T("Attempting to connect to debugger, error code - %x\n"), hr);
     }
     return hr;
 }
