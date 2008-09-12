@@ -171,6 +171,13 @@ public final class Startup {
               uiClass = Class.forName(uiClassName);
           } catch (ClassNotFoundException e) {
               System.err.println("Custom UI class " + uiClassName + " not on classpath."); // NOI18N
+
+              //#144402 - try fallback to Metal L&F
+              try {
+                uiClass = Class.forName("javax.swing.plaf.metal.MetalLookAndFeel"); //NOI18N
+              } catch( Exception newEx) {
+                  newEx.printStackTrace();
+              }
           } catch (Exception e) {
               System.err.println("While loading: " + uiClassName); // NOI18N
               e.printStackTrace();

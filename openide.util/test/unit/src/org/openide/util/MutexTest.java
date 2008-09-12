@@ -43,6 +43,7 @@ package org.openide.util;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
@@ -1131,13 +1132,13 @@ public class MutexTest extends NbTestCase {
      * - check interrupted flag is set
      */
     public void testInterruptedException129003() throws InterruptedException {
-        final boolean[] interrupted = {false};
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
         p.enterReadAccess();
         Thread enteringThread = new Thread("Entering thread") {
             @Override
             public void run() {
                 p.enterWriteAccess();
-                interrupted[0] = Thread.currentThread().isInterrupted();
+                interrupted.set(Thread.interrupted());
                 p.exitWriteAccess();
             }
         };
@@ -1149,6 +1150,6 @@ public class MutexTest extends NbTestCase {
         }
         p.exitReadAccess();
         enteringThread.join();
-        assertTrue("Interrupted thread entering Mutex should be set as interrupted.", interrupted[0]);
+        assertTrue("Interrupted thread entering Mutex should be set as interrupted.", interrupted.get());
     }
 }

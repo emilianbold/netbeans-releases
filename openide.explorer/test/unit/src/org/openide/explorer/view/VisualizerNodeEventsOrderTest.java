@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
 public class VisualizerNodeEventsOrderTest extends NbTestCase {
 
     {
-        System.setProperty("org.openide.explorer.VisualizerChildren.prefetchCount", "0");
+        System.setProperty("org.openide.explorer.VisualizerNode.prefetchCount", "0");
     }
 
     public VisualizerNodeEventsOrderTest(String name) {
