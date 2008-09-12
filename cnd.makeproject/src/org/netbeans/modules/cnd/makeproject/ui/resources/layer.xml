@@ -193,17 +193,8 @@ made subject to such option by the copyright holder.
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
                         
-                        <file name="RoundOffErrors" url="samples/roundofferrors.zip">
-                            <attr name="position" intvalue="830"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/roundofferrors.html"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
-                        </file>
-                        
                         <file name="Pi" url="samples/pi.zip">
-                            <attr name="position" intvalue="840"/>
+                            <attr name="position" intvalue="830"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/pi.html"/>

@@ -106,11 +106,6 @@ made subject to such option by the copyright holder.
                 <patternset refid="sample-src-pattern-set"/>
             </fileset>
         </zip>
-        <zip zipfile="${sample-dist}/roundofferrors.zip" >
-            <fileset dir="${sample-src}/roundofferrors">
-                <patternset refid="sample-src-pattern-set"/>
-            </fileset>
-        </zip>
         <zip zipfile="${sample-dist}/pi.zip" >
             <fileset dir="${sample-src}/pi">
                 <patternset refid="sample-src-pattern-set"/>
