@@ -1487,7 +1487,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
 
-    public void testGoToInclude() throws Exception {
+    public void testGoToInclude01() throws Exception {
         performTestSimpleFindDeclaration(2,
                                          "<?php\n" +
                                          "include \"te|sta.php\";\n" +
@@ -1497,6 +1497,66 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
 
+    public void testGoToInclude02() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "include ('|testa.php');\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+
+    public void testGoToInclude03() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "require 'testa.php|';\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+
+    public void testGoToInclude04() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "include_once '|testa.php';\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+
+    public void testGoToInclude05() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "include_once ('|testa.php');\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+
+    public void testGoToInclude06() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "require_once '|testa.php';\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+
+    public void testGoToInclude07() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "require_once (\"|testa.php\");\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+    
     public void testGoToInstanceVar() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "class test {\n" +
