@@ -49,7 +49,6 @@ import org.netbeans.modules.versioning.annotate.VcsAnnotations;
 import org.netbeans.modules.versioning.annotate.VcsAnnotation;
 import org.openide.windows.InputOutput;
 import org.openide.windows.IOProvider;
-import org.openide.windows.TopComponent;
 
 import java.io.*;
 import java.util.*;
@@ -68,12 +67,10 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.api.diff.Diff;
 import org.netbeans.modules.clearcase.ui.diff.DiffAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 
 /**
  * Main entry point for Clearcase functionality, use getInstance() to get the Clearcase object.

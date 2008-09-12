@@ -79,7 +79,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import org.netbeans.modules.clearcase.util.ProgressSupport;
-import org.openide.util.Cancellable;
 
 /**
  *
