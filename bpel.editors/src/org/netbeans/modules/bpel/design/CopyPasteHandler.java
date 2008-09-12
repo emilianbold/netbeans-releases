@@ -23,21 +23,23 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import org.netbeans.modules.bpel.design.actions.DesignModeAction;
+import javax.swing.Action;
 import org.netbeans.modules.bpel.design.actions.PasteModeAction;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
-import org.netbeans.modules.bpel.design.model.patterns.ProcessPattern;
 import org.netbeans.modules.bpel.design.selection.PlaceHolderManager;
 import org.netbeans.modules.bpel.design.selection.PlaceHolder;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
@@ -50,14 +52,22 @@ public class CopyPasteHandler implements MouseListener {
     private Pattern copiedPattern;
     private PlaceHolderManager[] managers;
     private PlaceHolder currentPlaceholder;
+    private CopyCutAction actionCopy;
+    private CopyCutAction actionCut; 
+    private PasteAction actionPaste; 
 
     public CopyPasteHandler(DesignView designView) {
         this.designView = designView;
+        actionCopy = new CopyCutAction(true);
+        actionCut = new CopyCutAction(false);
+        actionPaste = new PasteAction();
+
         managers = new PlaceHolderManager[]{
-            designView.getConsumersView().getPlaceholderManager(),
-            designView.getProcessView().getPlaceholderManager(),
-            designView.getProvidersView().getPlaceholderManager()
-        };
+                    designView.getConsumersView().getPlaceholderManager(),
+                    designView.getProcessView().getPlaceholderManager(),
+                    designView.getProvidersView().getPlaceholderManager()
+                };
+
     }
 
     public void enterPasteMode(Pattern pattern) {
@@ -67,33 +77,37 @@ public class CopyPasteHandler implements MouseListener {
             m.init(pattern);
             m.getDiagramView().addMouseListener(this);
         }
+
         tabNextPlaceholder(true);
+        fireUpdateActionEnabled();
     }
 
     public void exitPasteMode() {
         copiedPattern = null;
         currentPlaceholder = null;
+        
         for (PlaceHolderManager m : managers) {
             m.clear();
             m.getDiagramView().removeMouseListener(this);
         }
 
+        fireUpdateActionEnabled();
     }
 
     public boolean isActive() {
         return copiedPattern != null;
     }
 
-    public CopyAction getCopyAction() {
-        return new CopyAction();
+    public Action getCopyAction() {
+        return actionCopy;
     }
 
-    public CutAction getCutAction() {
-        return new CutAction();
+    public Action getCutAction() {
+        return actionCut;
     }
 
-    public PasteAction getPasteAction() {
-        return new PasteAction();
+    public Action getPasteAction() {
+        return actionPaste;
     }
 
     public void tabNextPlaceholder(boolean forward) {
@@ -153,6 +167,13 @@ public class CopyPasteHandler implements MouseListener {
 
     }
 
+    private void fireUpdateActionEnabled() {
+
+        actionPaste.fireUpdateActionEnabled();
+
+
+    }
+
     class PasteAction extends PasteModeAction {
 
         public PasteAction() {
@@ -180,90 +201,72 @@ public class CopyPasteHandler implements MouseListener {
             exitPasteMode();
 
         }
+
+        private void fireUpdateActionEnabled() {
+            
+            
+            
+            firePropertyChange(NodeAction.PROP_ENABLED, 
+                    new Boolean(!isEnabled()), 
+                    new Boolean(isEnabled()));
+
+        }
     }
 
-    public class CutAction extends DesignModeAction {
+    public class CopyCutAction extends BpelNodeAction {
 
-        public CutAction() {
-            super(designView);
+        private boolean copy;
+
+        public CopyCutAction(boolean copy) {
+            super(true);
+            this.copy = copy;
         }
 
-        public boolean isEnabled() {
-            if (!super.isEnabled()) {
+        protected boolean enable(BpelEntity[] bpelEntities) {
+            if (!super.enable(bpelEntities)) {
                 return false;
             }
 
-            Pattern selPattern = designView.getSelectionModel().getSelectedPattern();
-            return selPattern != null && !(selPattern instanceof ProcessPattern);
+            if (bpelEntities.length != 1) {
+                return false;
+            }
+
+            return !(bpelEntities[0] instanceof org.netbeans.modules.bpel.model.api.Process);
         }
 
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled()) {
+        public ActionType getType() {
+            return copy ? ActionType.CLIPBOARD_COPY : ActionType.CLIPBOARD_CUT;
+        }
+
+        @Override
+        protected String getBundleName() {
+            return NbBundle.getMessage(CopyPasteHandler.class,
+                    copy ? "ACT_ClipboardCopy" : "ACT_ClipboardCut"); //NOI18N
+        }
+
+        @Override
+        protected void performAction(BpelEntity[] bpelEntities) {
+            exitPasteMode();
+            if (!enable(bpelEntities)) {
                 return;
             }
+            Pattern pattern = getPatternCopy(bpelEntities[0]);
 
-            enterPasteMode(getPatternCopy(designView.getSelectionModel().getSelectedPattern()));
-
+            enterPasteMode(pattern);
         }
 
-        private Pattern getPatternCopy(Pattern pattern) {
-            if (pattern == null) {
-                return null;
-            }
-            Pattern copiedPattern = null;
-            BpelEntity entity = pattern.getOMReference();
+
+
+        private Pattern getPatternCopy(BpelEntity entity) {
             if (entity == null) {
                 return null;
             }
 
-            copiedPattern = designView.getModel().createPattern(entity.cut());
 
+            BpelEntity new_entity = copy ? entity.copy(new HashMap<UniqueId, UniqueId>()) : entity.cut();
 
-            return copiedPattern;
-        }
-    }
+            return designView.getModel().createPattern(new_entity);
 
-    public class CopyAction extends DesignModeAction {
-
-        public CopyAction() {
-            super(designView);
-        }
-
-        public boolean isEnabled() {
-            if (!super.isEnabled()) {
-                return false;
-            }
-
-            Pattern selPattern = designView.getSelectionModel().getSelectedPattern();
-            return selPattern != null && !(selPattern instanceof ProcessPattern);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            //            if (getModel().isReadOnly()) {
-//                return;
-//            }
-            if (!isEnabled()) {
-                return;
-            }
-
-            Pattern copiedPattern = getPatternCopy(designView.getSelectionModel().getSelectedPattern());
-            enterPasteMode(copiedPattern);
-
-        }
-
-        private Pattern getPatternCopy(Pattern pattern) {
-            if (pattern == null) {
-                return null;
-            }
-            Pattern copiedPattern = null;
-            BpelEntity entity = pattern.getOMReference();
-            if (entity == null) {
-                return null;
-            }
-
-            copiedPattern = designView.getModel().createPattern(entity.copy(new HashMap<UniqueId, UniqueId>()));
-
-            return copiedPattern;
         }
     }
 
@@ -275,7 +278,7 @@ public class CopyPasteHandler implements MouseListener {
             DiagramView view = (DiagramView) e.getComponent();
             List<PlaceHolder> placeholders =
                     view.getPlaceholderManager().getPlaceHolders();
-            FPoint pt = view.convertScreenToDiagram(new Point(e.getX(), e.getY()));        
+            FPoint pt = view.convertScreenToDiagram(new Point(e.getX(), e.getY()));
             for (PlaceHolder p : placeholders) {
                 if (p.contains(pt.x, pt.y)) {
                     p.drop();
