@@ -108,6 +108,7 @@ public class ResizeToDimensionAction extends SceneNodeAction
                 int width = panel.getResizeWidth();
                 if (height > 5 && width > 5)
                 {
+                    w.setPreferredBounds(null);
                     w.setPreferredSize(new Dimension(width, height));
                     w.revalidate();
                 }                
