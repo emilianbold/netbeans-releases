@@ -124,16 +124,7 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                         walker.visit();
                         out = walker.getBlocks();
                     } else {
-                        Comparator<CsmOffsetable> comparator = new Comparator<CsmOffsetable>() {
-                            public int compare(CsmOffsetable o1, CsmOffsetable o2) {
-                                int diff = o1.getStartOffset() - o2.getStartOffset();
-                                if (diff == 0) {
-                                    return o1.getEndOffset() - o2.getEndOffset();
-                                } else {
-                                    return diff;
-                                }
-                            }
-                        };
+                        Comparator<CsmOffsetable> comparator = new OffsetableComparator();
                         TreeSet<CsmOffsetable> result = new TreeSet<CsmOffsetable>(comparator);
                         boolean first = true;
                         for (APTPreprocHandler handler : handlers) {
@@ -188,9 +179,24 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                 long lastParsedTime = fileImpl.getLastParsedTime();
                 APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
                 if (apt != null) {
-                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, fileImpl.getPreprocHandler());
-                    walker.getTokenStream();
-                    out = walker.getCollectedData();
+                    Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
+                    if (handlers.isEmpty()) {
+                        DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
+                        return Collections.<CsmReference>emptyList();                    
+                    } else if (handlers.size() == 1) {
+                        APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handlers.iterator().next());
+                        walker.getTokenStream();
+                        out = walker.getCollectedData();
+                    } else {
+                        Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
+                        TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
+                        for (APTPreprocHandler handler : handlers) {
+                            APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler);
+                            walker.getTokenStream();
+                            result.addAll(walker.getCollectedData());
+                        }
+                        out = new ArrayList<CsmReference>(result);
+                    }
                 }
                 if (lastParsedTime == fileImpl.getLastParsedTime()) {
                     fileImpl.setLastMacroUsages(out);
@@ -283,5 +289,16 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
         return Collections.<CsmInclude>emptyList();
+    }
+    
+    private static class OffsetableComparator<T extends CsmOffsetable> implements Comparator<T> {
+        public int compare(CsmOffsetable o1, CsmOffsetable o2) {
+            int diff = o1.getStartOffset() - o2.getStartOffset();
+            if (diff == 0) {
+                return o1.getEndOffset() - o2.getEndOffset();
+            } else {
+                return diff;
+            }
+        }
     }
 }

@@ -223,6 +223,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#145148: forward class declaration is not replaced by real declaration in some cases
         performTest("child_ns.cc", 18, 16, "child_ns.cc", 15, 20);
     }
+    
+    public void testIZ145071() throws Exception {
+        // IZ#145071 : forward declarations marked as error
+        performTest("IZ145071.cc", 3, 21, "IZ145071.cc", 3, 5);
+    }
 
     public static class Failed extends HyperlinkBaseTestCase {
 

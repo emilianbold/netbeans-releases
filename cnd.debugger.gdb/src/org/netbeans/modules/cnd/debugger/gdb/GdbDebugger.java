@@ -104,7 +104,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -201,6 +200,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private int platform;
     private PathMap pathMap;
     private Map<String, ShareInfo> shareTab;
+    private String sig = null;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -494,27 +494,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
-    private static String getOsArch() {
-        String orig = System.getProperty("os.arch"); // NOI18N
-        return "-" + ((orig.equals("i386") || orig.equals("i686")) ? "x86" : orig); // NOI18N
-    }
-
-    private static String getOsName() {
-        return "-" + System.getProperty("os.name").replace(" ", "_"); // NOI18N
-    }
-
-    private static String getExtension() {
-        return Utilities.isWindows() ? ".dll" : Utilities.getOperatingSystem() == PlatformTypes.PLATFORM_MACOSX ? ".dylib" : ".so"; // NOI18N
-    }
-
-    private String fixPath(String path) {
-        if (isCygwin() && path.charAt(1) == ':') {
-            return "/cygdrive/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
-        } else if (isMinGW() && path.charAt(1) == ':') {
-            return "/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
-        } else {
-            return path;
-        }
+    public String getSignal() {
+        return sig;
     }
 
     private String getFullPath(String rundir, String path) {
@@ -1703,6 +1684,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     if (tid != null && !tid.equals(currentThreadID)) {
                         currentThreadID = tid;
                     }
+                    sig = map.get("signal-name"); // NOI18N
                     gdb.stack_list_frames();
                     setStopped();
                 }

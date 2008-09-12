@@ -259,7 +259,14 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     private synchronized Class selfLoadClass(String pkg, String name) { 
         Class cls = findLoadedClass(name); 
         if (cls == null) {
-            cls = doLoadClass(pkg, name);
+            try {
+                cls = doLoadClass(pkg, name);
+            } catch (NoClassDefFoundError e) {
+                // #145503: we can make a guess as to what triggered this error (since the JRE does not inform you).
+                // XXX Exceptions.attachMessage does not seem to work here
+                throw (NoClassDefFoundError) new NoClassDefFoundError(e.getMessage() + " while loading " + pkg + name +
+                        "; see http://wiki.netbeans.org/DevFaqTroubleshootClassNotFound").initCause(e); // NOI18N
+            }
             if (LOG_LOADING && !name.startsWith("java.")) LOGGER.log(Level.FINEST, "{0} loaded {1}",
                         new Object[] {this, name});
         }
