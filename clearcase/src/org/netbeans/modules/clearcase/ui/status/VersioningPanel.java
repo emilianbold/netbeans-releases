@@ -66,7 +66,6 @@ import org.netbeans.modules.clearcase.Clearcase;
 import org.netbeans.modules.clearcase.ClearcaseModuleConfig;
 import org.netbeans.modules.clearcase.FileInformation;
 import org.netbeans.modules.clearcase.FileStatusCache;
-import org.netbeans.modules.clearcase.util.ProgressSupport;
 import org.netbeans.modules.clearcase.ui.diff.Setup;
 import org.netbeans.modules.clearcase.ui.diff.DiffAction;
 import org.netbeans.modules.clearcase.ui.checkin.CheckinAction;
