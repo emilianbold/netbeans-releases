@@ -47,11 +47,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.SourceRoots;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -107,7 +109,11 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
 
     @Override
     protected void storeProperties(EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
-        // nothing needed
+        Info info = getPlatform().getInfo();
+        Util.logUsage(RubyProjectProperties.class, "USG_PROJECT_CONFIG_RUBY", // NOI18N
+                info.getKind(),
+                info.getPlatformVersion(),
+                info.getGemVersion());
     }
 
     private void storeRoots(SourceRoots roots, DefaultTableModel tableModel) throws MalformedURLException {

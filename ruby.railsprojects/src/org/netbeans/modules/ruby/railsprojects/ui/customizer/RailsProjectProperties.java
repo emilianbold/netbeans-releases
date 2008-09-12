@@ -110,6 +110,14 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         if (getRailsEnvironment() != null) {
             privateProperties.setProperty(RAILS_ENV, getRailsEnvironment());
         }
+//        Info info = getPlatform().getInfo();
+//        Util.logUsage(RailsProjectProperties.class, "USG_PROJECT_CONFIG_RAILS", // NOI18N
+//                info.getKind(),
+//                info.getPlatformVersion(),
+//                info.getGemVersion(),
+//                data.getServerInstanceId(),
+//                data.getDatabase().getDisplayName(),
+//                data.getRailsVersion());
     }
     
     RubyInstance getServer() {
