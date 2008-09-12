@@ -120,6 +120,11 @@ public class Clearcase {
     private InputOutput         log;
     private RequestProcessor    rp;
 
+    /**
+     * Keeps folders known to be a Clearcase view root
+     */
+    private Set<File> managedRoots = Collections.synchronizedSet(new HashSet<File>(10));
+
     private Clearcase() {
     }
 
@@ -196,8 +201,6 @@ public class Clearcase {
         // XXX
         return fileName.equals(".ccrc"); // NOI18N
     }
-    
-    private Set<File> managedRoots = Collections.synchronizedSet(new HashSet<File>(10));
     
     //  - lsvob returns the topmost folder for dynamic views on *nix
     //  - lsview -properties -full returns some usefull info about views (snapshot dynamic etc.)

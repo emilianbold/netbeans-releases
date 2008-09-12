@@ -241,10 +241,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE};
 
-    public static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
+    static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
 
-    public final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
+    final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
     static {
         PHP_KEYWORDS.put("__FILE__", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("__LINE__", KeywordCompletionType.SIMPLE);
@@ -295,7 +295,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private final static String[] PHP_KEYWORD_FUNCTIONS = {
         "echo", "include", "include_once", "require", "require_once"}; //NOI18N
 
-    private final static String[] PHP_CLASS_KEYWORDS = {
+    final static String[] PHP_CLASS_KEYWORDS = {
         "$this->", "self::", "parent::"
     };
 
@@ -1084,7 +1084,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // end: KEYWORDS
 
         PHPIndex index = request.index;
-        if (request.prefix.length() == 0) {
+        //commented out (no tests affected), takes more time, returns often wrong results
+        //TODO: should be be reevaluated by author deleted/revereted/rewritten
+        /*if (request.prefix.length() == 0) {
             Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram(),
                     request.prefix, request.anchor, request.currentlyEditedFileURL).vars;
             
@@ -1126,7 +1128,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 proposals.add(new PHPCompletionItem.VariableItem(var, request));
             }
         }
-        else {
+        else */
+        {
             // FUNCTIONS
             for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
                 for (int i = 0; i <= function.getOptionalArgs().length; i++) {
@@ -1321,6 +1324,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         ASTNode hierarchy[] = Utils.getNodeHierarchyAtOffset(program, position);
 
+        //getNodeHierarchyAtOffset obviously return null
+        if (hierarchy == null) {
+            LocalVariables result = new LocalVariables();
+            result.globalContext = globalContext;
+            result.vars = localVars.values();
+            return result;
+        }
         for (ASTNode node : hierarchy){
             if (node instanceof FunctionDeclaration){
                 varScopeNode = node;
