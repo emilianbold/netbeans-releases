@@ -69,6 +69,7 @@ import org.openide.util.Utilities;
 import javax.swing.*;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.diff.Diff;
+import org.netbeans.modules.clearcase.ui.diff.DiffAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileUtil;
@@ -429,7 +430,10 @@ public class Clearcase {
 
             @Override
             public Action[] getActions(VcsAnnotation annotation) {
-                return new Action[] { new DiffForAnnotationAction(annotation) };
+                String prevRevision = ClearcaseUtils.previousRevision(annotation.getRevision());
+                return prevRevision != null ? 
+                            new Action[] { new DiffForAnnotationAction(annotation, prevRevision) } :
+                            new Action[] { };
             }
 
             private class DiffForAnnotationAction extends AbstractAction {
@@ -437,10 +441,15 @@ public class Clearcase {
                 private final VcsAnnotation annotation;
                 private final String        prevRevision;
 
-                public DiffForAnnotationAction(VcsAnnotation annotation) {
-                    prevRevision = ClearcaseUtils.previousRevision(annotation.getRevision());
+                public DiffForAnnotationAction(VcsAnnotation annotation, String prevRevision) {
+                    this.prevRevision = prevRevision;
                     putValue(Action.NAME, NbBundle.getMessage(Clearcase.class, "Annotations_DiffTo", prevRevision, annotation.getRevision())); //NOI18N
                     this.annotation = annotation;
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return prevRevision != null && !prevRevision.trim().equals("");
                 }
 
                 public void actionPerformed(ActionEvent e) {
@@ -454,19 +463,7 @@ public class Clearcase {
                 private void diffToPrevious(VcsAnnotation annotation) throws IOException {
                     String selectedRevision = annotation.getRevision();
                     File baseFile = FileUtil.normalizeFile(context.getRootFiles().iterator().next());
-            
-                    File left = VersionsCache.getInstance().getFileRevision(baseFile, prevRevision);
-                    File right = VersionsCache.getInstance().getFileRevision(baseFile, selectedRevision);
-            
-                    FileObject fo = FileUtil.toFileObject(baseFile);
-                    String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N        
-        
-                    Reader r1 = new FileReader(left);
-                    Reader r2 = new FileReader(right);
-                    
-                    TopComponent c = (TopComponent) Diff.getDefault().createDiff(prevRevision, prevRevision, r1, selectedRevision, selectedRevision, r2, mimeType);
-                    c.open();
-                    c.requestActive();
+                    DiffAction.diff(baseFile, prevRevision, selectedRevision);
                 }
             }
         }

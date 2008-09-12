@@ -194,7 +194,7 @@ public class ClearcaseUtils {
         } catch (NumberFormatException e) {
             return null;
         }
-        return rev.substring(0, idx + 1) + (revno - 1);
+        return revno == 0 ? null : rev.substring(0, idx + 1) + (revno - 1);
     }
     
     /**
