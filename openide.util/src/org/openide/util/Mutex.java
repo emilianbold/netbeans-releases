@@ -1595,18 +1595,22 @@ public final class Mutex extends Object {
         * if wakeMeUp was already called then the thread will not sleep
         */
         public synchronized void sleep() {
+            boolean wasInterrupted = false;
             try {
                 while (!signal) {
                     try {
                         wait();
-
                         return;
                     } catch (InterruptedException e) {
-                        Logger.getLogger(Mutex.class.getName()).log(Level.WARNING, null, e);
+                        wasInterrupted = true;
+                        Logger.getLogger(Mutex.class.getName()).log(Level.FINE, null, e);
                     }
                 }
             } finally {
                 left = true;
+                if (wasInterrupted) { // #129003
+                    Thread.currentThread().interrupt();
+                }
             }
         }
 

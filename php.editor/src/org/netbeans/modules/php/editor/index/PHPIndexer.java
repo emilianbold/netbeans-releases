@@ -484,19 +484,21 @@ public class PHPIndexer implements Indexer {
                 Variable var = (Variable) assignment.getLeftHandSide();
                 String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
                 String varName = CodeUtils.extractVariableName(var);
-                String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
+                if (varName != null) {
+                    String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
 
-                if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-                    StringBuilder signature = new StringBuilder();
-                    signature.append(varName.toLowerCase() + ";" + varName + ";");
+                    if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
+                        StringBuilder signature = new StringBuilder();
+                        signature.append(varName.toLowerCase() + ";" + varName + ";");
 
-                    if (varType != null) {
-                        signature.append(varType);
+                        if (varType != null) {
+                            signature.append(varType);
+                        }
+
+                        signature.append(";"); //NOI18N
+                        signature.append(var.getStartOffset() + ";");
+                        document.addPair(FIELD_VAR, signature.toString(), true);
                     }
-
-                    signature.append(";"); //NOI18N
-                    signature.append(var.getStartOffset() + ";");
-                    document.addPair(FIELD_VAR, signature.toString(), true);
                 }
             }
             

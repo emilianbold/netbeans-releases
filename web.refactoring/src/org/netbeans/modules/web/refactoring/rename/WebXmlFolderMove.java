@@ -62,6 +62,10 @@ public class WebXmlFolderMove extends BaseWebXmlRename{
         List<FileObject> fos = new ArrayList<FileObject>();
         RefactoringUtil.collectChildren(folder, fos);
         for (FileObject each : fos){
+            // #142870 -- skip package-info, it is not needed in web.xml refactoring
+            if (RefactoringUtil.isPackageInfo(each)) {
+                continue;
+            }
             String oldFqn = JavaIdentifiers.getQualifiedName(each);
             String targetPackageName = getTargetPackageName(each.getParent());
             String oldUnqualifiedName = JavaIdentifiers.unqualify(oldFqn);

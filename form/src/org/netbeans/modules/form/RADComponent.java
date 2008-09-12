@@ -535,12 +535,18 @@ public class RADComponent {
                         + handlerName.substring(idx + oldComponentName.length())
                     );
                     formEvents.renameEventHandler(handlerName, newHandlerName);
+                    EventProperty prop = (EventProperty)events[i].getComponent().getPropertyByName(events[i].getId());
+                    if (prop != null) {
+                        prop.resetSelectedEventHandler(handlerName);
+                    }
+                    renamed = true;
                 }
             }
         }
 
-        if (renamed && getNodeReference() != null)
-            getNodeReference().fireComponentPropertySetsChange();
+        if (renamed && getNodeReference() != null) {
+            getNodeReference().fireComponentPropertiesChange();
+        }
     }
 
     /** Allows to add an auxiliary <name, value> pair, which is persistent

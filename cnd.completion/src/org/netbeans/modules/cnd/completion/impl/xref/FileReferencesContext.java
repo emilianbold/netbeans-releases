@@ -85,10 +85,13 @@ public final class FileReferencesContext {
     }
 
     public void clean(){
+        isClened = true;
         if (fileLocalVars != null) {
             fileLocalVars = null;
+            fileDeclarationsOffsets = null;
+            fileObjectOffsets = null;
+            projectMacros = null;
         }
-        isClened = true;
     }
     
     public boolean isCleaned(){

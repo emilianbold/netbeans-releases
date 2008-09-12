@@ -70,13 +70,14 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
 import java.io.File;
+import org.netbeans.jemmy.Timeouts;
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class GeneralPHPTest extends JellyTestCase {
+public class GeneralPHP extends JellyTestCase {
     
     static final String PHP_CATEGORY_NAME = "PHP";
     static final String PHP_PROJECT_NAME = "PHP Application";
@@ -99,7 +100,7 @@ public class GeneralPHPTest extends JellyTestCase {
       }
     }
 
-    public GeneralPHPTest( String arg0 )
+    public GeneralPHP( String arg0 )
     {
       super( arg0 );
     }
@@ -124,6 +125,12 @@ public class GeneralPHPTest extends JellyTestCase {
   // All defaults including name
   protected void CreatePHPApplicationInternal( )
   {
+    CreatePHPApplicationInternal( null );
+  }
+
+  // All defaults including name
+  protected void CreatePHPApplicationInternal( String sProjectName )
+  {
     // Create PHP application
 
     // Workaround for MacOS platform
@@ -140,10 +147,24 @@ public class GeneralPHPTest extends JellyTestCase {
     JDialogOperator jdNew = new JDialogOperator( "New PHP Project" );
 
     JTextComponentOperator jtName = new JTextComponentOperator( jdNew, 0 );
-    String sProjectName = GetWorkDir( ) + File.separator + jtName.getText( );
+
+    if( null != sProjectName )
+      jtName.setText( sProjectName );
+
+    String sProjectPath = GetWorkDir( ) + File.separator + jtName.getText( );
 
     JComboBoxOperator jcPath = new JComboBoxOperator( jdNew, 0 );
-    jcPath.enterText( sProjectName );
+
+    Timeouts t =  jcPath.getTimeouts( );
+    long lBack = t.getTimeout( "JTextComponentOperator.TypeTextTimeout" );
+    t.setTimeout( "JTextComponentOperator.TypeTextTimeout", 30000 );
+    jcPath.setTimeouts( t );
+
+    jcPath.enterText( sProjectPath );
+
+    t.setTimeout( "JTextComponentOperator.TypeTextTimeout", lBack );
+    jcPath.setTimeouts( t );
+
     //NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
     //opNewProjectNameLocationStep.txtProjectLocation( ).setText( GetWorkDir( ) );
 
@@ -151,5 +172,14 @@ public class GeneralPHPTest extends JellyTestCase {
 
     //opNewProjectNameLocationStep.txtProjectName( ).setText( sName );
     opNewProjectWizard.finish( );
+  }
+
+  protected void TypeCode( EditorOperator edit, String code )
+  {
+    for( int i = 0; i < code.length( ); i++ )
+    {
+      edit.typeKey( code.charAt( i ) );
+      Sleep( 100 );
+    }
   }
 }

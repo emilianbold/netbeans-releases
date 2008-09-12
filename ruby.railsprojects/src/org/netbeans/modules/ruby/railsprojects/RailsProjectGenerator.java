@@ -61,6 +61,7 @@ import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
@@ -174,6 +175,14 @@ public class RailsProjectGenerator {
         }
 
         RakeSupport.refreshTasks(p);
+        Util.logUsage(RailsProjectGenerator.class, "USG_PROJECT_CREATE_RAILS", // NOI18N
+                platform.getInfo().getKind(),
+                platform.getInfo().getVersion(),
+                platform.getInfo().getGemVersion(),
+                data.getServerInstanceId(),
+                data.getDatabase().getDisplayName(),
+                data.getRailsVersion());
+
         return h;
     }
 
