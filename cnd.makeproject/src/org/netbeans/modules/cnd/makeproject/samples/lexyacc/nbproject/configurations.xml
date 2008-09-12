@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="27">
+<configurationDescriptor version="47">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -27,16 +27,6 @@
   <defaultConf>0</defaultConf>
   <confs>
     <conf name="Debug" type="1">
-      <compileType>
-        <cCompilerTool>
-        </cCompilerTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
-        <linkerTool>
-          <linkerLibItems>
-          </linkerLibItems>
-        </linkerTool>
-      </compileType>
       <item path="token.l">
         <itemTool>3</itemTool>
         <customTool>
