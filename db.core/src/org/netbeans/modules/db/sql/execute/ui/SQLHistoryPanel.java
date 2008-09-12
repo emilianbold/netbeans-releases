@@ -357,7 +357,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         int rowSelected = sqlHistoryTable.getSelectedRow();
         try {
             // Make sure to insert the entire SQL, not just what appears in the Table
-            List<SQLHistory> sqlHistoryList = view.getSQLHistoryList();
+            List<SQLHistory> sqlHistoryList = view.getCurrentSQLHistoryList();
             int i = 0;
             String sqlToInsert = ""; // NOI18N
             for (SQLHistory sqlHistory : sqlHistoryList) {
@@ -898,6 +898,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             List<SQLHistory> sqlHistoryList = view.getSQLHistoryList();
             searchTextField.setText(""); // NOI18N
             Collections.reverse(sqlHistoryList);
+            view.setSQLHistoryList(sqlHistoryList);
             view.setCurrentSQLHistoryList(sqlHistoryList);
             refreshTable(null, sqlHistoryList);
         }
@@ -973,7 +974,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 int p1 = Math.max(caret.getDot(), caret.getMark());
                 doc.remove(p0, p1 - p0);
                 start = caret.getDot();
-                doc.insertString(start, s + ";", null); // NOI18N
+                doc.insertString(start, s + ";\n", null); // NOI18N
             } catch (BadLocationException ble) {
                 LOGGER.log(Level.WARNING, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_InsertAtLocationError") + ble);
             }
