@@ -97,11 +97,12 @@
 				<tocitem text="Changing Diagram Element Size" target="uml_diagrams_editing_diagram_elements_changing_size" />
 				<tocitem text="Finding Diagram Elements in the Projects Window" target="uml_diagrams_editing_diagram_elements_finding" />
 				<tocitem text="Using the Redefine Dialog Box" target="uml_diagrams_editing_diagram_elements_using_redefine_db" />
+				<tocitem text="Deleting Diagram Elements" target="uml_diagrams_deleting_diagram_elements" />
+			    <tocitem text="Deleting Diagrams" target="uml_diagrams_deleting_diagrams" />
 			</tocitem>
-			<tocitem text="Deleting Diagram Elements" target="uml_diagrams_deleting_diagram_elements" />
-			<tocitem text="Deleting Diagrams" target="uml_diagrams_deleting_diagrams" />
+			
 			<tocitem text="Working With Activity Diagrams" target="uml_diagrams_activity_ww_diagram_elements">
-				<tocitem text="Working With Activity Groups" target="uml_diagrams_activity_ww_activity_groups">
+				<tocitem text="Working With Activity Groups" target="uml_diagrams_activity_ww_activity_groups">/>
 					<tocitem text="Selecting and Modifying an Activity Group Kind" target="uml_diagrams_activity_selecting_modifying_activity_group_kind" />
 					<tocitem text="Selecting and Modifying an Activity Group GroupKind" target="uml_diagrams_activity_selecting_modifying_activity_group_groupkind" />
 					<tocitem text="Adding or Modifying Activity Group Conditions" target="uml_diagrams_activity_adding_modifying_activity_group_conditions" />
@@ -212,6 +213,7 @@
 			<tocitem text="Java Reverse Engineering">
 				<tocitem text="About Java-Code Reverse Engineering" target="uml_reverse_eng_about_java_code_rev_eng" />
 				<tocitem text="Launching Reverse Engineering" target="uml_reverse_eng_launching_rev_eng" />
+				<tocitem text="Reverse Engineer Dialog Box" target="uml_reverse_eng_reverse_eng_dialog_box" />
 				<tocitem text="Classes" target="uml_reverse_eng_classes" />
 				<tocitem text="Packages" target="uml_reverse_eng_packages" />
 				<tocitem text="Interfaces" target="uml_reverse_eng_interfaces" />
