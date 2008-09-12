@@ -1667,6 +1667,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (frame != null) {
                     map = GdbUtils.createMapFromString(frame);
                     String fullname = map.get("fullname"); // NOI18N
+                    if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() &&
+                        fullname != null && fullname.startsWith("/usr/")) { // NOI18N
+                        fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname.substring(4);
+                    }
                     String line = map.get("line"); // NOI18N
                     if (fullname != null && line != null) {
                         lastStop = fullname + ":" + line; // NOI18N
@@ -2040,6 +2044,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         fullname = runDirectory + file;
                         log.finest("GD.stackUpdate: Setting fullname from runDirectory + file"); // NOI18N
                     }
+                }
+                if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() &&
+                    fullname != null && fullname.startsWith("/usr/")) { // NOI18N
+                    fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname.substring(4);
                 }
 
                 callstack.add(i, new CallStackFrame(this, func, file, fullname, lnum, addr, i));
