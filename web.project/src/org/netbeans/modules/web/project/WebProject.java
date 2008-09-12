@@ -1122,6 +1122,7 @@ public final class WebProject implements Project, AntProjectListener {
     private static final String[] TYPES = new String[] { 
         "java-classes",         // NOI18N
         "java-main-class",      // NOI18N
+        "java-forms",           // NOI18N
         "java-beans",           // NOI18N
         "persistence",          // NOI18N
         "oasis-XML-catalogs",   // NOI18N
