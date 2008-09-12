@@ -151,7 +151,7 @@ public class SunASIntegrationPanelUI extends javax.swing.JPanel {
                     .add(directorySelector, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
                     .add(domainsCombo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
                     .add(labelInstall)
-                    .add(labelDomain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(labelDomain))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
