@@ -231,7 +231,9 @@ public class CodeUtils {
                 } else {
                     IndexedConstant dispatcher = varStack.get(varName);
 
-                    if (dispatcher != null) {
+                    if (dispatcher != null
+                            // preventing infinite loop
+                            && dispatcher != variable) {
                         resolveFunctionType(context, index, varStack, dispatcher);
                         className = dispatcher.getTypeName();
                     }
