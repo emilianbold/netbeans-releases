@@ -241,10 +241,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE};
 
-    public static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
+    static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
 
-    public final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
+    final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
     static {
         PHP_KEYWORDS.put("__FILE__", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("__LINE__", KeywordCompletionType.SIMPLE);
@@ -295,7 +295,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private final static String[] PHP_KEYWORD_FUNCTIONS = {
         "echo", "include", "include_once", "require", "require_once"}; //NOI18N
 
-    private final static String[] PHP_CLASS_KEYWORDS = {
+    final static String[] PHP_CLASS_KEYWORDS = {
         "$this->", "self::", "parent::"
     };
 
@@ -1319,6 +1319,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         ASTNode hierarchy[] = Utils.getNodeHierarchyAtOffset(program, position);
 
+        //getNodeHierarchyAtOffset obviously return null
+        if (hierarchy == null) {
+            LocalVariables result = new LocalVariables();
+            result.globalContext = globalContext;
+            result.vars = localVars.values();
+            return result;
+        }
         for (ASTNode node : hierarchy){
             if (node instanceof FunctionDeclaration){
                 varScopeNode = node;

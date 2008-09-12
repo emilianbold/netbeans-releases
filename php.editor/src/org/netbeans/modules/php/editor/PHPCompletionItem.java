@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -171,6 +172,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
     static class KeywordItem extends PHPCompletionItem {
         private String description = null;
         private String keyword = null;
+        private static final List<String> CLS_KEYWORDS =
+                Arrays.asList(PHPCodeCompletion.PHP_CLASS_KEYWORDS);
 
 
         KeywordItem(String keyword, CompletionRequest request) {
@@ -209,6 +212,11 @@ abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public ImageIcon getIcon() {
             return keywordIcon;
+        }
+
+        @Override
+        public boolean isSmart() {            
+            return CLS_KEYWORDS.contains(getName()) ? true : super.isSmart();
         }
 
         @Override
