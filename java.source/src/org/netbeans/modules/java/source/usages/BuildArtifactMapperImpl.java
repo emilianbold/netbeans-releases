@@ -209,7 +209,8 @@ public class BuildArtifactMapperImpl {
             SourceUtils.waitScanFinished();
         } catch (InterruptedException e) {
             //Not Important
-            Exceptions.printStackTrace(e);            
+            LOG.log(Level.FINE, null, e);
+            return false;
         }
 
         FileObject[][] sources = new FileObject[1][];
