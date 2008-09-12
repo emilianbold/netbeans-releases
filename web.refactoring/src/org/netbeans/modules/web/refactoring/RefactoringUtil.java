@@ -299,4 +299,13 @@ public class RefactoringUtil {
         return result[0];
 
     }
+    
+    /**
+     * @return true if the given <code>fo</code> represents
+     * a <code>package-info.java<code> file; false otherwise.
+     */
+    public static boolean isPackageInfo(FileObject fo) {
+        return "package-info.java".equals(fo.getNameExt()); //NOI18N
+    }
+
 }
