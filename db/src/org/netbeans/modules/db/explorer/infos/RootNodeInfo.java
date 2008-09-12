@@ -80,6 +80,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     private Collection<DbNodeLoader> nodeLoaders;
     
     // maps nodes to their associated RegisteredNodeInfo instance
+    // @GuardedBy("nodeMap")
     private HashMap<Node, RegisteredNodeInfo> nodeMap = new HashMap<Node, RegisteredNodeInfo>();
 
     private static Logger LOGGER = 
@@ -197,29 +198,35 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         return infos;
     }
 
-    private synchronized RegisteredNodeInfo getRegisteredNodeInfo(Node node)
+    private RegisteredNodeInfo getRegisteredNodeInfo(Node node)
     {
-        RegisteredNodeInfo info = nodeMap.get(node);
-        if (info == null)
+        RegisteredNodeInfo info = null;
+        
+        synchronized (nodeMap)
         {
-            info = new RegisteredNodeInfo(this, node);
-            nodeMap.put(node, info);
-            
-            node.addNodeListener(
-                new NodeAdapter()
-                {
-                    @Override
-                    public void nodeDestroyed(NodeEvent ev) 
+            info = nodeMap.get(node);
+        
+            if (info == null)
+            {
+                info = new RegisteredNodeInfo(this, node);
+                nodeMap.put(node, info);
+
+                node.addNodeListener(
+                    new NodeAdapter()
                     {
-                        Node node = ev.getNode();
-                        
-                        synchronized (nodeMap)
+                        @Override
+                        public void nodeDestroyed(NodeEvent ev) 
                         {
-                            nodeMap.remove(node);
+                            Node node = ev.getNode();
+
+                            synchronized (nodeMap)
+                            {
+                                nodeMap.remove(node);
+                            }
                         }
                     }
-                }
-            );
+                );
+            }
         }
         
         return info;
