@@ -73,6 +73,8 @@ NetBeans.Logger = {};
         }
         
         this.logMessage(exception.toString());
-        this.logMessage(exception.stack);
+        if (exception.stack) {
+          this.logMessage(exception.stack);
+        }
     }    
 }).apply(NetBeans.Logger);
