@@ -97,6 +97,8 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.NodeFactorySupport;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -111,6 +113,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -125,6 +128,8 @@ import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openidex.search.SearchInfo;
 
 /**
@@ -135,7 +140,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private final Project project;
     private FilterNode projectNode = null;
     private final SubprojectProvider spp;
-
+    private static final Boolean ASYNC_ROOT_NODE = Boolean.getBoolean("cnd.async.root"); // NOI18N
+    private static final Logger log = Logger.getLogger("cnd.makeproject"); // NOI18N
     private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); // NOI18N
     static final String PRIMARY_TYPE = "application"; // NOI18N
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
@@ -149,10 +155,18 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     public Node createLogicalView() {
-        if (getMakeConfigurationDescriptor() == null)
-            return new MakeLogicalViewRootNodeBroken();
-        else
-            return new MakeLogicalViewRootNode(getMakeConfigurationDescriptor().getLogicalFolders());
+        if (ASYNC_ROOT_NODE) {
+            log.fine("creating async root node in EDT? " + SwingUtilities.isEventDispatchThread()); // NOI18N
+            InstanceContent ic = new InstanceContent();
+            ic.add(project);
+            return new MakeLogicalViewRootNode(project, ic);
+        } else {
+            if (getMakeConfigurationDescriptor() == null) {
+                return new MakeLogicalViewRootNodeBroken(project);
+            } else {
+                return new MakeLogicalViewRootNode(getMakeConfigurationDescriptor().getLogicalFolders());
+            }
+        }
     }
 
     private boolean findPathMode = false;
@@ -383,7 +397,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         return new LoadingNode();
     }
 
-    private static class LoadingNode extends AbstractNode {
+    private static final class LoadingNode extends AbstractNode {
 
         public LoadingNode() {
             super(Children.LEAF);
@@ -391,6 +405,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             setDisplayName(NbBundle.getMessage(MakeLogicalViewProvider.class, "Tree_Loading")); // NOI18N
         }
 
+        @Override
         public Image getIcon(int param) {
             //System.err.println("get icon asked");
             return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/waitNode.gif"); // NOI18N
@@ -404,6 +419,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private Image icon;
         private Lookup lookup;
         private Action brokenLinksAction;
+        private final InstanceContent ic;
         private boolean brokenLinks;
         private boolean brokenIncludes;
         private Folder folder;
@@ -415,6 +431,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 project,
                 new FolderSearchInfo(folder),
             }));
+            ic = new InstanceContent();
+            ic.add(project);
+            ic.add(folder);
+            ic.add(new FolderSearchInfo(folder));
             this.folder = folder;
             setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
             setName( ProjectUtils.getInformation( project ).getDisplayName() );
@@ -436,6 +456,26 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 //            // Test Logical View Providers
         }
 
+        public MakeLogicalViewRootNode(Project project, InstanceContent ic) {
+            super(Children.create(new AsyncLogicalViewChildFactory(project, ic), true), new AbstractLookup(ic));
+            this.ic = ic;
+            this.folder = null;
+            setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
+            setName(ProjectUtils.getInformation(project).getDisplayName());
+
+            brokenIncludesResult = Lookup.getDefault().lookup(new Lookup.Template<BrokenIncludes>(BrokenIncludes.class));
+            brokenIncludesResult.addLookupListener(this);
+            resultChanged(null);
+
+            brokenLinks = hasBrokenLinks();
+            brokenIncludes = hasBrokenIncludes(project);
+            brokenLinksAction = new BrokenLinksAction();
+            // Handle annotations
+            setForceAnnotation(true);
+//            updateAnnotationFiles();
+
+        }
+
         public Folder getFolder() {
             return folder;
         }
@@ -445,7 +485,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // Add project directory
             if (project.getProjectDirectory() == null) {
                 // See IZ 125880
-                Logger.getLogger("cnd.makeproject").warning("project.getProjectDirectory() == null - " + project);
+                log.warning("project.getProjectDirectory() == null - " + project); // NOI18N
             }
             set.add(project.getProjectDirectory());
             // Add buildfolder from makefile projects to sources. See IZ 90190.
@@ -478,7 +518,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public String getShortDescription() {
             if (brokenIncludes){
-                return NbBundle.getMessage(getClass(), "BrokenIncludeTxt");
+                return NbBundle.getMessage(getClass(), "BrokenIncludeTxt"); // NOI18N
             } else {
                 return super.getShortDescription();
             }
@@ -495,6 +535,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             fireOpenedIconChange();
         }
 
+        @Override
         public Object getValue(String valstring) {
             if (valstring == null)
                 return super.getValue(valstring);
@@ -507,6 +548,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return super.getValue(valstring);
         }
 
+        @Override
         public Image getIcon( int type ) {
             return mergeBadge(annotateIcon(super.getIcon(type), type));
         }
@@ -520,10 +562,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return original;
         }
 
+        @Override
         public Image getOpenedIcon( int type ) {
             return mergeBadge(annotateIcon(super.getOpenedIcon(type), type));
         }
 
+        @Override
         public Action[] getActions( boolean context ) {
             // TODO: not clear if we need to call the following method at all
             // but we need to remove remembering the output to prevent memory leak;
@@ -549,10 +593,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return (Action[])actions.toArray(new Action[actions.size()]);
         }
 
+        @Override
         public boolean canRename() {
             return false;
         }
 
+        @Override
         public PasteType getDropType(Transferable transferable, int action, int index) {
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
@@ -562,6 +608,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return null;
         }
 
+        @Override
         protected void createPasteTypes(Transferable transferable, List list) {
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
@@ -685,35 +732,133 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    private final class MakeLogicalViewRootNodeBroken extends AbstractNode {
-        public MakeLogicalViewRootNodeBroken() {
+    private static final class MakeLogicalViewRootNodeBroken extends AbstractNode {
+        public MakeLogicalViewRootNodeBroken(Project project) {
             super(Children.LEAF, Lookups.fixed(new Object[] {project}));
             setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
             setName( ProjectUtils.getInformation( project ).getDisplayName() );
         }
 
+        @Override
         public Image getIcon( int type ) {
             Image original = super.getIcon(type);
             return Utilities.mergeImages(original, brokenProjectBadge, 8, 0);
         }
 
+        @Override
         public Image getOpenedIcon( int type ) {
             Image original = super.getOpenedIcon(type);
             return Utilities.mergeImages(original, brokenProjectBadge, 8, 0);
         }
 
+        @Override
         public Action[] getActions( boolean context ) {
             Vector actions = new Vector();
             actions.add(CommonProjectActions.closeProjectAction());
             return (Action[])actions.toArray(new Action[actions.size()]);
         }
 
+        @Override
         public boolean canRename() {
             return false;
         }
     }
 
-    private class LogicalViewChildren extends BaseMakeViewChildren {
+    private final class AsyncLogicalViewChildFactory extends ChildFactory<Node> implements RefreshableItemsContainer {
+
+        private final Project project;
+        private final InstanceContent ic;
+        private boolean inited = false;
+        public AsyncLogicalViewChildFactory(Project project, InstanceContent ic) {
+            assert ic != null;
+            this.ic = ic;
+            this.project = project;
+            assert this.project != null;
+        }
+
+        @Override
+        protected boolean createKeys(List<Node> toPopulate) {
+            toPopulate.addAll(createNodeList().keys());
+            return true;
+        }
+
+        @Override
+        protected Node createNodeForKey(Node key) {
+            return key;
+        }
+
+        @SuppressWarnings("unchecked")
+        NodeList<Node> createNodeList() {
+            List<Node> list = new ArrayList<Node>();
+            assert project != null;
+            log.fine("creating node in EDT?" + SwingUtilities.isEventDispatchThread()); // NOI18N
+            assert !SwingUtilities.isEventDispatchThread();
+            MakeConfigurationDescriptor projDescriptor = getMakeConfigurationDescriptor();
+            if (!inited) {
+                inited = true;
+                if (projDescriptor != null) {
+                    Folder logical = projDescriptor.getLogicalFolders();
+                    ic.add(logical);
+                    ic.add(new FolderSearchInfo(logical));
+                }
+            }
+            if (projDescriptor != null) {
+                Folder logical = projDescriptor.getLogicalFolders();
+
+                Collection elems = logical.getElements();
+                for (Object key : elems) {
+                    Node node = null;
+                    if (key instanceof Folder) {
+                        Folder folder = (Folder) key;
+                        if (folder.isProjectFiles()) {
+                            //FileObject srcFileObject = project.getProjectDirectory().getFileObject("src");
+                            FileObject srcFileObject = project.getProjectDirectory();
+                            DataObject srcDataObject;
+                            try {
+                                srcDataObject = DataObject.find(srcFileObject);
+                            } catch (DataObjectNotFoundException e) {
+                                throw new AssertionError(e);
+                            }
+                            node = new LogicalFolderNode(((DataFolder) srcDataObject).getNodeDelegate(), folder);
+                        } else {
+                            node = new ExternalFilesNode(folder);
+                        }
+                    } else {
+                        assert (key instanceof Item);
+                        Item item = (Item) key;
+                        DataObject fileDO = item.getDataObject();
+                        if (fileDO != null) {
+                            // TODO
+                            node = new ViewItemNode(this, logical, item, fileDO);
+                        } else {
+                            // TODO
+                            node = new BrokenViewItemNode(this, logical, item);
+                        }
+                    }
+                    list.add(node);
+                }
+                if ("root".equals(logical.getName())) { // NOI18N
+                    LogicalViewNodeProvider[] providers = LogicalViewNodeProviders.getInstance().getProvidersAsArray();
+                    if (providers.length > 0) {
+                        for (int i = 0; i < providers.length; i++) {
+                            AbstractNode node = providers[i].getLogicalViewNode(project);
+                            if (node != null) {
+                                list.add(node);
+                            }
+                        }
+                    }
+                }
+            }
+            Node[] nodes = list.toArray(new Node[list.size()]);
+            return NodeFactorySupport.fixedNodeList(nodes);
+        }
+
+        public void refreshItem(Item item) {
+            // TODO: need to implement
+        }
+    }
+
+    private final class LogicalViewChildren extends BaseMakeViewChildren {
         public LogicalViewChildren(Folder folder) {
             super(folder);
         }
@@ -757,7 +902,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         protected Collection getKeys() {
             Collection collection = getFolder().getElements();
 
-            if (getFolder().getName() == "root") { // NOI18N
+            if ("root".equals(getFolder().getName())) { // NOI18N
                 LogicalViewNodeProvider[] providers = LogicalViewNodeProviders.getInstance().getProvidersAsArray();
                 if (providers.length > 0) {
                     for (int i = 0; i < providers.length; i++) {
@@ -778,7 +923,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         return makeConfigurationDescriptor;
     }
 
-
+    
     /** Yet another cool filter node just to add properties action
      */
     /* FIXUP
@@ -828,7 +973,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     /** The special properties action
      */
-    private static class PreselectPropertiesAction extends AbstractAction {
+    private static final class PreselectPropertiesAction extends AbstractAction {
 
         private Project project;
         private String nodeName;
@@ -847,7 +992,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    public class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
+    private final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         private Folder folder;
 
         public LogicalFolderNode(Node folderNode, Folder folder) {
@@ -862,23 +1007,24 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         private void updateAnnotationFiles() {
-            RequestProcessor.getDefault().post(new UpdateAnnotationFilesTHread(this));
+            RequestProcessor.getDefault().post(new UpdateAnnotationFilesThread(this));
         }
 
-        class UpdateAnnotationFilesTHread extends Thread {
+        private class UpdateAnnotationFilesThread extends Thread {
             LogicalFolderNode logicalFolderNode;
 
-            UpdateAnnotationFilesTHread(LogicalFolderNode logicalFolderNode) {
+            UpdateAnnotationFilesThread(LogicalFolderNode logicalFolderNode) {
                 this.logicalFolderNode = logicalFolderNode;
             }
+            @Override
             public void run() {
                 setFiles(Collections.EMPTY_SET /*folder.getAllItemsAsFileObjectSet(true)*/); // See IZ 100394 for details
-                Vector allFolders = new Vector();
+                List<Folder> allFolders = new ArrayList<Folder>();
                 allFolders.add(folder);
                 allFolders.addAll(folder.getAllFolders(true));
-                Iterator iter = allFolders.iterator();
+                Iterator<Folder> iter = allFolders.iterator();
                 while (iter.hasNext()) {
-                    ((Folder)iter.next()).addChangeListener(logicalFolderNode);
+                    iter.next().addChangeListener(logicalFolderNode);
                 }
             }
         }
@@ -896,6 +1042,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         public Folder getFolder() {
             return folder;
         }
+        @Override
         public Object getValue(String valstring) {
             if (valstring == null)
                 return super.getValue(valstring);
@@ -908,22 +1055,27 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return super.getValue(valstring);
         }
 
+        @Override
         public Image getIcon( int type ) {
             return annotateIcon(Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolder.gif"), type); // NOI18N
         }
 
+        @Override
         public Image getOpenedIcon( int type ) {
             return annotateIcon(Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolderOpened.gif"), type); // NOI18N
         }
 
+        @Override
         public String getName() {
             return folder.getDisplayName();
         }
 
+        @Override
         public String getDisplayName() {
             return annotateName(folder.getDisplayName());
         }
 
+        @Override
         public void setName(String newName) {
             String oldName = folder.getDisplayName();
             if (folder.getParent() != null && folder.getParent().findFolderByDisplayName(newName) != null) {
@@ -935,26 +1087,32 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             fireDisplayNameChange(oldName, newName);
         }
 
+        @Override
         public void setDisplayName(String newName) {
             setDisplayName(newName);
         }
 
+        @Override
         public boolean canRename() {
             return true;
         }
 
+        @Override
         public boolean canDestroy() {
             return true;
         }
 
+        @Override
         public boolean canCut() {
             return false; // FIXUP
         }
 
+        @Override
         public boolean canCopy() {
             return false; // FIXUP
         }
 
+        @Override
         public PasteType getDropType(Transferable transferable, int action, int index) {
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
@@ -964,6 +1122,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return null;
         }
 
+        @Override
         protected void createPasteTypes(Transferable transferable, List list) {
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
@@ -982,6 +1141,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         public void newLogicalFolder() {
         }
 
+        @Override
         public Action[] getActions( boolean context ) {
             return new Action[] {
                 CommonProjectActions.newFileAction(),
@@ -1004,7 +1164,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    class ViewItemPasteType extends PasteType {
+    private static final class ViewItemPasteType extends PasteType {
         Folder toFolder;
         ViewItemNode viewItemNode;
         int type;
@@ -1105,10 +1265,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     private final class ExternalFilesNode extends AbstractNode {
-        private Image icon;
-        private Lookup lookup;
-        private Action brokenLinksAction;
-        private boolean broken;
         private Folder folder;
 
         public ExternalFilesNode(Folder folder) {
@@ -1172,13 +1328,14 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     private static final int WAIT_DELAY = 50;
-    private abstract class BaseMakeViewChildren extends Children.Keys implements ChangeListener {
+    private abstract class BaseMakeViewChildren extends Children.Keys implements ChangeListener, RefreshableItemsContainer {
         private final Folder folder;
 
         public BaseMakeViewChildren(Folder folder) {
             this.folder = folder;
         }
 
+        @Override
         protected void addNotify() {
             if (isFindPathMode()) {
                 //System.err.println("BaseMakeViewChildren: FindPathMode " + (SwingUtilities.isEventDispatchThread() ? "UI":"regular") + " thread");
@@ -1217,6 +1374,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
 
+        @Override
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             folder.removeChangeListener( this );
@@ -1247,7 +1405,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    private class ExternalFilesChildren extends BaseMakeViewChildren {
+    private final class ExternalFilesChildren extends BaseMakeViewChildren {
         private final Project project;
 
         public ExternalFilesChildren(Project project, Folder folder) {
@@ -1279,14 +1437,14 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    private class ViewItemNode extends FilterNode implements ChangeListener {
-        Children.Keys childrenKeys;
+    private final class ViewItemNode extends FilterNode implements ChangeListener {
+        RefreshableItemsContainer itemsContainer;
         private Folder folder;
         private Item item;
 
-        public ViewItemNode(Children.Keys childrenKeys, Folder folder, Item item, DataObject dataObject) {
+        public ViewItemNode(RefreshableItemsContainer itemsContainer, Folder folder, Item item, DataObject dataObject) {
             super(dataObject.getNodeDelegate());
-            this.childrenKeys = childrenKeys;
+            this.itemsContainer = itemsContainer;
             this.folder = folder;
             this.item = item;
             File file = item.getCanonicalFile();
@@ -1381,7 +1539,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                     newActions.add(oldActions[i]);
                     newActions.add(null);
-                    newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
+                    newActions.add(new RefreshItemAction(itemsContainer, null, getItem()));
                     newActions.add(null);
                     newActions.add(SystemAction.get(CompileSingleAction.class));
                     newActions.add(null);
@@ -1440,7 +1598,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    static class ViewItemTransferable extends ExTransferable.Single {
+    private static final class ViewItemTransferable extends ExTransferable.Single {
         private ViewItemNode node;
 
         public ViewItemTransferable(ViewItemNode node, int operation) throws ClassNotFoundException {
@@ -1455,13 +1613,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private final class BrokenViewItemNode extends AbstractNode {
         private boolean broken;
-        private Children.Keys childrenKeys;
+        private RefreshableItemsContainer itemsContainer;
         private Folder folder;
         private Item item;
 
-        public BrokenViewItemNode(Children.Keys childrenKeys, Folder folder, Item item) {
+        public BrokenViewItemNode(RefreshableItemsContainer itemsContainer, Folder folder, Item item) {
             super(Children.LEAF);
-            this.childrenKeys = childrenKeys;
+            this.itemsContainer = itemsContainer;
             this.folder = folder;
             this.item = item;
             File file = item.getCanonicalFile();
@@ -1471,6 +1629,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             broken = true;
         }
 
+        @Override
         public Image getIcon( int type ) {
             //Image original = Utilities.loadImage("org/openide/loaders/instanceObject.gif"); // NOI18N
             //Image original = Utilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
@@ -1487,19 +1646,22 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return broken ? Utilities.mergeImages(original, brokenProjectBadge, 11, 0) : original;
         }
 
+        @Override
         public Action[] getActions( boolean context ) {
             return new Action[] {
                 SystemAction.get(RemoveItemAction.class),
-                new RefreshItemAction(childrenKeys, null, item),
+                new RefreshItemAction(itemsContainer, null, item),
                 null,
                 SystemAction.get(PropertiesItemAction.class),
             };
         }
 
+        @Override
         public boolean canRename() {
             return false;
         }
 
+        @Override
         public Object getValue(String valstring) {
             if (valstring == null)
                 return super.getValue(valstring);
@@ -1515,13 +1677,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    class RefreshItemAction extends AbstractAction {
-        private Children.Keys childrenKeys;
-        private Folder folder;
-        private Item item;
+    private static final class RefreshItemAction extends AbstractAction {
+        private final RefreshableItemsContainer itemsContainer;
+        private final Folder folder;
+        private final Item item;
 
-        public RefreshItemAction(Children.Keys childrenKeys, Folder folder, Item item) {
-            this.childrenKeys = childrenKeys;
+        public RefreshItemAction(RefreshableItemsContainer itemsContainer, Folder folder, Item item) {
+            this.itemsContainer = itemsContainer;
             this.folder = folder;
             this.item = item;
             putValue(NAME, NbBundle.getBundle(getClass()).getString("CTL_Refresh")); //NOI18N
@@ -1538,15 +1700,16 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         private void refresh(Item item) {
-            if (childrenKeys instanceof ExternalFilesChildren)
-                ((ExternalFilesChildren)childrenKeys).refreshItem(item);
-            else if (childrenKeys instanceof LogicalViewChildren)
-                ((LogicalViewChildren)childrenKeys).refreshItem(item);
+            itemsContainer.refreshItem(item);
         }
     }
 
-    class FolderSearchInfo implements SearchInfo {
-        Folder folder;
+    private interface RefreshableItemsContainer {
+        void refreshItem(Item item);
+    }
+
+    private static final class FolderSearchInfo implements SearchInfo {
+        private final Folder folder;
 
         FolderSearchInfo(Folder folder) {
             this.folder = folder;

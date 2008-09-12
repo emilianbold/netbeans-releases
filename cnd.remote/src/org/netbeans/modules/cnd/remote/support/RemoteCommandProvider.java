@@ -56,8 +56,7 @@ public class RemoteCommandProvider implements CommandProvider {
         return support.run();
     }
     
-    @Override
-    public String toString() {
-        return support.toString();
+    public String getOutput() {
+        return support.getOutput();
     }
 }

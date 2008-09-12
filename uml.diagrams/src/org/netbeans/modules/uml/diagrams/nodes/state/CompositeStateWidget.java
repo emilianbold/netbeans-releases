@@ -345,7 +345,7 @@ public class CompositeStateWidget extends CompositeNodeWidget
         }
         if (elt != null && elt instanceof IRegion)
         {
-            RegionWidget regionW = findRegionWidget((IRegion) elt);
+            CompartmentWidget regionW = findCompartmentWidget(elt);
             if (regionW != null)
             {
                 //fix the size/location/properties
@@ -357,41 +357,6 @@ public class CompositeStateWidget extends CompositeNodeWidget
         }
     }
 
-    private RegionWidget findRegionWidget(IRegion region)
-    {
-        RegionWidget retVal = null;
-        if (region != null)
-        {
-            Collection<RegionWidget> list = getRegionWidgets();
-            for (Iterator<RegionWidget> it = list.iterator(); it.hasNext();)
-            {
-                RegionWidget regionWidget = it.next();
-                if (regionWidget.getElement().equals(region))
-                {
-                    retVal = regionWidget;
-                    break;
-                }
-            }
-        }
-        return retVal;
-    }
-
-    @Override
-    public void save(NodeWriter nodeWriter)
-    {
-        String layout = "";
-        if (isHorizontalLayout())
-        {
-            layout = SeparatorWidget.Orientation.HORIZONTAL.toString();
-        } else
-        {
-            layout = SeparatorWidget.Orientation.VERTICAL.toString();
-        }
-        HashMap map = nodeWriter.getProperties();
-        map.put("Orientation", layout);
-        nodeWriter.setProperties(map);
-        super.save(nodeWriter);
-    }
 
     public Collection<CompartmentWidget> getCompartmentWidgets()
     {

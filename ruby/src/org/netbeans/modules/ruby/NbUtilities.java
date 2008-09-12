@@ -87,26 +87,26 @@ public class NbUtilities {
 
         return pane;
     }
-    
+
     public static JTextComponent getPaneFor(FileObject fo) {
         JTextComponent pane = getOpenPane();
-        if (pane != null && findFileObject(pane) == fo) { 
+        if (pane != null && findFileObject(pane) == fo) {
             return pane;
         }
-        
+
         for (JTextComponent c : EditorRegistry.componentList()) {
             if (findFileObject(c) == fo) {
                 return c;
             }
         }
-        
+
         return null;
     }
-    
+
     public static BaseDocument getDocument(FileObject fileObject, boolean openIfNecessary) {
         try {
             DataObject dobj = DataObject.find(fileObject);
-            
+
             EditorCookie ec = dobj.getCookie(EditorCookie.class);
             if (ec != null) {
                 return (BaseDocument)(openIfNecessary ? ec.openDocument() : ec.getDocument());
@@ -116,7 +116,7 @@ public class NbUtilities {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         return null;
     }
 
@@ -129,7 +129,7 @@ public class NbUtilities {
 
         return dobj.getPrimaryFile();
     }
-    
+
     public static FileObject findFileObject(JTextComponent target) {
         Document doc = target.getDocument();
         return findFileObject(doc);
@@ -163,7 +163,7 @@ public class NbUtilities {
                 ec.open();
                 return true;
             }
-            
+
             // Simple text search if no known offset (e.g. broken/unparseable source)
             if ((ec != null) && (search != null) && (offset == -1)) {
                 StyledDocument doc = ec.openDocument();
@@ -197,7 +197,7 @@ public class NbUtilities {
                         Line l = lc.getLineSet().getCurrent(line);
 
                         if (l != null) {
-                            l.show(Line.SHOW_GOTO, column);
+                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
 
                             return true;
                         }
@@ -218,12 +218,12 @@ public class NbUtilities {
 
         return false;
     }
-    
+
     public static void extractZip(final FileObject extract, final FileObject dest) throws IOException {
         File extractFile = FileUtil.toFile(extract);
         extractZip(dest, new BufferedInputStream(new FileInputStream(extractFile)));
     }
-    
+
     // Based on openide/fs' FileUtil.extractJar
     private static void extractZip(final FileObject fo, final InputStream is)
     throws IOException {
@@ -277,13 +277,13 @@ public class NbUtilities {
             }
         }
     }
-    
+
     /** Return true iff we're editing code templates */
     public static boolean isCodeTemplateEditing(Document doc) {
         // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
-        String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
+        String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N
         String CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
-        
+
         return doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == Boolean.TRUE ||
                 doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
     }

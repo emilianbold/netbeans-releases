@@ -145,7 +145,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(GameEditorView.class);
     }
 
     public JComponent getVisualRepresentation() {

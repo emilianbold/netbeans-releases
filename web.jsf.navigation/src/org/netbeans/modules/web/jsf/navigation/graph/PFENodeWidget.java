@@ -39,7 +39,6 @@
 package org.netbeans.modules.web.jsf.navigation.graph;
 
 import java.awt.EventQueue;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -106,10 +105,12 @@ public class PFENodeWidget extends VMDNodeWidget {
 
         PageFlowScene scene = (PageFlowScene) getScene();
         Object objPage = scene.findObject(this);
-        if (objPage != null && objPage instanceof Page) {
-            final WeakReference<Page> pageRef = new WeakReference<Page>((Page) objPage);
+        if (objPage instanceof Page) {
+//            final WeakReference<Page> pageRef = new WeakReference<Page>((Page) objPage);
+            final Page page = (Page)objPage;
 
 //        runnables.add(new Runnable() {
+            // XXX Revise
             EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
@@ -117,29 +118,31 @@ public class PFENodeWidget extends VMDNodeWidget {
                     /* Need to do updateNodeWidgetActions after setupPinInNode because this is when the model is set. */
                     LOG.finest("    PFE: Inside Thread: " + java.util.Calendar.getInstance().getTime());
                     //Page page = pageRef.get();
-                    if (pageRef.get() == null) {
-                        LOG.finest("    PFE: runPinSetup will not completed because the page is now null.  It may have been removed to reset graph.");
-                        return;
-                    }
-                    if (!pageRef.get().isDataNode()) {
-                        EventQueue.invokeLater(new Runnable() {
-
-                            public void run() {
+//                    if (pageRef.get() == null) {
+//                        LOG.finest("    PFE: runPinSetup will not completed because the page is now null.  It may have been removed to reset graph.");
+//                        return;
+//                    }
+                    if (!page.isDataNode()) {
+////                        // XXX Revise
+////                        EventQueue.invokeLater(new Runnable() {
+//
+//                            public void run() {
                                 if (getScene() != null) {
                                     removeLoadingWidget();
                                 }
-                            }
-                        });
+//                            }
+//                        });
                         return;
                     }
-                    final java.util.Collection<Pin> newPinNodes = pageRef.get().getPinNodes();
+                    final java.util.Collection<Pin> newPinNodes = page.getPinNodes();
 
                     LOG.finest("    PFE: Completed Nodes Setup: " + java.util.Calendar.getInstance().getTime());
 
 //                    try {
-                    EventQueue.invokeLater(new java.lang.Runnable() {
-
-                        public void run() {
+//                    // XXX Revise
+//                    EventQueue.invokeLater(new java.lang.Runnable() {
+//
+//                        public void run() {
                             LOG.finest("    PFE: Starting Redraw: " + java.util.Calendar.getInstance().getTime());
                             
                             removeLoadingWidget();
@@ -148,8 +151,8 @@ public class PFENodeWidget extends VMDNodeWidget {
                             Collection<Pin> pinNodes = new ArrayList<Pin>(scene.getPins());
 
                             for (Pin pin : pinNodes) {
-                                if (pin.getPage() == pageRef.get()) {
-                                    assert pin.getPage().getDisplayName().equals(pageRef.get().getDisplayName());
+                                if (pin.getPage() == page) {
+//                                    assert pin.getPage().getDisplayName().equals(page.getDisplayName());
                                     java.util.Collection<NavigationCaseEdge> caseNodes = scene.findPinEdges(pin, true, false);
                                     redrawCaseNodes.addAll(caseNodes);
                                     if (!pin.isDefault()) {
@@ -159,29 +162,29 @@ public class PFENodeWidget extends VMDNodeWidget {
                             }
                             if (newPinNodes.size() > 0) {
                                 for (org.netbeans.modules.web.jsf.navigation.Pin pinNode : newPinNodes) {
-                                    scene.addPin(pageRef.get(), pinNode);
+                                    scene.addPin(page, pinNode);
                                 }
                             }
                             for (org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge caseNode : redrawCaseNodes) {
-                                scene.getPageFlowView().setEdgeSourcePin(caseNode, pageRef.get());
+                                scene.getPageFlowView().setEdgeSourcePin(caseNode, page);
                             }
-                            scene.updateNodeWidgetActions(pageRef.get());
+                            scene.updateNodeWidgetActions(page);
                             scene.validate();
                             LOG.finest("    PFE: Ending Redraw: " + java.util.Calendar.getInstance().getTime());
-                        }
-                        });
-//                    } catch (InterruptedException ex) {
-//                        Exceptions.printStackTrace(ex);
-//                    } catch (InvocationTargetException ex) {
-//                        if (getScene() == null) {
-//                            /* It is okay suppress this exception because it is expected if the scene is deleted (closed)
-//                             * before the page has finished loading. 
-//                             */
-//                            LOG.finer("Scene is has been closed before page has finished loading.:" + ex);
-//                        } else {
-//                            Exceptions.printStackTrace(ex);
 //                        }
-//                    }
+//                        });
+////                    } catch (InterruptedException ex) {
+////                        Exceptions.printStackTrace(ex);
+////                    } catch (InvocationTargetException ex) {
+////                        if (getScene() == null) {
+////                            /* It is okay suppress this exception because it is expected if the scene is deleted (closed)
+////                             * before the page has finished loading.
+////                             */
+////                            LOG.finer("Scene is has been closed before page has finished loading.:" + ex);
+////                        } else {
+////                            Exceptions.printStackTrace(ex);
+////                        }
+////                    }
                 }
             });
         }

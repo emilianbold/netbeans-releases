@@ -65,7 +65,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
-import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.loaders.DataObject;
 
@@ -76,18 +76,28 @@ import org.openide.loaders.DataObject;
 public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private CsmFile csmFile;
     private final QueryScope queryScope;
+    private final FileReferencesContext fileReferencesContext;
     
-    protected NbCsmCompletionQuery(CsmFile csmFile, QueryScope localContext) {
+    protected NbCsmCompletionQuery(CsmFile csmFile, QueryScope localContext, FileReferencesContext fileReferencesContext) {
         this.csmFile = csmFile;
         this.queryScope = localContext;
+        this.fileReferencesContext = fileReferencesContext;
     }
     
     protected CsmFinder getFinder() {
 	CsmFinder finder = null; 
         if (getCsmFile() != null) {
-            finder = new CsmFinderImpl(getCsmFile(), MIMENames.CPLUSPLUS_MIME_TYPE);
+            if (fileReferencesContext != null) {
+                finder = new CsmFinderImpl(getCsmFile(), MIMENames.CPLUSPLUS_MIME_TYPE, true);
+            } else {
+                finder = new CsmFinderImpl(getCsmFile(), MIMENames.CPLUSPLUS_MIME_TYPE);
+            }
         }
         return finder;
+    }
+
+    protected FileReferencesContext getFileReferencesContext() {
+        return fileReferencesContext;
     }
     
     private CsmFile getCsmFile() {
@@ -110,14 +120,14 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
 	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, queryScope, inIncludeDirective);
     }
 
-    private static CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, 
+    private CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, 
             boolean openingSource, boolean sort, QueryScope queryScope, boolean inIncludeDirective) {
 	CompletionResolver resolver = null; 
         if (csmFile != null) {
             String mimeType = CsmCompletionUtils.getMimeType(bDoc);
             resolver = new CompletionResolverImpl(csmFile, 
                     openingSource || CsmCompletionUtils.isCaseSensitive(mimeType),
-                    sort, CsmCompletionUtils.isNaturalSort(mimeType));
+                    sort, CsmCompletionUtils.isNaturalSort(mimeType), fileReferencesContext);
             ((CompletionResolverImpl)resolver).setResolveScope(queryScope);
             ((CompletionResolverImpl)resolver).setInIncludeDirective(inIncludeDirective);
         }

@@ -103,9 +103,9 @@ public class FileElementsCollector {
     
     
     private LinkedHashSet<CsmNamespace> directVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
-    private LinkedHashSet<CsmUsingDirective> usingNamespaces = new LinkedHashSet<CsmUsingDirective>();
+    private final LinkedHashSet<CsmUsingDirective> usingNamespaces = new LinkedHashSet<CsmUsingDirective>();
     private LinkedHashSet<CsmNamespaceAlias> namespaceAliases = new LinkedHashSet<CsmNamespaceAlias>()/*<String, CsmNamespace>*/;
-    private LinkedHashSet<CsmUsingDeclaration> usingDeclarations = new LinkedHashSet<CsmUsingDeclaration>()/*<String, CsmDeclaration>*/;
+    private final LinkedHashSet<CsmUsingDeclaration> usingDeclarations = new LinkedHashSet<CsmUsingDeclaration>()/*<String, CsmDeclaration>*/;
 //    private LinkedHashSet<CsmNamespaceDefinition> directVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
     
     public Collection<CsmUsingDeclaration> getUsingDeclarations() {

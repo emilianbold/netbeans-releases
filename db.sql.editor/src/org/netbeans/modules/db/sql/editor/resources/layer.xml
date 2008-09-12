@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance"/>
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
-            <file name="org-netbeans-modules-db-sql-editor-ui-actions-ToggleTabsAction.instance"/>
+            <file name="org-netbeans-modules-db-sql-editor-ui-actions-ToggleKeepOldResultTabsAction.instance"/>
         </folder>
     </folder>
 
@@ -64,9 +64,6 @@ made subject to such option by the copyright holder.
         </file>
         <file name="DAS-H.shadow">
             <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
-        </file>
-        <file name="DA-T.shadow">
-            <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-ToggleTabsAction.instance"/>
         </file>
     </folder>
 
@@ -126,7 +123,7 @@ made subject to such option by the copyright holder.
                         <file name="org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance">
                             <attr name="position" intvalue="920"/>
                         </file>
-                        <file name="org-netbeans-modules-db-sql-editor-ui-actions-ToggleTabsAction.instance">
+                        <file name="org-netbeans-modules-db-sql-editor-ui-actions-ToggleKeepOldResultTabsAction.instance">
                             <attr name="position" intvalue="940"/>
                         </file>
                     </folder>
@@ -140,10 +137,6 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
                         <attr name="position" intvalue="802"/>
-                    </file>
-                    <file name="org-netbeans-modules-db-sql-editor-ui-actions-ToggleTabsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-ToggleTabsAction.instance"/>
-                        <attr name="position" intvalue="804"/>
                     </file>
                     <file name="sql-separator-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

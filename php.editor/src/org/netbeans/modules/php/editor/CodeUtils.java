@@ -45,6 +45,7 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -55,8 +56,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
@@ -82,6 +83,16 @@ public class CodeUtils {
     private CodeUtils() {
     }
 
+    public static String extractClassName(ClassName clsName) {
+        Expression name = clsName.getName();
+
+        assert name instanceof Identifier :
+            "unsupported type of ClassName.getClassName().getName(): "
+            + name.getClass().getName();
+
+        return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
+    }
+
     public static String extractClassName(ClassInstanceCreation instanceCreation) {
         Expression name = instanceCreation.getClassName().getName();
         
@@ -99,6 +110,7 @@ public class CodeUtils {
         return (superClass != null) ? superClass.getName():null;
     }
 
+    @CheckForNull // null for RelectionVariable
     public static String extractVariableName(Variable var) {
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
@@ -115,8 +127,7 @@ public class CodeUtils {
             return extractVariableName(name);
         }
         
-        throw new IllegalStateException("unsupported type returned by Variable.getName():"
-                    + var.getName().getClass().toString());
+        return null;
     }
     
     public static boolean isVariableTypeResolved(IndexedConstant var){

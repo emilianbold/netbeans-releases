@@ -2380,7 +2380,8 @@ linkCheckFinished:
 
             return importImage(designer, local, location, /*coordinateTranslator,*/ updateSuspender);
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+//            ErrorManager.getDefault().notify(ex);
+            info(ex);
         }
         return false;
     }

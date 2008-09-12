@@ -169,8 +169,11 @@ final class AllLFCustoms extends LFCustoms {
         switchFont("windowTitleFont", fontTranslation, uiFontSize, nbDialogBold); // NOI18N
     }
 
-    private static final boolean isMetal = UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class;
-    private static final boolean isWindows = "Windows".equals( UIManager.getLookAndFeel().getID() );
+    //#144402
+    private static final boolean isMetal = null != UIManager.getLookAndFeel() 
+            && UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class;
+    private static final boolean isWindows = null != UIManager.getLookAndFeel() 
+            && "Windows".equals( UIManager.getLookAndFeel().getID() );
     
     private static void switchFont( String uiKey, Map<Font, Font> fontTranslation, int uiFontSize, Font defaultFont ) {
         Font oldFont = UIManager.getFont(uiKey);
