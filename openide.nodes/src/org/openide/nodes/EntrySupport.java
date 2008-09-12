@@ -39,6 +39,7 @@
 package org.openide.nodes;
 
 import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -110,7 +111,7 @@ abstract class EntrySupport {
     /** Abililty to create a snaphshot
      * @return immutable and unmodifiable list of Nodes that represent the children at current moment
      */
-    abstract List<Node> createSnapshot(boolean delayed);
+    abstract List<Node> createSnapshot();
 
     /** Refreshes content of one entry. Updates the state of children appropriately. */
     abstract void refreshEntry(Entry entry);
@@ -137,7 +138,7 @@ abstract class EntrySupport {
             return (arr != null) && arr.isInitialized();
         }
 
-        public List<Node> createSnapshot(boolean delayed) {
+        public List<Node> createSnapshot() {
             return new DefaultSnapshot(getNodes());
         }
         public final Node[] getNodes() {
@@ -991,7 +992,7 @@ abstract class EntrySupport {
 
         private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
 
-        private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerChildren.prefetchCount", 50), 0);  // NOI18N
+        private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerNode.prefetchCount", 50), 0);  // NOI18N
 
         public Lazy(Children ch) {
             super(ch);
@@ -1063,6 +1064,9 @@ abstract class EntrySupport {
                     synchronized (Lazy.this.LOCK) {
                         int cnt = 0;
                         boolean found = false;
+                        if (lastSnapshot != null && lastSnapshot.get() != null) {
+                            cnt++;
+                        }
                         for (Entry entry : visibleEntries) {
                             EntryInfo info = entryToInfo.get(entry);
                             if (info.currentNode() != null) {
@@ -1072,7 +1076,7 @@ abstract class EntrySupport {
                                 found = true;
                             }
                         }
-                        zero = cnt == 0 && found;
+                        zero = cnt == 0 && (found || who == null);
 
                         if (zero) {
                             inited = false;
@@ -1241,7 +1245,7 @@ abstract class EntrySupport {
                 arr.add(tmpEntry);
             }
             visibleEntries = arr;
-            fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, entry, createSnapshot(false), null);
+            fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, entry, createEventSnapshot(false), null);
         }
 
         private boolean mustNotifySetEnties = false;
@@ -1319,7 +1323,7 @@ abstract class EntrySupport {
                     }
                     idxs = tmp;
                 }
-                fireSubNodesChangeIdx(true, idxs, null, createSnapshot(false), null);
+                fireSubNodesChangeIdx(true, idxs, null, createEventSnapshot(false), null);
             }
         }
 
@@ -1520,6 +1524,17 @@ abstract class EntrySupport {
                 info.lazy().registerNode(-1, info);
             }
         }
+        SnapshotRef lastSnapshot;
+        private final class SnapshotRef extends WeakReference<List<Node>> implements Runnable {
+
+            public SnapshotRef(List<Node> referent) {
+                super(referent, Utilities.activeReferenceQueue());
+            }
+
+            public void run() {
+                registerNode(-1, null);
+            }
+        }
 
         /** Dummy node class for entries without any node */
         static class DummyNode extends AbstractNode {
@@ -1606,7 +1621,7 @@ abstract class EntrySupport {
             if (removedIdx < idxs.length) {
                 idxs = (int[]) resizeArray(idxs, removedIdx);
             }
-            fireSubNodesChangeIdx(false, idxs, entryToRemove, createSnapshot(delayed), new LazySnapshot(previousEntries, previousInfos));
+            fireSubNodesChangeIdx(false, idxs, entryToRemove, createEventSnapshot(delayed), new LazySnapshot(previousEntries, previousInfos));
 
             if (removedNodesIdx > 0) {
                 if (removedNodesIdx < removedNodes.length) {
@@ -1634,14 +1649,20 @@ abstract class EntrySupport {
         }
 
         @Override
-        List<Node> createSnapshot(boolean delayed) {
-            return delayed ? new DelayedLazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo)) : new LazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo));
+        List<Node> createSnapshot() {
+            return new LazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo));
+        }
+        
+        List<Node> createEventSnapshot(boolean delayed) {
+            List<Node> snapshot = delayed ? new DelayedLazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo)) : new LazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo));
+            lastSnapshot = new SnapshotRef(snapshot);
+            return snapshot;
         }
 
         class LazySnapshot extends AbstractList<Node> {
             private final List<Entry> entries;
             private final Map<Entry, EntryInfo> entryToInfo;
-
+            
             public LazySnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i) {
                 this.entries = entries;
                 this.entryToInfo = e2i != null ? e2i : Collections.<Entry, EntryInfo>emptyMap();

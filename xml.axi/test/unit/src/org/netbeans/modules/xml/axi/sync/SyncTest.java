@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.xml.axi.sync;
 
+import javax.swing.text.BadLocationException;
 import junit.framework.*;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.visitor.DeepAXITreeVisitor;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 
         
 /**
@@ -54,25 +57,74 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
  *
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
-public class SyncPerfTest extends AbstractSyncTestCase {
+public class SyncTest extends AbstractSyncTestCase {
                 
+    public static final String MULTIROOT_XSD  = "resources/multiRoot.xsd";
     public static final String OTA_XSD  = "resources/OTA_TravelItinerary.xsd";
     public static final String HL7_XSD  = "resources/hl7/fields.xsd";
     
     /**
      * SyncElementTest
      */
-    public SyncPerfTest(String testName) {
+    public SyncTest(String testName) {
         super(testName, OTA_XSD, null);
     }
         
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new SyncPerfTest("testOTASyncPerformance"));
+        suite.addTest(new SyncTest("testSync"));
+        suite.addTest(new SyncTest("testOTASyncPerformance"));
         //suite.addTest(new SyncPerfTest("testHealthcareSchemaSyncPerformance"));
         return suite;
     }
 
+    //Issue http://www.netbeans.org/issues/show_bug.cgi?id=113775
+    //multiple schema root should make the schema and axi model as not well formed.
+    public void testSync() throws Exception {
+        AXIModel aModel = getModel(MULTIROOT_XSD);
+        SchemaModel sModel = aModel.getSchemaModel();
+        assert(sModel.getSchema().getChildren().size() == 0);
+        assert(aModel.getRoot().getChildElements().size() == 0);
+        assert(aModel.getRoot().getContentModels().size() == 0);
+        javax.swing.text.Document document = ((AbstractDocumentModel)sModel).getBaseDocument();
+        String newSchemaContent = "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"\n"+
+                                    "xmlns:po=\"http://www.example.com/PO2\"\n"+
+                                    "targetNamespace=\"http://www.example.com/PO2\">\n"+
+                                    "<xsd:element name=\"AA\"/>\n"+
+                                    "<xsd:element name=\"BB\"/>\n"+
+                                    "</xsd:schema>";
+        int length = document.getLength();
+        document.insertString(document.getLength(), newSchemaContent, null); //NOI18N
+        try {
+            sModel.sync();
+        } catch (Exception ex) {
+            //just catch
+        }
+        try {
+            aModel.sync();
+        } catch (Exception ex) {
+            //just catch
+        }
+        assert(aModel.getState() == State.NOT_WELL_FORMED);
+        assert(sModel.getState() == State.NOT_WELL_FORMED);
+        document.remove(39, length-39);
+        try {
+            sModel.sync();
+        } catch (Exception ex) {
+            //just catch
+        }
+        try {
+            aModel.sync();
+        } catch (Exception ex) {
+            //just catch
+        }
+        assert(sModel.getState() == State.VALID);
+        assert(aModel.getState() == State.VALID);
+        assert(sModel.getSchema().getChildren().size() == 2);
+        assert(aModel.getRoot().getChildElements().size() == 2);
+        assert(aModel.getRoot().getContentModels().size() == 0);
+    }
+    
     public void testHealthcareSchemaSyncPerformance() throws Exception {
         AXIModel aModel = getModel(HL7_XSD);
         doRun(aModel.getSchemaModel(), aModel, false);
@@ -108,5 +160,24 @@ public class SyncPerfTest extends AbstractSyncTestCase {
         }
         assert(schemaChildCount+1 == sModel.getSchema().getChildren().size());
         assert(axiChildCount+1 == aModel.getRoot().getChildren().size());
+    }
+    
+    private void updateDocument(javax.swing.text.Document document, String stringToInsert)
+            throws BadLocationException {
+        javax.swing.text.AbstractDocument doc = (javax.swing.text.AbstractDocument)document;
+        String content = doc.getText(0,doc.getLength());
+        int offset = content.indexOf("elementFormDefault"); //NOI18N
+        //String tnsString = "targetNamespace=\"" + tns + "\"\n";
+        document.insertString(offset, stringToInsert, null); //NOI18N        
+        
+        
+        String newSchemaContent = "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"\n"+
+                                    "xmlns:po=\"http://www.example.com/PO2\"\n"+
+                                    "targetNamespace=\"http://www.example.com/PO2\">\n"+
+                                    "<xsd:element name=\"AA\"/>\n"+
+                                    "<xsd:element name=\"BB\"/>\n"+
+                                    "</xsd:schema>";
+        
+
     }
 }

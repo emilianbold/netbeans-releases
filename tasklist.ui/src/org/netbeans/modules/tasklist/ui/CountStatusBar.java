@@ -46,6 +46,7 @@ import javax.swing.JLabel;
 import org.netbeans.modules.tasklist.impl.TaskList;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -91,7 +92,7 @@ class CountStatusBar extends JLabel {
             }
         }
         if( buffer.length() == 0 ) 
-            buffer.append("<no tasks>");
+            buffer.append(NbBundle.getMessage(CountStatusBar.class, "LBL_NoTasks"));//NOI18N
         buffer.append( ' ' );
         setText( buffer.toString() );
     }
