@@ -77,7 +77,7 @@ final class RootNode extends AbstractNode {
     private volatile int failures = 0;
     private volatile int errors = 0;
     private volatile int pending = 0;
-    private volatile int elapsedTimeMillis = 0;
+    private volatile long elapsedTimeMillis = 0;
     private volatile int detectedPassedTests = 0;
     private boolean sessionFinished;
 
@@ -268,7 +268,7 @@ final class RootNode extends AbstractNode {
         }
 
         if (msg != null) {
-            msg += NbBundle.getMessage(bundleRefClass, "MSG_TestSuiteElapsedTime", new Float(elapsedTimeMillis / 1000f));
+            msg += NbBundle.getMessage(bundleRefClass, "MSG_TestSuiteElapsedTime", new Double(elapsedTimeMillis / 1000d));
         }
 
         if (this.message != null) {

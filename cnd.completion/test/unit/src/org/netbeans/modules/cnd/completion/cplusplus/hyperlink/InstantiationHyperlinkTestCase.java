@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,35 +31,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.xml;
-
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import javax.xml.parsers.*;
-import javax.xml.parsers.SAXParserFactory;
-import junit.framework.*;
-import org.netbeans.junit.*;
-import org.openide.util.*;
-import org.xml.sax.*;
-
-
+package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 /**
- * Will be loaded by different classloader by FactoriesTest.
- * @author Jaroslav Tulach
+ *
+ * @author eu155513
  */
-public class FactoriesRunnableHid extends HashMap implements Runnable {
-    public void run () {
-        try {
-            put ("dom", javax.xml.parsers.DocumentBuilderFactory.newInstance());
-            put ("sax", javax.xml.parsers.SAXParserFactory.newInstance ());
-        } catch (Exception ex) {
-            IllegalStateException e = new IllegalStateException (ex.getMessage ());
-            e.initCause (ex);
-            throw e;
-        }
+public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
+    public InstantiationHyperlinkTestCase(String testName) {
+        super(testName);
+    }
+
+    public void testClassForward() throws Exception {
+        // IZ144869 : fixed instantiation of class forward declaration
+        performTest("classForward.h", 21, 12, "classForward.h", 16, 5);
     }
 }

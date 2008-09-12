@@ -72,7 +72,7 @@ final class Report {
      * The number of tests that are pending (RSpec).
      */
     int pending;
-    int elapsedTimeMillis;
+    long elapsedTimeMillis;
     /**
      * number of recognized (by the parser) passed test reports
      */

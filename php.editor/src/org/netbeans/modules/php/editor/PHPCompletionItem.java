@@ -49,6 +49,7 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.php.editor.PHPCodeCompletion.KeywordCompletionType;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
@@ -209,6 +210,44 @@ abstract class PHPCompletionItem implements CompletionProposal {
         public ImageIcon getIcon() {
             return keywordIcon;
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder builder = new StringBuilder();
+            KeywordCompletionType type = PHPCodeCompletion.PHP_KEYWORDS.get(getName());
+            if (type == null) {
+                return null;
+            }
+            switch(type) {
+                case SIMPLE:
+                    builder.append(getName());
+                    break;
+                case ENDS_WITH_SPACE:
+                    builder.append(getName());
+                    builder.append(" ${cursor}"); //NOI18N
+                    break;
+                case CURSOR_INSIDE_BRACKETS:
+                    builder.append(getName());
+                    builder.append(" (${cursor})"); //NOI18N
+                    break;
+                case ENDS_WITH_CURLY_BRACKETS:
+                    builder.append(getName());
+                    builder.append(" {${cursor}"); //NOI18N
+                    break;
+                case ENDS_WITH_SEMICOLON:
+                    builder.append(getName());
+                    builder.append(";"); //NOI18N
+                    break;
+                case ENDS_WITH_COLON:
+                    builder.append(getName());
+                    builder.append(" ${cursor}:"); //NOI18N
+                    break;
+                default:
+                    assert false : type.toString();
+                    break;
+            }
+            return builder.toString();
+        }
     }
 
     static class SuperGlobalItem extends PHPCompletionItem{
@@ -291,13 +330,32 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class ClassItem extends PHPCompletionItem {
+        private boolean endWithDoubleColon;
         ClassItem(IndexedClass clazz, CompletionRequest request) {
+            this(clazz, request, false);
+        }
+        ClassItem(IndexedClass clazz, CompletionRequest request, boolean endWithDoubleColon) {
             super(clazz, request);
+            this.endWithDoubleColon = endWithDoubleColon;
         }
 
         public ElementKind getKind() {
             return ElementKind.CLASS;
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            if (endWithDoubleColon) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(getName());
+                builder.append("::${cursor}"); //NOI18N
+                return builder.toString();
+
+            }
+            return super.getCustomInsertTemplate();
+        }
+
+
     }
     
     static class InterfaceItem extends PHPCompletionItem {
@@ -391,6 +449,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return null;
         }
     }
+
 
     static class FunctionItem extends PHPCompletionItem {
         private int optionalArgCount = 0;
@@ -523,6 +582,28 @@ abstract class PHPCompletionItem implements CompletionProposal {
                     }
                 }
             }
+        }
+    }
+
+    static class FunctionDeclarationItem extends FunctionItem {
+        public FunctionDeclarationItem(IndexedFunction function, CompletionRequest request, int optionalArgCount) {
+            super(function, request, optionalArgCount);
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder template = new StringBuilder();
+            String modifierStr = getFunction().getModifiersString();
+            String functionSignature = getFunction().getFunctionSignature();
+            if (modifierStr.length() != 0) {
+                template.append(modifierStr);
+            }
+            template.append(" ").append("function");//NOI18N
+            template.append(" ").append(functionSignature);//NOI18N
+            template.append(" ").append("{\n");//NOI18N
+            template.append("${cursor};\n");//NOI18N
+            template.append("}");//NOI18N
+            return template.toString();
         }
     }
 

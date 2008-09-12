@@ -376,10 +376,24 @@ public final class RubyDebuggerTest extends TestBase {
         assertFalse("Rubinius debuggin is not supported yet", rdi.canDebug());
         assertFalse("Rubinius debuggin is not supported yet", RubyDebugger.checkAndTuneSettings(descriptor));
     }
-    
+
+    public void testSteppingThroughImportStatement() throws Exception {
+        String[] testContent = {
+            "require 'java'",
+            "import 'java.lang.System'",
+            "s = System",
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 2);
+        Process p = startDebugging(testF);
+        doAction(ActionsManager.ACTION_STEP_OVER);
+        doAction(ActionsManager.ACTION_STEP_OVER);
+        waitFor(p);
+    }
+
     private DebuggerEngine getEngineManager() {
         return DebuggerManager.getDebuggerManager().getCurrentEngine();
     }
-
 }
 

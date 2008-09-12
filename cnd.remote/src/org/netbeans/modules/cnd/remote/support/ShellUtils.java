@@ -77,7 +77,7 @@ public class ShellUtils {
     }
 
     private static final String cshBinz = "setenv PATH /bin:/usr/bin:$PATH; "; //NOI18N
-    private static final String shBinz = "PATH=/bin:/usr/bin "; //NOI18N
+    private static final String shBinz = "PATH=/bin:/usr/bin:$PATH "; //NOI18N
 
     static String getPrefix(String hkey) {
         return RemoteHostInfoProvider.getHostInfo(hkey).isCshShell() ? cshBinz : shBinz;
@@ -93,8 +93,8 @@ public class ShellUtils {
         return cmdline.toString();
     }
 
-    private static final String BashExport = "export"; //NOI8N
-    private static final String CshExport = "setenv"; //NOI8N
+    private static final String BashExport = "export"; //NOI18N
+    private static final String CshExport = "setenv"; //NOI18N
     
     private static String getExportCommand(boolean isCshShell) {
         return (isCshShell ? CshExport : BashExport) + " "; //NOI18N

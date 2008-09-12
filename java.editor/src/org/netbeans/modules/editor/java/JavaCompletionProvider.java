@@ -3625,7 +3625,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         ret = new HashSet<TypeMirror>();
                         Types types = controller.getTypes();
                         ret.add(controller.getTypes().getPrimitiveType(TypeKind.INT));
-                        ret.add(types.getDeclaredType(controller.getElements().getTypeElement("java.lang.Enum")));
+                        TypeElement te = controller.getElements().getTypeElement("java.lang.Enum"); //NOI18N
+                        if (te != null)
+                            ret.add(types.getDeclaredType(te));
                         return ret;
                     case METHOD_INVOCATION:
                         MethodInvocationTree mi = (MethodInvocationTree)tree;
@@ -3703,7 +3705,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
                         int idEndPos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
-                        if (idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
+                        if (idEndPos < 0 || idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
                             break;
                         argTypes = getArgumentsUpToPos(env, nc.getArguments(), idEndPos, lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset);
                         if (argTypes != null) {

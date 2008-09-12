@@ -484,6 +484,16 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("IZ146150.cc"); // NOI18N
     }   
 
+    // #146150 unexpected token: ; message appears on extern int errno; line
+    public void testMethodsWithFunctionAsReturnType() throws Exception {
+        performTest("methods_with_function_as_return_type.cc"); // NOI18N
+    }   
+
+    // #145071 : forward declarations marked as error
+    public void testForwardDeclarations() throws Exception {        
+        performTest("forward_declarations.cc"); // NOI18N
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
