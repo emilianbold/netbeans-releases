@@ -1084,7 +1084,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // end: KEYWORDS
 
         PHPIndex index = request.index;
-        if (request.prefix.length() == 0) {
+        //commented out (no tests affected), takes more time, returns often wrong results
+        //TODO: should be be reevaluated by author deleted/revereted/rewritten
+        /*if (request.prefix.length() == 0) {
             Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram(),
                     request.prefix, request.anchor, request.currentlyEditedFileURL).vars;
             
@@ -1126,7 +1128,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 proposals.add(new PHPCompletionItem.VariableItem(var, request));
             }
         }
-        else {
+        else */
+        {
             // FUNCTIONS
             for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
                 for (int i = 0; i <= function.getOptionalArgs().length; i++) {
