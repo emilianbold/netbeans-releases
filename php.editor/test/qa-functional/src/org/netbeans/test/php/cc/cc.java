@@ -41,26 +41,30 @@
 
 package org.netbeans.test.php.cc;
 
-import org.netbeans.test.php.GeneralPHPTest;
+import org.netbeans.test.php.GeneralPHP;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import java.util.List;
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class cc extends GeneralPHPTest {
+public class cc extends GeneralPHP
+{
+
+  static final protected int COMPLETE_CC_LIST_SIZE = 5193;
     
-    public cc( String arg0 )
-    {
-      super( arg0 );
-    }
+  public cc( String arg0 )
+  {
+    super( arg0 );
+  }
 
     protected CompletionJListOperator GetCompletion( )
     {
       CompletionJListOperator comp = null;
-      int iRedo = 5;
+      int iRedo = 10;
       while( true )
       {
         try
@@ -69,8 +73,14 @@ public class cc extends GeneralPHPTest {
         try
         {
           Object o = comp.getCompletionItems( ).get( 0 );
-          if( !o.toString( ).contains( "No suggestions" ) )
+          if(
+              !o.toString( ).contains( "No suggestions" )
+              && !o.toString( ).contains( "Scanning in progress..." )
+            )
+          {
             return comp;
+          }
+          Sleep( 1000 );
         }
         catch( java.lang.Exception ex )
         {
@@ -86,4 +96,30 @@ public class cc extends GeneralPHPTest {
         Sleep( 100 );//try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
       }
     }
+
+    protected void CheckCompletionItems(
+        CompletionJListOperator jlist,
+        String[] asIdeal
+      )
+    {
+      for( String sCode : asIdeal )
+      {
+        int iIndex = jlist.findItemIndex( sCode );
+        if( -1 == iIndex )
+        {
+          try
+          {
+          List list = jlist.getCompletionItems();
+          for( int i = 0; i < list.size( ); i++ )
+            System.out.println( "******" + list.get( i ) );
+          }
+          catch( java.lang.Exception ex )
+          {
+            System.out.println( "#" + ex.getMessage( ) );
+          }
+          fail( "Unable to find " + sCode + " completion." );
+        }
+      }
+    }
+
 }
