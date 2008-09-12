@@ -1084,72 +1084,25 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // end: KEYWORDS
 
         PHPIndex index = request.index;
-        //commented out (no tests affected), takes more time, returns often wrong results
-        //TODO: should be be reevaluated by author deleted/revereted/rewritten
-        /*if (request.prefix.length() == 0) {
-            Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram(),
-                    request.prefix, request.anchor, request.currentlyEditedFileURL).vars;
-            
-            Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
-
-            for (IndexedConstant var : localVars){
-                allVars.put(var.getName(), var);
-            }
-
-            for (IndexedElement element : index.getAll(request.result, request.prefix, nameKind)) {
-                if (element instanceof IndexedFunction) {
-                    IndexedFunction function = (IndexedFunction) element;
-                    for (int i = 0; i <= function.getOptionalArgs().length; i++) {
-                        proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
-                    }
-                }
-                else if (element instanceof IndexedConstant) {
-                    proposals.add(new PHPCompletionItem.ConstantItem((IndexedConstant)element, request));
-                }
-                else if (element instanceof IndexedClass) {
-                    proposals.add(new PHPCompletionItem.ClassItem((IndexedClass)element, request, true));
-                }
-                else if (element instanceof IndexedVariable) {
-                    IndexedConstant topLevelVar = (IndexedConstant) element;
-                    if (!request.currentlyEditedFileURL.equals(topLevelVar.getFilenameUrl())){
-                        IndexedConstant localVar = allVars.get(topLevelVar.getName());
-                        if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()) {
-                            IndexedConstant original = allVars.put(topLevelVar.getName(), topLevelVar);
-                            if (original != null && localVars.contains(original)) {
-                                allVars.put(original.getName(), original);
-                            }
-                        }
-                    }
-                }
-            }
-
-            for (IndexedConstant var : allVars.values()){
-                CodeUtils.resolveFunctionType(request.result, index, allVars, var);
-                proposals.add(new PHPCompletionItem.VariableItem(var, request));
+        // FUNCTIONS
+        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
+            for (int i = 0; i <= function.getOptionalArgs().length; i++) {
+                proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
             }
         }
-        else */
-        {
-            // FUNCTIONS
-            for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
-                for (int i = 0; i <= function.getOptionalArgs().length; i++) {
-                    proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
-                }
-            }
 
-            // CONSTANTS
-            for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
-                proposals.add(new PHPCompletionItem.ConstantItem(constant, request));
-            }
-
-            // CLASS NAMES
-            // TODO only show classes with static elements
-            autoCompleteClassNames(proposals, request,true);
-
-            // LOCAL VARIABLES
-            proposals.addAll(getVariableProposals(request.result.getProgram(), request));
+        // CONSTANTS
+        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
+            proposals.add(new PHPCompletionItem.ConstantItem(constant, request));
         }
 
+        // CLASS NAMES
+        // TODO only show classes with static elements
+        autoCompleteClassNames(proposals, request,true);
+
+        // LOCAL VARIABLES
+        proposals.addAll(getVariableProposals(request.result.getProgram(), request));
+        
         // Special keywords applicable only inside a class
         ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
         if (classDecl != null) {

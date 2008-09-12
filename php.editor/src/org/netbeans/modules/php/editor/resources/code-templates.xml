@@ -243,6 +243,21 @@ ob_end_clean();]]>
 ${cursor}]]>
         </code>
     </codetemplate>
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.tryc" abbreviation="tryc" contexts="php-code">
+        <code>
+<![CDATA[try {
+   ${selection}${cursor}
+} catch (Exception $e) {
+}
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.thr" abbreviation="thr" contexts="php-code">
+        <code>
+<![CDATA[throw new ${Exception};]]>
+        </code>
+    </codetemplate>
+
 
 </codetemplates>
 
