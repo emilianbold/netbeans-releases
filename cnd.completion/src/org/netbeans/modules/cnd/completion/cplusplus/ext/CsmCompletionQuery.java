@@ -1156,7 +1156,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                 CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
                                                 CompletionResolver.RESOLVE_LOCAL_CLASSES |
                                                 CompletionResolver.RESOLVE_LIB_NAMESPACES);
-                                        if (compResolver.refresh() && compResolver.resolve(varPos, var, openingSource)) {
+                                        if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                                             Collection<? extends CsmObject> res = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
                                             if (!res.isEmpty()) {
                                                 CsmObject obj = res.iterator().next();
