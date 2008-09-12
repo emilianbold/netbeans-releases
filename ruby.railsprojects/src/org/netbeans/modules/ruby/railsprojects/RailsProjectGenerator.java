@@ -177,7 +177,7 @@ public class RailsProjectGenerator {
         RakeSupport.refreshTasks(p);
         Util.logUsage(RailsProjectGenerator.class, "USG_PROJECT_CREATE_RAILS", // NOI18N
                 platform.getInfo().getKind(),
-                platform.getInfo().getVersion(),
+                platform.getInfo().getPlatformVersion(),
                 platform.getInfo().getGemVersion(),
                 data.getServerInstanceId(),
                 data.getDatabase().getDisplayName(),
