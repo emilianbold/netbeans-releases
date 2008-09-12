@@ -273,10 +273,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * Refreshes statuses of all files in the view. 
      */ 
     private void onRefreshAction() {
-        LifecycleManager.getDefault().saveAll();
         if(context == null || context.getRootFiles().size() < 1) {
             return;
         }        
+        LifecycleManager.getDefault().saveAll();
         refreshStatuses();
     }
 
