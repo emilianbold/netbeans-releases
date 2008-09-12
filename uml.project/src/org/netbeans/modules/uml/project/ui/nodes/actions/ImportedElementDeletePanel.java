@@ -69,6 +69,9 @@ public class ImportedElementDeletePanel extends javax.swing.JPanel {
                 .add(jCheckBox1)
                 .addContainerGap(15, Short.MAX_VALUE))
         );
+
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportedElementDeletePanel.class, "ImportedElementDeletePanel.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportedElementDeletePanel.class, "ImportedElementDeletePanel.jCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
