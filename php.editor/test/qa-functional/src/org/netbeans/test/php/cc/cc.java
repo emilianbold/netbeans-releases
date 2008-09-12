@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,44 +38,52 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.clearcase.ui.status;
 
-import org.openide.util.actions.SystemAction;
-import org.openide.util.HelpCtx;
+package org.netbeans.test.php.cc;
 
-import java.awt.event.ActionEvent;
-import javax.swing.ImageIcon;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.netbeans.test.php.GeneralPHPTest;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 
 /**
- * @author Maros Sandor
+ *
+ * @author michaelnazarov@netbeans.org
  */
-public class OpenVersioningAction extends SystemAction {
 
-    public OpenVersioningAction() {
-        putValue("noIconInMenu", Boolean.FALSE); // NOI18N
-        setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/clearcase/resources/icons/versioning-view.png"))); // NOI18N
+public class cc extends GeneralPHPTest {
+    
+    public cc( String arg0 )
+    {
+      super( arg0 );
     }
 
-
-    public String getName() {
-        return NbBundle.getMessage(OpenVersioningAction.class, "OpenCCView_Name_Clearcase"); //NOI18N;
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(OpenVersioningAction.class);
-    }
-
-    public void actionPerformed(ActionEvent ev) {
-        ClearcaseTopComponent stc = ClearcaseTopComponent.getInstance();
-        if (stc.hasContext()) {
-            stc.open();
-            stc.requestActive();
-        } else {
-            // TODO: set the context
-            stc.open();
-            stc.requestActive();
+    protected CompletionJListOperator GetCompletion( )
+    {
+      CompletionJListOperator comp = null;
+      int iRedo = 5;
+      while( true )
+      {
+        try
+        {
+        comp = new CompletionJListOperator( );
+        try
+        {
+          Object o = comp.getCompletionItems( ).get( 0 );
+          if( !o.toString( ).contains( "No suggestions" ) )
+            return comp;
         }
+        catch( java.lang.Exception ex )
+        {
+          return null;
+        }
+        }
+        catch( JemmyException ex )
+        {
+          System.out.println( "Wait completion timeout." );
+          if( 0 == --iRedo )
+            return null;
+        }
+        Sleep( 100 );//try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
+      }
     }
 }
