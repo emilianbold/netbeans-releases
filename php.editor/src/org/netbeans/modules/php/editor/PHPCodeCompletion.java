@@ -1219,13 +1219,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String namePrefix, String localFileURL, String type) {
 
         String varName = CodeUtils.extractVariableName(var);
-        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
+        if (varName != null) {
+            String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
 
-        if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-            IndexedConstant ic = new IndexedConstant(varName, null,
-                    null, localFileURL, var.getStartOffset(), 0, type);
+            if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
+                IndexedConstant ic = new IndexedConstant(varName, null,
+                        null, localFileURL, var.getStartOffset(), 0, type);
 
-            localVars.put(varName, ic);
+                localVars.put(varName, ic);
+            }
         }
     }
 
@@ -1351,13 +1353,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 if (parameterName instanceof Variable) {
                     String varName = CodeUtils.extractVariableName((Variable) parameterName);
-                    String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
+                    if (varName != null) {
+                        String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
 
-                    if (isPrefix(varName, namePrefix)) {
-                        IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, localFileURL, -1, 0, type);
+                        if (isPrefix(varName, namePrefix)) {
+                            IndexedConstant ic = new IndexedConstant(varName, null,
+                                    null, localFileURL, -1, 0, type);
 
-                        localVars.put(varName, ic);
+                            localVars.put(varName, ic);
+                        }
                     }
                 }
             }
