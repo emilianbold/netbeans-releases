@@ -212,7 +212,6 @@
 			<tocitem text="Java Reverse Engineering">
 				<tocitem text="About Java-Code Reverse Engineering" target="uml_reverse_eng_about_java_code_rev_eng" />
 				<tocitem text="Launching Reverse Engineering" target="uml_reverse_eng_launching_rev_eng" />
-				<tocitem text="Reverse Engineer Dialog Box" target="uml_reverse_eng_reverse_eng_dialog_box" />
 				<tocitem text="Classes" target="uml_reverse_eng_classes" />
 				<tocitem text="Packages" target="uml_reverse_eng_packages" />
 				<tocitem text="Interfaces" target="uml_reverse_eng_interfaces" />
