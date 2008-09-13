@@ -40,7 +40,6 @@ package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.awt.Dimension;
 import java.awt.Font;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -77,7 +76,7 @@ public class InvocationWidget extends ActivityNodeWidget
                                                                getResourcePath(),
                                                                bundle.getString("LBL_body"));
 
-            mainView.setMinimumSize(new Dimension(
+            mainView.setPreferredSize(new Dimension(
                                       MIN_NODE_WIDTH, MIN_NODE_WIDTH));
 
             mainView.setLayout(
@@ -91,7 +90,7 @@ public class InvocationWidget extends ActivityNodeWidget
             mainView.setCheckClipping(true);
 
             // stereotype widget
-            mainView.addChild(createStereoTypeWidget(), 20);
+            mainView.addChild(createStereoTypeWidget());
             enableStereoTypeWidget(invocationElem);
 
             // create multiline editable widget
@@ -104,15 +103,15 @@ public class InvocationWidget extends ActivityNodeWidget
                                                                  mainView,
                                                                  getResourcePath(),
                                                                  bundle.getString("LBL_text"));
-            nameWidget.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); 
+//            nameWidget.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); 
             nameWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
             String labelStr = invocationElem.getNameWithAlias();
             nameWidget.setLabel(labelStr != null && labelStr.trim().length() > 0 ? labelStr : "");
-            editorPanel.addChild(nameWidget,80);
-            mainView.addChild(editorPanel, 60);
+            editorPanel.addChild(nameWidget,1);
+            mainView.addChild(editorPanel, 1);
             
             // tagged value widget
-            mainView.addChild(createTaggedValueWidget(), 20); 
+            mainView.addChild(createTaggedValueWidget()); 
             enableTaggedValueWidget(invocationElem);
 
             setCurrentView(mainView);
