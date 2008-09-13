@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ResultSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:yahoo:yn" xsi:schemaLocation="urn:yahoo:yn http://api.search.yahoo.com/NewsSearchService/V1/NewsSearchResponse.xsd" totalResultsAvailable="1368" totalResultsReturned="2" firstResultPosition="1">
+    <Result>
+        <Title>Madonna against daughter Lourdes acting now</Title>
+        <Summary>London, Sep 6 : Pop superstar Madonna is reportedly not allowing her 11-year-old daughter Lourdes to act in a new movie and is determined to not let her enter the world of showbiz until she finishes school.</Summary>
+        <Url>http://www.newkerala.com/topstory-fullnews-19478.html</Url>
+        <ClickUrl>http://www.newkerala.com/topstory-fullnews-19478.html</ClickUrl>
+        <NewsSource>New Kerala</NewsSource>
+        <NewsSourceUrl>http://www.newkerala.com/</NewsSourceUrl>
+        <Language>en</Language>
+        <PublishDate>1220693901</PublishDate>
+        <ModificationDate>1220693902</ModificationDate>
+    </Result>
+    <Result>
+        <Title>Life With My Sister Madonna</Title>
+        <Summary>The latest tell-all book to be released about Madonna has a unique selling point: it is written by her own brother, a man with more insight and understanding of the star than almost anyone, having grown up with her and acted as her back-up dancer, personal assistant, dresser, decorator, art director, tour director and confidante through most of her career.</Summary>
+        <Url>http://www.rainbownetwork.com/UserPortal/Article/Detail.aspx?ID=21987&amp;gnbox_cn=0&amp;gnbox_ca=6</Url>
+        <ClickUrl>http://www.rainbownetwork.com/UserPortal/Article/Detail.aspx?ID=21987&amp;gnbox_cn=0&amp;gnbox_ca=6</ClickUrl>
+        <NewsSource>RainbowNetwork.com</NewsSource>
+        <NewsSourceUrl>http://www.rainbownetwork.com/</NewsSourceUrl>
+        <Language>en</Language>
+        <PublishDate>1220674567</PublishDate>
+        <ModificationDate>1220674568</ModificationDate>
+    </Result>
+</ResultSet>
+<!-- ws03.search.re2.yahoo.com compressed/chunked Sat Sep  6 05:46:44 PDT 2008 -->

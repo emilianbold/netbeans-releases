@@ -5,9 +5,13 @@
         <folder name="application">
             <folder name="x-httpd-eruby">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rhtml.resources.Bundle"/>
+
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-ruby-rhtml-loaders-RhtmlDataLoader.instance"/>
+                    <file name="org-netbeans-modules-ruby-rhtml-loaders-RhtmlDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rhtml.resources.Bundle"/>
+                    </file>
                 </folder>
+
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
                 <folder name="Actions">
@@ -201,16 +205,6 @@
         </folder>
     </folder>
 
-    <folder name="Navigator">
-        <folder name="Panels">
-            <folder name="application">
-                <folder name="x-httpd-eruby">
-                    <file name="org-netbeans-modules-languages-features-LanguagesNavigator.instance"/>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-    
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="application">

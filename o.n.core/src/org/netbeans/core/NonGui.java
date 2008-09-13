@@ -85,7 +85,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         try {
             LoaderPoolNode.load();
         } catch (IOException ioe) {
-            Logger.getLogger(NonGui.class.getName()).log(Level.WARNING, null, ioe);
+            Logger.getLogger(NonGui.class.getName()).log(Level.INFO, null, ioe);
         }
         StartLog.logProgress ("LoaderPool loaded"); // NOI18N
         Splash.getInstance().increment(10);

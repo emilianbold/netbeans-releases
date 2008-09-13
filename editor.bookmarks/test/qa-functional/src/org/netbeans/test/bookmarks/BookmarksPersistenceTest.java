@@ -41,6 +41,7 @@
 package org.netbeans.test.bookmarks;
 
 import java.awt.event.KeyEvent;
+import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import junit.framework.Test;
@@ -48,6 +49,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 
 /**
@@ -199,11 +201,12 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
         }
     }
 
-    private void checkBookmarksAtLines(BookmarkList bml, int[] expectedLineIndexes) {
-        assertEquals("Invalid bookmark count", expectedLineIndexes.length, bml.getBookmarkCount());
+    private void checkBookmarksAtLines(BookmarkList bookmarkList, int[] expectedLineIndexes) {
+        List<Bookmark> bookmarks = bookmarkList.getBookmarks ();
+        assertEquals("Invalid bookmark count", expectedLineIndexes.length, bookmarks.size ());
         for (int i = 0; i < expectedLineIndexes.length; i++) {
             int expectedLineIndex = expectedLineIndexes[i];
-            int lineIndex = bml.getBookmark(i).getLineIndex();
+            int lineIndex = bookmarks.get (i).getLineNumber();
             assertEquals("Bookmark line index " + lineIndex + " differs from expected " + expectedLineIndex+ "index "+i,
                     lineIndex,
                     expectedLineIndex);

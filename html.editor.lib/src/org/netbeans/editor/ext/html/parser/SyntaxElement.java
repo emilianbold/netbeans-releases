@@ -206,7 +206,7 @@ public class SyntaxElement {
         }
         
         public List<TagAttribute> getAttributes() {
-            return attribs;
+            return attribs == null ? Collections.EMPTY_LIST : attribs;
         }
         
         public TagAttribute getAttribute(String name) {
@@ -214,6 +214,9 @@ public class SyntaxElement {
         }
         
         public TagAttribute getAttribute(String name, boolean ignoreCase) {
+            if(attribs == null) {
+                return null;
+            }
             for(TagAttribute ta : attribs) {
                 if(ta.getName().equals(name)) {
                     return ta;

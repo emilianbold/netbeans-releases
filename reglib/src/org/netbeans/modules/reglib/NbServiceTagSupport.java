@@ -57,8 +57,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,6 +78,10 @@ public class NbServiceTagSupport {
     private static String GF_VERSION;
     
     private static final String USER_HOME = System.getProperty("user.home");
+
+    private static final String SUPER_IDENTITY_FILE_NAME = ".superId"; // NOI18N
+    
+    private static final String DEFAULT_NETBEANS_DIR = ".netbeans"; // NOI18N
     
     private static final String USER_DIR = System.getProperty("netbeans.user");
     
@@ -152,6 +158,43 @@ public class NbServiceTagSupport {
     }
 
     /** 
+     * First look in registration data if CND service tag exists.
+     * If not then create new service tag.
+     * 
+     * @param source client who creates service tag eg.: "NetBeans IDE 6.0.1 Installer" 
+     * or "NetBeans IDE 6.0.1"
+     * @param javaVersion IDE will provides java version on which IDE is running ie. value of system
+     * property java.version. Installer will provide java version selected to run IDE                
+     * @return service tag instance for CND
+     * @throws java.io.IOException
+     */
+    public static ServiceTag createNbServiceTag (String source, String javaVersion) throws IOException {
+        if (!inited) {
+            init();
+        }
+        LOG.log(Level.FINE,"Creating NetBeans service tag");
+        
+        ServiceTag st = getNbServiceTag();    
+        // New service tag entry if not created
+        if (st == null) {
+            LOG.log(Level.FINE,"Creating new service tag");
+            st = newNbServiceTag(source, javaVersion);
+            // Add the service tag to the registration data in NB
+            getRegistrationData().addServiceTag(st);
+            writeRegistrationXml();
+        }
+        
+        // Install a system service tag if supported
+        if (Registry.isSupported()) {
+            LOG.log(Level.FINE,"Add service tag to system registry");
+            installSystemServiceTag(st);
+        } else {
+            LOG.log(Level.FINE,"Cannot add service tag to system registry as ST infrastructure is not found");
+        }
+        return st;
+    }
+    
+    /** 
      * First look in registration data if NetBeans service tag exists.
      * If not then create new service tag.
      * 
@@ -162,27 +205,17 @@ public class NbServiceTagSupport {
      * @return service tag instance for NetBeans
      * @throws java.io.IOException
      */
-    public static ServiceTag createNbServiceTag (String source, String javaVersion) throws IOException {
+    public static ServiceTag createCndServiceTag (String source, String javaVersion) throws IOException {
         if (!inited) {
             init();
         }
-        LOG.log(Level.FINE,"Creating NetBeans service tag");
+        LOG.log(Level.FINE,"Creating CND service tag");
         
-        ServiceTag st = getNbServiceTag();
-        if (st != null) {
-            if ((serviceTagFileNb.exists() || serviceTagFileHome.exists())) {
-                LOG.log(Level.FINE,
-                "NetBeans service tag is already created and saved in registration.xml");
-                return st;
-            } else {
-                LOG.log(Level.FINE,"NetBeans service tag is already created");
-            }
-        }
-        
+        ServiceTag st = getCndServiceTag();
         // New service tag entry if not created
         if (st == null) {
             LOG.log(Level.FINE,"Creating new service tag");
-            st = newNbServiceTag(source, javaVersion);
+            st = newCndServiceTag(source, javaVersion);
             // Add the service tag to the registration data in NB
             getRegistrationData().addServiceTag(st);
             writeRegistrationXml();
@@ -412,6 +445,34 @@ public class NbServiceTagSupport {
                                       svcTagSource);
     }
     
+     /**
+     * Create new service tag instance for NetBeans
+     * @param svcTagSource
+     * @return
+     * @throws java.io.IOException
+     */
+    private static ServiceTag newCndServiceTag (String svcTagSource, String javaVersion) throws IOException {
+        // Determine the product URN and name
+        String productURN, productName, parentURN, parentName;
+
+        productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.cnd.urn");
+        productName = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.cnd.name");
+        
+        parentURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.cnd.parent.urn");
+        parentName = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.cnd.parent.name");
+
+        return ServiceTag.newInstance(ServiceTag.generateInstanceURN(),
+                                      productName,
+                                      NB_VERSION,
+                                      productURN,
+                                      parentName,
+                                      parentURN,
+                                      getNbProductDefinedId(javaVersion),
+                                      "NetBeans.org",
+                                      System.getProperty("os.arch"),
+                                      getZoneName(),
+                                      svcTagSource);
+    }
     /**
      * Create new service tag instance for GlassFish
      * @param svcTagSource
@@ -459,7 +520,24 @@ public class NbServiceTagSupport {
         }
         return null;
     }
-    
+
+        /**
+     * Return the NetBeans service tag from local registration data.
+     * Return null if srevice tag is not found.
+     * 
+     * @return a service tag for 
+     */
+    private static ServiceTag getCndServiceTag () throws IOException {
+        String productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.cnd.urn");
+        RegistrationData regData = getRegistrationData();
+        Collection<ServiceTag> svcTags = regData.getServiceTags();
+        for (ServiceTag st : svcTags) {
+            if (productURN.equals(st.getProductURN())) {
+                return st;
+            }
+        }
+        return null;
+    }
     /**
      * Return the GlassFish service tag from local registration data.
      * Return null if service tag is not found.
@@ -514,18 +592,76 @@ public class NbServiceTagSupport {
         StringBuilder definedId = new StringBuilder();
         definedId.append("id=");
         definedId.append(NB_VERSION);
-        
-        String location = ",dir=" + nbInstallDir.getPath() + ",java.version=" + javaVersion;
+
+        definedId.append(",uuid=");
+        definedId.append(getSuperId());
+
+        definedId.append(",java.version=");
+        definedId.append(javaVersion);
+
+        String location = ",dir=" + nbInstallDir.getPath();
         if ((definedId.length() + location.length()) < 256) {
             definedId.append(location);
         } else {
             // if it exceeds the limit, we will not include the location
             LOG.log(Level.INFO, "Warning: Product defined instance ID exceeds the field limit:");
         }
-
+        
         return definedId.toString();
     }
     
+    /**
+     * Returns id unique to user. It is either read from file $HOME/.netbeans/.superId or if this fil;e does not
+     * exist id is generated and fstored to this file.
+     * 
+     * @return id unique to user
+     * 
+     */
+    private static String getSuperId () {
+        String superId = "";
+        File f = new File(USER_HOME + File.separator + DEFAULT_NETBEANS_DIR + File.separator + SUPER_IDENTITY_FILE_NAME);
+        if (f.exists()) {
+            // read existing super Id
+            BufferedReader r = null;
+            try {
+                r = new BufferedReader(new FileReader(f));
+                superId = r.readLine().trim();
+            } catch (IOException ex) {
+                LOG.log(Level.INFO,"Error: Cannot read from file:" + f, ex);
+            } finally {
+                try {
+                    if (r != null) {
+                        r.close();
+                    }
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO,"Error: Cannot close input stream of file:" + f, ex);
+                }
+            }
+        } else {
+            File dir = new File(USER_HOME + File.separator + DEFAULT_NETBEANS_DIR);
+            if (dir.canWrite() && (!dir.exists())) {
+                dir.mkdirs();
+            }
+            Writer w = null;
+            try {
+                w = new BufferedWriter(new FileWriter(f));
+                superId = UUID.randomUUID().toString();
+                w.write(superId);
+            } catch (IOException ex) {
+                LOG.log(Level.INFO,"Error: Cannot write to file:" + f, ex);
+            } finally {
+                try {
+                    if (w != null) {
+                        w.close ();
+                    }
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO,"Error: Cannot close writer to file:" + f, ex);
+                }
+            }
+        }
+        return superId;
+    }
+
     /**
      * Returns the product defined instance ID for GlassFish.
      * It is a list of comma-separated name/value pairs.
@@ -585,7 +721,7 @@ public class NbServiceTagSupport {
      * Returns the instance urn stored in the servicetag file
      * or empty string if file not exists.
      */
-    private static String getInstalledURN() throws IOException {
+    private static String getInstalledURN(String urn) throws IOException {
         if (serviceTagFileNb.exists() || serviceTagFileHome.exists()) {
             File srcFile = null;
             if (serviceTagFileNb.exists()) {
@@ -596,8 +732,14 @@ public class NbServiceTagSupport {
             BufferedReader in = null;
             try {
                 in = new BufferedReader(new FileReader(srcFile));
-                String urn = in.readLine().trim();
-                return urn;
+                String line = in.readLine();
+                while (line != null) {
+                    if (urn.equals(line.trim())) {
+                        return urn;
+                    }
+                    line = in.readLine();
+                }
+                return "";
             } finally {
                 if (in != null) {
                     in.close();
@@ -608,7 +750,7 @@ public class NbServiceTagSupport {
     }
     
     private static void installSystemServiceTag(ServiceTag st) throws IOException {
-        if (getInstalledURN().length() > 0) {
+        if (getInstalledURN(st.getInstanceURN()).length() > 0) {
             // Already installed
             LOG.log(Level.INFO, "ST is already installed ie. we have file servicetag.");
             return;
@@ -644,11 +786,11 @@ public class NbServiceTagSupport {
             //Install in the system ST registry
             Registry.getSystemRegistry().addServiceTag(st);
 
-            // Write the instance_run to the servicetag file
+            // Write (append if any presents) the instance_run to the servicetag file            
             BufferedWriter out = null;
             try {
                 LOG.log(Level.FINE,"Creating file: " + targetFile);
-                out = new BufferedWriter(new FileWriter(targetFile));
+                out = new BufferedWriter(new FileWriter(targetFile, true));
                 out.write(st.getInstanceURN());
                 out.newLine();
             } finally {

@@ -99,7 +99,15 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         try {
             FileObject fo = FileUtil.toFileObject(file);
             assert fo != null : "no fileobject for file " + file;
-            handleMergeFor(file, fo, fo.lock(), merge);
+            FileLock lock = fo.lock();
+            boolean mergeWriterCreated = false;
+            try { 
+                mergeWriterCreated = handleMergeFor(file, fo, lock, merge);
+            } finally {
+                if(!mergeWriterCreated && lock != null) {
+                    lock.releaseLock();
+                }    
+            }
         } catch (FileAlreadyLockedException e) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -117,7 +125,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         }
     }
     
-    private void handleMergeFor(final File file, FileObject fo, FileLock lock,
+    private boolean handleMergeFor(final File file, FileObject fo, FileLock lock,
                                 final MergeVisualizer merge) throws IOException {
         String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
         String ext = "."+fo.getExt(); // NOI18N
@@ -140,7 +148,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                     lock.releaseLock();
                 }
             }
-            return;
+            return false;
         }
 
         copyParts(false, file, f2, false);
@@ -180,6 +188,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         } catch (IOException ioex) {
             Subversion.LOG.log(Level.SEVERE, null, ioex);;
         }
+        return true;
     }
 
     /**

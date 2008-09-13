@@ -128,7 +128,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         onDispose();
     }
     
-    private void onDispose() {
+    private synchronized void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
             // restore container from it's UID
             this.fileRef = UIDCsmConverter.UIDtoFile(fileUID);
@@ -136,7 +136,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         }
     }
     
-    private CsmFile _getFile() {
+    private synchronized CsmFile _getFile() {
         CsmFile file = this.fileRef;
         if (file == null) {
             file = UIDCsmConverter.UIDtoFile(fileUID);
@@ -166,5 +166,40 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     // test trace method
     protected String getOffsetString() {
         return "[" + getStartOffset() + "-" + getEndOffset() + "]"; // NOI18N
+    }
+
+    @Override
+    public String toString() {
+        return getOffsetString();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final OffsetableBase other = (OffsetableBase) obj;
+        if (this.fileUID != other.fileUID && (this.fileUID == null || !this.fileUID.equals(other.fileUID))) {
+            return false;
+        }
+        if (this.startPosition != other.startPosition) {
+            return false;
+        }
+        if (this.endPosition != other.endPosition) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + (this.fileUID != null ? this.fileUID.hashCode() : 0);
+        hash = 47 * hash + this.startPosition;
+        hash = 47 * hash + this.endPosition;
+        return hash;
     }
 }

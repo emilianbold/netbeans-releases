@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.utils;
  * @author Alexey Vladykin
  */
 public class CndUtils {
-    
+
     public static boolean isStandalone() {
         return !CndUtils.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
     }
@@ -59,5 +59,9 @@ public class CndUtils {
             releaseMode = Boolean.parseBoolean(text);
         }
         return releaseMode;
+    }
+
+    public static boolean isDebugMode() {
+        return ! isReleaseMode();
     }
 }

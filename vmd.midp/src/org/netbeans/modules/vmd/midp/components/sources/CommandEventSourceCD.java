@@ -106,13 +106,13 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
             // info
             InfoPresenter.create (EventSourceSupport.createCommandEventSourceInfoResolver ()),
             // general
-            GoToSourcePresenter.createForwarder (PROP_COMMAND),
-            new SecondaryGoToSourcePresenter() {
+            new GoToSourcePresenter() {
                 protected boolean matches (GuardedSection section) {
                     DesignComponent listener = MidpDocumentSupport.getCommandListener (getComponent ().getDocument (), CommandListenerCD.TYPEID);
                     return MultiGuardedSection.matches (section, listener.getComponentID () + "-commandAction", getComponent ().getComponentID () + "-postAction"); // NOI18N
                 }
             },
+            SecondaryGoToSourcePresenter.createForwarder(PROP_COMMAND),
             // flow
             new CommandEventSourceFlowPinPresenter (),
             // properties

@@ -178,13 +178,13 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
         // icon badging >>>
         private Set files;
-        private Map fileSystemListeners;
+        private Map<FileSystem, FileStatusListener> fileSystemListeners;
         private RequestProcessor.Task task;
         private final Object privateLock = new Object();
         private boolean iconChange;
         private boolean nameChange;
         private ChangeListener sourcesListener;
-        private Map groupsListeners;
+        private Map<SourceGroup, PropertyChangeListener> groupsListeners;
         private final Project project;
         private  Node iconDelegate;
 
@@ -289,8 +289,8 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                     group.removePropertyChangeListener(pcl);
                 }
             }
-            groupsListeners = new HashMap();
-            Set roots = new HashSet();
+            groupsListeners = new HashMap<SourceGroup, PropertyChangeListener>();
+            Set<FileObject> roots = new HashSet<FileObject>();
             Iterator it = groups.iterator();
             while (it.hasNext()) {
                 SourceGroup group = (SourceGroup) it.next();
@@ -313,13 +313,13 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                 }
             }
 
-            fileSystemListeners = new HashMap();
+            fileSystemListeners = new HashMap<FileSystem, FileStatusListener>();
             this.files = files;
             if (files == null) {
                 return;
             }
             Iterator it = files.iterator();
-            Set hookedFileSystems = new HashSet();
+            Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
             while (it.hasNext()) {
                 FileObject fo = (FileObject) it.next();
                 try {
@@ -338,12 +338,12 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         }
     }
 
-    private static final class ConfFilesChildren extends Children.Keys {
+    private static final class ConfFilesChildren extends Children.Keys<FileObject> {
 
         private static final String[] wellKnownFiles = {"web.xml", "webservices.xml", "struts-config.xml", "faces-config.xml", "portlet.xml", "navigator.xml", "managed-beans.xml"}; //NOI18N
         private final ProjectWebModule pwm;
-        private final HashSet keys;
-        private final java.util.Comparator comparator = new NodeComparator();
+        private final HashSet<FileObject> keys;
+        private final java.util.Comparator<FileObject> comparator = new NodeComparator();
         // Need to hold the conf dir strongly, otherwise it can be garbage-collected.
         private FileObject confDir;
         private FileObject persistenceXmlDir;
@@ -414,7 +414,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
         private ConfFilesChildren(ProjectWebModule pwm) {
             this.pwm = pwm;
-            keys = new HashSet();
+            keys = new HashSet<FileObject>();
         }
 
         public static Children forProject(Project project) {
@@ -431,11 +431,10 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             removeListeners();
         }
 
-        public Node[] createNodes(Object key) {
+        public Node[] createNodes(FileObject fo) {
             Node n = null;
 
-            if (keys.contains(key)) {
-                FileObject fo = (FileObject) key;
+            if (keys.contains(fo)) {
                 try {
                     DataObject dataObject = DataObject.find(fo);
                     n = dataObject.getNodeDelegate().cloneNode();
@@ -479,7 +478,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         }
 
         private void doSetKeys() {
-            final Object[] result = keys.toArray();
+            final FileObject[] result = keys.toArray(new FileObject[keys.size()]);
             java.util.Arrays.sort(result, comparator);
 
             SwingUtilities.invokeLater(new Runnable() {
@@ -589,11 +588,9 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             return false;
         }
 
-        private static final class NodeComparator implements java.util.Comparator {
+        private static final class NodeComparator implements java.util.Comparator<FileObject> {
 
-            public int compare(Object o1, Object o2) {
-                FileObject fo1 = (FileObject) o1;
-                FileObject fo2 = (FileObject) o2;
+            public int compare(FileObject fo1, FileObject fo2) {
 
                 int result = compareType(fo1, fo2);
                 if (result == 0) {
@@ -619,6 +616,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             public boolean equals(Object o) {
                 return o instanceof NodeComparator;
             }
+
         }
     }
 }

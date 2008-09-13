@@ -241,6 +241,7 @@
             <test-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.groovy.editor</friend>
+                <friend>org.netbeans.modules.groovy.grails</friend>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.groovy.refactoring</friend>
                 <package>org.netbeans.modules.groovy.support.api</package>

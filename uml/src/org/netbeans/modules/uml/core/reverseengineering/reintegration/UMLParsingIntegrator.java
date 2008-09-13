@@ -4602,7 +4602,11 @@ public class UMLParsingIntegrator
         return isCreated;
     }
     
-    protected boolean isTypeAllowedInAssociation(Node pAttrNode, Node owner, String typeName)
+    protected boolean isTypeAllowedInAssociation(Node pAttrNode, 
+                                                 Node owner, 
+                                                 IClassifier clazzObj, 
+                                                 INamespace classSpace, 
+                                                 String typeName)
     {
         boolean isAllowed = false;
         try
@@ -4626,7 +4630,7 @@ public class UMLParsingIntegrator
                         // First check if the type is been specified as a data type
                         // either a primitive or user defined data type.
                         boolean isAssociation = pLanguage.isDataType(typeName);
-                       if (isAssociation == false)
+                        if (isAssociation == false)
                         {
                             ArrayList < ETPairT < Node, String > > symbolList = m_SymbolTable.get(typeName);
                             // 103234 in case of RE part of existing project, search type in entire project
@@ -4647,19 +4651,14 @@ public class UMLParsingIntegrator
                             }
 			    else 
 			    { 
-				ETList < INamedElement > list = 
-                                    m_Locator.findByNameInMembersAndImports(m_Namespace, typeName);
-				if (list != null && list.size() > 0) 
-				{ 
-				    for(INamedElement el : list) 
-				    {
-					if (! (el instanceof IDataType)) 
-					{
-					    isAllowed = true;
-					    break;
-					}
-				    }
-				}
+                                INamedElement supplier = resolveType(owner, clazzObj, 
+                                                                     classSpace, typeName, 
+                                                                     false);
+                                if (supplier instanceof IClassifier 
+                                    && ! (supplier instanceof IDataType)) 
+                                {
+                                    isAllowed = true;
+                                }
                             }                          
                         }
                     }
@@ -5011,12 +5010,12 @@ public class UMLParsingIntegrator
                                             getUndecoratedName(typeName);
                                     
                                     String actualType = dec.getParamTwo();
-                                    
+
                                     if (actualType != null &&
                                             actualType.length() > 0 &&
                                             isTypeAllowedInAssociation(attr, 
-                                                                       clazz, 
-                                                                       actualType))
+                                                                       clazz, clazzObj, 
+                                                                       classSpace, actualType))
                                     {
                                         establishAssociation(
                                                 attr, clazz, clazzObj,

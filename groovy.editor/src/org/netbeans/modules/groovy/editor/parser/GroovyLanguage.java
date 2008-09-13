@@ -46,6 +46,7 @@ import org.netbeans.modules.groovy.editor.BracketCompleter;
 import org.netbeans.modules.groovy.editor.GroovyDeclarationFinder;
 import org.netbeans.modules.groovy.editor.GroovyIndexer;
 import org.netbeans.modules.groovy.editor.GroovyInstantRenamer;
+import org.netbeans.modules.groovy.editor.GroovyTypeSearcher;
 import org.netbeans.modules.groovy.editor.GroovyUtils;
 import org.netbeans.modules.groovy.editor.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
@@ -55,6 +56,7 @@ import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
@@ -175,5 +177,10 @@ public class GroovyLanguage extends DefaultLanguageConfig {
     @Override
     public InstantRenamer getInstantRenamer() {
         return new GroovyInstantRenamer();
+    }
+
+    @Override
+    public IndexSearcher getIndexSearcher() {
+        return new GroovyTypeSearcher();
     }
 }

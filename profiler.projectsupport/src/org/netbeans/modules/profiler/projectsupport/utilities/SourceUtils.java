@@ -427,6 +427,43 @@ public final class SourceUtils {
 
         return result.getValue();
     }
+    
+    public static String getEnclosingMethodName(FileObject profiledClassFile, final int position) {
+        final OutputParameter<String> result = new OutputParameter<String>(null);
+
+        if (isJavaFile(profiledClassFile)) {
+            JavaSource js = JavaSource.forFileObject(profiledClassFile);
+
+            if (js == null) {
+                return null; // not java source
+            }
+
+            try {
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                        public void cancel() {
+                        }
+
+                        public void run(final CompilationController controller)
+                                 throws Exception {
+                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                                return;
+                            }
+
+                            ExecutableElement parentMethod = controller.getTreeUtilities().scopeFor(position).getEnclosingMethod();
+
+                            if (parentMethod != null) {
+                                // no enclosing class found (i.e. cursor at import)
+                                result.setValue(getVMMethodName(parentMethod));
+                            }
+                        }
+                    }, true);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return result.getValue();
+    }
 
     public static boolean isExecutableMethod(ExecutableElement method) {
         if (method == null) {

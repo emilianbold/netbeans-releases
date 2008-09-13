@@ -218,8 +218,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
             public String getDescription() {
                 return NbBundle.getMessage(MercurialOptionsPanelController.class, "MercurialExec");// NOI18N
             }
-        });
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        });        
         fileChooser.showDialog(panel, NbBundle.getMessage(MercurialOptionsPanelController.class, "OK_Button"));                                            // NOI18N
         File f = fileChooser.getSelectedFile();
         if (f != null) {

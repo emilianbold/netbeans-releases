@@ -72,7 +72,8 @@ public enum CommandMap {
     STDERR(Stream.StreamCommand.class, Stream.StreamResponse.class),
     EVAL(Eval.EvalCommand.class, Eval.EvalResponse.class),
     BREAK(Break.BreakCommand.class, Break.BreakResponse.class),
-    OPEN_URI(Extension.OpenURICommand.class, Status.StatusResponse.class);
+    OPEN_URI(Extension.OpenURICommand.class, Status.StatusResponse.class),
+    RUNTIME_ERROR(Command.class, RuntimeErrorResponse.class);
     //EXPR,
     //EXEC;
 

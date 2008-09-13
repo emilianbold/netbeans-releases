@@ -91,8 +91,8 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
     private static final Logger LOG = Logger.getLogger(OffsetsBag.class.getName());
 
     private Document document;
-    private OffsetGapList<Mark> marks;
-    private boolean mergeHighlights;
+    private final OffsetGapList<Mark> marks;
+    private final boolean mergeHighlights;
     private long version = 0;
     private DocL docListener;
     private int lastAddIndex; // Index where last add to marks list was done

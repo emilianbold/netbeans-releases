@@ -59,6 +59,7 @@ import org.netbeans.modules.gsfret.source.util.LowMemoryNotifierMBeanImpl;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 
@@ -68,6 +69,8 @@ public class GsfModuleInstaller extends ModuleInstall {
 //}    
     private static final boolean ENABLE_MBEANS =
         Boolean.getBoolean("org.netbeans.modules.gsf.enableMBeans"); //NOI18N
+
+    private static final RequestProcessor RP = new RequestProcessor("gsf module install", 1);                  //NOI18N
 
     @Override
     public void restored() {
@@ -81,8 +84,12 @@ public class GsfModuleInstaller extends ModuleInstall {
 
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
                 public void run() {
-                    RepositoryUpdater.getDefault();
-                    ActivatedDocumentListener.register();
+                    RP.post(new Runnable() {
+                        public void run() {
+                            RepositoryUpdater.getDefault();
+                            ActivatedDocumentListener.register();
+                        }
+                    });
                 }
             });
 
@@ -97,7 +104,7 @@ public class GsfModuleInstaller extends ModuleInstall {
         try {
             for (final Language language : LanguageRegistry.getInstance()) {
                 if (language.getIndexer() != null) {
-                    ClassIndexManager.get(language).writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                    ClassIndexManager.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                          public Void run() throws IOException {
                              ClassIndexManager.get(language).close();
                              return null;

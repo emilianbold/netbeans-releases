@@ -141,7 +141,7 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
             Set subProjects;
 
             if (ProfilerLogger.isDebug()) {
-                ProfilerLogger.debug("NB Suite " + projectDir.getPath());
+                ProfilerLogger.debug("NB Suite " + projectDir.getPath()); //NOI18N
             }
 
             if (spp == null) {
@@ -161,11 +161,11 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
         List bootCpEntries = bootCp.entries();
 
         if (ProfilerLogger.isDebug()) {
-            ProfilerLogger.debug("Boot CP " + bootCp);
+            ProfilerLogger.debug("Boot CP " + bootCp); //NOI18N
         }
 
         if (ProfilerLogger.isDebug()) {
-            ProfilerLogger.debug("File " + projectDir.getPath());
+            ProfilerLogger.debug("File " + projectDir.getPath()); //NOI18N
         }
 
         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification("j2se", null)); // NOI18N
@@ -175,7 +175,7 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
 
             if (bootCpEntries.equals(platform.getBootstrapLibraries().entries())) {
                 if (ProfilerLogger.isDebug()) {
-                    ProfilerLogger.debug("Platform " + platform.getDisplayName());
+                    ProfilerLogger.debug("Platform " + platform.getDisplayName()); //NOI18N
                 }
 
                 return platform;
@@ -183,7 +183,7 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
         }
 
         if (ProfilerLogger.isDebug()) {
-            ProfilerLogger.debug("Platform null");
+            ProfilerLogger.debug("Platform null"); //NOI18N
         }
 
         return null;
@@ -202,14 +202,42 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
             final String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
             props.setProperty("profile.class", profiledClass); //NOI18N
         }
-        if (Utilities.isUnix()) {
-            String agentArg = props.getProperty("profiler.info.jvmargs.agent");
-            if (agentArg.indexOf(' ') != -1) {
+        
+        String agentArg = props.getProperty("profiler.info.jvmargs.agent"); //NOI18N
+        if (agentArg.indexOf(' ') != -1) { //NOI18N
+            if (Utilities.isUnix()) {
                 // Profiler is installed in directory with space on Unix (Linux, Solaris, Mac OS X)
                 // create temporary link in /tmp directory and use it instead of directory with space
                 String libsDir = Profiler.getDefault().getLibsDir();
-                props.setProperty("profiler.info.jvmargs.agent", IntegrationUtils.fixLibsDirPath(libsDir, agentArg));
+                props.setProperty("profiler.info.jvmargs.agent", IntegrationUtils.fixLibsDirPath(libsDir, agentArg)); //NOI18N
+            } else if (Utilities.isWindows()) {
+                // Profiler is installed in directory with space on Windows
+                // surround the whole -agentpath argument with quotes
+                agentArg = "\"" + agentArg + "\""; //NOI18N
+                props.setProperty("profiler.info.jvmargs.agent", agentArg); //NOI18N
             }
         }
+    }
+    
+    private static JavaPlatform getJavaPlatformFromAntName(Project project, Properties props) {
+        String javaPlatformAntName = props.getProperty("profiler.info.javaPlatform"); // NOI18N
+        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+
+        if (javaPlatformAntName.equals("default_platform")) { //NOI18N
+            return jpm.getDefaultPlatform();
+        }
+
+        JavaPlatform[] platforms = jpm.getPlatforms(null, new Specification("j2se", null)); //NOI18N
+
+        for (int i = 0; i < platforms.length; i++) {
+            JavaPlatform platform = platforms[i];
+            String antName = platform.getProperties().get("platform.ant.name"); // NOI18N
+
+            if (antName.equals(javaPlatformAntName)) {
+                return platform;
+            }
+        }
+
+        return null;
     }
 }

@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
  */
 public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeListener {
 
-    private final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
     private WizardDescriptor wizard;
     private AddServerPropertiesVisualPanel component;
     private JBInstantiatingIterator instantiatingIterator;
@@ -82,9 +81,14 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
             String path = panel.getDomainPath();
             File serverDirectory = new File(JBPluginProperties.getInstance().getInstallLocation());
             
-            if (!JBPluginUtils.isGoodJBInstanceLocation(serverDirectory, new File(path))) 
-            {
-                wizard.putProperty(PROP_ERROR_MESSAGE,NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_WrongDomainPath"));
+            if (path.length() < 1) {
+                wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                        NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_SpecifyDomainPath"));  //NOI18N
+                return false;
+            }
+            if (!JBPluginUtils.isGoodJBInstanceLocation(serverDirectory, new File(path))) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_WrongDomainPath"));  //NOI18N
                 return false;
             }
             
@@ -100,7 +104,8 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
                     String root = new File(property).getCanonicalPath();
                     
                     if(root.equals(new File(path).getCanonicalPath())) {
-                        wizard.putProperty(PROP_ERROR_MESSAGE,NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_InstanceExists"));
+                        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                                NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_InstanceExists"));  //NOI18N
                         return false;
                     }
                 } catch (MissingResourceException ex) {
@@ -114,26 +119,29 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
             
             try{
                 new Integer(port);
-            }catch(Exception e){
-                wizard.putProperty(PROP_ERROR_MESSAGE,NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_InvalidPort"));
+            } catch(Exception e) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_InvalidPort"));  //NOI18N
                 return false;
             }
             
             
         }else{ //remote
-            if ( (host.equals("")) ){
-                wizard.putProperty(PROP_ERROR_MESSAGE,NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_EnterHost"));
+            if (host.length() < 1){
+                wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                        NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_EnterHost"));  //NOI18N
                 return false;
             }
-            if (port.equals("")) {
-                wizard.putProperty(PROP_ERROR_MESSAGE,NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_EnterPort"));
+            if (port.length() < 1) {
+                wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                        NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_EnterPort"));  //NOI18N
                 return false;
             }
         }
         
-        wizard.putProperty(PROP_ERROR_MESSAGE,null);
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         
-        //   JBTargetServerData ts = JBPluginProperties.getInstance().getTargetServerData();
         instantiatingIterator.setHost(host);
         instantiatingIterator.setPort(port);
         instantiatingIterator.setServer(panel.getDomain());
@@ -158,7 +166,6 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
     }
     
     private void fireChangeEvent(ChangeEvent ev) {
-        //@todo implement it
         Iterator it;
         synchronized (listeners) {
             it = new HashSet(listeners).iterator();

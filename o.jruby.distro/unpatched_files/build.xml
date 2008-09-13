@@ -162,6 +162,11 @@
   </target>
 
   <target name="generate-method-classes" depends="compile">
+    <available file="src_gen/annotated_classes.txt" property="annotations.changed"/>
+    <antcall target="_gmc_internal_"/>
+  </target>
+  
+  <target name="_gmc_internal_" if="annotations.changed">
     <echo message="Generating invokers..."/>
     <java classname="org.jruby.anno.InvokerGenerator" fork="true" failonerror="true">
       <classpath refid="build.classpath"/>
@@ -177,41 +182,99 @@
        <src path="src_gen"/>
        <patternset refid="java.src.pattern"/>
     </javac>
+    
+    <delete file="src_gen/annotated_classes.txt"/>
   </target>
-
-  <target name="jar-jruby" unless="jar-up-to-date">    
-      <antcall target="generate-method-classes" inheritall="true"/>
-
+  
+  <target name="generate-unsafe" depends="compile">
+      <available file="${jruby.classes.dir}/org/jruby/util/unsafe/GeneratedUnsafe.class" property="unsafe.not.needed"/>
+      <antcall target="_gu_internal_"/>
+  </target>
+  
+  <target name="_gu_internal_" unless="unsafe.not.needed">
+    <echo message="Generating Unsafe impl..."/>
+    <java classname="org.jruby.util.unsafe.UnsafeGenerator" fork="true" failonerror="true">
+        <classpath refid="build.classpath"/>
+        <classpath path="${jruby.classes.dir}"/>
+        <arg value="org.jruby.util.unsafe"/>
+        <arg value="${jruby.classes.dir}/org/jruby/util/unsafe"/>
+    </java>
+  </target>
+  
+  <target name="jar-jruby" depends="generate-method-classes, generate-unsafe" unless="jar-up-to-date">  
       <!-- TODO: Unfortunate dependency on ruby executable, and ruby might
            not be present on user's side, so we ignore errors caused by that. -->
-      <exec executable="ruby" dir="${basedir}" failifexecutionfails="false">
+      <exec executable="ruby" dir="${basedir}" failifexecutionfails="false" resultproperty="snapshot.result" errorproperty="snapshot.error">
         <arg value="tool/snapshot.rb"/>
         <arg value="${jruby.classes.dir}/org/jruby/jruby.properties"/>
       </exec>
-
-      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
-      <jarjar destfile="${lib.dir}/jruby.jar">
-        <fileset dir="${jruby.classes.dir}">
-          <exclude name="org/jruby/util/ant/**/*.class"/>
-        </fileset>
+            
+      <jar destfile="${lib.dir}/jruby.jar" compress="false">
+        <fileset dir="${jruby.classes.dir}"/>
         <zipfileset src="${build.lib.dir}/asm-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-commons-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/bytelist-0.1.jar"/>
-        <zipfileset src="${build.lib.dir}/jvyamlb-0.2.jar"/>
+        <zipfileset src="${build.lib.dir}/jvyamlb-0.2.3.jar"/>
         <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
         <zipfileset src="${build.lib.dir}/joni.jar"/>
         <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
         <zipfileset src="${build.lib.dir}/jna.jar"/>
         <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
-        <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
+        <zipfileset src="${build.lib.dir}/dynalang-0.3.jar"/>
         <manifest>
           <attribute name="Built-By" value="${user.name}"/>
           <attribute name="Main-Class" value="org.jruby.Main"/>
         </manifest>
+      </jar>
+  </target>
+  
+  <target name="jar-jruby-dist" depends="generate-method-classes, generate-unsafe" unless="jar-up-to-date">  
+      <!-- TODO: Unfortunate dependency on ruby executable, and ruby might
+           not be present on user's side, so we ignore errors caused by that. -->
+      <exec executable="ruby" dir="${basedir}" failifexecutionfails="false" >
+        <arg value="tool/snapshot.rb"/>
+        <arg value="${jruby.classes.dir}/org/jruby/jruby.properties"/>
+      </exec>
+            
+      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
+      <jarjar destfile="${lib.dir}/jruby.jar" compress="true">
+        <fileset dir="${jruby.classes.dir}"/>
+        <zipfileset src="${build.lib.dir}/asm-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-commons-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/bytelist-0.1.jar"/>
+        <zipfileset src="${build.lib.dir}/jvyamlb-0.2.3.jar"/>
+        <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
+        <zipfileset src="${build.lib.dir}/joni.jar"/>
+        <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
+        <zipfileset src="${build.lib.dir}/jna.jar"/>
+        <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
+        <zipfileset src="${build.lib.dir}/dynalang-0.3.jar"/>
+        <manifest>
+          <attribute name="Built-By" value="${user.name}"/>
+          <attribute name="Main-Class" value="org.jruby.Main"/>
+        </manifest>
+        <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
       </jarjar>
+      <antcall target="_osgify-jruby_" />
+  </target>
+
+  <!-- Use Bnd to wrap the JAR generated by jarjar in above task -->
+  <target name="_osgify-jruby_">
+    <filter token="JRUBY_VERSION" value="${version.jruby}"/>
+    <copy file="${basedir}/jruby.bnd.template" tofile="${build.dir}/jruby.bnd" filtering="true"/>
+    <taskdef resource="aQute/bnd/ant/taskdef.properties"
+      classpath="${build.lib.dir}/bnd-0.0.249.jar"/>
+    <bndwrap definitions="${build.dir}" output="${lib.dir}">
+      <fileset file="${lib.dir}/jruby.jar" />
+    </bndwrap>
+    <move file="${lib.dir}/jruby.jar$" tofile="${lib.dir}/jruby.jar" 
+      overwrite="true" />
   </target>
 
   <path id="lib.classpath">
@@ -229,6 +292,7 @@
         <pathelement location="${lib.dir}/jruby-weaved.jar" />
       </classpath>
     </retro>
+    
       <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
       <jarjar destfile="${lib.dir}/jruby.jar">
         <zipfileset src="${lib.dir}/jruby-weaved.jar"/>
@@ -252,7 +316,7 @@
     <delete file="${lib.dir}/jruby-complete1.5.jar"/>
   </target>
 
-    <target name="jar-complete" depends="generate-method-classes" description="Create the 'complete' JRuby jar. Pass 'mainclass' and 'filename' to adjust.">
+    <target name="jar-complete" depends="generate-method-classes, generate-unsafe" description="Create the 'complete' JRuby jar. Pass 'mainclass' and 'filename' to adjust.">
       <property name="mainclass" value="org.jruby.Main"/>
       <property name="filename" value="jruby-complete.jar"/>
       <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
@@ -283,10 +347,10 @@
         <arg value="--no-rdoc"/>
         <arg value="--env-shebang"/>
       </java>
+      
+      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
       <jarjar destfile="${lib.dir}/${filename}">
-        <fileset dir="${jruby.classes.dir}">
-          <exclude name="org/jruby/util/ant/**/*.class"/>
-        </fileset>
+        <fileset dir="${jruby.classes.dir}"/>
         <fileset dir="${build.dir}/jar-complete">
           <exclude name="META-INF/jruby.home/lib/ruby/1.8/**"/>
         </fileset>
@@ -296,17 +360,18 @@
         <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/bytelist-0.1.jar"/>
-        <zipfileset src="${build.lib.dir}/jvyamlb-0.2.jar"/>
+        <zipfileset src="${build.lib.dir}/jvyamlb-0.2.3.jar"/>
         <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
         <zipfileset src="${build.lib.dir}/joni.jar"/>
         <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
         <zipfileset src="${build.lib.dir}/jna.jar"/>
         <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
-        <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
+        <zipfileset src="${build.lib.dir}/dynalang-0.3.jar"/>
         <manifest>
           <attribute name="Built-By" value="${user.name}"/>
           <attribute name="Main-Class" value="${mainclass}"/>
         </manifest>
+        <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
       </jarjar>
     </target>
 
@@ -319,6 +384,9 @@
 
   <target name="jar" depends="init" description="Create the jruby.jar file">
     <antcall target="jar-jruby" inheritall="true"/>
+  </target>
+  <target name="jar-dist" depends="init" description="Create the jruby.jar file for distribution. This version uses JarJar Links to rewrite some packages.">
+    <antcall target="jar-jruby-dist" inheritall="true"/>
   </target>
 
   <target name="compile-test" depends="jar" description="Compile the unit tests">
@@ -462,13 +530,8 @@
       run-junit-interpreted-1.9,
       run-junit-compiled-1.9,
       run-junit-precompiled-1.9,
-      run-junit-reflected-interpreted,
-      run-junit-reflected-compiled,
       run-junit-reflected-precompiled,
-      run-junit-compiled-threadpool,
-      run-junit-precompiled-threadpool,
       run-junit-interpreted-threadpool,
-      run-junit-object-persistence,
       compile-stdlib,
       coverage-report"
 	  description="Runs unit tests in all modes."/>
@@ -507,13 +570,8 @@
       run-junit-interpreted-1.9,
       run-junit-compiled-1.9,
       run-junit-precompiled-1.9,
-      run-junit-reflected-interpreted,
-      run-junit-reflected-compiled,
       run-junit-reflected-precompiled,
-      run-junit-compiled-threadpool,
       run-junit-precompiled-threadpool,
-      run-junit-interpreted-threadpool,
-      run-junit-object-persistence,
       compile-stdlib,
       coverage-report"
 	  description="Runs unit tests in all modes with weaved jruby classes."/>
@@ -557,7 +615,6 @@
     <attribute name="objectspace.enabled" default="true"/>
     <attribute name="thread.pooling" default="false"/>
     <attribute name="reflection" default="false"/>
-    <attribute name="threadlocal" default="false"/>
     <element name="junit-tests"/>
     <sequential>
       <echo message="compile=@{compile.mode}, jit.threshold=@{jit.threshold}, jit.max=@{jit.max}, objectspace=@{objectspace.enabled} threadpool=@{thread.pooling} reflection=@{reflection} version=@{jruby.version}"/>
@@ -574,10 +631,10 @@
 	<sysproperty key="jruby.jit.max" value="@{jit.max}"/>
 	<sysproperty key="jruby.compat.version" value="@{jruby.version}"/>
 	<sysproperty key="jruby.objectspace.enabled" value="@{objectspace.enabled}"/>
-	<sysproperty key="jruby.runtime.threadlocal" value="@{threadlocal}"/>
 	<sysproperty key="jruby.thread.pool.enabled" value="@{thread.pooling}"/>
 	<sysproperty key="jruby.reflection" value="@{reflection}"/>
 	<sysproperty key="jruby.jit.logging.verbose" value="true"/>
+	<sysproperty key="jruby.compile.lazyHandles" value="true"/>
 	<sysproperty key="emma.coverage.out.file" value="${test.results.dir}/coverage.emma" />
 	<sysproperty key="emma.coverage.out.merge" value="true" />
 
@@ -641,16 +698,6 @@
       </run-junit>
     </sequential>
   </macrodef>
-  
-  <!-- Runs junit tests for object persistence support -->
-  <target name="run-junit-object-persistence">
-    <run-junit objectspace.enabled="false" threadlocal="true">
-      <junit-tests>
-	<test name="${test}" if="test"/>
-	<test name="org.jruby.test.ObjectPersistenceTestSuite" todir="${test.results.dir}" unless="test"/>
-      </junit-tests>
-    </run-junit>
-  </target>
 
   <target name="test-security-manager">
     <java classname="org.jruby.Main" fork="true" failonerror="true">
@@ -790,18 +837,33 @@
       <delete file="${build.dir}/mspec.tgz"/>
       <delete file="${spec.dir}/rubyspecs.current.revision"/>
   </target>
-  
-  <target name="run-specs" depends="jar">
-      <antcall target="run-specs-precompiled"/>
-      <antcall target="run-specs-compiled"/>
-      <antcall target="run-specs-interpreted"/>
+
+  <target name="run-specs" depends="run-specs-precompiled, run-specs-compiled, run-specs-interpreted, jar">
+    <condition property="spec.status.combined.OK">
+      <and>
+        <equals arg1="${spec.status.PRECOMPILED}" arg2="0"/>
+        <equals arg1="${spec.status.COMPILED}"    arg2="0"/>
+        <equals arg1="${spec.status.INTERPRETED}" arg2="0"/>
+      </and>
+    </condition>
+    <fail message="RubySpecs FAILED" unless="spec.status.combined.OK"/>
   </target>
+
   <target name="run-specs-all" depends="jar"><antcall target="run-specs-all-precompiled"/></target>
-  <target name="run-specs-compiled"><_run_specs_internal compile.mode="JIT" jit.threshold="0"/></target>
-  <target name="run-specs-precompiled"><_run_specs_internal compile.mode="FORCE" jit.threshold="0"/></target>
+
+  <target name="run-specs-compiled" depends="jar">
+    <_run_specs_internal mode.name="COMPILED" compile.mode="JIT" jit.threshold="0"/>
+  </target>
+  <target name="run-specs-precompiled" depends="jar">
+    <_run_specs_internal mode.name="PRECOMPILED" compile.mode="FORCE" jit.threshold="0"/>
+  </target>
+  <target name="run-specs-interpreted" depends="jar">
+    <_run_specs_internal mode.name="INTERPRETED" compile.mode="OFF"/>
+  </target>
+
   <target name="run-specs-all-interpreted"><_run_specs_all_internal compile.mode="OFF"/></target>
   <target name="run-specs-all-precompiled"><_run_specs_all_internal compile.mode="FORCE" jit.threshold="0"/></target>
-  <target name="run-specs-interpreted"><_run_specs_internal/></target>
+
   
   <target name="update-excludes">
     <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="false" dir="${spec.dir}">
@@ -843,17 +905,18 @@
     <attribute name="objectspace.enabled" default="true"/>
     <attribute name="thread.pooling" default="false"/>
     <attribute name="reflection" default="false"/>
+    <attribute name="mode.name"/>
     <element name="extra-args" optional="true"/>
 
     <sequential>
       <echo message="compile=@{compile.mode}, threshold=@{jit.threshold}, objectspace=@{objectspace.enabled} threadpool=@{thread.pooling} reflection=@{reflection}"/>
     
-      <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true" dir="${base.dir}">
+      <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="false" resultproperty="spec.status.@{mode.name}" dir="${base.dir}">
 	<classpath refid="build.classpath"/>
 	<classpath path="${jruby.classes.dir}"/>
-      
+
 	<jvmarg value="-ea"/>
-      
+
 	<sysproperty key="jruby.home" value="${basedir}"/>
 	<sysproperty key="jruby.launch.inproc" value="false"/>
       
@@ -867,9 +930,15 @@
 
 	<arg line="${mspec.dir}/bin/mspec ci"/>
 	<arg line="-T -J-ea"/>
-	<arg value="-f"/><arg value="m"/>
+	<arg line="-T -J-Djruby.launch.inproc=false"/>
+	<arg line="-T -J-Djruby.compile.mode=@{compile.mode}"/>
+	<arg line="-T -J-Djruby.jit.threshold=@{jit.threshold}"/>
+	<arg line="-T -J-Djruby.jit.max=@{jit.max}"/>
+	<arg line="-T -J-Djruby.objectspace.enabled=@{objectspace.enabled}"/>
+	<arg line="-T -J-Djruby.thread.pool.enabled=@{thread.pooling}"/>
+	<arg line="-T -J-Djruby.reflection=@{reflection}"/>
+	<arg line="-f m"/>
 	<extra-args/>
-
 	<arg line="-B ${spec.dir}/default.mspec"/>
       </java>
     </sequential>
@@ -878,14 +947,12 @@
   <macrodef name="_run_specs_internal">
     <attribute name="compile.mode" default="OFF"/>
     <attribute name="jit.threshold" default="20"/>
+    <attribute name="mode.name"/>
 
     <sequential>
       <echo message="Excludes: ${spec.tags.dir}"/>
-      <run-specs compile.mode="@{compile.mode}" jit.threshold="@{jit.threshold}">
-	<extra-args>
-	    <arg line="-B ${spec.dir}/default.mspec"/>
-	</extra-args>
-      </run-specs>
+      <run-specs mode.name="@{mode.name}"
+        compile.mode="@{compile.mode}" jit.threshold="@{jit.threshold}"/>
     </sequential>
   </macrodef>
 
@@ -953,12 +1020,14 @@
     <exclude name="lib/junit.jar"/>
     <exclude name="lib/jarjar-1.0rc7.jar"/>
     <exclude name="docs/rdocs.tar.gz"/>
+    <exclude name="bench/**"/>
     <include name="share/**"/>
   </patternset>
 
   <patternset id="dist.src.files">
     <patternset refid="dist.files"/>
     <exclude name="share/**"/>
+    <include name="bench/**"/>
     <include name="src/**"/>
     <include name="test/**"/>
     <include name="spec/**"/>
@@ -974,7 +1043,7 @@
     <exclude name="lib/jruby.jar"/>
   </patternset>
 
-  <target name="dist-bin" depends="jar">
+  <target name="dist-bin" depends="jar-dist">
     <mkdir dir="dist"/>
     <copy todir="dist">
       <fileset dir="${basedir}">
@@ -1135,7 +1204,7 @@
       <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
       <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
       <zipfileset src="${build.lib.dir}/bytelist-0.1.jar"/>
-      <zipfileset src="${build.lib.dir}/jvyamlb-0.2.jar"/>
+      <zipfileset src="${build.lib.dir}/jvyamlb-0.2.3.jar"/>
       <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
       <zipfileset src="${build.lib.dir}/joni.jar"/>
       <zipfileset src="${build.lib.dir}/jna-posix.jar"/>

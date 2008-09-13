@@ -124,9 +124,27 @@ public abstract class OperationWizardModel {
     public Set<UpdateElement> getRequiredUpdateElements () {
         if (requiredElements == null) {
             requiredElements = new HashSet<UpdateElement> ();
+            dep2plugins = new TreeMap<String, Set<UpdateElement>> ();
             
             for (OperationInfo<?> info : getBaseInfos ()) {
                 Set<UpdateElement> reqs = info.getRequiredElements ();
+                Set<String> broken = info.getBrokenDependencies ();
+                if (! broken.isEmpty()) {
+                    for (String brokenDep : broken) {
+                        // pay special attention to missing JDK
+                        if (brokenDep.toLowerCase ().startsWith ("package")) {
+                            brokenDep = "package";
+                        }
+                        if (dep2plugins.get (brokenDep) == null) {
+                            dep2plugins.put (brokenDep, new HashSet<UpdateElement> ());
+                        }
+                        dep2plugins.get (brokenDep).add (info.getUpdateElement ());
+                    }
+                    if (dep2plugins.keySet ().size () >= MAX_TO_REPORT) {
+                        dep2plugins.put (MORE_BROKEN_PLUGINS, null);
+                        break;
+                    }
+                }
                 for (UpdateElement el : reqs) {
                     if (required2primary.get (el) == null) {
                         required2primary.put (el, new HashSet<UpdateElement> ());

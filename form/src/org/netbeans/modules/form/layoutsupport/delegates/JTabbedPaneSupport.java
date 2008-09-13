@@ -100,7 +100,8 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         JTabbedPane tabbedPane = (JTabbedPane)container;
         int n = tabbedPane.getTabCount();
         for (int i=0; i < n; i++) {
-            if (tabbedPane.getBoundsAt(i).contains(p)) {
+            Rectangle rect = tabbedPane.getBoundsAt(i);
+            if ((rect != null) && rect.contains(p)) {
                 selectedTab = i;
                 tabbedPane.setSelectedIndex(i);
                 break;

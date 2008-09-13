@@ -72,7 +72,6 @@ import org.openide.util.MutexException;
  * Support for extending project with Groovy support
  * 
  * @todo now supports only Java SE projects
- * @todo do we want also 'disable' functionality?
  * 
  * @author Martin Adamek
  */
@@ -99,9 +98,6 @@ public class GroovyProjectExtender implements GroovyFeature {
     }
 
     public GroovyCustomizerPanel getPanel() {
-        if (panel == null) {
-            panel = new GroovyCustomizerPanel(this);
-        }
         return panel;
     }
 

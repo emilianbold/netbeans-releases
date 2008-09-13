@@ -12,6 +12,7 @@ then
     dir=`dirname $0`/../..
     cd $dir
 else
+    hg up -C . # in case previous build mistakenly modified some source files
     hg --config extensions.purge= clean --all || exit
 fi
 
@@ -98,11 +99,11 @@ done
 echo SigTest: Checking All Changes Done
 
 echo SigTest: Generating Golden Files
-ant gen-sigtests 
+ant gen-sigtests || exit 1
 echo SigTest: Generating Golden Files Done
 
 echo SigTest: Incompatible Changes
-ant check-sigtests-release
+ant check-sigtests-release -Dfail.on.error=false
 echo SigTest: Incompatible Changes Done
 
 ###############  Commit validation tests  ##########################
@@ -143,3 +144,5 @@ rm -rf nbbuild/netbeans/testtools
 rm -f nbbuild/netbeans/bin/hs_err_*
 # Check to see if any other unregistered files remain (if so, delete them now so the problem can be fixed in incremental builds) (cf. #111946):
 ant clean-untracked-files
+# Make sure the build did not modify any files, or produce any nonignorable files.
+test -z "`hg st | tee /dev/stderr`" || exit
