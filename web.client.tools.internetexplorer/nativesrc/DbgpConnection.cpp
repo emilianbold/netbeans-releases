@@ -58,7 +58,7 @@ DbgpConnection::DbgpConnection(tstring port, tstring sessionId, DWORD dwWebBrows
 
 void DbgpConnection::close() {
     closesocket(m_socket);
-    WSACleanup();
+    WSACleanup();   
     m_socket = NULL;
 }
 
@@ -147,7 +147,7 @@ void DbgpConnection::sendInitMessage() {
 void DbgpConnection::handleDocumentComplete(IHTMLDocument2 *pHTMLDocument) {
     sendWindowsMessage(pHTMLDocument);
     sendSourcesMessage(pHTMLDocument);
-    if(m_pScriptDebugger->getStatus() != STATE_RUNNING) {
+    if(m_pScriptDebugger != NULL && m_pScriptDebugger->getStatus() != STATE_RUNNING) {
         m_pScriptDebugger->changeState(STATE_RUNNING, OK);
     }
 }
@@ -351,10 +351,11 @@ BOOL DbgpConnection::readCommand(char *cmdString) {
 
 void DbgpConnection::processCommand(char *cmdString, DbgpConnection *pDbgpConnection) {
     TCHAR *str;
+
     if(!UTF8toUnicode(cmdString, &str)) {
         return;
     }
-
+    Utils::log(4, _T("Processing command - %s\n"), str);
     //Utils::log(4, _T("Command: %s\n"), cmdString);
     tstring cmdStr = str;
     size_t firstSpacePos = cmdStr.find(_T(" "));

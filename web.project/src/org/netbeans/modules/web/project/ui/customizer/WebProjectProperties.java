@@ -112,7 +112,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Petr Hrebejk, Radko Najman
  */
-public class WebProjectProperties {
+final public class WebProjectProperties {
     
     public static final String J2EE_1_4 = "1.4"; // NOI18N
     public static final String J2EE_1_3 = "1.3"; // NOI18N
@@ -287,7 +287,7 @@ public class WebProjectProperties {
     private static String logServInstID = null;
 
     
-    public WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+    WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
         this.updateHelper = updateHelper;
         
@@ -425,8 +425,8 @@ public class WebProjectProperties {
         try {
             saveLibrariesLocation();
             // Store properties 
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     storeProperties();
                     return null;
                 }
@@ -526,7 +526,7 @@ public class WebProjectProperties {
         // Store special properties
         
         // Modify the project dependencies properly        
-        resolveProjectDependencies();
+        destroyRemovedDependencies();
        
         // Store source roots
         storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
@@ -537,7 +537,7 @@ public class WebProjectProperties {
             //remove servlet24 and jsp20 libraries (they are not used in 4.1)
             ClassPathTableModel cptm = getJavaClassPathModel();
 
-            ArrayList cpItemsToRemove = new ArrayList();
+            ArrayList<ClassPathSupport.Item> cpItemsToRemove = new ArrayList<ClassPathSupport.Item>();
             for(int i = 0; i < cptm.getRowCount(); i++) {
                 Object item = cptm.getValueAt(i,0);
                 if (item instanceof ClassPathSupport.Item) {
@@ -555,9 +555,9 @@ public class WebProjectProperties {
             } 
             
             //remove selected libraries
-            Iterator remove = cpItemsToRemove.iterator();
+            Iterator<ClassPathSupport.Item> remove = cpItemsToRemove.iterator();
             while(remove.hasNext()) {
-                ClassPathSupport.Item cpti = (ClassPathSupport.Item)remove.next();
+                ClassPathSupport.Item cpti = remove.next();
                 cptm.getDefaultListModel().removeElement(cpti);
             }
             
@@ -717,30 +717,31 @@ public class WebProjectProperties {
     /** Finds out what are new and removed project dependencies and 
      * applyes the info to the project
      */
-    private void resolveProjectDependencies() {
+    private void destroyRemovedDependencies() {
             
         // Create a set of old and new artifacts.
-        Set oldArtifacts = new HashSet();
+        Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB ) );
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES ) );
         oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
         oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES ) );
 
-        Set newArtifacts = new HashSet();
+        Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel() ) );
                 
         // Create set of removed artifacts and remove them
-        Set removed = new HashSet( oldArtifacts );
+        Set<ClassPathSupport.Item> removed = new HashSet<ClassPathSupport.Item>( oldArtifacts );
         removed.removeAll( newArtifacts );
-        Set added = new HashSet(newArtifacts);
+        Set<ClassPathSupport.Item> added = new HashSet<ClassPathSupport.Item>(newArtifacts);
         added.removeAll(oldArtifacts);
         
         // 1. first remove all project references. The method will modify
         // project property files, so it must be done separately
-        for( Iterator it = removed.iterator(); it.hasNext(); ) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
+        for( ClassPathSupport.Item item : removed) {
             if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 refHelper.destroyReference(item.getReference());
@@ -754,8 +755,7 @@ public class WebProjectProperties {
         EditableProperties ep = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
         boolean changed = false;
         
-        for( Iterator it = removed.iterator(); it.hasNext(); ) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
+        for( ClassPathSupport.Item item : removed) {
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 // remove helper property pointing to library jar if there is any
                 String prop = item.getReference();
@@ -779,26 +779,6 @@ public class WebProjectProperties {
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
         roots.putRoots(rootURLs,rootLabels);
-    }
-
-    public Object get(String propertyName) {
-        EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
-
-        if (J2EE_SERVER_INSTANCE.equals(propertyName))
-            return privateProperties.getProperty(J2EE_SERVER_INSTANCE);
-        else
-            return projectProperties.getProperty(propertyName);
-        
-//        return evaluator.getProperty(propertyName);
-    }
-    
-    public void put( String propertyName, String value ) {
-        EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        projectProperties.put(propertyName, value);
-        if (J2EE_SERVER_INSTANCE.equals (propertyName)) {
-            projectProperties.put (J2EE_SERVER_TYPE, Deployment.getDefault ().getServerID ((String) value));
-        }
     }
 
     public void store() {
@@ -1026,12 +1006,18 @@ public class WebProjectProperties {
         Set<File> roots = new HashSet<File>();
         for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
             for (Object row : model.getDataVector()) {
-                roots.add((File) ((Vector) row).elementAt(0));
+                File d = (File) ((Vector) row).elementAt(0);
+                if (d.isDirectory()) {
+                    roots.add(d);
+                }
             }
         }
         try {
             String webDocRoot = WEB_DOCBASE_DIR_MODEL.getText(0, WEB_DOCBASE_DIR_MODEL.getLength());
-            roots.add(project.getAntProjectHelper().resolveFile(webDocRoot));
+            File d = project.getAntProjectHelper().resolveFile(webDocRoot);
+            if (d.isDirectory()) {
+                roots.add(d);
+            }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }

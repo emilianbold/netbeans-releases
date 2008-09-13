@@ -763,7 +763,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         } else {
             FloatingWindowTransparencyManager.getDefault().stop();
         }
-        SwingUtilities.invokeLater(exclusive);
         central.setVisible(visible);
     }
     
@@ -1076,7 +1075,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         ModeImpl maximizedMode = getCurrentMaximizedMode();
         if(maximizedMode != null && mode != maximizedMode
            && mode.getKind() != Constants.MODE_KIND_SLIDING
-           && central.isViewMaximized() ) {
+           && (central.isViewMaximized() || mode.getKind() == Constants.MODE_KIND_EDITOR)) {
             switchMaximizedMode(null);
         }
         
@@ -1266,6 +1265,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return null != modeImpl && modeImpl.getKind() == Constants.MODE_KIND_EDITOR;
     }
 
+    public final void mainWindowPainted () {
+        SwingUtilities.invokeLater(exclusive);
+    }
+
     /** Handles exclusive invocation of Runnables.
      */
     private static final class Exclusive implements Runnable {
@@ -1295,9 +1298,12 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 arr = new ArrayList<Runnable>();
             }
 
+            Logger perf = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
             for (Runnable r : arrCopy) {
                 try {
+                    perf.log(Level.FINE, "start", "invokeWhenUIReady: " + r.getClass().getName()); // NOI18N
                     r.run();
+                    perf.log(Level.FINE, "end", "invokeWhenUIReady: " + r.getClass().getName()); // NOI18N
                 } catch (RuntimeException ex) {
                     Logger.getLogger(WindowManagerImpl.class.getName()).log(
                             Level.WARNING, null, ex);

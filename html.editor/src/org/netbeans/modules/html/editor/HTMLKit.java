@@ -84,6 +84,7 @@ import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.SelectCodeElementAction;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
+import org.netbeans.editor.ext.html.HtmlIndenter;
 import org.openide.util.Exceptions;
 
 /**
@@ -337,28 +338,35 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         private void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, final char lastChar) throws BadLocationException {
             if (lastChar == '>') {
                 TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-                for (LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
+                for (final LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
                     if (languagePath.innerLanguage() == HTMLTokenId.language()) {
                         HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(languagePath);
 
                         if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
-                            final Indent indent = Indent.get(doc);
-                            indent.lock();
-                            try {
-                                doc.runAtomic(new Runnable() {
+                            doc.runAtomic(new Runnable() {
                                 public void run() {
-                                        try {
-                                            int startOffset = Utilities.getRowStart(doc, dotPos);
-                                            int endOffset = Utilities.getRowEnd(doc, dotPos);
-                                            indent.reindent(startOffset, endOffset);
-                                        } catch (BadLocationException ex) {
-                                            //ignore
-                                        }
-                                } 
+                                    HtmlIndenter.indentEndTag(doc, languagePath, dotPos, null);
+                                }
                             });
-                            } finally {
-                                indent.unlock();
-                            }
+
+//                            //PUT BACK ONCE WE PROPERY IMPLEMENT HTML INDENT TASK                            
+//                            final Indent indent = Indent.get(doc);
+//                            indent.lock();
+//                            try {
+//                                doc.runAtomic(new Runnable() {
+//                                public void run() {
+//                                        try {
+//                                            int startOffset = Utilities.getRowStart(doc, dotPos);
+//                                            int endOffset = Utilities.getRowEnd(doc, dotPos);
+//                                            indent.reindent(startOffset, endOffset);
+//                                        } catch (BadLocationException ex) {
+//                                            //ignore
+//                                        }
+//                                } 
+//                            });
+//                            } finally {
+//                                indent.unlock();
+//                            }
                         }
                     }
                 }

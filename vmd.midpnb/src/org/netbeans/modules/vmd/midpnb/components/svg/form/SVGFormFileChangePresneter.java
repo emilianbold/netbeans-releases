@@ -56,6 +56,8 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.mobility.svgcore.util.Util;
+import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
+import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -95,7 +97,7 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        SVGFormFileObjectListener.regenerateSVGComponentsStructure(svgFileObject_, getComponent());
+                        SVGFormFileObjectListener.regenerateSVGComponentsStructure(svgFileObject_, getComponent(), DataEditorView.Kind.CODE);
                         context = ProjectUtils.getDataObjectContextForDocument(getComponent().getDocument());
                         context.addDesignDocumentAwareness(SVGFormFileChangePresneter.this);
                     }
@@ -143,6 +145,7 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
                 if (svgImage != null) {
                     imageFileListener = new SVGFormFileObjectListener(getComponent(), svgImageComponent, SVGImageCD.PROP_RESOURCE_PATH);
                     svgFileObjectNew.addFileChangeListener(imageFileListener);
+                    ActiveViewSupport.getDefault().addActiveViewListener(imageFileListener);
                     svgFileObject = new WeakReference<FileObject>(svgFileObjectNew);
                 }
             } catch (IOException e) {
@@ -174,6 +177,7 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
         if (svgFileObject_ != null) {
             svgFileObject_.removeFileChangeListener(imageFileListener);
         }
+        ActiveViewSupport.getDefault().removeActiveViewListener(imageFileListener);
         imageFileListener = null;
         svgFileObject = null;
     }

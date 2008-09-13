@@ -57,63 +57,57 @@ public final class RubySessionTest extends TestBase {
     }
     
     public void testLocalVariables() throws Exception {
-        if (tryToSwitchToRDebugIDE()) {
-            String[] testContent = {
-                "a = 5",
-                "sleep 0.01",
-            };
-            File testF = createScript(testContent);
-            FileObject testFO = FileUtil.toFileObject(testF);
-            addBreakpoint(testFO, 2);
-            Process p = startDebugging(testF);
-            RubySession session = Util.getCurrentSession();
-            assertEquals("a variable", 1, session.getVariables().length);
-            doContinue();
-            waitFor(p);
-        }
+        String[] testContent = {
+            "a = 5",
+            "sleep 0.01",
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 2);
+        Process p = startDebugging(testF);
+        RubySession session = Util.getCurrentSession();
+        assertEquals("a variable", 1, session.getVariables().length);
+        doContinue();
+        waitFor(p);
     }
     
     public void testSuspendedThread() throws Exception {
-        if (tryToSwitchToRDebugIDE()) {
-            String[] testContent = {
-                "loop do",
-                "  a = 2",
-                "  sleep 0.1",
-                "  puts a",
-                "end"
-            };
-            File testF = createScript(testContent);
-            FileObject testFO = FileUtil.toFileObject(testF);
-            RubyLineBreakpoint bp3 = addBreakpoint(testFO, 3);
-            Process p = startDebugging(testF);
-            RubySession session = Util.getCurrentSession();
-            assertTrue("session suspended", session.isSessionSuspended());
-            RubyVariable[] vars = session.getVariables();
-            assertEquals("a variable", 1, vars.length);
-            bp3.disable();
-            doAction(ActionsManager.ACTION_CONTINUE);
-            Thread.sleep(1000);
-            assertEquals("a variable", 0, session.getVariables().length);
-            doAction(ActionsManager.ACTION_KILL);
-            waitFor(p);
-        }
+        String[] testContent = {
+            "loop do",
+            "  a = 2",
+            "  sleep 0.1",
+            "  puts a",
+            "end"
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        RubyLineBreakpoint bp3 = addBreakpoint(testFO, 3);
+        Process p = startDebugging(testF);
+        RubySession session = Util.getCurrentSession();
+        assertTrue("session suspended", session.isSessionSuspended());
+        RubyVariable[] vars = session.getVariables();
+        assertEquals("a variable", 1, vars.length);
+        bp3.disable();
+        doAction(ActionsManager.ACTION_CONTINUE);
+        Thread.sleep(1000);
+        assertEquals("a variable", 0, session.getVariables().length);
+        doAction(ActionsManager.ACTION_KILL);
+        waitFor(p);
     }
     
     public void testSwitchToNonSuspendedThread() throws Exception {
-        if (tryToSwitchToRDebugIDE()) {
-            String[] testContent = {
-                "loop do",
-                "  sleep 1",
-                "end"
-            };
-            File testF = createScript(testContent);
-            Process p = startDebugging(testF, false);
-            RubySession session = Util.getCurrentSession();
-            RubyThreadInfo ti = session.getThreadInfos()[0];
-            session.switchThread(ti.getId(), null);
-            doAction(ActionsManager.ACTION_KILL);
-            waitFor(p);
-        }
+        String[] testContent = {
+            "loop do",
+            "  sleep 1",
+            "end"
+        };
+        File testF = createScript(testContent);
+        Process p = startDebugging(testF, false);
+        RubySession session = Util.getCurrentSession();
+        RubyThreadInfo ti = session.getThreadInfos()[0];
+        session.switchThread(ti.getId(), null);
+        doAction(ActionsManager.ACTION_KILL);
+        waitFor(p);
     }
 
     public void testResolveAbsolutePath() throws Exception {
@@ -168,32 +162,31 @@ public final class RubySessionTest extends TestBase {
     }
     
     public void testRunTo() throws Exception {
-        while (switchToNextEngine()) {
-            String[] testContent = {
-                "sleep 0.01",
-                "sleep 0.01",
-                "sleep 0.01",
-                "sleep 0.01",
-            };
-            final File testF = createScript(testContent);
-            FileObject testFO = FileUtil.toFileObject(testF);
-            addBreakpoint(testFO, 1);
-            Process p = startDebugging(testF);
-            final RubySession session = Util.getCurrentSession();
-            waitForEvents(session.getProxy(), 1, new Runnable() {
-                public void run() {
-                    session.runningToFile = testF;
-                    session.runningToLine = 3;
-                    try {
-                        doAction(ActionsManager.ACTION_RUN_TO_CURSOR);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+        String[] testContent = {
+            "sleep 0.01",
+            "sleep 0.01",
+            "sleep 0.01",
+            "sleep 0.01",
+        };
+        final File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 1);
+        Process p = startDebugging(testF);
+        final RubySession session = Util.getCurrentSession();
+        waitForEvents(session.getProxy(), 1, new Runnable() {
+
+            public void run() {
+                session.runningToFile = testF;
+                session.runningToLine = 3;
+                try {
+                    doAction(ActionsManager.ACTION_RUN_TO_CURSOR);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-            });
-            assertTrue("session suspended", session.isSessionSuspended());
-            doContinue();
-            waitFor(p);
-        }
+            }
+        });
+        assertTrue("session suspended", session.isSessionSuspended());
+        doContinue();
+        waitFor(p);
     }
 }

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project;
 
+import org.netbeans.modules.php.project.util.CopySupport;
 import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -57,12 +58,10 @@ import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
@@ -77,8 +76,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -96,9 +95,10 @@ public class PhpProject implements Project, AntProjectListener {
     private static final Icon PROJECT_ICON = new ImageIcon(
             ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
 
-    private final AntProjectHelper helper;
+    final AntProjectHelper helper;
     private final ReferenceHelper refHelper;
     private final PropertyEvaluator eval;
+    // @GuardedBy(this)
     private FileObject sourcesDirectory;
     private Lookup lookup;
 
@@ -117,8 +117,12 @@ public class PhpProject implements Project, AntProjectListener {
         return lookup;
     }
 
-    public PropertyEvaluator getEvaluator() {
+    PropertyEvaluator getEvaluator() {
         return eval;
+    }
+
+    void addWeakPropertyEvaluatorListener(PropertyChangeListener listener) {
+        eval.addPropertyChangeListener(WeakListeners.propertyChange(listener, eval));
     }
 
     private PropertyEvaluator createEvaluator() {
@@ -146,12 +150,11 @@ public class PhpProject implements Project, AntProjectListener {
         return getHelper().getProjectDirectory();
     }
 
-    public FileObject getSourcesDirectory() {
+    synchronized FileObject getSourcesDirectory() {
         if (sourcesDirectory == null) {
             sourcesDirectory = resolveSourcesDirectory();
-            assert sourcesDirectory != null : "Sources directory cannot be null";
         }
-        assert sourcesDirectory != null;
+        assert sourcesDirectory != null : "Sources directory cannot be null";
         return sourcesDirectory;
     }
 
@@ -163,64 +166,30 @@ public class PhpProject implements Project, AntProjectListener {
             return sourceObjects[0];
         }
         // #144371 - source folder probably deleted => so:
+        // #145477 (project sharability):
         //  1. try to restore it - if it fails, then
-        //  2. set it to the project directory (and save it)
+        //  2. set it to the project directory in *PRIVATE* properties (and save it)
+        //      => warn user about impossibility of creating src dir and *remove it in project closed hook*!!!
         String projectName = getName();
         File srcDir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(PhpProjectProperties.SRC_DIR))));
         if (srcDir.mkdirs()) {
             // original sources restored
-            informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderRestored", srcDir.getAbsolutePath()));
+            informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderRestored", srcDir.getAbsolutePath()), NotifyDescriptor.INFORMATION_MESSAGE);
             return FileUtil.toFileObject(srcDir);
         }
-        // save new sources directory
-        setSourcesToProjectDirectory();
-        informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderSetToProjectDirectory", srcDir.getAbsolutePath()));
+        // temporary set sources to project directory, do not store it anywhere
+        informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderTemporaryToProjectDirectory", srcDir.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
         return helper.getProjectDirectory();
     }
 
-    private void informUser(String title, String message) {
+    private void informUser(String title, String message, int type) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor(
                 message,
                 title,
                 NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.INFORMATION_MESSAGE,
+                type,
                 new Object[] {NotifyDescriptor.OK_OPTION},
                 NotifyDescriptor.OK_OPTION));
-    }
-
-    private void setSourcesToProjectDirectory() {
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws IOException {
-                    EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    projectProperties.setProperty(PhpProjectProperties.SRC_DIR, "."); // NOI18N
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                    return null;
-                }
-            });
-            ProjectManager.getDefault().saveProject(this);
-        } catch (MutexException e) {
-            Exceptions.printStackTrace((IOException) e.getException());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public FileObject getWebRootDirectory() {
-        String webRootPath = getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT);
-        FileObject webRoot = getSourcesDirectory();
-        if (webRootPath != null && webRootPath.trim().length() > 0 && !webRootPath.equals(".")) {//NOI18N
-            webRoot = sourcesDirectory.getFileObject(webRootPath);
-        }
-        return webRoot;
-    }
-
-    public PhpInterpreter getPhpInterpreter() {
-        String interpreter = getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
-        if (interpreter != null && interpreter.length() > 0) {
-            return new PhpInterpreter(interpreter);
-        }
-        return new PhpInterpreter(PhpOptions.getInstance().getPhpInterpreter());
     }
 
     public void configurationXmlChanged(AntProjectEvent event) {
@@ -364,6 +333,9 @@ public class PhpProject implements Project, AntProjectListener {
 
     private final class PhpOpenedHook extends ProjectOpenedHook {
         protected void projectOpened() {
+            // #139159 - we need to hold sources FO to prevent gc
+            getSourcesDirectory();
+
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
@@ -372,9 +344,6 @@ public class PhpProject implements Project, AntProjectListener {
             if (copySupport != null) {
                 copySupport.projectOpened(PhpProject.this);
             }
-
-            // #139159 - we need to hold sources FO to prevent gc
-            getSourcesDirectory();
         }
 
         protected void projectClosed() {
@@ -386,6 +355,12 @@ public class PhpProject implements Project, AntProjectListener {
             if (copySupport != null) {
                 copySupport.projectClosed(PhpProject.this);
             }
+
+            // clear reference so the next time the project is opened we can check it again
+            synchronized (PhpProject.this) {
+                sourcesDirectory = null;
+            }
+
             try {
                 ProjectManager.getDefault().saveProject(PhpProject.this);
             } catch (IOException e) {

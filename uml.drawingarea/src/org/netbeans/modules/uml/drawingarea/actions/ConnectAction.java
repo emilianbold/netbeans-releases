@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
+import java.util.List;
 import org.netbeans.api.visual.action.ConnectDecorator;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.ConnectorState;
@@ -51,6 +52,10 @@ import org.netbeans.api.visual.widget.Widget;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.util.Util;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  * Override at least isTargetWidget and createConnection methods. isSourceWidget is always called before isTargetWidget.
@@ -153,6 +158,45 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         return move (widget, event.getPoint ()) ? State.createLocked (widget, this) : State.REJECTED;
     }
 
+    private void createConnectionViaKeyboard(Widget widget)
+    {
+        if (widget.getScene() instanceof DesignerScene)
+        {
+            DesignerScene scene = (DesignerScene) widget.getScene();
+            List<IPresentationElement> selectedObjects = scene.getOrderedSelection();
+            if (selectedObjects.size() >= 2)
+            {
+                // When a new relationship is created it will be selected.
+                // If we keep using the selected objects set a concurrent
+                // modification exeception will occur.  So, store the selected
+                // objects in an array so the list does not change while we
+                // are processing.
+                Object[] selectedArray = selectedObjects.toArray();
+                Widget source = null;
+                for (Object curSelected : selectedArray)
+                {
+                    Widget curWidget = scene.findWidget(curSelected);
+                    if (source == null)
+                    {
+                        source = curWidget;
+                    }
+                    else
+                    {
+                        provider.createConnection(source, curWidget);
+                        // fixed iz #146256
+                        Widget newWidget = scene.getFocusedWidget();
+                        if (newWidget instanceof ConnectionWidget)
+                        {
+                            Object obj = scene.findObject(newWidget);
+                            scene.setFocusedObject(obj);
+                            scene.userSelectionSuggested(Collections.singleton(obj), false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private boolean move (Widget widget, Point point) {
         if (sourceWidget != widget)
             return false;
@@ -206,12 +250,18 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         return true;
     }
 
-
-    public State keyPressed (Widget widget, WidgetKeyEvent event) {
-        if (isLocked ()  &&  event.getKeyCode () == KeyEvent.VK_ESCAPE) {
+    public State keyPressed (Widget widget, WidgetKeyEvent event) 
+    {
+        if (isLocked ()  &&  event.getKeyCode () == KeyEvent.VK_ESCAPE) 
+        {
             cancel ();
             return State.CONSUMED;
         }
+        else if(Util.isPaletteExecute(event) == true)
+        {
+            createConnectionViaKeyboard(widget);
+        }
+        
         return super.keyPressed (widget, event);
     }
 

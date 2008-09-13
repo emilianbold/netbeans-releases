@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -70,7 +70,6 @@ public class UnitTable extends JTable {
     private UnitCategoryTableModel model = null;
     private static final int DARKER_COLOR_COMPONENT = 10;
     private TableCellRenderer enableRenderer = null;
-    private int rowHeight = -1;
     
     /** Creates a new instance of UpdateTable */
     public UnitTable (TableModel model) {
@@ -110,7 +109,6 @@ public class UnitTable extends JTable {
         int rowIndex = rowAtPoint (p);
         int colIndex = columnAtPoint (p);
         int realColumnIndex = convertColumnIndexToModel (colIndex);
-        UnitCategoryTableModel model = (UnitCategoryTableModel)getModel ();
         tip = model.getToolTipText (rowIndex, realColumnIndex);
         return tip != null ? tip : super.getToolTipText (e);
     }
@@ -118,14 +116,11 @@ public class UnitTable extends JTable {
     void resetEnableRenderer () {
         if (enableRenderer != null) {
             setEnableRenderer (enableRenderer);
-            TableCellRenderer defaultRenderer = getDefaultRenderer(String.class);
-            
         }
     }
     
     void setEnableRenderer (TableCellRenderer renderer) {
         enableRenderer = renderer;
-        TableColumnModel columnModel = getColumnModel();
         columnModel.getColumn(3).setCellRenderer(renderer);
     }
     

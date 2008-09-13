@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Loaders">
-        <folder name="content">
-            <folder name="unknown">
-              <folder name="Factories">
-                <file name="org-netbeans-modules-gsf-GsfDataLoader.instance">
-                    <attr name="position" intvalue="89999"/>
-                </file>
-              </folder>
-            </folder>
-        </folder>
-    </folder>
-    
     <folder name="TaskList">
         <folder name="Scanners">
             <file name="GsfTaskProvider.instance">

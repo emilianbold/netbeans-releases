@@ -43,6 +43,7 @@
 package org.netbeans.performance.languages.actions;
 
 
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -50,6 +51,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.SaveAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 
@@ -85,12 +87,14 @@ public class SaveModifiedScriptingFiles extends org.netbeans.modules.performance
         docName = "ruby20kb.rb";
         doMeasurement();
     }
+
     public void test_SavePHP_File() {
         testProject = Projects.PHP_PROJECT;
         pathName = "Source Files"+"|";
         docName = "php20kb.php";
-        doMeasurement();        
+        doMeasurement();
     }
+
     public void test_SaveRHTML_File() {
         testProject = Projects.RAILS_PROJECT;
         pathName = "Views"+"|";
@@ -149,6 +153,7 @@ public class SaveModifiedScriptingFiles extends org.netbeans.modules.performance
     
     @Override
     public void initialize(){
+        closeAllModal();
         EditorOperator.closeDiscardAll();
         String path = pathName+docName;
         fileToBeOpened = new Node(getProjectNode(testProject),path);   
@@ -184,7 +189,12 @@ public class SaveModifiedScriptingFiles extends org.netbeans.modules.performance
         EditorOperator.closeDiscardAll();
     }    
     
-   
-
-    
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(SaveModifiedScriptingFiles.class)
+            .enableModules(".*")
+            .clusters(".*")
+            .reuseUserDir(true)
+        );    
+    }
 }

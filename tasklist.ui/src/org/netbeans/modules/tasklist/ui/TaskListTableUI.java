@@ -46,6 +46,8 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
+import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTableUI;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -60,6 +62,16 @@ class TaskListTableUI extends BasicTableUI {
     
     /** Creates a new instance of TaskListTableUI */
     public TaskListTableUI() {
+        //avoid NPE on Nimbus l&f
+        if( null == UIManager.getColor("Table.selectionBackground") ) {
+            UIManager.put("Table.selectionBackground", new JTable().getSelectionBackground());
+        }
+        if( null == UIManager.getColor("Table.selectionForeground") ) {
+            UIManager.put("Table.selectionForeground", new JTable().getSelectionForeground());
+        }
+        if( null == UIManager.getColor("Table.gridColor") ) {
+            UIManager.put("Table.gridColor", new JTable().getGridColor());
+        }
     }
 
     /** Paint a representation of the <code>table</code> instance

@@ -43,6 +43,7 @@
 package org.netbeans.modules.palette;
 
 import java.awt.datatransfer.Transferable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
@@ -93,22 +94,30 @@ public final class RootNode extends FilterNode {
     
     // --------
 
+    @Override
     public NewType[] getNewTypes() {
         NewType[] res = super.getNewTypes();
-        if( null == res || res.length == 0 )
-            res = new NewType[] { new NewCategory() };
+        if( null == res || res.length == 0 ) {
+            DataFolder paletteFolder = (DataFolder)getCookie( DataFolder.class );
+            if( null != paletteFolder )
+                res = new NewType[] { new NewCategory() };
+        }
         return res;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (actions == null) {
-            actions = new Action[] {
-                new Utils.NewCategoryAction( this ),
-                null,
-                new Utils.SortCategoriesAction( this ),
-                null,
-                new Utils.RefreshPaletteAction()
-            };
+            List<Action> actionList = new ArrayList<Action>(5);
+            Action a = new Utils.NewCategoryAction( this );
+            if( a.isEnabled() ) {
+                actionList.add( a );
+                actionList.add( null );
+            }
+            actionList.add( new Utils.SortCategoriesAction( this ) );
+            actionList.add( null );
+            actionList.add( new Utils.RefreshPaletteAction() );
+            actions = actionList.toArray( new Action[actionList.size()] );
         }
         PaletteActions customActions = (PaletteActions)getLookup().lookup( PaletteActions.class );
         if( null != customActions ) {
@@ -117,10 +126,12 @@ public final class RootNode extends FilterNode {
         return actions;
     }
 
+    @Override
     public Node.PropertySet[] getPropertySets() {
         return NO_PROPERTIES;
     }
 
+    @Override
     public PasteType getDropType(Transferable t, int action, int index) {
         //no drop is accepted in palette's root node
         return null;
@@ -156,14 +167,17 @@ public final class RootNode extends FilterNode {
         }
     }
 
+    @Override
     public boolean canCut() {
         return false;
     }
 
+    @Override
     public boolean canDestroy() {
         return false;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return Utils.getHelpCtx( this, super.getHelpCtx() );
     }
@@ -183,10 +197,12 @@ public final class RootNode extends FilterNode {
             filter = (PaletteFilter)lkp.lookup( PaletteFilter.class );
         }
 
+        @Override
         protected Node copyNode(Node node) {
             return new CategoryNode( node, lkp );
         }
         
+        @Override
         protected Node[] createNodes(Node key) {
             if( null == filter || filter.isValidCategory( key.getLookup() ) ) {
                 return new Node[] { copyNode(key) };
@@ -212,10 +228,12 @@ public final class RootNode extends FilterNode {
      */
     final class NewCategory extends NewType {
 
+        @Override
         public String getName() {
             return Utils.getBundleString("CTL_NewCategory"); // NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(NewCategory.class);
         }

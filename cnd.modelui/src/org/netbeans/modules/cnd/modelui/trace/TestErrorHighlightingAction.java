@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Action;
+import javax.swing.text.Document;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -286,6 +287,10 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
         public boolean isCancelled() {
             return cancelled.get();
+        }
+
+        public Document getDocument() {
+            return null;
         }
     }
 

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.web.client.tools.javascript.debugger.impl;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoint;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
@@ -47,7 +49,8 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocati
  * @author jdeva
  */
 public class JSBreakpointImpl implements JSBreakpoint {
-    private String id, function, exception;
+    private String function, exception;
+    private Set<String> ids;
     private int hitValue;
     private JSURILocation jsURILocation;
     private Boolean enabled;
@@ -61,7 +64,8 @@ public class JSBreakpointImpl implements JSBreakpoint {
 
     public JSBreakpointImpl(String uri, int lineNumber, String id){
         this(uri, lineNumber, -1);
-        this.id = id;
+        this.ids = new LinkedHashSet<String>();
+        this.ids.add(id);
     }
 
     public JSBreakpointImpl(String uri, int lineNumber, int columnNumber ){
@@ -72,12 +76,31 @@ public class JSBreakpointImpl implements JSBreakpoint {
         this.jsURILocation = jsURILocation;
     }
 
-    public String getId() {
-        return id;
+    public synchronized String getId() {
+        if (ids == null || ids.isEmpty()) {
+            return null;
+        } else {
+            return ids.iterator().next();
+        }
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public synchronized Set<String> getIds() {
+        if (ids == null) {
+            ids = new LinkedHashSet<String>();
+        }
+        return ids;
+    }
+    
+    public synchronized void addId(String id) {
+        if (ids == null) {
+            ids = new LinkedHashSet<String>();
+        }
+        ids.add(id);
+    }
+    
+    public synchronized void setId(String id) {
+        this.ids = new LinkedHashSet<String>();
+        this.ids.add(id);
     }
 
     public Boolean isEnabled() {

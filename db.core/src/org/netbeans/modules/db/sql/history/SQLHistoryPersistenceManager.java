@@ -451,7 +451,7 @@ public class SQLHistoryPersistenceManager {
         private static final String ATTR_DATE_PROPERTY_VALUE = "date"; // NOI18N
         private final String sqlHistoryFileName;
         private static String url;
-        private static String sql;
+        private static StringBuilder sql;
         private static Date date;
         boolean matchingUrl = false;
         private  List<SQLHistory> xmlSqlHistoryList = new ArrayList<SQLHistory>();
@@ -482,7 +482,7 @@ public class SQLHistoryPersistenceManager {
         public void endElement(String uri, String localName, String qName) {
             if (ELEMENT_SQL.equals(qName)) {
                 if (url != null && sql != null && date != null) {
-                    addHistory(url, sql, date);
+                    addHistory(url, sql.toString(), date);
                     reset();
                 }
             }
@@ -490,8 +490,9 @@ public class SQLHistoryPersistenceManager {
 
         private static void reset() {
             // reset data
-            url = sql = null;
+            url = null;
             date = null;
+            sql = null;
         }
         
         private void addHistory(String url, String sql, Date date) {
@@ -513,9 +514,10 @@ public class SQLHistoryPersistenceManager {
             if (isSql) {
                 String parsedValue = new String(buf, offset, length);
                 if (sql == null) {
-                    sql = parsedValue;
+                    sql = new StringBuilder();
+                    sql.append(parsedValue);
                 } else {
-                    sql += parsedValue;
+                    sql.append(parsedValue);
                 }
             }
         }

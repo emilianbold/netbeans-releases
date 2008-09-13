@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -139,7 +140,20 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         FileObject file = info.getFileObject();
         String simpleName = ident.text().toString();
         Pair<List<String>, List<String>> candidates = getCandidateFQNs(info, file, simpleName, data);
-        
+
+        //workaround for #118714 -- neverending import
+        List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
+        for (ImportTree it : imports) {
+            String toString = it.getQualifiedIdentifier().toString();
+
+            if (candidates != null) {
+                List<String> a = candidates.getA();
+                if (a != null && a.contains(toString)) {
+                    return Collections.<Fix>emptyList();
+                }
+            }
+        }
+
         if (isCancelled() || candidates == null) {
             ErrorHintsProvider.LOG.log(Level.FINE, "ImportClassEnabler.cancelled."); //NOI18N
             

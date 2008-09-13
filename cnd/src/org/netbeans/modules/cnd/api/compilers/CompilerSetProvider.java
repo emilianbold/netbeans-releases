@@ -56,5 +56,7 @@ public interface CompilerSetProvider {
     
     public String getNextCompilerSetData();
 
+    public String[] getCompilerSetData(String hkey, String path);
+
     public RequestProcessor.Task loadCompilerSetData(List<CompilerSet> sets);
 }

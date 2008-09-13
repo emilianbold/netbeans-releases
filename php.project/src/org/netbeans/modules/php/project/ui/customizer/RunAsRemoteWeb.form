@@ -49,7 +49,7 @@
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="urlTextField" alignment="1" pref="229" max="32767" attributes="1"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="indexFileTextField" pref="128" max="32767" attributes="1"/>
+                              <Component id="indexFileTextField" pref="132" max="32767" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="indexFileBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -57,7 +57,7 @@
                           <Component id="urlHintLabel" alignment="1" max="32767" attributes="1"/>
                           <Component id="uploadFilesHintLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="remoteConnectionComboBox" pref="128" max="32767" attributes="0"/>
+                              <Component id="remoteConnectionComboBox" pref="132" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="manageRemoteConnectionButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                           </Group>

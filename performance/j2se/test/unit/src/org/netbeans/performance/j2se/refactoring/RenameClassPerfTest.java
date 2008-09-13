@@ -42,18 +42,22 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.*;
+import org.netbeans.junit.NbPerformanceTest;
+import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 
+
 /**
  *
  * @author Pavel Flaska
  */
-public class RenameClassPerfTest extends RefactoringTestCase {
+public class RenameClassPerfTest extends RefactoringTestCase implements NbPerformanceTest {
 
     private final MyHandler handler;
+    private List<PerformanceData> data = new ArrayList<PerformanceData>();
 
     public RenameClassPerfTest(String name) {
         super(name);
@@ -87,12 +91,26 @@ public class RenameClassPerfTest extends RefactoringTestCase {
         });
         long prepare = handler.get("refactoring.prepare");
         long doIt = handler.get("refactoringSession.doRefactoring");
+        NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
+        d.name = "refactoring.prepare";
+        d.value = prepare;
+        d.unit = "ms";
+        d.runOrder = 0;
+        data.add(d);
+        d.name = "refactoringSession.doRefactoring";
+        d.value = doIt;
+        d.unit = "ms";
+        d.runOrder = 0;
         System.err.println("usages collection: " + prepare);
         System.err.println("do refactoring: " + doIt);
     }
 
     @Override
     protected void tearDown() {
+    }
+
+    public PerformanceData[] getPerformanceData() {
+        return data.toArray(new PerformanceData[0]);
     }
 
     private static class MyHandler extends Handler {

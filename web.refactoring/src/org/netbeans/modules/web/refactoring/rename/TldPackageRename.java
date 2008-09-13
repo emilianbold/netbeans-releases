@@ -58,6 +58,9 @@ public class TldPackageRename extends BaseTldRename{
         RefactoringUtil.collectChildren(pkg, affectedClasses);
         List<RenameItem> result = new ArrayList<RenameItem>();
         for (FileObject affected : affectedClasses){
+            if (RefactoringUtil.isPackageInfo(affected)) {
+                continue;
+            }
             String oldName = JavaIdentifiers.getQualifiedName(affected);
             String newName = RefactoringUtil.constructNewName(affected, rename);
             result.add(new RenameItem(newName, oldName));

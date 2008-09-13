@@ -419,7 +419,10 @@ public class ExecutionService {
                     }
 
                     stopAction.setEnabled(false);
-                    rerunAction.setEnabled(true);
+
+                    if (descriptor.isRerun()) {
+                        rerunAction.setEnabled(true);
+                    }
 
                     if (stopAction.process != null) {
                         stopAction.process.destroy();
@@ -436,7 +439,7 @@ public class ExecutionService {
         try {
             InputForwarder in = new InputForwarder(process.getOutputStream(), ioput.getIn());
             OutputForwarder out =
-                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator, recognizers, sa, encoding, readWaitTime);
+                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator, recognizers, sa, encoding, readWaitTime, true);
             OutputForwarder err =
                 new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator, recognizers, sa, encoding, readWaitTime);
 

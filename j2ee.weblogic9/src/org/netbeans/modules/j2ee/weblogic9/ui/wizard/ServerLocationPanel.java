@@ -40,19 +40,31 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.filechooser.*;
+import java.util.Vector;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
+import org.openide.modules.SpecificationVersion;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-
-import org.openide.*;
-import org.openide.modules.SpecificationVersion;
-import org.openide.util.*;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * The first panel of the custom wizard used to register new server instance.
@@ -62,11 +74,6 @@ import org.openide.util.*;
  * @author Kirill Sorokin
  */
 public class ServerLocationPanel extends JPanel implements WizardDescriptor.Panel {
-    /**
-     * Since the WizardDescriptor does not expose the property name for the
-     * error message label, we have to keep it here also
-     */
-    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
 
     /**
      * The parent wizard descriptor handle
@@ -94,8 +101,8 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
 
         // set the required properties, so that the panel appear correct in
         // the steps
-        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
-        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(index)); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(index));
 
         // register the supplied listener
         addChangeListener(listener);
@@ -132,39 +139,48 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
      * @return true if the entered installation directory is valid, false
      *      otherwise
      */
+    @Override
     public boolean isValid() {
         // clear the error message
-        wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "");
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
 
         // test if IDE is run on correct JDK version
         if (!runningOnCorrectJdk()) {
-            String msg = NbBundle.getMessage(ServerLocationPanel.class, "WARN_INVALID_JDK");
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, instantiatingIterator.decorateMessage(msg));
+            String msg = NbBundle.getMessage(ServerLocationPanel.class, "WARN_INVALID_JDK");  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, instantiatingIterator.decorateMessage(msg));
         }
 
         // check for the validity of the entered installation directory
         // if it's invalid, return false
+        
+        if (locationField.getText().trim().length() < 1) {
+            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_EMPTY_SERVER_ROOT");  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, instantiatingIterator.decorateMessage(msg));
+            return false;
+        }
+        
         File serverRoot = new File(locationField.getText());
 
         if (!WLPluginProperties.isSupportedVersion(serverRoot)) {
-            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_VERSION");
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, instantiatingIterator.decorateMessage(msg));
+            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_VERSION");  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, instantiatingIterator.decorateMessage(msg));
             return false;
         }
 
         if (!WLPluginProperties.isGoodServerLocation(serverRoot)) {
-            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_ROOT");
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, instantiatingIterator.decorateMessage(msg));
+            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_ROOT");  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, instantiatingIterator.decorateMessage(msg));
             return false;
         }
 
         if (!WLPluginProperties.domainListExists(serverRoot)) {
-            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_ROOT") +
-                         " " +
-                         NbBundle.getMessage(ServerLocationPanel.class, "DOMAIN_LIST_NOT_FOUND",
+            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_ROOT") +   // NOI18N
+                         " " +    // NOI18N
+                         NbBundle.getMessage(ServerLocationPanel.class, "DOMAIN_LIST_NOT_FOUND",    // NOI18N
                             serverRoot.getPath() + File.separator + WLPluginProperties.DOMAIN_LIST
                          );
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, instantiatingIterator.decorateMessage(msg));
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, instantiatingIterator.decorateMessage(msg));
             return false;
         }
 
@@ -239,7 +255,7 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         add(locationField, gridBagConstraints);
 
         // add server installation directory field browse button
-        org.openide.awt.Mnemonics.setLocalizedText(locationBrowseButton, NbBundle.getMessage(ServerLocationPanel.class, "LBL_BROWSE_BUTTON"));
+        org.openide.awt.Mnemonics.setLocalizedText(locationBrowseButton, NbBundle.getMessage(ServerLocationPanel.class, "LBL_BROWSE_BUTTON"));  // NOI18N
         locationBrowseButton.addActionListener(new BrowseActionListener());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;

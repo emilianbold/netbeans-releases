@@ -42,9 +42,14 @@
 package org.netbeans.modules.uml.diagrams.actions;
 
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.animator.AnimatorEvent;
+import org.netbeans.api.visual.animator.AnimatorListener;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 
 public class RotateAction extends WidgetAction.Adapter
 {
@@ -52,15 +57,79 @@ public class RotateAction extends WidgetAction.Adapter
     @Override
     public State mousePressed(Widget widget, WidgetMouseEvent event) 
     {
+        rotateWidget(widget);
+        return State.CONSUMED;
+    }
+    
+    @Override
+    public State keyPressed(Widget widget, WidgetKeyEvent event)
+    {
+        State retVal = State.REJECTED;
+        
+        if(Util.isPaletteExecute(event) == true)
+        {
+            ContextPaletteManager manager = null;
+            if(widget.getScene() != null)
+            {
+                final Scene scene = widget.getScene();
+                scene.getSceneAnimator().getPreferredBoundsAnimator().addAnimatorListener(new AnimatorListener() {
+
+                    public void animatorStarted(AnimatorEvent event)
+                    {
+                        
+                    }
+
+                    public void animatorReset(AnimatorEvent event)
+                    {
+                        
+                    }
+
+                    public void animatorFinished(AnimatorEvent event)
+                    {
+                        ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
+                        if(manager != null)
+                        {
+                            manager.selectionChanged(null);
+                        }
+                    }
+
+                    public void animatorPreTick(AnimatorEvent event)
+                    {
+                        
+                    }
+
+                    public void animatorPostTick(AnimatorEvent event)
+                    {
+                        
+                    }
+                });
+                
+                manager = scene.getLookup().lookup(ContextPaletteManager.class);
+                
+                if(manager != null)
+                {
+                    manager.cancelPalette();
+                }
+            }
+            
+            rotateWidget(widget);
+            
+            retVal = State.CONSUMED;
+        }
+        
+        return retVal;
+    }
+
+    private void rotateWidget(Widget widget)
+    {
         Rectangle bounds = widget.getPreferredBounds();
-       
+
         Scene scene = widget.getScene();
         widget.setMinimumSize(null);
-        Rectangle newBounds = new Rectangle (bounds.x, bounds.y, bounds.height, bounds.width);
-        
-        scene.getSceneAnimator().animatePreferredBounds(widget, bounds);    // start bound
-        scene.getSceneAnimator().animatePreferredBounds(widget, newBounds);   // end bounds
+        Rectangle newBounds = new Rectangle(bounds.x, bounds.y, bounds.height, bounds.width);
+
+        scene.getSceneAnimator().animatePreferredBounds(widget, bounds); // start bound
+        scene.getSceneAnimator().animatePreferredBounds(widget, newBounds); // end bounds
         scene.revalidate();
-        return State.CONSUMED;
     }
 }

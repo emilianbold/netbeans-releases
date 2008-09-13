@@ -58,6 +58,10 @@ import org.openide.util.Exceptions;
  */
 public class AreVisualizersSynchronizedTest extends NbTestCase {
 
+    {
+        System.setProperty("org.openide.explorer.VisualizerNode.prefetchCount", "0");
+    }
+
     public AreVisualizersSynchronizedTest(String name) {
         super(name);
     }

@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
@@ -71,14 +72,11 @@ import org.rubyforge.debugcommons.RubyDebuggerProxy;
  */
 public final class RubyDebugger implements RubyDebuggerImplementation {
     
-    /** For unit tests. */
-    static boolean FORCE_CLASSIC;
-    
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
     private ExecutionDescriptor descriptor;
     
-    private RubySession session;
+    private RubySession rubySession;
     
     static {
         String path = "ruby/debug-commons-0.9.5/classic-debug.rb"; // NOI18N
@@ -101,10 +99,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     public Process debug() {
         Process p = null;
         try {
-            session = startDebugging(descriptor);
-            if (session != null) {
-                session.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
-                p = session.getProxy().getDebugTarged().getProcess();
+            rubySession = startDebugging(descriptor);
+            if (rubySession != null) {
+                rubySession.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
+                p = rubySession.getProxy().getDebugTarged().getProcess();
             }
         } catch (IOException e) {
             getFinishAction().run();
@@ -120,9 +118,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     public Runnable getFinishAction() {
         return new Runnable() {
             public void run() {
-                if (session != null) { // #131563
-                    session.getActionProvider().doAction(ActionsManager.ACTION_KILL);
-                    session = null;
+                if (rubySession != null) { // #131563
+                    rubySession.getActionProvider().doAction(ActionsManager.ACTION_KILL);
+                    rubySession = null;
                 }
             }
         };
@@ -161,8 +159,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             if (descriptor.getInitialArgs() != null) {
                 additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
             }
-            if (descriptor.getJRubyProps() != null) {
-                additionalOptions.addAll(Arrays.asList(descriptor.getJRubyProps()));
+            if (descriptor.getJVMArguments() != null) {
+                additionalOptions.addAll(Arrays.asList(descriptor.getJVMArguments()));
             }
             if (!additionalOptions.isEmpty()) {
                 debugDesc.setAdditionalOptions(additionalOptions);
@@ -187,7 +185,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 15); // NOI18N
         Util.finer("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
-        if (!platform.hasFastDebuggerInstalled() || FORCE_CLASSIC) {
+        if (!platform.hasFastDebuggerInstalled()) {
             Util.LOGGER.fine("Running classic(slow) debugger...");
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
@@ -264,10 +262,14 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         DebuggerInfo di = DebuggerInfo.create(
                 "RubyDebuggerInfo", new Object[] { sp, rubySession }); // NOI18N
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
-        DebuggerEngine[] es = dm.startDebugging(di);
+        DebuggerEngine[] de = dm.startDebugging(di);
+        assert de.length == 1 : "one debugger engine";
+        Session session = de[0].lookupFirst(null, Session.class);
+        assert session != null : "non-null Session in the lookup";
+        rubySession.setSession(session);
         
         RubyDebuggerActionProvider provider =
-                es[0].lookupFirst(null, RubyDebuggerActionProvider.class);
+                de[0].lookupFirst(null, RubyDebuggerActionProvider.class);
         assert provider != null;
         rubySession.setActionProvider(provider);
         proxy.addRubyDebugEventListener(provider);
