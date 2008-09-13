@@ -40,9 +40,6 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JButton;
@@ -119,46 +116,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         separator = new JSeparator();
         projectFolderPanel = new JPanel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return projectNameTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return projectNameTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return encodingComboBox;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  projectNameTextField){
-                    return localServerComboBox;
-                }
-                if(aComponent ==  localServerComboBox){
-                    return localServerButton;
-                }
-                if(aComponent ==  localServerButton){
-                    return encodingComboBox;
-                }
-                return projectNameTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  localServerComboBox){
-                    return projectNameTextField;
-                }
-                if(aComponent ==  localServerButton){
-                    return localServerComboBox;
-                }
-                if(aComponent ==  encodingComboBox){
-                    return localServerButton;
-                }
-                return encodingComboBox;//end getComponentBefore
-
-            }}
-        
-        );
+        setFocusTraversalPolicy(null);
 
         projectNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
         projectNameLabel.setLabelFor(projectNameTextField);
@@ -216,7 +174,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(localServerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(localServerButton)
-                    .add(sourcesLabel, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE))
+                    .add(sourcesLabel))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(localServerInfoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)

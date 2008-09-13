@@ -75,7 +75,6 @@ public class APTStdCFilter extends APTBaseLanguageFilter {
         filter("const_cast", APTTokenTypes.LITERAL_const_cast); // NOI18N
         filter("volatile", APTTokenTypes.LITERAL_volatile); // NOI18N
         filter("char", APTTokenTypes.LITERAL_char); // NOI18N
-        filter("wchar_t", APTTokenTypes.LITERAL_wchar_t); // NOI18N
         filter("bool", APTTokenTypes.LITERAL_bool); // NOI18N
         filter("short", APTTokenTypes.LITERAL_short); // NOI18N
         filter("int", APTTokenTypes.LITERAL_int); // NOI18N

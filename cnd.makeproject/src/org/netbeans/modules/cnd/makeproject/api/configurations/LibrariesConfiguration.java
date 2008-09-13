@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.List;
 import java.util.ArrayList;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 public class LibrariesConfiguration extends VectorConfiguration {
     public LibrariesConfiguration() {
@@ -58,6 +59,7 @@ public class LibrariesConfiguration extends VectorConfiguration {
 	
 	LibraryItem[] items = getLibraryItemsAsArray();
 	for (int i = 0; i < items.length; i++) {
+//	    options.append(IpeUtils.escapeOddCharacters(items[i].getOption(conf)));
 	    options.append(items[i].getOption(conf));
             options.append(" "); // NOI18N
 	}

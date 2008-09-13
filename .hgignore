@@ -19,7 +19,7 @@ derby\.log
 ^\.project$
 ^\.externalToolBuilders/.*$
 ^hs_err_pid[0-9]*\.log
-^[^/]+/external/[^/]+\.(zip|jar|gz|bz2|gem|dll)$
+^[^/]+/external/[^/]+\.(zip|jar|gz|bz2|gem|dll|xpi)$
 ^o.apache.tools.ant.module/external/lib$
 ^apisupport.project/src/org/netbeans/modules/apisupport/project/resources/sample-build-impl\.xml$
 ^apisupport.project/src/org/netbeans/modules/apisupport/project/resources/sample-build\.xml$
@@ -192,6 +192,7 @@ derby\.log
 ^j2ee.sun.dd/src/org/netbeans/modules/j2ee/sun/dd/impl/verifier$
 ^j2ee.sun.dd/src/org/netbeans/modules/j2ee/sun/dd/impl/serverresources/model$
 ^j2ee.weblogic9/src/org/netbeans/modules/j2ee/weblogic9/config/gen$
+^gsf.api/anttask/gsfanttask\.jar$
 ^testtools/.*\.nbm$
 ^testtools/testtools-bundle\.zip$
 ^testtools/javahelp/org/netbeans/modules/usersguide$

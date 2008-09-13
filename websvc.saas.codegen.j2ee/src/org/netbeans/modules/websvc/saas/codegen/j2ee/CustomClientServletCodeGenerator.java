@@ -118,8 +118,8 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
         methodBody += indent2 + REST_RESPONSE + " "+resultVarName+" = " + getBean().getSaasServiceName() +
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += Util.createPrintStatement(
-                getBean().getOutputWrapperPackageName(),
-                getBean().getOutputWrapperName(),
+                getBean().getOutputWrapperPackageNames(),
+                getBean().getOutputWrapperNames(),
                 getDropFileType(),
                 getBean().getHttpMethod(),
                 getBean().canGenerateJAXBUnmarshaller(), resultVarName, indent2);

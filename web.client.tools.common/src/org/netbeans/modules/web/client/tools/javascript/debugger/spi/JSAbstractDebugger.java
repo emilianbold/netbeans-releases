@@ -103,19 +103,24 @@ public abstract class JSAbstractDebugger implements JSDebugger {
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
-    public final void startDebugging() {
+    public final boolean startDebugging() {
         if (debuggerState.getState() != JSDebuggerState.State.NOT_CONNECTED) {
             throw new IllegalStateException(/* TODO */);
         }
 
-        startDebuggingImpl();
+        return startDebuggingImpl();
     }
 
+    public final void cancelStartDebugging() {    
+        cancelStartDebuggingImpl();
+    }
+    
     protected final long getSequenceId() {
         return sequenceId;
     }
 
-    protected abstract void startDebuggingImpl();
+    protected abstract boolean startDebuggingImpl();
+    protected abstract void cancelStartDebuggingImpl();
 
     public URI getURI() {
         return uri;

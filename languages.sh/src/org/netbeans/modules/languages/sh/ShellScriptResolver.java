@@ -39,7 +39,9 @@ import org.openide.filesystems.MIMEResolver;
 public class ShellScriptResolver extends MIMEResolver {
 
     /** Default constructor for lookup. */
-    public ShellScriptResolver() {}
+    public ShellScriptResolver() {
+        super("text/sh");  //NOI18N
+    }
 
     public String findMIMEType(FileObject fo) {
         if (fo.hasExt("sh")) {  //NOI18N
@@ -62,7 +64,7 @@ public class ShellScriptResolver extends MIMEResolver {
         }
         return null;
     }
-    
+
     /** Checks whether byte array starts with given string.
      * @return true if byte array starts with given prefix, false otherwise
      */

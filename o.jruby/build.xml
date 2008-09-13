@@ -93,6 +93,7 @@
                 <include name="jna-posix*.jar"/>
                 <include name="joda*.jar"/>
                 <include name="jline*.jar"/>
+                <include name="dynalang*.jar"/>
             </fileset>
         </copy>
     </target>

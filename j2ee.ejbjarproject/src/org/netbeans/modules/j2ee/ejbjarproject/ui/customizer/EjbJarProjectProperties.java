@@ -111,7 +111,7 @@ import org.openide.util.Exceptions;
  * @author Chris Webster
  * @author Andrei Badea
  */
-public class EjbJarProjectProperties {
+final public class EjbJarProjectProperties {
     
     // Special properties of the project
     public static final String EJB_PROJECT_NAME = "j2ee.ejbjarproject.name"; // NOI18N
@@ -263,7 +263,7 @@ public class EjbJarProjectProperties {
     }
 
     /** Creates a new instance of EjbJarProjectProperties and initializes them */
-    public EjbJarProjectProperties(EjbJarProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
+    EjbJarProjectProperties(EjbJarProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
         this.project = project;
         this.updateHelper = updateHelper;
         this.evaluator = evaluator;
@@ -757,16 +757,14 @@ public class EjbJarProjectProperties {
         }
     }
 
-    public static String getProperty(final String property, final AntProjectHelper helper, final String path) {
-        EditableProperties props = helper.getProperties(path);
-        return props.getProperty(property);
-    }
-
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {
         Set<File> roots = new HashSet<File>();
         for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
             for (Object row : model.getDataVector()) {
-                roots.add((File) ((Vector) row).elementAt(0));
+                File d = (File) ((Vector) row).elementAt(0);
+                if (d.isDirectory()) {
+                    roots.add(d);
+                }
             }
         }
         v.setRoots(roots.toArray(new File[roots.size()]));

@@ -80,11 +80,17 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.fine("beforeDelete " + file);
         if (file == null) return false;
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
-        
+
+        // we don't care about ignored files
+        // IMPORTANT: false means mind checking the sharability as this might cause deadlock situations
+        if(HgUtils.isIgnored(file, false)) return false; // XXX what about other events?
         return true;
     }
 
     public void doDelete(File file) throws IOException {
+        // XXX runnig hg rm for each particular file when removing a whole firectory might no be neccessery:
+        //     just delete it via file.delete and call, group the files in afterDelete and schedule a delete
+        //     fo the parent or for a bunch of files at once. 
         Mercurial.LOG.fine("doDelete " + file);
         if (file == null) return;
         Mercurial hg = Mercurial.getInstance();
@@ -217,7 +223,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.fine("beforeCreate " + file + " " + isDirectory);
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
-            FileInformation info = cache.getCachedStatus(file, false);
+            FileInformation info = cache.getCachedStatus(file);
             if (info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 Mercurial.LOG.log(Level.FINE, "beforeCreate(): LocallyDeleted: {0}", file); // NOI18N
                 Mercurial hg = Mercurial.getInstance();

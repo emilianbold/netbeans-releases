@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.groovy.editor.lexer;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -81,6 +82,13 @@ public class LexUtilities {
      *
      */
     private static final Set<TokenId> INDENT_WORDS = new HashSet<TokenId>();
+
+    private static final List<GroovyTokenId> WHITESPACES_AND_COMMENTS = Arrays.asList(
+            GroovyTokenId.WHITESPACE,
+            GroovyTokenId.NLS,
+            GroovyTokenId.EOL,
+            GroovyTokenId.LINE_COMMENT,
+            GroovyTokenId.BLOCK_COMMENT);
 
     static {
         END_PAIRS.add(GroovyTokenId.LBRACE);
@@ -1035,4 +1043,16 @@ public class LexUtilities {
         return lexOffset;
     }
     
+    public static Token<?extends GroovyTokenId> findPreviousNonWsNonComment(TokenSequence<?extends GroovyTokenId> ts) {
+        return findPrevious(ts, WHITESPACES_AND_COMMENTS);
+    }
+    
+    private static Token<?extends GroovyTokenId> findPrevious(TokenSequence<?extends GroovyTokenId> ts, List<GroovyTokenId> ignores) {
+        ts.movePrevious();
+        if (ignores.contains(ts.token().id())) {
+            while (ts.movePrevious() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+
 }

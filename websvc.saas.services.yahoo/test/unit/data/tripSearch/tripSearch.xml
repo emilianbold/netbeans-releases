@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResultSet firstResultPosition="0" totalResultsAvailable="873" totalResultsReturned="2" xmlns="urn:yahoo:travel" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:yahoo:travel http://api.travel.yahoo.com/TripService/V1.1/TripSearchResponse.xsd">
+    <Result id="998970">
+        <Geocode>
+            <Latitude>36.17183</Latitude>
+            <Longitude>-115.139764</Longitude>
+        </Geocode>
+        <Image>
+            <Url>http://farm4.static.flickr.com/3139/2818144483_f6b368e8cc_s.jpg</Url>
+            <Height>75</Height>
+            <Width>75</Width>
+        </Image>
+        <Summary>The Luxor was pretty good. Our air conditioner didn&apos;t work quite right the whole time we were there but it was ok cause we weren&apos;t there much. We had a pretty good view even though we weren&apos;t facing the strip. The MORE buffet was not worth $20 definitely skip that one. We were pretty lucky at the casino. We ate breakfast at The pyramid cafe and it was really good and you get a lot of food. The King Tut&apos;s Tomb was closed. The shark Reef was fun but didn&apos;t last long enough. It&apos;s pretty cool that they let you touch a sting ray. Fremont Street was fun but definitely wait until it&apos;s almost dark to ...</Summary>
+        <Description />
+        <Url>http://travel.yahoo.com/trip-journal-998970-vegas_baby</Url>
+        <Title>Vegas Baby</Title>
+        <Duration>5</Duration>
+        <Destinations>Las Vegas</Destinations>
+        <CreateDate>Thu, 01 Mar 2007 17:32:27 GMT</CreateDate>
+        <Author>Jamie</Author>
+        <id>998970</id>
+        <Attribution>
+Portions may be copyright (c) NorthStar Travel Media LLC, Travelocity, wCities, Inc., WorldRes
+        </Attribution>
+    </Result>
+    <Result id="958702">
+        <Geocode>
+            <Latitude>29.95369</Latitude>
+            <Longitude>-90.077714</Longitude>
+        </Geocode>
+        <Image>
+            <Url>http://farm1.static.flickr.com/161/370011101_6675498a96_s.jpg</Url>
+            <Height>75</Height>
+            <Width>75</Width>
+        </Image>
+        <Summary>Visit Viator.com&apos;s New Orleans Suggested Itineraries Page Nestled between the lazy curves of the Mississippi and the expansive shores of Lake Pontchartrain lies the City that Care Forgot: New Orleans. From the local&apos;s laconic drawl to the pre-Lenten bacchanalia of &lt;B&gt;Mardi&lt;/B&gt; &lt;B&gt;Gras&lt;/B&gt;, the Crescent City has something for any traveler, at any speed. Although the rebuilding continues, the Big Easy&apos;s famous districts are all open for business, along with the watering holes, jazz joints, ghosts and gumbo. For tips on how to get the most out of this capital of all things gastronomic, syncopated and laid-back...</Summary>
+        <Description>Three days of suggestions for a first time visitor to New Orleans</Description>
+        <Url>http://travel.yahoo.com/trip-journal-958702-new_orleans_suggested_itineraries_from_viator_com</Url>
+        <Title>New Orleans Suggested Itineraries from Viator.com</Title>
+        <Duration>0</Duration>
+        <Destinations>New Orleans</Destinations>
+        <CreateDate>Fri, 26 Jan 2007 17:11:10 GMT</CreateDate>
+        <Author>viatortripplans</Author>
+        <id>958702</id>
+        <Attribution>
+Portions may be copyright (c) NorthStar Travel Media LLC, Travelocity, wCities, Inc., WorldRes
+        </Attribution>
+    </Result>
+    <totalResultsAvailable>873</totalResultsAvailable>
+    <firstResultPosition>0</firstResultPosition>
+    <totalResultsReturned>2</totalResultsReturned>
+</ResultSet><!-- ws04.search.re2.yahoo.com compressed/chunked Fri Sep  5 13:47:40 PDT 2008 -->

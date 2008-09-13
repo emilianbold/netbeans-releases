@@ -47,7 +47,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -86,10 +85,6 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         // calculate nb project location
         File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
-        if (ProjectFactorySupport.areSourceRootsOwned(model, nbProjectDir, importProblems)) {
-            return null;
-        }
-        
         // create basic NB project
         String buildScript = null;
         if (new File(nbProjectDir, "build.xml").exists()) { //NOI18N
@@ -125,11 +120,6 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         ProjectFactorySupport.setupSourceExcludes(helper, model, importProblems);
 
         setupCompilerProperties(helper, model);
-        
-        // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
-        if (!nbProjectDir.equals(model.getEclipseProjectFolder())) {
-            FileOwnerQuery.markExternalOwner(model.getEclipseProjectFolder().toURI(), nbProject, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-        }
         
         // update project classpath
         ProjectFactorySupport.updateProjectClassPath(helper, nbProject.getReferenceHelper(), model, importProblems);

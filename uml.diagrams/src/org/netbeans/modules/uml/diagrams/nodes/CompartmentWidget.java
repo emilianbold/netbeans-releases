@@ -92,9 +92,9 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
     private ResizeStrategy RESIZE_STRATEGY;
     private ContainerWidget containerWidget;
     private IElement element;
-    private CompositeWidget compositeWidget;
+    private CompositeNodeWidget compositeWidget;
     
-    public CompartmentWidget(Scene scene, IElement element, CompositeWidget compositeWidget)
+    public CompartmentWidget(Scene scene, IElement element, CompositeNodeWidget compositeWidget)
     {
         super(scene);
         setForeground(null);
@@ -143,8 +143,8 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
 
             public Rectangle boundsSuggested(Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ResizeProvider.ControlPoint controlPoint)
             {
-                int width = Math.max(mininumBounds.width + separatorWidget.calculateClientArea().width, suggestedBounds.width + 1);
-                int height = Math.max(mininumBounds.height + separatorWidget.calculateClientArea().height + 1, suggestedBounds.height);
+                int width = Math.max(mininumBounds.width + separatorWidget.calculateClientArea().width, suggestedBounds.width );
+                int height = Math.max(mininumBounds.height + separatorWidget.calculateClientArea().height , suggestedBounds.height);
 
                 if (isHorizontalLayout())
                 {
@@ -163,7 +163,7 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
 
     private boolean isHorizontalLayout()
     {
-        return compositeWidget.isHorizontalLayout();
+        return compositeWidget.getOrientation() == SeparatorWidget.Orientation.HORIZONTAL;
     }
 
     public void updateOrientation(boolean horizontal)
@@ -172,7 +172,7 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
         {
             separatorWidget.removeFromParent();
         }
-        if (isHorizontalLayout())
+        if (horizontal)
         {
             setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
         } else
@@ -218,8 +218,8 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
             return null;
         }
     }
-
-    private Rectangle calculateMinimumBounds()
+    
+    public Rectangle calculateMinimumBounds()
     {
         Insets insets = getBorder().getInsets();
         Rectangle clientArea = new Rectangle();
@@ -296,14 +296,9 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
         setPreferredSize(null);
         setMinimumSize(null);
 
-        if (compositeWidget instanceof UMLNodeWidget)
-        {         
-            UMLNodeWidget nodeWidget = (UMLNodeWidget)compositeWidget;
-            nodeWidget.setPreferredBounds(null);
-            nodeWidget.setPreferredSize(null);
-            nodeWidget.setMinimumSize(nodeWidget.getBounds().getSize()); 
-            nodeWidget.revalidate();
-        }
+        compositeWidget.setPreferredBounds(null);
+        compositeWidget.setPreferredSize(null);
+        compositeWidget.revalidate();
     }
 
     private UMLNodeWidget getParentNodeWidget(Widget widget)
@@ -401,25 +396,17 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
 
         public void resizingFinished(Widget widget)
         {
-//            UMLNodeWidget parent = getParentNodeWidget(CompartmentWidget.this);
-//            if (parent != null)
-//            {
-//                ((UMLNodeWidget) parent).updateSizeWithOptions();
-//            }
-//            widget.revalidate();
-            if (compositeWidget instanceof UMLNodeWidget)
-            {
-                UMLNodeWidget nodeWidget = (UMLNodeWidget) compositeWidget;
-                nodeWidget.setPreferredBounds(null);
-                nodeWidget.setPreferredSize(null);
-                nodeWidget.setMinimumSize(nodeWidget.getBounds().getSize());
-                nodeWidget.revalidate();
-            }
+            compositeWidget.setPreferredBounds(null);
+            compositeWidget.setPreferredSize(null);         
+            compositeWidget.setMinimumSize(compositeWidget.getBounds().getSize());
+            compositeWidget.revalidate();
         }
+        
     };
 
     @Override
-    protected void notifyFontChanged(Font font) {
+    protected void notifyFontChanged(Font font) 
+    {
         if(font==null || nameWidget==null)return;
         nameWidget.setNameFont(font);
         revalidate();

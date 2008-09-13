@@ -412,9 +412,19 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         doc.readLock(); // Read-lock due to Token hierarchy use
         try {
             Node root = parseResult != null ? parseResult.getRootNode() : null;
-            final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+            int astOffset = AstUtilities.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
-                return CodeCompletionResult.NONE;
+                try {
+                    if (lexOffset < doc.getLength() && lexOffset > 0 && "\"\"".equals(doc.getText(lexOffset - 1, 2))) {
+                        // Completion in HTML in something like an empty attribute
+                        astOffset = 0;
+                    } else {
+                        return CodeCompletionResult.NONE;
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return CodeCompletionResult.NONE;
+                }
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
             final FileObject fileObject = info.getFileObject();

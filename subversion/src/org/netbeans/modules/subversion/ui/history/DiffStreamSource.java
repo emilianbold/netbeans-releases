@@ -189,7 +189,9 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
                             in = client.getContent(url, SvnUtils.toSvnRevision(revision), SvnUtils.toSvnRevision(revision));
                         }
                     } catch (SVNClientException e) {
-                        if(SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage())) {
+                        if(SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage())    ||
+                           SvnClientExceptionHandler.isPathNotFound(e.getMessage()))
+                        {
                             in = new ByteArrayInputStream(new byte[] {});
                         } else {
                             throw e;

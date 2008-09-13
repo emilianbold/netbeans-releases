@@ -1,4 +1,4 @@
-[b|, background, background, 141]
+[b|, background, background:, 142]
 background
 background-attachment
 background-color
@@ -28,8 +28,8 @@ border-top-style
 border-top-width
 border-width
 bottom
-End cursor position = 152
-[c|, clip, clip, 166]
+End cursor position = 154
+[c|, clip, clip:, 168]
 caption-side
 clear
 clip
@@ -41,18 +41,18 @@ cue
 cue-after
 cue-before
 cursor
-End cursor position = 171
-[font-s|, font-size, font-size, 225]
+End cursor position = 174
+[font-s|, font-size, font-size:, 228]
 font-size
 font-style
-End cursor position = 235
-[caption{co|}, color, caption{color}, 274]
+End cursor position = 239
+[caption{co|}, color, caption{color:}, 278]
 color
 content
 counter-increment
 counter-reset
-End cursor position = 288
-[caption{color:blue; p|}, position, caption{color:blue; position}, 349]
+End cursor position = 293
+[caption{color:blue; p|}, position, caption{color:blue; position:}, 354]
 padding
 padding-bottom
 padding-left
@@ -69,4 +69,4 @@ pitch
 pitch-range
 play-during
 position
-End cursor position = 378
+End cursor position = 384

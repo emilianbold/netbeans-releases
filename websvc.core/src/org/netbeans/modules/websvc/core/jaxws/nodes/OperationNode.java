@@ -43,13 +43,16 @@ package org.netbeans.modules.websvc.core.jaxws.nodes;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import javax.swing.Action;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -75,6 +78,11 @@ public class OperationNode extends AbstractNode {
         content.add(this);
         content.add(operation);
         editorDrop = new OperationEditorDrop(this);
+    }
+    
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{SystemAction.get(PropertiesAction.class)};
     }
     
     @Override

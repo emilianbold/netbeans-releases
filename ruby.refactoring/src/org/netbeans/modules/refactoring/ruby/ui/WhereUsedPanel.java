@@ -134,7 +134,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                             methodDeclaringSuperClass = method.getIn()
                         }
                         );
-                        newElement = new RubyElementCtx(method, info);
+                        newElement = new RubyElementCtx(method);
                     }
                 } else if (element.getKind() == ElementKind.CLASS || element.getKind() == ElementKind.MODULE) {
                     labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ClassUsages", element.getName()); // NOI18N

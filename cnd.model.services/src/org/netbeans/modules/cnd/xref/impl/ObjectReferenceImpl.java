@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
  * reference on object (has owner and target as passed object)
@@ -147,7 +148,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
     public CharSequence getText() {
         CsmFile file = getContainingFile();
         if (file != null) {
-            return file.getText(getStartOffset(), getEndOffset());
+            return TextCache.getString(file.getText(getStartOffset(), getEndOffset()));
         }
         return "";
     }

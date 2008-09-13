@@ -57,9 +57,9 @@ import javax.swing.text.StyledDocument;
 public class MidpCodeGenerator implements CodeGenerator {
 
     public void validateModelForCodeGeneration (DataObjectContext context, DesignDocument document) {
-        if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())) {
+//        if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())) {
 //            System.out.println ("MidpCodeGenerator.validateModelForCodeGeneration");
-        }
+//        }
     }
 
     public void updateModelFromCode (DataObjectContext context, DesignDocument document) {

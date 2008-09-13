@@ -54,12 +54,12 @@ import org.netbeans.modules.cnd.repository.util.Pair;
  * @author Nickolay Dalmatov
  * @author Vladimir Kvashin
  */
-public class UnitImpl implements Unit {
+public final class UnitImpl implements Unit {
     
     private Storage    singleFileStorage;
     private Storage    multyFileStorage;
-    private String  unitName;
-    MemoryCache cache;
+    private final String unitName;
+    private final MemoryCache cache;
     
     public UnitImpl(final String unitName) throws IOException {
        assert unitName != null;

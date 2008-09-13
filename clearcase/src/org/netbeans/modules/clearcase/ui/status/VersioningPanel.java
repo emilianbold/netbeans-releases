@@ -66,7 +66,6 @@ import org.netbeans.modules.clearcase.Clearcase;
 import org.netbeans.modules.clearcase.ClearcaseModuleConfig;
 import org.netbeans.modules.clearcase.FileInformation;
 import org.netbeans.modules.clearcase.FileStatusCache;
-import org.netbeans.modules.clearcase.util.ProgressSupport;
 import org.netbeans.modules.clearcase.ui.diff.Setup;
 import org.netbeans.modules.clearcase.ui.diff.DiffAction;
 import org.netbeans.modules.clearcase.ui.checkin.CheckinAction;
@@ -180,9 +179,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */ 
     void setContext(Context ctx) {
         context = ctx;
-        Set<File> roots = ctx.getRootFiles();
-        getProgressSupport().setRootFiles(roots.toArray(new File[roots.size()]));
-        performRefreshAction();
+        if(ctx != null) {
+            Set<File> roots = ctx.getRootFiles();
+            getProgressSupport().setRootFiles(roots.toArray(new File[roots.size()]));
+            performRefreshAction();
+        }
     }
     
     public ExplorerManager getExplorerManager () {
@@ -250,6 +251,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * @see CheckinAction 
      */  
     private void onCommitAction() {
+        if(context == null || context.getRootFiles().size() < 1) {
+            return;
+        }
         LifecycleManager.getDefault().saveAll();            
         CheckinAction.checkin(context.getVCSContext());
     }
@@ -257,7 +261,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     /**
      * Performs the "cleartool update" command on all diplayed roots.
      */ 
-    private void onUpdateAction() {      
+    private void onUpdateAction() {
+        if(context == null || context.getRootFiles().size() < 1) {
+            return;
+        }
         UpdateAction.update(context.getVCSContext());
         parentTopComponent.contentRefreshed();
     }
@@ -266,10 +273,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * Refreshes statuses of all files in the view. 
      */ 
     private void onRefreshAction() {
-        LifecycleManager.getDefault().saveAll();
-        if(context.getRootFiles().size() < 1) {
+        if(context == null || context.getRootFiles().size() < 1) {
             return;
         }        
+        LifecycleManager.getDefault().saveAll();
         refreshStatuses();
     }
 
@@ -306,7 +313,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * Shows Diff panel for all files in the view. The initial type of diff depends on the sync mode: Local, Remote, All.
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences. 
      */ 
-    private void onDiffAction() {   
+    private void onDiffAction() {
+        if(context == null || context.getRootFiles().size() < 1) {
+            return;
+        }        
         String title = parentTopComponent.getContentTitle();
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {            
             LifecycleManager.getDefault().saveAll();

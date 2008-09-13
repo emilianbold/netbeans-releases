@@ -121,6 +121,15 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         lblLearnMore.getAccessibleContext ().setAccessibleName (loc ("AN_Learn_More"));
         
         rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
+
+        //#144853: Show statistics ui only in IDE not in Platform.
+        if (System.getProperty("nb.show.statistics.ui") == null) {
+            jSeparator3.setVisible(false);
+            lUsage.setVisible(false);
+            jUsageCheck.setVisible(false);
+            lblUsageInfo.setVisible(false);
+            lblLearnMore.setVisible(false);
+        }
         
         // if system proxy setting is not detectable, disable this radio
         // button
@@ -320,7 +329,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
 
 private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBrowserButtonActionPerformed
     final WebBrowsersOptionsModel wbModel = new WebBrowsersOptionsModel();
-    WebBrowsersOptionsPanel wbPanel = new WebBrowsersOptionsPanel(wbModel);
+    WebBrowsersOptionsPanel wbPanel = new WebBrowsersOptionsPanel(wbModel, cbWebBrowser.getSelectedItem().toString());
     DialogDescriptor dialogDesc = new DialogDescriptor (wbPanel, loc("LBL_WebBrowsersPanel_Title"), true, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if( "OK".equals(e.getActionCommand()) ) {

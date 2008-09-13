@@ -79,7 +79,7 @@ DWORD WINAPI Breakpoint::handle(LPVOID param) {
         if(needToBreak && pBreakpoint->isValidHit()) {
             pScriptDebugger->changeState(STATE_BREAKPOINT, OK);
             if(pBreakpoint->isTemporary()) {
-                pScriptDebugger->getBreakpointManager()->removeBreakpoint(pBreakpoint);
+                pScriptDebugger->removeBreakpoint(pBreakpoint);
             }
         }else {
             pScriptDebugger->run();
@@ -128,16 +128,6 @@ Breakpoint *BreakpointManager::getUpdatableBreakpoint(tstring id) {
         //our internal structures
         m_pScriptDebugger->removeBreakpoint(iter->second);
         return iter->second;
-    }else {
-        //breakpoint is not set in the engine, look in the to be added list
-        list<Breakpoint *>::iterator bpIter = breakpointsToAdd.begin();
-        while(bpIter != breakpointsToAdd.end()) {
-            if((*bpIter)->getID() == id) {
-                breakpointsToAdd.remove(*bpIter);
-                return *bpIter;
-            }
-            ++bpIter;
-        }
     }
     return NULL;
 }
@@ -145,7 +135,7 @@ Breakpoint *BreakpointManager::getUpdatableBreakpoint(tstring id) {
 void BreakpointManager::removeAllBreakpoints() {
     map<tstring, Breakpoint *>::iterator idIter = idToBreakpointMap.begin();
     while(idIter != idToBreakpointMap.end()) {
-        removeBreakpoint(idIter->second);
+        m_pScriptDebugger->removeBreakpoint(idIter->second);
         ++idIter;
     }
     fileToBreakpointsMap.clear();
@@ -153,26 +143,12 @@ void BreakpointManager::removeAllBreakpoints() {
 }
 
 void BreakpointManager::processBreakpoints(tstring fileURI) {
-    list<Breakpoint *>::iterator bpIter = breakpointsToAdd.begin();
-    while(bpIter != breakpointsToAdd.end()) {
-        Breakpoint *pBreakpoint = *bpIter;
-        if(fileURI == pBreakpoint->getFileURI() && m_pScriptDebugger->setBreakpoint(pBreakpoint)) {
-            addToMaps(*bpIter);
-            bpIter = breakpointsToAdd.erase(bpIter);
-        }else {
-            ++bpIter;
-        }
-    }
-
-    bpIter = breakpointsToRemove.begin();
-    while(bpIter != breakpointsToRemove.end()) {
-        Breakpoint *pBreakpoint = *bpIter;
-        if(fileURI == pBreakpoint->getFileURI()) {
-            if(m_pScriptDebugger->setBreakpoint(pBreakpoint)) {
-                removeFromMaps(*bpIter);
-                bpIter = breakpointsToRemove.erase(bpIter);
-            }
-        }else {
+    map<tstring, list<Breakpoint *> *>::iterator iter = fileToBreakpointsMap.find(fileURI);
+    if(iter != fileToBreakpointsMap.end()) {
+        list<Breakpoint *> *pList = iter->second;
+        list<Breakpoint *>::iterator bpIter = pList->begin();
+        while(bpIter != pList->end()) {
+            m_pScriptDebugger->setBreakpoint(*bpIter);
             ++bpIter;
         }
     }
@@ -212,28 +188,18 @@ void BreakpointManager::removeFromMaps(Breakpoint *pBreakpoint) {
 }
 
 BOOL BreakpointManager::setBreakpoint(Breakpoint *pBreakpoint) {
-    if(!m_pScriptDebugger->setBreakpoint(pBreakpoint)) {
-        breakpointsToAdd.push_back(pBreakpoint);
-    }else {
-        addToMaps(pBreakpoint);
-    }
-    return TRUE;
+    BOOL result = m_pScriptDebugger->setBreakpoint(pBreakpoint);
+    addToMaps(pBreakpoint);
+    return result;
 }
 
 BOOL BreakpointManager::removeBreakpoint(tstring id) {
+    BOOL result = FALSE;
     map<tstring, Breakpoint *>::iterator iter = idToBreakpointMap.find(id);
     if(iter != idToBreakpointMap.end()) {
         Breakpoint *pBreakpoint = iter->second;
-        if(removeBreakpoint(pBreakpoint)) {
-            removeFromMaps(pBreakpoint);
-        }
+        result = m_pScriptDebugger->removeBreakpoint(pBreakpoint);
+        removeFromMaps(pBreakpoint);
     }
-    return FALSE;
-}
-
-BOOL BreakpointManager::removeBreakpoint(Breakpoint *pBreakpoint) {
-    if(!m_pScriptDebugger->removeBreakpoint(pBreakpoint)) {
-        breakpointsToRemove.push_back(pBreakpoint);
-    }
-    return TRUE;
+    return result;
 }

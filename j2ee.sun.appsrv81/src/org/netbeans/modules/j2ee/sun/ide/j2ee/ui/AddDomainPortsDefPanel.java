@@ -81,7 +81,6 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-//            targetData.setHost("localhost"); //NOI18N
             component = new CreateServerVisualPanel();
             component.addChangeListener(this);
         }

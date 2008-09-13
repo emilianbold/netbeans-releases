@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
 import org.openide.nodes.Children;
@@ -57,7 +59,10 @@ public class WsdlPortNodeChildren extends Children.Keys<WsdlSaasMethod>{
 
     @Override
     protected void addNotify() {
-        setKeys(port.getWsdlMethods());
+        List<WsdlSaasMethod> methods = port.getWsdlMethods();
+        Collections.sort(methods);
+        setKeys(methods);
+        
         super.addNotify();
     }
 

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fql_query_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <!-- Commenting this test case out. The reason is that the fields in the response
+         depends on the fql query. For example, the following query is what fetches the following result:
+         SELECT src, caption, 1+2*3/4, caption, 10*(20 + 1) 
+         FROM photo WHERE pid IN (
+         SELECT pid FROM photo_tag WHERE subject=211031) AND pid IN (SELECT pid FROM photo_tag WHERE subject=204686) AND caption
+         
+         As you can see the result elements correspond to what is being selected.
+         In other words, the result can't be described by xml schema.
+    <photo>
+        <src>http://photos-923.ak.facebook.com/ip002/v61/188/75/206412/s206412_31508923_7923.jpg</src>
+        <caption>celebrating 23 years of ari's life at the one and the oasis.</caption>
+        <anon>2.5</anon>
+        <caption>celebrating 23 years of ari's life at the one and the oasis.</caption>
+        <anon>210</anon>
+    </photo>
+    <photo>
+        <src>http://photos-447.ak.facebook.com/ip005/v40/164/17/202965/s202965_30849447_4635.jpg</src>
+        <caption>Liar's Dice...</caption>
+        <anon>2.5</anon>
+        <caption>Liar's Dice...</caption>
+        <anon>210</anon>
+    </photo>
+    <photo>
+        <src>http://photos-480.ak.facebook.com/ip005/v29/188/75/206412/s206412_30452480_140.jpg</src>
+        <caption>the crew. (RishDAWG!)</caption>
+        <anon>2.5</anon>
+        <caption>the crew. (RishDAWG!)</caption>
+        <anon>210</anon>
+    </photo>
+    <photo>
+        <src>http://photos-103.ak.facebook.com/ip001/v12/188/75/206412/s206412_30325103_6676.jpg</src>
+        <caption>group photo!!!!</caption>
+        <anon>2.5</anon>
+        <caption>group photo!!!!</caption>
+        <anon>210</anon>
+    </photo>
+    <photo>
+        <src>http://photos-399.ak.facebook.com/ip001/v10/188/75/206412/s206412_30191399_9134.jpg</src>
+        <caption>someone is particularly happy to be in this picture</caption>
+        <anon>2.5</anon>
+        <caption>someone is particularly happy to be in this picture</caption>
+        <anon>210</anon>
+    </photo>
+    <photo>
+        <src>http://photos-716.ak.facebook.com/ip007/v16/129/99/204686/s204686_30190716_7256.jpg</src>
+        <caption>One of the most extravagant.</caption>
+        <anon>2.5</anon>
+        <caption>One of the most extravagant.</caption>
+        <anon>210</anon>
+    </photo>
+    -->
+</fql_query_response>
