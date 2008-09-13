@@ -3,7 +3,9 @@ package __PACKAGE__;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -60,11 +62,18 @@ public class JsfUtil {
         return converter.getAsObject(FacesContext.getCurrentInstance(), component, theId);
     }
     
-    public static <T> Collection<T> arrayToCollection(T[] arr) {
+    public static <T> List<T> arrayToList(T[] arr) {
         if (arr == null) {
             return new ArrayList<T>();
         }
         return Arrays.asList(arr);
+    }
+
+    public static <T> Set<T> arrayToSet(T[] arr) {
+        if (arr == null) {
+            return new HashSet<T>();
+        }
+        return new HashSet(Arrays.asList(arr));
     }
     
     public static Object[] collectionToArray(Collection<?> c) {
@@ -72,6 +81,10 @@ public class JsfUtil {
             return new Object[0];
         }
         return c.toArray();
+    }
+
+    public static <T> List<T> setToList(Set<T> set) {
+        return new ArrayList<T>(set);
     }
     
     public static String getAsConvertedString(Object object, Converter converter) {

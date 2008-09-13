@@ -305,6 +305,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 Expression expr = node.getField().getName();
                 (new FieldAccessVisitor(ColoringAttributes.FIELD_SET)).scan(expr);
             }
+            super.scan(node.getDispatcher());
         }
 
         @Override
