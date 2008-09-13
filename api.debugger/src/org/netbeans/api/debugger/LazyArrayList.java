@@ -102,6 +102,7 @@ class LazyArrayList<T> extends ArrayList<T> {
                 if (o.equals(lazyEntries.get(i))) {
                     super.remove(i);
                     lazyEntries.remove(i);
+                    shiftLazyEntries(i, -1);
                     return true;
                 }
             }
@@ -171,22 +172,7 @@ class LazyArrayList<T> extends ArrayList<T> {
 
     @Override
     public void add(int index, T element) {
-        // Set<Integer> indexes = new TreeSet(lazyEntries.keySet()).descendingSet();
-        TreeSet<Integer> indexes = new TreeSet(new Comparator<Integer>() {
-            public int compare(Integer o1, Integer o2) {
-                int i1 = o1;
-                int i2 = o2;
-                if (i1 == i2) return 0;
-                if (i1 < i2) return 1;
-                else return -1;
-            }
-        });
-        indexes.addAll(lazyEntries.keySet());
-        for (Integer i : indexes) {
-            if (i >= index) {
-                lazyEntries.put((i+1), lazyEntries.remove(i));
-            }
-        }
+        shiftLazyEntries(index, 1);
         super.add(index, element);
     }
 
@@ -196,10 +182,31 @@ class LazyArrayList<T> extends ArrayList<T> {
         if (le != null) {
             T e = le.get();
             super.remove(index);
+            shiftLazyEntries(index, -1);
             return e;
         } else {
             return super.remove(index);
         }
+    }
+
+    private void shiftLazyEntries(int from, final int by) {
+        // Set<Integer> indexes = new TreeSet(lazyEntries.keySet());
+        // if (by > 0) indexes = indexes.descendingSet(); - Since JDK 6.
+        TreeSet<Integer> indexes = new TreeSet(new Comparator<Integer>() {
+            public int compare(Integer o1, Integer o2) {
+                int i1 = o1;
+                int i2 = o2;
+                return (int) (Math.signum(i2 - i1)*Math.signum(by));
+            }
+        });
+        //System.err.println("\nSHIFTING "+lazyEntries+"\nby "+by);
+        indexes.addAll(lazyEntries.keySet());
+        for (Integer i : indexes) {
+            if (i >= from) {
+                lazyEntries.put((i + by), lazyEntries.remove(i));
+            }
+        }
+        //System.err.println(" entries = "+lazyEntries+"\n");
     }
 
     @Override
