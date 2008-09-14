@@ -15,6 +15,7 @@
 			<tocitem text="Design: UML Modeling Windows" target="uml_basics_design_windows">
 				<tocitem text="Diagram Editor" target="uml_basics_diagram_windows" />
 				<tocitem text="Modeling Palette" target="uml_basics_palette" />
+				<tocitem text="Context Palette" target="uml_basics_context_palette" />
 				<tocitem text="Properties Window" target="uml_basics_properties_window" />
 				<tocitem text="Documentation Window" target="uml_basics_documentation_window" />
 				<tocitem text="Source Editor" target="uml_basics_source_editor" />
