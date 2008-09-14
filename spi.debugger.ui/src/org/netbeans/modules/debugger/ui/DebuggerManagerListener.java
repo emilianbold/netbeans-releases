@@ -41,6 +41,7 @@
 package org.netbeans.modules.debugger.ui;
 
 import java.awt.Component;
+import java.beans.DesignMode;
 import java.beans.beancontext.BeanContextChildComponentProxy;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -109,15 +110,20 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                 continue;
                             }
                             cs.add(c);
+                            boolean doOpen = (cp instanceof DesignMode) ? ((DesignMode) cp).isDesignTime() : true;
                             if (c instanceof TopComponent) {
                                 TopComponent tc = (TopComponent) c;
                                 boolean wasClosed = Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
                                         getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), false);
-                                if (!wasClosed) {
+                                boolean wasOpened = !Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
+                                        getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), true);
+                                if (doOpen && !wasClosed || !doOpen && wasOpened) {
                                     tc.open();
                                 }
                             } else {
-                                c.setVisible(true);
+                                if (doOpen) {
+                                    c.setVisible(true);
+                                }
                             }
                         }
                         setupToolbar();
