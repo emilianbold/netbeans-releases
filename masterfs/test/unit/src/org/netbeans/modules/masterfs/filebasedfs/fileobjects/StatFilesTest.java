@@ -56,9 +56,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.StatFiles;
 
 /**
- * FileLockImplTest.java
- * JUnit based test
- *
  * @author Radek Matous
  */
 public class StatFilesTest extends NbTestCase {
@@ -162,7 +159,8 @@ public class StatFilesTest extends NbTestCase {
         }
     }
     
-    //on trunk fails: expected:<5> but was:<11>    
+    //on trunk fails: expected:<5> but was:<11>
+    @RandomlyFails // frequent failures in NB-Core-Build
     public void testGetFileObject2() throws IOException {
         FileObject fobj = getFileObject(testFile);
         FileObject parent = fobj.getParent();
