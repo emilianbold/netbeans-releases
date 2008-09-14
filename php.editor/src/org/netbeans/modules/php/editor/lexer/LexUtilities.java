@@ -176,9 +176,9 @@ public class LexUtilities {
 //    }
 //    
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
+    public static TokenSequence<PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-        TokenSequence<?extends PHPTokenId> ts = th == null ? null : th.tokenSequence(PHPTokenId.language());
+        TokenSequence<PHPTokenId> ts = th == null ? null : th.tokenSequence(PHPTokenId.language());
 
         if (ts == null) {
             // Possibly an embedding scenario such as an RHTML file

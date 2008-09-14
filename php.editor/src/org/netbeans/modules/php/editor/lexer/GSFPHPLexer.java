@@ -58,13 +58,13 @@ public class GSFPHPLexer implements Lexer<PHPTokenId> {
     private final PHP5ColoringLexer scanner;
     private TokenFactory<PHPTokenId> tokenFactory;    
     
-    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info) {
-        scanner = new PHP5ColoringLexer(info, false);
+    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info, boolean inPHP) {
+        scanner = new PHP5ColoringLexer(info, false, inPHP);
         tokenFactory = info.tokenFactory();
     }
     
-    public static synchronized GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info) {
-        return new GSFPHPLexer(info);
+    public static synchronized GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info, boolean inPHP) {
+        return new GSFPHPLexer(info, inPHP);
     }
     
     public Token<PHPTokenId> nextToken() {
