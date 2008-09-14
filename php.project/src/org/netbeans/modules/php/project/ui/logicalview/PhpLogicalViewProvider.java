@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.project.ui.logicalview;
 
-import org.netbeans.modules.php.project.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -46,6 +45,8 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.php.project.PhpActionProvider;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -197,7 +198,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
-            actions.add(CommonProjectActions.openSubprojectsAction());
+            //actions.add(CommonProjectActions.openSubprojectsAction()); // does not make sense for php now
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
             actions.add(CommonProjectActions.renameProjectAction());
@@ -208,8 +209,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
             // honor 57874 contact
             actions.add(null);
-            actions.addAll(Utilities.actionsForPath("Projects/Actions"));
-            // NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
             return actions.toArray(new Action[actions.size()]);

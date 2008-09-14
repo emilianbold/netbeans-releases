@@ -122,6 +122,7 @@ made subject to such option by the copyright holder.
     <bind actionName="paste-from-clipboard" key="D-V"/>
     <bind actionName="paste-from-clipboard" key="S-INSERT"/>
     <bind actionName="redo" key="D-Y"/>
+    <bind actionName="redo" key="DS-Z"/>
     <bind actionName="remove-line" key="D-E"/>
     <!-- <bind actionName="remove-line-begin" key="D-U"/> -->
     <bind actionName="remove-tab" key="S-TAB"/>

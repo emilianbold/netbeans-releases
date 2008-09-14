@@ -53,4 +53,5 @@ public interface CollapsibleWidgetManager {
     
     public Widget getCollapsibleCompartmentWidget();
     
+    public boolean isCompartmentCollapsed();
 }

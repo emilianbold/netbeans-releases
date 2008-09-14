@@ -46,6 +46,7 @@
  */
 package org.netbeans.modules.uml.core.metamodel.common.commonactivities;
 
+import java.lang.StringBuilder;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementCollector;
@@ -187,4 +188,31 @@ public class InvocationNode extends ActivityNode implements IInvocationNode
         return getMultiplicity().getRangeAsString();
     }
 
+    public String getPreconditionsAsString()
+    {
+        StringBuilder val = new StringBuilder();
+        for (IConstraint constraint: getLocalPreconditions())
+        {
+            val.append(constraint.getExpression());
+            val.append(", ");
+        }
+        int index = val.lastIndexOf(", ");
+        if (index > 0)
+            return val.substring(0, index);
+        return val.toString();
+    }
+
+    public String getPostConditionsAsString()
+    {
+        StringBuilder val = new StringBuilder();
+        for (IConstraint constraint: getLocalPostConditions())
+        {
+            val.append(constraint.getExpression());
+            val.append(", ");
+        }
+        int index = val.lastIndexOf(", ");
+        if (index > 0)
+            return val.substring(0, index);
+        return val.toString();
+    }
 }

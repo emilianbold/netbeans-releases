@@ -91,6 +91,9 @@ public class UMLDiagramNode extends UMLElementNode
     private DispatchHelper dispatchHelper = null;
     private boolean bCancelSaveDialog = false;
     private boolean listenersRegistered = false;
+    //
+    public static final String ETLD_EXTENSION = "etld"; // NOI18N
+    public static final String ETLP_EXTENSION = "etlp"; // NOI18N
     
     public UMLDiagramNode(IProxyDiagram diagram)
     {
@@ -143,17 +146,21 @@ public class UMLDiagramNode extends UMLElementNode
     // enables the node to be renamed
     public boolean canRename()
     {
-        return true;
+        return !isOldDiagramFormat();
     }
 
     @Override
     public boolean canCopy()
     {
-        return true;
-//        return false;
+        return !isOldDiagramFormat();
+    }
+
+    @Override
+    public boolean canCut() {
+        return !isOldDiagramFormat();
     }
     
-    
+    @Override
     public void destroy() throws IOException
     {
         ProxyDiagramManager proxyDiagramManager = ProxyDiagramManager.instance();
@@ -274,7 +281,7 @@ public class UMLDiagramNode extends UMLElementNode
         
         // see #102294
         if ( kind != IDiagramKind.DK_SEQUENCE_DIAGRAM &&
-                kind != IDiagramKind.DK_COLLABORATION_DIAGRAM )
+                kind != IDiagramKind.DK_COLLABORATION_DIAGRAM && !isOldDiagramFormat())
         {
             actions.add(SystemAction.get(CopyDiagramAction.class));
         }
@@ -849,6 +856,11 @@ public class UMLDiagramNode extends UMLElementNode
         }
         
         return success;
+    }
+    private boolean isOldDiagramFormat()
+    {
+        boolean ret=mDiagram.getFilename().endsWith("."+ETLD_EXTENSION);
+        return ret;
     }
 
     

@@ -159,7 +159,7 @@ public class J2eePlatformUiSupport {
         private synchronized J2eePlatformAdapter[] getJ2eePlatforms(Object moduleType) {
             if (j2eePlatforms == null) {
                 String[] serverInstanceIDs = Deployment.getDefault().getServerInstanceIDs();
-                Set orderedNames = new TreeSet();
+                Set<J2eePlatformAdapter> orderedNames = new TreeSet<J2eePlatformAdapter>();
                 boolean activeFound = false;
 
                 for (int i = 0; i < serverInstanceIDs.length; i++) {
@@ -179,7 +179,7 @@ public class J2eePlatformUiSupport {
                         }
                     }
                 }
-                j2eePlatforms = (J2eePlatformAdapter[])orderedNames.toArray(new J2eePlatformAdapter[orderedNames.size()]);
+                j2eePlatforms = orderedNames.toArray(new J2eePlatformAdapter[orderedNames.size()]);
             }
             return j2eePlatforms;
         }

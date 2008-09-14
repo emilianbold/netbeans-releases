@@ -497,9 +497,11 @@ public class MultiPartHandler {
       byte[] buf = new byte[8 * 1024];
 
       InputStream partInput;
+      boolean canCloseStream = true;
       if (content.equals("x-application/gzip")) { // NOI18N
           // sending from NetBeans UI Gestures Collector
           partInput = in.getInputStream();
+          canCloseStream = false;
       } else {
           /** input stream containing file data */
           partInput = new MultipartInputStream(in, boundary);
@@ -508,7 +510,9 @@ public class MultiPartHandler {
         fileOut.write(buf, 0, numBytes);
         written += numBytes;
       }
-      partInput.close();
+      if (canCloseStream){
+        partInput.close();
+      }
     }
     finally {
       if (fileOut != null) fileOut.close();

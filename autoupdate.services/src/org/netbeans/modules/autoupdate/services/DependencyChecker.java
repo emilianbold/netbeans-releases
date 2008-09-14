@@ -51,7 +51,7 @@ import org.openide.modules.SpecificationVersion;
 
 class DependencyChecker extends Object {
 
-    private static final Logger err = Logger.getLogger(DependencyChecker.class.getName ()); // NOI18N
+    private static final Logger err = Logger.getLogger(DependencyChecker.class.getName ());
     
     public static Set<Dependency> findBrokenDependencies (Set<Dependency> deps, Collection<ModuleInfo> modules) {
         Set<Dependency> res = new HashSet<Dependency> ();
@@ -189,7 +189,7 @@ class DependencyChecker extends Object {
         return null;
     }
     
-    private static boolean matchDependencyJava (Dependency dep) {
+    public static boolean matchDependencyJava (Dependency dep) {
         if (dep.getName ().equals (Dependency.JAVA_NAME) && Dependency.COMPARE_SPEC == dep.getComparison ()) {
             return Dependency.JAVA_SPEC.compareTo (new SpecificationVersion (dep.getVersion ())) >= 0;
         }
@@ -197,7 +197,7 @@ class DependencyChecker extends Object {
         return true;
     }
     
-    private static boolean matchPackageDependency (Dependency dep) {
+    public static boolean matchPackageDependency (Dependency dep) {
         return Util.checkPackageDependency (dep, ClassLoader.getSystemClassLoader ());
     }
     

@@ -353,7 +353,8 @@ public class RetoucheUtils {
     }
 
     public static boolean isClasspathRoot(FileObject fo) {
-        return fo.equals(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo));
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        return cp != null ? fo.equals(cp.findOwnerRoot(fo)) : false;
     }
     
     public static boolean isRefactorable(FileObject file) {
@@ -645,6 +646,17 @@ public class RetoucheUtils {
         ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
         ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
         ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
+        //When file[0] is a class file, there is no compile cp but execute cp
+        //try to get it
+        if (compile == null) {
+            compile = ClassPath.getClassPath(files[0], ClassPath.EXECUTE);
+        }
+        //If no cp found at all log the file and use nullPath since the ClasspathInfo.create
+        //doesn't accept null compile or boot cp.
+        if (compile == null) {
+            LOG.warning ("No classpath for: " + FileUtil.getFileDisplayName(files[0]) + " " + FileOwnerQuery.getOwner(files[0]));
+            compile = nullPath;
+        }
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
     }

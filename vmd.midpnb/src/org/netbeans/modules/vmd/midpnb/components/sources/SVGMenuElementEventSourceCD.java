@@ -63,6 +63,7 @@ import java.util.List;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
+import org.netbeans.modules.vmd.midp.actions.SecondaryGoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midpnb.flow.FlowSVGMenuElementEventSourcePinPresenter;
 
@@ -133,7 +134,13 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
             // flow
             new FlowSVGMenuElementEventSourcePinPresenter(),
             // general
-            new GoToSourcePresenter () {
+             new GoToSourcePresenter() {
+                protected boolean matches (GuardedSection section) {
+                    DesignComponent svgMenu = getComponent().getParentComponent();
+                    return MultiGuardedSection.matches (section, svgMenu.getComponentID () + "-action", getComponent ().getComponentID () + "-postAction"); // NOI18N
+                }
+            },
+            new SecondaryGoToSourcePresenter() {
                 protected boolean matches (GuardedSection section) {
                     DesignComponent parentComponent = getComponent().getParentComponent();
                     if (parentComponent == null)
@@ -141,7 +148,7 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
                     boolean lazyInit = MidpTypes.getBoolean (parentComponent.readProperty (ClassCD.PROP_LAZY_INIT));
                     return MultiGuardedSection.matches(section, lazyInit ? parentComponent.getComponentID() + "-getter" : parentComponent.getDocument ().getRootComponent ().getComponentID () + "-initialize", 1); // NOI18N
                 }
-            }        
+            }
         );
     }
 

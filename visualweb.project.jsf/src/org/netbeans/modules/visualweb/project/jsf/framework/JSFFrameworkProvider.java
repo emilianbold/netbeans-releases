@@ -242,7 +242,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        Project project = (webModule == null) ? null : FileOwnerQuery.getOwner(webModule.getDeploymentDescriptor());
+        Project project = null;
+        if (webModule != null) {
+            FileObject dd = webModule.getDeploymentDescriptor();
+            if (dd != null) {
+                project = FileOwnerQuery.getOwner(dd);
+            }
+        }
         panel = new JSFConfigurationPanel(this, project, controller, !defaultValue);
 
         // Default Bean Package

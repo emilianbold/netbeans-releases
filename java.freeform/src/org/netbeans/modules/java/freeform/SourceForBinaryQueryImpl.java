@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -58,6 +59,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 import org.w3c.dom.Element;
 
 /**
@@ -66,28 +68,31 @@ import org.w3c.dom.Element;
  * @author Jesse Glick
  */
 final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation, AntProjectListener {
-    
+
     private AntProjectHelper helper;
     private PropertyEvaluator evaluator;
     private AuxiliaryConfiguration aux;
-    
+
     /**
      * Map from known binary roots to lists of source roots.
      */
     private Map<URL,FileObject[]> roots = null;
-    
+
     public SourceForBinaryQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
         this.helper = helper;
         this.evaluator = evaluator;
         this.aux = aux;
         helper.addAntProjectListener(this);
     }
-    
+
     private void refresh () {
         roots = null;
     }
-    
-    public synchronized SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
+
+    public SourceForBinaryQuery.Result findSourceRoots(final URL binaryRoot) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<SourceForBinaryQuery.Result>() {
+            public SourceForBinaryQuery.Result run() {
+                synchronized (SourceForBinaryQueryImpl.this) {
         if (roots == null) {
             // Need to compute it. Easiest to compute them all at once.
             roots = new HashMap<URL,FileObject[]>();
@@ -105,7 +110,7 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                         FileObject[] orig = roots.get(u);
                         //The case when sources are in the separate compilation units but
                         //the output is built into a single archive is not very common.
-                        //It is better to recreate arrays rather then to add source roots 
+                        //It is better to recreate arrays rather then to add source roots
                         //into lists which will slow down creation of Result instances.
                         if (orig != null) {
                             FileObject[] merged = new FileObject[orig.length+sources.length];
@@ -120,9 +125,12 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         }
         assert roots != null;
         FileObject[] sources = roots.get(binaryRoot);
-        return sources == null ? null : new Result (sources);       //TODO: Optimize it, resolution of sources should be done in the result        
+        return sources == null ? null : new Result (sources);       //TODO: Optimize it, resolution of sources should be done in the result
+                }
+            }
+        });
     }
-    
+
     /**
      * Find a list of URLs of binaries which will be produced from a compilation unit.
      * Result may be empty.
@@ -152,27 +160,27 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     public void propertiesChanged(AntProjectEvent ev) {
         // ignore
     }
-    
+
     private static class Result implements SourceForBinaryQuery.Result {
-        
+
         private FileObject[] ret;
-        
+
         public Result (FileObject[] ret) {
             this.ret = ret;
         }
-        
+
         public FileObject[] getRoots () {
             return ret;
         }
-        
+
         public void addChangeListener (ChangeListener l) {
             // XXX
         }
-        
+
         public void removeChangeListener (ChangeListener l) {
             // XXX
         }
-        
+
     }
-    
+
 }

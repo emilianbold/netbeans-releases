@@ -139,33 +139,79 @@ public class UnixNativeUtils extends NativeUtils {
     public UnixNativeUtils() {
         initializeForbiddenFiles();
     }
+    
     @Override
     protected Platform getPlatform() {
         final String osName = System.getProperty("os.name");
-        if (osName.endsWith("BSD")) {
-            if (osName.equals("FreeBSD")) {
-                if(System.getProperty("os.arch").contains("ppc")) {
-                    return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_PPC: Platform.FREEBSD_PPC64;
-                } else {
-                    return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_X64 : Platform.FREEBSD_X86;
-                }
-            } else {
-                if(System.getProperty("os.arch").contains("ppc")) {
-                    return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_PPC64 : Platform.BSD_PPC;
-                } else {
-                    return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_X64 : Platform.BSD_X86;
-                }
-            }
-        } else if(osName.equals("AIX")) {
-            if(System.getProperty("os.arch").contains("ppc")) {
-                return SystemUtils.isCurrentJava64Bit() ? Platform.AIX_PPC64 : Platform.AIX_PPC;
-            } else { 
-                return Platform.AIX;
-            }
-        } else if(osName.equals("HP-UX")) {
-            return Platform.HPUX;
+
+        if (osName.equals("FreeBSD")) {
+            return getPlatformFreeBSD();
+        } else if (osName.equals("OpenBSD")) {
+            return getPlatformOpenBSD();
+        } else if (osName.endsWith("BSD")) {
+            return getPlatformBSD();
+        } else if (osName.equals("AIX")) {
+            return getPlatformAIX();
+        } else if (osName.toLowerCase(Locale.ENGLISH).startsWith("hp-ux")) {
+            return getPlatformHPUX();
         } else {
             return Platform.UNIX;
+        }
+    }
+    
+    private Platform getPlatformOpenBSD() {
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.contains("ppc") || osArch.contains("PowerPC")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.OPENBSD_PPC64 : Platform.OPENBSD_PPC;
+        } else if (osArch.contains("sparc")) {
+            return Platform.OPENBSD_SPARC;
+        } else if (osArch.matches("i[3-6]86|x86|amd64|x86_64")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.OPENBSD_X64 : Platform.OPENBSD_X86;
+        } else {
+            return Platform.OPENBSD;
+        }
+    }
+    private Platform getPlatformFreeBSD() {
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.contains("ppc") || osArch.contains("PowerPC")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_PPC64 : Platform.FREEBSD_PPC;
+        } else if (osArch.contains("sparc")) {
+            return Platform.FREEBSD_SPARC;
+        } else if (osArch.matches("i[3-6]86|x86|amd64|x86_64")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_X64 : Platform.FREEBSD_X86;
+        } else {
+            return Platform.FREEBSD;
+        }
+    }
+    private Platform getPlatformBSD() {
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.contains("ppc") || osArch.contains("PowerPC")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_PPC64 : Platform.BSD_PPC;
+        } else if (osArch.contains("sparc")) {
+            return Platform.BSD_SPARC;
+        } else if (osArch.matches("i[3-6]86|x86|amd64|x86_64")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_X64 : Platform.BSD_X86;
+        } else {
+            return Platform.BSD;
+        }
+    }
+    private Platform getPlatformAIX() {
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.contains("ppc") || osArch.contains("PowerPC")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.AIX_PPC64 : Platform.AIX_PPC;
+        } else {
+            return Platform.AIX;
+        }
+    }
+    
+    private Platform getPlatformHPUX() {
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.toLowerCase(Locale.ENGLISH).replace("-", "_").startsWith("pa_risc")) {
+            return osArch.startsWith("PA_RISC2.0") ? Platform.HPUX_PA_RISC20 : Platform.HPUX_PA_RISC;
+        } else if (osArch.toLowerCase(Locale.ENGLISH).startsWith("ia64")) {
+            return Platform.HPUX_IA64;
+        } else {
+            return Platform.HPUX;
         }
     }
     
@@ -270,6 +316,7 @@ public class UnixNativeUtils extends NativeUtils {
                 break;
             default:
                 shortcutFile = null;
+
         }
 
         LogManager.logUnindent(
@@ -289,16 +336,16 @@ public class UnixNativeUtils extends NativeUtils {
         final File userConfigFile = new File(userHome, XDG_USERDIRS_CONF);
         LogManager.log("... getting desktop folder");
         if (desktopDir != null && !desktopDir.equals("")) {
-            LogManager.log("XDG_DESKTOP_DIR = " + desktopDir);
+            LogManager.log(XDG_DESKTOP_DIR_ENV_VARIABLE + " = " + desktopDir);
             File f = new File(desktopDir);
             if (f.exists()) {
                 LogManager.log("... desktop dir : " + f);
                 return f;
             } else {
-                LogManager.log("... XDG_DESKTOP_DIR is defined but does not exist:" + desktopDir);
+                LogManager.log("... " + XDG_DESKTOP_DIR_ENV_VARIABLE + " is defined but does not exist:" + desktopDir);
             }
-        } else if (System.getenv("XDG_SESSION_COOKIE") == null) {
-            LogManager.log("... XDG_SESSION_COOKIE environment variable is not defined");
+        } else if (System.getenv("XDG_SESSION_COOKIE") == null && System.getenv(XDG_DATA_DIRS_ENV_VARIABLE) == null) {
+            LogManager.log("... neither XDG_SESSION_COOKIE nor " + XDG_DATA_DIRS_ENV_VARIABLE + " environment variable is defined");
         } else if (!FileUtils.exists(globalConfigFile)) {
             LogManager.log("... global XDG config file does not exist");
         } else if (!FileUtils.exists(userDirsFile)) {
@@ -317,6 +364,7 @@ public class UnixNativeUtils extends NativeUtils {
                         if (matcher.find()) {
                             if (!Boolean.parseBoolean(matcher.group(1).toLowerCase(Locale.ENGLISH))) {
                                 LogManager.log("... XDG dirs are disabled");
+                                useXdgDirs = false;
                                 break;
                             } else {
                                 LogManager.log("... XDG dirs are enabled");
@@ -353,20 +401,42 @@ public class UnixNativeUtils extends NativeUtils {
                     List<String> content = (encoding == null) ? FileUtils.readStringList(userDirsFile) : FileUtils.readStringList(userDirsFile, encoding);
 
                     for (String s : content) {
-                        final Matcher matcher = Pattern.compile(XDG_DESKTOP_DIR_ENV_VARIABLE + "=\"(.*)\"").matcher(s);
-                        if (matcher.find()) {                            
-                            File f = new File(matcher.group(1).replace("$HOME", 
-                                    userHome.getAbsolutePath()));
+                        LogManager.log("...... evaluating string : " + s);
+                        Matcher matcher = Pattern.compile("^" + XDG_DESKTOP_DIR_ENV_VARIABLE + "=\"(.*)\"").matcher(s);
+                        if (matcher.find()) {
+                            LogManager.log("...... matches expected pattern");
+                            final String value = matcher.group(1).replace("$HOME", userHome.getAbsolutePath());
+                            File f = new File(value);
                             if (FileUtils.exists(f)) {
                                 return f;
                             } else {
                                 LogManager.log("... custom desktop directory defined but does not exist: " + f);
+                                LogManager.log("... probably wrong encoding used, fallback to system utils");
+                                throw new IOException("File " + f + " is defined as desktop folder but does not exist");
                             }
                         }
                     }
                 }
             } catch (Exception e) {
                 LogManager.log(e);
+                //fallback
+                try {
+                    final File bin = new File("/usr/bin/xdg-user-dir");
+                    if (FileUtils.exists(bin)) {
+                        String stdout = SystemUtils.executeCommand(bin.getAbsolutePath(), "DESKTOP").getStdOut();
+                        if (stdout.length() > 0) {
+                            File dsk = new File(stdout);
+                            if (FileUtils.exists(dsk)) {
+                                return dsk;
+                            } else {
+                                LogManager.log("... custom desktop directory defined (system util) but does not exist: " + dsk);
+                                LogManager.log("... probably wrong encoding, fallback to default");                                
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    LogManager.log(ex);
+                }
             }
         }
         return new File(userHome, "Desktop");
@@ -862,7 +932,21 @@ public class UnixNativeUtils extends NativeUtils {
 
         return list;
     }
-
+    
+    private String[] getDfCommand(String... args) {
+        List <String> command = new ArrayList <String> ();
+        command.add("df");//NOI18N
+        command.add(getCurrentPlatform().isCompatibleWith(Platform.HPUX) ? "-kP" : "-k"); //NOI18N
+        // it is also possible to use bdf instead of df -kP but block size is 512 in that case        
+        
+        if (args != null && args.length > 0) {
+            for(String arg:args) {
+                command.add(arg);
+            }
+        }
+        return command.toArray(new String[0]);
+    }
+        
     public List<File> getFileSystemRoots() throws IOException {
         try {
             setEnvironmentVariable(
@@ -880,8 +964,8 @@ public class UnixNativeUtils extends NativeUtils {
                     "LC_NUMERIC", "C", EnvironmentScope.PROCESS, false);
             setEnvironmentVariable(
                     "LC_TIME", "C", EnvironmentScope.PROCESS, false);
-
-            final String stdout = SystemUtils.executeCommand("df", "-k").getStdOut();
+            
+            final String stdout = SystemUtils.executeCommand(getDfCommand()).getStdOut();
             final String[] lines = StringUtils.splitByLines(stdout);
 
             // a quick and dirty solution - we assume that % is present only once in
@@ -948,7 +1032,7 @@ public class UnixNativeUtils extends NativeUtils {
         }
         
         try {
-            final String stdout = SystemUtils.executeCommand("df", "-k", s).getStdOut().trim();
+            final String stdout = SystemUtils.executeCommand(getDfCommand(s)).getStdOut().trim();
             final String[] lines = StringUtils.splitByLines(stdout);
 
             // a quick and dirty solution - we assume that % is present only once in

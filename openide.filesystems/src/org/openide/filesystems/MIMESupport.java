@@ -97,8 +97,9 @@ final class MIMESupport extends Object {
     /** Asks all registered subclasses of MIMEResolver to resolve FileObject passed as parameter.
      * @param fo is FileObject, whose MIME should be resolved
      * @param def the default value to return or null
+     * @param withinMIMETypes an array of MIME types which only should be considered
      * @return  MIME type or null if not resolved*/
-    static String findMIMEType(FileObject fo, String def) {
+    static String findMIMEType(FileObject fo, String def, String... withinMIMETypes) {
         if (!fo.isValid() || fo.isFolder()) {
             return null;
         }
@@ -121,7 +122,7 @@ final class MIMESupport extends Object {
                 lastCfo = EMPTY;
             }
 
-            return cfo.getMIMEType(def);
+            return cfo.getMIMEType(def, withinMIMETypes);
         } finally {
             synchronized (lock) {
                 lastFo = new WeakReference<FileObject>(fo);
@@ -129,7 +130,7 @@ final class MIMESupport extends Object {
             }
         }
     }
-    
+
     /** Testing purposes.
      */
     static MIMEResolver[] getResolvers() {
@@ -141,7 +142,9 @@ final class MIMESupport extends Object {
         private static Union2<MIMEResolver[],Set<Thread>> resolvers; // call getResolvers instead 
         /** resolvers that were here before we cleaned them */
         private static MIMEResolver[] previousResolvers;
-        
+        /** Set used to print just one warning per resolver. */
+        private static final Set<String> warningPrinted = new HashSet<String>();
+
         String mimeType;
         java.util.Date lastModified;
         Long size;
@@ -275,22 +278,58 @@ final class MIMESupport extends Object {
             return getMIMEType(null);
         }
 
-        public String getMIMEType(String def) {
+        public String getMIMEType(String def, String... withinMIMETypes) {
             if (mimeType == null) {
-                mimeType = resolveMIME(def);
+                mimeType = resolveMIME(def, withinMIMETypes);
             }
 
             return mimeType;
         }
 
-        private String resolveMIME(String def) {
+        /** Decides whether given MIMEResolver is capable to resolve at least
+         * one of given MIME types.
+         * @param resolver MIMEResolver to be examined
+         * @param desiredMIMETypes an array of MIME types
+         * @return true if at least one of given MIME types can be resolved by
+         * given resolver or if array is empty or resolver.getMIMETypes() doesn't
+         * return non empty array, false otherwise.
+         */
+        private boolean canResolveMIMETypes(MIMEResolver resolver, String... desiredMIMETypes) {
+            if(desiredMIMETypes.length == 0) {
+                return true;
+            }
+            String[] resolvableMIMETypes = null;
+            if (MIMEResolverImpl.isDeclarative(resolver)) {
+                resolvableMIMETypes = MIMEResolverImpl.getMIMETypes(resolver);
+            } else {
+                resolvableMIMETypes = resolver.getMIMETypes();
+            }
+            if(resolvableMIMETypes == null || resolvableMIMETypes.length == 0) {
+                if(warningPrinted.add(resolver.getClass().getName())) {
+                    ERR.warning(resolver.getClass().getName() + "'s constructor should call super(String...) with list of resolvable MIME types.");  //NOI18N
+                }
+                return true;
+            }
+            for (int i = 0; i < desiredMIMETypes.length; i++) {
+                for (int j = 0; j < resolvableMIMETypes.length; j++) {
+                    if(resolvableMIMETypes[j].equals(desiredMIMETypes[i])) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        private String resolveMIME(String def, String... withinMIMETypes) {
             String retVal = null;
             MIMEResolver[] local = getResolvers();
 
             try {
                 for (int i = 0; i < local.length; i++) {
-                    retVal = local[i].findMIMEType(this);
-
+                    MIMEResolver resolver = local[i];
+                    if(canResolveMIMETypes(resolver, withinMIMETypes)) {
+                        retVal = resolver.findMIMEType(this);
+                    }
                     if (retVal != null) {
                         return retVal;
                     }

@@ -42,14 +42,14 @@
 package org.openide.util;
 
 import java.io.IOException;
-import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import junit.framework.Test;
+import org.netbeans.junit.Log;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 
 public class MutexTest extends NbTestCase {
     Mutex.Privileged p;
@@ -79,7 +79,7 @@ public class MutexTest extends NbTestCase {
     protected Level logLevel() {
         return Level.FINEST;
     }
-    
+
     public void testReadWriteRead() throws Exception {
         
         final Object lock = new Object();
@@ -90,6 +90,7 @@ public class MutexTest extends NbTestCase {
             mPriv.enterReadAccess();
             
             new Thread() {
+                @Override
                 public void run () {
                     synchronized( lock ) {
                         lock.notifyAll();
@@ -1119,5 +1120,36 @@ public class MutexTest extends NbTestCase {
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
+    }
+
+    /** Test that interrupted flag of thread entering Mutex is not eaten in
+     * Mutex.QueueCell.sleep.
+     * - enter read access in main thread
+     * - start another thread which tries to aquire write access
+     * - interrupt that thread
+     * - wait until thread is stopped at wait() in Mutex.QueueCell.sleep
+     * - exit read access to release waiting thread
+     * - check interrupted flag is set
+     */
+    public void testInterruptedException129003() throws InterruptedException {
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+        p.enterReadAccess();
+        Thread enteringThread = new Thread("Entering thread") {
+            @Override
+            public void run() {
+                p.enterWriteAccess();
+                interrupted.set(Thread.interrupted());
+                p.exitWriteAccess();
+            }
+        };
+        enteringThread.start();
+        enteringThread.interrupt();
+        // let enteringThread reach wait() in Mutex.QueueCell.sleep
+        while(!enteringThread.getState().equals(Thread.State.WAITING)) {
+            Thread.sleep(100);
+        }
+        p.exitReadAccess();
+        enteringThread.join();
+        assertTrue("Interrupted thread entering Mutex should be set as interrupted.", interrupted.get());
     }
 }

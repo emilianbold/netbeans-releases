@@ -41,7 +41,6 @@
 package org.netbeans.modules.websvc.saas.ui.wizards;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -88,8 +87,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     private static String previousDirectory = null;
     private static JFileChooser wsdlFileChooser;
     private final FileFilter WSDL_FILE_FILTER = new ServiceFileFilter();
-    private JButton cancelButton = new JButton();
-    private JButton addButton = new JButton();
     private SaasGroup group;
     private final boolean jaxRPCAvailable;
     private String defaultMsg;
@@ -177,49 +174,54 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     private void setErrorMessage(String msg) {
         if (msg == null || msg.length() == 0) {
             errorLabel.setVisible(false);
+            
+            if (dlg != null) {
+                dlg.setValid(true);
+            }
         } else {
             errorLabel.setVisible(true);
             errorLabel.setText(msg);
+            
+            if (dlg != null) {
+                if (msg.equals(defaultMsg)) {
+                    dlg.setValid(true);
+                } else {
+                    dlg.setValid(false);
+                }
+            }
         }
     }
 
-    private void updateAddButtonState(Component changedComponent) {
+    private void checkValues() {
         // Check the package name
         final String packageName = jTxtpackageName.getText().trim();
         boolean defaultPackage = DEFAULT_PACKAGE_HOLDER.equals(packageName) || packageName.length() == 0;
         if (!defaultPackage && !isValidPackageName(packageName)) {
             setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_PACKAGE"));
-            addButton.setEnabled(false);
         } else if (jTxtLocalFilename.isEnabled()) {
             String localText = jTxtLocalFilename.getText().trim();
             if (localText.length() == 0) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "EMPTY_FILE"));
-                addButton.setEnabled(false);
                 return;
             }
 
             File f = new File(localText);
             if (!f.exists()) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_FILE_NOT_FOUND"));
-                addButton.setEnabled(false);
                 return;
             } else if (!f.isFile()) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_FILE_NOT_FILE"));
-                addButton.setEnabled(false);
                 return;
             } else if (group.serviceExists(localText)) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "SERVICE_ALREADY_EXISTS_FOR_FILE"));
-                addButton.setEnabled(false);
                 return;
             } else {
                 setErrorMessage(defaultMsg);
-                addButton.setEnabled(true);
             }
         } else if (jTxServiceURL.isEnabled()) {
             String urlText = jTxServiceURL.getText().trim();
             if (urlText.length() == 0) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "EMPTY_URL"));
-                addButton.setEnabled(false);
                 return;
             }
 
@@ -228,18 +230,14 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
 
                 if (group.serviceExists(urlText)) {
                     setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "SERVICE_ALREADY_EXISTS_FOR_URL"));
-                    addButton.setEnabled(false);
                 } else {
                     setErrorMessage(defaultMsg);
-                    addButton.setEnabled(true);
                 }
             } catch (MalformedURLException ex) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_URL"));
-                addButton.setEnabled(false);
             }
         } else {
             setErrorMessage(defaultMsg);
-            addButton.setEnabled(true);
         }
     }
 
@@ -247,27 +245,19 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         wsdlFileChooser = new JFileChooser();
         ServiceFileFilter myFilter = new ServiceFileFilter();
         wsdlFileChooser.setFileFilter(myFilter);
-        addButton.setText(NbBundle.getMessage(this.getClass(), "Add"));
-        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.addButton.ACC_name"));
-        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.addButton.ACC_desc"));
-        addButton.setMnemonic(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.addButton.ACC_mnemonic").charAt(0));
-        cancelButton.setText(NbBundle.getMessage(this.getClass(), "CANCEL"));
-        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.cancelButton.ACC_name"));
-        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.cancelButton.ACC_desc"));
-        cancelButton.setMnemonic(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.cancelButton.ACC_mnemonic").charAt(0));
 
         jTxtLocalFilename.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtLocalFilename);
+                checkValues();
             }
 
             public void removeUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtLocalFilename);
+                checkValues();
             }
 
             public void changedUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtLocalFilename);
+                checkValues();
             }
         });
 
@@ -275,15 +265,30 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         jTxServiceURL.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxServiceURL);
+                checkValues();
             }
 
             public void removeUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxServiceURL);
+                checkValues();
             }
 
             public void changedUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxServiceURL);
+                checkValues();
+            }
+        });
+        
+         jTxtpackageName.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                checkValues();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                checkValues();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                checkValues();
             }
         });
 
@@ -298,22 +303,17 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     public void displayDialog() {
 
         dlg = new DialogDescriptor(this, NbBundle.getMessage(AddWebServiceDlg.class, "ADD_WEB_SERVICE"),
-                true, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION,
+                true, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), this);
-        addButton.setEnabled(false);
-        dlg.setOptions(new Object[]{addButton, cancelButton});
+ 
+        //dlg.setOptions(new Object[]{addButton, cancelButton});
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
+        dlg.setValid(false);
         dialog.setVisible(true);
-    }
-
-    private void cancelButtonAction(ActionEvent evt) {
-        closeDialog();
-    }
-
-    private void closeDialog() {
-
-        dialog.dispose();
-
+        
+        if (dlg.getValue() == DialogDescriptor.OK_OPTION) {
+            createService();
+        }
     }
 
     /** XXX once we implement context sensitive help, change the return */
@@ -335,13 +335,11 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
             jTxServiceURL.setEnabled(true);
             jTxServiceURL.requestFocusInWindow();
             jTxtLocalFilename.setEnabled(false);
-            updateAddButtonState(jTxServiceURL);
             jLblChooseSource.setLabelFor(jTxServiceURL);
         } else if (jRbnFilesystem.isSelected()) {
             jTxtLocalFilename.setEnabled(true);
             jTxtLocalFilename.requestFocusInWindow();
             jTxServiceURL.setEnabled(false);
-            updateAddButtonState(jTxtLocalFilename);
             jLblChooseSource.setLabelFor(jTxtLocalFilename);
         }
     }
@@ -389,7 +387,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     /**
      * This represents the event on the "Add" button
      */
-    private void addButtonAction(ActionEvent evt) {
+    private void createService() {
         if ((jTxServiceURL.getText() == null) && (jTxtLocalFilename.getText() == null)) {
             return;
         }
@@ -428,7 +426,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
                         public void run() {
                             enableAllControls();
                             enableControls();
-                            setErrorMessage(defaultMsg);
+                            checkValues();
                         }
                     });
                 }
@@ -437,13 +435,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent evt) {
-        String actionCommand = evt.getActionCommand();
-        if (actionCommand.equalsIgnoreCase(addString)) {
-            addButtonAction(evt);
-        } else if (actionCommand.equalsIgnoreCase(cancelString)) {
-            cancelButtonAction(evt);
-        }
-
+  
     }
 
     /** This method is called from within the constructor to
@@ -522,19 +514,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         jTxtpackageName.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jTxtpackageNameMouseClicked(evt);
-            }
-        });
-        jTxtpackageName.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtpackageName);
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtpackageName);
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtpackageName);
             }
         });
 

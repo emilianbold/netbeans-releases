@@ -180,7 +180,7 @@ public class J2eeUtil {
 
                 String type = Constants.VOID;
 
-                String comment = "Retrieves representation of an instance of " + bean.getQualifiedClassName() + "\n";// NOI18N
+                String comment = "\n";// NOI18N
                 for (String param : parameters) {
                     comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N
                 }

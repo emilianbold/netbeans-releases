@@ -4751,4 +4751,62 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    } slotinfo[10];\n" +
                 "} pcihp_t;\n");
     }
+
+    public void testIZ145529() {
+        setLoadDocumentText(
+                "class Base {\n" +
+                "\n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect empty class formatting",
+                "class Base {\n" +
+                "};\n"
+                );
+    }
+
+    public void testReformatConstructorInitializer3() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.constructorListContinuationIndent, 6);
+        setLoadDocumentText(
+            "class ClipCost {\n" +
+            "public:\n" +
+            "    ClipCost(OmFrameRate rate = omFrmRateInvalid)\n" +
+            "      : m_type(Threshold::play1xThresh),\n" +
+            "        m_ticksPerPane(getTicksPerPane(rate)),\n" +
+            "        m_frameStart(0),\n" +
+            "        m_thisFrame(~0)\n" +
+            "    {\n" +
+            "        // indentation should be like this\n" +
+            "        for (uint i = 0; i < nCosts; i++)\n" +
+            "            init(i);\n" +
+            "\n" +
+            "          // ide insists (strongly) on this indentation\n" +
+            "          for (uint i = 0; i < nCosts; i++)\n" +
+            "              init(i);\n" +
+            "    }\n" +
+            "}\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of constructor initializer",
+            "class ClipCost\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    ClipCost(OmFrameRate rate = omFrmRateInvalid)\n" +
+            "          : m_type(Threshold::play1xThresh),\n" +
+            "          m_ticksPerPane(getTicksPerPane(rate)),\n" +
+            "          m_frameStart(0),\n" +
+            "          m_thisFrame(~0)\n" +
+            "    {\n" +
+            "        // indentation should be like this\n" +
+            "        for (uint i = 0; i < nCosts; i++)\n" +
+            "            init(i);\n" +
+            "\n" +
+            "        // ide insists (strongly) on this indentation\n" +
+            "        for (uint i = 0; i < nCosts; i++)\n" +
+            "            init(i);\n" +
+            "    }\n" +
+            "}\n");
+    }
 }

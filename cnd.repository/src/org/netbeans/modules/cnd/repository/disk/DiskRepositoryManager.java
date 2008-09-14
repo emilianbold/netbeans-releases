@@ -57,6 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.queue.RepositoryQueue;
 import org.netbeans.modules.cnd.repository.queue.RepositoryThreadManager;
 import org.netbeans.modules.cnd.repository.queue.RepositoryWriter;
@@ -73,14 +74,14 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  */
 public final class DiskRepositoryManager implements Repository, RepositoryWriter {
 
-    private final Map<String, Unit> units;
+    private final Map<Integer, Unit> units;
     
     private final RepositoryQueue           queue;
     private final RepositoryThreadManager   threadManager;
     private final Persistent                removedObject; 
     private final ReadWriteLock             queueLock;
     
-    private Map<String, Object> unitLocks = new HashMap<String, Object>();
+    private Map<Integer, Object> unitLocks = new HashMap<Integer, Object>();
     private String mainUnitLock = new String("DelegateRepository main lock"); // NOI18N
 
     public DiskRepositoryManager() {
@@ -88,44 +89,44 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         queueLock          = new ReentrantReadWriteLock(true);
         threadManager   = new RepositoryThreadManager(this, queueLock);
 	queue           = threadManager.startup();
-        units    = new ConcurrentHashMap<String, Unit>();
+        units    = new ConcurrentHashMap<Integer, Unit>();
     }
 
-    private Object getUnitLock(String unitName) {
+    private Object getUnitLock(int unitId) {
 	synchronized( mainUnitLock  ) {
-	    Object lock = unitLocks.get(unitName);
+	    Object lock = unitLocks.get(unitId);
 	    if( lock == null ) {
-		lock = new String(unitName); // NOI18N
-		unitLocks.put(unitName, lock);
+		lock = new String("unitId="+unitId); // NOI18N
+		unitLocks.put(unitId, lock);
 	    }
 	    return lock;
 	}
     }
     
-    private Object getUnitLock(Key key) {
-        return getUnitLock(key.getUnit().toString());
-    }
-    
     /** Never returns null - throws exceptions */
     private Unit getCreateUnit(Key key) throws IOException {
         assert key != null;
-        return getCreateUnit(key.getUnit().toString());
+        Unit unit = units.get(key.getUnitId());
+        if (unit != null) {
+            return unit;
+        }
+        return getCreateUnit(key.getUnitId(), key.getUnit().toString());
     }
     
     /** Never returns null - throws exceptions */
-    private Unit getCreateUnit(String unitName) throws IOException {
+    private Unit getCreateUnit(int unitId, String unitName) throws IOException {
         assert unitName != null;
         
-        Unit unit = units.get(unitName);
+        Unit unit = units.get(unitId);
             
         if (unit == null) {
-            synchronized (getUnitLock(unitName)) {
+            synchronized (getUnitLock(unitId)) {
                 unit = units.get(unitName);
                 if (unit == null) {
                     if (RepositoryListenersManager.getInstance().fireUnitOpenedEvent(unitName)) {
                         RepositoryTranslatorImpl.loadUnitIndex(unitName);
                         unit = new UnitImpl(unitName);
-                        units.put(unitName, unit);
+                        units.put(unitId, unit);
                     }
                 }
             }
@@ -133,7 +134,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         
         return unit;
     }
-    
+
     public void put(Key key, Persistent obj) {
         try {
             getCreateUnit(key).putToCache(key, obj);
@@ -203,10 +204,11 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         if( threadManager != null ) {
             threadManager.shutdown();
         }
-
-        List<Entry<String, Unit>> entries = new ArrayList<Entry<String, Unit>>(units.entrySet());
-        for (Entry<String, Unit> entry: entries) {
-            closeUnit(entry.getKey(), false, null);
+        List<Entry<Integer, Unit>> entries = new ArrayList<Entry<Integer, Unit>>(units.entrySet());
+        for (Entry<Integer, Unit> entry: entries) {
+            // iz #146241 IllegalStateException in the case revious session terminated with ^C in console
+            // if there are projects that aren't yet closed => the data might be corrupted! => clean untit
+            closeUnit(RepositoryAccessor.getTranslator().getUnitName(entry.getKey()), true, null);
         }
         
         try {
@@ -248,10 +250,10 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             return needMoreTime;
     }
 
-    public void openUnit(String unitName) {
+    public void openUnit(int unitId, String unitName) {
         try {
-            synchronized (getUnitLock(unitName)) {
-                getCreateUnit(unitName);
+            synchronized (getUnitLock(unitId)) {
+                getCreateUnit(unitId, unitName);
             }
         } catch (Throwable exc) {
             RepositoryListenersManager.getInstance().fireAnException(unitName, 
@@ -260,7 +262,8 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     }
 
     public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
-        synchronized (getUnitLock(unitName)) {
+        int unitId = RepositoryAccessor.getTranslator().getUnitId(unitName);
+        synchronized (getUnitLock(unitId)) {
             closeUnit2(unitName, cleanRepository, requiredUnits);
         }
     }
@@ -277,7 +280,8 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
 		}
             }
             
-            Unit unit = units.remove(unitName);
+            int unitId = RepositoryAccessor.getTranslator().getUnitId(unitName);
+            Unit unit = units.remove(unitId);
             
             if (unit != null) {
                 try {
@@ -305,15 +309,16 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     }
     
     public void removeUnit(String unitName) {
-        synchronized (getUnitLock(unitName)) {
+        int unitId = RepositoryAccessor.getTranslator().getUnitId(unitName);
+        synchronized (getUnitLock(unitId)) {
             closeUnit(unitName, true, Collections.<String>emptySet());
             RepositoryTranslatorImpl.removeUnit(unitName);
         }
     }
 
     public void debugClear() {
-        List<Entry<String, Unit>> entries = new ArrayList<Entry<String, Unit>>(units.entrySet());
-        for (Entry<String, Unit> entry: entries) {
+        List<Entry<Integer, Unit>> entries = new ArrayList<Entry<Integer, Unit>>(units.entrySet());
+        for (Entry<Integer, Unit> entry: entries) {
             entry.getValue().debugClear();
         }
         try {

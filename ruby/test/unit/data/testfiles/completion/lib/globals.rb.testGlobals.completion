@@ -3,3 +3,25 @@ $|m # input
 (QueryType=COMPLETION, NameKind=PREFIX)
 GLOBAL     $myglob                                    globals.rb
 GLOBAL     $myotherglob                               globals.rb
+------------------------------------
+KEYWORD    $!                                         Latest error message
+KEYWORD    $$                                         Interpreter's process ID
+KEYWORD    $&                                         String last matched by regexp
+KEYWORD    $*                                         The command line arguments
+KEYWORD    $.                                         Line number last read by interpreter
+KEYWORD    $/                                         Input record separator
+KEYWORD    $0                                         The name of the ruby script file
+KEYWORD    $=                                         Case-insensitivity flag
+KEYWORD    $?                                         Exit status of last executed child process
+KEYWORD    $@                                         Location of error
+KEYWORD    $DEBUG                                     null
+KEYWORD    $FILENAME                                  null
+KEYWORD    $LOAD_PATH                                 null
+KEYWORD    $VERBOSE                                   null
+KEYWORD    $\                                         Output record separator
+KEYWORD    $_                                         String last read by gets
+KEYWORD    $n                                         The nth subexpression in the last match (same as $~[n])
+KEYWORD    $stderr                                    null
+KEYWORD    $stdin                                     null
+KEYWORD    $stdout                                    null
+KEYWORD    $~                                         The last regexp match, as an array of subexpressions

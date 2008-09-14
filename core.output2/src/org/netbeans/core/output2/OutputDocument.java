@@ -43,12 +43,9 @@ package org.netbeans.core.output2;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.Mutex;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
@@ -60,7 +57,7 @@ import org.openide.util.Exceptions;
  *
  * @author  Tim Boudreau, Jesse Glick
  */
-public class OutputDocument implements Document, Element, ChangeListener, ActionListener, Runnable {
+public class OutputDocument implements Document, Element, ChangeListener, Runnable {
     private List<DocumentListener> dlisteners = new ArrayList<DocumentListener>();
     private volatile Timer timer = null;
 
@@ -462,60 +459,11 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         } else {
             if (Controller.VERBOSE) Controller.log("Writer says it is not dirty, firing no change");
         }
-        updateTimerState();
-    }
-
-    private boolean updatingTimerState = false;
-    private synchronized void updateTimerState() {
-        if (updatingTimerState) {
-            return;
-        }
-        updatingTimerState = true;
-        long newTime = System.currentTimeMillis();
-        if (timer == null && getLines().isGrowing()) {
-            if (Controller.LOG) Controller.log("Starting timer");
-            //Run the timer fast and furious at first, slowing down after
-            //the initial output has been captured
-            timer = new javax.swing.Timer(50, this);
-            timer.setRepeats(true);
-            timer.start();
-        } else if (!getLines().isGrowing()) {
-            if (timer != null) {
-                timer.stop();
-            }
-            if (getLines().checkDirty(false) && timer != null) {
-                //There's still some output we haven't displayed - 
-                //fire a change one last time.
-                Mutex.EVENT.readAccess(this);
-            }
-//            logInfo();
-            timer = null;
-        } else if (lastFireTime != 0 && timer != null) {
-            if (newTime - lastFireTime > 15000) {
-                //Probably we're done, but someone forgot to close the stream.
-                //Slow down the timer to a dull roar.
-                timer.setDelay (10000);
-            }
-        }
-        if (timer != null && timer.getDelay() < 350) {
-            timer.setDelay (timer.getDelay() + 20);
-            if (Controller.VERBOSE) Controller.log ("Decreased timer interval to " + timer.getDelay());
-        }
-        lastFireTime = newTime;
-        updatingTimerState = false;
     }
     
     public void run() {
         stateChanged(null);
-    }
-
-    private long lastFireTime = 0;
-    public void actionPerformed(ActionEvent actionEvent) {
-        if (!getLines().isGrowing()) {
-            updateTimerState();
-        }
-        stateChanged(null);
-    }    
+    }   
     
     private void fireDocumentEvent (DocumentEvent de) {
         for (DocumentListener dl: new ArrayList<DocumentListener>(dlisteners)) {

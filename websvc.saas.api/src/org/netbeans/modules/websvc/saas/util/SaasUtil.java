@@ -563,7 +563,8 @@ public class SaasUtil {
                 name = name.substring(0, name.length()- 5);
             }
             name = name.replace('.', '-'); // NOI18N
-            return ensureUniqueServiceDirName(name);
+  
+            return name;
     }
     
     public static String ensureUniqueServiceDirName(String name) {
@@ -577,7 +578,7 @@ public class SaasUtil {
                 try {
                     websvcHome.createFolder(result);
                 } catch(IOException e) {
-                    Exceptions.printStackTrace(e);
+                    //ignore  
                 }
                 break;
             }

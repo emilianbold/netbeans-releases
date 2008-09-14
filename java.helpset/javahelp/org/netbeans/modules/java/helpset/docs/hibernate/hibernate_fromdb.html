@@ -15,16 +15,17 @@
         
         <h2>Generating Hibernate Mapping Files and POJOs from a Database</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>In addition to writing Hibernate mapping files and POJOs and from scratch, 
-        you can also generate the mapping files and POJO from a connected database with the
+        <p>In addition to writing Hibernate mapping files and POJOs 
+        (Plain Old Java Objects) from scratch, 
+        you can also generate the mapping files and POJOs from a connected database with the
         Hibernate Mapping Files and POJOs from Database wizard.</p>
 
         <p><b>To generate Hibernate mapping files and POJOs from a database:</b></p> 
         <ol>
             <li>Right-click the project node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
             <li>In the New File wizard, select Hibernate Mapping Files and POJOs from Database from the Hibernate category.</li>
-            <li>Specify the Location for the generated <tt>hibernate.reveng</tt> file. Click Next.</li>
-            <li>Select the Configuration File from the dropdown list.
+            <li>Specify the Folder where you want to save the generated <tt>hibernate.reveng</tt> reverse engineering file. Click Next.</li>
+            <li>Select the Configuration File (<tt>hibernate.cfg.xml</tt>) from the drop down list.
                 <ul class="note">
                     <li>The configuration file contains the database connection details.
                     If a connection to the database is not open you may be prompted to 
@@ -33,18 +34,14 @@
                 </ul>
             </li>
             
-            <li>Select any tables in the left pane and click the Add button. 
-                Any tables related to the tables you select are automatically added to the list in the right pane. 
-                The IDE will generate Hibernate mapping files and POJOs for each table listed in the right pane.
-                <ul class="note">
-                    <li>Deselect Include Related Tables if you do not want entity classes created for related tables.</li> 
-                </ul>
-            </li>
+            <li>Select any tables in the Available Tables pane and click the Add to move the tables to the Selected Tables pane. 
+                Any tables related to the tables you select are automatically added to the list in the Selected Tables pane. 
+                The IDE will generate Hibernate mapping files and POJOs for each table listed in the Selected Tables pane.</li>
             <li>Click Next.</li>
             <li>Specify any options for the generated files.</li>
             <li>Select Domain Code to generate the POJOs.</li> 
             <li>Select Hibernate XML Mappings to generate the mapping files.</li>
-            <li>Select an existing package from the Package drop-down menu or type the name of a new package.</li>
+            <li>Select an existing package from the Package drop down list or type the name of a new package.</li>
             <li>Click Finish.</li>
         </ol>
         

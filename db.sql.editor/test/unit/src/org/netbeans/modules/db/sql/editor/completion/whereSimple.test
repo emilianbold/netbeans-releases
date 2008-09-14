@@ -1,16 +1,17 @@
-# The "customers" schema should show up, the "customer" table too. The "customization" table should not,
+# The "customers" schema should not show up (not needed). The "customer" table should. The "customization" table should not,
 # because it's not in the default schema.
 
 select * from customers.customer, customizations.customization, discount_code cus where cus|
 
 --
-customers*
-  customer
-    customer_id
-    address_line
-  discount_code
-    id
-customizations
-  customization
-    invoice_id
-    customer_id
+<unknown>
+  customers*
+    customer
+      customer_id
+      address_line
+    discount_code
+      id
+  customizations
+    customization
+      invoice_id
+      customer_id

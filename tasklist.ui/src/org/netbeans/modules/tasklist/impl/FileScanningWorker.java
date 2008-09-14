@@ -178,8 +178,9 @@ class FileScanningWorker implements Runnable {
                 
                 Set<FileTaskScanner> scannersToNotify = null;
                 ScanItem item = new ScanItem();
+                ScanMonitor monitor = ScanMonitor.getDefault();
                 while( true ) {
-
+                    monitor.waitEnabled();
                     synchronized( SCAN_LOCK ) {
                         if( getNext( item ) ) {
                             if( !scan( item ) ) {

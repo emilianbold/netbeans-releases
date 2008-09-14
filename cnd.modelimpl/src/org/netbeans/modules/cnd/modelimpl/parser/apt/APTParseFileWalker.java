@@ -137,7 +137,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         try {
             return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), mode);
         } catch (NullPointerException ex) {
-            APTUtils.LOG.log(Level.SEVERE, "file without project!!!", ex);// NOI18N
+            APTUtils.LOG.log(Level.SEVERE, "NPE when processing file", ex);// NOI18N
 	    DiagnosticExceptoins.register(ex);
         } finally {
             getIncludeHandler().popInclude();

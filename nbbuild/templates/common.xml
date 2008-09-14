@@ -749,6 +749,7 @@ made subject to such option by the copyright holder.
 
     <target name="clean" depends="files-init,testuserdir-delete,test-clean">
         <delete failonerror="false" includeemptydirs="true">
+            <fileset dir="${build.classes.dir}" />
             <fileset dir="build">
                 <exclude name="testuserdir/"/>
             </fileset>

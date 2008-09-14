@@ -89,7 +89,7 @@ public class TransferFileUnit {
         return !getTransferFile().isDirectory() &&
                 (filter == null ||
                 filter.length() == 0 ||
-                getDisplayName().contains(filter));
+                getDisplayName().toLowerCase().contains(filter));
     }
 
 

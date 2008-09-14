@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
  *
@@ -59,6 +60,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private boolean findDone  = false;
     private final int offset;
     private CsmReferenceKind kind;
+    private FileReferencesContext fileReferencesContext;
     
     public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token, CsmReferenceKind kind) {
         super(doc, file, offset);
@@ -70,7 +72,8 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     public CsmObject getReferencedObject() {
         if (!findDone && isValid()) {
-            target = ReferencesSupport.instance().findReferencedObject(super.getContainingFile(), super.getDocument(), this.offset, token);
+            target = ReferencesSupport.instance().findReferencedObject(super.getContainingFile(), super.getDocument(),
+                                       this.offset, token, fileReferencesContext);
             findDone = true;
         }
         return target;
@@ -84,20 +87,20 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     }
 
     @Override
-    public String getText() {
+    public CharSequence getText() {
         CharSequence cs = token.text();
         if (cs == null) {
             // Token.text() can return null if the token has been removed.
             // We want to avoid NPE (see IZ#143591).
             return ""; // NOI18N
         } else {
-            return cs.toString();
+            return TextCache.getString(cs);
         }
     }
     
     @Override
     public String toString() {
-        return "'" + org.netbeans.editor.EditorDebug.debugString(getText()) // NOI18N
+        return "'" + org.netbeans.editor.EditorDebug.debugString(getText().toString()) // NOI18N
                + "', tokenID=" + this.token.id().toString().toLowerCase() // NOI18N
                + ", offset=" + this.offset + " [" + super.getStartPosition() + "-" + super.getEndPosition() + "]"; // NOI18N
     }    
@@ -128,5 +131,8 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             this.kind = curKind;
         }
         return this.kind;
+    }
+    void setFileReferencesContext(FileReferencesContext fileReferencesContext) {
+        this.fileReferencesContext = fileReferencesContext;
     }
 }

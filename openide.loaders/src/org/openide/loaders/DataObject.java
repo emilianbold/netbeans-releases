@@ -107,7 +107,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * ! Use syncModified for modifications instead !*/
     private static ModifiedRegistry modified = new ModifiedRegistry();
     /** sync modified data (for modification operations) */
-    private static Set<DataObject> syncModified = Collections.synchronizedSet(modified);
+    private static final Set<DataObject> syncModified = Collections.synchronizedSet(modified);
 
     /** Modified flag */
     private boolean modif = false;
@@ -131,7 +131,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     private static final Object listenersMethodLock = new Object();
     
     /** Lock used for ensuring there will be just one node delegate */
-    private Object nodeCreationLock = new Object();
+    private final Object nodeCreationLock = new Object();
     
     /** Lock for copy/move/rename/etc. operations */
     private static Object synchObject = new Object ();
@@ -183,11 +183,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * the original data object, it is protected.
     */
     protected void dispose () {
-        DataObjectPool.Item item = this.item;
+        DataObjectPool.Item i = item;
         
-        if (item != null) {
-            item.deregister (true);
-            item.setDataObject(null);
+        if (i != null) {
+            i.deregister (true);
+            i.setDataObject(null);
             firePropertyChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
         }
     }
@@ -521,6 +521,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         return getPrimaryFile ().getName ();
     }
 
+    @Override
     public String toString () {
         return super.toString () + '[' + getPrimaryFile () + ']';
     }

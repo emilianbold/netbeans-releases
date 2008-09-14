@@ -1,14 +1,14 @@
 <html>
     <body>        
         <%
-            if (true) {
-                a = b;
-            }
+        if (true) {
+            a = b;
+        }
         %>
         <%
-            for (int i = 0; i < servers.length; i++) {
+        for (int i = 0; i < servers.length; i++) {
         %>
-        <%            }
+        <%        }
         %>
     </body>
 </html>

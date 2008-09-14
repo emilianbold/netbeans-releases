@@ -351,9 +351,14 @@ public class GameCodeSupport {
 				section.switchToEditable(getComponent().getComponentID() + "-preInit"); // NOI18N
 				section.getWriter().write(" // write pre-init user code here\n").commit(); // NOI18N
 				section.switchToGuarded();
-				
+
+                //Fix for #145509 - [65cat] ArrayIndexOutOfBoundsException: 0
+                int cols = 0;
+                if ( tiles.length >0 ){
+                    cols = tiles[0].length;
+                }
 				section.getWriter().write(layerName + " = new TiledLayer(" // NOI18N
-						+ tiles[0].length + ", " + tiles.length + ", " + CodeUtils.createGetterMethodName(imageName) // NOI18N
+						+ cols + ", " + tiles.length + ", " + CodeUtils.createGetterMethodName(imageName) // NOI18N
 						+ "(), " + tileWidth + ", " + tileHeight + ");\n"); // NOI18N
 				
 				//init animated tiles
@@ -400,7 +405,7 @@ public class GameCodeSupport {
 				section.switchToGuarded();
 				
 				section.getWriter().write("for (int row = 0; row < " + tiles.length + "; row++) {\n"); // NOI18N
-				section.getWriter().write("for (int col = 0; col < " + tiles[0].length + "; col++) {\n"); // NOI18N
+				section.getWriter().write("for (int col = 0; col < " + cols + "; col++) {\n"); // NOI18N
 				section.getWriter().write(layerName + ".setCell(col, row, tiles[row][col]);\n"); // NOI18N
 				section.getWriter().write("}\n"); // NOI18N
 				section.getWriter().write("}\n"); // NOI18N

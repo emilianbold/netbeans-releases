@@ -11,6 +11,4 @@ void main() {
    freq.td_pair_BAD().getKey().foo();
    freq.td_pair_BAD().getValue().boo();
    iter->key_OK();
-   MyVector<A>::iterator i;
-   i->foo();
 }

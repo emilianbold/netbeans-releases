@@ -192,9 +192,13 @@ public abstract class GsfTestBase extends NbTestCase {
             assertTrue("success to create " + dir, dir.mkdirs());
         }
         FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        return FileUtil.createData(dirFO, path);
+        return touch(dirFO, path);
     }
     
+    protected FileObject touch(final FileObject dir, final String path) throws IOException {
+        return FileUtil.createData(dir, path);
+    }
+
     public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
         OutputStream os = fo.getOutputStream();
         try {
@@ -273,9 +277,24 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
 
-    public BaseDocument getDocument(String s, String mimeType, Language language) {
+    public BaseDocument getDocument(String s, final String mimeType, final Language language) {
         try {
-            BaseDocument doc = new BaseDocument(true, mimeType);
+            BaseDocument doc = new BaseDocument(true, mimeType) {
+                @Override
+                public boolean isIdentifierPart(char ch) {
+                    if (mimeType != null) {
+                        org.netbeans.modules.gsf.Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                        if (l != null) {
+                            GsfLanguage gsfLanguage = l.getGsfLanguage();
+                            if (gsfLanguage != null) {
+                                return gsfLanguage.isIdentifierChar(ch);
+                            }
+                        }
+                    }
+
+                    return super.isIdentifierPart(ch);
+                }
+            };
 
             //doc.putProperty("mimeType", mimeType);
             doc.putProperty(org.netbeans.api.lexer.Language.class, language);
@@ -2830,7 +2849,7 @@ public abstract class GsfTestBase extends NbTestCase {
      * the caret) and a corresponding insert or delete (with insert:string or remove:string)
      * as the value.
      */
-    protected IncrementalParse getIncrementalResult(String relFilePath, String... edits) throws Exception {
+    protected IncrementalParse getIncrementalResult(String relFilePath, double speedupExpectation, String... edits) throws Exception {
         assertNotNull("Must provide a list of edits", edits);
         assertTrue("Should be an even number of edit events: pairs of caret, insert/remove", edits.length % 2 == 0);
 
@@ -2898,20 +2917,30 @@ public abstract class GsfTestBase extends NbTestCase {
         long fullParseEndTime = System.nanoTime();
         assertNotNull(fullParseResult);
 
-        long incrementalParseTime = incrementalEndTime-incrementalStartTime;
-        long fullParseTime = fullParseEndTime-fullParseStartTime;
-        //assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns)",
-        //        incrementalParseTime < fullParseTime);
-        // Figure out how to ensure garbage collections etc. make a fair run.
-        assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns)",
-// 2x here -- figure out how to make test stable, then remove!!                
-                incrementalParseTime < 2*fullParseTime);
+        if (speedupExpectation > 0.0) {
+            long incrementalParseTime = incrementalEndTime-incrementalStartTime;
+            long fullParseTime = fullParseEndTime-fullParseStartTime;
+            // Figure out how to ensure garbage collections etc. make a fair run.
+            assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns); speedup was " +
+                    fullParseTime/incrementalParseTime,
+                    ((double)incrementalParseTime)*speedupExpectation < fullParseTime);
+        }
 
         return new IncrementalParse(initialResult, info, incrementalResult, history, initialText, modifiedText, fullParseResult);
     }
 
-    protected void checkIncremental(String relFilePath, String... edits) throws Exception {
-        IncrementalParse parse = getIncrementalResult(relFilePath, edits);
+    /**
+     * Check incremental parsing
+     * @param relFilePath Path to test file to be parsed
+     * @param speedupExpectation The speed up we're expecting for incremental processing
+     *   over normal full-file analysis. E.g. 1.0d means we want to ensure that incremental
+     *   parsing is at least as fast as normal parsing. For small files there may be extra
+     *   overhead; you can pass 0.0d to turn off this check (but the test runs to ensure
+     *   that things are working okay.)
+     * @param edits A list of edits to perform.
+     */
+    protected void checkIncremental(String relFilePath, double speedupExpectation, String... edits) throws Exception {
+        IncrementalParse parse = getIncrementalResult(relFilePath, speedupExpectation, edits);
 
         ParserResult incrementalResult = parse.newParserResult;
         ParserResult fullParseResult = parse.fullParseResult;

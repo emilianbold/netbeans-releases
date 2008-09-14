@@ -224,6 +224,9 @@ public:
     void run() {
         resume(BREAKRESUMEACTION_CONTINUE);
     }
+    void stop() {
+        resume(BREAKRESUMEACTION_ABORT);
+    }
     void stepInto() {
         resume(BREAKRESUMEACTION_STEP_INTO);
     }
