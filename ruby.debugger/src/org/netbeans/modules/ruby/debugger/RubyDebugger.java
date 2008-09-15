@@ -162,8 +162,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             if (descriptor.getInitialArgs() != null) {
                 additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
             }
-            if (descriptor.getJVMArguments() != null) {
-                additionalOptions.addAll(Arrays.asList(descriptor.getJVMArguments()));
+            if (jrubySet && descriptor.getJVMArguments() != null) {
+                for (String jvmArg : descriptor.getJVMArguments()) {
+                    additionalOptions.add("-J" + jvmArg); // NOI18N
+                }
             }
             if (!additionalOptions.isEmpty()) {
                 debugDesc.setAdditionalOptions(additionalOptions);
