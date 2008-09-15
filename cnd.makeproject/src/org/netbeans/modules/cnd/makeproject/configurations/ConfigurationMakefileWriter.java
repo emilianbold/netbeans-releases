@@ -328,8 +328,7 @@ public class ConfigurationMakefileWriter {
         for (LibraryItem lib : libs) {
             String libPath = lib.getPath();
             if (libPath != null && libPath.length() > 0) {
-//                bw.write(output + ": " + IpeUtils.escapeOddCharacters(libPath) + "\n\n"); // NOI18N
-                bw.write(output + ": " + libPath + "\n\n"); // NOI18N
+                bw.write(output + ": " + IpeUtils.escapeOddCharacters(libPath) + "\n\n"); // NOI18N
             }
         }
         bw.write(output + ": ${OBJECTFILES}\n"); // NOI18N
