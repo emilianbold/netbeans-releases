@@ -703,9 +703,10 @@ public class MySQLDatabaseServer implements DatabaseServer {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(Utils.getMessage("LBL_StoppingMySQLServer"));
                 handle.start();
                 handle.switchToIndeterminate();
+                Process proc = null;
 
                 try {
-                    runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
+                    proc = runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
 
                     // See if the connection is still active.  Try 5 times with a
                     // 1 second wait and then assume something went wrong if it's
@@ -738,6 +739,9 @@ public class MySQLDatabaseServer implements DatabaseServer {
                         });
                     }
                 } finally {
+                    if (proc != null) {
+                        proc.destroy();
+                    }
                     handle.finish();
                 }
                 
@@ -778,7 +782,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
 
     }
 
-    private void runProcess(String command, String args, boolean displayOutput,
+    private Process runProcess(String command, String args, boolean displayOutput,
             String outputLabel) throws DatabaseException {
 
         if ( Utilities.isMac() && command.endsWith(".app") ) {  // NOI18N
@@ -795,6 +799,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
             if ( displayOutput ) {
                 new ExecSupport().displayProcessOutputs(proc, outputLabel);
             }
+            return proc;
         } catch ( Exception e ) {
             throw new DatabaseException(e);
         }
