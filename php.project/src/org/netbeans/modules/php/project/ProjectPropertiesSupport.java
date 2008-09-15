@@ -214,11 +214,10 @@ public final class ProjectPropertiesSupport {
     }
 
     private static boolean getBoolean(PhpProject project, String property, boolean defaultValue) {
-        boolean retval = defaultValue;
         String boolValue = project.getEvaluator().getProperty(property);
         if (boolValue != null && boolValue.trim().length() > 0) {
-            retval = Boolean.parseBoolean(boolValue);
+            return Boolean.parseBoolean(boolValue);
         }
-        return retval;
+        return defaultValue;
     }
 }
