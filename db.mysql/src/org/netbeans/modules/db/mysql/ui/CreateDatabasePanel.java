@@ -316,8 +316,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     dbname = keyStr;
                 }
                 
-                // User has changed the db name, so enable creating a new db
-                databaseCreated = false;
                 validatePanel(dbname);
             }
 
@@ -460,7 +458,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
     private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDatabaseNameItemStateChanged
     
-        databaseCreated = false;
         if (evt.getStateChange() == ItemEvent.SELECTED)
         {
             validatePanel(evt.getItem().toString().trim());
