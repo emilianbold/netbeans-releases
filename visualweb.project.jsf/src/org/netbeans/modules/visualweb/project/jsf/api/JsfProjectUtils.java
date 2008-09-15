@@ -606,6 +606,10 @@ public class JsfProjectUtils {
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
                 if (ddRoot != null) {
                     String facesMapping = getFacesURLPattern(ddRoot);
+                    if (facesMapping == null) {
+                        return newStartPage;
+                    }
+
                     if (oldStartPage != null) {
                         removeWelcomeFile(ddRoot, facesMapping, oldStartPage);
                     }
