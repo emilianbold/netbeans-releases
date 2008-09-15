@@ -92,6 +92,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
+                comboDatabaseName.setEnabled(!start);
                 okButton.setEnabled(!start);
                 if (! start) {
                     cancelButton.setEnabled(true);
