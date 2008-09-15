@@ -37,10 +37,5 @@
 
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
     <component class="org.netbeans.installer.wizard.components.actions.SearchForJavaAction"/>
-    
-    <component class="org.netbeans.installer.products.glassfish.wizard.panels.GlassFishPanel">
-        <properties>
-            <property name="preferred.jdk.version.macosx">1.5.0.7.0</property>
-        </properties>
-    </component>
+    <component class="org.netbeans.installer.products.glassfish.wizard.panels.GlassFishPanel"/>
 </wizard>

@@ -280,9 +280,9 @@ implements FileChangeListener, LexicalHandler, LookupListener {
                         }
                     }
                 } catch (FileNotFoundException ex) {
-                    XMLDataObject.ERR.log(Level.WARNING, null, ex);
+                    XMLDataObject.ERR.log(Level.INFO, null, ex);
                 } catch (IOException ex) {
-                    XMLDataObject.ERR.log(Level.WARNING, null, ex);
+                    XMLDataObject.ERR.log(Level.INFO, null, ex);
                 } finally {
                     if (Boolean.getBoolean("netbeans.profile.memory")) {
                         parser.setContentHandler(XMLDataObject.NullHandler.INSTANCE);

@@ -11,6 +11,7 @@
   </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -32,7 +33,7 @@
         </Property>
         <Property name="lineWrap" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="DESC_saxw_versions" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/java/generator/Bundle.properties" key="DESC_saxw_versions" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
         <Property name="disabledTextColor" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -53,7 +54,7 @@
           <Connection component="jaxpVersionComboBox" type="bean"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorVersionPanel.jaxpLabel.text" replaceFormat="NbBundle.getMessage(SAXGeneratorVersionPanel.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/java/generator/Bundle.properties" key="SAXGeneratorVersionPanel.jaxpLabel.text" replaceFormat="NbBundle.getMessage(SAXGeneratorVersionPanel.class,&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -75,7 +76,7 @@
           <Connection component="versionComboBox" type="bean"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorCustomizer.versionLabel.text" replaceFormat="NbBundle.getMessage(SAXGeneratorVersionPanel.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/java/generator/Bundle.properties" key="SAXGeneratorCustomizer.versionLabel.text" replaceFormat="NbBundle.getMessage(SAXGeneratorVersionPanel.class,&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -94,7 +95,7 @@
     <Component class="javax.swing.JCheckBox" name="propagateSAXCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorVersionPanel.propagateSAXCheckBox.text" replaceFormat="NbBundle.getMessage(SAXGeneratorVersionPanel.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/java/generator/Bundle.properties" key="SAXGeneratorVersionPanel.propagateSAXCheckBox.text" replaceFormat="NbBundle.getMessage(SAXGeneratorVersionPanel.class,&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>

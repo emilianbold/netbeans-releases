@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class SQLCompletionItem implements CompletionItem {
 
+    private static final String CATALOG_COLOR = "<font color=#515fc5>"; // NOI18N
     private static final String SCHEMA_COLOR = "<font color=#006666>"; // NOI18N
     private static final String TABLE_COLOR = "<font color=#cc7800>"; // NOI18N
     private static final String COLUMN_COLOR = "<font color=#0707ab>"; // NOI18N
@@ -70,12 +71,18 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final String BOLD = "<b>"; // NOI18N
     private static final String BOLD_END = "</b>"; // NOI18N
 
+    private static final ImageIcon CATALOG_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/catalog.png")); // NOI18N
     private static final ImageIcon SCHEMA_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/schema.png")); // NOI18N
     private static final ImageIcon TABLE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/table.png")); // NOI18N
+    private static final ImageIcon ALIAS_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/alias.png")); // NOI18N
     private static final ImageIcon COLUMN_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/column.png")); // NOI18N
 
     private final String substitutionText;
     private final int substitutionOffset;
+
+    public static SQLCompletionItem catalog(String catalogName, String substitutionText, int substitutionOffset) {
+        return new Catalog(catalogName, substitutionText, substitutionOffset);
+    }
 
     public static SQLCompletionItem schema(String schemaName, String substitutionText, int substitutionOffset) {
         return new Schema(schemaName, substitutionText, substitutionOffset);
@@ -85,16 +92,12 @@ public abstract class SQLCompletionItem implements CompletionItem {
         return new Table(tableName, substitutionText, substitutionOffset);
     }
 
-    public static SQLCompletionItem alias(String alias, String substitutionText, int substitutionOffset) {
-        return new Alias(alias, substitutionText, substitutionOffset);
+    public static SQLCompletionItem alias(String alias, QualIdent tableName, String substitutionText, int substitutionOffset) {
+        return new Alias(alias, tableName, substitutionText, substitutionOffset);
     }
 
     public static SQLCompletionItem column(QualIdent tableName, String columnName, String substitutionText, int substitutionOffset) {
-        return new QualTableColumn(tableName, columnName, substitutionText, substitutionOffset);
-    }
-
-    public static SQLCompletionItem column(String simpleTableName, String columnName, String substitutionText, int substitutionOffset) {
-        return new SimpleTableColumn(simpleTableName, columnName, substitutionText, substitutionOffset);
+        return new Column(tableName, columnName, substitutionText, substitutionOffset);
     }
 
     protected SQLCompletionItem(String substitutionText, int substitutionOffset) {
@@ -170,6 +173,44 @@ public abstract class SQLCompletionItem implements CompletionItem {
                 }
             }
         });
+    }
+
+    private static final class Catalog extends SQLCompletionItem {
+
+        private final String catalogName;
+        private String leftText;
+
+        public Catalog(String catalogName, String substitutionText, int substitutionOffset) {
+            super(substitutionText, substitutionOffset);
+            this.catalogName = catalogName;
+        }
+
+        @Override
+        protected ImageIcon getImageIcon() {
+            return CATALOG_ICON;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(CATALOG_COLOR);
+                sb.append(catalogName);
+                sb.append(COLOR_END);
+                leftText = sb.toString();
+            }
+            return leftText;
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return MessageFormat.format("Catalog {0}", catalogName); // NOI18N
+        }
     }
 
     private static final class Schema extends SQLCompletionItem {
@@ -252,15 +293,18 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final class Alias extends SQLCompletionItem {
 
         private final String alias;
+        private final QualIdent tableName;
+        private String rightText;
 
-        public Alias(String alias, String substitutionText, int substitutionOffset) {
+        public Alias(String alias, QualIdent tableName, String substitutionText, int substitutionOffset) {
             super(substitutionText, substitutionOffset);
             this.alias = alias;
+            this.tableName = tableName;
         }
 
         @Override
         protected ImageIcon getImageIcon() {
-            return null;
+            return ALIAS_ICON;
         }
 
         @Override
@@ -270,27 +314,34 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
         @Override
         protected String getRightHtmlText() {
-            return null;
+            if (rightText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(TABLE_COLOR);
+                sb.append(tableName.toString());
+                sb.append(COLOR_END);
+                rightText = MessageFormat.format(NbBundle.getMessage(SQLCompletionItem.class, "MSG_Alias"), sb.toString());
+            }
+            return rightText;
         }
 
         @Override
         public String toString() {
-            return MessageFormat.format("Alias {0}", alias); // NOI18N
+            return MessageFormat.format("Alias {0} to {1}", alias, tableName); // NOI18N
         }
     }
 
-    private static abstract class AbstractColumn extends SQLCompletionItem {
+    private static class Column extends SQLCompletionItem {
 
+        private final QualIdent tableName;
         private final String columnName;
         private String leftText;
         private String rightText;
 
-        public AbstractColumn(String columnName, String substitutionText, int substitutionOffset) {
+        public Column(QualIdent tableName, String columnName, String substitutionText, int substitutionOffset) {
             super(substitutionText, substitutionOffset);
+            this.tableName = tableName;
             this.columnName = columnName;
         }
-
-        protected abstract String getTableName();
 
         protected String getColumnName() {
             return columnName;
@@ -319,7 +370,7 @@ public abstract class SQLCompletionItem implements CompletionItem {
             if (rightText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(TABLE_COLOR);
-                sb.append(getTableName());
+                sb.append(tableName.toString());
                 sb.append(COLOR_END);
                 rightText = MessageFormat.format(NbBundle.getMessage(SQLCompletionItem.class, "MSG_Table"), sb.toString());
             }
@@ -328,37 +379,7 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
         @Override
         public String toString() {
-            return MessageFormat.format("Column {0} in table {1}", columnName, getTableName()); // NOI18N
-        }
-    }
-
-    private static final class QualTableColumn extends AbstractColumn {
-
-        private final QualIdent tableName;
-
-        public QualTableColumn(QualIdent tableName, String columnName, String substitutionText, int substitutionOffset) {
-            super(columnName, substitutionText, substitutionOffset);
-            this.tableName = tableName;
-        }
-
-        @Override
-        protected String getTableName() {
-            return tableName.toString();
-        }
-    }
-
-    private static final class SimpleTableColumn extends AbstractColumn {
-
-        private final String simpleTableName;
-
-        public SimpleTableColumn(String simpleTableName, String columnName, String quoteString, int substitutionOffset) {
-            super(columnName, quoteString, substitutionOffset);
-            this.simpleTableName = simpleTableName;
-        }
-
-        @Override
-        protected String getTableName() {
-            return simpleTableName;
+            return MessageFormat.format("Column {0} in table {1}", columnName, tableName); // NOI18N
         }
     }
 }

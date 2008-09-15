@@ -777,9 +777,25 @@ public final class OpenProjectList {
                 // correct loaded list.
                 try {
                     mainProject = ProjectManager.getDefault().findProject(mainProject.getProjectDirectory());
-                    if (mainProject != null && !openProjects.contains(mainProject)) {
-                        logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                        throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                    if (mainProject != null) {
+                        boolean fail = true;
+                        for (Project p : openProjects) {
+                            if (p.equals(mainProject)) {
+                                fail = false;
+                                break;
+                            }
+                            if (p instanceof LazyProject) {
+                                if (p.getProjectDirectory().equals(mainProject.getProjectDirectory())) {
+                                    mainProject = p;
+                                    fail = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (fail) {
+                            logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
+                            throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                        }
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -1192,7 +1208,7 @@ public final class OpenProjectList {
             }
         }
         
-        public void add( Project p ) {
+        public synchronized void add( Project p ) {
             int index = getIndex( p );
             
             if ( index == -1 ) {
@@ -1234,7 +1250,7 @@ public final class OpenProjectList {
             }
         }
         
-        public boolean remove( Project p ) {
+        public synchronized boolean remove( Project p ) {
             int index = getIndex( p );
             if ( index != -1 ) {
                 if (LOGGER.isLoggable(Level.FINE)) {
@@ -1247,7 +1263,7 @@ public final class OpenProjectList {
             return false;
         }
         
-        public void refresh() {
+        public synchronized void refresh() {
             assert recentProjects.size() == recentProjectsInfos.size();
             boolean refresh = false;
             Iterator<ProjectReference> recentProjectsIter = recentProjects.iterator();
@@ -1317,7 +1333,7 @@ public final class OpenProjectList {
             return empty;
         }
         
-        public void load() {
+        public synchronized void load() {
             List<URL> URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
             List<String> names = OpenProjectListSettings.getInstance().getRecentProjectsDisplayNames();
             List<ExtIcon> icons = OpenProjectListSettings.getInstance().getRecentProjectsIcons();

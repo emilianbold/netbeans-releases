@@ -612,7 +612,7 @@ public final class RubyPlatform {
      * returned by this function.
      */
     private Pattern getRequiredRDebugIDEVersionPattern() {
-        return Pattern.compile("0\\.2\\..*"); // NOI18N
+        return Pattern.compile("0\\.3\\..*"); // NOI18N
     }
 
     private void checkAndReport(final String gemName, final Pattern gemVersion, final StringBuilder errors) {
@@ -659,7 +659,7 @@ public final class RubyPlatform {
             public void run() {
                 // TODO: ideally this would be e.g. '< 0.3' but then running external
                 // process has problems with the '<'. See issue 142240.
-                gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.2.1");
+                gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.3.0");
             }
         };
         if (!EventQueue.isDispatchThread()) {
@@ -877,15 +877,15 @@ public final class RubyPlatform {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.6"); // NOI18N
-            info.jversion = "1.1.3"; // NOI18N
+            info.jversion = "1.1.4"; // NOI18N
             info.patchlevel = "114"; // NOI18N
             // XXX this is dynamically generated during JRuby build, should be
             // fixed by not hardcoding the default platform info, but rather
             // computing as for other platforms
-            info.releaseDate = "2008-08-15"; // NOI18N
+            info.releaseDate = "2008-08-28"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.1.3", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+                    "jruby-1.1.4", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby"); // NOI18N
@@ -956,12 +956,34 @@ public final class RubyPlatform {
             return releaseDate;
         }
 
+        /**
+         * Returns JRuby version as specified by <code>JRUBY_VERSION</code>
+         * JRuby constant. Supported by JRuby only.
+         *
+         * @return JRuby version
+         */
         public String getJVersion() {
             return jversion;
         }
 
+        /**
+         * Returns Ruby version as specified by <code>RUBY_VERSION</code>
+         * constant. Supported by all interpreters.
+         *
+         * @return Ruby version
+         */
         public String getVersion() {
             return version;
+        }
+
+        /**
+         * Get version specific for the platform. E.g. in the case of JRuby it
+         * returns e.g. 1.1.4 instead of 1.8.6.
+         *
+         * @return platform specific version
+         */
+        public String getPlatformVersion() {
+            return isJRuby() ? getJVersion() : getVersion();
         }
 
         /** Returns content of <code>RbConfig::CONFIG['rubylibdir']</code>. */

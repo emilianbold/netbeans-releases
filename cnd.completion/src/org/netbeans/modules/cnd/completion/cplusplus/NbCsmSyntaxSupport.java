@@ -52,6 +52,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -82,6 +83,10 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
         assert dobj != null;
         FileObject fo = dobj.getPrimaryFile();
         return CsmFinderFactory.getDefault().getFinder(fo);
+    }
+
+    protected FileReferencesContext getFileReferencesContext() {
+        return null;
     }
     
     protected DataObject getDataObject(FileObject fo) {
@@ -148,7 +153,11 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
                     for (int j = 0; j <= cntM1; j++) {
 			//XXX
                         //sb.append(parms[j].getType().format(true));
-			sb.append(parms[j].getType().getText());
+                        if (parms[j].isVarArgs()) {
+                            sb.append("...");// NOI18N
+                        } else {
+                            sb.append(parms[j].getType().getText());
+                        }
                         if (j < cntM1) {
                             sb.append(", "); // NOI18N
                         }

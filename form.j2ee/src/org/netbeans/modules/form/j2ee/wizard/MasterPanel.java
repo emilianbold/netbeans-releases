@@ -503,13 +503,15 @@ public class MasterPanel implements WizardDescriptor.Panel {
         tableCombo.setEnabled(tableCombo.getModel().getSize() != 0);
         tableCombo.setSelectedItem(tableCombo.getSelectedItem());
         
-        if (model.getSize() == 0) {
-            showMsg("MSG_MasterDBWithoutTables"); // NOI18N
-        } else {
-            if (invalidCount == model.getSize()) {
-                showMsg("MSG_MasterDBWithoutTablesWithPrimaryKeys"); // NOI18N
+        if (connection != null) {
+            if (model.getSize() == 0) {
+                showMsg("MSG_MasterDBWithoutTables"); // NOI18N
             } else {
-                hideMsg();
+                if (invalidCount == model.getSize()) {
+                    showMsg("MSG_MasterDBWithoutTablesWithPrimaryKeys"); // NOI18N
+                } else {
+                    hideMsg();
+                }
             }
         }
     }

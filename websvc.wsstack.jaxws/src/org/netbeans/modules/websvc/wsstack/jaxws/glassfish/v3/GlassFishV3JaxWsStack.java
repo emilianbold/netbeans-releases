@@ -87,7 +87,8 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxWs.Feature.TESTER_PAGE || feature == JaxWs.Feature.WSIT) {
+        if (feature == JaxWs.Feature.TESTER_PAGE || feature == JaxWs.Feature.WSIT ||
+            feature == JaxWs.Feature.JSR109) {
             return true;
         } else {
             return false;
@@ -129,9 +130,8 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
 
         public URL[] getLibraries() {
             String[] entries = new String[] {"javax.javaee", //NOI
-                                             "webservices-api", 
-                                             "webservices-rt", 
-                                             "webservices-tools", 
+                                             "webservices", 
+                                             "jaxb", 
                                              "jsr109-impl"};
             List<URL> cPath = new ArrayList<URL>();
             for (String entry : entries) {

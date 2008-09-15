@@ -424,7 +424,7 @@ implements java.io.Serializable {
         }
 
         public Iterator<FileObject> iterator() {
-            return Collections.EMPTY_SET.iterator();
+            return Collections.<FileObject>emptySet().iterator();
         }
 
         public Object[] toArray() {
@@ -632,10 +632,10 @@ implements java.io.Serializable {
     }
 
     /** Factory method to create default implementation of a factory for
-     * data objects. It takes the class of the <code>DataObject</code> and
+     * data objects. It takes the class of the {@link DataObject} and
      * is ready to call its constructor. The constructor needs to take two
-     * arguments: FileObject and MultiDataLoader. It can throw IOException as
-     * is usual among DataObject constructors.
+     * arguments: {@link FileObject} and {@link MultiFileLoader}. It can throw {@link IOException} as
+     * is usual among {@link DataObject} constructors.
      * <p>
      * You can also invoke this method from a layer by following definition:
      * <pre>
@@ -753,6 +753,7 @@ implements java.io.Serializable {
             super ();
         }
 
+        @Override
         protected FileObject findPrimaryFile (FileObject fo) {
             FileSystem fs = null;
             try {
@@ -767,6 +768,7 @@ implements java.io.Serializable {
         }
 
         /** @return list of all required extensions for this loader */
+        @Override
         protected String [] getRequiredExt () {
             return new String[] {
                 InstanceDataObject.INSTANCE,
@@ -780,7 +782,7 @@ implements java.io.Serializable {
  * the end of loader pool among default loaders.
  */
 private static class InstanceLoader extends UniFileLoader {
-    static final long serialVersionUID =-3462727693843631328L;
+    private static final long serialVersionUID =-3462727693843631328L;
 
 
     /* Creates new InstanceLoader */
@@ -788,11 +790,13 @@ private static class InstanceLoader extends UniFileLoader {
         super ("org.openide.loaders.InstanceDataObject"); // NOI18N
     }
 
+    @Override
     protected void initialize () {
         super.initialize();
         setExtensions(null);
     }
 
+    @Override
     protected String actionsContext () {
         return "Loaders/application/x-nbsettings/Actions"; // NOI18N
     }
@@ -800,6 +804,7 @@ private static class InstanceLoader extends UniFileLoader {
     /** Get the default display name of this loader.
     * @return default display name
     */
+    @Override
     protected String defaultDisplayName () {
         return NbBundle.getMessage (DataLoaderPool.class, "LBL_instance_loader_display_name");
     }
@@ -818,6 +823,7 @@ private static class InstanceLoader extends UniFileLoader {
         return obj;
     }
 
+    @Override
     public void writeExternal (ObjectOutput oo) throws IOException {
         // does not use super serialization of extensions
         oo.writeObject (this);
@@ -825,6 +831,7 @@ private static class InstanceLoader extends UniFileLoader {
         super.writeExternal (oo);
     }
 
+    @Override
     public void readExternal (ObjectInput oi) throws IOException, ClassNotFoundException {
         // the result of following code is either ExtensionList (original version)
         // or this (current version).
@@ -849,6 +856,7 @@ private static class InstanceLoader extends UniFileLoader {
     * Checks if all required extensions are in new list of extensions.
     * @param ext new list of extensions
     */
+    @Override
     public void setExtensions(ExtensionList ext) {
         super.setExtensions(initExtensions(ext));
     }
@@ -867,6 +875,7 @@ private static class InstanceLoader extends UniFileLoader {
      * exceptions when browsing system file system.
      * Anyway reading the contents would mutate loader singletons! Evil.
      */
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
         FileObject r = super.findPrimaryFile(fo);
         if (r != null && r.getPath().equals("loaders.ser")) { // NOI18N
@@ -902,6 +911,7 @@ private static final class DefaultLoader extends MultiFileLoader {
         //super (DefaultDataObject.class);
     }
 
+    @Override
     protected String actionsContext () {
         return "Loaders/content/unknown/Actions"; // NOI18N
     }
@@ -909,6 +919,7 @@ private static final class DefaultLoader extends MultiFileLoader {
     /** Get the default display name of this loader.
     * @return default display name
     */
+    @Override
     protected String defaultDisplayName () {
         return NbBundle.getMessage (DataLoaderPool.class, "LBL_default_loader_display_name");
     }
@@ -964,6 +975,7 @@ private static final class DefaultLoader extends MultiFileLoader {
      *
      * @param obj the object to test
      */
+    @Override
     void checkFiles (MultiDataObject obj) {
     }
 } // end of DefaultLoader
@@ -987,6 +999,7 @@ private static final class ShadowLoader extends UniFileLoader {
     /** Get the default display name of this loader.
     * @return default display name
     */
+    @Override
     protected String defaultDisplayName () {
         return NbBundle.getMessage (DataLoaderPool.class, "LBL_shadow_loader_display_name");
     }
@@ -997,6 +1010,7 @@ private static final class ShadowLoader extends UniFileLoader {
      * @return the primary file for the file or <code>null</code> if the file is not
      *  recognized by this loader
      */
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
         if (fo.hasExt (DataShadow.SHADOW_EXTENSION)) {
             return fo;
@@ -1010,6 +1024,7 @@ private static final class ShadowLoader extends UniFileLoader {
      * @param primaryFile primary file recognized by this loader
      * @return primary entry for that file
      */
+    @Override
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
         return new FileEntry(obj, primaryFile);
     }
@@ -1032,8 +1047,10 @@ private static final class ShadowLoader extends UniFileLoader {
         /* Link is broken, create BrokenDataShadow */
         return new BrokenDataShadow (primaryFile, this);
     }
+    @Override
     public void writeExternal(ObjectOutput oo) throws IOException {
     }
+    @Override
     public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
     }
 } // end of ShadowLoader
@@ -1049,6 +1066,7 @@ static final class FolderLoader extends UniFileLoader {
         // super (DataFolder.class);
     }
 
+    @Override
     protected String actionsContext () {
         return "Loaders/folder/any/Actions"; // NOI18N
     }
@@ -1056,10 +1074,12 @@ static final class FolderLoader extends UniFileLoader {
     /** Get the default display name of this loader.
     * @return default display name
     */
+    @Override
     protected String defaultDisplayName () {
         return NbBundle.getMessage (DataLoaderPool.class, "LBL_folder_loader_display_name");
     }
 
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
         if (fo.isFolder()) {
             return fo;
@@ -1067,6 +1087,7 @@ static final class FolderLoader extends UniFileLoader {
         return null;
     }
 
+    @Override
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
         return new FileEntry.Folder(obj, primaryFile);
     }
@@ -1089,9 +1110,11 @@ static final class FolderLoader extends UniFileLoader {
             public NodeSharingDataFolder(FileObject fo) throws DataObjectExistsException, IllegalArgumentException {
                 super(fo, FolderLoader.this);
             }
+            @Override
             protected Node createNodeDelegate() {
                 return new FilterNode(original.getNodeDelegate());
             }
+            @Override
             Node getClonedNodeDelegate (DataFilter filter) {
                 return new FilterNode(original.getClonedNodeDelegate(filter));
             }
@@ -1099,6 +1122,7 @@ static final class FolderLoader extends UniFileLoader {
         return new NodeSharingDataFolder(primaryFile);
     }
 
+    @Override
     public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         try {
             super.readExternal(oi);

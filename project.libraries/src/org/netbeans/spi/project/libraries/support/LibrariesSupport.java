@@ -184,11 +184,18 @@ public final class LibrariesSupport {
                 libEntryPath = libEntryPath.substring(0, index);
                 // use raw path instead because it will be append to URI as is:
                 jarFolder = libraryEntry.getRawPath().substring(libraryEntry.getRawPath().indexOf("!/")+2);
-            }
+            }            
             URI resolvedPath = FileUtil.normalizeFile(new File(libBase, libEntryPath)).toURI();
             if (jarFolder != null) { // NOI18N
                 return URI.create("jar:"+resolvedPath.toString()+"!/"+jarFolder); // NOI18N
             } else {
+                //If the original was a folder but translated not (non existing file) preserve /
+                final boolean relativeEndsWithSlash = libEntryPath.endsWith("/");     //NOI18N
+                final String suri = resolvedPath.toString();
+                final boolean absoluteEndsWithSlash = suri.endsWith("/");  //NOI18N
+                if (relativeEndsWithSlash && !absoluteEndsWithSlash) {
+                    resolvedPath = URI.create (suri+'/');    //NOI18N
+                }
                 return resolvedPath;
             }
         }

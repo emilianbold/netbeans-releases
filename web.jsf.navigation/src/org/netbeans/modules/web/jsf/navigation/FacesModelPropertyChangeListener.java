@@ -30,7 +30,7 @@ import org.openide.util.Exceptions;
  */
 public class FacesModelPropertyChangeListener implements PropertyChangeListener {
 
-    public PageFlowController pfc;
+    private final PageFlowController pfc;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
     
     public FacesModelPropertyChangeListener(PageFlowController pfc) {
@@ -69,7 +69,12 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
-                    pfc.getView().removeUserMalFormedFacesConfig(); // Does clear graph take care of this?
+                    PageFlowView view = pfc.getView();
+                    if (view == null) {
+                        // XXX #145996 PageFlowController got destroyed in the meantime, revise that.
+                        return;
+                    }
+                    view.removeUserMalFormedFacesConfig(); // Does clear graph take care of this?
                     setupGraph(ev);
                 }
             });
@@ -81,6 +86,10 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
+                    if (pfc.getView() == null) {
+                        // XXX #145996 PageFlowController got destroyed in the meantime, revise that.
+                        return;
+                    }
                     navigationCaseEventHandler(myNewCase, myOldCase);
                 }
             });
@@ -91,6 +100,10 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
+                    if (pfc.getView() == null) {
+                        // XXX #145996 PageFlowController got destroyed in the meantime, revise that.
+                        return;
+                    }
                     navigationRuleEventHandler(myNewRule, myOldRule);
                 }
             });
@@ -99,6 +112,10 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
 
                 public void run() {
                     PageFlowView view = pfc.getView();
+                    if (view == null) {
+                        // XXX #145996 PageFlowController got destroyed in the meantime, revise that.
+                        return;
+                    }
                     view.clearGraph();
                     view.warnUserMalFormedFacesConfig();
                 }
@@ -116,6 +133,10 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
+                    if (pfc.getView() == null) {
+                        // XXX #145996 PageFlowController got destroyed in the meantime, revise that.
+                        return;
+                    }
                     replaceFromViewIdToViewIdEventHandler(ev, source, oldName, newName);
                 //                    replaceFromViewIdToViewIdEventHandler(oldName, newName, refactoringIsLikely);
                 }
@@ -127,6 +148,10 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
+                    if (pfc.getView() == null) {
+                        // XXX #145996 PageFlowController got destroyed in the meantime, revise that.
+                        return;
+                    }
                     replaceFromOutcomeEventHandler(navCase, oldName, newName);
                 }
             });
@@ -337,6 +362,10 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
+                if (pfc.getView() == null) {
+                    // XXX #145996 PageFlowController got destroyed in the meantime, revise that.
+                    return;
+                }
                 setupGraph(ev);
             }
         });

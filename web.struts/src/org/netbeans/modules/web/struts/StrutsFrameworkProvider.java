@@ -428,7 +428,8 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     }
                 } else {
                     //create welcome file with forward
-                    content = "<jsp:forward page=\"" + StrutsConfigUtilities.getWelcomeFile(panel.getURLPattern(), "Welcome") + "\"/>"; //NOI18N
+                    content = "<%@page contentType=\"text/html\"%>\n" + "<%@page pageEncoding=\"" + FileEncodingQuery.getDefaultEncoding().name() + "\"%>\n\n" + //NOI18N
+                              "<jsp:forward page=\"" + StrutsConfigUtilities.getWelcomeFile(panel.getURLPattern(), "Welcome") + "\"/>"; //NOI18N
                     target = FileUtil.createData(wm.getDocumentBase(), "index.jsp");//NOI18N
                     createFile(target, content, "UTF-8"); //NOI18N
                 }

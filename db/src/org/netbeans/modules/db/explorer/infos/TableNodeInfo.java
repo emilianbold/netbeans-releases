@@ -247,7 +247,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
     }
 
     public void addColumn(String tname) throws DatabaseException {
-        refreshChildren();
+        notifyChange();
     }
 
     @Override
@@ -280,7 +280,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
     } 
     
     @Override
-    protected void notifyChange() {
+    public void notifyChange() {
         super.notifyChange();
         fireRefresh();
     }

@@ -77,9 +77,14 @@ final class OffsetableDeclarationKey extends OffsetableKey {
             return obj.getEndOffset();
         } else {
             int result = obj.getEndOffset();
-            result |= 0x70000000;
+            result |= 0x40000000;
             return result;
         }
+    }
+
+    @Override
+    int getEndOffset() {
+        return super.getEndOffset() & 0x3FFFFFFF;
     }
     
     /*package*/ OffsetableDeclarationKey(DataInput aStream) throws IOException {

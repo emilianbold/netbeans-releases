@@ -57,37 +57,20 @@ import org.openide.util.NbBundle;
  * @author David Van Couvering
  */
 public class SampleManager {
-    private static Collection<SampleProvider> providers;
-    private static List<String> sampleNames;
-
-    static {
-        providers = SampleProviderHelper.getProviders();
-
-        sampleNames = new ArrayList<String>();
-        for (SampleProvider provider : providers) {
-            sampleNames.addAll(provider.getSampleNames());
-        }
-    }
-
     /**
      * Get the list of sample names that the manager knows how to create
      *
      * @return
      */
     public static List<String> getSampleNames() {
+        Collection<SampleProvider> providers = SampleProviderHelper.getProviders();
+
+        List<String> sampleNames = new ArrayList<String>();
+        for (SampleProvider provider : providers) {
+            sampleNames.addAll(provider.getSampleNames());
+        }
         return sampleNames;
     }
-
-    private static SampleProvider getProvider(String sampleName) {
-        for (SampleProvider provider : providers) {
-            if (provider.supportsSample(sampleName)) {
-                return provider;
-            }
-        }
-
-        return null;
-    }
-    
 
     /**
      * Determine if a give database name is for a sample database
@@ -96,7 +79,25 @@ public class SampleManager {
      * @return true if this is the name of a samlpe database
      */
     public static boolean isSample(String name) {
+        Collection<SampleProvider> providers = SampleProviderHelper.getProviders();
+
+        List<String> sampleNames = new ArrayList<String>();
+        for (SampleProvider provider : providers) {
+            sampleNames.addAll(provider.getSampleNames());
+        }
         return sampleNames.contains(name);
+    }
+
+    private static SampleProvider getProvider(String sampleName) {
+        Collection<SampleProvider> providers = SampleProviderHelper.getProviders();
+
+        for (SampleProvider provider : providers) {
+            if (provider.supportsSample(sampleName)) {
+                return provider;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -122,13 +123,6 @@ public class SampleManager {
                 throw new DatabaseException(Utils.getMessage("MSG_NoSuchSample", sampleName));
         }
         
-        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(
-                SampleManager.class, "MSG_CreatingSampleDBProgressLabel", sampleName));
-        ph.start();
-        try {
-            provider.create(sampleName, dbconn);
-        } finally {
-            ph.finish();
-        }
+        provider.create(sampleName, dbconn);
     }
 }

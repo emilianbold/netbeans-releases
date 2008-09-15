@@ -182,7 +182,7 @@ public class NavigateLinkAction extends WidgetAction.Adapter
                 Object obj = objectScene.findObject(widget);
                 HashSet<Object> set = new HashSet<Object>();
                 set.add(obj);
-                objectScene.setSelectedObjects(set);
+                objectScene.userSelectionSuggested(set, false);
             }
         }
     }

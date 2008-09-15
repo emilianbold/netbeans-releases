@@ -259,6 +259,7 @@ public class AstOffsetTest extends JsTestBase {
 
     public void testIncremental1() throws Exception {
         checkIncremental("testfiles/dragdrop.js",
+                2.0d, // Expect it to be at least twice as fast as non-incremental
                 "for (i = 1; i < ^drops.length; ++i)", INSERT+"target",
                 "if (Element.isPa^rent", REMOVE+"re"
                 );
@@ -266,11 +267,13 @@ public class AstOffsetTest extends JsTestBase {
 
     public void testIncremental2() throws Exception {
         checkIncremental("testfiles/rename.js",
+                0.0d, // small file: no expectation for it to be faster
                 "bbb: function(^ppp)", REMOVE+"pp"
                 );
     }
     public void testIncremental3() throws Exception {
         checkIncremental("testfiles/semantic3.js",
+                0.0d, // small file: no expectation for it to be faster
                 "document.createElement(\"option\");^", INSERT+"\nfoo = 5;\n"
                 );
     }

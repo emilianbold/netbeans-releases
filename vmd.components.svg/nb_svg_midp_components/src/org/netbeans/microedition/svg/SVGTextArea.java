@@ -132,6 +132,9 @@ public class SVGTextArea extends SVGComponent {
     }
     
     public void setText(String text) {
+        if (text == null) {
+            text = "";
+        }
         StringBuffer buffer = new StringBuffer();
         char ch = ' ';
         myLines = new Vector();

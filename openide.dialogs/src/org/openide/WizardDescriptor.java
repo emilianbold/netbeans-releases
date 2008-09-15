@@ -2549,9 +2549,15 @@ public class WizardDescriptor extends DialogDescriptor {
             label.setForeground(fgColor);
         }
         
-        private void setProgressComponent (JComponent progressComp, JLabel progressLabel) {
+        private void setProgressComponent (JComponent progressComp, final JLabel progressLabel) {
             if (progressLabel != null) {
                 progressLabel.setText (PROGRESS_BAR_DISPLAY_NAME);
+                progressLabel.addPropertyChangeListener ("text", new PropertyChangeListener () { // NOI18N
+                    public void propertyChange (PropertyChangeEvent evt) {
+                        progressLabel.putClientProperty (JComponent.TOOL_TIP_TEXT_KEY, evt.getNewValue ().toString ());
+                    }
+                });
+                progressLabel.setToolTipText (PROGRESS_BAR_DISPLAY_NAME);
                 progressBarPanel.add (progressLabel, BorderLayout.NORTH);
             }
             progressBarPanel.add (progressComp, BorderLayout.CENTER);

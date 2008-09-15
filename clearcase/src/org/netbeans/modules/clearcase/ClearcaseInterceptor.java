@@ -94,6 +94,7 @@ public class ClearcaseInterceptor extends VCSInterceptor {
     @Override
     public void afterDelete(final File file) {
         Clearcase.LOG.finer("afterDelete " + file);
+        ClearcaseUtils.afterCommandRefresh(new File[] { file }, false, false);
     }
 
     private void deleteFile(File file) {
@@ -117,7 +118,6 @@ public class ClearcaseInterceptor extends VCSInterceptor {
         if (file.exists()) {
             file.delete();
         }        
-        ClearcaseUtils.afterCommandRefresh(new File[] { file }, false, false);
     }
     
     private void fileDeletedImpl(File file) {       
@@ -249,8 +249,10 @@ public class ClearcaseInterceptor extends VCSInterceptor {
 
     @Override
     public void beforeEdit(File file) {
-        Clearcase.LOG.finer("beforeEdit " + file);        
-        ClearcaseUtils.ensureMutable(client, file);   
+        Clearcase.LOG.finer("beforeEdit " + file);
+        FileEntry entry = ClearcaseUtils.readEntry(client, file);
+        if(entry == null || entry.isViewPrivate()) return;
+        ClearcaseUtils.ensureMutable(client, file, entry);
     }
 
     @Override

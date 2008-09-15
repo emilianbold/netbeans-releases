@@ -44,6 +44,7 @@ package org.netbeans.modules.beans.beaninfo;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -54,11 +55,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.beans.BeanUtils;
 import org.netbeans.modules.beans.EventSetPattern;
 import org.netbeans.modules.beans.GenerateBeanException;
 import org.netbeans.modules.beans.IdxPropertyPattern;
@@ -155,19 +156,32 @@ public final class BiAnalyser {
     private boolean isUpdateMode;
     private boolean isBeanBroken;
     
-    private int getIndexOfMethod(List<BiFeature.Method> al, ElementHandle<ExecutableElement> method) {
-        if (method == null) return -1;
-        
-        int i = 0;
-        for (BiFeature.Method bifMethod : al) {
-            if (method.equals(bifMethod.getElement())) {
-                return i;
+    private static void removeMethods(List<BiFeature.Method> methods, ElementHandle<ExecutableElement>... removes) {
+        List<ElementHandle<ExecutableElement>> realremoves = new ArrayList<ElementHandle<ExecutableElement>>(removes.length);
+        for (ElementHandle<ExecutableElement> remove : removes) {
+            if (remove != null) {
+                realremoves.add(remove);
             }
-            ++i;
         }
-        
-        return -1;
+        if (realremoves.isEmpty()) {
+            return;
+        }
+        for (int i = methods.size() - 1; i >= 0 ; i--) {
+            ElementHandle<ExecutableElement> method = methods.get(i).getElement();
+            for (int ri = 0; ri < realremoves.size() ; ri++) {
+                ElementHandle<ExecutableElement> remove = realremoves.get(ri);
+                if (remove.equals(method)) {
+                    methods.remove(i);
+                    realremoves.remove(ri);
+                    break;
+                }
+            }
+            if (realremoves.isEmpty()) {
+                return;
+            }
+        }
     }
+    
     /** Creates Bean Info analyser which contains all patterns from PatternAnalyser
     */
     BiAnalyser ( PatternAnalyser pa, CompilationInfo javac ) throws GenerateBeanException {
@@ -190,7 +204,7 @@ public final class BiAnalyser {
         // Fill methods list (only in case we have new templates)
         methods = new  ArrayList<BiFeature.Method>();
         if (!olderVersion) {
-            for (ExecutableElement method : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
+            for (ExecutableElement method : BeanUtils.methodsIn(classElement, javac)) {
                 methods.add(new BiFeature.Method(method, pa, javac, this));
             }
         }
@@ -200,10 +214,7 @@ public final class BiAnalyser {
         properties = new  ArrayList<BiFeature.Property>(propertyPatterns.size());
         for (PropertyPattern pp : propertyPatterns) {
             properties.add(new BiFeature.Property(pp, javac, this));
-            for (int i = 0; i < methods.size(); i ++) {
-                if ((index = getIndexOfMethod(methods, pp.getGetterMethod())) != -1) methods.remove(index);
-                if ((index = getIndexOfMethod(methods, pp.getSetterMethod())) != -1) methods.remove(index);
-            }
+            removeMethods(methods, pp.getGetterMethod(), pp.getSetterMethod());
         }
 
         // Fill indexed properties list
@@ -217,10 +228,7 @@ public final class BiAnalyser {
             }
 
             idxProperties.add(new BiFeature.IdxProperty(ipp, javac, this));
-            if ((index = getIndexOfMethod(methods, ipp.getGetterMethod())) != -1) methods.remove(index);
-            if ((index = getIndexOfMethod(methods, ipp.getSetterMethod())) != -1) methods.remove(index);
-            if ((index = getIndexOfMethod(methods, ipp.getIndexedGetterMethod())) != -1) methods.remove(index);
-            if ((index = getIndexOfMethod(methods, ipp.getIndexedSetterMethod())) != -1) methods.remove(index);
+            removeMethods(methods, ipp.getGetterMethod(), ipp.getSetterMethod(), ipp.getIndexedGetterMethod(), ipp.getIndexedSetterMethod());
         }
 
         // Fill event sets list
@@ -228,9 +236,10 @@ public final class BiAnalyser {
         eventSets = new  ArrayList<BiFeature.EventSet>(eventSetPatterns.size());
         for (EventSetPattern esp : eventSetPatterns) {
             eventSets.add(new BiFeature.EventSet(esp, javac, this));
-            if ((index = getIndexOfMethod(methods, esp.getRemoveListenerMethod())) != -1) methods.remove(index);
-            if ((index = getIndexOfMethod(methods, esp.getAddListenerMethod())) != -1) methods.remove(index);
+            removeMethods(methods, esp.getAddListenerMethod(), esp.getRemoveListenerMethod());
         }
+
+        Collections.sort(methods);
 
         try {
             isUpdateMode = false;
@@ -677,7 +686,7 @@ public final class BiAnalyser {
         }
 
         // Make common list of all methods
-        Set<BiFeature.Method> allMethods = new  TreeSet<BiFeature.Method>( getMethods() );
+        List<BiFeature.Method> allMethods = methods;
 
         sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_MethodIdentifiers" ) );  // NOI18N
 

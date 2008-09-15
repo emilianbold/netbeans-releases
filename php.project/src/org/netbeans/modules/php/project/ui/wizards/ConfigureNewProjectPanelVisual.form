@@ -66,7 +66,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="localServerComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="localServerButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="sourcesLabel" alignment="3" min="-2" pref="15" max="-2" attributes="1"/>
+                  <Component id="sourcesLabel" alignment="3" min="-2" max="-2" attributes="1"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="localServerInfoLabel" min="-2" max="-2" attributes="0"/>

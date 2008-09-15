@@ -254,7 +254,11 @@ public class JavaFixAllImports {
         };
         try {
             JavaSource javaSource = JavaSource.forFileObject(fo);
-            javaSource.runModificationTask(task).commit();
+            if (javaSource==null) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaFixAllImports.class, "MSG_CannotFixImports" ));
+            } else {
+                javaSource.runModificationTask(task).commit();
+            }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }

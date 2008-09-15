@@ -59,7 +59,7 @@ made subject to such option by the copyright holder.
             <test_coverage flags="-xprofile=tcov -xinline="/>
             <diagnosable_release flags="-g -xO2"/>
             <release flags="-xO3 -xstrconst"/>
-            <performance_release flags="-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -xalias_level=basic"/>
+            <performance_release flags="-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -107,7 +107,7 @@ made subject to such option by the copyright holder.
             <test_coverage flags="-xprofile=tcov +d -xinline="/>
             <diagnosable_release flags="-g0 -xO2"/>
             <release flags="-xO3"/>
-            <performance_release flags="-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no -xalias_level=simple"/>
+            <performance_release flags="-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>

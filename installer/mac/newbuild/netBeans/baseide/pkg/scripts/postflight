@@ -40,7 +40,7 @@ cd Contents/Resources/NetBeans*/etc
 if [ -f netbeans.conf ]
 then
   echo netbeans.conf found: `pwd`/netbeans.conf
-  if [ -d $jdk_home ]
+  if [ -d $jdk_home ] || [ -L $jdk_home ]
   then
     echo JDK home exists: $jdk_home
     cp netbeans.conf netbeans.conf_orig_jdk_home

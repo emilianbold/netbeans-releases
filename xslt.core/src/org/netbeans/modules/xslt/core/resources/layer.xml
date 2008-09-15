@@ -46,17 +46,16 @@
             <folder name="xslt+xml">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-xslt-core-XSLTDataLoader.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.core.resources.Bundle"/>
                         <attr name="position" intvalue="100"/>
                     </file>
                 </folder>
                 <folder name="Actions">
-                    <file name="org-openide-actions-EditAction.instance">
+                    <!-- 139025 file name="org-openide-actions-EditAction.instance">
                         <attr name="position" intvalue="300"/>
                     </file>
                     <file name="org-netbeans-modules-xslt-core-multiview-XsltDesignViewOpenAction.instance">
                         <attr name="position" intvalue="350"/>
-                    </file>
+                    </file-->
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="400"/>
@@ -155,4 +154,15 @@
             </folder> <!-- xml -->
         </folder> <!-- text -->
     </folder> <!-- Editors -->
+    
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="GrammarQueryManagers">
+                <!-- register semantics grammar -->
+                <file name="org-netbeans-modules-xslt-core-text-completion-support-grammar-XSLTGrammarQueryProvider.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder> <!-- GrammarQueryManagers -->
+        </folder> <!-- XML -->
+    </folder> <!-- Plugins -->
 </filesystem>

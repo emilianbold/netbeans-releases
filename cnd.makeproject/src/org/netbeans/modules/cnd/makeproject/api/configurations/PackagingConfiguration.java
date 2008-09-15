@@ -68,14 +68,20 @@ public class PackagingConfiguration {
     private static String[] TYPE_NAMES = {
         getString("Tar"),
         getString("Zip"),
-        getString("SCR4Package")
+        getString("SCR4Package"),
+        getString("RPM"),
+        getString("Debian")
     };
     public static final int TYPE_TAR = 0;
     public static final int TYPE_ZIP = 1;
     public static final int TYPE_SVR4_PACKAGE = 2;
+    public static final int TYPE_RPM_PACKAGE = 3;
+    public static final int TYPE_DEBIAN_PACKAGE = 4;
     private IntConfiguration type;
     private BooleanConfiguration verbose;
-    private VectorConfiguration header;
+    private VectorConfiguration svr4Header;
+    private VectorConfiguration rpmHeader;
+    private VectorConfiguration debianHeader;
     private VectorConfiguration files;
     private StringConfiguration output;
     private StringConfiguration tool;
@@ -86,7 +92,9 @@ public class PackagingConfiguration {
         this.makeConfiguration = makeConfiguration;
         type = new IntConfiguration(null, TYPE_TAR, TYPE_NAMES, null);
         verbose = new BooleanConfiguration(null, true);
-        header = new VectorConfiguration(null); // NOI18N
+        svr4Header = new VectorConfiguration(null); // NOI18N
+        rpmHeader = new VectorConfiguration(null); // NOI18N
+        debianHeader = new VectorConfiguration(null); // NOI18N
         files = new VectorConfiguration(null); // NOI18N
         output = new StringConfiguration(null, ""); // NOI18N
         tool = new StringConfiguration(null, ""); // NOI18N
@@ -100,6 +108,7 @@ public class PackagingConfiguration {
         // Init default values
         String perm = MakeOptions.getInstance().getDefExePerm();
         String packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
+        String suffix = ""; // NOI18N
 
         if (makeConfiguration.isMakefileConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
@@ -107,6 +116,9 @@ public class PackagingConfiguration {
         } else if (makeConfiguration.isApplicationConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
             packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
+            if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                suffix = ".exe"; // NOI18N
+            }
         } else if (makeConfiguration.isLibraryConfiguration()) {
             perm = MakeOptions.getInstance().getDefFilePerm();
             packageDir = "${PACKAGE_TOP_DIR}lib"; // NOI18N
@@ -116,22 +128,28 @@ public class PackagingConfiguration {
         }
         FileElement elem = new FileElement(
                 FileType.FILE,
-                "${OUTPUT_PATH}", // NOI18N
-                packageDir + "/${OUTPUT_BASENAME}", // NOI18N
+                "${OUTPUT_PATH}" + suffix, // NOI18N
+                packageDir + "/${OUTPUT_BASENAME}" + suffix, // NOI18N
                 perm,
                 MakeOptions.getInstance().getDefOwner(),
                 MakeOptions.getInstance().getDefGroup());
         elem.setDefaultValue(true);
         files.add(elem);
         
-        String defArch = getString("DefaultArchictureValue");
+        String defArch;
         if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
             defArch = "i386"; // NOI18N
         }
         else if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
             defArch = "sparc"; // NOI18N
         }
-        List<InfoElement> headerList = getHeader().getValue();
+        else {
+            // Anything else ?
+            defArch = "i386"; // NOI18N
+        }
+        
+        // Solaris SVR4
+        List<InfoElement> headerList = getSvr4Header().getValue();
         headerList.add(new InfoElement("PKG", getOutputName(), true, true)); // NOI18N
         headerList.add(new InfoElement("NAME", "Package description ...", true, true)); // NOI18N
         headerList.add(new InfoElement("ARCH", defArch, true, true)); // NOI18N
@@ -140,6 +158,24 @@ public class PackagingConfiguration {
         headerList.add(new InfoElement("BASEDIR", "/opt", false, true)); // NOI18N
         headerList.add(new InfoElement("PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
         headerList.add(new InfoElement("CLASSES", "none", false, true)); // NOI18N
+        
+        // RPM
+        List<InfoElement> rpmHeaderList = getRpmHeader().getValue();
+        rpmHeaderList.add(new InfoElement("Summary", "Sumary...", true, true)); // NOI18N
+        rpmHeaderList.add(new InfoElement("Name", getOutputName(), true, true)); // NOI18N
+        rpmHeaderList.add(new InfoElement("Version", "1.0", true, true)); // NOI18N
+        rpmHeaderList.add(new InfoElement("Release", "1", true, true)); // NOI18N
+        rpmHeaderList.add(new InfoElement("Group", "Applications/System", true, true)); // NOI18N
+        rpmHeaderList.add(new InfoElement("License", "BSD-type", true, true)); // NOI18N
+        rpmHeaderList.add(new InfoElement("%description", "Description...", true, true)); // NOI18N
+        
+        // Debian
+        List<InfoElement> debianHeaderList = getDebianHeader().getValue();
+        debianHeaderList.add(new InfoElement("Package", getOutputName(), true, true)); // NOI18N
+        debianHeaderList.add(new InfoElement("Version", "1.0", true, true)); // NOI18N
+        debianHeaderList.add(new InfoElement("Architecture", defArch, false, true)); // NOI18N
+        debianHeaderList.add(new InfoElement("Maintainer", System.getProperty("user.name"), false, true)); // NOI18N
+        debianHeaderList.add(new InfoElement("Description", "...", false, true)); // NOI18N
     }
     
     public boolean isModified() {
@@ -155,10 +191,30 @@ public class PackagingConfiguration {
             }
         }
         if (getType().getValue() == TYPE_SVR4_PACKAGE) {
-            if (header.getValue().size() != 8) {
+            if (svr4Header.getValue().size() != 8) {
                 return true;
             }
-            for (InfoElement elem : (List<InfoElement>)header.getValue()) {
+            for (InfoElement elem : (List<InfoElement>)svr4Header.getValue()) {
+                if (!elem.isDefaultValue()) {
+                    return true;
+                }
+            }
+        }
+        if (getType().getValue() == TYPE_RPM_PACKAGE) {
+            if (rpmHeader.getValue().size() != 6) {
+                return true;
+            }
+            for (InfoElement elem : (List<InfoElement>)rpmHeader.getValue()) {
+                if (!elem.isDefaultValue()) {
+                    return true;
+                }
+            }
+        }
+        if (getType().getValue() == TYPE_DEBIAN_PACKAGE) {
+            if (debianHeader.getValue().size() != 5) {
+                return true;
+            }
+            for (InfoElement elem : (List<InfoElement>)debianHeader.getValue()) {
                 if (!elem.isDefaultValue()) {
                     return true;
                 }
@@ -192,12 +248,28 @@ public class PackagingConfiguration {
         this.verbose = verbose;
     }
 
-    public VectorConfiguration getHeader() {
-        return header;
+    public VectorConfiguration getSvr4Header() {
+        return svr4Header;
     }
 
-    public void setHeader(VectorConfiguration header) {
-        this.header = header;
+    public void setSvr4Header(VectorConfiguration svr4Header) {
+        this.svr4Header = svr4Header;
+    }
+    
+    public VectorConfiguration getRpmHeader() {
+        return rpmHeader;
+    }
+
+    public void setRpmHeader(VectorConfiguration rpmHeader) {
+        this.rpmHeader = rpmHeader;
+    }
+    
+    public VectorConfiguration getDebianHeader() {
+        return debianHeader;
+    }
+
+    public void setDebianHeader(VectorConfiguration debianHeader) {
+        this.debianHeader = debianHeader;
     }
 
     public VectorConfiguration getFiles() {
@@ -245,7 +317,9 @@ public class PackagingConfiguration {
         setMakeConfiguration(conf.getMakeConfiguration());
         getType().assign(conf.getType());
         getVerbose().assign(conf.getVerbose());
-        getHeader().assign(conf.getHeader());
+        getSvr4Header().assign(conf.getSvr4Header());
+        getRpmHeader().assign(conf.getRpmHeader());
+        getDebianHeader().assign(conf.getDebianHeader());
         getFiles().assign(conf.getFiles());
         getOutput().assign(conf.getOutput());
         getTool().assign(conf.getTool());
@@ -258,7 +332,9 @@ public class PackagingConfiguration {
         PackagingConfiguration clone = new PackagingConfiguration(getMakeConfiguration());
         clone.setType((IntConfiguration) getType().clone());
         clone.setVerbose((BooleanConfiguration) getVerbose().clone());
-        clone.setHeader((VectorConfiguration) getHeader().clone());
+        clone.setSvr4Header((VectorConfiguration) getSvr4Header().clone());
+        clone.setRpmHeader((VectorConfiguration) getRpmHeader().clone());
+        clone.setDebianHeader((VectorConfiguration) getDebianHeader().clone());
         clone.setFiles((VectorConfiguration) getFiles().clone());
         clone.setOutput((StringConfiguration) getOutput().clone());
         clone.setTool((StringConfiguration) getTool().clone());
@@ -338,7 +414,26 @@ public class PackagingConfiguration {
         if (getTopDir().getModified()) {
             return getTopDir().getValue();
         } else {
-            String val = IpeUtils.getBaseName(getOutputValue());
+            String val = null;
+            
+            if (getType().getValue() == TYPE_RPM_PACKAGE) {
+                val = "/usr"; // NOI18N
+            }
+            else if (getType().getValue() == TYPE_DEBIAN_PACKAGE) {
+                val = "/usr"; // NOI18N
+            }
+            else if (getType().getValue() == TYPE_SVR4_PACKAGE) {
+                val = findInfoValueName("PKG"); // NOI18N
+            }
+            else if (getType().getValue() == TYPE_TAR) {
+                val = IpeUtils.getBaseName(getOutputValue());
+            }
+            else if (getType().getValue() == TYPE_ZIP) {
+                val = IpeUtils.getBaseName(getOutputValue());
+            }
+            else {
+                assert false;
+            }
             
             int i = val.lastIndexOf("."); // NOI18N
             if (i > 0) {
@@ -361,15 +456,19 @@ public class PackagingConfiguration {
     }
     
     private String getOutputDefault() {
-        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/package/"; // NOI18N 
+        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/package"; // NOI18N 
         String outputName = getOutputName();
         
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            outputPath += outputName;
+            // nothing
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            // nothing
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            outputPath += "/" + outputName + ".deb"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
-            outputPath += outputName + ".tar"; // NOI18N
+            outputPath += "/" + outputName + ".tar"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
-            outputPath += outputName + ".zip"; // NOI18N
+            outputPath += "/" + outputName + ".zip"; // NOI18N
         } else {
             assert false;
         }
@@ -389,6 +488,10 @@ public class PackagingConfiguration {
         String tool = null;
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             tool = "pkgmk"; // NOI18N // FIXUP 
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            tool = "rpmbuild"; // NOI18N
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            tool = "dpkg-deb"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             tool = "tar"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
@@ -412,6 +515,10 @@ public class PackagingConfiguration {
         String option = null;
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             option = ""; // NOI18N // FIXUP 
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            option = ""; // NOI18N
+        } else if (getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            option = ""; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             option = "-v"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
@@ -436,11 +543,6 @@ public class PackagingConfiguration {
                 return;
             }
             super.setValue(v);
-            if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-                String pkgName = IpeUtils.getBaseName((String)v);
-                InfoElement pkgElem = findInfoElement("PKG"); // NOI18N
-                pkgElem.setValue(pkgName);
-            }
         }
     }
 
@@ -471,7 +573,7 @@ public class PackagingConfiguration {
     
     
     public InfoElement findInfoElement(String name) {
-        List<InfoElement> infoList = getHeader().getValue();
+        List<InfoElement> infoList = getSvr4Header().getValue();
         for (InfoElement elem : infoList) {
             if (elem.getName().equals(name)) {
                 return elem;
@@ -481,7 +583,7 @@ public class PackagingConfiguration {
     }
     
     public String findInfoValueName(String name) {
-        List<InfoElement> infoList = getHeader().getValue();
+        List<InfoElement> infoList = getSvr4Header().getValue();
         for (InfoElement elem : infoList) {
             if (elem.getName().equals(name)) {
                 return elem.getValue();

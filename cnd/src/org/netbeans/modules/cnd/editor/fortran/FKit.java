@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
-import java.io.Writer;
-import java.io.IOException;
-import java.io.CharArrayWriter;
+import java.awt.Cursor;
 import java.util.ArrayList;
 
 import java.awt.event.ActionEvent;
@@ -60,7 +58,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.*;
 
 import org.netbeans.modules.editor.*;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
 * Fortran editor kit with appropriate document
@@ -103,7 +101,7 @@ public class FKit extends NbEditorKit {
 
     @Override
     protected Action[] createActions() {
-	int arraySize = 2;
+	int arraySize = 5;
 	int numAddClasses = 0;
 	if (actionClasses != null) {
 	    numAddClasses = actionClasses.size();
@@ -126,6 +124,9 @@ public class FKit extends NbEditorKit {
 	}
 	fortranActions[index++] = new FFormatAction();
 	fortranActions[index++] = new CCDefaultKeyTypedAction();
+	fortranActions[index++] = new CommentAction("!"); // NOI18N
+	fortranActions[index++] = new UncommentAction("!"); // NOI18N
+	fortranActions[index++] = new ToggleCommentAction("!"); // NOI18N
         return TextAction.augmentList(super.createActions(), fortranActions);
     }
 
@@ -157,43 +158,46 @@ public class FKit extends NbEditorKit {
 	    putValue ("helpID", FFormatAction.class.getName ()); // NOI18N
 	}
 
-	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+        
+       	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
 	    if (target != null) {
 
 		if (!target.isEditable() || !target.isEnabled()) {
 		    target.getToolkit().beep();
 		    return;
 		}
-                
-                final Caret caret = target.getCaret();
-		final BaseDocument doc = (BaseDocument)target.getDocument();
 
-		doc.runAtomic(new Runnable() {
+		final BaseDocument doc = (BaseDocument)target.getDocument();
+                // Set hourglass cursor
+                Cursor origCursor = target.getCursor();
+                target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                
+                doc.runAtomic(new Runnable() {
                     public void run() {
                         try {
+                            Caret caret = target.getCaret();
                             int caretLine = Utilities.getLineOffset(doc, caret.getDot());
                             int startPos;
                             Position endPosition;
-                            if (caret.isSelectionVisible()) {
+                            if (Utilities.isSelectionShowing(caret)) {
                                 startPos = target.getSelectionStart();
                                 endPosition = doc.createPosition(target.getSelectionEnd());
                             } else {
                                 startPos = 0;
                                 endPosition = doc.createPosition(doc.getLength());
                             }
+
                             int pos = startPos;
-
-                            while (pos < endPosition.getOffset()) {
-                                int stopPos = endPosition.getOffset();
-
-                                CharArrayWriter cw = new CharArrayWriter();
-                                Writer w = doc.getFormatter().createWriter(doc, pos, cw);
-                                w.write(doc.getChars(pos, stopPos - pos));
-                                w.close();
-                                String out = new String(cw.toCharArray());
-                                doc.remove(pos, stopPos - pos);
-                                doc.insertString(pos, out, null);
-                                pos += out.length(); // go to the end of the area inserted
+                            Formatter formatter = doc.getFormatter();
+                            formatter.reformatLock();
+                            try {
+                                while (pos < endPosition.getOffset()) {
+                                    int stopPos = endPosition.getOffset();
+                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
+                                    pos = pos + reformattedLen;
+                                }
+                            } finally {
+                                formatter.reformatUnlock();
                             }
 
                             // Restore the line
@@ -202,16 +206,12 @@ public class FKit extends NbEditorKit {
                                 caret.setDot(pos);
                             }
                         } catch (BadLocationException e) {
-                            if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
-                                e.printStackTrace();
-                            }
-                        } catch (IOException e) {
-                            if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
-                                e.printStackTrace();
-                            }
+                            //failed to format
                         }
-                    }                    
+                    }
                 });
+                target.setCursor(origCursor);
+
 	    }
 	}
     }    

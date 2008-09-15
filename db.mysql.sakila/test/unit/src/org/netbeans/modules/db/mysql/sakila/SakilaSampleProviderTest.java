@@ -22,14 +22,16 @@ import org.junit.Test;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.api.sql.execute.SQLExecutionInfo;
 import org.netbeans.modules.db.api.sql.execute.SQLExecutor;
-import org.netbeans.modules.db.mysql.sakila.test.TestBase;
+import org.netbeans.modules.db.api.sql.execute.StatementExecutionInfo;
+import org.netbeans.modules.db.test.DBTestBase;
 
 /**
  *
  * @author David
  */
-public class SakilaSampleProviderTest  extends TestBase {
+public class SakilaSampleProviderTest  extends DBTestBase {
     SakilaSampleProvider provider;
     DatabaseConnection dbconn;
     
@@ -54,25 +56,32 @@ public class SakilaSampleProviderTest  extends TestBase {
 
         provider = SakilaSampleProvider.getDefault();
         
-        dbconn = getDatabaseConnection();
+        dbconn = getDatabaseConnection(true);
     }
         
     /**
      * Test of create method, of class SakilaSampleProvider.
      */
     @Test
-    public void testCreate() throws Exception { 
+    public void testCreate() throws Exception {
+        if (! isMySQL() ) {
+            System.out.println("testCreate() only runs with MySQL database");
+        }
+
         checkExecution(SQLExecutor.execute(dbconn, "DROP DATABASE IF EXISTS " + DBNAME));
         checkExecution(SQLExecutor.execute(dbconn, "CREATE DATABASE  " + DBNAME));
 
-        // Now that we've created the database, open a new connection directly
-        // to that database.  This mimics what happens in the UI
-        setDatabase(DBNAME);
+        String baseUrl = getDbUrl();
+        String[] chunks = baseUrl.split("/");
+        assertTrue(chunks.length == 4);
+        String originalDbName = chunks[3];
+        String newUrl = baseUrl.replace(originalDbName, DBNAME);
 
-        dbconn = refreshDatabaseConnection();
+        dbconn = DatabaseConnection.create(getJDBCDriver(), newUrl, getUsername(), DBNAME, getPassword(), false);
+        ConnectionManager.getDefault().addConnection(dbconn);
         ConnectionManager.getDefault().connect(dbconn);
-        assertTrue(dbconn.getJDBCConnection() != null);
-        assertFalse(dbconn.getJDBCConnection().isClosed());
+        assertTrue(dbconn.getJDBCConnection(true) != null);
+        assertFalse(dbconn.getJDBCConnection(true).isClosed());
 
         provider.create("sakila", dbconn);
         
@@ -127,19 +136,19 @@ public class SakilaSampleProviderTest  extends TestBase {
 
         HashMap<String, String> triggers = new HashMap<String, String>();
         triggers.put("customer_create_date", "SET NEW.create_date = NOW()");
-        triggers.put("ins_film", "BEGIN " +
-            "    INSERT INTO film_text (film_id, title, description) " +
-            "        VALUES (new.film_id, new.title, new.description); " +
+        triggers.put("ins_film", "BEGIN\n" +
+            "    INSERT INTO film_text (film_id, title, description)\n" +
+            "        VALUES (new.film_id, new.title, new.description);\n" +
             "END");
-        triggers.put("upd_film", "BEGIN " +
-            "    IF (old.title != new.title) or (old.description != new.description) " +
-            "    THEN " +
-            "        UPDATE film_text " +
-            "            SET title=new.title, " +
-            "                description=new.description, " +
-            "                film_id=new.film_id " +
-            "        WHERE film_id=old.film_id; " +
-            "    END IF; " + 
+        triggers.put("upd_film", "BEGIN\n" +
+            "    IF (old.title != new.title) or (old.description != new.description)\n" +
+            "    THEN\n" +
+            "        UPDATE film_text\n" +
+            "            SET title=new.title,\n" +
+            "                description=new.description,\n" +
+            "                film_id=new.film_id\n" +
+            "        WHERE film_id=old.film_id;\n" +
+            "    END IF;\n" +
             "  END");
         triggers.put("payment_date", "SET NEW.payment_date = NOW()");
         triggers.put("rental_date", "SET NEW.rental_date = NOW()");
@@ -153,6 +162,10 @@ public class SakilaSampleProviderTest  extends TestBase {
     
     @Test
     public void testBadCreate() throws Exception {
+        if (! isMySQL() ) {
+            System.out.println("testCreate() only runs with MySQL database");
+        }
+
         try {
             provider.create("sample", dbconn);
             fail("This should have failed");
@@ -333,6 +346,32 @@ public class SakilaSampleProviderTest  extends TestBase {
             if (rs != null) {
                 rs.close();
             }
+        }
+    }
+
+    private void checkExecution(SQLExecutionInfo info) throws Exception {
+        assertNotNull(info);
+
+        Throwable throwable = null;
+        if (info.hasExceptions()) {
+            for (StatementExecutionInfo stmtinfo : info.getStatementInfos()) {
+                if (stmtinfo.hasExceptions()) {
+                    System.err.println("The following SQL had exceptions:");
+                } else {
+                    System.err.println("The following SQL executed cleanly:");
+                }
+                System.err.println(stmtinfo.getSQL());
+
+                for  (Throwable t : stmtinfo.getExceptions()) {
+                    t.printStackTrace();
+
+                    throwable = t;
+                }
+            }
+
+            Exception e = new Exception("Executing SQL generated exceptions - see output for details");
+            e.initCause(throwable);
+            throw e;
         }
     }
 }

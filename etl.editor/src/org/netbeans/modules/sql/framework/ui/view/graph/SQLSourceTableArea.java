@@ -326,7 +326,9 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
                         jViewGraph.setHeight(jViewGraph.getMaximumHeight());
                     }
                     // Mark collab as needing to be persisted.
+                    DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
                     sqlModel.setDirty(true);
+                    
                 }
                 BasicTopView gvMgr = (BasicTopView) gView.getGraphViewContainer();
                 gvMgr.showRefreshMetadataInfo(visitView.infoList);

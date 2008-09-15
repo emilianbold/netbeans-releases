@@ -1052,7 +1052,7 @@ public class TraceModel extends TraceModelBase {
 	if (firstFile == null || firstFile.equalsIgnoreCase(file.getAbsolutePath())) {
 	    firstFile = file.getAbsolutePath();
 	    APTDriver.getInstance().invalidateAll();
-	    getProject().invalidateFiles();
+	    getProject().debugInvalidateFiles();
 	} else {
 	    APTDriver.getInstance().invalidateAPT(buffer);
 	}
@@ -1145,7 +1145,7 @@ public class TraceModel extends TraceModelBase {
 	FileImpl fileImpl = (FileImpl) getProject().testAPTParseFile(item);
         waitProjectParsed(false);
         if (dumpAst || writeAst || showAstWindow) {
-            tree = fileImpl.parse(null);
+            tree = fileImpl.debugParse();
         }
 	errCount = fileImpl.getErrorCount();
 	if (dumpPPState) {

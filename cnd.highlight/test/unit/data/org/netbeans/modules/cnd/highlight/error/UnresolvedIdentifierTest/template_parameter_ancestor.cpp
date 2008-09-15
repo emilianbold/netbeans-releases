@@ -1,5 +1,26 @@
 class empty_class {};
 
+// In the class below they all should be errors
+template<typename T> class inherits_no_parameter  {
+
+    static inherits_no_parameter get_instance();
+
+    empty_class& get_empty();
+
+    void inline_use_anc_mem(inherits_no_parameter x, empty_class e) {
+        this->ancestor_member(); // error
+        ancestor_member(); // error
+        x.ancestor_member(); // error
+        inherits_no_parameter::get_instance().ancestor_member(); // error
+        inherits_no_parameter array[2];
+        array[0].ancestor_member(); // error
+        e.inexistent_method(); // error
+        ::inexistent_function(); // error
+        int x = ::inexistent_var; // error
+        get_empty().inexistent_method(); // error
+    }
+};
+
 template<typename T> struct template_parameter_descendant : public T {
 
     static template_parameter_descendant get_instance();
@@ -7,7 +28,7 @@ template<typename T> struct template_parameter_descendant : public T {
     empty_class& get_empty();
 
     void inline_use_anc_mem(template_parameter_descendant x, empty_class e) {
-        // this->ancestor_member(); // warning
+        this->ancestor_member111(); // warning
         ancestor_member(); // warning
         x.ancestor_member(); // warning
         template_parameter_descendant::get_instance().ancestor_member(); // warning
@@ -22,7 +43,7 @@ template<typename T> struct template_parameter_descendant : public T {
 };
 
 void template_parameter_descendant::use_anc_mem(template_parameter_descendant x, empty_class e) {
-    // this->ancestor_member(); // warning
+    this->ancestor_member(); // warning
     ancestor_member(); // warning
     x.ancestor_member(); // warning
     template_parameter_descendant::get_instance().ancestor_member(); // warning
@@ -44,7 +65,7 @@ template<typename T> struct descendant_2 : template_parameter_descendant<T> {
         e.inexistent_method(); // error
         ::inexistent_function(); // error
         int x = ::inexistent_var; // error
-        // get_empty().inexistent_method(); // error
+        get_empty().inexistent_method(); // error
     }
 };
 
@@ -58,7 +79,7 @@ template<typename T> struct descendant_3 : descendant_2<T> {
         e.inexistent_method(); // error
         ::inexistent_function(); // error
         int x = ::inexistent_var; // error
-        // get_empty().inexistent_method(); // error
+        get_empty().inexistent_method(); // error
     }
 };
 

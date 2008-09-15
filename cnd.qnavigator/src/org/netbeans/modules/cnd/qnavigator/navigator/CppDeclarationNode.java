@@ -118,6 +118,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 
     void resetNode(CppDeclarationNode node){
         object = node.object;
+        fireIconChange();
     }
     
     public int compareTo(CppDeclarationNode o) {

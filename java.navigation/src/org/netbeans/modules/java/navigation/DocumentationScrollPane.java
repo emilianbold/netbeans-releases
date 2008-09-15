@@ -44,7 +44,6 @@ package org.netbeans.modules.java.navigation;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -57,6 +56,7 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.TextUI;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
@@ -218,9 +218,10 @@ public class DocumentationScrollPane extends JScrollPane {
             String text = currentDocumentation.getText();
             URL url = currentDocumentation.getURL();
             if (text != null){
+                Document document = view.getDocument();
+                document.putProperty(Document.StreamDescriptionProperty, null);
                 if (url!=null){
                     // fix of issue #58658
-                    javax.swing.text.Document document = view.getDocument();
                     if (document instanceof HTMLDocument){
                         ((HTMLDocument)document).setBase(url);
                     }
@@ -430,7 +431,9 @@ public class DocumentationScrollPane extends JScrollPane {
                 final String desc = e.getDescription();
                 if (desc != null) {
                     ElementJavadoc doc = currentDocumentation.resolveLink(desc);
-                    setData(doc, false);
+                    if (doc != null) {
+                        setData(doc, false);
+                    }
                 }                    
             }
         }

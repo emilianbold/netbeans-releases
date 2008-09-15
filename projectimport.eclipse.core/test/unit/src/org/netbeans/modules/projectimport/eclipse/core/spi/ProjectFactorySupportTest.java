@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -207,6 +208,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
         J2SEProject p = (J2SEProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         List<String> importProblems = new ArrayList<String>();
+        
+        //
+        // NB-Core-Build #1293: "No project found to correspond to .../spcp/eclipse/src" from ProjectClassPathModifier.findExtensible
+        // 
+        // Looks like J2SEProject registers its external source roots asynchronously and sometimes 
+        // it is too late and above problem happens. Mark external source roots explicitly here:
+        FileOwnerQuery.markExternalOwner(model.getEclipseSourceRootsAsFileArray()[0].toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        
         ProjectFactorySupport.updateProjectClassPath(helper, p.getReferenceHelper(), model, importProblems);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals(
@@ -236,6 +245,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
         J2SEProject p = (J2SEProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         List<String> importProblems = new ArrayList<String>();
+        
+        //
+        // NB-Core-Build #1293: "No project found to correspond to .../spcp/eclipse/src" from ProjectClassPathModifier.findExtensible
+        // 
+        // Looks like J2SEProject registers its external source roots asynchronously and sometimes 
+        // it is too late and above problem happens. Mark external source roots explicitly here:
+        FileOwnerQuery.markExternalOwner(model.getEclipseSourceRootsAsFileArray()[0].toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        
         ProjectFactorySupport.updateProjectClassPath(helper, p.getReferenceHelper(), model, importProblems);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals(
@@ -321,6 +338,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
         J2SEProject p = (J2SEProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         List<String> importProblems = new ArrayList<String>();
+        
+        //
+        // NB-Core-Build #1293: "No project found to correspond to .../spcp/eclipse/src" from ProjectClassPathModifier.findExtensible
+        // 
+        // Looks like J2SEProject registers its external source roots asynchronously and sometimes 
+        // it is too late and above problem happens. Mark external source roots explicitly here:
+        FileOwnerQuery.markExternalOwner(model.getEclipseSourceRootsAsFileArray()[0].toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        
         ProjectFactorySupport.updateProjectClassPath(helper, p.getReferenceHelper(), model, importProblems);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         // required project "JavaLibrary1" is not available and therefore should not be
@@ -369,6 +394,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
                 mdl_d.getEclipseTestSourceRootsAsFileArray(), null, null, null);
         List<String> problems = new ArrayList<String>();
         J2SEProject j2seprj_d = (J2SEProject) ProjectManager.getDefault().findProject(aph_d.getProjectDirectory());
+        
+        //
+        // NB-Core-Build #1293: "No project found to correspond to .../spcp/eclipse/src" from ProjectClassPathModifier.findExtensible
+        // 
+        // Looks like J2SEProject registers its external source roots asynchronously and sometimes 
+        // it is too late and above problem happens. Mark external source roots explicitly here:
+        FileOwnerQuery.markExternalOwner(mdl_d.getEclipseSourceRootsAsFileArray()[0].toURI(), j2seprj_d, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        
         ProjectFactorySupport.updateProjectClassPath(aph_d, j2seprj_d.getReferenceHelper(), mdl_d, problems);
         assertEquals(Collections.emptyList(), problems);
         assertEquals("${reference.c.jar}:${reference.b.jar}", aph_d.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).get("javac.classpath"));

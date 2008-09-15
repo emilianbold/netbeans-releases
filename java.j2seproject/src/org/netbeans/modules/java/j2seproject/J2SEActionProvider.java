@@ -43,6 +43,8 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +53,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,7 +66,6 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -81,6 +81,8 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -89,6 +91,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
@@ -97,7 +100,6 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
@@ -113,7 +115,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -170,8 +171,6 @@ class J2SEActionProvider implements ActionProvider {
     };
 
     private static final String[] actionsDisabledForQuickRun = {
-        COMMAND_BUILD,
-        COMMAND_CLEAN,
         COMMAND_COMPILE_SINGLE,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
     };
@@ -201,6 +200,8 @@ class J2SEActionProvider implements ActionProvider {
     // is different from null it will be returned instead.
     String unitTestingSupport_fixClasses;
     
+    private volatile Boolean allowsFileTracking;
+    
     public J2SEActionProvider(J2SEProject project, UpdateHelper updateHelper) {
 
         commands = new HashMap<String,String[]>();
@@ -229,6 +230,34 @@ class J2SEActionProvider implements ActionProvider {
         this.updateHelper = updateHelper;
         this.project = project;
         this.evaluator = project.evaluator();
+        this.evaluator.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent evt) {
+                synchronized (J2SEActionProvider.class) {
+                    final String propName = evt.getPropertyName();
+                    if (propName == null || J2SEProjectProperties.TRACK_FILE_CHANGES.equals(propName)) {
+                        allowsFileTracking = null;
+                        dirty = null;
+                    }
+                }
+            }
+        });
+    }
+    
+    
+    private boolean allowsFileChangesTracking () {
+        //allowsFileTracking is volatile primitive, fine to do double checking        
+        synchronized (this) {
+            if (allowsFileTracking != null) {
+                return allowsFileTracking.booleanValue();
+            }
+        }
+        final String val = evaluator.getProperty(J2SEProjectProperties.TRACK_FILE_CHANGES);                    
+        synchronized (this) {
+            if (allowsFileTracking == null) {
+                allowsFileTracking = "true".equals(val) ? Boolean.TRUE : Boolean.FALSE;  //NOI18N
+            }            
+            return allowsFileTracking.booleanValue();
+        }
     }
 
     private final FileChangeListener modificationListener = new FileChangeAdapter() {
@@ -254,7 +283,9 @@ class J2SEActionProvider implements ActionProvider {
         //Listener has to be started when the project's lookup is initialized
         try {
             FileSystem fs = project.getProjectDirectory().getFileSystem();
-            // XXX would be more efficient to only listen while DO_DEPEND=false (though this is the default)
+            // XXX would be more efficient to only listen while TRACK_FILE_CHANGES is set,
+            // but it needs adding and removing of listeners depending on PropertyEvaluator events,
+            // the file event handling is cheap when TRACK_FILE_CHANGES is disabled.
             fs.addFileChangeListener(FileUtil.weakFileChangeListener(modificationListener, fs));
         } catch (FileStateInvalidException x) {
             Exceptions.printStackTrace(x);
@@ -262,6 +293,9 @@ class J2SEActionProvider implements ActionProvider {
     }
 
     private void modification(FileObject f) {
+        if (!allowsFileChangesTracking()) {
+            return;
+        }
         final Iterable <? extends FileObject> roots = getRoots();
         assert roots != null;
         for (FileObject root : roots) {
@@ -345,6 +379,10 @@ class J2SEActionProvider implements ActionProvider {
                     return;
                 }
                 if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+                    if (COMMAND_BUILD.equals(command)) {
+                        showBuildActionWarning(context);
+                        return ;
+                    }
                     Properties execProperties = new Properties();
 
                     copyValue(J2SEProjectProperties.RUN_JVM_ARGS, execProperties);
@@ -700,8 +738,10 @@ class J2SEActionProvider implements ActionProvider {
         File buildClassesDir = project.getAntProjectHelper().resolveFile(buildClassesDirValue);
         synchronized (this) {
             if (dirty == null) {
-                // #119777: the first time, build everything.
-                dirty = new TreeSet<String>();
+                if (allowsFileChangesTracking()) {
+                    // #119777: the first time, build everything.                
+                    dirty = new TreeSet<String>();                    
+                }
                 return;
             }
             for (DataObject d : DataObject.getRegistry().getModified()) {
@@ -1202,11 +1242,13 @@ class J2SEActionProvider implements ActionProvider {
         String              pathType
     ) {
         StringBuilder sb = new StringBuilder ();
-        sb.append ("File: ").append (fileObject);
-        sb.append ("\nPath Type: ").append (pathType);
-        sb.append ("\nClassPathProviders: ");
+        sb.append ("File: ").append (fileObject);                                                                       //NOI18N
+        sb.append ("\nPath Type: ").append (pathType);                                                                  //NOI18N
+        final Project owner = FileOwnerQuery.getOwner(fileObject);
+        sb.append ("\nOwner: ").append (owner == null ? "" : ProjectUtils.getInformation(owner).getDisplayName());      //NOI18N
+        sb.append ("\nClassPathProviders: ");                                                                           //NOI18N
         for (ClassPathProvider impl  : Lookup.getDefault ().lookupResult (ClassPathProvider.class).allInstances ())
-            sb.append ("\n  ").append (impl);
+            sb.append ("\n  ").append (impl);                                                                           //NOI18N
         return sb.toString ();
     }
 
@@ -1395,6 +1437,41 @@ class J2SEActionProvider implements ActionProvider {
             return null;
         }
         return url;
+    }
+
+    private void showBuildActionWarning(Lookup context) {
+        String text = NbBundle.getMessage(J2SEActionProvider.class, "LBL_ProjectBuiltAutomatically");
+        String projectProperties = NbBundle.getMessage(J2SEActionProvider.class, "BTN_ProjectProperties");
+        String cleanAndBuild = NbBundle.getMessage(J2SEActionProvider.class, "BTN_CleanAndBuild");
+        String ok = NbBundle.getMessage(J2SEActionProvider.class, "BTN_OK");
+        String titleFormat = NbBundle.getMessage(J2SEActionProvider.class, "TITLE_BuildProjectWarning");
+        String title = MessageFormat.format(titleFormat, ProjectUtils.getInformation(project).getDisplayName());
+        DialogDescriptor dd = new DialogDescriptor(text,
+                                                   title,
+                                                   true,
+                                                   new Object[] {projectProperties, cleanAndBuild, ok},
+                                                   ok,
+                                                   DialogDescriptor.DEFAULT_ALIGN,
+                                                   null,
+                                                   null);
+
+        dd.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
+        
+        Object result = DialogDisplayer.getDefault().notify(dd);
+
+        if (result == projectProperties) {
+            CustomizerProviderImpl p = project.getLookup().lookup(CustomizerProviderImpl.class);
+
+            p.showCustomizer("Build"); //NOI18N
+            return ;
+        }
+
+        if (result == cleanAndBuild) {
+            invokeAction(COMMAND_REBUILD, context);
+            return ;
+        }
+
+        //otherwise dd.getValue() == ok
     }
 
 }
