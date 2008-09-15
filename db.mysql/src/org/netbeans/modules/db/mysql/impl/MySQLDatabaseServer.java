@@ -712,7 +712,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                     // 1 second wait and then assume something went wrong if it's
                     // still active after that.
                     int tries = 0;
-                    while (tries <= 4) {
+                    while (tries <= 10) {
                         tries++;
 
                         try {
