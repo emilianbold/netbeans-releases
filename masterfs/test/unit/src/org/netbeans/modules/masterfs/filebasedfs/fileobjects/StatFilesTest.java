@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
@@ -103,15 +104,24 @@ public class StatFilesTest extends NbTestCase {
         monitor.getResults().assertResult(4, StatFiles.ALL);
     }
 
+    /** Tests it is not neccessary to create FileObjects for the whole path. */
     public void testGetFileObject23() throws IOException {    
-        FileSystem fbs = FileBasedFileSystem.getInstance();
         File workDir = getWorkDir();
-        FileObject root = fbs.getRoot();
+        File rootFile = null;
+        Stack<String> stack = new Stack<String>();
+        while(workDir != null) {
+            stack.push(workDir.getName());
+            rootFile = workDir;
+            workDir = workDir.getParentFile();
+        }
+        String relativePath = "";
+        while(!stack.empty()) {
+            relativePath += stack.pop() + "/";
+        }
+        FileObject root = FileUtil.toFileObject(rootFile);
         monitor.reset();
-        assertNotNull(root.getFileObject(workDir.getPath()));
-        /* sometimes fails:
-            assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
-        */
+        assertNotNull(root.getFileObject(relativePath));
+        assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
     }
     
      //on trunk fails: expected:<1> but was:<41>
