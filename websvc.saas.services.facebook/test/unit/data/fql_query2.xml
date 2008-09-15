@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fql_query_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <!-- Commenting this test case out. The reason is that the fields in the response
+         depends on the fql query. For example, the following query is what fetches the following result:
+         SELECT src, caption, 1+2*3/4, caption, 10*(20 + 1) 
+         FROM photo WHERE pid IN (
+         SELECT pid FROM photo_tag WHERE subject=211031) AND pid IN (SELECT pid FROM photo_tag WHERE subject=204686) AND caption
+         
+         As you can see the result elements correspond to what is being selected.
+         In other words, the result can't be described by xml schema.
     <photo>
         <src>http://photos-923.ak.facebook.com/ip002/v61/188/75/206412/s206412_31508923_7923.jpg</src>
         <caption>celebrating 23 years of ari's life at the one and the oasis.</caption>
@@ -42,4 +50,5 @@
         <caption>One of the most extravagant.</caption>
         <anon>210</anon>
     </photo>
+    -->
 </fql_query_response>

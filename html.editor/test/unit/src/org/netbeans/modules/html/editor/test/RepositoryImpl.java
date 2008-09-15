@@ -68,9 +68,15 @@ public class RepositoryImpl extends Repository {
         try
         {
             FileSystem writeFs = FileUtil.createMemoryFileSystem();
-            FileSystem layerFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/html/editor/resources/layer.xml"));
+            FileSystem htmlFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/html/mf-layer.xml"));
+            FileSystem htmlEditotFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/html/editor/resources/layer.xml"));
+            FileSystem htmlEditorLibFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/html/editor/resources/layer.xml"));
             FileSystem lexerLayerFS = new XMLFileSystem(HTMLTokenId.class.getClassLoader().getResource("org/netbeans/lib/html/lexer/layer.xml"));
-            return new MultiFileSystem(new FileSystem[] { writeFs, lexerLayerFS, layerFs });
+            FileSystem cssEditorFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/css/resources/layer.xml"));
+            FileSystem jsEditorFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/javascript/editing/layer.xml"));
+            return new MultiFileSystem(new FileSystem[] { writeFs, lexerLayerFS, htmlFs, 
+                                                          htmlEditotFs, htmlEditorLibFs,
+                                                          cssEditorFs, jsEditorFs});
         } catch (SAXException e) {
             return null;
         }

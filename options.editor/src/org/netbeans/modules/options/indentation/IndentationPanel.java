@@ -329,6 +329,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         lRightMargin = new ControlledLabel();
         sRightMargin = new ControlledSpinner();
 
+        setOpaque(false);
+
         cbOverrideGlobalOptions.setText("Override Global Options");
         cbOverrideGlobalOptions.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 

@@ -265,13 +265,7 @@ public class WSUtils {
                         FileSystem fs = implClassFo.getFileSystem();
                         fs.runAtomicAction(new AtomicAction() {
                             public void run() {
-                                FileObject parent = implClassFo.getParent();
                                 deleteFile(implClassFo);
-                                while (parent!=srcRoot && parent.getChildren().length==0) {
-                                    FileObject fileToDelete=parent;
-                                    parent = parent.getParent();
-                                    deleteFile(fileToDelete);
-                                }
                             }
                         });
                     } catch (IOException ex) {
@@ -286,18 +280,12 @@ public class WSUtils {
     private static void deleteFile(FileObject f) {
         FileLock lock = null;
         try {
-            lock = f.lock();
-            if (f.isFolder()) {
-                DataFolder folder = DataFolder.findFolder(f);
-                // save all opened files
-                if (folder!=null) {
-                    DataObject[] children = folder.getChildren();
-                    for (int i=0;i<children.length;i++) {
-                        SaveCookie save = children[i].getCookie(SaveCookie.class);
-                        if (save!=null) save.save();
-                    }
-                }
+            DataObject dObj = DataObject.find(f);
+            if (dObj != null) {
+                SaveCookie save = dObj.getCookie(SaveCookie.class);
+                if (save!=null) save.save();
             }
+            lock = f.lock();
             f.delete(lock);
         } catch(java.io.IOException e) {
             NotifyDescriptor ndd =

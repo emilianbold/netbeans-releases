@@ -487,7 +487,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
         String removeForbid = instanceProperties.getProperty(InstanceProperties.REMOVE_FORBIDDEN);
         return Boolean.valueOf(removeForbid).booleanValue();
     }
-    
+
+    /**
+     * <i>This method can have ugly side effect of starting the server.</i>
+     *
+     * @return
+     */
     public ServerTarget[] getTargets() {
         Map targets = getTargetMap();
         synchronized (this) {

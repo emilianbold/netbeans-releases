@@ -78,6 +78,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -199,7 +200,7 @@ final public class WebProjectProperties {
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
     
     private static Logger LOGGER = Logger.getLogger(WebProjectProperties.class.getName());
-    
+
     public ClassPathSupport cs;
 
     //list of frameworks to add to the application
@@ -493,6 +494,11 @@ final public class WebProjectProperties {
                 String oldCP = wm.getContextPath(serverId);
                 if (!cp.equals(oldCP))
                     wm.setContextPath(serverId, cp);
+            }
+            
+            //Delete COS mark
+            if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
+                DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir"); // NOI18N
             }
         } 
         catch (MutexException e) {
@@ -1006,12 +1012,18 @@ final public class WebProjectProperties {
         Set<File> roots = new HashSet<File>();
         for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
             for (Object row : model.getDataVector()) {
-                roots.add((File) ((Vector) row).elementAt(0));
+                File d = (File) ((Vector) row).elementAt(0);
+                if (d.isDirectory()) {
+                    roots.add(d);
+                }
             }
         }
         try {
             String webDocRoot = WEB_DOCBASE_DIR_MODEL.getText(0, WEB_DOCBASE_DIR_MODEL.getLength());
-            roots.add(project.getAntProjectHelper().resolveFile(webDocRoot));
+            File d = project.getAntProjectHelper().resolveFile(webDocRoot);
+            if (d.isDirectory()) {
+                roots.add(d);
+            }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }

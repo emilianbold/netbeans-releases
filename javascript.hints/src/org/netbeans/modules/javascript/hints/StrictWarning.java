@@ -86,6 +86,8 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class StrictWarning extends JsErrorRule {
+    /** For testsuite, should normally be null! */
+    static Throwable problem;
 
     public static final String ANON_NO_RETURN_VALUE = "msg.anon.no.return.value"; // NOI18N
     public static final String BAD_OCTAL_LITERAL = "msg.bad.octal.literal"; // NOI18N
@@ -213,6 +215,7 @@ public class StrictWarning extends JsErrorRule {
             }
         } else {
             int errorOffset = lexOffset;
+            errorOffset = Math.min(errorOffset, doc.getLength());
             try {
                 int rowLastNonWhite = Utilities.getRowLastNonWhite(doc, errorOffset);
                 if (rowLastNonWhite <= errorOffset) {
@@ -224,6 +227,7 @@ public class StrictWarning extends JsErrorRule {
                 }
                 range = new OffsetRange(errorOffset, rowLastNonWhite);
             } catch (BadLocationException ex) {
+                problem = ex;
                 Exceptions.printStackTrace(ex);
                 range = OffsetRange.NONE;
             }
@@ -262,7 +266,10 @@ public class StrictWarning extends JsErrorRule {
             // Adjust offsets, since (a) Node offsets are still kinda shaky, and
             // (b) for things like block nodes we want to limit the errors to
             // a single line!
+            range = range.boundTo(0, doc.getLength());
             if (range.getStart() == 0) {
+                offset = Math.min(offset, doc.getLength());
+
                 // Probably an incorrectly initialized node AST offset somewhere
                 int start = Math.max(range.getStart(), Utilities.getRowStart(doc, offset));
                 int end = Math.max(start, Math.min(range.getEnd(), doc.getLength()));
@@ -278,6 +285,7 @@ public class StrictWarning extends JsErrorRule {
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
+            problem = ex;
         }
 
         return range;

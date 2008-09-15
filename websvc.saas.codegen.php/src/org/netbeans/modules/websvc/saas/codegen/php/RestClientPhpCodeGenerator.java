@@ -223,8 +223,11 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
             methodBody += INDENT+"$conn->setHeaders($" +Constants.HEADER_PARAMS+");\n";
         }
 
+        //Insert the sleep call to avoid service throttling
+        methodBody += INDENT + "sleep(1);\n";
+        
         //Insert the method call
-        methodBody += INDENT + "return $conn"+"->" + httpMethod.prefix() + "(";
+        methodBody += INDENT + "return $conn->" + httpMethod.prefix() + "(";
         if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
             if (Util.isPutPostFormParams(getBean())) {
                 methodBody += "$" + Constants.QUERY_PARAMS;

@@ -261,6 +261,16 @@ public final class TokenListUpdater {
         assert (relexIndex >= 0);
         if (relex) {
             // Create lexer input operation for the given token list
+            if (relexOffset < 0) { // Invalid value
+                // Log modification unconditionally due to #144258
+                logModification(tokenList, eventInfo, false);
+                LOG.info("relexIndex=" + relexIndex + ", relexOffset=" + relexOffset +
+                        ", relexState=" + relexState + ", indexAndTokenOffset: [" +
+                        indexAndTokenOffset[0] + ", " + indexAndTokenOffset[1] + "]\n"
+                        );
+                LOG.info("\n\n" + eventInfo.modificationDescription(true) + "\n");
+
+            }
             LexerInputOperation<T> lexerInputOperation
                     = tokenList.createLexerInputOperation(relexIndex, relexOffset, relexState);
             relex(change, lexerInputOperation, tokenCount);
@@ -787,7 +797,10 @@ public final class TokenListUpdater {
         sb.append(insertedLength).append(insertedText);
         sb.append(", remLen=").append(removedLength);
         sb.append(", tCnt=").append(tokenList.tokenCountCurrent()).append('\n');
-        LOG.log(Level.FINE, sb.toString());
+        // Use INFO level to allow to log the modification in case of failure
+        // when FINE level is not enabled. The "loggable" var should be checked
+        // for regular calls of this method.
+        LOG.log(Level.INFO, sb.toString());
     }
 
 }

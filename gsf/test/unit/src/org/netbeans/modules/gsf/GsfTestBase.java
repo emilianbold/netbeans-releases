@@ -277,9 +277,24 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
 
-    public BaseDocument getDocument(String s, String mimeType, Language language) {
+    public BaseDocument getDocument(String s, final String mimeType, final Language language) {
         try {
-            BaseDocument doc = new BaseDocument(true, mimeType);
+            BaseDocument doc = new BaseDocument(true, mimeType) {
+                @Override
+                public boolean isIdentifierPart(char ch) {
+                    if (mimeType != null) {
+                        org.netbeans.modules.gsf.Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                        if (l != null) {
+                            GsfLanguage gsfLanguage = l.getGsfLanguage();
+                            if (gsfLanguage != null) {
+                                return gsfLanguage.isIdentifierChar(ch);
+                            }
+                        }
+                    }
+
+                    return super.isIdentifierPart(ch);
+                }
+            };
 
             //doc.putProperty("mimeType", mimeType);
             doc.putProperty(org.netbeans.api.lexer.Language.class, language);
@@ -3212,6 +3227,10 @@ public abstract class GsfTestBase extends NbTestCase {
     }
  
     protected boolean parseErrorsOk;
+
+    protected void customizeHintInfo(GsfTestCompilationInfo info, ParserResult result) {
+        // Optionally override to change some of the information
+    }
     
     protected ComputedHints getHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
         assert relFilePath == null || fileObject == null;
@@ -3234,6 +3253,9 @@ public abstract class GsfTestBase extends NbTestCase {
         
         GsfTestCompilationInfo info = fileObject != null ? getInfo(fileObject) : getInfo(relFilePath);
         ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+
+        customizeHintInfo(info, pr);
+
         if (pr == null /*|| pr.hasErrors()*/ && !(hint instanceof ErrorRule)) { // only expect testcase source errors in error tests
             if (parseErrorsOk) {
                 List<Hint> result = new ArrayList<Hint>();

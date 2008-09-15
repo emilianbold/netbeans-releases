@@ -57,8 +57,8 @@ public class SimpleConfigParser {
 
     private final Map<String, Map<String, String>> sections2attributes = new HashMap<String, Map<String, String>>();
     private final Map<String, String> orphanAttributes = new HashMap<String, String>();
-    private final Pattern patternSection = Pattern.compile("\\[.+\\]");
-    private final Pattern patternAttribute = Pattern.compile("[^=]+=[^=]+");
+    private final Pattern patternSection = Pattern.compile("\\[.+\\]"); //NOI18N
+    private final Pattern patternAttribute = Pattern.compile("[^=]+=[^=]+"); //NOI18N
     private boolean parsed = false;
 
     public SimpleConfigParser() {
@@ -118,7 +118,7 @@ public class SimpleConfigParser {
         writeAttributes(sb, getOrphanAttributes());
         for (String section : getSections()) {
             Map<String, String> attributes = getAttributes(section);
-            sb.append("[" + section + "]\n"); // empty sections are ok?
+            sb.append("[" + section + "]\n"); // empty sections are ok? //NOI18N
             writeAttributes(sb, attributes);
         }
         return sb.toString();
@@ -126,7 +126,7 @@ public class SimpleConfigParser {
 
     private static void writeAttributes(StringBuilder sb, Map<String, String> attributes) {
         for (String attributeName : attributes.keySet()) {
-            sb.append("\t" + attributeName + "=" + attributes.get(attributeName) + "\n");
+            sb.append("\t" + attributeName + "=" + attributes.get(attributeName) + "\n"); //NOI18N
         }
     }
 }

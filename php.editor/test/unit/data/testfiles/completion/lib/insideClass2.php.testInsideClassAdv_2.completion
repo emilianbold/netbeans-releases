@@ -2,4 +2,5 @@ Code completion result for source line:
 protected f|unction meth_bb() {}
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
+KEYWORD    final                                      null
 KEYWORD    function                                   null

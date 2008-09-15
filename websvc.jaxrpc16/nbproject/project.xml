@@ -48,6 +48,8 @@ made subject to such option by the copyright holder.
             <module-dependencies>
             </module-dependencies>
             <public-packages>
+                <package>com.sun.xml.rpc.spi</package>
+                <package>com.sun.xml.rpc.spi.model</package>
                 <package>com.sun.xml.rpc.processor.model</package>
                 <package>com.sun.xml.rpc.soap</package>
                 <package>com.sun.xml.rpc.processor.modeler</package>

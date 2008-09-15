@@ -97,7 +97,7 @@ public class GraphDocumentFactory {
         for (ResolutionNode nd : nodes) {
             ArtifactGraphNode gr = getNode(nd, cache, scene);
             if (nd.isChildOfRootNode()) {
-                String edge = nd1.getArtifact().getId() + "--" + nd.getArtifact().getId();
+                String edge = nd1.getArtifact().getId() + "--" + nd.getArtifact().getId(); //NOI18N
                 ArtifactGraphEdge ed = new ArtifactGraphEdge(edge);
                 ed.setLevel(0);
                 scene.addEdge(ed);
@@ -109,7 +109,7 @@ public class GraphDocumentFactory {
                 while (it.hasNext()) {
                     ResolutionNode child = it.next();
                     ArtifactGraphNode childNode = getNode(child, cache, scene);
-                    String edge = nd.getArtifact().getId() + "--" + child.getArtifact().getId();
+                    String edge = nd.getArtifact().getId() + "--" + child.getArtifact().getId();//NOI18N
                     ArtifactGraphEdge ed = new ArtifactGraphEdge(edge);
                     ed.setLevel(nd.getDepth() + 1);
                     scene.addEdge(ed);

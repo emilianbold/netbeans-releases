@@ -124,7 +124,6 @@ public abstract class TestBase extends RubyTestBase {
             Util.LOGGER.removeHandler(testHandler);
             org.rubyforge.debugcommons.Util.LOGGER.removeHandler(testHandler);
         }
-        doCleanUp();
     }
 
     private void doCleanUp() {
