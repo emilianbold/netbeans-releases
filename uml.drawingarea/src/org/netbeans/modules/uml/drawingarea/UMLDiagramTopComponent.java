@@ -248,7 +248,6 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         }
     }
 
-
     public UMLDiagramTopComponent(String filename) throws DataObjectNotFoundException {
         this();
         
@@ -698,6 +697,8 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         if(diagramView != null)
         {
             diagramView.putClientProperty("print.name", diagram.getNameWithAlias()); // NOI18N
+            diagramView.getAccessibleContext().setAccessibleName(diagram.getNameWithAlias());
+            diagramView.getAccessibleContext().setAccessibleDescription(getToolTipText());
         }
     }
 

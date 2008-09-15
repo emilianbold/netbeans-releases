@@ -46,5 +46,5 @@ package org.netbeans.modules.uml.drawingarea.keymap;
 public interface DiagramKeyMapConstants {
     public static final String CANCEL_ACTION = "CANCEL_ACTION";
     public static final String CONTEXT_PALETTE_FOCUS = "CONTEXT_PALETTE_FOCUS";
-    public static final String CTRL_ENTER_ACTION = "CTRL_ENTER_ACTION";
+    public static final String ADD_TO_DIAGRAM = "ADD_TO_DIAGRAM";
 }

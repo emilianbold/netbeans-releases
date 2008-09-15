@@ -305,7 +305,7 @@ public final class RakeRunner {
                 charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
                 classPath = evaluator.getProperty(SharedRubyProjectProperties.JAVAC_CLASSPATH);
                 extraArgs = evaluator.getProperty(SharedRubyProjectProperties.RAKE_ARGS);
-                jrubyProps = evaluator.getProperty(RubyProjectProperties.JRUBY_PROPS);
+                jrubyProps = evaluator.getProperty(RubyProjectProperties.JVM_ARGS);
                 options = evaluator.getProperty(RubyProjectProperties.RUBY_OPTIONS);
             }
         }
@@ -332,7 +332,7 @@ public final class RakeRunner {
         }
         desc.allowInput();
         desc.classPath(classPath); // Applies only to JRuby
-        desc.jrubyProperties(jrubyProps);
+        desc.jvmArguments(jrubyProps);
         desc.fileLocator(fileLocator);
         desc.addStandardRecognizers();
 

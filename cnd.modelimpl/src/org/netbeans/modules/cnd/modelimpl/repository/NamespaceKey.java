@@ -53,13 +53,15 @@ import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /*package*/
-final class NamespaceKey extends ProjectNameBasedKey {
+class NamespaceKey extends ProjectNameBasedKey {
     
     private final CharSequence fqn;
+    private final int hashCode; // cashed hash code
     
     public NamespaceKey(CsmNamespace ns) {
 	super(getProjectName(ns));
 	this.fqn = ns.getQualifiedName();
+        hashCode = _hashCode();
     }
     
     private static String getProjectName(CsmNamespace ns) {
@@ -79,6 +81,10 @@ final class NamespaceKey extends ProjectNameBasedKey {
     
     @Override
     public int hashCode() {
+        return hashCode;
+    }
+
+    private int _hashCode() {
 	int key = super.hashCode();
 	key = 17*key + fqn.hashCode();
 	return key;
@@ -104,6 +110,7 @@ final class NamespaceKey extends ProjectNameBasedKey {
 	super(aStream);
 	fqn = QualifiedNameCache.getManager().getString(aStream.readUTF());
 	assert fqn != null;
+        hashCode = _hashCode();
     }
     
     @Override

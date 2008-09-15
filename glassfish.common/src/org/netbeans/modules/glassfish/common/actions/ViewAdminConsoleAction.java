@@ -67,10 +67,19 @@ public class ViewAdminConsoleAction extends NodeAction {
             if(commonSupport.getServerState() == ServerState.RUNNING) {
                 try {
                     Map<String, String> ip = commonSupport.getInstanceProperties();
-                    String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-                    boolean useAdminPort = !"false".equals(System.getProperty("glassfish.useadminport")); // NOI18N
-                    String adminPort = ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR);
-                    URL url = new URL("http://" + host + ":" + adminPort + "/admin"); // NOI18N
+                    StringBuilder urlBuilder = new StringBuilder(128);
+                    urlBuilder.append("http://");
+                    urlBuilder.append(ip.get(GlassfishModule.HOSTNAME_ATTR));
+                    urlBuilder.append(":");
+                    if(!"false".equals(System.getProperty("glassfish.useadminport"))) {
+                        // url for admin gui when on admin port (4848)
+                        urlBuilder.append(ip.get(GlassfishModule.ADMINPORT_ATTR));
+                    } else {
+                        // url for admin gui when on http port (8080)
+                        urlBuilder.append(ip.get(GlassfishModule.HTTPPORT_ATTR));
+                        urlBuilder.append("/admin");
+                    }
+                    URL url = new URL(urlBuilder.toString());
                     URLDisplayer.getDefault().showURL(url);
                 } catch (MalformedURLException ex) {
                     Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex); // NOI18N

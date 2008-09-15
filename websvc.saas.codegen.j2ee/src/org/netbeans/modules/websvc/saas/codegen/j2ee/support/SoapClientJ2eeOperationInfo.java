@@ -47,8 +47,7 @@ import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SoapClientJavaOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
 
@@ -70,8 +69,8 @@ public class SoapClientJ2eeOperationInfo extends SoapClientJavaOperationInfo {
         if (headerParams == null) {
             headerParams = new java.util.ArrayList<ParameterInfo>();
             Map<QName,String> params = SoapClientUtils.getSoapHandlerParameters(
-                    getXamWsdlModel(), (WsdlPort)getPort(), 
-                    (WsdlOperation)getOperation());
+                    getXamWsdlModel(), getPort(), 
+                    (WSOperation)getOperation());
             for (Map.Entry<QName,String> entry : params.entrySet()) {
                 Class type = getType(getProject(), entry.getValue());
                 ParameterInfo info = new ParameterInfo(entry.getKey(), type, entry.getValue());

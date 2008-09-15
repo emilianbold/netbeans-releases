@@ -55,12 +55,12 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
-import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -907,7 +907,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                         parentClassifier = parentType.getClassifier();
                     }
                     if (CsmBaseUtilities.isValid(parentClassifier)) {
-                        CsmMemberResolver memberResolver = CsmMemberResolver.getDefault();
+                        MemberResolverImpl memberResolver = new MemberResolverImpl(resolver);
                         if (instantiatedType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
                             Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, ((org.netbeans.modules.cnd.modelimpl.csm.NestedType) instantiatedType).getOwnText());
                             if (iter.hasNext()) {
@@ -925,6 +925,11 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                 }
             }
             return resolved;
+        }
+
+        @Override
+        public boolean isInstantiation() {
+            return (parentType != null && parentType.isInstantiation()) || super.isInstantiation();
         }
     }
 

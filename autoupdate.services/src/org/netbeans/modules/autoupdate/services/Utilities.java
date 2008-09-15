@@ -634,7 +634,16 @@ public class Utilities {
                 UpdateUnit u = DependencyAggregator.getRequested (dep);
                 boolean matched = false;
                 if (u == null) {
-                    brokenDependencies.add (dep);
+                    // last chance
+                    for (ModuleInfo m : availableInfos) {
+                        if (DependencyChecker.checkDependencyModule (dep, m)) {
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (! matched) {
+                        brokenDependencies.add (dep);
+                    }
                 } else {
                     if (u.getInstalled () != null) {
                         UpdateElementImpl reqElImpl = Trampoline.API.impl (u.getInstalled ());
@@ -672,7 +681,15 @@ public class Utilities {
             case Dependency.TYPE_RECOMMENDS :
                 UpdateUnit p = DependencyAggregator.getRequested (dep);
                 boolean passed = false;
-                if (p != null) {
+                if (p == null) {
+                    // look on availableInfos as well
+                    for (ModuleInfo m : availableInfos) {
+                        if (Arrays.asList (m.getProvides ()).contains (dep.getName ())) {
+                            passed = true;
+                            break;
+                        }
+                    }
+                } else {
                     passed = true;
                     if (! p.getAvailableUpdates ().isEmpty ()) {
                         requested = p.getAvailableUpdates ().get (0);
@@ -684,22 +701,6 @@ public class Utilities {
                 break;
         }
         return requested;
-    }
-    
-    private static Collection<UpdateElement> checkUpdateTokenProvider (Collection<Dependency> deps) {
-        Collection<UpdateElement> elems = new HashSet<UpdateElement> ();
-        UpdateManagerImpl updateMgr = UpdateManagerImpl.getInstance ();
-        for (Dependency dep : deps) {
-            if (updateMgr.getInstalledProviders (dep.getName ()).isEmpty ()) {
-                for (ModuleInfo mi : updateMgr.getAvailableProviders (dep.getName ())) {
-                    UpdateUnit u = toUpdateUnit (mi.getCodeNameBase ());
-                    assert u != null : "UpdateUnit found with codeName " + mi.getCodeNameBase ();
-                    assert u.getAvailableUpdates ().size () > 0 : "UpdateUnit " + u + " has available updates.";
-                    elems.add (u.getAvailableUpdates ().get (0));
-                }
-            }
-        }
-        return elems;
     }
     
     static Set<String> getBrokenDependencies (UpdateElement element, List<ModuleInfo> infos) {
@@ -1113,7 +1114,9 @@ public class Utilities {
             KeyStore ks = null;
             try {
                 File f = new File (getCacheDirectory (), fileName);
-                assert f.exists () : f + " exists.";
+                if (! f.exists ()) {
+                    return null;
+                }
                 is = new BufferedInputStream (new FileInputStream (f));
                 ks = KeyStore.getInstance (KeyStore.getDefaultType ());
                 ks.load (is, KS_USER_PASSWORD.toCharArray ());

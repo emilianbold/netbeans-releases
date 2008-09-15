@@ -73,6 +73,10 @@ public class WsdlSaasMethod extends SaasMethod {
         return operation.getName();
     }
 
+    public String getDisplayName() {
+        return getName();
+    }
+    
     @Override
     public WsdlSaas getSaas() {
         return (WsdlSaas) super.getSaas();

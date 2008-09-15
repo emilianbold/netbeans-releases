@@ -43,7 +43,6 @@ import java.util.Map;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
@@ -56,12 +55,14 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
@@ -79,6 +80,16 @@ public class CodeUtils {
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
 
     private CodeUtils() {
+    }
+
+    public static String extractClassName(ClassName clsName) {
+        Expression name = clsName.getName();
+
+        assert name instanceof Identifier :
+            "unsupported type of ClassName.getClassName().getName(): "
+            + name.getClass().getName();
+
+        return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
     }
 
     public static String extractClassName(ClassInstanceCreation instanceCreation) {
@@ -112,12 +123,10 @@ public class CodeUtils {
         } else if (var.getName() instanceof Variable) {
             Variable name = (Variable) var.getName();
             return extractVariableName(name);
-        } else {
-            assert false : "unsupported type returned by Variable.getName():"
-                    + var.getName().getClass().toString();
         }
-
-        return null;
+        
+        throw new IllegalStateException("unsupported type returned by Variable.getName():"
+                    + var.getName().getClass().toString());
     }
     
     public static boolean isVariableTypeResolved(IndexedConstant var){
@@ -302,6 +311,10 @@ public class CodeUtils {
     
     public static String extractFunctionName(FunctionDeclaration functionDeclaration){
         return functionDeclaration.getFunctionName().getName();
+    }
+
+    public static String extractMethodName(MethodDeclaration methodDeclaration){
+        return methodDeclaration.getFunction().getFunctionName().getName();
     }
     
     public static String extractFunctionName(FunctionName functionName){

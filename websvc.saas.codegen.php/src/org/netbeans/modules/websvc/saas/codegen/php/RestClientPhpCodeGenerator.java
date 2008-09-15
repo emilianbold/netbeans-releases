@@ -228,8 +228,10 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
             if (Util.isPutPostFormParams(getBean())) {
                 methodBody += "$" + Constants.QUERY_PARAMS;
-            } else {
+            } else if (Util.hasInputRepresentations(getBean())) {
                 methodBody += "$" + Constants.PUT_POST_CONTENT;
+            } else {
+                methodBody += "null";
             }
         }
         methodBody += ");\n";
@@ -360,7 +362,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         String bodyText = "{ \n" + getServiceMethodBody() + "\n"+indent+"}";
 
 
-        String comment = "Retrieves representation of an instance of " + getBean().getQualifiedClassName() + "\n";// NOI18N
+        String comment = "\n";// NOI18N
 
         for (String param : parameters) {
             comment += indent+"@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N

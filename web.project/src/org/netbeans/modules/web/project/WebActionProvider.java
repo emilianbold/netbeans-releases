@@ -149,11 +149,11 @@ class WebActionProvider implements ActionProvider {
     // Ant project helper of the project
     private UpdateHelper updateHelper;
     /** Map from commands to ant targets */
-    Map/*<String,String[]>*/ commands;
+    Map<String,String[]> commands;
 
     public WebActionProvider(WebProject project, UpdateHelper updateHelper) {
 
-        commands = new HashMap();
+        commands = new HashMap<String, String[]>();
         commands.put(COMMAND_BUILD, new String[]{"dist"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[]{"clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[]{"clean", "dist"}); // NOI18N
@@ -264,7 +264,7 @@ class WebActionProvider implements ActionProvider {
      * @return array of targets or null to stop execution; can return empty array
      */
     String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        String[] targetNames = (String[]) commands.get(command);
+        String[] targetNames = commands.get(command);
 
         // RUN-SINGLE
         if (command.equals(COMMAND_RUN_SINGLE)) {
@@ -547,7 +547,7 @@ class WebActionProvider implements ActionProvider {
             if (wscs != null) { //project contains ws reference
                 List serviceClients = wscs.getServiceClients();
                 //we store all ws client names into hash set for later fast searching
-                HashSet scNames = new HashSet();
+                HashSet<String> scNames = new HashSet<String>();
                 for (Iterator scIt = serviceClients.iterator(); scIt.hasNext();) {
                     WsCompileClientEditorSupport.ServiceSettings serviceClientSettings =
                             (WsCompileClientEditorSupport.ServiceSettings) scIt.next();
@@ -558,11 +558,10 @@ class WebActionProvider implements ActionProvider {
                 StringBuffer clientWDD = new StringBuffer();//additional web.docbase.dir
 
                 //we find all projects containg a web service            
-                Set globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
-                HashSet serverNames = new HashSet();
+                Set<FileObject> globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
+                HashSet<String> serverNames = new HashSet<String>();
                 //iteration through all source roots
-                for (Iterator iter = globalPath.iterator(); iter.hasNext();) {
-                    FileObject sourceRoot = (FileObject) iter.next();
+                for (FileObject sourceRoot : globalPath) {
                     Project serverProject = FileOwnerQuery.getOwner(sourceRoot);
                     if (serverProject != null) {
                         if (!serverNames.add(serverProject.getProjectDirectory().getName())) //project was already visited
@@ -994,15 +993,8 @@ class WebActionProvider implements ActionProvider {
             throw new IllegalArgumentException("Not a folder: " + dir); // NOI18N
         }
 
-        List/*<FileObject>*/ files = new ArrayList();
-        Iterator it = context.lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
-
-
-
-
-
-        while (it.hasNext()) {
-            DataObject d = (DataObject) it.next();
+        List<FileObject> files = new ArrayList<FileObject>();
+        for (DataObject d : context.lookupAll(DataObject.class)) {
             FileObject f = d.getPrimaryFile();
             boolean matches = FileUtil.toFile(f) != null;
             if (dir != null) {
@@ -1026,7 +1018,7 @@ class WebActionProvider implements ActionProvider {
         if (files.isEmpty()) {
             return null;
         }
-        return (FileObject[]) files.toArray(
+        return files.toArray(
                 new FileObject[files.size()]);
     }
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
@@ -1414,6 +1406,6 @@ class WebActionProvider implements ActionProvider {
     }
 
     private boolean isCosEnabled() {
-        return !Boolean.parseBoolean((String) project.getWebProjectProperties().get(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE));
+        return !Boolean.parseBoolean(project.evaluator().getProperty(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE));
     }
 }

@@ -72,7 +72,7 @@ public class HtmlIndenter {
     public static synchronized void indentEndTag(Document doc, LanguagePath languagePath, final int offset, String endTagName) {
         LOGGER.fine("Offset=" + offset);
 
-        TokenSequence htmlTokenSequence = getHtmlSequence(doc, languagePath, offset);
+        TokenSequence htmlTokenSequence = HTMLSyntaxSupport.getJoinedHtmlSequence(doc, languagePath);
         final String closeTagName = endTagName == null ? getCloseTagName(htmlTokenSequence, offset) : endTagName;
 
         if (closeTagName == null) {
@@ -82,15 +82,6 @@ public class HtmlIndenter {
         LOGGER.fine("Close tag name: '" + closeTagName + "'");
 
         SyntaxParser parser = SyntaxParser.get(doc, languagePath);
-
-        //attach syntaxparser listener 
-        final List<SyntaxElement> fresh = new ArrayList<SyntaxElement>();
-        parser.addSyntaxParserListener(new SyntaxParserListener() {
-
-            public void parsingFinished(List<SyntaxElement> elements) {
-                fresh.addAll(elements);
-            }
-        });
 
         AstNode node = SyntaxTree.makeTree(parser.elements());
         AstNode found = AstNodeUtils.findDescendant(node, offset);
@@ -147,6 +138,12 @@ public class HtmlIndenter {
         //lets try to find the pair lexically.
         //it is very likely that the text near of the end tag position contains the open tag if there is any
         //so we do not need a stack to properly filter closed tags
+        
+        if(htmlTokenSequence == null) {
+            //no html content
+            return ;
+        }
+        
         int limit = 50; //limit the backward search to some reasonable range; 50 tokens seems to be enought
         htmlTokenSequence.move(offset);
         //lexer bug hack
@@ -183,31 +180,12 @@ public class HtmlIndenter {
         }
     }
 
-    private static TokenSequence getHtmlSequence(Document doc, LanguagePath languagePath, int offset) {
-        //find html token sequence, in joined version if embedded
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        List<TokenSequence> embedded = th.embeddedTokenSequences(offset, true);
-        TokenSequence sequence = null;
-        for (TokenSequence ts : embedded) {
-            if (ts.language() == HTMLTokenId.language()) {
-                if (sequence == null) {
-                    //html is top level
-                    sequence = ts;
-                    break;
-                } else {
-                    //the sequence is my master language
-                    //get joined html sequence from it
-                    sequence = sequence.embeddedJoined(HTMLTokenId.language());
-                    assert sequence != null;
-                    break;
-                }
-            }
-            sequence = ts;
-        }
-        return sequence;
-    }
 
     private static String getCloseTagName(TokenSequence sequence, int offset) {
+        if(sequence == null) {
+            return  null;
+        }
+        
         sequence.move(offset);
 
         if (!sequence.moveNext()) {
@@ -231,8 +209,18 @@ public class HtmlIndenter {
 
         }
 
-        assert token.id() == HTMLTokenId.TAG_CLOSE : "unexpected state, we are on token " + token.id() + "; " + token.text().toString();
+        if(token.id() == HTMLTokenId.TAG_CLOSE) {
+            return token.text().toString();
+        } else {
+            //we didn't manage to find the close tag, strange since the
+            //code is triggered only if a closing '>' symbol is added 
+            //to a close tag.
+            
+            LOGGER.info("Cannot find the TAG_CLOSE token of the just typed end tag.\nStarting position is " + offset + ". Here is the searched token sequence:\n" + sequence.toString()); //NOI18N
+            return null;
+            
+        }
 
-        return token.text().toString();
+            
     }
 }

@@ -52,11 +52,11 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
-import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
+import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
@@ -91,7 +91,7 @@ public class NestedType extends TypeImpl {
                     parentClassifier = parentType.getClassifier();
                 }
                 if (CsmBaseUtilities.isValid(parentClassifier)) {
-                    CsmMemberResolver memberResolver = CsmMemberResolver.getDefault();
+                    MemberResolverImpl memberResolver = new MemberResolverImpl(parent);
                     Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, getOwnText());
                     if (iter.hasNext()) {
                         classifier = iter.next();
@@ -138,6 +138,11 @@ public class NestedType extends TypeImpl {
         } else {
             return "::" + classifierText; // NOI18N
         }
+    }
+
+    @Override
+    public boolean isInstantiation() {
+        return (parentType != null && parentType.isInstantiation()) || super.isInstantiation();
     }
 
     @Override

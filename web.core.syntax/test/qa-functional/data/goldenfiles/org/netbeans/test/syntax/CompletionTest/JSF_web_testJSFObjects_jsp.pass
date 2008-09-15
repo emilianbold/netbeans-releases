@@ -1,0 +1,34 @@
+[<h:inputText value="#{|}"/>, cookie[], <h:inputText value="#{cookie[]}"/>, 269]
+MyBean MyBean
+applicationScope[]
+cookie[]
+headerValues[]
+header[]
+initParam[]
+pageContext
+pageScope[]
+paramValues[]
+param[]
+requestScope[]
+sessionScope[]
+End cursor position = 299
+[<h:outputText value="#{|}" title="Hi" />, MyBean MyBean, <h:outputText value="#{MyBean}" title="Hi" />, 384]
+MyBean MyBean
+applicationScope[]
+cookie[]
+headerValues[]
+header[]
+initParam[]
+pageContext
+pageScope[]
+paramValues[]
+param[]
+requestScope[]
+sessionScope[]
+End cursor position = 414
+[<h:outputText value="#{MyBean.|}" title="Hi" />, String name, <h:outputText value="#{MyBean.name}" title="Hi" />, 508]
+Class class
+doSome
+String name
+toString
+End cursor position = 543

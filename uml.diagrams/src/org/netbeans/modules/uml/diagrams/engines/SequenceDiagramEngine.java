@@ -107,8 +107,6 @@ import org.netbeans.modules.uml.diagrams.actions.sqd.LifelineMoveStrategy;
 import org.netbeans.modules.uml.diagrams.actions.sqd.MessageMoveProvider;
 import org.netbeans.modules.uml.diagrams.actions.sqd.MessageMoveStrategy;
 import org.netbeans.modules.uml.diagrams.actions.sqd.MessagesConnectProvider;
-import org.netbeans.modules.uml.diagrams.actions.sqd.SQDRelationshipDisovery;
-import org.netbeans.modules.uml.diagrams.actions.sqd.ToolbarTestMessageCreateAction;
 import org.netbeans.modules.uml.diagrams.anchors.TargetMessageAnchor;
 import org.netbeans.modules.uml.diagrams.edges.factories.MessageFactory;
 import org.netbeans.modules.uml.diagrams.edges.sqd.MessageLabelManager;
@@ -349,7 +347,11 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
     }
 
     public INamedElement processDrop(INamedElement elementToDrop) {
-        //
+        
+        if ( elementToDrop == null)
+        {
+            return null;
+        }
         String type0=elementToDrop.getExpandedElementType();
         if(type0==null)type0=elementToDrop.getElementType();
         INamedElement ret=elementToDrop;
@@ -437,6 +439,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         //
         WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);
         
+        selectTool.addAction(DiagramEngine.lockSelectionAction);
         selectTool.addAction(mouseHoverAction);
         selectTool.addAction(sceneSelectAction);
         selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
@@ -444,7 +447,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         if(node.getFirstSubject().getExpandedElementType().equals("Lifeline"))//works for both Lifeline and ActorLifeline
         {
             WidgetAction lifelineMoveAction=new LifelineMoveAction(new LifelineMoveStrategy(), new LifelineMoveProvider(provider));
-            selectTool.addAction(new MoveNodeKeyAction(true, false));
+            selectTool.addAction(new MoveNodeKeyAction(new LifelineMoveStrategy(), new LifelineMoveProvider(provider)));
             selectTool.addAction(lifelineMoveAction);
         }
         else if(widget instanceof CombinedFragmentWidget)//covers combinedfragments, references, interaction boundary
@@ -456,7 +459,9 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             }
             else 
             {
-                selectTool.addAction(ActionFactory.createMoveAction(provider, new CombinedFragmentMoveProvider(provider)));
+                CombinedFragmentMoveProvider cfMoveProvider = new CombinedFragmentMoveProvider(provider);
+                selectTool.addAction(ActionFactory.createMoveAction(provider, cfMoveProvider));
+                selectTool.addAction(new MoveNodeKeyAction(provider, cfMoveProvider));
             }
         }
         else
@@ -486,6 +491,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             edgeKind=getMessageKindAsString(msg.getKind());
         }
                 
+        selectTool.addAction(DiagramEngine.lockSelectionAction);
         selectTool.addAction(sceneSelectAction);
         selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
         if("Synchronous".equals(edgeKind) || "Asynchronous".equals(edgeKind))selectTool.addAction(ActionFactory.createReconnectAction(new MessageReconnectDecorator(widget),new MessagesReconnectProvider()));//only these messages was possible to reconnect in 6.0

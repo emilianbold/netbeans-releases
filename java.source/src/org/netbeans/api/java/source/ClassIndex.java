@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -598,7 +599,8 @@ public final class ClassIndex {
                 }
             }
             result |= !roots.isEmpty();
-            removedRoots.addAll(roots);;
+            Collection<? super URL> c = removedRoots;
+            c.addAll(roots);
             return result;
         }
         

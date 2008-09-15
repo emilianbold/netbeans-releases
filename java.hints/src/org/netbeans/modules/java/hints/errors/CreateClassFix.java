@@ -79,17 +79,19 @@ import org.openide.util.NbBundle;
 public abstract class CreateClassFix implements Fix {
     
     protected Set<Modifier> modifiers;
-    private List<TypeMirrorHandle> argumentTypes; //if a specific constructor should be created
-    private List<String> argumentNames; //dtto.
+    protected List<TypeMirrorHandle> argumentTypes; //if a specific constructor should be created
+    protected List<String> argumentNames; //dtto.
     private List<TypeMirrorHandle> superTypes;
     protected ElementKind kind;
     private int numTypeParameters;
+    protected List<? extends TypeMirror> argumentTypeMirrors;
     
     public CreateClassFix(CompilationInfo info, Set<Modifier> modifiers, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, TypeMirror superType, ElementKind kind, int numTypeParameters) {
         this.modifiers = modifiers;
         
         if (argumentTypes != null && argumentNames != null) {
             this.argumentTypes = new ArrayList<TypeMirrorHandle>();
+            this.argumentTypeMirrors = argumentTypes;
             
             for (TypeMirror tm : argumentTypes) {
                 this.argumentTypes.add(TypeMirrorHandle.create(tm));
@@ -252,7 +254,18 @@ public abstract class CreateClassFix implements Fix {
         }
 
         public String getText() {
-            return NbBundle.getMessage(CreateClassFix.class, "FIX_CreateClassInPackage", simpleName, packageName, valueForBundle(kind));
+            if (argumentNames == null || argumentNames.isEmpty())
+                return NbBundle.getMessage(CreateClassFix.class, "FIX_CreateClassInPackage", simpleName, packageName, valueForBundle(kind));
+            else {
+                StringBuffer buf = new StringBuffer();
+                for (TypeMirror tm : argumentTypeMirrors) {
+                    buf.append(tm.toString());
+                    buf.append(",");
+                }
+                String ctorParams = buf.toString();
+                Object[] params = new Object[] {simpleName, packageName, valueForBundle(kind), ctorParams.substring(0, ctorParams.length() - 1)};
+                return NbBundle.getMessage(CreateClassFix.class, "FIX_CreateClassAndCtorInPackage", params);
+            }
         }
         
         private static String template(ElementKind kind) {
@@ -289,7 +302,43 @@ public abstract class CreateClassFix implements Fix {
         public String toDebugString(CompilationInfo info) {
             return "CreateClass:" + packageName + "." + simpleName + ":" + modifiers.toString() + ":" + kind; // NOI18N
         }
-        
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CreateOuterClassFix other = (CreateOuterClassFix) obj;
+            if (this.targetSourceRoot != other.targetSourceRoot && (this.targetSourceRoot == null || !this.targetSourceRoot.equals(other.targetSourceRoot))) {
+                return false;
+            }
+            if (this.packageName != other.packageName && (this.packageName == null || !this.packageName.equals(other.packageName))) {
+                return false;
+            }
+            if (this.simpleName != other.simpleName && (this.simpleName == null || !this.simpleName.equals(other.simpleName))) {
+                return false;
+            }
+            if (this.argumentTypeMirrors != other.argumentTypeMirrors && (this.argumentTypeMirrors == null || !this.argumentTypeMirrors.equals(other.argumentTypeMirrors))) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 53 * hash + (this.targetSourceRoot != null ? this.targetSourceRoot.hashCode() : 0);
+            hash = 53 * hash + (this.packageName != null ? this.packageName.hashCode() : 0);
+            hash = 53 * hash + (this.simpleName != null ? this.simpleName.hashCode() : 0);
+            hash = 53 * hash + (this.argumentTypeMirrors != null ? this.argumentTypeMirrors.hashCode() : 0);
+            return hash;
+        }
+
+
     }
     
     static final class CreateInnerClassFix extends CreateClassFix {
@@ -353,5 +402,5 @@ public abstract class CreateClassFix implements Fix {
         }
         
     }
-    
+
 }

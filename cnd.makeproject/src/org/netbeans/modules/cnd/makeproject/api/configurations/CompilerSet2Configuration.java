@@ -56,22 +56,22 @@ import org.openide.util.Utilities;
 
 public class CompilerSet2Configuration implements PropertyChangeListener {
 
-    private DevelopmentHostConfiguration developmentHostConfiguration;
+    private DevelopmentHostConfiguration dhconf;
     private StringConfiguration compilerSetName;
     private CompilerSetNodeProp compilerSetNodeProp;
     private String flavor;
     private boolean dirty = false;
 
     private CompilerSet2Configuration(CompilerSet2Configuration other) {
-        this.developmentHostConfiguration = (DevelopmentHostConfiguration) other.developmentHostConfiguration.clone();
+        this.dhconf = (DevelopmentHostConfiguration) other.dhconf.clone();
         this.compilerSetName = (StringConfiguration) other.compilerSetName.clone();
         this.flavor = other.flavor;
         this.compilerSetNodeProp = null;        
     }
     
     // Constructors
-    public CompilerSet2Configuration(DevelopmentHostConfiguration developmentHostConfiguration) {
-        this.developmentHostConfiguration = developmentHostConfiguration;
+    public CompilerSet2Configuration(DevelopmentHostConfiguration dhconf) {
+        this.dhconf = dhconf;
         String csName = getCompilerSetManager().getDefaultCompilerSet().getName();
         if (csName == null || csName.length() == 0) {
             if (getCompilerSetManager().getCompilerSetNames().size() > 0) {
@@ -90,7 +90,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     // we can't store CSM because it's dependent on devHostConfig name which is not persistent
     public CompilerSetManager getCompilerSetManager() {
-        return CompilerSetManager.getDefault(developmentHostConfiguration.getName());
+        return CompilerSetManager.getDefault(dhconf.getName());
     }
 
 //
@@ -148,12 +148,12 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
      */
     public int getValue() {
         // TODO: only usage of getValue is next:
-        // CompilerSetManager.getDefault(developmentHostConfiguration.getName()).getCompilerSet(conf.getCompilerSet().getValue());
+        // CompilerSetManager.getDefault(dhconf.getName()).getCompilerSet(conf.getCompilerSet().getValue());
 
         String s = getCompilerSetName().getValue();
-	if (s != null) {
+        if (s != null) {
             int i = 0;
-            for (String csname : CompilerSetManager.getDefault(developmentHostConfiguration.getName()).getCompilerSetNames()) {
+            for (String csname : CompilerSetManager.getDefault(dhconf.getName()).getCompilerSetNames()) {
                 if (s.equals(csname)) {
                     return i;
                 }
@@ -190,18 +190,26 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         if (compilerSet != null) {
             displayName = compilerSet.getName();
         }
-        if (displayName != null) {
+        if (displayName != null && dhconf.isOnline()) {
             return displayName;
         } else {
             if (displayIfNotFound)
                 return createNotFoundName(getCompilerSetName().getValue());
             else
-                return ""; // NOI18N
+                return "";
         }
     }
 
     public String createNotFoundName(String name) {
-        return name.equals(CompilerSet.None) ? name : NbBundle.getMessage(CompilerSet2Configuration.class,  "NOT_FOUND", name); // NOI18N
+        if (!dhconf.isOnline()) {
+            return "";
+        } else {
+            return name.equals(CompilerSet.None) ? name : NbBundle.getMessage(CompilerSet2Configuration.class,  "NOT_FOUND", name); // NOI18N
+        }
+    }
+
+    public boolean isDevHostOnline() {
+        return dhconf.isOnline();
     }
 
     // Clone and assign
@@ -219,8 +227,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         return clone;
     }
 
-    public void setDevelopmentHostConfiguration(DevelopmentHostConfiguration developmentHostConfiguration) {
-        this.developmentHostConfiguration = developmentHostConfiguration;
+    public void setDevelopmentHostConfiguration(DevelopmentHostConfiguration dhconf) {
+        this.dhconf = dhconf;
     }
 
     public void setDirty(boolean dirty) {
@@ -275,7 +283,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     public void propertyChange(final PropertyChangeEvent evt) {
-        final String key = evt.getNewValue().toString();
+        final String key = ((DevelopmentHostConfiguration) evt.getNewValue()).getName();
         if (key.equals(CompilerSetManager.LOCALHOST)) {
             setValue(getCompilerSetManager().getCompilerSet(0).getName());
         } else {

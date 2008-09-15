@@ -123,6 +123,7 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
@@ -284,14 +285,25 @@ public final class WebProject implements Project, AntProjectListener {
             updateFileChangeListener();
         }
 
-        public void fileRenamed(FileRenameEvent fe) {
+        public void fileRenamed(final FileRenameEvent fe) {
             if(watchRename && fileObject.isValid()) {
-                File f = new File(helper.getStandardPropertyEvaluator().getProperty(propertyName));
+                final File f = new File(helper.getStandardPropertyEvaluator().getProperty(propertyName));
                 if(f.getName().equals(fe.getName())) {
-                    EditableProperties properties = new EditableProperties(true);
-                    properties.setProperty(propertyName, new File(f.getParentFile(), fe.getFile().getName()).getPath());
-                    Utils.updateProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
-                    getWebProjectProperties().store();
+                    ProjectManager.mutex().postWriteRequest(new Runnable() {
+                        public void run() {
+                            EditableProperties properties = new EditableProperties(true);
+                            properties.setProperty(propertyName, new File(f.getParentFile(), fe.getFile().getName()).getPath());
+                            Utils.updateProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
+                            try {
+                                ProjectManager.getDefault().saveProject(WebProject.this);
+                                updateFileChangeListener();
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (IllegalArgumentException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
                 }
             }
             updateFileChangeListener();
@@ -306,7 +318,7 @@ public final class WebProject implements Project, AntProjectListener {
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
-        buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation());
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation(), refHelper);
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         updateProject = new UpdateProjectImpl(this, this.helper, aux);
         this.updateHelper = new UpdateHelper(updateProject, helper);
@@ -566,14 +578,10 @@ public final class WebProject implements Project, AntProjectListener {
             return apiJAXWSClientSupport;
     }
     
-    public WebProjectProperties getWebProjectProperties() {
-        return new WebProjectProperties (this, updateHelper, eval, refHelper);
-    }
-
     /** Return configured project name. */
     public String getName() {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            public String run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
@@ -590,8 +598,8 @@ public final class WebProject implements Project, AntProjectListener {
     
     /** Store configured project name. */
     public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
@@ -618,8 +626,8 @@ public final class WebProject implements Project, AntProjectListener {
         j2eePlatformListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
-                    ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                        public Object run() {
+                    ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                        public Void run() {
                             EditableProperties ep = helper.getProperties(
                                     AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             EditableProperties projectProps = helper.getProperties(
@@ -828,9 +836,8 @@ public final class WebProject implements Project, AntProjectListener {
                     genFilesHelper.refreshBuildScript(
                         getBuildXmlName(),
                         WebProject.class.getResource("resources/build.xsl"), true);
-                    
-                    WebProjectProperties wpp = getWebProjectProperties();
-                    String servInstID = (String) wpp.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+
+                    String servInstID = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
                     String serverType = null;
                     J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
                     if (platform != null) {
@@ -839,7 +846,7 @@ public final class WebProject implements Project, AntProjectListener {
                     } else {
                         // if there is some server instance of the type which was used
                         // previously do not ask and use it
-                        serverType = (String) wpp.get(WebProjectProperties.J2EE_SERVER_TYPE);
+                        serverType = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
                         if (serverType != null) {
                             String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                             if (servInstIDs.length > 0) {
@@ -895,7 +902,7 @@ public final class WebProject implements Project, AntProjectListener {
                 webModule.setContextPath (sysName);
             }
 
-            if (!Boolean.parseBoolean((String) getWebProjectProperties().get(
+            if (!Boolean.parseBoolean(evaluator().getProperty(
                     WebProjectProperties.DISABLE_DEPLOY_ON_SAVE))) {
                 Deployment.getDefault().enableCompileOnSaveSupport(webModule);
             }
@@ -1060,11 +1067,16 @@ public final class WebProject implements Project, AntProjectListener {
             webInfFileWatch.reset();
 
             // listen to j2ee platform classpath changes
-            WebProjectProperties wpp = getWebProjectProperties();
-            String servInstID = (String)wpp.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
-            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
-            if (platform != null) {
-                unregisterJ2eePlatformListener(platform);
+            String servInstID = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+            if (servInstID != null) {
+                try {
+                    J2eePlatform platform = Deployment.getDefault().getServerInstance(servInstID).getJ2eePlatform();
+                    if (platform != null) {
+                        unregisterJ2eePlatformListener(platform);
+                    }
+                } catch (InstanceRemovedException ex) {
+                    // ignore in this case
+                }
             }
             
             // remove ServiceListener from jaxWsModel            
@@ -1197,19 +1209,17 @@ public final class WebProject implements Project, AntProjectListener {
             return;
         }
         
-        ArrayList<String>templatesEE5 = new ArrayList(PRIVILEGED_NAMES_EE5.length + 1);
-        ArrayList<String>templates = new ArrayList(PRIVILEGED_NAMES.length + 1);
+        ArrayList<String>templatesEE5 = new ArrayList<String>(PRIVILEGED_NAMES_EE5.length + 1);
+        ArrayList<String>templates = new ArrayList<String>(PRIVILEGED_NAMES.length + 1);
 
         // how many templates are added
         int countTemplate = 0;
-        Collection <WebPrivilegedTemplates> pfTemplates = 
-                (Collection<WebPrivilegedTemplates>)Lookups.forPath(WEBTEMPLATE_PATH).lookupAll(WebPrivilegedTemplates.class);
         
-        for (WebPrivilegedTemplates webPrivililegedTemplates : pfTemplates) {
+        for (WebPrivilegedTemplates webPrivililegedTemplates : Lookups.forPath(WEBTEMPLATE_PATH).lookupAll(WebPrivilegedTemplates.class)) {
             String[] addedTemplates = webPrivililegedTemplates.getPrivilegedTemplates(apiWebModule);
             if (addedTemplates != null && addedTemplates.length > 0){
                 countTemplate = countTemplate + addedTemplates.length;
-                List addedList = Arrays.asList(addedTemplates);
+                List<String> addedList = Arrays.asList(addedTemplates);
                 templatesEE5.addAll(addedList);
                 templates.addAll(addedList);
             }

@@ -58,12 +58,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.TableModel;
@@ -79,6 +76,8 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementEvent;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementListener;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
@@ -98,7 +97,7 @@ import org.openide.util.NbBundle;
  *
  * @author Karol Harezlak
  */
-public class SVGFormEditorElement extends PropertyEditorResourceElement implements Runnable {
+public class SVGFormEditorElement extends PropertyEditorResourceElement implements Runnable, PropertyEditorResourceElementListener {
 
     private static final String EXTENSION = "svg"; // NOI18N
     private long componentID;
@@ -115,7 +114,9 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private Map<String, String> pathMap;
     private JPopupMenu menu;
     private WeakReference<DesignComponent> svgFormReferences;
-    //private WeakHashMap<DesignComponent, String[][]> orderedMap = null;
+    private boolean needUpdate;
+    private boolean orderNeedsUpdate;
+
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
         comboBoxModel = new DefaultComboBoxModel();
@@ -125,10 +126,11 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         previewPanel.add(imageView, BorderLayout.CENTER);
         //jTable1.setModel(new Model());
         menu = new JPopupMenu();
-        menu.add(new MoveAction("Move Up", 1)); //TODO
-        menu.add(new MoveAction("Move down", -1)); //TODO
+        menu.add(new MoveAction(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("Move_Up_Action"), 1)); //NOI18N
+        menu.add(new MoveAction(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("Move_Down_Action"), -1)); //NOi18N
         jTable1.addMouseListener(new PopupListener());
         pathMap = new HashMap<String, String>();
+        jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     @Override
@@ -181,7 +183,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         }
         final DesignDocument document = documentReferences.get();
         project = ProjectUtils.getProject(document);
-
 
         if (wrapper == null) {
             // UI stuff
@@ -236,7 +237,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 retValue[0] = component.getDocument().getDescriptorRegistry().isInHierarchy(SVGFormCD.TYPEID, component.getType());
             }
         });
-
         return retValue[0];
     }
 
@@ -249,11 +249,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
-//                DesignComponent childComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
-//                if (childComponent == null) {
-//                    return;
-//                }
-
                 PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
                 if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
                     //String svgImagePath = MidpTypes.getString(propertyValue);
@@ -263,16 +258,18 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                     parseIt[0] = Boolean.TRUE;
                 }
                 DesignComponent oldComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
-                if (oldComponent == childComponent && svgImageFileObject[0] != null) {
+                if (!needUpdate && oldComponent == childComponent && svgImageFileObject[0] != null) {
                     parseIt[0] = Boolean.FALSE;
                 }
             }
         });
-
         if (parseIt[0] != null && parseIt[0]) {
             parseSVGImageItems(svgImageFileObject[0], parentComponent);
+            orderSVGComponentsArray(parentComponent);
         }
-        orderSVGComponentsArray(parentComponent);
+        if (orderNeedsUpdate) {
+            orderSVGComponentsArray(parentComponent);
+        }
     }
 
     private void orderSVGComponentsArray(final DesignComponent svgForm) {
@@ -469,14 +466,22 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         File file = FileUtil.toFile(fo);
         if (file == null) {
             // abstract FO - zip/jar...
-            relativePath = "/" + fo.getPath(); // NOI18N
+            if (!fo.getPath().startsWith("/")) { // NOI18N
+                relativePath = "/" + fo.getPath(); // NOI18N
+            } else {
+                relativePath = fo.getPath();
+            }
         } else {
             String fullPath = file.getAbsolutePath();
             if (fullPath.contains(sourcePath)) {
                 // file is inside sources
                 fullPath = fo.getPath();
                 int i = fullPath.indexOf(sourcePath) + sourcePath.length() + 1;
-                relativePath = fullPath.substring(i);
+                if (!fullPath.substring(i).startsWith("/")) { //NOI18N
+                    relativePath = "/" + fullPath.substring(i); //NOI18N
+                } else {
+                    relativePath = fullPath.substring(i);
+                }
             } else if (needCopy) {
                 // somewhere outside sources - need to copy (export image)
                 File possible = new File(sourcePath + File.separator + fo.getNameExt());
@@ -502,7 +507,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     public void run() {
-
+        orderNeedsUpdate = false;
+        needUpdate = false;
         if (documentReferences == null || documentReferences.get() == null) {
             return;
         }
@@ -534,8 +540,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                progressBar.setVisible(
-                        isShowing);
+                progressBar.setVisible(isShowing);
             }
         });
     }
@@ -832,6 +837,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
             fireElementChanged(componentID, SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
             updatePreview();
             updateSVGComponentsList();
+            needUpdate = true;
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -858,8 +864,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     // End of variables declaration
     private class Model implements TableModel {
 
-        private String COLUMN_NAME_I = "SVG Component Type"; //TODO Localization
-        private String COLUMN_NAME_II = "SVG Component ID"; //TODO Localization
+        private String COLUMN_NAME_I = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("SVG_Component_Type_Column"); //NOI18N
+        private String COLUMN_NAME_II = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("SVG_Component_ID_Column"); //NOI18N
         private String[][] values;
 
         public Model() {
@@ -960,6 +966,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         }
 
         private void moveValue(int step) {
+            orderNeedsUpdate = true;
             TableModel model = jTable1.getModel();
             int selectedRow = jTable1.getSelectedRow();
             String typeToMoveUp = (String) model.getValueAt(selectedRow, 0);
@@ -979,11 +986,15 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 
         @Override
         public void mousePressed(MouseEvent e) {
+            int selectedRow = jTable1.rowAtPoint(e.getPoint());
+            jTable1.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
             showPopup(e);
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            int selectedRow = jTable1.rowAtPoint(e.getPoint());
+            jTable1.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
             showPopup(e);
         }
 
@@ -992,5 +1003,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }
+    }
+
+    public void elementChanged(PropertyEditorResourceElementEvent event) {
     }
 }

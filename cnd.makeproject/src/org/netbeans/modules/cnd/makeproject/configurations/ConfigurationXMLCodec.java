@@ -253,7 +253,15 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentPackagingConfiguration.getFiles().getValue().clear();
             //currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
-            currentPackagingConfiguration.getHeader().getValue().clear();
+            if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+                currentPackagingConfiguration.getSvr4Header().getValue().clear();
+            }
+            else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+                currentPackagingConfiguration.getRpmHeader().getValue().clear();
+            }
+            else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+                // FIXUP
+            }
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
@@ -316,8 +324,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String value = atts.getValue(VALUE_ATTR); // NOI18N
             String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
             InfoElement infoElement = new InfoElement(name, value, mandatory.equals(TRUE_VALUE), false);
-            if (currentPackagingConfiguration != null)
-                currentPackagingConfiguration.getHeader().add(infoElement);
+            if (currentPackagingConfiguration != null) {
+                if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+                    currentPackagingConfiguration.getSvr4Header().add(infoElement);
+                }
+                else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+                    currentPackagingConfiguration.getRpmHeader().add(infoElement);
+                }
+                else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+                    // FIXUP
+                }
+            }
         }
     }
     

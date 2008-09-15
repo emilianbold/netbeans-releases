@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<marketplace_getListings_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <listing>
+        <listing_id>4973534529</listing_id>
+        <url>http://www.facebook.com/marketplace/listing.php?classified_id=4973534529</url>
+        <title>Want a Bike Bad</title>
+        <description>please sell me a bike, i want to save the environment. pretty please.</description>
+        <poster>703</poster>
+        <update_time>1190706121</update_time>
+        <category>FORSALE_WANTED</category>
+        <subcategory>GENERAL_WANTED</subcategory>
+        <image_urls list="true"/>
+    </listing>
+</marketplace_getListings_response>

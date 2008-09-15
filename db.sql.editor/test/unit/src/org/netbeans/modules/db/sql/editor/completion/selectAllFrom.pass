@@ -4,3 +4,4 @@ Column address_line in table customer
 Table customer
 Alias cus
 Schema accounting
+Catalog anotherapp

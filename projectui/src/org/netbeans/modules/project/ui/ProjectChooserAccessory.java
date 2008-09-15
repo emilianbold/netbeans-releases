@@ -575,6 +575,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         public ProjectFileView(JFileChooser chooser) {
             this.chooser = chooser;
             chooser.setFileView(this);
+            task.setPriority(Thread.MIN_PRIORITY);
         }
 
         @Override
@@ -593,7 +594,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                         return icon;
                     } else if (lookingForIcon == null) {
                         lookingForIcon = f;
-                        task.schedule(100);
+                        task.schedule(20);
                         // Only calculate one at a time.
                         // When the view refreshes, the next unknown icon
                         // should trigger the task to be reloaded.

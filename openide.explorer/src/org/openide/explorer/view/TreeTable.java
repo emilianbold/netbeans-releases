@@ -1156,6 +1156,13 @@ class TreeTable extends JTable implements Runnable {
             super.fireTreeExpanded(path);
             firePropertyChange("width", -1, getWidth());
         }
+
+        boolean treeTableHasFocus() {
+            Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+            boolean tableHasFocus = (focusOwner == this) || (focusOwner == TreeTable.this) ||
+                TreeTable.this.isAncestorOf(focusOwner) || focusOwner instanceof JRootPane; //RootPane == popup menu
+            return tableHasFocus;
+        }
     }
 
     /**

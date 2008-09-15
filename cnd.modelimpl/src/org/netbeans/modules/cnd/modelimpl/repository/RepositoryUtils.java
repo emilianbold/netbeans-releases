@@ -69,7 +69,7 @@ public class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 42;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 45;
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
     }
@@ -95,19 +95,16 @@ public class RepositoryUtils {
     
     public static Persistent get(Key key) {
         assert key != null;
-        long time = 0;
-        int index = 0;
         if (TRACE_REPOSITORY_ACCESS) {
-            index = nextIndex();
-            time = System.currentTimeMillis();
+            long time = System.currentTimeMillis();
+            int index = nextIndex();
             System.err.println(index + ":getting key " + key);
-        }
-        Persistent out = RepositoryAccessor.getRepository().get(key);
-        if (TRACE_REPOSITORY_ACCESS) {
+            Persistent out = RepositoryAccessor.getRepository().get(key);
             time = System.currentTimeMillis() - time;
             System.err.println(index + ":got in " + time + "ms the key " + key);
+            return out;
         }
-	return out;
+        return RepositoryAccessor.getRepository().get(key);
     }
     
     private static synchronized int nextIndex() {
@@ -117,19 +114,19 @@ public class RepositoryUtils {
     public static void remove(CsmUID uid) {
         Key key = UIDtoKey(uid);
         if (key != null) {
-            long time = 0;
-            int index = 0;
             if (TRACE_REPOSITORY_ACCESS) {
-                index = nextIndex();
-                time = System.currentTimeMillis();
+                long time = System.currentTimeMillis();
+                int index = nextIndex();
                 System.err.println(index + ":removing key " + key);
+                if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
+                    RepositoryAccessor.getRepository().remove(key);
+                }
+                time = System.currentTimeMillis() - time;
+                System.err.println(index + ":removed in " + time + "ms the key " + key);
+                return;
             }
             if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
                 RepositoryAccessor.getRepository().remove(key);
-            }
-            if (TRACE_REPOSITORY_ACCESS) {
-                time = System.currentTimeMillis() - time;
-                System.err.println(index + ":removed in " + time + "ms the key " + key);
             }
         }
     }
@@ -155,22 +152,24 @@ public class RepositoryUtils {
     
     public static void put(Key key, Persistent obj) {
 	if (key != null) {
-	    long time = 0;
-	    int index = 0;
 	    if (TRACE_REPOSITORY_ACCESS) {
-		index = nextIndex();
-		time = System.currentTimeMillis();
-		System.err.println(index + ":putting key " + key);
-	    }
+                long time = System.currentTimeMillis();
+                int index = nextIndex();
+                System.err.println(index + ":putting key " + key);
+                RepositoryAccessor.getRepository().put(key, obj);
+                // A workaround for #131701
+                if( key instanceof FileKey ) {
+                    RepositoryAccessor.getRepository().hang(key, obj);
+                }
+                time = System.currentTimeMillis() - time;
+                System.err.println(index + ":put in " + time + "ms the key " + key);
+                return;
+            }
 	    RepositoryAccessor.getRepository().put(key, obj);
             // A workaround for #131701
             if( key instanceof FileKey ) {
                 RepositoryAccessor.getRepository().hang(key, obj);
             }
-	    if (TRACE_REPOSITORY_ACCESS) {
-		time = System.currentTimeMillis() - time;
-		System.err.println(index + ":put in " + time + "ms the key " + key);
-	    }
 	}
     }
     
@@ -186,18 +185,16 @@ public class RepositoryUtils {
     
     public static void hang(Key key, Persistent obj) {
 	if (key != null) {
-	    long time = 0;
-	    int index = 0;
 	    if (TRACE_REPOSITORY_ACCESS) {
-		index = nextIndex();
-		time = System.currentTimeMillis();
-		System.err.println(index + ":hanging key " + key);
-	    }
+                long time = System.currentTimeMillis();
+                int index = nextIndex();
+                System.err.println(index + ":hanging key " + key);
+                RepositoryAccessor.getRepository().hang(key, obj);
+                time = System.currentTimeMillis() - time;
+                System.err.println(index + ":hung in " + time + "ms the key " + key);
+                return;
+            }
 	    RepositoryAccessor.getRepository().hang(key, obj);
-	    if (TRACE_REPOSITORY_ACCESS) {
-		time = System.currentTimeMillis() - time;
-		System.err.println(index + ":hung in " + time + "ms the key " + key);
-	    }
 	}
     }
     
@@ -281,13 +278,13 @@ public class RepositoryUtils {
     }
     
     public static void openUnit(Key key) {
-	openUnit(key.getUnit().toString());
+	openUnit(key.getUnitId(), key.getUnit().toString());
     }
     
-    private static void openUnit(String unitName) {
+    private static void openUnit(int unitId, String unitName) {
 	// TODO explicit open should be called here: 
 	RepositoryListenerImpl.instance().onExplicitOpen(unitName);
-	RepositoryAccessor.getRepository().openUnit(unitName);
+	RepositoryAccessor.getRepository().openUnit(unitId, unitName);
     }
     
     public static void unregisterRepositoryListener(RepositoryListener listener) {

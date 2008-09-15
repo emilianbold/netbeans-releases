@@ -47,6 +47,7 @@ import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
@@ -62,6 +63,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.DeclarationFinderImpl;
 import org.netbeans.modules.php.editor.nav.InstantRenamerImpl;
 import org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl;
+import org.netbeans.modules.php.editor.nav.PHPTypeSearcher;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser;
 import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
@@ -186,5 +188,8 @@ public class PHPLanguage extends DefaultLanguageConfig {
         return PhpSourcePath.getPreindexedFolders();
     }
 
-
+    @Override
+    public IndexSearcher getIndexSearcher() {
+        return new PHPTypeSearcher();
+    }
 }

@@ -151,7 +151,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         renderVariableInClassifier(token, innerClass, null, null);
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                        EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile());
+                        EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext());
                         innerEnum.setVisibility(curentVisibility);
                         addMember(innerEnum);
                         renderVariableInClassifier(token, innerEnum, null, null);

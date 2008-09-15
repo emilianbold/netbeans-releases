@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.drawingarea.view;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Collection;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
@@ -204,6 +205,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     public Point getOriginalLocation (Widget widget) {
         
         original = widget.getPreferredLocation();
+        lastPoint = original;
         return original;
     }
 
@@ -222,14 +224,32 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         
         return retVal;
     }
-    
+
+    Point lastPoint = null;
     public void setNewLocation (Widget widget, Point location) {
         
         if(location != null)
         {
             int dx = location.x - original.x;
             int dy = location.y - original.y;
-            if(dx!=0 || dy!=0)
+
+            // Determine if the new location of the widget has actually moved.
+            //
+            // Originally we used the dx and dy variables to determine if the
+            // node moved.  However, the dx and dy values are based off the
+            // original position of the widget.  In this case the "original"
+            // position of the widget is defined as the location before the move
+            // started.  Therefore if the widget is moved back to the exact
+            // coordinate as the origional location the widget will not be
+            // moved.  This is not that big of a deal when using the mouse to
+            // move because it is not very likely that the exact coordinate will
+            // occur in a single move.  However when using the keyboard to move
+            // nodes this is very likey to happen, especially on the SQD where
+            // the lifeline node can only be moved left and right.
+
+            int curDx = location.x - widget.getPreferredLocation().x;
+            int curDy = location.y - widget.getPreferredLocation().y;
+            if(curDx != 0 || curDy != 0)
             {
                 if(movingWidgets == null)
                 {
@@ -242,8 +262,10 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                 // the connection point values from before the move started.
                 // 
                 // Therefore use the reference widget to determine the dx.
-                int edgeDx = location.x - widget.getPreferredLocation().x;
-                int edgeDy = location.y - widget.getPreferredLocation().y;
+
+                int edgeDx = location.x - lastPoint.x;
+                int edgeDy = location.y - lastPoint.y;
+                lastPoint = location;
                 adjustControlPoints(getMovingWidgetList(), edgeDx, edgeDy);
                 for(MovingWidgetDetails details : movingWidgets)
                 {
@@ -251,31 +273,8 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     Point newPt = new Point(point.x + dx, point.y + dy);
                     if (details.getWidget() instanceof ConnectionWidget)
                     {
-                        ConnectionWidget connection = (ConnectionWidget) details.getWidget();
-                        List<Point> list = new ArrayList<Point>();
-
-                        ArrayList<Point> oldList = new ArrayList<Point>(connection.getControlPoints());
-                        oldList.remove(connection.getFirstControlPoint());
-                        oldList.remove(connection.getLastControlPoint());
-                        Anchor sourceAnchor = connection.getSourceAnchor();
-                        Anchor targetAnchor = connection.getTargetAnchor();
-                        if (sourceAnchor == null || targetAnchor == null)
-                        {
-                            continue;
-                        }
-                        Point sourceP = sourceAnchor.compute(connection.getSourceAnchorEntry()).getAnchorSceneLocation();
-                        list.add(sourceP);
-
-                        for (Point p : oldList)
-                        {
-                            int ddx = p.x - connection.getFirstControlPoint().x;
-                            int ddy = p.y - connection.getFirstControlPoint().y;
-                            Point np = new Point(details.getOriginalLocation().x + dx + ddx, details.getOriginalLocation().y + dy + ddy);
-                            list.add(np);
-                        }
-                        list.add(targetAnchor.compute(connection.getTargetAnchorEntry()).getAnchorSceneLocation());
-
-                        connection.setControlPoints(list, true);
+                        // Do nothing because the adjustControlPoints will
+                        // take care of this situation.
                     }
                     else
                         details.getWidget().setPreferredLocation(newPt);
@@ -300,44 +299,124 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         
         return retVal;
     }
-    
+
+    /**
+     * Adjust the control points of all selected connection widgets attached
+     * to a node.
+     *
+     * @param widgets The list of widgets to update.
+     * @param dx The distance in the x direction.
+     * @param dy The distance in the y direction.
+     */
     public static void adjustControlPoints(List < Widget> widgets, 
                                            int dx, int dy)
     {
-        // Nodes are only put onto this list of widgets.  Therefore I need 
-        // to check there associated connection widgets to see if any are selected.
+        // Since child nodes are not part of the widgets (since they are moved
+        // when the parent widget is moved), we need to first make sure
+        // that we get not only the selected set of widgets, but also the
+        // edges attached to all child nodes.  This is mostly for containers.
+        List < ConnectionWidget > connections = includeAllConnections(widgets);
+        
         ArrayList < Object > alreadyProcessed = new ArrayList < Object >();
-        for(Widget widget : widgets)
+
+        for(ConnectionWidget connection : connections)
         {
-            GraphScene scene = (GraphScene)widget.getScene();
-            Object data = scene.findObject(widget);
+            GraphScene scene = (GraphScene)connection.getScene();
+            Object data = scene.findObject(connection);
             
-            if(scene.isNode(data) == true)
+            if(alreadyProcessed.contains(data) == false)
             {
-                for (Object connectionObj : scene.findNodeEdges(data, true, true))
+                if ((connection.getState().isSelected() == true) || 
+                    (widgets.contains(connection) == true))
                 {
-                    // Maket sure that an edge is only processed once.
-                    if(alreadyProcessed.contains(connectionObj) == false)
+                    List<Point> points = connection.getControlPoints();
+                    for (int index = 1; index < points.size() - 1; index++) 
                     {
-                        ConnectionWidget connection = (ConnectionWidget) scene.findWidget(connectionObj);
-                        if(connection.getState().isSelected() == true)
-                        {
-                            //for(Point pt : connection.getControlPoints())
-                            List < Point > points = connection.getControlPoints();
-                            for(int index = 1; index < points.size() - 1; index++)
-                            {
-                                Point pt = points.get(index);
-                                pt.x += dx;
-                                pt.y += dy;
-                            }
-                        }
-                        alreadyProcessed.add(connectionObj);
+                        Point pt = points.get(index);
+                        pt.x += dx;
+                        pt.y += dy;
                     }
                 }
+                
+                // Each node also needs to be revalidated so that the anchor 
+                // gets a chance to update the end point
+                Anchor sourceAnchor = connection.getSourceAnchor();
+                if(sourceAnchor != null)
+                {
+                    sourceAnchor.getRelatedWidget().revalidate();
+                }
+                
+                Anchor targetAnchor = connection.getTargetAnchor();
+                if(targetAnchor != null)
+                {
+                    targetAnchor.getRelatedWidget().revalidate();
+                }
+                
+                alreadyProcessed.add(data);
             }
         }
     }
     
+    private static List<ConnectionWidget> includeAllConnections(List<Widget> widgets) 
+    {
+        ArrayList < ConnectionWidget > retVal = new ArrayList <ConnectionWidget>();
+        
+        for(Widget widget : widgets)
+        {
+           GraphScene scene = (GraphScene)widget.getScene();
+           List < ConnectionWidget > connections = buildListOfConnections(scene, widget);
+           if((connections != null) && (connections.size() > 0))
+           {
+               retVal.addAll(connections);
+           }
+        }
+         
+        return retVal;
+    }
+    
+    private static List<ConnectionWidget> buildListOfConnections(GraphScene scene,
+                                                                 Widget widget)
+    {
+        ArrayList < ConnectionWidget > retVal = new ArrayList <ConnectionWidget>();
+        
+        // First get the edges for the passed in widget.  If the data object
+        // does not represent a node the method findNodeEdges will throw an
+        // assertion.  Therefore check if it is a node first.
+        Object data = scene.findObject(widget);
+        if((data != null) && (scene.isNode(data) == true))
+        {
+            // If you ask for the object of a widget it will get the object
+            // of the first parent that has an associated object.  Therefore
+            // we need to first make sure that the object is associated with the
+            // widget in question.  Otherwise we will end up with a lot of
+            // duplicates.
+            if(widget.equals(scene.findWidget(data)) == true)
+            {
+                Collection edges = scene.findNodeEdges(data, true, true);
+                if((edges != null) && (edges.size() > 0))
+                {
+                    for(Object curEdge : edges)
+                    {
+                        ConnectionWidget connection = (ConnectionWidget)scene.findWidget(curEdge);
+                        retVal.add(connection);
+                    }
+                }
+            }
+        }
+        
+        // Second get the edges for all of the children.
+        for(Widget child : widget.getChildren())
+        {
+            
+            List<ConnectionWidget> childConns = buildListOfConnections(scene, child);
+            if((childConns != null) && (childConns.size() > 0))
+            {
+                retVal.addAll(childConns);
+            }
+        }
+        return retVal;
+    }
+
     private boolean checkIfAccepted(Widget widget,
                                     WidgetAction.WidgetDropTargetDropEvent event,
                                     Point pt)

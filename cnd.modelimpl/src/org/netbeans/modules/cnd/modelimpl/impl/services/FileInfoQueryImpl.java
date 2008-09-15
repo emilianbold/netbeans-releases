@@ -33,9 +33,11 @@ import antlr.TokenStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Stack;
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -113,9 +115,43 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                 APTFile apt = APTDriver.getInstance().findAPTLight(fileImpl.getBuffer());
 
                 if (hasConditionalsDirectives(apt)) {
-                    APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, fileImpl.getPreprocHandler());
-                    walker.visit();
-                    out = walker.getBlocks();
+                    Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
+                    if (handlers.isEmpty()) {
+                        DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
+                        return Collections.<CsmOffsetable>emptyList();
+                    } else if (handlers.size() == 1) {
+                        APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handlers.iterator().next());
+                        walker.visit();
+                        out = walker.getBlocks();
+                    } else {
+                        Comparator<CsmOffsetable> comparator = new Comparator<CsmOffsetable>() {
+                            public int compare(CsmOffsetable o1, CsmOffsetable o2) {
+                                int diff = o1.getStartOffset() - o2.getStartOffset();
+                                if (diff == 0) {
+                                    return o1.getEndOffset() - o2.getEndOffset();
+                                } else {
+                                    return diff;
+                                }
+                            }
+                        };
+                        TreeSet<CsmOffsetable> result = new TreeSet<CsmOffsetable>(comparator);
+                        boolean first = true;
+                        for (APTPreprocHandler handler : handlers) {
+                            APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler);
+                            walker.visit();
+                            List<CsmOffsetable> blocks = walker.getBlocks();
+                            if (first) {
+                                result.addAll(blocks);
+                                first = false;
+                            } else {
+                                result.retainAll(blocks);
+                                if (result == null) {
+                                    break;
+                                }
+                            }
+                        }
+                        out = new ArrayList<CsmOffsetable>(result);
+                    }
                 }
             } catch (IOException ex) {
                 System.err.println("skip getting unused blocks\nreason:" + ex.getMessage()); //NOI18N
@@ -221,27 +257,29 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             ProjectBase startProject = ProjectBase.getStartProject(startEntry);
             if (startProject != null) {
                 CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile()));
-                List<CsmInclude> res = new ArrayList<CsmInclude>();
-                for(APTIncludeHandler.IncludeInfo info : reverseInclStack){
-                    int line = info.getIncludeDirectiveLine();
-                    CsmInclude find = null;
-                    for(CsmInclude inc : startFile.getIncludes()){
-                        if (line == inc.getEndPosition().getLine()){
-                            find = inc;
+                if (startFile != null) {
+                    List<CsmInclude> res = new ArrayList<CsmInclude>();
+                    for(APTIncludeHandler.IncludeInfo info : reverseInclStack){
+                        int line = info.getIncludeDirectiveLine();
+                        CsmInclude find = null;
+                        for(CsmInclude inc : startFile.getIncludes()){
+                            if (line == inc.getEndPosition().getLine()){
+                                find = inc;
+                                break;
+                            }
+                        }
+                        if (find != null) {
+                            res.add(find);
+                            startFile = find.getIncludeFile();
+                            if (startFile == null) {
+                                break;
+                            }
+                        } else {
                             break;
                         }
                     }
-                    if (find != null) {
-                        res.add(find);
-                        startFile = find.getIncludeFile();
-                        if (startFile == null) {
-                            break;
-                        }
-                    } else {
-                        break;
-                    }
+                    return res;
                 }
-                return res;
             }
         }
         return Collections.<CsmInclude>emptyList();

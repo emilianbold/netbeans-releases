@@ -1146,14 +1146,12 @@ catch (IOException ex) {
                     performLayout(pDiagram, false);
                 }
 		
-		// process post drop handling
-//		IDiagramEngine diaEngine = TypeConversions.getDiagramEngine(pDiagram);
-//		if (diaEngine != null)
-//		{
-//			// This discovers relationships.
-//			diaEngine.postOnDrop(pElements, false);
-//		}
-		
+                if (pDiagram instanceof UIDiagram)
+                {
+                    engine = scene.getEngine();
+                    engine.postDrop(pElements);
+                }
+                
 		IPresentationElement lastPresEle = newPES != null && newPES.size() > 0 ? newPES.get(newPES.size() -1) : null;
 		if (lastPresEle != null)
 		{

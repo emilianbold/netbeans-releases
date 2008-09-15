@@ -32,6 +32,11 @@ import java.util.logging.Logger;
  */
 public class ${name} {
 
+    static {
+        //set the identification of the client
+        System.setProperty("http.agent", System.getProperty("user.name") + " (from NetBeans IDE)");
+    }
+
     private HttpURLConnection conn;
     private String date;
 
@@ -84,13 +89,25 @@ public class ${name} {
         conn.setRequestMethod("GET");
         return connect(headers, null);
     }
-    
+
+    public RestResponse head() throws IOException {
+        return get(null);
+    }
+
+    public RestResponse head(String[][] headers) throws IOException {
+        conn.setRequestMethod("HEAD");
+        return connect(headers, null);
+    }
+
+    public RestResponse put(String[][] headers) throws IOException {
+        return put(headers, (InputStream) null);
+    }
+
     public RestResponse put(String[][] headers, String data) throws IOException {
-        conn.setRequestMethod("PUT");
         InputStream is = null;
         if(data != null)
             is = new ByteArrayInputStream(data.getBytes("UTF-8"));
-        return connect(headers, is);
+        return put(headers, is);
     }
 
     public RestResponse put(String[][] headers, InputStream is) throws IOException {
@@ -98,12 +115,15 @@ public class ${name} {
         return connect(headers, is);
     }
     
+    public RestResponse post(String[][] headers) throws IOException {
+        return post(headers, (InputStream) null);
+    }
+
     public RestResponse post(String[][] headers, String data) throws IOException {
-        conn.setRequestMethod("POST");
         InputStream is = null;
         if(data != null)
             is = new ByteArrayInputStream(data.getBytes("UTF-8"));
-        return connect(headers, is);
+        return post(headers, is);
     }
     
     public RestResponse post(String[][] headers, InputStream is) throws IOException {
@@ -176,7 +196,7 @@ public class ${name} {
                 StringBuffer buf = new StringBuffer();
                 while ((line = rd.readLine()) != null) {
                     buf.append(line);
-                    System.out.print(line);
+                    buf.append('\n');
                 }
                 errMsg = buf.toString();
             } finally {

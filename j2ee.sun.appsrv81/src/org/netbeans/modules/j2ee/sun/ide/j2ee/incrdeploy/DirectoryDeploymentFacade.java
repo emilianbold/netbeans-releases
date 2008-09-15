@@ -177,6 +177,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         return retVal;
     }
     
+    @Override
     public String getModuleUrl(javax.enterprise.deploy.spi.TargetModuleID module) {
         String retVal = null;
         if (null != inner){
@@ -186,6 +187,10 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     }
     
     public ProgressObject incrementalDeploy(TargetModuleID module, AppChangeDescriptor acd) {
+        return incrementalDeploy(module, acd, true);
+    }
+    
+    private ProgressObject incrementalDeploy(TargetModuleID module, AppChangeDescriptor acd, boolean userActivated) {
         //Register resources if any
         
         // XXX
@@ -196,7 +201,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         if((resourceDirs != null) && (dm != null)){
             Utils.registerResources(resourceDirs, (ServerInterface)((SunDeploymentManagerInterface)dm).getManagement());
         }
-        if (null!=dm){
+        if (null!=dm && userActivated){
             ViewLogAction.viewLog((SunDeploymentManagerInterface)dm);
         }
         // j2eeserver does this check for "regular" in-place deployment
@@ -222,7 +227,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     
     public ProgressObject initialDeploy(Target target, J2eeModule app, ModuleConfiguration configuration, File dir) {
         //Register resources if any
-        File[] resourceDirs = Utils.getResourceDirs(app);
+        //File[] resourceDirs = Utils.getResourceDirs(app);
         if((resourceDirs != null) && (dm != null)) {
             Utils.registerResources(resourceDirs, (ServerInterface)((SunDeploymentManagerInterface)dm).getManagement());
         }
@@ -332,7 +337,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
 
     @Override
     public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
-        return incrementalDeploy(module, desc);
+        return incrementalDeploy(module, desc, false);
     }
 
     @Override

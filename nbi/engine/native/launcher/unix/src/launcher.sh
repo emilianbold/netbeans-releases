@@ -1244,7 +1244,7 @@ verifyJavaHome() {
 		        javaVersion=`echo "$javaVmVersion" | sed "s/.*${javaVersion}/${javaVersion}/"`
 		    fi
 		    #remove build number
-		    javaVersion=`echo "$javaVersion" | sed 's/-.*$//'`
+		    javaVersion=`echo "$javaVersion" | sed 's/-.*$//;s/\ .*//'`
 		    verifyResult=$VERIFY_UNCOMPATIBLE
 
 	            if [ -n "$javaVersion" ] ; then

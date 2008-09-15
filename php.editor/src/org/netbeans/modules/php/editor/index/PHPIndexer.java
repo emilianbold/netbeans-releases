@@ -60,6 +60,7 @@ import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
@@ -82,7 +83,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -140,7 +141,9 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_FIELD = "field"; //NOI18N
     static final String FIELD_METHOD = "method"; //NOI18N
     static final String FIELD_INCLUDE = "include"; //NOI18N
-    static final String FIELD_IDENTIFIER = "identifier"; //NOI18N
+    static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
+    static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
+
     static final String FIELD_VAR = "var"; //NOI18N
 
     public boolean isIndexable(ParserFile file) {
@@ -212,7 +215,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.5.1"; // NOI18N
+        return "0.5.4"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -254,27 +257,69 @@ public class PHPIndexer implements Indexer {
         List<IndexDocument> getDocuments() {
             return documents;
         }
+
+        private void indexFieldsDeclaration(FieldsDeclaration fieldsDeclaration, IndexDocument document) {
+            for (SingleFieldDeclaration field : fieldsDeclaration.getFields()) {
+                if (field.getName().getName() instanceof Identifier) {
+                    Identifier identifier = (Identifier) field.getName().getName();
+                    StringBuilder fieldSignature = new StringBuilder();
+                    fieldSignature.append(identifier.getName() + ";"); //NOI18N
+                    fieldSignature.append(field.getStartOffset() + ";"); //NOI18N
+                    fieldSignature.append(fieldsDeclaration.getModifier() + ";"); //NOI18N
+                    String type = getFieldTypeFromPHPDoc(field);
+
+                    if (type != null){
+                        fieldSignature.append(type);
+                    }
+
+                    fieldSignature.append(";"); //NOI18N
+                    document.addPair(FIELD_FIELD, fieldSignature.toString(), false);
+                }
+            }
+        }
         
-        private class IndexerVisitor extends DefaultVisitor{
+        private class IndexerVisitor extends DefaultTreePathVisitor{
             private List<IndexDocument> documents;
             private IndexDocument defaultDocument;
+            private final IndexDocument identifierDocument = factory.createDocument(10);
+            private Map<String, IdentifierSignature> identifiers = new HashMap<String, IdentifierSignature>();
 
             public IndexerVisitor(List<IndexDocument> documents, IndexDocument defaultDocument) {
                 this.documents = documents;
                 this.defaultDocument = defaultDocument;
+                documents.add(identifierDocument);
             }
-
+            public void addIdentifierPairs() {
+                Collection<IdentifierSignature> values = identifiers.values();
+                for (IdentifierSignature idSign : values) {
+                    identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true);
+                }
+            }            
+            @Override
+            public void visit(Identifier node) {
+                IdentifierSignature.add(node, identifiers);
+                super.visit(node);
+            }
             @Override
             public void visit(ClassDeclaration node) {
                 // create a new document for each class
                 IndexDocument classDocument = factory.createDocument(10);
                 documents.add(classDocument);
                 indexClass((ClassDeclaration) node, classDocument);
+                List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
+                IdentifierSignature.add(node, idSignatures);
+                for (IdentifierSignature idSign : idSignatures) {
+                    identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true);
+                }
                 super.visit(node);
             }
 
             @Override
             public void visit(FunctionDeclaration node) {
+                if (getPath().get(0) instanceof MethodDeclaration){
+                    return;
+                }
+
                 indexFunction((FunctionDeclaration)node, defaultDocument);
                 super.visit(node);
             }
@@ -290,6 +335,11 @@ public class PHPIndexer implements Indexer {
                 IndexDocument ifaceDocument = factory.createDocument(10);
                 documents.add(ifaceDocument);
                 indexInterface((InterfaceDeclaration) node, ifaceDocument);
+                List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
+                IdentifierSignature.add(node, idSignatures);
+                for (IdentifierSignature idSign : idSignatures) {
+                    identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true);
+                }
                 super.visit(node);
             }
         }
@@ -300,7 +350,9 @@ public class PHPIndexer implements Indexer {
             documents.add(defaultDocument);
 
             root = result.getProgram();
-            root.accept(new IndexerVisitor(documents, defaultDocument));
+            IndexerVisitor indexerVisitor = new IndexerVisitor(documents, defaultDocument);
+            root.accept(indexerVisitor);
+            indexerVisitor.addIdentifierPairs();
 
             String processedFileURL = null;
 
@@ -349,20 +401,6 @@ public class PHPIndexer implements Indexer {
             }
             
             defaultDocument.addPair(FIELD_INCLUDE, includes.toString(), false);
-            final IndexDocument idDocument = factory.createDocument(10);
-            documents.add(idDocument);            
-            DefaultVisitor visitor = new DefaultVisitor() {
-                @Override
-                public void visit(Identifier identifier) {
-                    StringBuilder idSignature = new StringBuilder();
-                    idSignature.append(identifier.getName().toLowerCase() + ";"); //NOI18N
-                    idSignature.append(identifier.getName() + ";"); //NOI18N
-                    idSignature.append(identifier.getStartOffset() + ";"); //NOI18N
-                    idDocument.addPair(FIELD_IDENTIFIER, idSignature.toString(), true);                    
-                    super.visit(identifier);                    
-                }                
-            };
-            visitor.scan(root);
         }
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
@@ -387,18 +425,7 @@ public class PHPIndexer implements Indexer {
                     indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
                 } else if (statement instanceof FieldsDeclaration) {
                     FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
-                    
-                    for (SingleFieldDeclaration field : fieldsDeclaration.getFields()){
-                        if (field.getName().getName() instanceof Identifier) {
-                            Identifier identifier = (Identifier) field.getName().getName();
-                            StringBuilder fieldSignature = new StringBuilder();
-                            fieldSignature.append(identifier.getName() + ";"); //NOI18N
-                            fieldSignature.append(field.getStartOffset() + ";"); //NOI18N
-                            fieldSignature.append(fieldsDeclaration.getModifier() + ";"); //NOI18N
-                                     
-                            document.addPair(FIELD_FIELD, fieldSignature.toString(), false);
-                        }
-                    }
+                    indexFieldsDeclaration(fieldsDeclaration, document);
                 } else if (statement instanceof ClassConstantDeclaration) {
                     ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
                     
@@ -437,18 +464,7 @@ public class PHPIndexer implements Indexer {
                     indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
                 } else if (statement instanceof FieldsDeclaration) {
                     FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
-                    
-                    for (SingleFieldDeclaration field : fieldsDeclaration.getFields()){
-                        if (field.getName().getName() instanceof Identifier) {
-                            Identifier identifier = (Identifier) field.getName().getName();
-                            StringBuilder fieldSignature = new StringBuilder();
-                            fieldSignature.append(identifier.getName() + ";"); //NOI18N
-                            fieldSignature.append(field.getStartOffset() + ";"); //NOI18N
-                            fieldSignature.append(fieldsDeclaration.getModifier() + ";"); //NOI18N
-                                     
-                            document.addPair(FIELD_FIELD, fieldSignature.toString(), false);
-                        }
-                    }
+                    indexFieldsDeclaration(fieldsDeclaration, document);
                 } else if (statement instanceof ClassConstantDeclaration) {
                     ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
                     
@@ -570,7 +586,7 @@ public class PHPIndexer implements Indexer {
             signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
             signature.append(defaultArgs + ";");
 
-            String type = getTypeFromComment(functionDeclaration);
+            String type = getReturnTypeFromPHPDoc(functionDeclaration);
             
             if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)){
                 signature.append(type);
@@ -580,15 +596,24 @@ public class PHPIndexer implements Indexer {
            
             return signature.toString();
         }
+        
+        
+        private String getReturnTypeFromPHPDoc(FunctionDeclaration functionDeclaration) {
+            return getTypeFromPHPDoc(functionDeclaration, PHPDocTag.Type.RETURN);
+        }
 
-        private String getTypeFromComment(FunctionDeclaration functionDeclaration) {
-            Comment comment = Utils.getCommentForNode(root, functionDeclaration);
+        private String getFieldTypeFromPHPDoc(SingleFieldDeclaration field){
+            return getTypeFromPHPDoc(field, PHPDocTag.Type.VAR);
+        }
+        
+        private String getTypeFromPHPDoc(ASTNode node, PHPDocTag.Type tagType){
+            Comment comment = Utils.getCommentForNode(root, node);
 
             if (comment instanceof PHPDocBlock) {
                 PHPDocBlock phpDoc = (PHPDocBlock) comment;
 
                 for (PHPDocTag tag : phpDoc.getTags()) {
-                    if (tag.getKind() == PHPDocTag.Type.RETURN) {
+                    if (tag.getKind() == tagType) {
                         String parts[] = tag.getValue().split("\\s+", 2); //NOI18N
 
                         if (parts.length > 0) {

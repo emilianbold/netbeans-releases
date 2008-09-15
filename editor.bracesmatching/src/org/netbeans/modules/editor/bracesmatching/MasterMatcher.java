@@ -368,24 +368,28 @@ public final class MasterMatcher {
         }
     }
 
-    private static Collection<? extends BracesMatcherFactory> findFactories(Document document, int offset, boolean backward) {
-        MimePath mimePath = null;
-
-        TokenHierarchy<? extends Document> th = TokenHierarchy.get(document);
-        if (th.isActive()) {
-            List<TokenSequence<?>> sequences = th.embeddedTokenSequences(offset, backward);
-            if (!sequences.isEmpty()) {
-                String path = sequences.get(sequences.size() - 1).languagePath().mimePath();
-                mimePath = MimePath.parse(path);
+    private static Collection<? extends BracesMatcherFactory> findFactories(final Document document,
+            final int offset, final boolean backward
+    ) {
+        final MimePath[] mimePath = { null };
+        document.render(new Runnable() {
+            public void run() {
+                TokenHierarchy<? extends Document> th = TokenHierarchy.get(document);
+                if (th.isActive()) {
+                    List<TokenSequence<?>> sequences = th.embeddedTokenSequences(offset, backward);
+                    if (!sequences.isEmpty()) {
+                        String path = sequences.get(sequences.size() - 1).languagePath().mimePath();
+                        mimePath[0] = MimePath.parse(path);
+                    }
+                } else {
+                    String mimeType = (String) document.getProperty("mimeType"); //NOI18N
+                    mimePath[0] = mimeType != null ? MimePath.parse(mimeType) : MimePath.EMPTY;
+                }
             }
-        } else {
-            String mimeType = (String) document.getProperty("mimeType"); //NOI18N
-            mimePath = mimeType != null ? MimePath.parse(mimeType) : MimePath.EMPTY;
-        }
-
-        Collection<? extends BracesMatcherFactory> factories = mimePath == null ?
+        });
+        Collection<? extends BracesMatcherFactory> factories = mimePath[0] == null ?
             Collections.<BracesMatcherFactory>emptyList() :
-            MimeLookup.getLookup(mimePath).lookupAll(BracesMatcherFactory.class);
+            MimeLookup.getLookup(mimePath[0]).lookupAll(BracesMatcherFactory.class);
         
 //        System.out.println("@@@ '" + (mimePath == null ? "null" : mimePath.getPath()) + "', offset = " + offset + ", backward = " + backward + " -> {");
 //        for(BracesMatcherFactory f : factories) {
@@ -672,7 +676,8 @@ public final class MasterMatcher {
                 try {
                     origin = matcher[0].findOrigin();
                 } catch (BadLocationException ble) {
-                    LOG.log(Level.WARNING, null, ble);
+                    // since we are not running under document lock (see #131284) there can be exceptions
+                    LOG.log(Level.FINE, null, ble);
                 }
                 
                 // Check the original area for consistency
@@ -722,10 +727,12 @@ public final class MasterMatcher {
                     }
                 }
 
-                if (origin != null) {
-                    LOG.fine("[" + origin[0] + ", " + origin[1] + "] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
-                } else {
-                    LOG.fine("[null] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    if (origin != null) {
+                        LOG.fine("[" + origin[0] + ", " + origin[1] + "] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                    } else {
+                        LOG.fine("[null] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                    }
                 }
                 
                 return origin;

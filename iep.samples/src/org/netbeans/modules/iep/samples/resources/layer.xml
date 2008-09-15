@@ -23,9 +23,10 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="SOA">
+<!--                    
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.samples.resources.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/iep/samples/resources/category.html"/>
-
+-->
                     <file name="IEPBluePrint1">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/samples/resources/project.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.samples.resources.Bundle"/>

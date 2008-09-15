@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -31,6 +30,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -70,8 +71,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
     }
         
-    public static DatabaseConnection showCreateDatabaseDialog(DatabaseServer server) {
-        assert SwingUtilities.isEventDispatchThread();
+    public static DatabaseConnection showCreateDatabaseDialog(DatabaseServer server) throws DatabaseException {
+        // DialogDescriptor handles running on a background thread
+        // assert SwingUtilities.isEventDispatchThread();
         
         CreateDatabasePanel panel = new CreateDatabasePanel(server);
         String title = NbBundle.getMessage(CreateDatabasePanel.class, 
@@ -142,17 +144,36 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
                
             result = createConnection(server, dbname, user);
+
+            if (result == null) {
+                boolean delete = Utils.displayConfirmDialog(NbBundle.getMessage(CreateDatabasePanel.class, 
+                        "CreateDatabasePanel.MSG_ConfirmDeleteDatabase", dbname));
+
+                if (delete) {
+                    server.dropDatabase(dbname);
+                }
+
+                return null;
+            }
             
             // Need a final variable for the anonymous class.
             final DatabaseConnection dbconn = result;
 
             if (result != null && SampleManager.isSample(dbname)) {
+                boolean create = Utils.displayConfirmDialog(NbBundle.getMessage(CreateDatabasePanel.class, 
+                        "CreateDatabasePanel.MSG_ConfirmCreateSample", dbname));
+
+                if (! create) {
+                    return dbconn;
+                }
+
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
                             SampleManager.createSample(dbname, dbconn);
                         } catch (DatabaseException dbe) {
-                            Exceptions.printStackTrace(dbe);
+                            LOGGER.log(Level.INFO, dbe.getMessage(), dbe);
+                            Utils.displayErrorMessage(dbe.getMessage());
                         }
                     }
 
@@ -231,16 +252,21 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             user = grantUser;
         }
         
-        String url = server.getURL(dbname);
-        
-        return ConnectionManager.getDefault().
-            showAddConnectionDialogFromEventThread(
-                DatabaseUtils.getJDBCDriver(), url, user, null);        
+        final String url = server.getURL(dbname);
+        final String finalUser = user;
+
+        return Mutex.EVENT.readAccess(new Action<DatabaseConnection>() {
+            public DatabaseConnection run() {
+                return ConnectionManager.getDefault().showAddConnectionDialogFromEventThread(
+                        DatabaseUtils.getJDBCDriver(), url, finalUser, null);
+            }
+
+        });
     }
 
     
     /** Creates new form CreateDatabasePanel */
-    public CreateDatabasePanel(DatabaseServer server) {
+    public CreateDatabasePanel(DatabaseServer server) throws DatabaseException {
         this.server = server;
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
@@ -395,6 +421,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 .add(messageLabel)
                 .addContainerGap(30, Short.MAX_VALUE))
         );
+
+        comboDatabaseName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboDatabaseName.AccessibleContext.accessibleName")); // NOI18N
+        comboDatabaseName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboDatabaseName.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDatabaseNameItemStateChanged
@@ -410,10 +439,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_chkGrantAccessItemStateChanged
     
     private static class DatabaseComboModel implements ComboBoxModel {
-        static final List<String> SAMPLES = SampleManager.getSampleNames();
+        private final List<String> sampleNames = SampleManager.getSampleNames();
         static final String samplePrefix =
-                NbBundle.getMessage(CreateDatabasePanel.class, 
-                    "CreateNewDatabasePanel.STR_SampleDatabase") + ": ";
+                NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.STR_SampleDatabase") + ": ";
         
         String selected = null;
         final ArrayList<ListDataListener> listeners = new ArrayList<ListDataListener>();
@@ -434,14 +462,14 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
 
         public int getSize() {
-            return SAMPLES.size();
+            return sampleNames.size();
         }
 
         public Object getElementAt(int index) {
             if (index < 0) {
                 return null;
             }
-            return samplePrefix + SAMPLES.get(index).toString();
+            return samplePrefix + sampleNames.get(index).toString();
         }
 
         public void addListDataListener(ListDataListener listener) {
@@ -457,11 +485,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         ArrayList<DatabaseUser> users= new ArrayList<DatabaseUser>();
         DatabaseUser selected;
-                
-        public UsersComboModel(DatabaseServer server) {
+
+        public UsersComboModel(DatabaseServer server) throws DatabaseException {
             this.server = server;
                         
-            try {            
+            try {
                 users.addAll(server.getUsers());
                 
                 // Remove the root user, this user always has full access
@@ -479,7 +507,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     users.remove(rootUser);
                 }
             } catch ( DatabaseException dbe )  {
-                // This can be caused by permission problems.  Log the error
+                if (! server.isConnected()) {
+                    throw dbe;
+                }
+
+                // If we're still connected, log the error
                 // and continue with an empty user list
                 LOGGER.log(Level.INFO, null, dbe);
                 users.clear();

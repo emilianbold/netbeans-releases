@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
@@ -141,6 +142,17 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
             Logger.getLogger("glassfish-javaee").log(Level.FINER, "caller passed invalid param", cce); // NOI18N
         }
         return retVal;
+    }
+
+    @Override
+    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
+        ServerInstanceDescriptor result = null;
+        if(dm instanceof Hk2DeploymentManager) {
+            result = new Hk2ServerInstanceDescriptor((Hk2DeploymentManager) dm);
+        } else {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "Invalid deployment manager: " + dm); // NOI18N
+        }
+        return result;
     }
 
     private static class J2eeInstantiatingIterator implements InstantiatingIterator {

@@ -48,6 +48,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
+import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
@@ -56,8 +59,11 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -70,11 +76,12 @@ import org.openide.util.Exceptions;
  *
  * @author Karol Harezlak
  */
-public class SVGFormFileObjectListener implements FileChangeListener {
+public class SVGFormFileObjectListener implements FileChangeListener, ActiveViewSupport.Listener {
 
     private WeakReference<DesignComponent> component;
     private WeakReference<DesignComponent> imageComponent;
     private String propertyName;
+    private DataEditorView.Kind activatedView;
 
     public SVGFormFileObjectListener(DesignComponent component, DesignComponent imageComponent, String propertyName) {
         assert (component != null);
@@ -92,12 +99,13 @@ public class SVGFormFileObjectListener implements FileChangeListener {
 
     public void fileChanged(FileEvent fe) {
         regenerateComponents(fe.getFile());
-
     }
 
     public void fileDeleted(FileEvent fe) {
         regenerateComponents(fe.getFile());
         fe.getFile().removeFileChangeListener(this);
+        ActiveViewSupport.getDefault().removeActiveViewListener(this);
+        activatedView = null;
     }
 
     public void fileRenamed(FileRenameEvent fe) {
@@ -111,10 +119,10 @@ public class SVGFormFileObjectListener implements FileChangeListener {
             return;
         }
         final DesignComponent svgForm = component.get();
-        regenerateSVGComponentsStructure(fe, svgForm);
+        regenerateSVGComponentsStructure(fe, svgForm, activatedView);
     }
 
-    public static synchronized void regenerateSVGComponentsStructure(FileObject fo, final DesignComponent svgForm) {
+    public static synchronized void regenerateSVGComponentsStructure(FileObject fo, final DesignComponent svgForm, final DataEditorView.Kind activatedView) {
         InputStream is = null;
         try {
             if (fo.isValid()) {
@@ -126,6 +134,20 @@ public class SVGFormFileObjectListener implements FileChangeListener {
         if (fo == null && is == null) {
             return;
         }
+        //Updating Screen Designer
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                svgForm.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                    public void run() {
+                        ScreenDisplayPresenter sdp = svgForm.getPresenter(ScreenDisplayPresenter.class);
+                        ScreenDeviceInfo di = ScreenSupport.getDeviceInfo(svgForm.getDocument());
+                        sdp.reload(di);
+                    }
+                });
+            }
+        });
         String[][] idsArray = SVGFormImageParser.getComponentsInformation(is);
 
         final Map<String, String> exisitngIDs = new HashMap<String, String>();
@@ -161,31 +183,44 @@ public class SVGFormFileObjectListener implements FileChangeListener {
             }
         }
         if (!toAdd.isEmpty() || !toDelete.isEmpty()) {
-            svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
-                    Collection<DesignComponent> components = new HashSet<DesignComponent>(svgForm.getComponents());
 
-                    for (DesignComponent component : components) {
-                        if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
-                            String id = (String) component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
-                            if (toDelete.contains(id)) {
-                                ArraySupport.remove(svgForm, SVGFormCD.PROP_COMPONENTS, component);
-                                removeSVGButtonEventSource(component, svgForm);
-                                svgForm.getDocument().deleteComponent(component);
+                    svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                        public void run() {
+                            DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
+                            Collection<DesignComponent> components = new HashSet<DesignComponent>(svgForm.getComponents());
+
+                            for (DesignComponent component : components) {
+                                if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
+                                    String id = (String) component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
+                                    if (toDelete.contains(id)) {
+                                        ArraySupport.remove(svgForm, SVGFormCD.PROP_COMPONENTS, component);
+                                        removeSVGButtonEventSource(component, svgForm);
+                                        svgForm.getDocument().deleteComponent(component);
+                                    }
+                                }
                             }
+                            addComponents(toAdd, svgForm);
                         }
-                    }
-                    addComponents(toAdd, svgForm);
+                    });
                 }
             });
-            DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(svgForm.getDocument());
+            final DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(svgForm.getDocument());
             if (context != null && context.getDataObject() != null) {
-                IOSupport.forceUpdateCode(context.getDataObject());
+                if (DataEditorView.Kind.CODE == activatedView) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            IOSupport.forceUpdateCode(context.getDataObject());
+                        }
+                    });
+
+                }
             }
         }
-
     }
 
     private static void addComponents(Map<String, String> ids, DesignComponent svgForm) {
@@ -236,6 +271,12 @@ public class SVGFormFileObjectListener implements FileChangeListener {
             if (value != null && value.getComponent() != null && value.getComponent() == svgButton) {
                 potentialButtonEventSource.getDocument().deleteComponent(potentialButtonEventSource);
             }
+        }
+    }
+
+    public void activeViewChanged(DataEditorView deactivatedView, DataEditorView activatedView) {
+        if (activatedView != null) {
+            this.activatedView = activatedView.getKind();
         }
     }
 }

@@ -41,6 +41,7 @@
 package org.netbeans.junit.ide;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -59,7 +60,8 @@ public class ProjectSupportTest extends NbTestCase {
     }
 
     /** Set up. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
+        clearWorkDir();
         System.out.println("########  "+getName()+"  #######");
     }
 

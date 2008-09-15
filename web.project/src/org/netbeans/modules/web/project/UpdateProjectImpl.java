@@ -214,10 +214,10 @@ public class UpdateProjectImpl implements UpdateImplementation {
             ReferenceHelper refHelper = new ReferenceHelper(helper, cfg, helper.getStandardPropertyEvaluator());
             ClassPathSupport cs = new ClassPathSupport(helper.getStandardPropertyEvaluator(), refHelper, helper,
                     updateHelper, new ClassPathSupportCallbackImpl(helper));
-            Iterator items = cs.itemsIterator((String)props.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
-            ArrayList cpItems = new ArrayList();
+            Iterator<ClassPathSupport.Item> items = cs.itemsIterator((String)props.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
+            ArrayList<ClassPathSupport.Item> cpItems = new ArrayList<ClassPathSupport.Item>();
             while(items.hasNext()) {
-                ClassPathSupport.Item cpti = (ClassPathSupport.Item)items.next();
+                ClassPathSupport.Item cpti = items.next();
                 String propertyName = cpti.getReference();
                 if(propertyName != null) {
                     String libname = propertyName.substring("${libs.".length());

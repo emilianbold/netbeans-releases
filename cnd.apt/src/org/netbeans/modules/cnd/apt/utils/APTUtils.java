@@ -81,7 +81,11 @@ public class APTUtils {
                 LOG.setLevel(Level.SEVERE);
             }
         } else {
-            LOG.setLevel(Level.parse(level));
+            try {
+                LOG.setLevel(Level.parse(level));
+            } catch (Exception e) {
+                // skip
+            }
         }
     }
     

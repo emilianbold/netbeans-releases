@@ -51,6 +51,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -115,16 +116,16 @@ public final class TransferFilter extends javax.swing.JPanel {
     });
         
     //folders are not filtered although not showed to user
-    public static Set<TransferFile> showUploadDialog(Set<TransferFile> transferFiles, long timestamp, Set<TransferFile> preselectedFiles) {
-        return showTransferDialog(transferFiles, TransferFileTableModel.Type.UPLOAD, timestamp, preselectedFiles);
+    public static Set<TransferFile> showUploadDialog(Set<TransferFile> transferFiles, long timestamp) {
+        return showTransferDialog(transferFiles, TransferFileTableModel.Type.UPLOAD, timestamp);
     }
 
     //folders are not filtered although not showed to user
     public static Set<TransferFile> showDownloadDialog(Set<TransferFile> transferFiles) {
-        return showTransferDialog(transferFiles, TransferFileTableModel.Type.DOWNLOAD, -1, null);
+        return showTransferDialog(transferFiles, TransferFileTableModel.Type.DOWNLOAD, -1);
     }
 
-    private static Set<TransferFile> showTransferDialog(Set<TransferFile> transferFiles, TransferFileDownloadModel.Type type, long timestamp, Set<TransferFile> preselectedFiles) {
+    private static Set<TransferFile> showTransferDialog(Set<TransferFile> transferFiles, TransferFileDownloadModel.Type type, long timestamp) {
         TransferFileTableModel model = null;
         String title = null;
         switch (type) {
@@ -133,7 +134,7 @@ public final class TransferFilter extends javax.swing.JPanel {
                 title = NbBundle.getMessage(TransferFilter.class, "Download_Title");
                 break;
             case UPLOAD:
-                model = new TransferFileUploadModel(wrapTransferFiles(transferFiles, timestamp, preselectedFiles));
+                model = new TransferFileUploadModel(wrapTransferFiles(transferFiles, timestamp));
                 title = NbBundle.getMessage(TransferFilter.class, "Upload_Title");
                 break;
             default:
@@ -148,7 +149,7 @@ public final class TransferFilter extends javax.swing.JPanel {
         descriptior.setOptions(new Object[]{close, DialogDescriptor.CANCEL_OPTION});
         Object closeOption = DialogDisplayer.getDefault().notify(descriptior);
         boolean continueTransfer = !DialogDescriptor.CANCEL_OPTION.equals(closeOption);        
-        return (continueTransfer) ? unwrapFileUnits(model.getFilteredUnits()) : new HashSet<TransferFile>();
+        return (continueTransfer) ? unwrapFileUnits(model.getFilteredUnits()) : Collections.<TransferFile>emptySet();
     }
 
     private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer, TransferFileTableModel model) {
@@ -159,13 +160,11 @@ public final class TransferFilter extends javax.swing.JPanel {
         return retval;
     }
 
-    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer,  long timestamp, Set<TransferFile> preselectedFiles) {
+    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer,  long timestamp) {
         List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
+        boolean selected = timestamp == -1;
         for (TransferFile transferFile : toTransfer) {
-            boolean selected = timestamp == -1 && preselectedFiles.size() == 0;
-            if (preselectedFiles.contains(transferFile)) {
-                selected = true;
-            } else if (timestamp != -1) {
+            if (timestamp != -1) {
                 // we have some timestamp
                 selected = transferFile.isFile() && transferFile.getTimestamp() > timestamp;
             }

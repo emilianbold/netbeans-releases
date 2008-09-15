@@ -109,7 +109,7 @@ public class GroovyParserResult extends ParserResult {
         this.sanitizedContents = sanitizedContents;
     }
 
-    public GroovyParser.Sanitize getSanitized() {
+    GroovyParser.Sanitize getSanitized() {
         return sanitized;
     }    
 

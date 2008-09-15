@@ -41,8 +41,8 @@ package org.netbeans.modules.vmd.midpnb.components.svg.parsers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -85,7 +85,8 @@ public class SVGFormImageParser extends SVGComponentImageParser {
     private static final Pattern FORM_COMPONENT_ID_LIST = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_LIST + DIGITS);
     private static final Pattern FORM_COMPONENT_ID_SLIDER = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_SLIDER + DIGITS);
     private static final Pattern FORM_COMPONENT_ID_SPINNER = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_SPINNER + DIGITS);
-    private static final Pattern FORM_COMPONENT_ID_TEXTFIELD = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_TEXTFIELD + DIGITS); // NOI18N
+    private static final Pattern FORM_COMPONENT_ID_TEXTFIELD = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_TEXTFIELD + DIGITS);
+    private static final Pattern FORM_COMPONENT_ID_RADIOBUTTONFRAME = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_RADIOBUTTON_FRAME + DIGITS);
 
     public synchronized static void parseSVGForm(final InputStream svgInputStream, final DesignComponent svgForm) {
         final SVGFormComponent[] srcComponents = getFormComponents(svgInputStream);
@@ -93,15 +94,6 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
                 public void run() {
-
-//                    Collection<DesignComponent> components = new HashSet(svgForm.getComponents());
-//                    DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
-//                    for (DesignComponent component : components) {
-//                        if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
-//                            removeSVGButtonEventSource(component, svgForm);
-//                            svgForm.getDocument().deleteComponent(component);
-//                        }
-//                    }
                     for (SVGFormComponent srcComponent : srcComponents) {
                         DesignComponent svgComponent = srcComponent.createComponent(svgForm);
                         svgForm.addComponent(svgComponent);
@@ -190,37 +182,16 @@ public class SVGFormImageParser extends SVGComponentImageParser {
     private static class NamedElementsContentHandler extends AbstractElementsContentHandler {
 
         private ArrayList<SVGFormComponent> foundElements;
+        private Float radioButtonFramePosition;
 
         public NamedElementsContentHandler() {
             this.foundElements = new ArrayList<SVGFormComponent>();
         }
 
         public SVGFormComponent[] getFoundElements() {
-//            Comparator<SVGFormComponent> comparator = new Comparator<SVGFormComponent>() {
-//
-//                public int compare(SVGFormComponent o1, SVGFormComponent o2) {
-//                    if (o1.getPositon() > o2.getPositon())
-//                        return -1;
-//                    else if (o1.getPositon() < o2.getPositon())
-//                        return 1;
-//                    return 0;
-//                        
-//                }
-//            };
-
-
-
-            //Collections.sort(foundElements, comparator);
-            //for (SVGFormComponent c : foundElements) {
-            //    System.out.println(c.id + " "+ c.getPositon() + " "  + c.getTypeID());
-            //     
-            // }
-            System.out.println("+++++++++Before you passing to array");
-             
-            LinkedList<SVGFormComponent> reversedList = new LinkedList<SVGFormComponent>();
+          LinkedList<SVGFormComponent> reversedList = new LinkedList<SVGFormComponent>();
             for (SVGFormComponent c : foundElements) {
-                    System.out.println(c.getId() + " " + c.getPositon());
-                    reversedList.addFirst(c);
+                reversedList.addFirst(c);
             }
             return reversedList.toArray(new SVGFormComponent[reversedList.size()]);
         }
@@ -228,43 +199,28 @@ public class SVGFormImageParser extends SVGComponentImageParser {
         public final void resetFoundElements() {
             foundElements.clear();
         }
-        
-        private Float lastPosition; 
-        
+
         @Override
         public final void startElement(String namespaceURI, String localName,
                 String qName, Attributes atts)
                 throws SAXException {
             // get id attribute value
             final String id = atts.getValue("id"); // NOI18N
-            final  String transform = atts.getValue("transform");
+            final String transform = atts.getValue("transform");
             if (id == null || transform == null) {
                 return;
             }
-
-             System.out.println("---------");
-            System.out.println("COMPONENT " + id);
-            
+            if (FORM_COMPONENT_ID_RADIOBUTTONFRAME.matcher(id).find()) {
+                radioButtonFramePosition = getPosition(atts);
+            }
             if (FORM_COMPONENT_ID_BUTTON.matcher(id).find()) {
                 Float position = getPosition(atts);
                 int index = getIndex(position);
                 if (index == -1) {
-                    
-//                    for (SVGFormComponent c : foundElements) {
-//                        System.out.println(c.getId() + " " + c.getPositon());
-//                    }
-                    //System.out.println(id + " " + position);
+
                     foundElements.add(SVGFormComponent.createSVGButton(id, SVGButtonCD.TYPEID, position));
                 } else {
-                   
-//                    for (SVGFormComponent c : foundElements) {
-//                        System.out.println(c.getId() + " " + c.getPositon());
-//                    }
-//                    System.out.println(id + " " + position);
                     foundElements.add(index, SVGFormComponent.createSVGButton(id, SVGButtonCD.TYPEID, position));
-                }
-                for (SVGFormComponent c : foundElements) {
-                    System.out.println(c.getId() + " " + c.getPositon());
                 }
             } else if (FORM_COMPONENT_ID_CHECKBOX.matcher(id).find()) {
                 addSVGFormComponent(id, SVGCheckBoxCD.TYPEID, getPosition(atts));
@@ -275,7 +231,7 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             } else if (FORM_COMPONENT_ID_LIST.matcher(id).find()) {
                 addSVGFormComponent(id, SVGListCD.TYPEID, getPosition(atts));
             } else if (FORM_COMPONENT_ID_RADIO.matcher(id).find()) {
-                addSVGFormComponent(id, SVGRadioButtonCD.TYPEID, getPositionForRadioButton(atts, lastPosition));
+                addSVGFormComponent(id, SVGRadioButtonCD.TYPEID, getPositionForRadioButton(atts, radioButtonFramePosition));
             } else if (FORM_COMPONENT_ID_SLIDER.matcher(id).find()) {
                 addSVGFormComponent(id, SVGSliderCD.TYPEID, getPosition(atts));
             } else if (FORM_COMPONENT_ID_SPINNER.matcher(id).find()) {
@@ -283,27 +239,15 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             } else if (FORM_COMPONENT_ID_TEXTFIELD.matcher(id).find()) {
                 addSVGFormComponent(id, SVGTextFieldCD.TYPEID, getPosition(atts));
             }
-            lastPosition = getPosition(atts);
         }
 
         private void addSVGFormComponent(String id, TypeID type, Float position) {
             int index = getIndex(position);
-            if (index == -1) {
-//                for (SVGFormComponent c : foundElements) {
-//                    System.out.println(c.getId() + " " + c.getPositon());
-//                }
-                //System.out.println(id + " " + position);
+            if (index == -1) {            
                 foundElements.add(SVGFormComponent.create(id, type, position));
-            } else {
-//                for (SVGFormComponent c : foundElements) {
-//                    System.out.println(c.getId() + " " + c.getPositon());
-//                }
-                //System.out.println(id + " " + position);
+            } else {             
                 foundElements.add(index, SVGFormComponent.create(id, type, position));
             }
-            for (SVGFormComponent c : foundElements) {
-                    System.out.println(c.getId() + " " + c.getPositon());
-                }
         }
 
         @Override
@@ -313,12 +257,13 @@ public class SVGFormImageParser extends SVGComponentImageParser {
 
         private int getIndex(Float position) {
             int index = -1;
-            Float highestPosition = new Float(-1);
-            System.out.println("Positions :" + position);
-            for (SVGFormComponent c : foundElements) {
-                if (position > c.getPositon() && highestPosition < c.getPositon()) {
-                    highestPosition = c.getPositon();
-                    index = foundElements.indexOf(c);
+            if (position != null) {
+                Float highestPosition = new Float(-1);
+                for (SVGFormComponent c : foundElements) {
+                    if (position > c.getPositon() && highestPosition < c.getPositon()) {
+                        highestPosition = c.getPositon();
+                        index = foundElements.indexOf(c);
+                    }
                 }
             }
             return index;
@@ -329,22 +274,49 @@ public class SVGFormImageParser extends SVGComponentImageParser {
         String transform = atts.getValue("transform"); //NOI18N
         Float position = null;
         if (transform != null) {
-            int begining = transform.indexOf(","); //NOI18N
-            int end = transform.indexOf(")"); //NOI18N
-            position = new Float(transform.substring(begining + 1, end));
+            if (transform.startsWith("translate")){
+                position = getPositionFromTranslate(transform);
+            } else if (transform.startsWith("matrix")){
+                position = getPositionFromMatrix(transform);
+            }
         }
         return position;
     }
     
-    private static Float getPositionForRadioButton(Attributes atts, Float lastPosition) {
+    private static Float getPositionFromTranslate(String transform) {
+        Float position = null;
+        int begining = transform.indexOf(","); //NOI18N
+        int end = transform.indexOf(")"); //NOI18N
+        try{
+            position = new Float(transform.substring(begining + 1, end));
+        } catch (NumberFormatException nfe) {
+            Logger.getLogger(SVGFormImageParser.class.getName()).info(nfe.getMessage());
+        }
+        return position;
+    }
+    
+    private static Float getPositionFromMatrix(String transform) {
+        Float position = null;
+        int begining = transform.lastIndexOf(","); //NOI18N
+        int end = transform.indexOf(")"); //NOI18N
+        try{
+            position = new Float(transform.substring(begining + 1, end));
+        } catch (NumberFormatException nfe) {
+            Logger.getLogger(SVGFormImageParser.class.getName()).info(nfe.getMessage());
+        }
+        return position;
+    }
+
+    private static Float getPositionForRadioButton(Attributes atts, Float framePosition) {
         String transform = atts.getValue("transform"); //NOI18N
         Float position = null;
         if (transform != null) {
             int begining = transform.indexOf(","); //NOI18N
             int end = transform.indexOf(")"); //NOI18N
             position = new Float(transform.substring(begining + 1, end));
+            position = position + framePosition;
         }
-        return position + lastPosition;
+        return position;
     }
 
     /**

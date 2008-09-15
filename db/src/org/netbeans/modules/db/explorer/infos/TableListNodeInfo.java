@@ -179,7 +179,7 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
     }
     
     @Override
-    protected void notifyChange() {
+    public void notifyChange() {
         super.notifyChange();
         fireRefresh();        
     }

@@ -45,7 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 
@@ -76,7 +76,7 @@ public class WebServiceData implements WsdlData {
      */
     private String packageName;
     /** WSDL Service Model this meta model wraps */
-    WsdlService wsdlService;
+    WSService wsdlService;
     /** This is the name of WsdlService WsdlService.getName()
      * Used to find the corresponding WsdlService during loading from
      * persstence
@@ -122,7 +122,7 @@ public class WebServiceData implements WsdlData {
         }
     }
 
-    public WebServiceData(WsdlService service, String wsdlFile, String originalWsdl, String groupId) {
+    public WebServiceData(WSService service, String wsdlFile, String originalWsdl, String groupId) {
         this(wsdlFile, originalWsdl, groupId);
         wsdlService = service;
         wsName = service.getName();
@@ -188,7 +188,7 @@ public class WebServiceData implements WsdlData {
         return resolved;
     }
 
-    public void setWsdlService(WsdlService svc) {
+    public void setWsdlService(WSService svc) {
         wsdlService = svc;
 
         if (jaxRpcDescriptor != null) {
@@ -200,7 +200,7 @@ public class WebServiceData implements WsdlData {
         }
     }
 
-    public WsdlService getWsdlService() {
+    public WSService getWsdlService() {
         return wsdlService;
     }
 

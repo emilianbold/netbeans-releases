@@ -95,27 +95,30 @@ public class MessageOperationsAction extends SceneNodeAction
     public Action createContextAwareInstance(Lookup actionContext)
     {
         context = actionContext.lookup(WidgetContext.class);
-        type = LabelManager.LabelType.valueOf(context.getContextName());
-        lastPresentationElement=actionContext.lookup(IPresentationElement.class);
-        lastScene=(ObjectScene) actionContext.lookup(Scene.class);
-        if(lastScene!=null && lastPresentationElement!=null)
+        if(context!=null)
         {
-            Widget w=lastScene.findWidget(lastPresentationElement);
-            if(!(w instanceof MessageWidget))
+            type = LabelManager.LabelType.valueOf(context.getContextName());
+            lastPresentationElement=actionContext.lookup(IPresentationElement.class);
+            lastScene=(ObjectScene) actionContext.lookup(Scene.class);
+            if(lastScene!=null && lastPresentationElement!=null)
             {
-                lastPresentationElement=null;//may be label selected or other related
-                //search for parents if will find, set pres element
-                if(w!=null)
-                    for(Widget par=w.getParentWidget();par!=null;par=par.getParentWidget())
-                    {
-                        if(par instanceof MessageWidget)
+                Widget w=lastScene.findWidget(lastPresentationElement);
+                if(!(w instanceof MessageWidget))
+                {
+                    lastPresentationElement=null;//may be label selected or other related
+                    //search for parents if will find, set pres element
+                    if(w!=null)
+                        for(Widget par=w.getParentWidget();par!=null;par=par.getParentWidget())
                         {
-                            lastPresentationElement=(IPresentationElement) lastScene.findObject(par);
-                            break;
+                            if(par instanceof MessageWidget)
+                            {
+                                lastPresentationElement=(IPresentationElement) lastScene.findObject(par);
+                                break;
+                            }
                         }
-                    }
+                }
+                //other option is to exclude message finding below, sepatrate this clas to sevelal for each message kind
             }
-            //other option is to exclude message finding below, sepatrate this clas to sevelal for each message kind
         }
         //
         return this;

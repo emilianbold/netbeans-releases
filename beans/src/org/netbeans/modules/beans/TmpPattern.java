@@ -46,14 +46,14 @@ public class TmpPattern {
         TypeMirror type;        
         String name;
         
-        public Property( ExecutableElement getterMethod, 
+        public Property( CompilationInfo javac, ExecutableElement getterMethod,
                          ExecutableElement setterMethod )
             throws IntrospectionException {
 
             this.getterMethod = getterMethod;
             this.setterMethod = setterMethod;
 
-            type = findPropertyType();
+            type = findPropertyType(javac);
             name = findPropertyName();
         }
         
@@ -62,7 +62,7 @@ public class TmpPattern {
         * @param x The first (lower priority) PropertyPattern.
         * @param y The second (higher priority) PropertyPattern.
         */
-        Property( Property x, Property y ) {
+        Property( CompilationInfo javac, Property x, Property y ) {
             
             // Figure out the merged getterMethod
             ExecutableElement xr = x.getterMethod;
@@ -97,12 +97,12 @@ public class TmpPattern {
             */
 
             try {
-                type = findPropertyType();
+                type = findPropertyType(javac);
             }
             catch ( IntrospectionException ex ) {
                 //System.out.println (x.getName() + ":" +  y.getName()); // NOI18N
                 //System.out.println (x.getType() + ":" + y.getType() ); // NOI18N
-                throw new InternalError( "Mixing invalid PropertyPattrens" + ex ); // NOI18N
+                throw new IllegalStateException("Mixing invalid PropertyPattrens", ex); // NOI18N
             }
 
             name = findPropertyName();
@@ -118,7 +118,7 @@ public class TmpPattern {
          * @throws IntrospectionException if the property doesnt folow the design patterns
          * @return The type of the property.
          */
-        TypeMirror findPropertyType() throws IntrospectionException {
+        TypeMirror findPropertyType(CompilationInfo javac) throws IntrospectionException {
 
             TypeMirror resolvedType = null;
 
@@ -139,7 +139,7 @@ public class TmpPattern {
                     throw new IntrospectionException( "bad write method arg count" ); // NOI18N
                 }
                 VariableElement param = params.get(0);
-                if ( resolvedType != null && !resolvedType.equals( param.asType() ) ) {
+                if ( resolvedType != null && !javac.getTypes().isSameType(resolvedType, param.asType()) ) {
                     throw new IntrospectionException( "type mismatch between read and write methods" ); // NOI18N
                 }
                 resolvedType = param.asType();
@@ -188,12 +188,12 @@ public class TmpPattern {
                             ExecutableElement indexedGetterMethod, ExecutableElement indexedSetterMethod )
         throws IntrospectionException {
 
-            super ( getterMethod, setterMethod );
+            super ( ci, getterMethod, setterMethod );
 
             this.indexedGetterMethod = indexedGetterMethod;
             this.indexedSetterMethod = indexedSetterMethod;
 
-            indexedType = findIndexedPropertyType();
+            indexedType = findIndexedPropertyType(ci);
             
             if (this.type == null && this.indexedType != null) {
                 this.type = ci.getTypes().getArrayType(this.indexedType);
@@ -207,8 +207,8 @@ public class TmpPattern {
          * @param x The first (lower priority) PropertyPattern.
          * @param y The second (higher priority) PropertyPattern.
          */
-        IdxProperty( Property x, Property y )  {
-            super(x, y);
+        IdxProperty( CompilationInfo javac, Property x, Property y )  {
+            super(javac, x, y);
             if ( x instanceof IdxProperty ) {
                 IdxProperty ix = (IdxProperty)x;
                 indexedGetterMethod = ix.indexedGetterMethod;
@@ -243,10 +243,10 @@ public class TmpPattern {
         // Private methods -----------------------------------------------------
         
         /** Resolves the indexed type of the property from type of getter and setter.
-         * Chcecks for conformance to Beans design patterns.
-         * @throws IntrospectionException if the property doesnt folow the design patterns
+         * Checks for conformance to Beans design patterns.
+         * @throws IntrospectionException if the property does not follow the design patterns
          */
-        private TypeMirror findIndexedPropertyType() throws IntrospectionException {
+        private TypeMirror findIndexedPropertyType(CompilationInfo javac) throws IntrospectionException {
 
             indexedType = null;
 
@@ -275,7 +275,7 @@ public class TmpPattern {
                     throw new IntrospectionException( "non int index to indexed write method" ); // NOI18N
                 }
                 VariableElement param2 = params.get(1);
-                if (indexedType != null && !indexedType.equals( param2.asType()) ) {
+                if (indexedType != null && !javac.getTypes().isSameType(indexedType, param2.asType()) ) {
                     throw new IntrospectionException(
                         "type mismatch between indexed read and write methods" ); // NOI18N
                 }
@@ -286,7 +286,7 @@ public class TmpPattern {
 
             TypeMirror propType = type;
             if ( propType != null &&
-                ( (propType.getKind() != TypeKind.ARRAY) || !indexedType.equals(((ArrayType)propType).getComponentType()))) {
+                ( (propType.getKind() != TypeKind.ARRAY) || !javac.getTypes().isSameType(indexedType, ((ArrayType)propType).getComponentType()))) {
                 throw new IntrospectionException(
                     "type mismatch between property type and indexed type" ); // NOI18N
             }

@@ -41,49 +41,66 @@ package org.netbeans.modules.db.test;
 
 import java.sql.Types;
 import java.util.logging.Logger;
-import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.lib.ddl.impl.AddColumn;
 import org.netbeans.lib.ddl.impl.CreateIndex;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.CreateView;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.lib.ddl.impl.TableColumn;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
-import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
+import org.netbeans.lib.ddl.util.CommandBuffer;
 
 /**
  *
  * @author David
  */
 public class DDLTestBase extends DBTestBase {
+    private static SpecificationFactory specfactory;
+    private Specification spec;
+    private DriverSpecification drvspec;
+
     private static Logger LOGGER = Logger.getLogger(DDLTestBase.class.getName());
 
     public DDLTestBase(String name) {
         super(name);
     }
 
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        if (specfactory == null) {
+            specfactory = new SpecificationFactory();
+        }
+        spec = (Specification)specfactory.createSpecification(getConnection());
+
+        // All this is copied from ConnectionNodeInfo.java
+        drvspec = specfactory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
+        if (spec.getMetaData().getDriverName().trim().equals("jConnect (TM) for JDBC (TM)")) //NOI18N
+            //hack for Sybase ASE - I don't guess why spec.getMetaData doesn't work
+            drvspec.setMetaData(getConnection().getMetaData());
+        else
+            drvspec.setMetaData(spec.getMetaData());
+        drvspec.setCatalog(getConnection().getCatalog());
+        drvspec.setSchema(getSchema());
+    }
+
     protected final Specification getSpecification() throws Exception {
-        DatabaseConnection dbconn = getDatabaseConnection(true);
-        
-        ConnectionNodeInfo cinfo = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNodeInfo(dbconn.getName());
-        
-        return (Specification)cinfo.getSpecification();
+        return spec;
     }
     
     protected final DriverSpecification getDriverSpecification() throws Exception {
-        DatabaseConnection dbconn = getDatabaseConnection(true);
-        
-        ConnectionNodeInfo cinfo = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNodeInfo(dbconn.getName());
-        
-        return cinfo.getDriverSpecification();
+        return drvspec;
     }
         
     protected void createBasicTable(String tablename, String pkeyName)
             throws Exception {
         dropTable(tablename);
+        CommandBuffer cbuff = new CommandBuffer();
+
+        // Uncomment this if you want to see what the SQL looks like
+        // cbuff.setDebugMode(true);
+
         CreateTable cmd = getSpecification().createCommandCreateTable(tablename);
         cmd.setObjectOwner(getSchema());
 
@@ -92,7 +109,8 @@ public class DDLTestBase extends DBTestBase {
         col.setColumnType(Types.INTEGER);
         col.setNullAllowed(false);
 
-        cmd.execute();
+        cbuff.add(cmd);
+        cbuff.execute();
     }
 
     protected void createView(String viewName, String query) throws Exception {

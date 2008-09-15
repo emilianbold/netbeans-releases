@@ -601,8 +601,8 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         for (JDBCDriver jdbcDriver : jdbcDrivers) {
             for (URL url : jdbcDriver.getURLs()) {
                 java.io.File file = null;
-                try {
-                    if (url.getProtocol().equals("nbinst")) { //NOI18N
+                if (url.getProtocol().equals("nbinst")) { //NOI18N
+                    try {
                         file = InstalledFileLocator.getDefault().locate(url.getFile().substring(1), null, false);
                         logger.info("Bundled DB Driver Jar : " + file);
                         if (file == null) {
@@ -610,17 +610,19 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
                         }
                     } else {
                         file = new java.io.File(url.getFile());
+                        if(file != null) {
+                            url = file.toURL();
+                        }
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                    if (file.isFile() && file.getName().endsWith(".jar")) {
-                        logger.info("DB Driver Jar : " + file);
-                        driverURLs.add(new URL("jar:" + file.toURL() + "!/"));
-
-                    } else {
-                        logger.info("Registering DB Driver from folder : " + url);
-                        driverURLs.add(url);
-                    }
-                } catch (MalformedURLException ex) {
-                    logger.log(Level.INFO, "Problem in converting file url to jar url.", ex);
+                } else {
+                    logger.info("User provided DB Driver Jar : " + url);
+                }
+                if (FileUtil.isArchiveFile(url)) {
+                    driverURLs.add(FileUtil.getArchiveRoot(url));
+                } else {
+                    driverURLs.add(url);
                 }
             }
         }

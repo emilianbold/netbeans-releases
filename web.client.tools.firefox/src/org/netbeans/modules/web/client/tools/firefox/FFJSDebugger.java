@@ -39,15 +39,12 @@
 package org.netbeans.modules.web.client.tools.firefox;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 
-import org.netbeans.modules.web.client.tools.api.JSLocation;
-import org.netbeans.modules.web.client.tools.common.dbgp.Breakpoint;
-import org.netbeans.modules.web.client.tools.common.dbgp.DbgpUtils;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
 import org.netbeans.modules.web.client.tools.common.launcher.Utils;
-import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoint;
 import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
@@ -82,28 +79,17 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
         boolean result = super.startDebuggingImpl();
         startHttpMonitorThread();
         return result;
-    }    
+    }
+    
+    @Override
+    protected InputStream getInputStreamForURLImpl(String uri) {
+        return super.getInputStreamForURLImpl(uri, true);
+    }        
 
     public String getID() {
         if (ID == null) {
             ID = FFJSDebuggerConstants.NETBEANS_FIREFOX_DEBUGGER + "-" + getSequenceId(); // NOI18N
         }
         return ID;
-    }
-    
-    /*
-     * Translates file URI
-     */
-    private String translateURI(String uri) {
-        return uri.replaceFirst("\\Afile:/+", "file:///"); // NOI18N
-    }
-    
-    @Override
-    public String setBreakpoint(JSBreakpoint breakpoint) {
-        Breakpoint.BreakpointSetCommand setCommand = DbgpUtils.getDbgpBreakpointCommand(proxy, breakpoint);
-        JSLocation location = breakpoint.getLocation();
-        String uri = location.getURI().toASCIIString();
-        setCommand.setFileURI(translateURI(uri));
-        return proxy.setBreakpoint(setCommand);
     }
 }

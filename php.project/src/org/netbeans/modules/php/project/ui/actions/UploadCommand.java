@@ -40,8 +40,6 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
@@ -98,8 +96,6 @@ public class UploadCommand extends FtpCommand implements Displayable {
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 
-        // XXX project name could be cached - but is it correct?
-
         InputOutput ftpLog = getFtpLog(getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(ftpLog);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
@@ -109,16 +105,21 @@ public class UploadCommand extends FtpCommand implements Displayable {
             progressHandle.start();
             Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], filesToUpload);
 
-            Set<TransferFile> preselected = Collections.<TransferFile>emptySet();
+            // manage preselected files - it is just enough to touch the file
             if (preselectedFiles != null && preselectedFiles.length > 0) {
                 File baseLocalDir = FileUtil.toFile(sources[0]);
                 String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
-                preselected = new HashSet<TransferFile>();
                 for (FileObject fo : preselectedFiles) {
-                    preselected.add(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+                    TransferFile transferFile = TransferFile.fromFileObject(fo, baseLocalAbsolutePath);
+                    transferFile.touch();
+                    boolean result = forUpload.remove(transferFile);
+                    assert result : "Transfer file not in upload set: " + transferFile;
+                    result = forUpload.add(transferFile);
+                    assert result : "Transfer file not added to upload set: " + transferFile;
                 }
             }
-            forUpload = TransferFilter.showUploadDialog(forUpload, RemoteSettings.getLastUpload(getProject()), preselected);
+
+            forUpload = TransferFilter.showUploadDialog(forUpload, RemoteSettings.getLastUpload(getProject()));
             if (forUpload.size() == 0) {
                 return;
             }

@@ -445,7 +445,7 @@
                             http://www.zillow.com/webservice/Registration.htm
                         </doc>
                     </param>
-                    <param name="rid" type="xsd:string" style="query" required="true">
+                    <param name="regionid" type="xsd:string" style="query" required="true">
                         <doc xml:lang="en">
 							The regionId of the region to retrieve subregions from.
                         </doc>
