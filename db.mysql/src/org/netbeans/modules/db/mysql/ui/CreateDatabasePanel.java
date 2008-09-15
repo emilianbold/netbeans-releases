@@ -205,13 +205,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 return;
             }
 
-            boolean create = true;
+            boolean create = false;
 
-            if (! databaseComboModel.isSelectedSample() && SampleManager.isSample(dbname)) {
-                // This is a sample name the user typed in - make sure they want to
-                // actually create the sample tables, objects, etc.
-                create = Utils.displayYesNoDialog(NbBundle.getMessage(CreateDatabasePanel.class,
-                        "CreateDatabasePanel.MSG_ConfirmCreateSample", dbname));
+            if (SampleManager.isSample(dbname)) {
+                if (! databaseComboModel.isSelectedSample()) {
+                    // This is a sample name the user typed in - make sure they want to
+                    // actually create the sample tables, objects, etc.
+                    create = Utils.displayYesNoDialog(NbBundle.getMessage(CreateDatabasePanel.class,
+                            "CreateDatabasePanel.MSG_ConfirmCreateSample", dbname));
+                } else {
+                    create = true;
+                }
             }
 
             if (create) {
