@@ -106,26 +106,16 @@ public final class FileReferencesContext {
         if (csmFile == null) {
             return;
         }
-        if (lastOffset > offset) {
-            _clean();
-        }
         lastOffset = offset;
-        if (fileLocalVars == null) {
-            // no increment for fileLocalVars
-            fileLocalVars = new HashMap<String,List<CsmUID<CsmVariable>>>();
-            fillFileLocalIncludeVariables();
-            // no increment for fileOffsets
-            fileDeclarationsOffsets = new ArrayList<Offsets>();
-            fileObjectOffsets = new ArrayList<Offsets>();
-            fillFileOffsets();
-            projectMacros = new HashMap<String,CsmUID<CsmMacro>>();
-            fillProjectMacros();
-        }
     }
 
     public List<CsmVariable> getFileLocalIncludeVariables(String name){
-        if (fileLocalVars == null) {
+        if (isCleaned()){
             return null;
+        }
+        if (fileLocalVars == null) {
+            fileLocalVars = new HashMap<String,List<CsmUID<CsmVariable>>>();
+            fillFileLocalIncludeVariables();
         }
         List<CsmUID<CsmVariable>> vars = fileLocalVars.get(name);
         if (vars == null || vars.isEmpty()){
@@ -142,8 +132,13 @@ public final class FileReferencesContext {
     }
     
     public CsmObject findInnerFileDeclaration(int offset){
-        if (fileDeclarationsOffsets == null) {
+        if (isCleaned()){
             return null;
+        }
+        if (fileDeclarationsOffsets == null) {
+            fileDeclarationsOffsets = new ArrayList<Offsets>();
+            fileObjectOffsets = new ArrayList<Offsets>();
+            fillFileOffsets();
         }
         Offsets key = new Offsets(offset);
         int res = Collections.binarySearch(fileDeclarationsOffsets, key);
@@ -160,8 +155,13 @@ public final class FileReferencesContext {
     }
 
     public CsmObject findInnerFileObject(int offset){
-        if (fileObjectOffsets == null) {
+        if (isCleaned()){
             return null;
+        }
+        if (fileDeclarationsOffsets == null) {
+            fileDeclarationsOffsets = new ArrayList<Offsets>();
+            fileObjectOffsets = new ArrayList<Offsets>();
+            fillFileOffsets();
         }
         Offsets key = new Offsets(offset);
         int res = Collections.binarySearch(fileObjectOffsets, key);
@@ -178,8 +178,12 @@ public final class FileReferencesContext {
     }
 
     public CsmMacro findIncludedMacro(String name){
-        if (projectMacros == null) {
+        if (isCleaned()){
             return null;
+        }
+        if (projectMacros == null) {
+            projectMacros = new HashMap<String,CsmUID<CsmMacro>>();
+            fillProjectMacros();
         }
         CsmUID<CsmMacro> uid = projectMacros.get(name);
         if (uid != null) {
