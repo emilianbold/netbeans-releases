@@ -145,7 +145,28 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();
         childs = parent.getChildren();
         assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
-    }    
+    }
+
+    public void testGetChildrenCaches() throws IOException {
+        FileObject fobj = getFileObject(testFile);
+        FileObject parent = fobj.getParent();
+        List<FileObject> l = new ArrayList<FileObject>();
+        parent = parent.createFolder("parent");
+        for (int i = 0; i < 20; i++) {
+            l.add(parent.createData("file" + i + ".txt"));
+        }
+
+        monitor.reset();
+        //20 x FileObject + 1 File.listFiles
+        FileObject[] childs = parent.getChildren();
+        assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
+        assertEquals(1, monitor.getResults().statResult(StatFiles.READ));
+        for (FileObject ch : childs) {
+            assertNull("No sibling", FileUtil.findBrother(ch, "exe"));
+        }
+        assertEquals("No aditional touches", 1, monitor.getResults().statResult(StatFiles.ALL));
+        assertEquals("No aditional reads", 1, monitor.getResults().statResult(StatFiles.READ));
+    }
 
     //on trunk fails: expected:<0> but was:<11>    
     public void testLockFile() throws IOException {
