@@ -200,6 +200,9 @@ public class AstUtilities {
             if (end < 0) {
                 end = 0;
             }
+            if (start > end) {
+                return OffsetRange.NONE;
+            }
             return new OffsetRange(start, end);
     }
     
