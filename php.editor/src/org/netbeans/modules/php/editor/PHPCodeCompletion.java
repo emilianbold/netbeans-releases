@@ -71,11 +71,10 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
-import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -313,8 +312,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (document == null) {
             return CompletionContext.NONE;
         }
+
+        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(document, caretOffset);
+        if (tokenSequence == null) {
+            return CompletionContext.NONE;
+        }
         TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
         tokenSequence.move(caretOffset);
         if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()){
             return CompletionContext.NONE;
@@ -457,7 +460,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private synchronized static boolean isInsideClassDeclarationBlock(CompilationInfo info,
             int caretOffset, TokenSequence tokenSequence){
-        List<ASTNode> nodePath = NavUtils.underCaret(info, caretOffset);
+        List<ASTNode> nodePath = NavUtils.underCaret(info, lexerToASTOffset(info, caretOffset));
         boolean methDecl = false;
         boolean funcDecl = false;
         boolean clsDecl = false;
@@ -604,7 +607,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case CLASS_CONTEXT_KEYWORDS:
                     autoCompleteKeywords(proposals, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
-                    ClassDeclaration enclosingClass = findEnclosingClass(info, caretOffset);
+                    ClassDeclaration enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
                     if (enclosingClass != null) {
                         Identifier superClass = enclosingClass.getSuperClass();
                         if (superClass != null) {
@@ -745,7 +748,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             case PHP_PARENT:
                 staticContex = true;
                  {
-                    ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+                    ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
 
                      if (classDecl != null) {
                          if (tokenSequence.token().id() == PHPTokenId.PHP_PARENT) {
@@ -786,14 +789,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 varName = tokenSequence.token().text().toString();
 
                 if ("$this".equalsIgnoreCase(varName)) { //NOI18N
-                    ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+                    ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                     if (classDecl != null) {
                         preceedingType = classDecl.getName().getName();
                     }
 
                 } else {
                     Collection<IndexedConstant> vars = getVariables(request.result, request.index,
-                            request.result.getProgram(),
                             varName, request.anchor, request.currentlyEditedFileURL);
 
                     if (vars != null) {
@@ -936,8 +938,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         // TODO: remove duplicate/redundant code from here
 
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
+        //TokenHierarchy th = TokenHierarchy.get(document);
+        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(document, request.anchor);
         tokenSequence.move(request.anchor);
         if (tokenSequence.movePrevious())
         {
@@ -956,7 +958,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String typeName = null;
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
             if (varName.equals("self")) { //NOI18N
-                ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+                ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (classDecl != null) {
                     typeName = classDecl.getName().getName();
                     staticContext = instanceContext = true;
@@ -965,7 +967,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             } else if (varName.equals("parent")) { //NOI18N
                 invalidProposalsForClsMembers = Collections.emptyList();
-                ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+
+                ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (classDecl != null) {
                     Identifier superIdentifier = classDecl.getSuperClass();
                     if (superIdentifier != null) {
@@ -975,7 +978,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             } else if (varName.equals("$this")) { //NOI18N
-                ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+                ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (classDecl != null) {
                     typeName = classDecl.getName().getName();
                     staticContext = false;
@@ -988,7 +991,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 } else {
                     assert typeName == null;
                     Collection<IndexedConstant> vars = getVariables(request.result, request.index,
-                            request.result.getProgram(),
                             varName, request.anchor, request.currentlyEditedFileURL);
 
                     if (vars != null) {
@@ -1106,7 +1108,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         proposals.addAll(getVariableProposals(request.result.getProgram(), request));
         
         // Special keywords applicable only inside a class
-        ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+        ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
         if (classDecl != null) {
             for (String keyword : PHP_CLASS_KEYWORDS) {
                 if (startsWith(keyword, request.prefix)) {
@@ -1121,7 +1123,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         Collection<IndexedConstant> allVars = getVariables(request.result, request.index,
-                program, request.prefix, request.anchor, request.currentlyEditedFileURL);
+                request.prefix, request.anchor, request.currentlyEditedFileURL);
 
         for (IndexedConstant localVar : allVars){
             CompletionProposal proposal = new PHPCompletionItem.VariableItem(localVar, request);
@@ -1138,9 +1140,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return proposals;
     }
 
-    public Collection<IndexedConstant> getVariables(PHPParseResult context,  PHPIndex index, Program program,
+    public Collection<IndexedConstant> getVariables(PHPParseResult context,  PHPIndex index,
             String namePrefix, int position, String localFileURL){
-        LocalVariables localVars = getLocalVariables(program, namePrefix, position, localFileURL);
+
+        LocalVariables localVars = getLocalVariables(context, namePrefix, position, localFileURL);
         Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
 
         for (IndexedConstant var : localVars.vars){
@@ -1272,12 +1275,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         boolean globalContext;
     }
 
-    private LocalVariables getLocalVariables(Program program, String namePrefix, int position, String localFileURL){
+    private LocalVariables getLocalVariables(PHPParseResult context, String namePrefix, int position, String localFileURL){
         Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();
         boolean globalContext = true;
-        ASTNode varScopeNode = program;
+        ASTNode varScopeNode = context.getProgram();
 
-        ASTNode hierarchy[] = Utils.getNodeHierarchyAtOffset(program, position);
+        ASTNode hierarchy[] = Utils.getNodeHierarchyAtOffset(context.getProgram(), lexerToASTOffset(context, position));
 
         //getNodeHierarchyAtOffset obviously return null
         if (hierarchy == null) {
@@ -1462,9 +1465,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
         Document document = component.getDocument();
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence<PHPTokenId> ts = th.tokenSequence(PHPTokenId.language());
+        //TokenHierarchy th = TokenHierarchy.get(document);
         int offset = component.getCaretPosition();
+        TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(document, offset);
+        if (ts == null) {
+            return QueryType.STOP;
+        }
         int diff = ts.move(offset);
         if(diff > 0 && ts.moveNext() || ts.movePrevious()) {
             Token t = ts.token();
@@ -1506,4 +1512,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return caseSensitive ? theString.startsWith(prefix)
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
-}
+
+    private static int lexerToASTOffset (PHPParseResult result, int lexerOffset) {
+        if (result.getTranslatedSource() != null) {
+            return result.getTranslatedSource().getAstOffset(lexerOffset);
+        }
+        return lexerOffset;
+    }
+
+    private static int lexerToASTOffset(CompilationInfo info, int lexerOffset) {
+        PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, lexerOffset);
+        return lexerToASTOffset(result, lexerOffset);
+    }
+ }
