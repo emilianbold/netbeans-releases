@@ -3227,6 +3227,10 @@ public abstract class GsfTestBase extends NbTestCase {
     }
  
     protected boolean parseErrorsOk;
+
+    protected void customizeHintInfo(GsfTestCompilationInfo info, ParserResult result) {
+        // Optionally override to change some of the information
+    }
     
     protected ComputedHints getHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
         assert relFilePath == null || fileObject == null;
@@ -3249,6 +3253,9 @@ public abstract class GsfTestBase extends NbTestCase {
         
         GsfTestCompilationInfo info = fileObject != null ? getInfo(fileObject) : getInfo(relFilePath);
         ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+
+        customizeHintInfo(info, pr);
+
         if (pr == null /*|| pr.hasErrors()*/ && !(hint instanceof ErrorRule)) { // only expect testcase source errors in error tests
             if (parseErrorsOk) {
                 List<Hint> result = new ArrayList<Hint>();
