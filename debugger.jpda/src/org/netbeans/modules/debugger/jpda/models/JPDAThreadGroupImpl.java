@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 
@@ -59,10 +60,17 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
 
     private ThreadGroupReference tgr;
     private JPDADebuggerImpl debugger;
+    private String name;
     
     public JPDAThreadGroupImpl (ThreadGroupReference tgr, JPDADebuggerImpl debugger) {
         this.tgr = tgr;
         this.debugger = debugger;
+        name = "";
+        try {
+            name = tgr.name();
+        } catch (VMDisconnectedException de) {
+        } catch (ObjectCollectedException ex) {
+        }
     }
 
     /**
@@ -109,11 +117,7 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     }
     
     public String getName () {
-        try {
-            return tgr.name ();
-        } catch (VMDisconnectedException e) {
-            return "";
-        }
+        return name;
     }
     
     // XXX Add some synchronization so that the threads can not be resumed at any time
