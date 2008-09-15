@@ -215,7 +215,7 @@ public class FilterAction extends CookieAction
         if (result == SimpleQuestionDialogResultKind.SQDRK_RESULT_NO)
             userClickedYes = false;
         
-        if (result == SimpleQue0stionDialogResultKind.SQDRK_RESULT_CANCEL)
+        if (result == SimpleQuestionDialogResultKind.SQDRK_RESULT_CANCEL)
             //user pressed the escape key or cancelled the save dialog
             //in which case do not do nothing, getback to the old state.
             userClickedYes = false;
