@@ -95,6 +95,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.Exceptions;
 
 /**
  * CsmFile implementations
@@ -103,9 +104,12 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 public class FileImpl implements CsmFile, MutableDeclarationsContainer, 
         Disposable, Persistent, SelfPersistent {
     
-    public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
+    public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;    
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
-    private static final boolean reportState = Boolean.getBoolean("parser.log.state");
+    // the next 3 flags make sense only in the casew reportParse is true
+    private static final String[] logMacros;
+    private static final boolean logState = Boolean.getBoolean("parser.log.state");
+//    private static final boolean logEmptyTokenStream = Boolean.getBoolean("parser.log.empty");
     
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
 
@@ -118,6 +122,19 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static final int HEADER_FILE = 4;
 
     private FileBuffer fileBuffer;
+    
+    static {
+         String text = System.getProperty("parser.log.macro");
+         if (text != null && text.length() > 0) {
+             List<String> l = new ArrayList<String>();
+             for (StringTokenizer stringTokenizer = new StringTokenizer(text, ","); stringTokenizer.hasMoreTokens();) {
+                 l.add(stringTokenizer.nextToken());
+             }
+             logMacros = l.toArray(new String[l.size()]);
+         } else {
+             logMacros = null;
+         }
+    }
 
     /**
      * DUMMY_STATE and DUMMY_HANDLERS are used when we need to ensure that the file will be arsed.
@@ -191,7 +208,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	BEING_PARSED 
     }
     
-    private State state;
+    private volatile State state;
 
     private int fileType = UNDEFINED_FILE;
     
@@ -489,13 +506,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if( reportParse || TraceFlags.DEBUG ) logParse("ReParsing", preprocHandler); //NOI18N
         AST ast = doParse(preprocHandler);
         if (ast != null) {
-            disposeAll(false);
-            render(ast);
+            if( isValid() ) {
+                disposeAll(false);
+                render(ast);
+            }
         } else {
             //System.err.println("null ast for file " + getAbsolutePath());
         }
     }
-
+    
     public void dispose() {
         onDispose();
         Notificator.instance().registerRemovedFile(this);
@@ -592,11 +611,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private void logParse(String title, APTPreprocHandler preprocHandler) {
         if( reportParse || TraceFlags.DEBUG ) {
-            APTPreprocHandler.State state = preprocHandler.getState();
-            System.err.printf("# %s %s (valid=%b, compile-context=%b) (Thread=%s)\n", title, fileBuffer.getFile().getPath(),
-                    state.isValid(), state.isCompileContext(), Thread.currentThread().getName());
-            if (reportState) {
-                System.err.printf("%s\n\n", preprocHandler.getState());
+            APTPreprocHandler.State preprocState = preprocHandler.getState();
+            StringBuilder additionalText = new StringBuilder();
+            if (logMacros != null && logMacros.length > 0) {
+                for (int i = 0; i < logMacros.length; i++) {
+                    additionalText.append(String.format(" #defined(%s)=%b",  //NOI18N
+                            logMacros[i], preprocHandler.getMacroMap().isDefined(logMacros[i])));
+                }
+            }
+            System.err.printf("# %s %s (valid=%b, compile-context=%b%s) (Thread=%s)\n", //NOI18N
+                    title, fileBuffer.getFile().getPath(), 
+                    preprocState.isValid(), preprocState.isCompileContext(), additionalText,
+                    Thread.currentThread().getName());
+            if (logState) {
+                System.err.printf("%s\n\n", preprocHandler.getState()); //NOI18N
             }
         }
     }
@@ -855,7 +883,21 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
             }
-            clearFakeRegistrations();
+            clearFakeRegistrations();   
+
+//            if (reportParse && logEmptyTokenStream) {
+//                APTParseFileWalker walker2 = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
+//                walker2.addMacroAndIncludes(false);
+//                TokenStream  ts = walker2.getFilteredTokenStream(getLanguageFilter(ppState));
+//                try {
+//                    boolean empty = ts.nextToken().getType() == APTToken.EOF_TYPE;
+//                    System.err.printf("\tFile %s empty tokens ? %b (Thread=%s)\n",
+//                            getAbsolutePath(), empty, Thread.currentThread().getName());
+//                } catch (TokenStreamException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
@@ -1270,7 +1312,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 fixFakes = wait;
             } else {
                 while( ! isParsed() ) {
-                    ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE), ParserQueue.Position.HEAD, false);
+                    ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE), 
+                            ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
                     if( wait ) {
                         stateLock.wait();
                     } else {

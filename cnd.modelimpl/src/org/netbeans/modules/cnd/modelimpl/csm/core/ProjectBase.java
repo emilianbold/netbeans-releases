@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ParserQueue;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
@@ -1151,12 +1152,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                                 statesToParse.add(pair.state);
                             }
                         }
-                        csmFile.markReparseNeeded(false);
-                    } else {
-                        csmFile.markMoreParseNeeded();
                     }
                     entry.setStates(statesToKeep, new FileContainer.StatePair(newState, pcState));
-                    scheduleIncludedFileParsing(csmFile, statesToParse, clean);
+                    ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
+                            clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
                     if (TraceFlags.TRACE_PC_STATE) {
                         traceIncludeScheduling(csmFile, newState, pcState, clean,
                                 statesToParse, statesToKeep);
@@ -1384,7 +1383,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public abstract void onFileRemoved(List<NativeFileItem> items);
     public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
     public abstract void onFilePropertyChanged(List<NativeFileItem> items);
-    protected abstract void scheduleIncludedFileParsing(FileImpl csmFile, Collection<APTPreprocHandler.State> states, boolean replaceStates);
+    protected abstract ParserQueue.Position getIncludedFileParserQueuePosition();
     public abstract NativeFileItem getNativeFileItem(CsmUID<CsmFile> file);
     protected abstract void putNativeFileItem(CsmUID<CsmFile> file, NativeFileItem nativeFileItem);
     protected abstract void removeNativeFileItem(CsmUID<CsmFile> file);
