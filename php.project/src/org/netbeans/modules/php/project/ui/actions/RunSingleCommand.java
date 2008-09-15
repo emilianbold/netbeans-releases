@@ -74,7 +74,7 @@ public class RunSingleCommand extends RunCommand {
             }
             try {
                 // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
-                final URL url = urlForContext(context);
+                final URL url = urlForContext(context, true);
 
                 eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
                 showURL(url);
