@@ -272,12 +272,6 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      */
     public boolean addHibernateLibraryToProject(FileObject fileInProject) {
         boolean addLibraryResult = false;
-        ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
-        if (projectClassPathModifier == null) {
-            // PCPM not implemented for this project. May be a freeform project ?
-            logger.info("Library registration not possible : " + project);
-            return addLibraryResult;
-        }
         try {
             LibraryManager libraryManager = LibraryManager.getDefault();
             Library hibernateLibrary = libraryManager.getLibrary("hibernate-support");  //NOI18N
@@ -305,114 +299,9 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
             addLibraryResult = false;
         } catch (UnsupportedOperationException ex) {
             // PCPM not implemented for this project. May be a freeform project ?
+            logger.info("Library registration not possible : " + project);
         }
         return addLibraryResult;
-    }
-
-    private boolean registerHibernateClasspath(java.util.Properties buildProperties, List<String> classpathEntries) {
-        // Verify and register.
-        String hibernateClasspath = buildProperties.getProperty("hibernate.cp"); //NOI18N
-        // register..
-        StringBuilder buffer = new StringBuilder();
-        for (String classpathEntry : classpathEntries) {
-            buffer.append(classpathEntry).append(":");
-        }
-        String classpathToBeRegistered = buffer.toString().substring(0, buffer.toString().length() - 1);
-        if (hibernateClasspath != null && hibernateClasspath.contains(classpathToBeRegistered)) {
-            logger.info("Already registered with Hibernate libraries.. returning.");
-            return false; // Already registered. 
-        }
-        logger.info("Registering following classpath with freeform project : " + classpathToBeRegistered);
-        buildProperties.setProperty("hibernate.cp", classpathToBeRegistered);
-        return true;
-    }
-
-    private boolean registerLibrariesForFreeformProjects(URL[] libraryURLs)
-            throws IOException {
-        boolean registeredLibrariesForFreeformProjects = false;
-        FileObject buildPropertiesFO = project.getProjectDirectory().getFileObject("build.properties"); //NOI18N
-        if (buildPropertiesFO == null) {
-            buildPropertiesFO = project.getProjectDirectory().createData("build", "properties");  //NOI18N
-        }
-
-        java.util.Properties buildProperties = new java.util.Properties();
-        buildProperties.load(new java.io.FileInputStream(FileUtil.toFile(buildPropertiesFO)));
-
-        // Prepare the list of classpath entries that need to be registered.
-        List<String> classpathEntries = new ArrayList<String>();
-        for (URL url : libraryURLs) {
-            String classpathEntry = url.getFile();
-            classpathEntry = classpathEntry.replace("nbinst://", "").replace("!/", "").replace("file:", ""); //NOI18N
-            if (url.getFile().contains("nbinst://")) { //NOI18N
-                int moduleRootIndex = classpathEntry.indexOf("/modules"); //NOI18N
-                classpathEntry = "${netbeans.home}" + classpathEntry.substring(moduleRootIndex);
-            }
-            classpathEntries.add(classpathEntry);
-        }
-
-        registeredLibrariesForFreeformProjects = registerHibernateClasspath(buildProperties, classpathEntries);
-        if (registeredLibrariesForFreeformProjects) {
-            buildProperties.store(new java.io.FileOutputStream(FileUtil.toFile(buildPropertiesFO)), "");
-        }
-
-        FileObject projectXML = null;
-        registeredLibrariesForFreeformProjects = false; // resetting.
-        try {
-            projectXML = project.getProjectDirectory().getFileObject("nbproject").getFileObject("project.xml"); //NOI18N
-        } catch (NullPointerException e) {
-            logger.info("Unable to locate project XML file.");
-            throw new IOException("Unable to locate project XML file under project folder.");
-        }
-        if (projectXML == null) {
-            logger.info("Not able to locate project metadata in freeform project : " + project);
-            throw new IOException("Could not locate project metadata");
-        }
-
-        try {
-            org.dom4j.io.SAXReader saxReader = new org.dom4j.io.SAXReader();
-            org.dom4j.Document projectXMLDocument = saxReader.read(FileUtil.toFile(projectXML));
-            org.dom4j.Element javaDataElement = projectXMLDocument.getRootElement().element("configuration").element("java-data"); //NOI18N
-            org.dom4j.Element compilationUnitElement = javaDataElement.element("compilation-unit"); //NOI18N
-            org.dom4j.Element classpathElement = compilationUnitElement.element("classpath"); //NOI18N
-            if (classpathElement == null) {
-                logger.info("classpath element does not exist. Creating ..");
-                classpathElement = compilationUnitElement.addElement("classpath"); //NOI18N
-                classpathElement.addAttribute("mode", "compile"); //NOI18N
-                List elementList = compilationUnitElement.elements();
-                Object elementObject = elementList.remove(classpathElement);
-                elementList.add(1, elementObject);
-            }
-
-            // Register classpath entries in projectXML.
-            StringBuilder buffer = new StringBuilder(classpathElement.getTextTrim());
-            if (buffer.toString().equals("")) {
-                buffer.append("${hibernate.cp}"); //NOI18N
-                registeredLibrariesForFreeformProjects = true;
-            } else if (!buffer.toString().contains("${hibernate.cp}")) { //NOI18N
-                buffer.append(":").append("${hibernate.cp}"); //NOI18N
-                registeredLibrariesForFreeformProjects = true;
-            }
-
-
-            // Write projectXMDocument.
-            if (registeredLibrariesForFreeformProjects) {
-                classpathElement.setText(buffer.toString());
-                logger.info("Registering classpath entries (" + buffer.toString() + ") for freeform project " + project);
-                org.dom4j.io.OutputFormat format = org.dom4j.io.OutputFormat.createPrettyPrint();
-                org.dom4j.io.XMLWriter xmlWriter = new org.dom4j.io.XMLWriter(
-                        new java.io.FileWriter(FileUtil.toFile(projectXML)),
-                        format);
-                xmlWriter.write(projectXMLDocument);
-                xmlWriter.close();
-            }
-        } catch (org.dom4j.DocumentException ex) {
-            logger.info("Unable to parse projectXML : " + projectXML);
-            throw new IOException("Unable to parse projectXML");
-        } catch (Exception e) {
-            logger.info("Problem in parsing projectXML : " + projectXML);
-            throw new IOException("Processing error in projectXML");
-        }
-        return registeredLibrariesForFreeformProjects;
     }
 
     /**
@@ -482,7 +371,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public List<URL> getProjectClassPath(FileObject projectFile) {
         return HibernateUtil.getProjectClassPathEntries(projectFile);
     }
-    
+
     /**
      * Returns the project classpath including project build paths.
      * Can be used to set classpath for custom classloader.
@@ -586,16 +475,9 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      * @param primaryFile a file in the project. Used to extend the classpath.
      * @return true if successfully registered the given driver or false, if there's problem with registering.
      */
-    @SuppressWarnings("static-access")
     public boolean registerDBDriver(String driver, FileObject primaryFile) {
         boolean registeredDBDriver = false;
-        ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
 
-        if (projectClassPathModifier == null) {
-            // PCPM is not defined for this project. May be freeform project ?
-            logger.info("DB Driver registration not possible : " + project);
-            return registeredDBDriver;
-        }
         JDBCDriver[] jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driver);
         List<URL> driverURLs = new ArrayList<URL>();
         for (JDBCDriver jdbcDriver : jdbcDrivers) {
@@ -608,11 +490,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
                         if (file == null) {
                             continue;
                         }
-                    } else {
-                        file = new java.io.File(url.getFile());
-                        if(file != null) {
-                            url = file.toURL();
-                        }
+                        url = file.toURL();
                     } catch (MalformedURLException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -629,12 +507,16 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
 
         try {
 
-            registeredDBDriver = projectClassPathModifier.addRoots(
+            registeredDBDriver = ProjectClassPathModifier.addRoots(
                     driverURLs.toArray(new URL[]{}),
                     primaryFile,
                     ClassPath.COMPILE);
 
-        } catch (Exception e) {
+        } catch (UnsupportedOperationException e) {
+            // PCPM is not defined for this project. May be freeform project ?
+            logger.info("DB Driver registration not possible : " + project);            
+            registeredDBDriver = false;
+        }catch (Exception e) {
             registeredDBDriver = false;
             logger.log(Level.INFO, "Problem in registering db driver.", e);
         }
