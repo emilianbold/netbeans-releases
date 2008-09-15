@@ -1,0 +1,2 @@
+
+typedef struct MediaIdRec *MediaId;

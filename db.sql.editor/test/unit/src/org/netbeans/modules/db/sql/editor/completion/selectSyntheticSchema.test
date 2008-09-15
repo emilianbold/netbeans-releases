@@ -1,8 +1,0 @@
-# Ensures the synthetic schema is ignored.
-
-select c|
-
---
-<no-schema>
-  customer
-  invoice

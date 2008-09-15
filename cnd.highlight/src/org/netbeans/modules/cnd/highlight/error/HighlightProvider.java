@@ -152,7 +152,7 @@ public class HighlightProvider  {
             }
         };
         removeAnnotations(doc);
-        CsmErrorProvider.getDefault().getErrors(new RequestImpl(file,interrupter), response);
+        CsmErrorProvider.getDefault().getErrors(new RequestImpl(file, doc, interrupter), response);
         CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         
     }
@@ -176,10 +176,12 @@ public class HighlightProvider  {
 
         private final CsmFile file;
         private Interrupter interrupter;
-
-        public RequestImpl(CsmFile file, Interrupter interrupter) {
+        private final Document document;
+        
+        public RequestImpl(CsmFile file, Document doc, Interrupter interrupter) {
             this.file = file;
             this.interrupter = interrupter;
+            this.document = doc;
         }
 
         public CsmFile getFile() {
@@ -188,6 +190,10 @@ public class HighlightProvider  {
 
         public boolean isCancelled() {
             return interrupter.cancelled();
+        }
+
+        public Document getDocument() {
+            return document;
         }
     }
     

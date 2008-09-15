@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -51,8 +51,12 @@ import org.openide.filesystems.MIMEResolver;
  * declarative mime resolver.
  */
 public class CndMIMEResolver extends MIMEResolver {
+    
     public CndMIMEResolver() {
         //System.err.println("called CndMIMEResolver.CndMIMEResolver()");
+        super(MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE,
+                MIMENames.MAKEFILE_MIME_TYPE, MIMENames.SHELL_MIME_TYPE,
+                MIMENames.FORTRAN_MIME_TYPE, MIMENames.ASM_MIME_TYPE);
     }
     
     public static boolean isHeaderExtension(String ext){
@@ -67,7 +71,7 @@ public class CndMIMEResolver extends MIMEResolver {
         }
         return false;
     }
-    
+
     /**
      * Resolves FileObject and returns recognized MIME type
      * @param fo is FileObject which should be resolved

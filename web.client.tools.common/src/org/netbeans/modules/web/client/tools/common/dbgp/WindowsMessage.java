@@ -81,7 +81,7 @@ public class WindowsMessage extends Message {
         public String getURI() {
             String uri = getAttribute(FILE_URI);
             byte[] result = Message.getDecodedBytes(enc, uri);
-            return new String(result);  
+            return new String(result).trim();  
         }
 
         public List<Window> getChildren() {

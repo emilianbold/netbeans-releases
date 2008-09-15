@@ -198,6 +198,9 @@ final class Importer {
         
         // create ENV variables in build.properties
         eclProject.setupEnvironmentVariables(projectImportProblems);
+        
+        // remove invalid source roots:
+        eclProject.removeInvalidSourceRoots(projectImportProblems);
     }
         
     private Project importProjectStage1(EclipseProject eclProject, List<String> importProblems, List<String> projectImportProblems) throws IOException {
@@ -237,6 +240,18 @@ final class Importer {
                         eclProject.getWorkspace() != null ? eclProject.getWorkspace().getDirectory().getAbsolutePath() : null, 0, key);
                 EclipseProjectReference.write(p, ref);
                 ProjectManager.getDefault().saveProject(p);
+            }
+            if (p != null) {
+                // type: java / web
+                // naked or workspace
+                // imported to separate folder
+                // number of import issues
+                // TODO: add eg. eclipse version  (not available now)
+                Util.logUsage(Importer.class, "USG_PROJECT_ECLIPSE_IMPORT",  // NOI18N
+                        eclProject.getProjectTypeFactory().getProjectTypeName(),
+                        eclProject.getWorkspace() != null ? "true" : "false", // NOI18N
+                        destination == null ? "true" : "false", // NOI18N
+                        projectImportProblems.size());
             }
         }
         return p;

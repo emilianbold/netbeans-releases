@@ -213,7 +213,7 @@ public class RubyIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "6.103"; // NOI18N
+        return "6.104"; // NOI18N
     }
 
     public String getIndexerName() {

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mercurial.ui.wizards;
 
-import java.net.MalformedURLException;
 import java.awt.Component;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
@@ -65,11 +64,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
-import org.netbeans.modules.mercurial.ui.repository.HgURL;
 
 public class CloneRepositoryWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel, PropertyChangeListener {
     
@@ -309,6 +305,15 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
             } catch (URISyntaxException ex) {
                  invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
                                   "MSG_Progress_Clone_InvalidURL_Err");
+                return;
+            } catch (RuntimeException re) {
+                Throwable t = re.getCause();
+                if(t != null) {
+                    invalidMsg = t.getLocalizedMessage();
+                } else {
+                    invalidMsg = re.getLocalizedMessage();
+                }
+                Mercurial.LOG.log(Level.INFO, invalidMsg, re);
                 return;
             } finally {
                 if(isCanceled()) {

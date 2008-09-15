@@ -40,8 +40,6 @@
  */
 package org.netbeans.api.visual.widget;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -52,10 +50,12 @@ import org.netbeans.modules.visual.util.GeomUtil;
 import org.netbeans.modules.visual.widget.WidgetAccessibleContext;
 import org.openide.util.Lookup;
 
-import javax.accessibility.AccessibleContext;
 import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
 
@@ -152,7 +152,7 @@ public class Widget implements Accessible {
      * The resource table is created lazily.  A resource is only created when 
      * a property is set by using using resources.  
      */
-    private ResourceTable resoruceTable = null;
+    private ResourceTable resourceTable = null;
     
     /**
      * Creates a new widget which will be used in a specified scene.
@@ -557,8 +557,9 @@ public class Widget implements Accessible {
         // when the property changes.
         if(backgroundListener != null)
         {
-            getResourceTable().removePropertyChangeListener(backgroundProperty, 
-                                                            backgroundListener);
+            ResourceTable resourceTable = getResourceTable ();
+            if (resourceTable != null)
+                resourceTable.removePropertyChangeListener(backgroundProperty, backgroundListener);
             backgroundListener = null;
         }
         
@@ -567,7 +568,7 @@ public class Widget implements Accessible {
     
     /**
      * Sets the widget background color to be based on a resource property.
-     * @param foreground the foreground property name
+     * @param property the background property name
      */
     public final void setBackgroundFromResource (String property) {
         
@@ -606,9 +607,7 @@ public class Widget implements Accessible {
         repaint ();
     }
     
-    protected void notifyBackgroundChanged(Paint paint)
-    {
-        
+    protected void notifyBackgroundChanged(Paint paint) {
     }
     
     /**
@@ -625,34 +624,35 @@ public class Widget implements Accessible {
      */
     public final void setForeground (Color foreground) {
         this.foreground = foreground;
-                
+
         // Since we have a new color set manually, we no longer want to update
         // when the property changes.
-        if(foregroundListener != null)
-        {
-            getResourceTable().removePropertyChangeListener(foregroundProperty, 
-                                                            foregroundListener);
+        if (foregroundListener != null) {
+            ResourceTable resourceTable = getResourceTable();
+            if (resourceTable != null) {
+                resourceTable.removePropertyChangeListener(foregroundProperty, foregroundListener);
+            }
             foregroundListener = null;
         }
-        repaint ();
+        repaint();
     }
-    
+
     /**
      * Sets the widget foreground color to be based on a resource property.
-     * @param foreground the foreground property name
+     * @param property the foreground property name
      */
     public final void setForegroundFromResource (String property) {
-        
+
         String oldPropertyName = foregroundProperty;
-        
+
         foregroundProperty = property;
-        
+
         ResourceTable table = getResourceTable();
         if(table != null)
         {
             if((oldPropertyName != null) && (oldPropertyName.length() > 0))
             {
-                // Maybe the property name has changed.  Therefore, remove the old 
+                // Maybe the property name has changed.  Therefore, remove the old
                 // listener.
                 table.removePropertyChangeListener(oldPropertyName, foregroundListener);
             }
@@ -682,9 +682,7 @@ public class Widget implements Accessible {
         repaint ();
     }
     
-    protected void notifyForegroundChanged(Color newColor)
-    {
-        
+    protected void notifyForegroundChanged(Color newColor) {
     }
     
     /**
@@ -709,24 +707,25 @@ public class Widget implements Accessible {
      */
     public final void setFont (Font font) {
         this.font = font;
-                
+
         // Since we have a new color set manually, we no longer want to update
         // when the property changes.
-        if(fontListener != null)
-        {
-            getResourceTable().removePropertyChangeListener(fontProperties, 
-                                                            fontListener);
+        if (fontListener != null) {
+            ResourceTable resourceTable = getResourceTable();
+            if (resourceTable != null) {
+                resourceTable.removePropertyChangeListener(fontProperties, fontListener);
+            }
             fontListener = null;
         }
-        
+
         // Notify others about the change.
         notifyFontChanged(font);
-        
-        revalidate ();
+
+        revalidate();
     }
     /**
      * Sets the widget background color to be based on a resource property.
-     * @param foreground the foreground property name
+     * @param property the foreground property name
      */
     public final void setFontFromResource (String property) 
     {
@@ -795,7 +794,7 @@ public class Widget implements Accessible {
         }
         else
         {
-            ResourceTable table = resoruceTable;
+            ResourceTable table = resourceTable;
             if(table == null)
             {
                 table = parent.getResourceTable();
@@ -832,69 +831,7 @@ public class Widget implements Accessible {
         revalidate ();
     }
     
-//    protected final void intializeFontProperty()
-//    {
-//        if(parentWidget != null)
-//        {
-//            Font retVal = getFont();
-//
-//            ResourceTable table = getResourceTable();
-//
-//            if((fontProperties != null) && (table != null))
-//            {
-//                String pattern = "inherited {0,choice," + Font.PLAIN + "#plain" +
-//                                  "|" + Font.BOLD + "#bold" + 
-//                                  "|" + Font.ITALIC + "#italic" +
-//                                  "|" + (Font.BOLD | Font.ITALIC) + "#bolditalic} {1,number,integer}";
-//                MessageFormat format = new MessageFormat(pattern);
-//
-//
-//                for(String property : fontProperties)
-//                {
-//                    Object value = table.getProperty(property);
-//                    if(value instanceof Font)
-//                    {
-//                        retVal = (Font)value;
-//                    }
-//                    else if (value instanceof String)
-//                    {
-//                        String strValue = (String) value;
-//                        if((strValue.startsWith("inherited") == true) && (retVal != null))
-//                        {
-//                            retVal = parentWidget.getFont();
-//                            
-//                            try
-//                            {
-//                                Object[] params = format.parse((String) strValue);
-//                                if((params != null) && (params.length == 2))
-//                                {
-//                                    Double style = (Double)params[0];
-//                                    Long size = (Long)params[1];
-//                                    retVal = retVal.deriveFont(style.intValue(), retVal.getSize() + size.floatValue());
-//                                }
-//                            }
-//                            catch (ParseException ex)
-//                            {
-//                                Exceptions.printStackTrace(ex);
-//                            }
-//                        }
-//                        else
-//                        {
-//                            retVal = Font.decode(strValue);
-//                        }
-//                    }
-//
-//                }
-//                
-//                font = retVal;
-//            }
-//        }
-//        
-//    }
-    
-    protected void notifyFontChanged(Font font)
-    {
-        
+    protected void notifyFontChanged(Font font) {
     }
     
     /**
@@ -1559,33 +1496,28 @@ public class Widget implements Accessible {
      * @return The resource table.
      */
     public ResourceTable getResourceTable() {
-        
-        ResourceTable retVal = resoruceTable;
-        
-        if((retVal == null) && (getParentWidget() != null))
-        {
+
+        ResourceTable retVal = resourceTable;
+
+        if ((retVal == null) && (getParentWidget() != null)) {
             retVal = getParentWidget().getResourceTable();
         }
-        
+
         return retVal;
     }
 
-    private ResourceTable connectResourceTable()
-    {
-        if((resoruceTable != null) && (getParentWidget() != null))
-        {
+    private ResourceTable connectResourceTable() {
+        if ((resourceTable != null) && (getParentWidget() != null)) {
             ResourceTable parentTable = getParentWidget().getResourceTable();
-            resoruceTable.setParentTable(parentTable);
+            resourceTable.setParentTable(parentTable);
         }
-        
+
         return getResourceTable();
     }
     
-    private void disconnectResourceTable()
-    {
-        if(resoruceTable != null)
-        {
-            resoruceTable.removeParent();
+    private void disconnectResourceTable() {
+        if (resourceTable != null) {
+            resourceTable.removeParent();
         }
     }
     
@@ -1595,7 +1527,7 @@ public class Widget implements Accessible {
      * @param table The widgets resource table.
      */
     public void setResourceTable(ResourceTable table) {
-        resoruceTable = table;
+        resourceTable = table;
     }
     
     /**

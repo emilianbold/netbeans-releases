@@ -8,7 +8,7 @@
 <%-- completion for JSP elements --%>
 <%--CC
 <f:a|
-< f:attribute />
+< f:attribute / >
 <f:attribute
 --%>
 

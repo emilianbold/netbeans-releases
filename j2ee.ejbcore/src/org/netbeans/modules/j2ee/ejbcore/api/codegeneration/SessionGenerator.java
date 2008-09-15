@@ -48,6 +48,7 @@ import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -61,6 +62,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Generator of Session EJBs for EJB 2.1 and 3.0
@@ -219,6 +221,10 @@ public final class SessionGenerator {
     private void generateEJB21Xml() throws IOException {
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(pkg);
         org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ejbModule.getDeploymentDescriptor()); // EJB 2.1
+        if (ejbJar == null) {
+            Logger.getLogger(SessionGenerator.class.getName()).warning("EjbJar not found for " + FileUtil.getFileDisplayName(ejbModule.getDeploymentDescriptor()));
+            return;
+        }
         EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
         Session session = null;
         if (beans == null) {

@@ -161,7 +161,11 @@ public class TaskManagerImpl extends TaskManager {
                     listenToFileSystemChanges( scope, true );
 
                     startWorker();
-                    worker.scan( scope.iterator(), filter );
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            worker.scan( scope.iterator(), filter );
+                        }
+                    });
                 }
             }
         }

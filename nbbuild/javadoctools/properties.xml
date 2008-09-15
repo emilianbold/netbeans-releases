@@ -169,3 +169,6 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-xml-core" value="${javadoc.web.root}/org-netbeans-modules-xml-core"/>
 <property name="javadoc.docs.org-netbeans-modules-websvc-wsstackapi" value="${javadoc.web.root}/org-netbeans-modules-websvc-wsstackapi"/>
 <property name="javadoc.docs.org-netbeans-swing-outline" value="${javadoc.web.root}/org-netbeans-swing-outline"/>
+<property name="javadoc.docs.org-netbeans-modules-maven" value="${javadoc.web.root}/org-netbeans-modules-maven"/>
+<property name="javadoc.docs.org-netbeans-modules-maven-indexer" value="${javadoc.web.root}/org-netbeans-modules-maven-indexer"/>
+<property name="javadoc.docs.org-netbeans-modules-maven-embedder" value="${javadoc.web.root}/org-netbeans-modules-maven-embedder"/>

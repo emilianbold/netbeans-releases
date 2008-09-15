@@ -65,20 +65,28 @@ import org.openide.util.Utilities;
 public abstract class SharedRubyProjectProperties {
     
     public static final String MAIN_CLASS = "main.file"; // NOI18N
-    public static final String RUBY_OPTIONS = "run.jvmargs"; // NOI18N
+    public static final String RUBY_OPTIONS = "ruby.options"; // NOI18N
     public static final String DIST_DIR = "dist.dir"; // NOI18N
     public static final String BUILD_DIR = "build.dir"; // NOI18N
     public static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
     public static final String JAVAC_CLASSPATH = "javac.classpath"; // NOI18N
     public static final String RAKE_ARGS = "rake.args"; // NOI18N
-    public static final String JRUBY_PROPS = "jruby.props"; // NOI18N
+    public static final String JVM_ARGS = "jvm.args"; // NOI18N
     public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
+
+    /**
+     * Support for odd property name ('run.jvmargs'). Will be dropped in the
+     * future
+     */
+    public static final String RUBY_OPTIONS_DEPRECATED = "run.jvmargs"; // NOI18N
+
     /**
      * The key for the names of the rake tasks that invoke RSpec tests and should be
      * run using the UI test runner.
      */
     public static final String SPEC_TASKS = "spec.tasks"; //NOI18N
+
     /**
      * The key for the names of the rake tasks that invoke Test/Unit tests and should be 
      * run using the UI test runner.
@@ -173,6 +181,22 @@ public abstract class SharedRubyProjectProperties {
             platform = RubyPlatform.platformFor(project);
         }
         return platform;
+    }
+
+    public static String getRubyOptions(final RubyBaseProject project) {
+        String options = project.evaluator().getProperty(SharedRubyProjectProperties.RUBY_OPTIONS);
+
+        if (isEmpty(options)) {
+            options = null;
+        }
+
+        if (options == null) { // support for depreacted 'run.jvmargs' key
+            options = project.evaluator().getProperty(SharedRubyProjectProperties.RUBY_OPTIONS_DEPRECATED);
+            if (isEmpty(options)) {
+                options = null;
+            }
+        }
+        return options;
     }
 
     public void setPlatform(final RubyPlatform platform) {
@@ -408,5 +432,10 @@ public abstract class SharedRubyProjectProperties {
         @SuppressWarnings("unchecked")
         List<Item> items = (List<Item>) Collections.list(model.elements());
         return items;
+    }
+
+    /** Tests whether the given string is non-null and empty. */
+    private static boolean isEmpty(final String options) {
+        return options != null && options.trim().length() == 0;
     }
 }

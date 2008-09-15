@@ -27,7 +27,7 @@
  */
 package org.netbeans.api.db.sql.support;
 
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  * @author <a href="mailto:david@vancouvering.com">David Van Couvering</a>
@@ -45,7 +45,7 @@ public class QuoterTest extends DDLTestBase {
     
     public void setUp() throws Exception {
         super.setUp();
-        quoter = SQLIdentifiers.createQuoter(conn.getMetaData());        
+        quoter = SQLIdentifiers.createQuoter(getConnection().getMetaData());        
     }
         
     public void testNoQuoting() {
@@ -158,11 +158,12 @@ public class QuoterTest extends DDLTestBase {
     }
 
     public void testUnquote() {
+        String quoteString = quoter.getQuoteString();
         assertEquals("", quoter.unquote(""));
-        assertEquals("", quoter.unquote("\"\""));
+        assertEquals("", quoter.unquote(quoteString + quoteString));
         assertEquals("id", quoter.unquote("id"));
-        assertEquals("id", quoter.unquote("\"id"));
-        assertEquals("id", quoter.unquote("id\""));
-        assertEquals("id", quoter.unquote("\"id"));
+        assertEquals("id", quoter.unquote(quoteString + "id"));
+        assertEquals("id", quoter.unquote("id" + quoteString));
+        assertEquals("id", quoter.unquote(quoteString + "id" + quoteString));
     }
 }

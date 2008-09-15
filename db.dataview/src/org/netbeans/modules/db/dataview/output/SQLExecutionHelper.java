@@ -91,6 +91,12 @@ class SQLExecutionHelper {
         Statement stmt = null;
         try {
             Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
+            if(conn == null) {
+                String msg = NbBundle.getMessage(SQLExecutionHelper.class,"MSG_connection_failure", dv.getDatabaseConnection());
+                dv.setErrorStatusText(new DBException(msg));
+                return;
+            }
+
             DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
             dv.setLimitSupported(dbMeta.supportsLimit());
             String sql = dv.getSQLString();

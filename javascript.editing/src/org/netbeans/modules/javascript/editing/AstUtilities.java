@@ -128,9 +128,7 @@ public final class AstUtilities {
             return false;
         }
         VariableVisitor v = rpr.getVariableVisitor();
-        Map<String,List<Node>> localVars = v.getLocalVars(node);
-
-        List<Node> nodes = localVars.get(name);
+        List<Node> nodes = v.getVarOccurrences(node);
         if (nodes == null) {
             return true;
         } else {

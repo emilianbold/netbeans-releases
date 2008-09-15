@@ -1,7 +1,7 @@
 | Debug |                   D (mnemonics)
 =========
 Debug Project               D   - Debug Project (project-name) - Debug Main Project
-Debug File                  l
+Debug File                  g
 Debug Test for File         r
 Attach Debugger...          A
 Finish Debugger Session     F
@@ -12,12 +12,13 @@ Continue                    C
 Step Over                   v
 Step Over Expression        E
 Step Into                   I
-Step Into Next Method       h
+Step Into Next Method       N
 Step Out                    O
 Run to Cursor               u
 =========================
-Apply Code Changes          g
+Apply Code Changes          y
 =========================
+Set Current Thread...       h
 Stack                   >   S
 =========================
 Toggle Line Breakpoint      T

@@ -149,7 +149,6 @@ import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -255,6 +254,7 @@ public final class JavaSource {
     private static final int RESCHEDULE_FINISHED_TASKS = CHANGE_EXPECTED<<1;
     private static final int UPDATE_INDEX = RESCHEDULE_FINISHED_TASKS<<1;
     private static final int IS_CLASS_FILE = UPDATE_INDEX<<1;
+    private static final int FIXED_CLASSPATH_INFO = IS_CLASS_FILE<<1;
     
     private static final Pattern excludedTasks;
     private static final Pattern includedTasks;
@@ -363,7 +363,7 @@ public final class JavaSource {
         if (files == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
-        return create(cpInfo, null, files);
+        return create(cpInfo, null, files, true);
     }
     
     
@@ -379,12 +379,13 @@ public final class JavaSource {
         if (files == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
-        return create(cpInfo, null, Arrays.asList(files));
+        return create(cpInfo, null, Arrays.asList(files), true);
     }
     
-    private static JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding, final Collection<? extends FileObject> files) throws IllegalArgumentException {
+    private static JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding,
+            final Collection<? extends FileObject> files, final boolean fixedCpInfo) throws IllegalArgumentException {
         try {
-            return new JavaSource(cpInfo, binding, files);
+            return new JavaSource(cpInfo, binding, files, fixedCpInfo);
         } catch (DataObjectNotFoundException donf) {
             Logger.getLogger("global").warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(donf.getFileObject()));     //NOI18N
         } catch (IOException ex) {            
@@ -474,7 +475,7 @@ public final class JavaSource {
                 if (binding == null)
                     return null;
             }
-            js = create(ClasspathInfo.create(fileObject), binding, Collections.singletonList(fileObject));
+            js = create(ClasspathInfo.create(fileObject), binding, Collections.singletonList(fileObject), false);
             }
             file2JavaSource.put(fileObject, new WeakReference<JavaSource>(js));
         }
@@ -513,7 +514,8 @@ public final class JavaSource {
      * @param files to create JavaSource for
      * @param cpInfo classpath info
      */
-    private JavaSource (ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IOException {
+    private JavaSource (ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files,
+            final boolean fixedCpInfo) throws IOException {
         this.reparseDelay = REPARSE_DELAY;
         this.files = Collections.unmodifiableList(new ArrayList<FileObject>(files));   //Create a defensive copy, prevent modification
         this.fileChangeListener = new FileChangeListenerImpl ();
@@ -558,6 +560,9 @@ public final class JavaSource {
             this.rootFo = null;
         }
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
+        if (fixedCpInfo) {
+            flags |=  FIXED_CLASSPATH_INFO;
+        }
     }
     
     private JavaSource (final ClasspathInfo info, final FileObject classFileObject, final FileObject root) throws IOException {
@@ -572,7 +577,7 @@ public final class JavaSource {
         this.classpathInfo =  info;
         this.rootFo = root;
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
-        this.flags|= IS_CLASS_FILE;
+        this.flags|= (IS_CLASS_FILE|FIXED_CLASSPATH_INFO);
         this.supportsReparse = false;
         this.binding = new PositionConverter(classFileObject, null);
     }
@@ -1050,15 +1055,22 @@ public final class JavaSource {
             }
         }
         synchronized (INTERNAL_LOCK) {
-            toRemove.add (task);
+            boolean found = false;
             Collection<Request> rqs = finishedRequests.get(this);
             if (rqs != null) {
                 for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
                     Request rq = it.next();
                     if (rq.task == task) {
                         it.remove();
+                        found = true;
+//Some tasks are duplicated (racecondition?), remove even them.
+//todo: Prevent duplication of tasks
+//                        break;
                     }
                 }
+            }
+            if (!found) {
+                toRemove.add (task);
             }
         }
     }
@@ -1182,6 +1194,15 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
+
+        //for dev builds, fill stack trace for CompletionFailures (see #146026):
+        boolean assertsEnabled = false;
+
+        assert assertsEnabled = true;
+
+        if (assertsEnabled) {
+            options.add("-XDide");   // NOI18N
+        }
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {            
@@ -1879,6 +1900,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     }
                     if (js != null) {
                         js.k24 = false;
+                        Request _request = request; 
+                        request = null;
+                        currentRequest.cancelCompleted(_request);
                     }                   
                 }
                 lastEditorRef = new WeakReference<JTextComponent>(editor);
@@ -2037,7 +2061,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (js.files.size() == 1) {
             fo = js.files.iterator().next();
         }
-        if (fo != null) {
+        if ((js.flags & FIXED_CLASSPATH_INFO) == 0 && fo != null) {
             final ClassPath scp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             if (scp != js.classpathInfo.getClassPath(PathKind.SOURCE)) {
                 //Revalidate
@@ -2182,7 +2206,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
 
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
-            return JavaSource.create(cpInfo, binding, files);
+            return JavaSource.create(cpInfo, binding, files, true);
         }
 
         public PositionConverter create(FileObject fo, int offset, int length, JTextComponent component) {
@@ -2970,29 +2994,28 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     static final class DocPositionRegion extends PositionRegion {
         
-        private final Document doc;
+        private final Reference<Document> doc;
         
         public DocPositionRegion (final Document doc, final int startPos, final int endPos) throws BadLocationException {
             super (doc,startPos,endPos);
             assert doc != null;
-            this.doc = doc;
-        }
-        
-        public Document getDocument () {
-            return this.doc;
-        }
+            this.doc = new WeakReference<Document>(doc);
+        }                
         
         public String getText () {
             final String[] result = new String[1];
-            this.doc.render(new Runnable() {
-                public void run () {
+            final Document _doc = doc.get();
+            if (_doc != null) {
+                _doc.render(new Runnable() {
+                    public void run () {
                     try {
-                        result[0] = doc.getText(getStartOffset(), getLength());
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                            result[0] = _doc.getText(getStartOffset(), getLength());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
-                }
-            });
+                });
+            }
             return result[0];
         }
         

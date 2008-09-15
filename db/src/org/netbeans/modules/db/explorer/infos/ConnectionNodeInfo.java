@@ -186,7 +186,9 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     private void update(Connection conn) throws DatabaseException {
         if ( conn == null ) {
             // Not connected, so no children
-            setChildren(new Vector());
+            // I don't believe this is necessary.  refreshChildren()
+            // should already be taking care of this
+            //setChildren(new Vector());
         } else {
             setProperties();
         }

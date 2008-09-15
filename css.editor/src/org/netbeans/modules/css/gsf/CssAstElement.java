@@ -38,11 +38,8 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
  *
@@ -50,16 +47,14 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  */
 public class CssAstElement extends CSSElement {
 
-    private CompilationInfo ci;
     private SimpleNode node;
 
-    public static CssAstElement getElement(CompilationInfo ci, SimpleNode node) {
-        return new CssAstElement(ci, node);
+    public static CssAstElement createElement(SimpleNode node) {
+        return new CssAstElement(node);
     }
     
-    CssAstElement(CompilationInfo ci, SimpleNode node) {
+    CssAstElement(SimpleNode node) {
         super(node.image());
-        this.ci = ci;
         this.node = node;
     }
 
@@ -67,12 +62,4 @@ public class CssAstElement extends CSSElement {
         return node;
     }
 
-    public CompilationInfo compilationInfo() {
-        return ci;
-    }
-
-    public TranslatedSource translatedSource() {
-        ParserResult presult = ci.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
-        return presult.getTranslatedSource();
-    }
 }

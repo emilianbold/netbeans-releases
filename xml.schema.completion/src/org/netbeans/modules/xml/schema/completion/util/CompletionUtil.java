@@ -559,6 +559,10 @@ public class CompletionUtil {
                     String value = t.text().toString();
                     if(value.length() >= 2 && (value.startsWith("'") || value.startsWith("\"")))
                         value = value.substring(1, value.length()-1);
+                    if(XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(value)) {
+                        lastNS = null;
+                        continue;
+                    }
                     map.put(value, CompletionUtil.getPrefixFromXMLNS(lastNS));
                     lastNS = null;
                 }

@@ -533,6 +533,8 @@ public class MenuEditLayer extends JPanel {
     }
     
     private void unconfigureMenu(final JMenu menu) {
+        if (hackedPopupFactory == null) return; // Issue 145981
+
         // restore the UI
         menu.getPopupMenu().setUI(menuPopupUIMap.get(menu));
         

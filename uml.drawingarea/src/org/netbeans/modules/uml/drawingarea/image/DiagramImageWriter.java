@@ -115,7 +115,7 @@ public class DiagramImageWriter
         // unselect widgest so that the exported image does not have resize border
         HashSet selected = new HashSet();
         selected.addAll(scene.getSelectedObjects());
-        scene.setSelectedObjects(Collections.emptySet());
+        scene.userSelectionSuggested(Collections.emptySet(), false);
         
         double scale = scene.getZoomFactor();
   
@@ -208,7 +208,7 @@ public class DiagramImageWriter
         }
               
         // now restore the selected objects 
-        scene.setSelectedObjects(selected);
+        scene.userSelectionSuggested(selected, false);
         
         try
         {

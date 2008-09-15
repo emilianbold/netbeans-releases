@@ -181,6 +181,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
+                <friend>org.netbeans.modules.j2ee.websphere6</friend>
                 <friend>org.netbeans.modules.mobility.svgcore</friend>
                 <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>

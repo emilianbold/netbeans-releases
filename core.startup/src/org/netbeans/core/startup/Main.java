@@ -240,10 +240,6 @@ public final class Main extends Object {
 
 
 // 5. initialize GUI 
-    StartLog.logStart ("XML Factories"); //NOI18N
-    
-    org.netbeans.core.startup.SAXFactoryImpl.install();
-    org.netbeans.core.startup.DOMFactoryImpl.install();
     //Bugfix #35919: Log message to console when initialization of local
     //graphics environment fails eg. due to incorrect value of $DISPLAY
     //on X Windows (Linux, Solaris). In such case IDE will not start
@@ -283,6 +279,7 @@ public final class Main extends Object {
 	    // -----------------------------------------------------------------------------------------------------
 	    // License check
             if (!handleLicenseCheck()) {
+                deleteRec(new File(CLIOptions.getUserDir())); // #145936
                 TopLogging.exit(0);
             }
 	    // -----------------------------------------------------------------------------------------------------
@@ -338,6 +335,20 @@ public final class Main extends Object {
     // start to store all caches after 15s
     Stamps.getModulesJARs().flush(15000);
   }
+    private static void deleteRec(File f) throws IOException {
+        if (f.isDirectory()) {
+            File[] kids = f.listFiles();
+            if (kids == null) {
+                throw new IOException("Could not list: " + f);
+            }
+            for (File kid : kids) {
+                deleteRec(kid);
+            }
+        }
+        if (!f.delete()) {
+            throw new IOException("Could not delete: " + f);
+        }
+    }
   
     /** Loads a class from available class loaders. */
     private static final Class getKlass(String cls) {

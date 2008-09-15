@@ -51,6 +51,7 @@ import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
@@ -139,7 +140,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(project.getWebRootDirectory()), indexFile, args);
+        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(ProjectPropertiesSupport.getWebRootDirectory(project)), indexFile, args);
         category.setErrorMessage(err);
         category.setValid(err == null);
     }
@@ -293,7 +294,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseSourceFile(project, indexFileTextField);
+        Utils.browseFolderFile(ProjectPropertiesSupport.getWebRootDirectory(project), indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

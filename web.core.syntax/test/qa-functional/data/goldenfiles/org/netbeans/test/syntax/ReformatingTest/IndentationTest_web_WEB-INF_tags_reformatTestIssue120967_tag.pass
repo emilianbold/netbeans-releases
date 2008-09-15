@@ -1,17 +1,17 @@
 <%  if (true) {
-                switch (age) {
-                    case 10:
+            switch (age) {
+                case 10:
 
-                        a = b;
-                }
+                    a = b;
             }
+        }
 %>
 
 
 <%
 
-            if (true) {
-            }
+        if (true) {
+        }
 
 %>
 <font size="4"/>
@@ -19,21 +19,21 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>JSP Page</title>
     <%
-            if (true) {
-                switch (age) {
+        if (true) {
+            switch (age) {
 
-                    case 10:
-                        dsds;
-                    case 12:
-                        kfkfdlf;
-                    case 22:
-                        fdfjd;
+                case 10:
+                    dsds;
+                case 12:
+                    kfkfdlf;
+                case 22:
+                    fdfjd;
 
-                        a = b;
-
-                }
+                    a = b;
 
             }
+
+        }
     %>           
     
     
