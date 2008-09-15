@@ -89,13 +89,13 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.openide.util.Exceptions;
 
 /**
  * CsmFile implementations
@@ -106,8 +106,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;    
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
-    // the next 3 flags make sense only in the casew reportParse is true
-    private static final String[] logMacros;
+    // the next flag(s) make sense only in the casew reportParse is true
     private static final boolean logState = Boolean.getBoolean("parser.log.state");
 //    private static final boolean logEmptyTokenStream = Boolean.getBoolean("parser.log.empty");
     
@@ -123,18 +122,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private FileBuffer fileBuffer;
     
-    static {
-         String text = System.getProperty("parser.log.macro");
-         if (text != null && text.length() > 0) {
-             List<String> l = new ArrayList<String>();
-             for (StringTokenizer stringTokenizer = new StringTokenizer(text, ","); stringTokenizer.hasMoreTokens();) {
-                 l.add(stringTokenizer.nextToken());
-             }
-             logMacros = l.toArray(new String[l.size()]);
-         } else {
-             logMacros = null;
-         }
-    }
 
     /**
      * DUMMY_STATE and DUMMY_HANDLERS are used when we need to ensure that the file will be arsed.
@@ -611,17 +598,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private void logParse(String title, APTPreprocHandler preprocHandler) {
         if( reportParse || TraceFlags.DEBUG ) {
-            APTPreprocHandler.State preprocState = preprocHandler.getState();
-            StringBuilder additionalText = new StringBuilder();
-            if (logMacros != null && logMacros.length > 0) {
-                for (int i = 0; i < logMacros.length; i++) {
-                    additionalText.append(String.format(" #defined(%s)=%b",  //NOI18N
-                            logMacros[i], preprocHandler.getMacroMap().isDefined(logMacros[i])));
-                }
-            }
-            System.err.printf("# %s %s (valid=%b, compile-context=%b%s) (Thread=%s)\n", //NOI18N
+            System.err.printf("# %s %s (%s %s) (Thread=%s)\n", //NOI18N
                     title, fileBuffer.getFile().getPath(), 
-                    preprocState.isValid(), preprocState.isCompileContext(), additionalText,
+                    TraceUtils.getPreprocStateString(preprocHandler.getState()),
+                    TraceUtils.getMacroString(preprocHandler, TraceFlags.logMacros),
                     Thread.currentThread().getName());
             if (logState) {
                 System.err.printf("%s\n\n", preprocHandler.getState()); //NOI18N

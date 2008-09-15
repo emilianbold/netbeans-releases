@@ -162,8 +162,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             if (descriptor.getInitialArgs() != null) {
                 additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
             }
-            if (descriptor.getJVMArguments() != null) {
-                additionalOptions.addAll(Arrays.asList(descriptor.getJVMArguments()));
+            if (jrubySet && descriptor.getJVMArguments() != null) {
+                for (String jvmArg : descriptor.getJVMArguments()) {
+                    additionalOptions.add("-J" + jvmArg); // NOI18N
+                }
             }
             if (!additionalOptions.isEmpty()) {
                 debugDesc.setAdditionalOptions(additionalOptions);
@@ -243,6 +245,12 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         }
         
         if (fastDebuggerRequired) { // NOI18N
+            if (jrubySet) {
+                Util.showMessage(NbBundle.getMessage(RubyDebugger.class,
+                        "RubyDebugger.instructionsToInstallJRubyDebugger", // NOI18N
+                        platform.getFastDebuggerProblemsInHTML()));
+                return false;
+            }
             FastDebugInstallationResult result = Util.ensureRubyDebuggerIsPresent(
                     platform, true, "RubyDebugger.wrong.fast.debugger.required"); // NOI18N
             if (result != INSTALLED) {
