@@ -78,6 +78,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.Utilities;
@@ -468,12 +469,13 @@ public class AstUtilities {
         // ^Map bar = ...
         // find first token that is identifier and that matches given name
         TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
-        if (ts.token().id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(ts.token().text(), fieldName)) {
+        Token<? extends GroovyTokenId> token = ts.token();
+        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
             int offset = ts.offset();
             return new OffsetRange(offset, offset + fieldName.length());
         }
         while (ts.moveNext()) {
-            if (ts.token().id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(ts.token().text(), fieldName)) {
+            if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
                 int offset = ts.offset();
                 return new OffsetRange(offset, offset + fieldName.length());
             }
