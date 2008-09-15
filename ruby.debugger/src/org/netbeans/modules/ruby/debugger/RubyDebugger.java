@@ -248,6 +248,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             if (rDebugPath == null) {
                 Util.showMessage(NbBundle.getMessage(RubyDebugger.class,
                         "RubyDebugger.wrong.rdebug-ide", // NOI18N
+                        platform.getInfo().getLongDescription(),
                         platform.getInterpreter(),
                         Util.rdebugPattern()));
                 return false;
