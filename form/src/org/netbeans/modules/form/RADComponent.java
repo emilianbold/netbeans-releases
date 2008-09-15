@@ -256,10 +256,11 @@ public class RADComponent {
     void setInModel(boolean in) {
         if (inModel != in) {
             inModel = in;
-            formModel.updateMapping(this, in);
             if (in) {
                 createCodeExpression();
+                formModel.updateMapping(this, true);
             } else {
+                formModel.updateMapping(this, false);
                 releaseCodeExpression();
                 setNodeReference(null);
             }
