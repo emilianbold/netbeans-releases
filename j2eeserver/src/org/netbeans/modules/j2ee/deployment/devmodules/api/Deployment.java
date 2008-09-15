@@ -186,6 +186,16 @@ public final class Deployment {
         }
     }
 
+    /**
+     * Undeploys the project (if it is deployed and available).
+     *
+     * @param jmp provider representing the project
+     * @param startServer if <code>true</code> server may be started while
+     *            trying to determine whether the project is deployed
+     * @param logger logger for undeploy related events
+     * @throws org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.DeploymentException
+     * @since 1.52
+     */
     public void undeploy(J2eeModuleProvider jmp, boolean startServer, Logger logger) throws DeploymentException {
         DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(jmp, null);
         final J2eeModule module = deploymentTarget.getModule();
