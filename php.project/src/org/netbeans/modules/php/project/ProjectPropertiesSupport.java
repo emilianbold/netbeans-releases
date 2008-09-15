@@ -108,12 +108,7 @@ public final class ProjectPropertiesSupport {
     }
 
     public static boolean isCopySourcesEnabled(PhpProject project) {
-        boolean retval = false;
-        String copySrcFiles = project.getEvaluator().getProperty(PhpProjectProperties.COPY_SRC_FILES);
-        if (copySrcFiles != null && copySrcFiles.trim().length() > 0) {
-            retval = Boolean.parseBoolean(copySrcFiles);
-        }
-        return retval;
+        return getBoolean(project, PhpProjectProperties.COPY_SRC_FILES, false);
     }
 
     /**
@@ -133,6 +128,14 @@ public final class ProjectPropertiesSupport {
 
     public static Charset getIncludePath(PhpProject project) {
         throw new UnsupportedOperationException();
+    }
+
+    public static boolean areShortTagsEnabled(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.SHORT_TAGS, org.netbeans.modules.php.project.api.PhpOptions.SHORT_TAGS_ENABLED);
+    }
+
+    public static boolean areAspTagsEnabled(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.ASP_TAGS, org.netbeans.modules.php.project.api.PhpOptions.ASP_TAGS_ENABLED);
     }
 
     /**
@@ -213,5 +216,14 @@ public final class ProjectPropertiesSupport {
             // ignored
         }
         return uploadFiles;
+    }
+
+    private static boolean getBoolean(PhpProject project, String property, boolean defaultValue) {
+        boolean retval = defaultValue;
+        String boolValue = project.getEvaluator().getProperty(property);
+        if (boolValue != null && boolValue.trim().length() > 0) {
+            retval = Boolean.parseBoolean(boolValue);
+        }
+        return retval;
     }
 }
