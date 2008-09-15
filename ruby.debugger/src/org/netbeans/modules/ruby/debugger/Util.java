@@ -50,6 +50,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -186,7 +187,7 @@ public final class Util {
             if (!strict) {
                 DebuggerPreferences.getInstance().setDoNotAskAgain(rubyDebugPanel.isDoNotAskAgain());
             }
-            if (button == cancelButton) {
+            if (button == cancelButton || button == NotifyDescriptor.CLOSED_OPTION) {
                 return CANCELLED;
             }
             // else 'Use Slow' button
