@@ -290,7 +290,7 @@ public final class RubyProjectGenerator {
         helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         Util.logUsage(RubyProjectGenerator.class, "USG_PROJECT_CREATE_RUBY", // NOI18N
                 platform.getInfo().getKind(),
-                platform.getInfo().getVersion(),
+                platform.getInfo().getPlatformVersion(),
                 platform.getInfo().getGemVersion());
 
         return helper;

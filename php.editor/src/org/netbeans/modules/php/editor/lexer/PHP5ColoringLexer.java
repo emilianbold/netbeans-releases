@@ -1379,7 +1379,7 @@ public class PHP5ColoringLexer {
     	initialize(parameters[6]);
     }
     */
-        public PHP5ColoringLexer(LexerRestartInfo info, boolean asp_tags) {
+        public PHP5ColoringLexer(LexerRestartInfo info, boolean asp_tags, boolean inPHP) {
             this.input = info.input();
             this.asp_tags = asp_tags;
             
@@ -1388,7 +1388,12 @@ public class PHP5ColoringLexer {
                 setState((LexerState)info.state());
             } else {
                 //initial state
-                zzState = zzLexicalState = YYINITIAL;
+                if (inPHP) {
+                    zzState = zzLexicalState = ST_PHP_IN_SCRIPTING;
+                }
+                else {
+                    zzState = zzLexicalState = YYINITIAL;
+                }
                 stack.clear();
             }
             

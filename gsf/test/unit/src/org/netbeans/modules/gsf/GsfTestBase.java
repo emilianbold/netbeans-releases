@@ -277,9 +277,24 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
 
-    public BaseDocument getDocument(String s, String mimeType, Language language) {
+    public BaseDocument getDocument(String s, final String mimeType, final Language language) {
         try {
-            BaseDocument doc = new BaseDocument(true, mimeType);
+            BaseDocument doc = new BaseDocument(true, mimeType) {
+                @Override
+                public boolean isIdentifierPart(char ch) {
+                    if (mimeType != null) {
+                        org.netbeans.modules.gsf.Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                        if (l != null) {
+                            GsfLanguage gsfLanguage = l.getGsfLanguage();
+                            if (gsfLanguage != null) {
+                                return gsfLanguage.isIdentifierChar(ch);
+                            }
+                        }
+                    }
+
+                    return super.isIdentifierPart(ch);
+                }
+            };
 
             //doc.putProperty("mimeType", mimeType);
             doc.putProperty(org.netbeans.api.lexer.Language.class, language);

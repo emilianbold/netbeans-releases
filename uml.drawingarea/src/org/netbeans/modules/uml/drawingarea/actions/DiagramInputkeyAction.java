@@ -116,8 +116,8 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
             Set<Object> selectedObjs = (Set<Object>) scene.getSelectedObjects();
             if ( selectedObjs != null && selectedObjs.size() > 0)
             {   
-                scene.userSelectionSuggested (Collections.EMPTY_SET, false);
                 scene.setFocusedObject(null);
+                scene.userSelectionSuggested (Collections.EMPTY_SET, false);
                 scene.clearLockedSelected();
                 
                 // cancel context palette
@@ -265,11 +265,12 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                 // diagram top component to be in focus and active
                 if ( addedPEs != null && addedPEs.size() > 0) 
                 {
-                    scene.userSelectionSuggested( new HashSet<IPresentationElement>(addedPEs), false );
+                    //scene.userSelectionSuggested( new HashSet<IPresentationElement>(addedPEs), false );
                      if (addedPEs.size() == 1)
                     {
                         scene.setFocusedObject(addedPEs.get(0));
                     }
+                    scene.userSelectionSuggested( new HashSet<IPresentationElement>(addedPEs), false );
                     scene.getTopComponent().requestActive();
                 }
             }
@@ -307,8 +308,8 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                             sceneAcceptAction.addWidget(sceneCenter, scene, pe);
 
                             // select the added widget and set it focused
-                            scene.userSelectionSuggested(Collections.singleton(pe), false);
                             scene.setFocusedObject(pe);
+                            scene.userSelectionSuggested(Collections.singleton(pe), false);
                         }
                     }
                 }

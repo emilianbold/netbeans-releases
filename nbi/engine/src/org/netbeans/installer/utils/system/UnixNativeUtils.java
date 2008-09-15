@@ -316,6 +316,7 @@ public class UnixNativeUtils extends NativeUtils {
                 break;
             default:
                 shortcutFile = null;
+
         }
 
         LogManager.logUnindent(
@@ -335,16 +336,16 @@ public class UnixNativeUtils extends NativeUtils {
         final File userConfigFile = new File(userHome, XDG_USERDIRS_CONF);
         LogManager.log("... getting desktop folder");
         if (desktopDir != null && !desktopDir.equals("")) {
-            LogManager.log("XDG_DESKTOP_DIR = " + desktopDir);
+            LogManager.log(XDG_DESKTOP_DIR_ENV_VARIABLE + " = " + desktopDir);
             File f = new File(desktopDir);
             if (f.exists()) {
                 LogManager.log("... desktop dir : " + f);
                 return f;
             } else {
-                LogManager.log("... XDG_DESKTOP_DIR is defined but does not exist:" + desktopDir);
+                LogManager.log("... " + XDG_DESKTOP_DIR_ENV_VARIABLE + " is defined but does not exist:" + desktopDir);
             }
-        } else if (System.getenv("XDG_SESSION_COOKIE") == null) {
-            LogManager.log("... XDG_SESSION_COOKIE environment variable is not defined");
+        } else if (System.getenv("XDG_SESSION_COOKIE") == null && System.getenv(XDG_DATA_DIRS_ENV_VARIABLE) == null) {
+            LogManager.log("... neither XDG_SESSION_COOKIE nor " + XDG_DATA_DIRS_ENV_VARIABLE + " environment variable is defined");
         } else if (!FileUtils.exists(globalConfigFile)) {
             LogManager.log("... global XDG config file does not exist");
         } else if (!FileUtils.exists(userDirsFile)) {
@@ -363,6 +364,7 @@ public class UnixNativeUtils extends NativeUtils {
                         if (matcher.find()) {
                             if (!Boolean.parseBoolean(matcher.group(1).toLowerCase(Locale.ENGLISH))) {
                                 LogManager.log("... XDG dirs are disabled");
+                                useXdgDirs = false;
                                 break;
                             } else {
                                 LogManager.log("... XDG dirs are enabled");
@@ -399,20 +401,42 @@ public class UnixNativeUtils extends NativeUtils {
                     List<String> content = (encoding == null) ? FileUtils.readStringList(userDirsFile) : FileUtils.readStringList(userDirsFile, encoding);
 
                     for (String s : content) {
-                        final Matcher matcher = Pattern.compile(XDG_DESKTOP_DIR_ENV_VARIABLE + "=\"(.*)\"").matcher(s);
-                        if (matcher.find()) {                            
-                            File f = new File(matcher.group(1).replace("$HOME", 
-                                    userHome.getAbsolutePath()));
+                        LogManager.log("...... evaluating string : " + s);
+                        Matcher matcher = Pattern.compile("^" + XDG_DESKTOP_DIR_ENV_VARIABLE + "=\"(.*)\"").matcher(s);
+                        if (matcher.find()) {
+                            LogManager.log("...... matches expected pattern");
+                            final String value = matcher.group(1).replace("$HOME", userHome.getAbsolutePath());
+                            File f = new File(value);
                             if (FileUtils.exists(f)) {
                                 return f;
                             } else {
                                 LogManager.log("... custom desktop directory defined but does not exist: " + f);
+                                LogManager.log("... probably wrong encoding used, fallback to system utils");
+                                throw new IOException("File " + f + " is defined as desktop folder but does not exist");
                             }
                         }
                     }
                 }
             } catch (Exception e) {
                 LogManager.log(e);
+                //fallback
+                try {
+                    final File bin = new File("/usr/bin/xdg-user-dir");
+                    if (FileUtils.exists(bin)) {
+                        String stdout = SystemUtils.executeCommand(bin.getAbsolutePath(), "DESKTOP").getStdOut();
+                        if (stdout.length() > 0) {
+                            File dsk = new File(stdout);
+                            if (FileUtils.exists(dsk)) {
+                                return dsk;
+                            } else {
+                                LogManager.log("... custom desktop directory defined (system util) but does not exist: " + dsk);
+                                LogManager.log("... probably wrong encoding, fallback to default");                                
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    LogManager.log(ex);
+                }
             }
         }
         return new File(userHome, "Desktop");

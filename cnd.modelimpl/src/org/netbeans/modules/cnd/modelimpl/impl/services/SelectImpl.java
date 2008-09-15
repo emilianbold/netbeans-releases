@@ -371,7 +371,7 @@ public class SelectImpl extends CsmSelect {
                 if (start < 0) {
                     return true;
                 }
-                if (start <= innerOffset && innerOffset < end) {
+                if (start <= innerOffset && innerOffset <= end) {
                     return true;
                 }
                 return false;

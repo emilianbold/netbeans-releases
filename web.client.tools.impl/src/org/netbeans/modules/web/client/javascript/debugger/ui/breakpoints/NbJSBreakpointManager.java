@@ -75,7 +75,11 @@ public final class NbJSBreakpointManager {
      */
 
     protected final static NbJSBreakpoint createBreakpoint(final Line line) {
-    	DataObject dataObject = (DataObject)line.getLookup ().lookup (DataObject.class);
+        if(line == null || line.getLookup() == null)
+                return null;
+    	DataObject dataObject = (DataObject)line.getLookup().lookup (DataObject.class);
+        if(dataObject == null)
+            return null;
         FileObject fileObject = dataObject.getPrimaryFile();
         NbJSBreakpoint breakpoint = null;
         if (fileObject instanceof URLFileObject) {
