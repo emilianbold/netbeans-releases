@@ -54,6 +54,7 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
@@ -65,6 +66,8 @@ import org.openide.util.NbBundle;
 import org.rubyforge.debugcommons.RubyDebuggerFactory;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.RubyDebuggerProxy;
+
+import static org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult.*;
 
 /**
  * Implementation of {@link RubyDebuggerImplementation} SPI, providing an entry
@@ -233,15 +236,24 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         // Offers to install only for fast native Ruby debugger. Installation
         // does not work for jruby ruby-debug-base yet.
         if (!jrubySet) {
-            Util.offerToInstallFastDebugger(platform);
+            FastDebugInstallationResult result = Util.offerToInstallFastDebugger(platform);
+            if (result == CANCELLED || result == FAILED) {
+                return false;
+            }
         }
         
-        if (fastDebuggerRequired && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) { // NOI18N
-            return false;
+        if (fastDebuggerRequired) { // NOI18N
+            FastDebugInstallationResult result = Util.ensureRubyDebuggerIsPresent(
+                    platform, true, "RubyDebugger.wrong.fast.debugger.required"); // NOI18N
+            if (result != INSTALLED) {
+                return false;
+            }
         }
 
         if (platform.hasFastDebuggerInstalled()) {
-            if (!Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.requiredMessage")) { // NOI18N
+            FastDebugInstallationResult result = Util.ensureRubyDebuggerIsPresent(
+                    platform, true, "RubyDebugger.requiredMessage"); // NOI18N
+            if (result != INSTALLED) {
                 return false;
             }
             String rDebugPath = Util.findRDebugExecutable(platform);
