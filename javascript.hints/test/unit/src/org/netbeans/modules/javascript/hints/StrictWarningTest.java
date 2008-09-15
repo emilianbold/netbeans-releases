@@ -39,15 +39,7 @@
 
 package org.netbeans.modules.javascript.hints;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.text.Document;
-import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.spi.DefaultError;
 
 /**
  *
@@ -55,8 +47,6 @@ import org.netbeans.modules.gsf.spi.DefaultError;
  */
 public class StrictWarningTest extends HintTestBase {
     private String goldenfileSuffix;
-    enum ChangeOffsetType { NONE, OVERLAP, OUTSIDE };
-    ChangeOffsetType changeOffsetType = ChangeOffsetType.NONE;
 
     
     public StrictWarningTest(String testName) {
@@ -127,84 +117,15 @@ public class StrictWarningTest extends HintTestBase {
         goldenfileSuffix = "";
         applyHint(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", "600px\"^,", "Remove");
     }
-
-    public void testWrongOffsets() throws Exception {
-        // Iterate over the various hints and set the offsets to invalid document positions to
-        // check that the rules gracefully recover without throwing BadLocationExceptions etc
-        // (This is necessary because during editing, if the user deletes a lot of text rapidly
-        // such that when the rules are looking at AST offsets (containing offsets in the now
-        // deleted text) and compares those to on-screen positions, the rules need to gracefully
-        // handle nonexistent offsets)
-        goldenfileSuffix = "";
-        try {
-            for (ChangeOffsetType type : new ChangeOffsetType[] { ChangeOffsetType.OUTSIDE, ChangeOffsetType.OVERLAP }) {
-                changeOffsetType = type;
-                getHints(this, new StrictWarning(StrictWarning.RESERVED_KEYWORD), "testfiles/reserved.js", null, null);
-                getHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/sideeffects.js", null, null);
-                getHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/functions-sideeffects.js", null, null);
-                getHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/generated.js", null, null);
-                getHints(this, new StrictWarning(StrictWarning.ANON_NO_RETURN_VALUE), "testfiles/returns.js", null, null);
-                getHints(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", null, null);
-
-                for (String key : StrictWarning.KNOWN_STRICT_ERROR_KEYS) {
-                    goldenfileSuffix = "." + key;
-                    StrictWarning rule = new StrictWarning(key);
-                    if (StrictWarning.RESERVED_KEYWORD.equals(key) || StrictWarning.TRAILING_COMMA.equals(key)) {
-                        rule.setDefaultSeverity(HintSeverity.ERROR);
-                    }
-                    getHints(this, rule, "testfiles/prototype.js", null, null);
-                }
-
-                assertNull(StrictWarning.problem);
-            }
-        } finally {
-            changeOffsetType = ChangeOffsetType.NONE;
-        }
-    }
-
-    @Override
-    protected void customizeHintInfo(GsfTestCompilationInfo info, ParserResult result) {
-        if (changeOffsetType == ChangeOffsetType.NONE) {
-            return;
-        }
-        if (info == null || result == null) {
-            return;
-        }
-        // Test offset handling to make sure we can handle bogus node positions
-        
-        Document doc = info.getDocument();
-        int docLength = doc.getLength();
-        // Replace errors with offsets
-        List<Error> errors = new ArrayList<Error>();
-        List<Error> oldErrors = result.getDiagnostics();
-        for (Error error : oldErrors) {
-            int start = error.getStartPosition();
-            int end = error.getEndPosition();
-
-            // Modify document position to be off
-            int length = end-start;
-            if (changeOffsetType == ChangeOffsetType.OUTSIDE) {
-                start = docLength+1;
-            } else {
-                start = docLength-1;
-            }
-            end = start+length;
-            if (end <= docLength) {
-                end = docLength+1;
-            }
-
-            Error newError = new DefaultError(error.getKey(), error.getDisplayName(), error.getDescription(), error.getFile(), start,
-                    end, error.getSeverity());
-            errors.add(newError);
-
-            if (error.getParameters() != null && error.getParameters().length > 0 && error.getParameters()[0] instanceof Node) {
-                Node node = (Node) error.getParameters()[0];
-                // Tweak Node AST offsets as well
-                int nodeLength = node.getSourceEnd()-node.getSourceStart();
-                node.setSourceBounds(start, start+nodeLength);
-            }
-        }
-        oldErrors.clear();
-        oldErrors.addAll(errors);
-    }
+    
+//
+//    @Override
+//    protected void customizeHintError(Error error, int start) {
+//        if (error.getParameters() != null && error.getParameters().length > 0 && error.getParameters()[0] instanceof Node) {
+//            Node node = (Node) error.getParameters()[0];
+//            // Tweak Node AST offsets as well
+//            int nodeLength = node.getSourceEnd()-node.getSourceStart();
+//            node.setSourceBounds(start, start+nodeLength);
+//        }
+//    }
 }
