@@ -54,6 +54,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.CharBuffer;
 import java.util.Arrays;
@@ -133,8 +135,10 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.EditList;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.spi.DefaultError;
 
 /**
@@ -3291,7 +3295,9 @@ public abstract class GsfTestBase extends NbTestCase {
                 @Override
                 public void publish(LogRecord record) {
                     if (record.getThrown() != null) {
-                        fail("Encountered error: " + record.getThrown().toString());
+                        StringWriter sw = new StringWriter();
+                        record.getThrown().printStackTrace(new PrintWriter(sw));
+                        fail("Encountered error: " + sw.toString());
                     }
                 }
 
@@ -3518,8 +3524,15 @@ public abstract class GsfTestBase extends NbTestCase {
         
         HintFix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
-        
-        fix.implement();
+
+        if (fix.isInteractive() && fix instanceof PreviewableFix) {
+            PreviewableFix preview = (PreviewableFix)fix;
+            assert preview.canPreview();
+            EditList editList = preview.getEditList();
+            editList.applyToDocument((BaseDocument) info.getDocument());
+        } else {
+            fix.implement();
+        }
         
         Document doc = info.getDocument();
         String fixed = doc.getText(0, doc.getLength());
