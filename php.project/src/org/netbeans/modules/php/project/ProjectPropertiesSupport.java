@@ -42,7 +42,6 @@ package org.netbeans.modules.php.project;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
-import java.nio.charset.Charset;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -124,10 +123,6 @@ public final class ProjectPropertiesSupport {
 
     public static String getEncoding(PhpProject project) {
         return project.getEvaluator().getProperty(PhpProjectProperties.SOURCE_ENCODING);
-    }
-
-    public static Charset getIncludePath(PhpProject project) {
-        throw new UnsupportedOperationException();
     }
 
     public static boolean areShortTagsEnabled(PhpProject project) {
