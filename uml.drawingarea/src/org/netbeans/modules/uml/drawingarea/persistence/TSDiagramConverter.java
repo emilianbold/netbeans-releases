@@ -432,6 +432,18 @@ public class TSDiagramConverter
             String path=etldFO.getPath();
             String path2=etlpFO.getPath();
             String parpath=parent.getPath();
+            //if it's reconverting just override previous 6.1 backup
+             FileObject destFO1 = backupFO.getFileObject(etldFO.getName(), etldFO.getExt());
+             if (destFO1 != null)
+             {
+                destFO1.delete();
+             }             
+             FileObject destFO2 = backupFO.getFileObject(etlpFO.getName(), etlpFO.getExt());
+             if (destFO2 != null)
+             {
+                destFO2.delete();
+             }             
+            //
             FileUtil.moveFile(etldFO, backupFO, etldFO.getName());
             FileUtil.moveFile(etlpFO, backupFO, etlpFO.getName());
             IDrawingAreaEventDispatcher dispatcher = getDispatcher();
