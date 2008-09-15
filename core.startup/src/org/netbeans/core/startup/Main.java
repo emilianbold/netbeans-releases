@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.ProxyURLStreamHandlerFactory;
@@ -346,7 +348,7 @@ public final class Main extends Object {
             }
         }
         if (!f.delete()) {
-            throw new IOException("Could not delete: " + f);
+            Logger.getLogger(Main.class.getName()).log(Level.WARNING, "Failed to delete " + f);
         }
     }
   
