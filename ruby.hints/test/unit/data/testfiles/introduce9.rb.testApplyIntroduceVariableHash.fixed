@@ -1,7 +1,7 @@
 def mymethod
   foo = 5
   bar = 20
-  myhash = { :foo => :bar }
-  test(foo, bar, myhash, :baz => :booy)
+  new_name = { :foo => :bar }
+  test(foo, bar, new_name, :baz => :booy)
 end
 

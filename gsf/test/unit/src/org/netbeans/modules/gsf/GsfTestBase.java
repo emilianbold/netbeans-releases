@@ -54,12 +54,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.CharBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JTextArea;
@@ -121,6 +125,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Handler;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentEvent.ElementChange;
 import javax.swing.event.DocumentEvent.EventType;
@@ -130,8 +135,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.EditList;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.spi.DefaultError;
 
 /**
  * @author Tor Norbye
@@ -3228,11 +3236,89 @@ public abstract class GsfTestBase extends NbTestCase {
  
     protected boolean parseErrorsOk;
 
-    protected void customizeHintInfo(GsfTestCompilationInfo info, ParserResult result) {
-        // Optionally override to change some of the information
+    protected boolean checkAllHintOffsets() {
+        return true;
+    }
+
+    protected void customizeHintError(Error error, int start) {
+        // Optionally override
+    }
+
+    private enum ChangeOffsetType { NONE, OVERLAP, OUTSIDE };
+
+    private void customizeHintInfo(GsfTestCompilationInfo info, ParserResult result, ChangeOffsetType changeOffsetType) {
+        if (changeOffsetType == ChangeOffsetType.NONE) {
+            return;
+        }
+        if (info == null || result == null) {
+            return;
+        }
+        // Test offset handling to make sure we can handle bogus node positions
+
+        Document doc = info.getDocument();
+        int docLength = doc.getLength();
+        // Replace errors with offsets
+        List<Error> errors = new ArrayList<Error>();
+        List<Error> oldErrors = result.getDiagnostics();
+        for (Error error : oldErrors) {
+            int start = error.getStartPosition();
+            int end = error.getEndPosition();
+
+            // Modify document position to be off
+            int length = end-start;
+            if (changeOffsetType == ChangeOffsetType.OUTSIDE) {
+                start = docLength+1;
+            } else {
+                start = docLength-1;
+            }
+            end = start+length;
+            if (end <= docLength) {
+                end = docLength+1;
+            }
+
+            DefaultError newError = new DefaultError(error.getKey(), error.getDisplayName(), error.getDescription(), error.getFile(), start,
+                    end, error.getSeverity());
+            newError.setParameters(error.getParameters());
+            customizeHintError(error, start);
+            errors.add(newError);
+        }
+        oldErrors.clear();
+        oldErrors.addAll(errors);
     }
     
     protected ComputedHints getHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
+        ComputedHints hints = computeHints(test, hint, relFilePath, fileObject, caretLine, ChangeOffsetType.NONE);
+
+        if (checkAllHintOffsets()) {
+            // Run alternate hint computation AFTER the real computation above since we will destroy the document...
+            Logger.global.addHandler(new Handler() {
+                @Override
+                public void publish(LogRecord record) {
+                    if (record.getThrown() != null) {
+                        StringWriter sw = new StringWriter();
+                        record.getThrown().printStackTrace(new PrintWriter(sw));
+                        fail("Encountered error: " + sw.toString());
+                    }
+                }
+
+                @Override
+                public void flush() {
+                }
+
+                @Override
+                public void close() throws SecurityException {
+                }
+
+            });
+            for (ChangeOffsetType type : new ChangeOffsetType[] { ChangeOffsetType.OUTSIDE, ChangeOffsetType.OVERLAP }) {
+                computeHints(test, hint, relFilePath, fileObject, caretLine, type);
+            }
+        }
+
+        return hints;
+    }
+
+    protected ComputedHints computeHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine, ChangeOffsetType changeOffsetType) throws Exception {
         assert relFilePath == null || fileObject == null;
         UserConfigurableRule ucr = null;
         if (hint instanceof UserConfigurableRule) {
@@ -3254,7 +3340,14 @@ public abstract class GsfTestBase extends NbTestCase {
         GsfTestCompilationInfo info = fileObject != null ? getInfo(fileObject) : getInfo(relFilePath);
         ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
 
-        customizeHintInfo(info, pr);
+        if (changeOffsetType != ChangeOffsetType.NONE) {
+            customizeHintInfo(info, pr, changeOffsetType);
+
+            // Also: Delete te contents from the document!!!
+            // This ensures that the node offsets will be out of date by the time the rules run
+            Document doc = info.getDocument();
+            doc.remove(0, doc.getLength());
+        }
 
         if (pr == null /*|| pr.hasErrors()*/ && !(hint instanceof ErrorRule)) { // only expect testcase source errors in error tests
             if (parseErrorsOk) {
@@ -3383,7 +3476,7 @@ public abstract class GsfTestBase extends NbTestCase {
         CompilationInfo info = r.info;
         List<Hint> result = r.hints;
         int caretOffset = r.caretOffset;
-        
+
         String annotatedSource = annotateHints((BaseDocument)info.getDocument(), result, caretOffset);
 
         if (fileObject != null) {
@@ -3431,8 +3524,15 @@ public abstract class GsfTestBase extends NbTestCase {
         
         HintFix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
-        
-        fix.implement();
+
+        if (fix.isInteractive() && fix instanceof PreviewableFix) {
+            PreviewableFix preview = (PreviewableFix)fix;
+            assert preview.canPreview();
+            EditList editList = preview.getEditList();
+            editList.applyToDocument((BaseDocument) info.getDocument());
+        } else {
+            fix.implement();
+        }
         
         Document doc = info.getDocument();
         String fixed = doc.getText(0, doc.getLength());
@@ -3495,6 +3595,11 @@ public abstract class GsfTestBase extends NbTestCase {
             this.info = info;
             this.hints = hints;
             this.caretOffset = caretOffset;
+        }
+
+        @Override
+        public String toString() {
+            return "ComputedHints(caret=" + caretOffset + ",info=" + info + ",hints=" + hints + ")";
         }
 
         public CompilationInfo info;
