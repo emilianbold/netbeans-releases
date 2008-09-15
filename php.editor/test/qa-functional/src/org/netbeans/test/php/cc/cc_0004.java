@@ -115,12 +115,7 @@ public class cc_0004 extends cc
     // Check constructor
     String sCode = "function __con";
     String sIdeal = "function __construct()";
-    for( int i = 0; i < sCode.length( ); i++ )
-    {
-      // Press Ctrl+Space
-      eoPHP.typeKey( sCode.charAt( i ) );
-      Sleep( 1000 );
-    }
+    TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
     Sleep( 1000 );
 
@@ -136,12 +131,7 @@ public class cc_0004 extends cc
     Sleep( 1000 );
     sCode = "function __des";
     sIdeal = "function __destruct()";
-    for( int i = 0; i < sCode.length( ); i++ )
-    {
-      // Press Ctrl+Space
-      eoPHP.typeKey( sCode.charAt( i ) );
-      Sleep( 1000 );
-    }
+    TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
     Sleep( 1000 );
 

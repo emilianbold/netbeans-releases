@@ -78,6 +78,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -199,7 +200,7 @@ final public class WebProjectProperties {
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
     
     private static Logger LOGGER = Logger.getLogger(WebProjectProperties.class.getName());
-    
+
     public ClassPathSupport cs;
 
     //list of frameworks to add to the application
@@ -493,6 +494,11 @@ final public class WebProjectProperties {
                 String oldCP = wm.getContextPath(serverId);
                 if (!cp.equals(oldCP))
                     wm.setContextPath(serverId, cp);
+            }
+            
+            //Delete COS mark
+            if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
+                DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir"); // NOI18N
             }
         } 
         catch (MutexException e) {

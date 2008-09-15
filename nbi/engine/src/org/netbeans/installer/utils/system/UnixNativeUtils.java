@@ -129,6 +129,8 @@ public class UnixNativeUtils extends NativeUtils {
             ".config/user-dirs.conf";//NOI18N    
     public static final String XDG_USERDIRS_GLOBAL_CONF = 
             "/etc/xdg/user-dirs.conf";//NOI18N
+    public static final String DESKTOP_EXT = 
+            ".desktop";//NOI18N
     
     public static final String DEFAULT_XDG_DATA_HOME =
             ".local/share"; // NOI18N
@@ -245,21 +247,66 @@ public class UnixNativeUtils extends NativeUtils {
         LogManager.logIndent(
                 "devising the shortcut location by type: " + locationType); // NOI18N
 
-        final String XDG_DATA_HOME =
-                SystemUtils.getEnvironmentVariable(XDG_DATA_HOME_ENV_VARIABLE);
-        final String XDG_DATA_DIRS =
-                SystemUtils.getEnvironmentVariable(XDG_DATA_DIRS_ENV_VARIABLE);
+        final File shortcutFile;
+        
+        switch (locationType) {
+            case CURRENT_USER_DESKTOP:
+            case ALL_USERS_DESKTOP:
+                final File desktopLocation = getDesktopFolder();
+                LogManager.log("... desktop folder : " + desktopLocation);
+                shortcutFile = new File(desktopLocation, getShortcutFileName(shortcut));
+                break;
+            case CURRENT_USER_START_MENU:
+                final File currentUserAppFolder = 
+                        getApplicationsLocation(
+                        getCurrentUserLocation());
+                LogManager.log("... current user app folder : " + currentUserAppFolder);
+                shortcutFile =  new File(currentUserAppFolder, 
+                        getShortcutFileName(shortcut));
+                break;
+            case ALL_USERS_START_MENU:
+                final File allUsersAppFolder = 
+                        getApplicationsLocation(
+                        getAllUsersLocation());
+                LogManager.log("... all users app folder : " + allUsersAppFolder);
+                shortcutFile = new File(allUsersAppFolder,
+                        getShortcutFileName(shortcut));
+                break;
+            default:
+                shortcutFile = null;
 
-        final File currentUserLocation;
-        if (XDG_DATA_HOME == null) {
-            currentUserLocation = new File(
-                    SystemUtils.getUserHomeDirectory(),
-                    DEFAULT_XDG_DATA_HOME);
-        } else {
-            currentUserLocation = new File(
-                    XDG_DATA_HOME);
         }
 
+        LogManager.logUnindent(
+                "shortcut file: " + shortcutFile); // NOI18N
+
+        return shortcutFile;
+    }
+    
+    private String getShortcutFileName(Shortcut shortcut) {
+        String fileName = shortcut.getFileName();
+        if (fileName == null) {
+            if (shortcut instanceof FileShortcut) {
+                final File target = ((FileShortcut) shortcut).getTarget();
+
+                fileName = target.getName();
+                if(!target.isDirectory()) {
+                    fileName += DESKTOP_EXT;
+                }
+            } else if(shortcut instanceof InternetShortcut) {
+                fileName = ((InternetShortcut) shortcut).getURL().getFile() +
+                        DESKTOP_EXT;
+            }
+        }
+        return fileName;
+    }
+    
+    private File getApplicationsLocation(File location) {
+        return new File(location, "applications");
+    }
+    
+    private File getAllUsersLocation() {
+        final String XDG_DATA_DIRS = System.getenv(XDG_DATA_DIRS_ENV_VARIABLE);                
         final File allUsersLocation;
         if (XDG_DATA_DIRS == null) {
             allUsersLocation = new File(DEFAULT_XDG_DATA_DIRS);
@@ -274,55 +321,26 @@ public class UnixNativeUtils extends NativeUtils {
             allUsersLocation = new File(firstPath);
         }
         
-        LogManager.log(
-                "XDG_DATA_HOME = " + currentUserLocation); // NOI18N
-        LogManager.log(
-                "XDG_DATA_DIRS = " + allUsersLocation); // NOI18N
+        LogManager.log(XDG_DATA_DIRS_ENV_VARIABLE + " = " + allUsersLocation); // NOI18N
+        
+        return allUsersLocation;
+    }
+    
+    private File getCurrentUserLocation() {
+        final File currentUserLocation;
+        final String XDG_DATA_HOME = System.getenv(XDG_DATA_HOME_ENV_VARIABLE);
 
-        String fileName = shortcut.getFileName();
-        if (fileName == null) {
-            if (shortcut instanceof FileShortcut) {
-                final File target = ((FileShortcut) shortcut).getTarget();
-
-                fileName = target.getName();
-                if(!target.isDirectory()) {
-                    fileName += ".desktop";
-                }
-            } else if(shortcut instanceof InternetShortcut) {
-                fileName = ((InternetShortcut) shortcut).getURL().getFile() +
-                        ".desktop";
-            }
+        if (XDG_DATA_HOME == null) {
+            currentUserLocation = new File(
+                    SystemUtils.getUserHomeDirectory(),
+                    DEFAULT_XDG_DATA_HOME);
+        } else {
+            currentUserLocation = new File(XDG_DATA_HOME);
         }
+        
+        LogManager.log(XDG_DATA_DIRS_ENV_VARIABLE + " = " + currentUserLocation); // NOI18N
 
-        LogManager.log(""); // NOI18N
-
-        final File shortcutFile;
-        switch (locationType) {
-            case CURRENT_USER_DESKTOP:
-            case ALL_USERS_DESKTOP:
-                final File desktopLocation = getDesktopFolder();
-                LogManager.log("... desktop folder : " + desktopLocation);
-                shortcutFile = new File(desktopLocation, fileName);
-                break;
-            case CURRENT_USER_START_MENU:
-                shortcutFile = new File(
-                        currentUserLocation,
-                        "applications/" + fileName);
-                break;
-            case ALL_USERS_START_MENU:
-                shortcutFile = new File(
-                        allUsersLocation,
-                        "applications/" + fileName);
-                break;
-            default:
-                shortcutFile = null;
-
-        }
-
-        LogManager.logUnindent(
-                "shortcut file: " + shortcutFile); // NOI18N
-
-        return shortcutFile;
+        return currentUserLocation;
     }
     
     private File getDesktopFolder() {

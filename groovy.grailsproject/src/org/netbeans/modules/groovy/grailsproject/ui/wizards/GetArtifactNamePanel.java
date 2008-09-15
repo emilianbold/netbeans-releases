@@ -50,7 +50,6 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     void store( WizardDescriptor d ) {
         
         d.putProperty( "projectFolder", projectTextField.getText() ); // NOI18N
-        parentStep.fireChangeEvent();
         }
     
     

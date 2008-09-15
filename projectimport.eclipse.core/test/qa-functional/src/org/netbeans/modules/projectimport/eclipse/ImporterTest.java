@@ -62,7 +62,7 @@ public class ImporterTest {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(ImporterMenu.class).
                 addTest(ImporterWizard.class).
 		addTest(ImportSimpleJavaProjectFromWS.class).
-                addTest(ImportSimpleWebProjectFromWS.class).
+                //addTest(ImportSimpleWebProjectFromWS.class).
                 addTest(ImportMultipleRootsJavaProjectFromWS.class).
                 addTest(ImportJavaVersion.class).
                 addTest(ImportProjectWithTransitiveDeps.class).
