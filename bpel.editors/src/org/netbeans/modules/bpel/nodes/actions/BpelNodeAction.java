@@ -42,7 +42,7 @@ public abstract class BpelNodeAction extends NodeAction implements BpelNodeTyped
     boolean no_transaction = true;
 
     public BpelNodeAction() {
-        name = getBundleName();
+       
     }
 
     public BpelNodeAction(boolean no_transaction) {
@@ -152,6 +152,11 @@ public abstract class BpelNodeAction extends NodeAction implements BpelNodeTyped
     }
 
     public String getName() {
+        //Do not pre-load name in constructor, otherwise CopyCutAction will be broken
+        if (name == null){
+            name = getBundleName();
+        }
+        
         return name;
     }
 

@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.design;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.bpel.design.actions.PasteModeAction;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
@@ -52,14 +54,14 @@ public class CopyPasteHandler implements MouseListener {
     private Pattern copiedPattern;
     private PlaceHolderManager[] managers;
     private PlaceHolder currentPlaceholder;
-    private CopyCutAction actionCopy;
-    private CopyCutAction actionCut; 
+    private CopyAction actionCopy;
+    private CutAction actionCut; 
     private PasteAction actionPaste; 
 
     public CopyPasteHandler(DesignView designView) {
         this.designView = designView;
-        actionCopy = new CopyCutAction(true);
-        actionCut = new CopyCutAction(false);
+        actionCopy = new CopyAction();
+        actionCut = new CutAction();
         actionPaste = new PasteAction();
 
         managers = new PlaceHolderManager[]{
@@ -213,13 +215,32 @@ public class CopyPasteHandler implements MouseListener {
         }
     }
 
-    public class CopyCutAction extends BpelNodeAction {
+    public class CopyAction extends CopyCutAction{
+        public CopyAction(){
+            super(true);
+        }
+        
+    }
+    public class CutAction extends CopyCutAction{
+        public CutAction(){
+            super(false);
+        }
+        
+    }
+    
+    protected class CopyCutAction extends BpelNodeAction {
 
         private boolean copy;
 
         public CopyCutAction(boolean copy) {
             super(true);
+            
             this.copy = copy;
+            
+            putValue(ACCELERATOR_KEY, 
+                    KeyStroke.getKeyStroke(
+                        copy ? KeyEvent.VK_C : KeyEvent.VK_X, 
+                        KeyEvent.CTRL_DOWN_MASK));
         }
 
         protected boolean enable(BpelEntity[] bpelEntities) {
