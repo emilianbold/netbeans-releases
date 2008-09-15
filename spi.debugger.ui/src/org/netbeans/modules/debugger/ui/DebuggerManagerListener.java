@@ -104,7 +104,10 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             Component c;
                             try {
                                 c = cp.getComponent();
-                                if (c == null) throw new NullPointerException("No component from "+cp);
+                                if (c == null) {
+                                    //throw new NullPointerException("No component from "+cp);
+                                    continue;
+                                }
                             } catch (Exception ex) {
                                 Exceptions.printStackTrace(ex);
                                 continue;
