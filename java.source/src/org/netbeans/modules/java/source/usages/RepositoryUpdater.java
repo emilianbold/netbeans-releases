@@ -2759,7 +2759,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
              
              if (f != null) {
                  sb.append("(");
-                 if (f.exists()) {
+                 if (f.isFile()) {
                      sb.append(f.lastModified());
                  } else {
                      sb.append("-1");
