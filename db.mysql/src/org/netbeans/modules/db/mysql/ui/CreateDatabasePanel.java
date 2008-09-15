@@ -56,7 +56,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private Color nbErrorForeground;
     private JButton okButton;
     private JButton cancelButton;
-    private boolean databaseCreated;
     
     private void validatePanel(String databaseName) {
         if (descriptor == null) {
@@ -124,14 +123,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         // Don't start a new task if we're still running the old one
                         return;
                     }
-
-                    if (databaseCreated) {
-                        // The user already created this database and hasn't typed
-                        // in a new database, so "OK" means they are done.  Don't
-                        // try to create the same database all over again...
-                        dialog.dispose();
-                        return;
-                    }
                     
                     startProgress();
 
@@ -144,7 +135,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     task.addTaskListener(new TaskListener() {
                         public void taskFinished(org.openide.util.Task task) {
                             stopProgress();
-                            databaseCreated = true;
+                            dialog.dispose();
                         }
                     });
                     
