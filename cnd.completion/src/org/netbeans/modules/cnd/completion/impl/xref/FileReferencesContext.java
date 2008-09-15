@@ -86,6 +86,10 @@ public final class FileReferencesContext {
 
     public void clean(){
         isClened = true;
+        _clean();
+    }
+
+    private void _clean(){
         if (fileLocalVars != null) {
             fileLocalVars = null;
             fileDeclarationsOffsets = null;
@@ -103,9 +107,9 @@ public final class FileReferencesContext {
             return;
         }
         if (lastOffset > offset) {
-            lastOffset = 0;
-            clean();
+            _clean();
         }
+        lastOffset = offset;
         if (fileLocalVars == null) {
             // no increment for fileLocalVars
             fileLocalVars = new HashMap<String,List<CsmUID<CsmVariable>>>();
@@ -147,10 +151,10 @@ public final class FileReferencesContext {
             if (res < fileDeclarationsOffsets.size()-1) {
                 Offsets next = fileDeclarationsOffsets.get(res+1);
                 if (next.compareTo(key) == 0) {
-                    return (CsmObject) next.object.getObject();
+                    return next.object;
                 }
             }
-            return (CsmObject) fileDeclarationsOffsets.get(res).object.getObject();
+            return fileDeclarationsOffsets.get(res).object;
         }
         return null;
     }
@@ -165,10 +169,10 @@ public final class FileReferencesContext {
             if (res < fileObjectOffsets.size()-1) {
                 Offsets next = fileObjectOffsets.get(res+1);
                 if (next.compareTo(key) == 0) {
-                    return (CsmObject) next.object.getObject();
+                    return next.object;
                 }
             }
-            return (CsmObject) fileObjectOffsets.get(res).object.getObject();
+            return fileObjectOffsets.get(res).object;
         }
         return null;
     }
@@ -237,21 +241,21 @@ public final class FileReferencesContext {
     private static class Offsets implements Comparable<Offsets> {
         private int startOffset;
         private int endOffset;
-        private CsmUID object;
+        private CsmObject object;
         Offsets(CsmOffsetableDeclaration declaration){
             startOffset = declaration.getStartOffset();
             endOffset = declaration.getEndOffset();
-            object = declaration.getUID();
+            object = declaration;
         }
         Offsets(CsmMacro macros){
             startOffset = macros.getStartOffset();
             endOffset = macros.getEndOffset();
-            object = macros.getUID();
+            object = macros;
         }
         Offsets(CsmInclude include){
             startOffset = include.getStartOffset();
             endOffset = include.getEndOffset();
-            object = include.getUID();
+            object = include;
         }
         Offsets(int offset){
             startOffset = offset;
