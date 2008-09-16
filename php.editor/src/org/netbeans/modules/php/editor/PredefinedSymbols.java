@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -72,12 +73,18 @@ public class PredefinedSymbols {
     public  static final Map<String,IndexedFunction> MAGIC_METHODS = new HashMap<String, IndexedFunction>();
 
     private static IndexedFunction createMagicFunction(String fncName, String arguments, int flags) {
-        IndexedFunction ifnc = new IndexedFunction(fncName, 
+        IndexedFunction ifnc = new MagicIndexedFunction(fncName, 
                 NbBundle.getMessage(PredefinedSymbols.class, "MagicMethod"), //NOI18N
                 null, null, arguments, 0, flags, ElementKind.METHOD);
         ifnc.setOptionalArgs(new int[0]);
         return ifnc;
     }
+    static class MagicIndexedFunction extends IndexedFunction {
+        public MagicIndexedFunction(String name, String in, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
+            super(name, in, index, fileUrl, arguments, offset, flags, kind);
+        }
+    }
+
     static {
         IndexedFunction[] ifunctions = new IndexedFunction[] {
             createMagicFunction("__callStatic", "$name, $arguments", Modifier.PUBLIC | Modifier.STATIC),//NOI18N

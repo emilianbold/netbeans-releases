@@ -70,6 +70,7 @@ import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.php.editor.PredefinedSymbols.MagicIndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -1460,7 +1461,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     public String document(CompilationInfo info, ElementHandle element) {
-        return DocRenderer.document(info, element);
+        return (element instanceof MagicIndexedFunction) ? null : 
+            DocRenderer.document(info, element);
     }
 
     public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
