@@ -286,7 +286,7 @@ public final class RubyDebuggerTest extends TestBase {
             "sleep 0.01",
             "sleep 0.01"
         };
-        Process p = startDebugging(testContent, 2);
+        Process p = startDebugging(testContent, 4);
         doAction(ActionsManager.ACTION_STEP_INTO);
         doAction(ActionsManager.ACTION_STEP_INTO);
         doAction(ActionsManager.ACTION_STEP_INTO);
@@ -314,21 +314,9 @@ public final class RubyDebuggerTest extends TestBase {
         ExecutionDescriptor descriptor = new ExecutionDescriptor(jruby);
         // DialogDisplayerImpl.createDialog() assertion would fail if dialog is shown
         assertTrue("default setting OK with JRuby", RubyDebugger.checkAndTuneSettings(descriptor));
-        File origGemHome = jruby.getGemManager().getGemHomeF();
-        try {
-            assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
-
-            try {
-                assertTrue("fail when no fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
-            } catch (AssertionFailedError afe) {
-                // OK, expected
-            }
-
-            installFakeFastRubyDebugger(jruby);
-            assertTrue("succeed when fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
-        } finally {
-            jruby.setGemHome(origGemHome);
-        }
+        assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
+        installFakeFastRubyDebugger(jruby);
+        assertTrue("succeed when fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
     }
 
     public void testCheckAndTuneSettingsForJRubyAndRails() throws IOException {
