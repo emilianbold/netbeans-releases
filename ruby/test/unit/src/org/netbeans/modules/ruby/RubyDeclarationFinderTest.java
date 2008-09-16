@@ -38,8 +38,15 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         super(testName);
     }
 
-    public void testTodo() {
-        
+    public void testDeclaration1() throws Exception {
+        checkDeclaration("testfiles/resolv.rb", "r.each_name(add^ress) {|name|", "def each_name(^address)");
     }
 
+    public void testDeclaration2() throws Exception {
+        checkDeclaration("testfiles/resolv.rb", "yield na^me.to_s", "r.each_name(address) {|^name|");
+    }
+
+    public void testDeclaration3() throws Exception {
+        checkDeclaration("testfiles/resolv.rb", "class UnconnectedUDP < Reque^ster", "^class Requester");
+    }
 }

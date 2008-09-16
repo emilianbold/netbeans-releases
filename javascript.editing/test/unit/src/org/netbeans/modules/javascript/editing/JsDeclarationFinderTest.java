@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,33 +31,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor;
-
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+package org.netbeans.modules.javascript.editing;
 
 /**
  *
- * @author Martin Adamek
+ * @author Tor Norbye
  */
-public class GroovyDeclarationFinderTest extends GroovyTestBase {
-    
-    private final String TEST_BASE = "testfiles/declarationfinder/";
+public class JsDeclarationFinderTest extends JsTestBase {
 
-    public GroovyDeclarationFinderTest(String testName) {
+    public JsDeclarationFinderTest(String testName) {
         super(testName);
     }
 
-    // this test is for variables defined and used in the same CU.
-    
-    public void testField1() throws Exception {
-        checkDeclaration(TEST_BASE + "Script.groovy", "        println va^r1", "    def ^var1 = 'aaa'");
+    public void testDeclaration1() throws Exception {
+        checkDeclaration("testfiles/prototype.js", "return (scriptTag.match(mat^chOne) || ['', ''])[1];",
+                "var ^matchOne = new RegExp(Prototype.ScriptFragment, 'im');");
     }
-    
-    // we gotta have a test for class usage:
-    
-    public void testClass1() throws Exception {
-        checkDeclaration(TEST_BASE + "Consumer.groovy", "        Fin^der finder = new Finder()", "class ^Finder {");
+
+    public void testDeclaration2() throws Exception {
+        checkDeclaration("testfiles/prototype.js", "if (useDoubl^eQuotes)",
+                "inspect: function(^useDoubleQuotes) {");
     }
+
+//    public void testDeclaration3() throws Exception {
+//        checkDeclaration("testfiles/prototype.js", "this.responders = this.responders.wi^thout(responder);",
+//                "^without: function() {");
+//    }
 }
