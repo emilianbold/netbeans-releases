@@ -66,7 +66,7 @@ END_COM_MAP()
     }
 
     void FinalRelease() {
-        Utils::log(4, _T("dctor Debug document - %s\n"), name.c_str());
+        Utils::log(4, _T("Destructing DebugDocument - %s\n"), name.c_str());
     }
 
 public:

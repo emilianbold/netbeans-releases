@@ -69,7 +69,7 @@ STDMETHODIMP DebugDocument::onUpdateDocumentAttributes(TEXT_DOC_ATTR textdocattr
 }
 
 HRESULT DebugDocument::handleSourceChange() {
-    Utils::log(4, _T("Text replaced - %s\n"), name.c_str());
+    Utils::log(4, _T("Text modified - %s\n"), name.c_str());
     if(pDbgpConnection != NULL) {
         pDbgpConnection->sendReloadSourcesMessage(name);
     }
