@@ -258,7 +258,6 @@ public final class Main extends Object {
             throw exc;
         }
     }
-    StartLog.logEnd ("XML Factories"); //NOI18N
     
     
 
