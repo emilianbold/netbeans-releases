@@ -227,7 +227,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 if (value == null) { // Invalid input
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Number"); // NOI18N
                 }
-            } else if (rt.equals("bool")) { // NOI18N
+            } else if (rt.equals("bool") || (!debugger.isCplusPlus() && rt.equals("_Bool"))) { // NOI18N
                 if (!value.equals("true") && !value.equals("false") && !isNumberInRange(value, 0, 1)) { // NOI18N
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_CplusPlus_Bool"); // NOI18N
                 }
@@ -270,6 +270,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     }
                 }
                 ovalue = this.value;
+                if (!debugger.isCplusPlus() && rt.equals("_Bool") && !isNumber(value)) { // NOI18N
+                    value = value.equals("true") ? "1" : "0"; // NOI18N - gdb doesn't handle
+                }
                 this.value = getDebugger().updateVariable(fullname, value);
                 if (this instanceof AbstractField) {
                     // This code transfers changes between Local Variables and Watches
