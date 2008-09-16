@@ -68,11 +68,11 @@ import java.util.List;
  * @author michaelnazarov@netbeans.org
  */
 
-public class cc_0004 extends cc
+public class Issue141855 extends cc
 {
-  static final String TEST_PHP_NAME = "PhpProject4";
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141855";
 
-  public cc_0004( String arg0 )
+  public Issue141855( String arg0 )
   {
     super( arg0 );
   }
@@ -80,9 +80,9 @@ public class cc_0004 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( cc_0004.class ).addTest(
+      NbModuleSuite.createConfiguration( Issue141855.class ).addTest(
           "CreateApplication",
-          "Issue141873"
+          "Issue141855"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -99,7 +99,7 @@ public class cc_0004 extends cc
     endTest( );
   }
 
-  public void Issue141873( ) throws Exception
+  public void Issue141855( ) throws Exception
   {
     startTest( );
 
@@ -107,40 +107,25 @@ public class cc_0004 extends cc
     EditorOperator eoPHP = new EditorOperator( "index.php" );
     Sleep( 1000 );
     // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
+    eoPHP.setCaretPosition( "?>", false );
     // Add new line
-    eoPHP.insert( "\nclass a\n{\n" );
+    eoPHP.insert( "\n" );
     Sleep( 1000 );
-
-    // Check constructor
-    String sCode = "function __con";
-    String sIdeal = "function __construct()";
-    TypeCode( eoPHP, sCode );
+    // Press Ctrl+Space
+    eoPHP.typeKey( '<' );
+    Sleep( 1000 );
+    eoPHP.typeKey( '?' );
+    Sleep( 1000 );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
     Sleep( 1000 );
-
-    // Get code
-    String sText = eoPHP.getText( eoPHP.getLineNumber( ) );
-
     // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
+    CompletionJListOperator jCompl = GetCompletion( );
+    List list = jCompl.getCompletionItems( );
+    // Magic CC number for complete list
+    if( COMPLETE_CC_LIST_SIZE != list.size( ) )
+      fail( "Invalid CC list size: " + list.size( ) + ", expected: " + COMPLETE_CC_LIST_SIZE );
 
-    // Check destructor
-    eoPHP.insert( ";\n" );
-    Sleep( 1000 );
-    sCode = "function __des";
-    sIdeal = "function __destruct()";
-    TypeCode( eoPHP, sCode );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
-
-    // Get code
-    sText = eoPHP.getText( eoPHP.getLineNumber( ) );
-
-    // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
+    jCompl.hideAll( );
 
     endTest( );
   }

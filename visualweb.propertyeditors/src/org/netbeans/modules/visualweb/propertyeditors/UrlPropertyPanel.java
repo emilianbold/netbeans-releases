@@ -70,6 +70,8 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.faces.FacesDesignProject;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.openide.ErrorManager;
@@ -386,7 +388,10 @@ public class UrlPropertyPanel extends PropertyPanelBase {
                 DesignBean beans[] = contexts[i].getBeans();
                 for (int j = 0; j < beans.length; j++) {
                     Object instance = beans[j].getInstance();
-                    if (UIComponent.class.isAssignableFrom(instance.getClass()) && editor.isTargetComponent((UIComponent) instance)) {
+                    if (instance == null) {
+                        // XXX #144220 Logging illegal state.
+                        info(new IllegalStateException("There was returned null instance from design bean, designBean=" + beans[j])); // NOI18N
+                    } else if (UIComponent.class.isAssignableFrom(instance.getClass()) && editor.isTargetComponent((UIComponent) instance)) {
                         TargetNode target = new ComponentTargetNode(pageNode, beans[j]);
                         pageNode.add(target);
                     }
@@ -715,5 +720,8 @@ public class UrlPropertyPanel extends PropertyPanelBase {
         }
         
     }
-    
+
+    private static void info(Exception ex) {
+        Logger.getLogger(UrlPropertyPanel.class.getName()).log(Level.INFO, null, ex);
+    }
 }

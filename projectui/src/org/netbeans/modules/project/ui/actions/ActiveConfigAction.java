@@ -505,10 +505,10 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
         if (contextPrj != null) {
             activeProjectChanged(contextPrj);
-        } else {
-            currentProject = null;
-            activeProjectChanged(null);
-        }
+        } //else {
+          //  currentProject = null;
+          //  activeProjectChanged(null);
+        //}
 
     }
 
