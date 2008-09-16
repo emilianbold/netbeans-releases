@@ -227,8 +227,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 if (value == null) { // Invalid input
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Number"); // NOI18N
                 }
-            } else if (getDebugger().isCplusPlus() && rt.equals("bool")) { // NOI18N
-                if (!value.equals("true") && !value.equals("false") && !isNumber(value)) { // NOI18N
+            } else if (rt.equals("bool")) { // NOI18N
+                if (!value.equals("true") && !value.equals("false") && !isNumberInRange(value, 0, 1)) { // NOI18N
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_CplusPlus_Bool"); // NOI18N
                 }
             } else if (rt.startsWith("enum ")) { // NOI18N
@@ -1024,6 +1024,15 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         try {
             Long.parseLong(value);
             return true;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+    }
+
+    private boolean isNumberInRange(String value, long low, long high) {
+        try {
+            long val = Long.parseLong(value);
+            return val >= low && val <= high;
         } catch (NumberFormatException ex) {
             return false;
         }
