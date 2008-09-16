@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
@@ -204,6 +205,8 @@ public final class SuiteActions implements ActionProvider {
      */
     public ExecutorTask invokeActionImpl(String command, Lookup context) throws IllegalArgumentException, IOException {
         String[] targetNames;
+        Properties p = null;
+
         if (command.equals(ActionProvider.COMMAND_BUILD)) {
             targetNames = new String[] {"build"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_CLEAN)) {
@@ -212,14 +215,16 @@ public final class SuiteActions implements ActionProvider {
             targetNames = new String[] {"clean", "build"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_RUN)) {
             if (project.getTestUserDirLockFile().isFile()) {
-                ModuleActions.notifyCannotReRun();
-                return null;
+                // #141069: lock file exists, run with bogus option
+                p = new Properties();
+                p.setProperty(ModuleActions.TEST_USERDIR_LOCK_PROP_NAME, ModuleActions.TEST_USERDIR_LOCK_PROP_VALUE);
             }
             targetNames = new String[] {"run"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
             if (project.getTestUserDirLockFile().isFile()) {
-                ModuleActions.notifyCannotReRun();
-                return null;
+                // #141069: lock file exists, run with bogus option
+                p = new Properties();
+                p.setProperty(ModuleActions.TEST_USERDIR_LOCK_PROP_NAME, ModuleActions.TEST_USERDIR_LOCK_PROP_VALUE);
             }
             targetNames = new String[] {"debug"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_TEST)) {
@@ -254,7 +259,7 @@ public final class SuiteActions implements ActionProvider {
             throw new IllegalArgumentException(command);
         }
         
-        return ActionUtils.runTarget(findBuildXml(project), targetNames, null);
+        return ActionUtils.runTarget(findBuildXml(project), targetNames, p);
     }
     
     private static FileObject findBuildXml(SuiteProject project) {
