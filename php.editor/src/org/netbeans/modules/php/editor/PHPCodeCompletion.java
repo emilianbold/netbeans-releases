@@ -71,6 +71,8 @@ import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -287,6 +289,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private boolean caseSensitive;
     private NameKind nameKind;
 
+    @NonNull
     static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
        Document document = info.getDocument();
         if (document == null) {
@@ -323,7 +326,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         return CompletionContext.SERVER_ENTRY_CONSTANTS;
                     }
                 }
-                return null;
+                return CompletionContext.NONE;
             default:
         }
         CompletionContext clsIfaceDeclContext = getClsIfaceDeclContext(token,
@@ -426,6 +429,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return tokens.toArray(new Token[tokens.size()]);
     }
 
+    @CheckForNull
     private static CompletionContext getClsIfaceDeclContext(Token<PHPTokenId> token, int tokenOffset,TokenSequence tokenSequence) {
         boolean isClass = false;
         boolean isIface = false;
