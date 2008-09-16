@@ -214,6 +214,22 @@ public class JpaControllerGenerator {
                         idClass = (TypeElement) declaredType.asElement();
                         embeddable[0] = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
                         idPropertyType[0] = idClass.getQualifiedName().toString();
+                    } else if (TypeKind.BOOLEAN == idType.getKind()) {
+                        idPropertyType[0] = "boolean";
+                    } else if (TypeKind.BYTE == idType.getKind()) {
+                        idPropertyType[0] = "byte";
+                    } else if (TypeKind.CHAR == idType.getKind()) {
+                        idPropertyType[0] = "char";
+                    } else if (TypeKind.DOUBLE == idType.getKind()) {
+                        idPropertyType[0] = "double";
+                    } else if (TypeKind.FLOAT == idType.getKind()) {
+                        idPropertyType[0] = "float";
+                    } else if (TypeKind.INT == idType.getKind()) {
+                        idPropertyType[0] = "int";
+                    } else if (TypeKind.LONG == idType.getKind()) {
+                        idPropertyType[0] = "long";
+                    } else if (TypeKind.SHORT == idType.getKind()) {
+                        idPropertyType[0] = "short";
                     }
                     
                     String simpleIdPropertyType = JpaControllerUtil.simpleClassName(idPropertyType[0]);

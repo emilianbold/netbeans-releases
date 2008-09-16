@@ -148,7 +148,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         }
     }
 
-    private ClassPath getProvidedClassPath() {
+    private synchronized ClassPath getProvidedClassPath() {
         ClassPath cp = cache[7];
         if (cp == null) {
             cp = ClassPathFactory.createClassPath(new PackagedClassPathImpl(project));
@@ -212,7 +212,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     
     
     
-    private ClassPath getSourcepath(int type) {
+    private synchronized ClassPath getSourcepath(int type) {
         if (type == TYPE_WEB) {
             type = TYPE_SRC;
         }
@@ -228,7 +228,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         return cp;
     }
     
-    private ClassPath getCompileTimeClasspath(int type) {
+    private synchronized ClassPath getCompileTimeClasspath(int type) {
         if (type == TYPE_WEB) {
             type = TYPE_SRC;
         }
@@ -244,7 +244,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         return cp;
     }
     
-    private ClassPath getRuntimeClasspath(int type) {
+    private synchronized ClassPath getRuntimeClasspath(int type) {
         if (type == TYPE_WEB) {
             type = TYPE_SRC;
         }
@@ -260,7 +260,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         return cp;
     }
     
-    private ClassPath getBootClassPath() {
+    private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[6];
         if (cp == null) {
             bcpImpl = new BootClassPathImpl(project);

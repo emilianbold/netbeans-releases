@@ -653,7 +653,11 @@ public class PHPIndex {
     public Collection<IndexedInterface> getInterfaces(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedInterface> ifaces = new ArrayList<IndexedInterface>();
-        search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
+        if (name != null && name.trim().length() > 0) {
+            search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
+        } else {
+            search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, null);
+        }
 
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null) {

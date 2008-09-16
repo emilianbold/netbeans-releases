@@ -1,0 +1,125 @@
+      extendCode = extend()
+      ----------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to extend_code
+FIX:Rename...
+        argList = "(pattern)";
+        -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("=$/", "=\"$/\"");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("=$;", "=\"$;\"");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("=$,", "=\"$,\"");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("=$>", "=\"$>\"");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+        argList = argList.gsub("(module, ", "(module_, ");
+        -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub(", end,", ", endd,"); # yuck
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("]+>", "");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("]*", "");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("]+", "");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("]", "");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub(" [", "");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("[", "");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("...", "");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("..", ""); #probably typo in original source
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("  ", " ");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+        argList = "(module_name)";
+        -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+        argList = "(class_name)";
+        -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub(", )", ")");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub(",)", ")");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub(">)", ")");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("//)", ")");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("()", "");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...
+      argList = argList.gsub("fixnum, fixnum", "fixnum1, fixnum2");
+      -------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to arg_list
+FIX:Rename...

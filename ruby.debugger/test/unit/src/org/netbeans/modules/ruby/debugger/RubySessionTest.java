@@ -61,10 +61,7 @@ public final class RubySessionTest extends TestBase {
             "a = 5",
             "sleep 0.01",
         };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 2);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 2);
         RubySession session = Util.getCurrentSession();
         assertEquals("a variable", 1, session.getVariables().length);
         doContinue();
@@ -115,9 +112,7 @@ public final class RubySessionTest extends TestBase {
             "sleep 0.01",
         };
         File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 1);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 1);
         RubySession session = Util.getCurrentSession();
         assertNotNull("test.rb relative resolved", session.resolveAbsolutePath(testF.getName()));
         assertNotNull("test.rb absolute resolved", session.resolveAbsolutePath(testF.getAbsolutePath()));
@@ -169,9 +164,7 @@ public final class RubySessionTest extends TestBase {
             "sleep 0.01",
         };
         final File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 1);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 1);
         final RubySession session = Util.getCurrentSession();
         waitForEvents(session.getProxy(), 1, new Runnable() {
 

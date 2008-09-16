@@ -62,227 +62,226 @@ import static org.netbeans.modules.print.ui.UI.*;
  */
 final class ComponentLine {
 
-  ComponentLine(AttributedCharacterIterator it, Font defaultFont, Color defaultColor) {
-    for (char c = it.first(); c != CharacterIterator.DONE; c = it.next()) {
-      Font font = (Font) it.getAttribute(TextAttribute.FONT);
-      Color color = (Color) it.getAttribute(TextAttribute.FOREGROUND);
-      mySymbols.add(new Symbol(c, createFont(font, defaultFont), createColor(color, defaultColor)));
+    ComponentLine(AttributedCharacterIterator it, Font defaultFont, Color defaultColor) {
+        for (char c = it.first(); c != CharacterIterator.DONE; c = it.next()) {
+            Font font = (Font) it.getAttribute(TextAttribute.FONT);
+            Color color = (Color) it.getAttribute(TextAttribute.FOREGROUND);
+            mySymbols.add(new Symbol(c, createFont(font, defaultFont), createColor(color, defaultColor)));
+        }
+        checkSpaces(defaultFont, defaultColor);
     }
-    checkSpaces(defaultFont, defaultColor);
-  }
 
-  ComponentLine(String text, Font font, Color color) {
-    for (int i=0; i < text.length(); i++) {
-      mySymbols.add(new Symbol(text.charAt(i), font, color));
+    ComponentLine(String text, Font font, Color color) {
+        for (int i = 0; i < text.length(); i++) {
+            mySymbols.add(new Symbol(text.charAt(i), font, color));
+        }
+        checkSpaces(font, color);
     }
-    checkSpaces(font, color);
-  }
 
-  private ComponentLine(List<Symbol> symbols, Font font, Color color) {
-    mySymbols = symbols;
-    checkSpaces(font, color);
-  }
-
-  private Font createFont(Font attrFont, Font defaultFont) {
-    if ( !Config.getDefault().isUseFont()) {
-      return defaultFont;
+    private ComponentLine(List<Symbol> symbols, Font font, Color color) {
+        mySymbols = symbols;
+        checkSpaces(font, color);
     }
-    String name = defaultFont.getName();
-    int size = defaultFont.getSize();
-    int style = attrFont.getStyle();
-    return new Font(name, style, size);
-  }
 
-  private Color createColor(Color attrColor, Color defaultColor) {
-    if (Config.getDefault().isUseColor()) {
-      return attrColor;
+    private Font createFont(Font attrFont, Font defaultFont) {
+        if (!Config.getDefault().isUseFont()) {
+            return defaultFont;
+        }
+        String name = defaultFont.getName();
+        int size = defaultFont.getSize();
+        int style = attrFont.getStyle();
+        return new Font(name, style, size);
     }
-    return defaultColor;
-  }
 
-  private void checkSpaces(Font font, Color color) {
-    int i = length() - 1;
-    myFont = font;
-    myColor = color;
-
-    while (i >= 1 && mySymbols.get(i).getChar() == ' ') {
-      i--;
+    private Color createColor(Color attrColor, Color defaultColor) {
+        if (Config.getDefault().isUseColor()) {
+            return attrColor;
+        }
+        return defaultColor;
     }
-    mySymbols = mySymbols.subList(0, i + 1);
 
-    if (length() == 0) {
-      mySymbols.add(new Symbol(' ', font, color));
+    private void checkSpaces(Font font, Color color) {
+        int i = length() - 1;
+        myFont = font;
+        myColor = color;
+
+        while (i >= 1 && mySymbols.get(i).getChar() == ' ') {
+            i--;
+        }
+        mySymbols = mySymbols.subList(0, i + 1);
+
+        if (length() == 0) {
+            mySymbols.add(new Symbol(' ', font, color));
+        }
     }
-  }
 
-  void prepend(String text) {
-    Font firstFont = mySymbols.get(0).getFont();
+    void prepend(String text) {
+        Font firstFont = mySymbols.get(0).getFont();
 
-    String name = firstFont.getName();
-    int size = firstFont.getSize();
+        String name = firstFont.getName();
+        int size = firstFont.getSize();
 
-    Font font = new Font(name, Font.PLAIN, size);
+        Font font = new Font(name, Font.PLAIN, size);
 
-    for (int i= text.length()-1; i >= 0; i--) {
-      mySymbols.add(0, new Symbol(text.charAt(i), font, myColor));
+        for (int i = text.length() - 1; i >= 0; i--) {
+            mySymbols.add(0, new Symbol(text.charAt(i), font, myColor));
+        }
     }
-  }
 
-  boolean isEmpty() {
-    for (int i=0; i < length(); i++) {
-      if (mySymbols.get(i).getChar() != ' ') {
-        return false;
-      }
+    boolean isEmpty() {
+        for (int i = 0; i < length(); i++) {
+            if (mySymbols.get(i).getChar() != ' ') {
+                return false;
+            }
+        }
+        return true;
     }
-    return true;
-  }
 
-  int length() {
-    return mySymbols.size();
-  }
-
-  ComponentLine substring(int index1, int index2) {
-    List<Symbol> list = new ArrayList<Symbol>();
-
-    for (int i=index1; i < index2; i++) {
-      list.add(mySymbols.get(i));
+    int length() {
+        return mySymbols.size();
     }
-    return new ComponentLine(list, myFont, myColor);
-  }
 
-  ComponentLine substring(int index) {
-    return substring(index, mySymbols.size());
-  }
+    ComponentLine substring(int index1, int index2) {
+        List<Symbol> list = new ArrayList<Symbol>();
 
-  int getAscent() {
-    return (int) Math.ceil(getTextLayout().getAscent());
-  }
-
-  int getDescent() {
-    return (int) Math.ceil(getTextLayout().getDescent());
-  }
-
-  int getLeading() {
-    return (int) Math.ceil(getTextLayout().getLeading());
-  }
-
-  int getWidth() {
-    int offset = getOffset();
-
-    if (offset > 0) {
-      offset = 0;
+        for (int i = index1; i < index2; i++) {
+            list.add(mySymbols.get(i));
+        }
+        return new ComponentLine(list, myFont, myColor);
     }
+
+    ComponentLine substring(int index) {
+        return substring(index, mySymbols.size());
+    }
+
+    int getAscent() {
+        return (int) Math.ceil(getTextLayout().getAscent());
+    }
+
+    int getDescent() {
+        return (int) Math.ceil(getTextLayout().getDescent());
+    }
+
+    int getLeading() {
+        return (int) Math.ceil(getTextLayout().getLeading());
+    }
+
+    int getWidth() {
+        int offset = getOffset();
+
+        if (offset > 0) {
+            offset = 0;
+        }
 //out(this + " " + getOffset());
-    return (int) Math.ceil(getTextLayout().getBounds().getMaxX() - offset);
-  }
+        return (int) Math.ceil(getTextLayout().getBounds().getMaxX() - offset);
+    }
 
-  int getOffset() {
-    return (int) Math.ceil(getTextLayout().getBounds().getX());
-  }
+    int getOffset() {
+        return (int) Math.ceil(getTextLayout().getBounds().getX());
+    }
 
-  void draw(Graphics2D g, int x, int y) {
-    getTextLayout().draw(g, x, y);
-  }
+    void draw(Graphics2D g, int x, int y) {
+        getTextLayout().draw(g, x, y);
+    }
 
-  private TextLayout getTextLayout() {
-    if (myTextLayout == null) {
+    private TextLayout getTextLayout() {
+        if (myTextLayout == null) {
 //out();
 //out("TEXT : '" + this + "'");
-      myTextLayout = new TextLayout(getIterator(), Config.FONT_RENDER_CONTEXT);
-    }
-    return myTextLayout;
-  }
-
-  private AttributedCharacterIterator getIterator() {
-    AttributedCharacters characters = new AttributedCharacters();
-
-    for (int i=0; i < length(); i++) {
-      characters.append(mySymbols.get(i).getChar(), mySymbols.get(i).getFont(), mySymbols.get(i).getColor());
-    }
-    return characters.iterator();
-  }
-
-  int lastIndexOf(char c, int index) {
-    for (int i=index; i >= 0; i--) {
-      if (mySymbols.get(i).getChar() == c) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  @Override
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-
-    for (int i=0; i < length(); i++) {
-      buffer.append(mySymbols.get(i).getChar());
-    }
-    return buffer.toString();
-  }
-
-  void show() {
-    for (int i=0; i < length(); i++) {
-      out(mySymbols.get(i));
-    }
-  }
-
-  // --------------------------------
-  private static final class Symbol {
-
-    Symbol(char c, Font font, Color color) {
-      myChar = c;
-      myFont = font;
-      myColor = color;
+            myTextLayout = new TextLayout(getIterator(), Config.FONT_RENDER_CONTEXT);
+        }
+        return myTextLayout;
     }
 
-    char getChar() {
-      return myChar;
+    private AttributedCharacterIterator getIterator() {
+        AttributedCharacters characters = new AttributedCharacters();
+
+        for (int i = 0; i < length(); i++) {
+            characters.append(mySymbols.get(i).getChar(), mySymbols.get(i).getFont(), mySymbols.get(i).getColor());
+        }
+        return characters.iterator();
     }
 
-    Font getFont() {
-      return myFont;
-    }
-
-    Color getColor () {
-      return myColor;
-    }
-
-    void setColor (Color color) {
-      myColor = color;
+    int lastIndexOf(char c, int index) {
+        for (int i = index; i >= 0; i--) {
+            if (mySymbols.get(i).getChar() == c) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
     public String toString() {
-      return "'" + myChar + "' " + getString(myFont) + " " + getString(myColor); // NOI18N
+        StringBuffer buffer = new StringBuffer();
+
+        for (int i = 0; i < length(); i++) {
+            buffer.append(mySymbols.get(i).getChar());
+        }
+        return buffer.toString();
     }
 
-    private String getString(Color color) {
-      return "(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ")"; // NOI18N
+    void show() {
+        for (int i = 0; i < length(); i++) {
+            out(mySymbols.get(i));
+        }
     }
 
-    private String getString(Font font) {
-      String style = ""; // NOI18N
+    // --------------------------------
+    private static final class Symbol {
 
-      if (font.isBold()) {
-        style += "bold"; // NOI18N
-      } 
-      if (font.isItalic()) {
-        style += " italic"; // NOI18N
-      }
-      else {
-        style += " plain"; // NOI18N
-      }
-      return "[" + font.getName() + ", " + style + ", " + font.getSize() + "]"; // NOI18N
+        Symbol(char c, Font font, Color color) {
+            myChar = c;
+            myFont = font;
+            myColor = color;
+        }
+
+        char getChar() {
+            return myChar;
+        }
+
+        Font getFont() {
+            return myFont;
+        }
+
+        Color getColor() {
+            return myColor;
+        }
+
+        void setColor(Color color) {
+            myColor = color;
+        }
+
+        @Override
+        public String toString() {
+            return "'" + myChar + "' " + getString(myFont) + " " + getString(myColor); // NOI18N
+        }
+
+        private String getString(Color color) {
+            return "(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ")"; // NOI18N
+        }
+
+        private String getString(Font font) {
+            String style = ""; // NOI18N
+
+            if (font.isBold()) {
+                style += "bold"; // NOI18N
+            }
+            if (font.isItalic()) {
+                style += " italic"; // NOI18N
+            } else {
+                style += " plain"; // NOI18N
+            }
+            return "[" + font.getName() + ", " + style + ", " + font.getSize() + "]"; // NOI18N
+        }
+
+        private char myChar;
+        private Font myFont;
+        private Color myColor;
     }
 
-    private char myChar;
     private Font myFont;
     private Color myColor;
-  }
-
-  private Font myFont;
-  private Color myColor;
-  private TextLayout myTextLayout;
-  private List<Symbol> mySymbols = new ArrayList<Symbol>();
+    private TextLayout myTextLayout;
+    private List<Symbol> mySymbols = new ArrayList<Symbol>();
 }

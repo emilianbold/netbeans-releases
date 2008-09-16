@@ -57,6 +57,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -69,7 +70,6 @@ import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataLoader;
 import org.netbeans.modules.hibernate.service.TableColumn;
-import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -198,12 +198,12 @@ public class HibernateUtil {
                 FileObject fo = enumeration.nextElement();
                 if (fo.getNameExt() != null && fo.getNameExt().contains("cfg.xml")) {
                     configFiles.add(fo);
-                } 
+                }
             }
         }
         return configFiles;
     }
-    
+
     /**
      * Seaches mapping files under the given project and returns the list of 
      * FileObjects if found.
@@ -226,7 +226,7 @@ public class HibernateUtil {
         }
         return mappingFiles;
     }
-    
+
     private static FileObject createBuildFolder(File buildFile) {
         FileObject buildFO = null;
         logger.info("Build folder does not exist. Creating it.");
@@ -291,6 +291,29 @@ public class HibernateUtil {
     }
 
     /**
+     * Returns the project classpath including project build paths.
+     * Can be used to set classpath for custom classloader.
+     * 
+     * @param project the current project.
+     * @return List of java.net.URL objects representing each entry on the classpath.
+     */
+    public static List<URL> getProjectClassPath(Project project) {
+        List<URL> projectClassPathEntries = new ArrayList<URL>();
+        for (SourceGroup sourceGroup : getSourceGroups(project)) {
+            if (sourceGroup == null) {
+                continue;
+            }
+            ClassPath cp = ClassPath.getClassPath(sourceGroup.getRootFolder(), ClassPath.COMPILE);
+
+            for (ClassPath.Entry cpEntry : cp.entries()) {
+                projectClassPathEntries.add(cpEntry.getURL());
+            }
+        }
+
+        return projectClassPathEntries;
+    }
+
+    /**
      * Returns the build directory set for this project.
      * @param projectFile a file in the project.
      * @param project the project.
@@ -299,9 +322,9 @@ public class HibernateUtil {
     public static FileObject getBuildFO(Project project) {
         FileObject buildFO = null;
         try {
-            BinaryForSourceQueryImplementation binaryForSourceQueryImpl = (BinaryForSourceQueryImplementation) project.getLookup().lookup(BinaryForSourceQueryImplementation.class);
+            BinaryForSourceQuery binaryForSourceQuery = project.getLookup().lookup(BinaryForSourceQuery.class);
 
-            if (binaryForSourceQueryImpl == null) {
+            if (binaryForSourceQuery == null) {
                 // Web projects do not have this in the lookup.
                 logger.info("BinaryForSourceQueryImpl is null. trying reflection.");
                 // The following is a hack because of #140802.
@@ -337,7 +360,20 @@ public class HibernateUtil {
 
             } else {
                 SourceGroup[] sourceGroup = HibernateUtil.getSourceGroups(project);
-                Result result = binaryForSourceQueryImpl.findBinaryRoots(
+                Result result = BinaryForSourceQuery.findBinaryRoots(
+                        sourceGroup[0].getRootFolder().getURL());
+                URL buildURL = result.getRoots()[0];
+                logger.info("Got build URL from the project sources : " + buildURL);
+                File buildFile = new File(buildURL.getPath());
+                buildFO = FileUtil.toFileObject(buildFile);
+                if (buildFO == null) {
+                    buildFO = createBuildFolder(buildFile);
+                }
+            }
+            
+            if(buildFO == null) { // For freeform projects.
+                SourceGroup[] sourceGroup = HibernateUtil.getSourceGroups(project);
+                Result result = BinaryForSourceQuery.findBinaryRoots(
                         sourceGroup[0].getRootFolder().getURL());
                 URL buildURL = result.getRoots()[0];
                 logger.info("Got build URL from the project sources : " + buildURL);

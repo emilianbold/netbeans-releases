@@ -87,6 +87,7 @@ made subject to such option by the copyright holder.
                     </condition>
                 </target>
                 <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
+                    <property name="wsdl" location="${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"/>
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <xsl:choose>
                             <xsl:when test="$xnocompile = 'true'">
@@ -95,7 +96,7 @@ made subject to such option by the copyright holder.
                                     sourcedestdir="${{build.generated.dir}}/wsimport/client"
                                     package="{$package_name}"
                                     destdir="${{build.generated.dir}}/wsimport/binaries"
-                                    wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                                    wsdl="${{wsdl}}"
                                     wsdlLocation="{$wsdl_url_actual}"
                                     catalog="{$catalog}">
                                     <xsl:if test="jaxws:wsimport-options">
@@ -125,7 +126,7 @@ made subject to such option by the copyright holder.
                                     sourcedestdir="${{build.generated.dir}}/wsimport/client"
                                     package="{$package_name}"
                                     destdir="${{build.generated.dir}}/wsimport/binaries"
-                                    wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                                    wsdl="${{wsdl}}"
                                     wsdlLocation="{$wsdl_url_actual}"
                                     catalog="{$catalog}">
                                     <xsl:if test="jaxws:wsimport-options">
@@ -159,7 +160,7 @@ made subject to such option by the copyright holder.
                                     xnocompile="true"
                                     sourcedestdir="${{build.generated.dir}}/wsimport/client"
                                     destdir="${{build.generated.dir}}/wsimport/binaries"
-                                    wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                                    wsdl="${{wsdl}}"
                                     wsdlLocation="{$wsdl_url_actual}"
                                     catalog="{$catalog}">
                                     <xsl:if test="jaxws:wsimport-options">
@@ -188,7 +189,7 @@ made subject to such option by the copyright holder.
                                 <wsimport
                                     sourcedestdir="${{build.generated.dir}}/wsimport/client"
                                     destdir="${{build.generated.dir}}/wsimport/binaries"
-                                    wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                                    wsdl="${{wsdl}}"
                                     wsdlLocation="{$wsdl_url_actual}"
                                     catalog="{$catalog}">
                                     <xsl:if test="jaxws:wsimport-options">
