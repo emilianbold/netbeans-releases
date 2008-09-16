@@ -54,6 +54,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.CharBuffer;
 import java.util.Arrays;
@@ -132,9 +134,13 @@ import javax.swing.text.Element;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.EditList;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.spi.DefaultError;
 
 /**
@@ -1867,7 +1873,7 @@ public abstract class GsfTestBase extends NbTestCase {
         return (s.substring(begin, offset)+"|"+s.substring(offset, end)).trim();
     }
 
-    private String getSourceWindow(String s, int offset) {
+    protected String getSourceWindow(String s, int offset) {
         int prevLineBegin;
         int nextLineEnd;
         int begin = offset;
@@ -3291,7 +3297,9 @@ public abstract class GsfTestBase extends NbTestCase {
                 @Override
                 public void publish(LogRecord record) {
                     if (record.getThrown() != null) {
-                        fail("Encountered error: " + record.getThrown().toString());
+                        StringWriter sw = new StringWriter();
+                        record.getThrown().printStackTrace(new PrintWriter(sw));
+                        fail("Encountered error: " + sw.toString());
                     }
                 }
 
@@ -3518,8 +3526,15 @@ public abstract class GsfTestBase extends NbTestCase {
         
         HintFix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
-        
-        fix.implement();
+
+        if (fix.isInteractive() && fix instanceof PreviewableFix) {
+            PreviewableFix preview = (PreviewableFix)fix;
+            assert preview.canPreview();
+            EditList editList = preview.getEditList();
+            editList.applyToDocument((BaseDocument) info.getDocument());
+        } else {
+            fix.implement();
+        }
         
         Document doc = info.getDocument();
         String fixed = doc.getText(0, doc.getLength());
@@ -3593,5 +3608,66 @@ public abstract class GsfTestBase extends NbTestCase {
         public List<Hint> hints;
         public int caretOffset;
     }
-    
+
+    ////////////////////////////////////////////////////////////////////////////
+    // DeclarationFinder
+    ////////////////////////////////////////////////////////////////////////////
+    protected DeclarationFinder getFinder() {
+        DeclarationFinder finder = getPreferredLanguage().getDeclarationFinder();
+        if (finder == null) {
+            fail("You must override getFinder()");
+        }
+
+        return finder;
+    }
+
+    protected DeclarationLocation findDeclaration(String relFilePath, String caretLine) throws Exception {
+        CompilationInfo info = getInfo(relFilePath);
+
+        String text = info.getText();
+
+        int caretDelta = caretLine.indexOf('^');
+        assertTrue(caretDelta != -1);
+        caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+        int lineOffset = text.indexOf(caretLine);
+        assertTrue(lineOffset != -1);
+        int caretOffset = lineOffset + caretDelta;
+
+        DeclarationFinder finder = getFinder();
+        DeclarationLocation location = finder.findDeclaration(info, caretOffset);
+
+        return location;
+    }
+
+    protected void checkDeclaration(String relFilePath, String caretLine, String declarationLine) throws Exception {
+        DeclarationLocation location = findDeclaration(relFilePath, caretLine);
+        if (location == DeclarationLocation.NONE) {
+            // if we dont found a declaration, bail out.
+            assertTrue("DeclarationLocation.NONE", false);
+        }
+
+        int caretDelta = declarationLine.indexOf('^');
+        assertTrue(caretDelta != -1);
+        declarationLine = declarationLine.substring(0, caretDelta) + declarationLine.substring(caretDelta + 1);
+        String text = readFile(location.getFileObject());
+        int lineOffset = text.indexOf(declarationLine);
+        assertTrue(lineOffset != -1);
+        int caretOffset = lineOffset + caretDelta;
+
+        if (caretOffset != location.getOffset()) {
+            fail("Offset mismatch (expected " + caretOffset + " vs. actual " + location.getOffset() + ": got " + getSourceWindow(text, location.getOffset()));
+        }
+        assertEquals(caretOffset, location.getOffset());
+    }
+
+    protected void checkDeclaration(String relFilePath, String caretLine, String file, int offset) throws Exception {
+        DeclarationLocation location = findDeclaration(relFilePath, caretLine);
+        if (location == DeclarationLocation.NONE) {
+            // if we dont found a declaration, bail out.
+            assertTrue("DeclarationLocation.NONE", false);
+        }
+
+        assertEquals(file, location.getFileObject().getNameExt());
+        assertEquals(offset, location.getOffset());
+    }
 }

@@ -85,6 +85,11 @@ public class PHPHintsProvider implements HintsProvider {
                 
                 if (mgr.isEnabled(userConfigurableRule)){
                     firstPassHints.add(obj);
+                    
+                    if (userConfigurableRule instanceof PHPRuleWithPreferences) {
+                        PHPRuleWithPreferences ruleWithPrefs = (PHPRuleWithPreferences) userConfigurableRule;
+                        ruleWithPrefs.setPreferences(mgr.getPreferences(userConfigurableRule));
+                    }
                 }
             }
         }

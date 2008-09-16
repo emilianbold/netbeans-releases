@@ -49,6 +49,9 @@
         <ccCompilerTool>
           <developmentMode>5</developmentMode>
         </ccCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
         <linkerTool>
           <linkerLibItems>
           </linkerLibItems>

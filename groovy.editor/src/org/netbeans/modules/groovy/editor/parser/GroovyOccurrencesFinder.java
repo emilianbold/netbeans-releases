@@ -180,12 +180,20 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
             if (astNode instanceof FakeASTNode) {
                 String text = astNode.getText();
                 ASTNode orig = ((FakeASTNode) astNode).getOriginalNode();
-                int start = AstUtilities.getOffset(document, orig.getLineNumber(), orig.getColumnNumber());
-                range = AstUtilities.getNextIdentifierByName(document, text, start);
+                int line = orig.getLineNumber();
+                int column = orig.getColumnNumber();
+                if (line > 0 && column > 0) {
+                    int start = AstUtilities.getOffset(document, line, column);
+                    range = AstUtilities.getNextIdentifierByName(document, text, start);
+                } else {
+                    range = OffsetRange.NONE;
+                }
             } else {
                 range = AstUtilities.getRange(astNode, document);
             }
-            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            if (range != OffsetRange.NONE) {
+                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
         }
     }
 
