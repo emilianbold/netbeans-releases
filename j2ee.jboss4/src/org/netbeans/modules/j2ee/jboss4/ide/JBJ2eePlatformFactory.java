@@ -56,12 +56,14 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
@@ -71,6 +73,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.Lookups;
 
  
 /**
@@ -409,5 +412,12 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, properties.getSources());
             libraries = new LibraryImplementation[] {lib};
         }
+
+        @Override
+        public Lookup getLookup() {
+            Lookup baseLookup = Lookups.fixed(properties.getRootDir());
+            return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/JBoss4/Lookup"); //NOI18N
+        }
+        
     }
 }
