@@ -432,6 +432,18 @@ public class TSDiagramConverter
             String path=etldFO.getPath();
             String path2=etlpFO.getPath();
             String parpath=parent.getPath();
+            //if it's reconverting just override previous 6.1 backup
+             FileObject destFO1 = backupFO.getFileObject(etldFO.getName(), etldFO.getExt());
+             if (destFO1 != null)
+             {
+                destFO1.delete();
+             }             
+             FileObject destFO2 = backupFO.getFileObject(etlpFO.getName(), etlpFO.getExt());
+             if (destFO2 != null)
+             {
+                destFO2.delete();
+             }             
+            //
             FileUtil.moveFile(etldFO, backupFO, etldFO.getName());
             FileUtil.moveFile(etlpFO, backupFO, etlpFO.getName());
             IDrawingAreaEventDispatcher dispatcher = getDispatcher();
@@ -903,6 +915,18 @@ public class TSDiagramConverter
                 Object object = retVal.get(i);
                 if (object instanceof DiagramEdgeReader)
                 {
+                    //workaround for issue with number on message which do not have associated operation, will show name label instead of operation label
+                    if(ShowMessageNumbers)
+                    {
+                        if(message.getOperationInvoked()==null)//no operation - no operation label in 6.5
+                        {
+                            if(edgeInfo.getLabels()!=null && edgeInfo.getLabels().size()>0 && edgeInfo.getLabels().get(0).getLabel().equalsIgnoreCase(AbstractLabelManager.OPERATION))//atempt to load operation
+                            {
+                                edgeInfo.getLabels().get(0).setLabel(AbstractLabelManager.NAME);//change o show name
+                            }
+                        }
+                    }
+                    //
                     if (object instanceof UMLEdgeWidget && 
                             (((UMLEdgeWidget)object).getWidgetID()).equalsIgnoreCase(UMLWidgetIDString.RESULTMESSAGECONNECTIONWIDGET.toString())) {
                         ((DiagramEdgeReader)object).load(resultInfo);

@@ -154,6 +154,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** document we work with */
     private StrongRef doc;
 
+    /** State of doc reference, it is set to true in prepareDocument when StrongRef is created
+     * and set to false when document loading is finished. It helps to reset doc reference to weak just once. */
+    private boolean isStrongSet = false;
+
     /** Non default MIME type used to editing */
     private String mimeType;
 
@@ -520,8 +524,27 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             switch (documentStatus) {
             case DOCUMENT_NO:
                 documentStatus = DOCUMENT_LOADING;
-                
-                return prepareDocument(false);
+                Task t = prepareDocument(false);
+                //Check for null is workaround for issue #144722
+                if (t != null) {
+                    t.addTaskListener(new TaskListener() {
+                        public void taskFinished(Task task) {
+                            if (isStrongSet) {
+                                isStrongSet = false;
+                                CloneableEditorSupport.this.doc.setStrong(false);
+                            }
+                            task.removeTaskListener(this);
+                        }
+                    });
+                } else {
+                    if (isStrongSet) {
+                        isStrongSet = false;
+                        if (this.doc != null) {
+                            this.doc.setStrong(false);
+                        }
+                    }
+                }
+                return t;
 
             default:
 
@@ -558,7 +581,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             final StyledDocument[] docToLoad = { getDoc() };
             if (docToLoad[0] == null) {
                 docToLoad[0] = createStyledDocument(kit);
-                setDoc(docToLoad[0], false);
+                setDoc(docToLoad[0], true);
+                isStrongSet = true;
 
                 // here would be the testability hook for issue 56413
                 // (Deadlock56413Test), but I use the reflection in the test
@@ -717,7 +741,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.openDocument();
         }
         synchronized (getLock()) {
-            return openDocumentCheckIOE();
+            StyledDocument doc = openDocumentCheckIOE();
+            if (isStrongSet) {
+                isStrongSet = false;
+                this.doc.setStrong(false);
+            }
+            return doc;
         }
     }
 
@@ -801,7 +830,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     }
 
                     try {
-                        return openDocumentCheckIOE();
+                        StyledDocument doc = openDocumentCheckIOE();
+                        if (isStrongSet) {
+                            isStrongSet = false;
+                            this.doc.setStrong(false);
+                        }
+                        return doc;
                     } catch (IOException e) {
                         return null;
                     }
