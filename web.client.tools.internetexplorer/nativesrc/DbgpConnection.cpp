@@ -239,7 +239,7 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
 
     CComBSTR bstrURL;
     pHTMLDocument->get_URL(&bstrURL);
-    DbgpSourcesMessage message;
+    DbgpSourcesMessage message(SOURCES);
     message.addAttribute(ENCODING, BASE64);
     DbgpSourceTag &sourceTag = message.addSource();
     sourceTag.addAttribute(FILE_URI, encodeToBase64((TCHAR *)(bstrURL)));
@@ -302,6 +302,14 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
         }
     }
     */
+}
+
+void DbgpConnection::sendReloadSourcesMessage(tstring docName) {
+    DbgpSourcesMessage message(RELOAD_SOURCES);
+    message.addAttribute(ENCODING, BASE64);
+    DbgpSourceTag &sourceTag = message.addSource();
+    sourceTag.addAttribute(FILE_URI, encodeToBase64(docName.c_str()));
+    sendResponse(message.toString());
 }
 
 void DbgpConnection::sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID, tstring reason) {
