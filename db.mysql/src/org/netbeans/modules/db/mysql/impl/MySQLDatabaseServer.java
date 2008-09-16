@@ -77,6 +77,8 @@ import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.DatabaseUser;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.util.ExecSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Mutex;
@@ -865,6 +867,11 @@ public class MySQLDatabaseServer implements DatabaseServer {
         } catch (UnknownHostException ex) {
             return false;
         } catch (IOException ex) {
+            return false;
+        } catch (NumberFormatException nfe) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_MySQL_InvalidPortNumber" + "  " + getPort()), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+            DialogDisplayer.getDefault().notify(nd);
+            LOGGER.log(Level.WARNING, nfe.getMessage());
             return false;
         }
 
