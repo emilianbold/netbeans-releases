@@ -116,7 +116,7 @@ public abstract class CCCCompiler extends BasicCompiler {
                     env.put(pi.getPathName(), newPath);
 
                     provider.run(getHostKey(), remote_command(command, stdout), env);
-                    reader = new BufferedReader(new StringReader(provider.toString()));
+                    reader = new BufferedReader(new StringReader(provider.getOutput()));
                 } else {
                     return;
                 }
