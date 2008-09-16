@@ -147,6 +147,15 @@ public abstract class TestBase extends RubyTestBase {
     }
 
 
+    protected Process startDebugging(final String[] rubyCode, final int... breakpoints) throws RubyDebuggerException, IOException, InterruptedException {
+        File testF = createScript(rubyCode);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        for (int breakpoint : breakpoints) {
+            addBreakpoint(testFO, breakpoint);
+        }
+        return startDebugging(testF);
+    }
+
     protected Process startDebugging(final File f) throws RubyDebuggerException, IOException, InterruptedException {
         return startDebugging(f, true);
     }
