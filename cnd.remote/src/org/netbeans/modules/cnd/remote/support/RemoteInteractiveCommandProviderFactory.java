@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,78 +31,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.remote.support;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 
 /**
- * Run a remote command which requires interactive I/O. The caller is responsible for setting up the
- * reader and writers via the getInputStream() and getOutputStream() methods.
- * 
- * @author gordonp
+ *
+ * @author Sergey Grinev
  */
-public class RemoteInteractiveCommandProvider implements InteractiveCommandProvider {
-
-    public RemoteInteractiveCommandProvider(String hkey) {
-        this.hkey = hkey;
-    }
-    
-    private RemoteInteractiveCommandSupport support;
-    private String hkey;
-
-    public boolean run(String hkey, String cmd, Map<String, String> env) {
-        support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
-        return !support.isFailedOrCancelled();
-    }
-
-    public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env) {
-        assert hkey != null;
-        StringBuilder plainCommand = new StringBuilder();
-        
-        for (String arg : commandAndArgs) {
-            plainCommand.append(arg);
-            plainCommand.append(' ');
-        }
-        support = new RemoteInteractiveCommandSupport(hkey, plainCommand.toString(), env);
-        return !support.isFailedOrCancelled();
-    }
-
-    public boolean connect(String hkey, String cmd, Map<String, String> env) {
-        support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
-        return !support.isFailedOrCancelled();
-    }
-
-    public InputStream getInputStream() throws IOException {
-        return support == null ? null : support.getInputStream();
-    }
-
-    public OutputStream getOutputStream() throws IOException {
-        return support == null ? null : support.getOutputStream();
-    }
-    
-    public void disconnect() {
-        if (support != null) {
-            support.disconnect();
-        }
-    }
-
-    public int waitFor() {
-        return support == null ? -1 : support.waitFor();
-    }
-
-    public int getExitStatus() {
-        return support == null ? -1 : support.getExitStatus();
+public class RemoteInteractiveCommandProviderFactory extends InteractiveCommandProviderFactory {
+    @Override
+    public InteractiveCommandProvider createInstance(String hkey) {
+        return new RemoteInteractiveCommandProvider(hkey);
     }
 }
