@@ -19,7 +19,6 @@
 
 package org.netbeans.test.languages;
 
-import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.lib.BasicOpenFileTest;
@@ -39,7 +38,8 @@ public class OpenProjectFileTest extends BasicOpenFileTest {
     }
     
     @Override
-    public void setUp() throws IOException{
+    public void setUp() throws Exception{
+        super.setUp();
         openDataProjects(projectName);
     }
     
