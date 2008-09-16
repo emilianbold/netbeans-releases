@@ -956,12 +956,34 @@ public final class RubyPlatform {
             return releaseDate;
         }
 
+        /**
+         * Returns JRuby version as specified by <code>JRUBY_VERSION</code>
+         * JRuby constant. Supported by JRuby only.
+         *
+         * @return JRuby version
+         */
         public String getJVersion() {
             return jversion;
         }
 
+        /**
+         * Returns Ruby version as specified by <code>RUBY_VERSION</code>
+         * constant. Supported by all interpreters.
+         *
+         * @return Ruby version
+         */
         public String getVersion() {
             return version;
+        }
+
+        /**
+         * Get version specific for the platform. E.g. in the case of JRuby it
+         * returns e.g. 1.1.4 instead of 1.8.6.
+         *
+         * @return platform specific version
+         */
+        public String getPlatformVersion() {
+            return isJRuby() ? getJVersion() : getVersion();
         }
 
         /** Returns content of <code>RbConfig::CONFIG['rubylibdir']</code>. */

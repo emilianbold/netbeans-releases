@@ -45,13 +45,13 @@ made subject to such option by the copyright holder.
 <fontscolors>
     <!-- See http://ui.netbeans.org/docs/ui/editor_fonts_colors/Editor_fonts_and_colors.htm#jsp -->
     <!-- GSP tokens -->
-    <fontcolor name="groovy-delimiter" foreColor="black" bgColor="ffD8EED2" default="default">
+    <fontcolor name="groovy-delimiter" foreColor="black" bgColor="ffe3f2e1" default="default">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="html" default="default"/>
-    <fontcolor name="groovy" bgColor="ffD8EED2" default="default"/>
-    <fontcolor name="GROOVYCOMMENT" bgColor="ffD8EED2" default="comment"/>
-    <fontcolor name="gtag" foreColor="black" bgColor="ffD8EED2" default="default">
+    <fontcolor name="groovy" bgColor="ffe3f2e1" default="default"/>
+    <fontcolor name="GROOVYCOMMENT" bgColor="ffe3f2e1" default="comment"/>
+    <fontcolor name="gtag" foreColor="black" bgColor="ffe3f2e1" default="default">
         <font style="bold"/>
     </fontcolor>
 </fontscolors>

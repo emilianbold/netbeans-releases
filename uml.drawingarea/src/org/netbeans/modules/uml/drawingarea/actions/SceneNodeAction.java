@@ -66,4 +66,10 @@ public abstract class SceneNodeAction extends NodeAction
         return retVal;
     }
     
+
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
 }

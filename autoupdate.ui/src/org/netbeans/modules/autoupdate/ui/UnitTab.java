@@ -46,6 +46,7 @@ import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -196,6 +197,13 @@ public class UnitTab extends javax.swing.JPanel {
                 refreshState();
             }
         });
+        table.getInputMap ().put (
+                KeyStroke.getKeyStroke (KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK),
+                "org.netbeans.modules.autoupdate.ui.UnitTab.PopupActionSupport"); // NOI18N
+        table.getActionMap ().put (
+                "org.netbeans.modules.autoupdate.ui.UnitTab.PopupActionSupport", // NOI18N
+                popupActionsSupport.popupOnF10);
+
     }
     
     void focusTable () {
@@ -684,7 +692,7 @@ public class UnitTab extends javax.swing.JPanel {
         return Utilities.startAsWorkerThread (checkUpdates);
     }
     
-    private class PopupActionSupport extends MouseAdapter {
+    class PopupActionSupport extends MouseAdapter implements Runnable {
         private final TabAction[] actions;
         
         PopupActionSupport (TabAction[] actions) {
@@ -784,16 +792,53 @@ public class UnitTab extends javax.swing.JPanel {
             }
             return false;
         }
+
+        public void run () {
+            Point p = getPositionForPopup();
+
+            if (p != null) {
+                showPopup (p, table);
+            }
+        }
+        
+        private Point getPositionForPopup () {
+            int r = table.getSelectedRow ();
+            int c = table.getSelectedColumn ();
+
+            if (r < 0 || c < 0) {
+                return null;
+            }
+
+            Rectangle rect = table.getCellRect (r, c, false);
+
+            if (rect == null) {
+                return null;
+            }
+
+            return SwingUtilities.convertPoint (table, rect.x, rect.y, table);
+        }
+
+        public final Action popupOnF10 = new AbstractAction () {
+
+            public void actionPerformed (ActionEvent evt) {
+                popupActionsSupport.run ();
+            }
+
+            @Override
+            public boolean isEnabled () {
+                return table.isFocusOwner ();
+            }
+        };
+
     }
-    
     
     private void showPopup (Point e, Component invoker) {
         int row = UnitTab.this.table.rowAtPoint (e);
         if (row >= 0) {
             table.getSelectionModel ().setSelectionInterval (row, row);
-            final JPopupMenu popup = popupActionsSupport.createPopup ();
-            if (popup != null && popup.getComponentCount () > 0) {
-                popup.show (invoker,e.x, e.y);
+            final JPopupMenu finalPopup = popupActionsSupport.createPopup ();
+            if (finalPopup != null && finalPopup.getComponentCount () > 0) {
+                finalPopup.show (invoker,e.x, e.y);
                 
             }
         }

@@ -139,7 +139,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         if (additionalArgs.isEmpty()) {
             // just display 'no tests run' immediately if there are no files to run
-            TestSession empty = new TestSession(locator, debug ? SessionType.DEBUG : SessionType.TEST);
+            TestSession empty = new TestSession(name, locator, debug ? SessionType.DEBUG : SessionType.TEST);
             Manager.getInstance().emptyTestRun(empty);
             return;
         }
@@ -167,11 +167,14 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
+        TestSession session = new TestSession(name,
+                locator,
+                debug ? SessionType.DEBUG : SessionType.TEST);
 
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                locator,
                 RspecHandlerFactory.getHandlers(),
-                debug ? SessionType.DEBUG : SessionType.TEST);
+                session,
+                false);
         TestExecutionManager.getInstance().start(desc, recognizer);
     }
 
@@ -292,10 +295,13 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         task.addTaskParameters("SPEC_OPTS=" + options); //NOI18N
 
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+        TestSession session = new TestSession(task.getDisplayName(),
                 locator,
-                RspecHandlerFactory.getHandlers(),
                 debug ? SessionType.DEBUG : SessionType.TEST);
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                RspecHandlerFactory.getHandlers(),
+                session,
+                false);
         taskDescriptor.addOutputRecognizer(recognizer);
         // using a shorter wait time than for test/unit since the only cases
         // i've seen requiring more than 1000ms have all been test/unit executions

@@ -64,8 +64,6 @@ import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -77,7 +75,6 @@ import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Registry;
-import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
@@ -438,6 +435,9 @@ public class GsfCompletionProvider implements CompletionProvider {
             
                     int index = info.getCurrentIndex();
                     anchorOffset = info.getAnchorOffset();
+                    if (anchorOffset == -1) {
+                        anchorOffset = offset;
+                    }
                     toolTip = new MethodParamsTipPaintComponent(parameterList, index, component);
                     //startPos = (int)sourcePositions.getEndPosition(env.getRoot(), mi.getMethodSelect());
                     //String text = controller.getText().substring(startPos, offset);

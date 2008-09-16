@@ -67,6 +67,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -260,13 +261,10 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             setOpaque (true);
             setBackground (Color.WHITE);
             setBorder (BorderFactory.createLineBorder (10));
-            setToolTipText("<html><i>GroupId:</i><b> " + artifact.getGroupId() + 
-                         "</b><br><i>ArtifactId:</i><b> "+ artifact.getArtifactId() + 
-                         "</b><br><i>Version:</i><b> " + artifact.getVersion() + 
-                         "</b><br><i>Scope:</i><b> " + artifact.getScope() + 
-                         "</b><br><i>Type:</i><b> " + artifact.getType() + 
-                    "</b></html>");
-            
+            setToolTipText(NbBundle.getMessage(DependencyGraphScene.class,
+                    "TIP_Artifact", new Object[] {artifact.getGroupId(),
+                    artifact.getArtifactId(), artifact.getVersion(),
+                    artifact.getScope(), artifact.getType()}));
             Widget root = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
             addChild(root);
             root.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));

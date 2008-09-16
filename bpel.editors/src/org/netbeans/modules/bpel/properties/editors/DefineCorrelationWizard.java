@@ -637,22 +637,18 @@ public class DefineCorrelationWizard implements WizardProperties {
                     ((CorrelationMapperModel) correlationMapper.getModel()).getRightTreeModel());
             if (leftBpelEntity != null) {
                 leftTreeModel = new CorrelationMapperTreeModel();
-                CorrelationMapperTreeNode topLeftTreeNode = buildCorrelationTree(leftBpelEntity,
-                    NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
-                    leftBpelEntity instanceof OnMessage ? "LBL_Mapper_Tree_OnMessage_Name_Pattern" : 
-                    leftBpelEntity instanceof OnEvent ? "LBL_Mapper_Tree_OnEvent_Name_Pattern" : 
-                    "LBL_Mapper_Tree_Top_Node_Name_Pattern"));
-                leftTreeModel.buildCorrelationMapperTree(topLeftTreeNode);
+                CorrelationMapperTreeNode topLeftTreeNode = 
+                    leftTreeModel.makeCorrelationMapperTopTreeNode(leftBpelEntity);
+                leftTreeModel.makeCorrelationMapperRootTreeNode(topLeftTreeNode);
+                leftTreeModel.preBuildCorrelationTree();
                 isMapperChanged = true;
             }
             if (rightBpelEntity != null) {
                 rightTreeModel = new CorrelationMapperTreeModel();
-                CorrelationMapperTreeNode topRightTreeNode = buildCorrelationTree(rightBpelEntity,
-                    NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
-                    rightBpelEntity instanceof OnMessage ? "LBL_Mapper_Tree_OnMessage_Name_Pattern" : 
-                    rightBpelEntity instanceof OnEvent ? "LBL_Mapper_Tree_OnEvent_Name_Pattern" : 
-                    "LBL_Mapper_Tree_Top_Node_Name_Pattern"));
-                rightTreeModel.buildCorrelationMapperTree(topRightTreeNode);
+                CorrelationMapperTreeNode topRightTreeNode = 
+                    rightTreeModel.makeCorrelationMapperTopTreeNode(rightBpelEntity);
+                rightTreeModel.makeCorrelationMapperRootTreeNode(topRightTreeNode);
+                rightTreeModel.preBuildCorrelationTree();
                 isMapperChanged = true;
             }
             MapperModel mapperModel = null;
@@ -697,117 +693,6 @@ public class DefineCorrelationWizard implements WizardProperties {
                 DefineCorrelationWizard.class, "A11_DESCRIPTOR_MapperRightTree"));
             rightTree.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
                 DefineCorrelationWizard.class, "A11_NAME_MapperRightTree"));
-        }
-
-        private CorrelationMapperTreeNode buildCorrelationTree(BpelEntity topBpelEntity, 
-            String nodeNamePattern) {
-            CorrelationMapperTreeNode topTreeNode = new CorrelationMapperTreeNode(
-                topBpelEntity, nodeNamePattern);
-            topTreeNode = buildCorrelationTree(topBpelEntity, topTreeNode);
-            return topTreeNode;
-        }
-        
-        private CorrelationMapperTreeNode buildCorrelationTree(BpelEntity topBpelEntity, 
-            CorrelationMapperTreeNode topTreeNode) {
-            Operation requiredOperation = WizardUtils.getBpelEntityOperation(topBpelEntity);
-            handleOperations(topBpelEntity, topTreeNode, requiredOperation);
-            return topTreeNode;
-        }
-        
-        private void handleOperations(BpelEntity topBpelEntity, 
-            CorrelationMapperTreeNode topTreeNode, Operation operation) {
-            Message outputMessage = null, inputMessage = null;
-            List<Message> messages = new ArrayList<Message>();
-            if (topBpelEntity instanceof Requester) {
-                try {
-                    OperationParameter output = operation.getOutput();
-                    outputMessage = output.getMessage().get();
-                    messages.add(outputMessage);
-                } catch (Exception e) {}
-            }
-            if (topBpelEntity instanceof Responder) {
-                try {
-                    OperationParameter input = operation.getInput();
-                    inputMessage = input.getMessage().get();
-                    messages.add(inputMessage);
-                } catch (Exception e) {}
-            }
-            handleMessages(topTreeNode, messages);
-        }
-        
-        private void handleMessages(CorrelationMapperTreeNode topTreeNode, 
-            Collection<Message> messages) {
-            for (Message message : messages) {
-                Collection<Part> parts = message.getParts();
-                if (! parts.isEmpty()) {
-                    CorrelationMapperTreeNode messageNode = new CorrelationMapperTreeNode(message, null);
-                    for (Part part : parts) {
-                        messageNode.add(handlePart(part));
-                    }
-                    topTreeNode.add(messageNode);
-                }
-            }
-        }
-
-        private CorrelationMapperTreeNode handlePart(Part part) {
-            CorrelationMapperTreeNode partNode = new CorrelationMapperTreeNode(part, null);
-            NamedComponentReference<GlobalElement> partElementRef = part.getElement();
-            if (partElementRef != null) {
-                GlobalElement partElement = partElementRef.get();
-                addSchemaComponentNode(partNode, partElement, new FindAllChildrenSchemaVisitor(true, true, false));                    
-            } else {
-                NamedComponentReference<GlobalType> partTypeRef = part.getType();
-                if (partTypeRef != null) {
-                    GlobalType partType = partTypeRef.get();
-                    addSchemaComponentNode(partNode, partType, new FindAllChildrenSchemaVisitor(true, true, false)); 
-                }
-            }
-            return partNode;
-        }        
-        
-        private void addSchemaComponentNode(CorrelationMapperTreeNode parentNode, 
-            SchemaComponent schemaComponent, FindAllChildrenSchemaVisitor schemaTypeFinder) {
-            String nodeNamePattern = schemaComponent instanceof SimpleType ?
-                SIMPLE_TYPE_NAME_PATTERN : null;
-            CorrelationMapperTreeNode schemaComponentNode = new CorrelationMapperTreeNode(
-                schemaComponent, nodeNamePattern);
-
-            List<SchemaComponent> childSchemaTypeComponentList = null;
-            if (! (schemaComponent instanceof SimpleType)) {
-                schemaTypeFinder.lookForSubcomponents(schemaComponent);
-                childSchemaTypeComponentList = schemaTypeFinder.getFound();
-                for (SchemaComponent childSchemaTypeComponent : childSchemaTypeComponentList) {
-                    addSchemaComponentNode(schemaComponentNode, childSchemaTypeComponent, 
-                            new FindAllChildrenSchemaVisitor(true, true, false));
-                }
-            }
-            if ((schemaComponent instanceof Element) && 
-                ((childSchemaTypeComponentList == null) || (childSchemaTypeComponentList.isEmpty())) &&
-                isElementComplexType(schemaComponent)) {
-                return;
-            }
-            if ((schemaComponent instanceof Attribute) && 
-                ((childSchemaTypeComponentList == null) || (childSchemaTypeComponentList.isEmpty())) &&
-                isAttributeUnknownType(schemaComponent)) {
-                return;
-            }
-            parentNode.add(schemaComponentNode);
-        }
-    
-        private boolean isElementComplexType(SchemaComponent schemaComponent) {
-            if (! (schemaComponent instanceof Element)) {
-                return false;
-            }
-            NamedComponentReference<? extends GlobalType> typeRef = 
-                WizardUtils.getSchemaComponentTypeRef(schemaComponent);
-            return ((typeRef != null) && (typeRef.get() instanceof ComplexType));
-        }
-        
-        private boolean isAttributeUnknownType(SchemaComponent schemaComponent) {
-            if (! (schemaComponent instanceof Attribute)) {
-                return false;
-            }
-            return (WizardUtils.getSchemaComponentTypeName(schemaComponent) == null);
         }
 
         /* Not used since Jun 2008 - method delete() of the class 
@@ -1397,8 +1282,20 @@ public class DefineCorrelationWizard implements WizardProperties {
             public CorrelationMapperTreeModel() {
                 super(null);
             }
-        
-            public void buildCorrelationMapperTree(CorrelationMapperTreeNode topTreeNode) {
+
+            public CorrelationMapperTreeNode makeCorrelationMapperTopTreeNode(
+                BpelEntity topBpelEntity) {
+                String nodeNamePattern = NbBundle.getMessage(DefineCorrelationWizard.class, 
+                    topBpelEntity instanceof OnMessage ? "LBL_Mapper_Tree_OnMessage_Name_Pattern" : 
+                    topBpelEntity instanceof OnEvent ? "LBL_Mapper_Tree_OnEvent_Name_Pattern" : 
+                    "LBL_Mapper_Tree_Top_Node_Name_Pattern");
+
+                CorrelationMapperTreeNode topTreeNode = new CorrelationMapperTreeNode(
+                    topBpelEntity, nodeNamePattern);
+                return topTreeNode;
+            }
+
+            public void makeCorrelationMapperRootTreeNode(CorrelationMapperTreeNode topTreeNode) {
                 BpelEntity topBpelEntity = (BpelEntity) (topTreeNode).getUserObject();
                 CorrelationMapperTreeNode fakeRootTreeNode = new CorrelationMapperTreeNode(
                     topBpelEntity.getBpelModel().getBuilder().createEmpty());
@@ -1406,11 +1303,76 @@ public class DefineCorrelationWizard implements WizardProperties {
                 setRoot(fakeRootTreeNode);
             }
             
-            public BpelEntity getTopBpelEntity() {
-                CorrelationMapperTreeNode topTreeNode = (CorrelationMapperTreeNode) ((CorrelationMapperTreeNode) getRoot()).getChildAt(0);
-                return (BpelEntity) topTreeNode.getUserObject();
+            public CorrelationMapperTreeNode getTopTreeNode() {
+                Object rootNode = getRoot();
+                if (rootNode == null) return null;
+                
+                CorrelationMapperTreeNode topTreeNode = (CorrelationMapperTreeNode) 
+                    ((CorrelationMapperTreeNode) rootNode).getChildAt(0);
+                return topTreeNode;
             }
             
+            public BpelEntity getTopBpelEntity() {
+                return getTopBpelEntity(getTopTreeNode());
+            }
+            
+            private BpelEntity getTopBpelEntity(CorrelationMapperTreeNode topTreeNode) {
+                return (topTreeNode == null ? null  : 
+                       (BpelEntity) topTreeNode.getUserObject());
+            }
+
+            /**
+             * Adds a tree node, related to the appropriate WSDL message, to the top tree node.
+             * Adds a tree node, related to the appropriate WSDL part, to the WSDL message's 
+             * tree node.
+             * @return returns modified top tree node.
+             */
+            public CorrelationMapperTreeNode preBuildCorrelationTree() {
+                CorrelationMapperTreeNode topTreeNode = getTopTreeNode();
+                BpelEntity topBpelEntity = getTopBpelEntity(topTreeNode);
+                Operation requiredOperation = WizardUtils.getBpelEntityOperation(topBpelEntity);
+                handleOperations(topBpelEntity, topTreeNode, requiredOperation);
+                return topTreeNode;
+            }
+
+            private void handleOperations(BpelEntity topBpelEntity, 
+                CorrelationMapperTreeNode topTreeNode, Operation operation) {
+                Message outputMessage = null, inputMessage = null;
+                List<Message> messages = new ArrayList<Message>();
+                if (topBpelEntity instanceof Requester) {
+                    try {
+                        OperationParameter output = operation.getOutput();
+                        outputMessage = output.getMessage().get();
+                        messages.add(outputMessage);
+                    } catch (Exception e) {}
+                }
+                if (topBpelEntity instanceof Responder) {
+                    try {
+                        OperationParameter input = operation.getInput();
+                        inputMessage = input.getMessage().get();
+                        messages.add(inputMessage);
+                    } catch (Exception e) {}
+                }
+                handleMessages(topTreeNode, messages);
+            }
+        
+            private void handleMessages(CorrelationMapperTreeNode topTreeNode, 
+                Collection<Message> messages) {
+                for (Message message : messages) {
+                    Collection<Part> parts = message.getParts();
+                    if (! parts.isEmpty()) {
+                        CorrelationMapperTreeNode messageNode = new CorrelationMapperTreeNode(
+                            message, null);
+                        for (Part part : parts) {
+                            CorrelationMapperTreeNode partNode = new CorrelationMapperTreeNode(
+                                part, null);
+                            messageNode.add(partNode);
+                        }
+                        topTreeNode.add(messageNode);
+                    }
+                }
+            }
+
             public void fireTreeChanged(Object source, TreePath treePath) {
                 Object[] listeners = listenerList.getListenerList(); // guaranteed to return a non-null array
                 TreeModelEvent treeModelEvent = null;
@@ -1446,6 +1408,7 @@ public class DefineCorrelationWizard implements WizardProperties {
         //====================================================================//
         private class CorrelationMapperTreeNode extends DefaultMutableTreeNode {
             private String nodeNamePattern;
+            private boolean isChildNodeListLoaded;
             
             public CorrelationMapperTreeNode(Object userObject) {
                 this(userObject, null);
@@ -1453,8 +1416,111 @@ public class DefineCorrelationWizard implements WizardProperties {
             public CorrelationMapperTreeNode(Object userObject, String nodeNamePattern) {
                 super(userObject);
                 this.nodeNamePattern = nodeNamePattern;
+                if (! ((userObject instanceof Part) || 
+                       (userObject instanceof SchemaComponent))) {
+                    isChildNodeListLoaded = true;
+                }
             }
 
+            private void initializeChildNodeList() {
+                if (! isChildNodeListLoaded) { 
+                    isChildNodeListLoaded = true;
+                    List<CorrelationMapperTreeNode> childNodeList = getChildNodeList();
+                    if (childNodeList != null) {
+                        for (CorrelationMapperTreeNode childNode : childNodeList) {
+                            add(childNode);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public int getChildCount() {
+                initializeChildNodeList();
+                return super.getChildCount();
+            }
+
+            /*
+            @Override
+            public boolean isLeaf() {
+                return (getChildCount() < 1);
+            }
+            */ 
+
+            private List<CorrelationMapperTreeNode> getChildNodeList() {
+                if (userObject instanceof Part) {
+                    return getPartNodeChildList((Part) userObject);
+                }
+                if (userObject instanceof SchemaComponent) {
+                    return getSchemaComponentNodeChildList((SchemaComponent) userObject);
+                }
+                return null;
+            }
+            
+            private List<CorrelationMapperTreeNode> getPartNodeChildList(Part part) {
+                NamedComponentReference<GlobalElement> partElementRef = part.getElement();
+                if (partElementRef != null) {
+                    GlobalElement partElement = partElementRef.get();
+                    return getSchemaComponentNodeChildList(partElement);                    
+                } else {
+                    NamedComponentReference<GlobalType> partTypeRef = part.getType();
+                    if (partTypeRef != null) {
+                        GlobalType partType = partTypeRef.get();
+                        return getSchemaComponentNodeChildList(partType); 
+                    }
+                }
+                return null;
+            }
+            
+            private List<CorrelationMapperTreeNode> getSchemaComponentNodeChildList(
+                SchemaComponent parentSchemaComponent) {
+                String schemaNodeNamePattern = parentSchemaComponent instanceof SimpleType ?
+                    SIMPLE_TYPE_NAME_PATTERN : null;
+
+                List<SchemaComponent> childSchemaComponentList = 
+                    getSchemaComponentChildList(parentSchemaComponent);
+                if ((childSchemaComponentList == null) ||
+                    (childSchemaComponentList.isEmpty())) return null;
+                
+                List<CorrelationMapperTreeNode> childTreeNodeList = 
+                    new ArrayList<CorrelationMapperTreeNode>();
+                for (SchemaComponent childSchemaComponent : childSchemaComponentList) {
+                    List<SchemaComponent> grandChildSchemaComponentList = 
+                        getSchemaComponentChildList(childSchemaComponent);
+                    if ((childSchemaComponent instanceof Element) && 
+                        ((grandChildSchemaComponentList == null) || 
+                         (grandChildSchemaComponentList.isEmpty())) &&
+                        WizardUtils.isElementComplexType(childSchemaComponent)) {
+                        continue;
+                    }
+                    if ((childSchemaComponent instanceof Attribute) && 
+                        ((grandChildSchemaComponentList == null) || 
+                         (grandChildSchemaComponentList.isEmpty())) &&
+                        WizardUtils.isAttributeUnknownType(childSchemaComponent)) {
+                        continue;
+                    }
+                    
+                    CorrelationMapperTreeNode childTreeNode = new CorrelationMapperTreeNode(
+                        childSchemaComponent, schemaNodeNamePattern);
+                    childTreeNodeList.add(childTreeNode);
+                }
+                return childTreeNodeList;
+            }
+            
+            private List<SchemaComponent> getSchemaComponentChildList(
+                SchemaComponent parentSchemaComponent) {
+                if (parentSchemaComponent == null) return null;
+                
+                List<SchemaComponent> childSchemaComponentList = null;
+                if (! (parentSchemaComponent instanceof SimpleType)) {
+                    FindAllChildrenSchemaVisitor schemaTypeFinder = 
+                        new FindAllChildrenSchemaVisitor(true, true, false);
+                    schemaTypeFinder.lookForSubcomponents(parentSchemaComponent);
+                    childSchemaComponentList = schemaTypeFinder.getFound();
+                }
+                return childSchemaComponentList;
+            }            
+            
             @Override
             public String toString() {
                 String userObjectName = null;
@@ -1545,7 +1611,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
 
             private void expandTreeNode(TreeNode treeNode, boolean isRightTreeExpanded) {
-                expandTreeNode(treeNode, (isRightTreeExpanded ? 6 : 5), isRightTreeExpanded);
+                expandTreeNode(treeNode, (isRightTreeExpanded ? 5 : 4), isRightTreeExpanded);
                 // value (-1) for the variable "expandLevel" means that all 
                 // tree nodes should be expanded
                 // expandTreeNode(treeNode, -1, isRightTreeExpanded);
@@ -1808,6 +1874,14 @@ public class DefineCorrelationWizard implements WizardProperties {
                     }
                 }
             }
+
+            public List<TreePath> findInLeftTree(String value) {
+                return null;
+            }
+
+            public List<TreePath> findInRightTree(String value) {
+                return null;
+            }
         }
     }
     //========================================================================//
@@ -1969,7 +2043,23 @@ class WizardUtils implements WizardConstants {
         }
         return name;
     }
+            
+    public static boolean isElementComplexType(SchemaComponent schemaComponent) {
+        if (! (schemaComponent instanceof Element)) {
+            return false;
+        }
+        NamedComponentReference<? extends GlobalType> typeRef = 
+            getSchemaComponentTypeRef(schemaComponent);
+        return ((typeRef != null) && (typeRef.get() instanceof ComplexType));
+    }
 
+    public static boolean isAttributeUnknownType(SchemaComponent schemaComponent) {
+        if (! (schemaComponent instanceof Attribute)) {
+            return false;
+        }
+        return (getSchemaComponentTypeName(schemaComponent) == null);
+    }
+    
     public static boolean isBuiltInType(SchemaComponent schemaComponent) {
         String typeName = getSchemaComponentTypeName(schemaComponent);
         GlobalSimpleType builtInSimpleType = ValidationUtil.findGlobalSimpleType(typeName, 

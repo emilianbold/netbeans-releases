@@ -243,7 +243,7 @@ public final class ElementUtilities {
         }
         sb.append("</td>\n"); // NOI18N
         if (indexedElement != null) {
-            sb.append("<td width=\"100\">"); // NOI18N
+            sb.append("<td width=\"125\">"); // NOI18N
             EnumSet<BrowserVersion> es = indexedElement.getCompatibility();
             try {
                 if (es.contains(BrowserVersion.FF3)) {
@@ -265,6 +265,11 @@ public final class ElementUtilities {
                     appendImage(sb, "opera20.png"); // NOI18N
                 } else {
                     appendImage(sb, "opera20-disabled.png"); // NOI18N
+                }
+                if (es.contains(BrowserVersion.SAFARI3)) { // Doesn't have its own flags yet
+                    appendImage(sb, "chrome20.png"); // NOI18N
+                } else {
+                    appendImage(sb, "chrome20-disabled.png"); // NOI18N
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
@@ -297,6 +302,11 @@ public final class ElementUtilities {
                         !indexedElement.getCompatibility().contains(v)) {
                     sb.append("<li>"); // NOI18N
                     sb.append(v.getDisplayName());
+
+                    // Chrome isn't in our version list yet
+                    if (v == BrowserVersion.SAFARI3) {
+                        sb.append("<li>Chrome");
+                    }
                 }
             }
             sb.append("</ul>\n"); // NOI18N

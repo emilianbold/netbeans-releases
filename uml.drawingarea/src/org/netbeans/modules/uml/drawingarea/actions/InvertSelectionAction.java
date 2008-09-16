@@ -105,4 +105,10 @@ public class InvertSelectionAction extends NodeAction
     {
         return null;
     }
+
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
 }

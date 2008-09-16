@@ -58,7 +58,7 @@ public final class ResultWindowOpenAction extends AbstractAction {
      */
     public ResultWindowOpenAction() {
         String name = NbBundle.getMessage(ResultWindowOpenAction.class,
-                                          "TITLE_TEST_RESULTS");        //NOI18N
+                                          "ACT_TestResult");        //NOI18N
         putValue(NAME, name);
         putValue("iconBase",                                            //NOI18N
                "org/netbeans/modules/junit/output/res/testResults.png");//NOI18N

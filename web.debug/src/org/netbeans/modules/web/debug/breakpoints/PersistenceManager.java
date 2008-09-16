@@ -72,6 +72,16 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             new Breakpoint [0]
         );
         for (int i = 0; i < breakpoints.length; i++) {
+            if (breakpoints[i] == null) {
+                Breakpoint[] b2 = new Breakpoint[breakpoints.length - 1];
+                System.arraycopy(breakpoints, 0, b2, 0, i);
+                if (i < breakpoints.length - 1) {
+                    System.arraycopy(breakpoints, i + 1, b2, i, breakpoints.length - i - 1);
+                }
+                breakpoints = b2;
+                i--;
+                continue;
+            }
             breakpoints[i].addPropertyChangeListener(this);
         }
         return breakpoints;

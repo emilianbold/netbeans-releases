@@ -4110,8 +4110,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         reformat();
         assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
             "int array[10] = {1, 2, 3, 4,\n" +
-            "                 5, 6, 7, 8, 9\n" +
-            "};\n"
+            "                 5, 6, 7, 8, 9};\n"
             );
     }
 
@@ -4236,8 +4235,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect formatting array init",
                 "int a[] = { 1, (1 + 2), (2 + 3) };\n" +
                 "int b[] = { 1, (1 + 2), (2 + 3) };\n" +
-                "int c[] = { 1, (1 + 2), (2 + 3)\n" +
-                "};\n"
+                "int c[] = { 1, (1 + 2), (2 + 3) };\n"
                 );
     }
 
@@ -4253,8 +4251,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect formatting array init",
                 "int a[] = {1, (1 + 2), (2 + 3)};\n" +
                 "int b[] = {1, (1 + 2), (2 + 3)};\n" +
-                "int c[] = {1, (1 + 2), (2 + 3)\n" +
-                "};\n"
+                "int c[] = {1, (1 + 2), (2 + 3)};\n"
                 );
     }
 
@@ -4808,5 +4805,45 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "            init(i);\n" +
             "    }\n" +
             "}\n");
+    }
+
+    public void testIZ144976() {
+        setLoadDocumentText(
+                "int Ar[] ={\n" +
+                "1, 2, 3,\n" +
+                " 4, 5 };\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect arry init formatting",
+                "int Ar[] = {\n" +
+                "    1, 2, 3,\n" +
+                "    4, 5\n" +
+                "};\n"
+                );
+    }
+
+    public void testIZ144976_2() {
+        setLoadDocumentText(
+                "int Ar[] ={1, 2, 3,\n" +
+                " 4, 5 };\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect arry init formatting",
+                "int Ar[] = {1, 2, 3,\n" +
+                "    4, 5};\n"
+                );
+    }
+
+    public void testIZ144976_3() {
+        setLoadDocumentText(
+                "int Ar[] ={1, 2, 3,\n" +
+                "4, 5 \n" +
+                " };\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect arry init formatting",
+                "int Ar[] = {1, 2, 3,\n" +
+                "    4, 5};\n"
+                );
     }
 }

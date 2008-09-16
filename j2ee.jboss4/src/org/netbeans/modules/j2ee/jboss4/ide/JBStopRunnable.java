@@ -125,9 +125,13 @@ class JBStopRunnable implements Runnable {
         credentialsParams.append(" -u ").append(properties.getUsername()).append(" -p ").append(properties.getPassword()); // NOI18N
         // Currently there is a problem stopping JBoss when Profiler agent is loaded.
         // As a workaround for now, --halt parameter has to be used for stopping the server.
-        NbProcessDescriptor pd = (startServer.getMode() == JBStartServer.MODE.PROFILE ? 
-                                  new NbProcessDescriptor(serverStopFileName, "--halt=0 " + credentialsParams) :   // NOI18N
-                                  new NbProcessDescriptor(serverStopFileName, "--shutdown " + credentialsParams)); // NOI18N
+//        NbProcessDescriptor pd = (startServer.getMode() == JBStartServer.MODE.PROFILE ?
+//                                  new NbProcessDescriptor(serverStopFileName, "--halt=0 " + credentialsParams) :   // NOI18N
+//                                  new NbProcessDescriptor(serverStopFileName, "--shutdown " + credentialsParams)); // NOI18N
+
+        /* 2008-09-10 The usage of --halt doesn't solve the problem on Windows; it even creates another problem
+                        of NB Profiler not being notified about the fact that the server was stopped */
+        NbProcessDescriptor pd = new NbProcessDescriptor(serverStopFileName, "--shutdown " + credentialsParams); // NOI18N
 
         Process stoppingProcess = null;
         try {

@@ -89,7 +89,7 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
     // ChangeListener
     public void stateChanged(FontColorProvider provider) {
         updateFontColors(provider);
-        run(PhaseRunner.Phase.INIT);
+        //run(PhaseRunner.Phase.INIT);
     }
     
     protected abstract void updateFontColors(FontColorProvider provider);
