@@ -42,7 +42,6 @@ package org.netbeans.modules.php.project;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
-import java.nio.charset.Charset;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -108,12 +107,7 @@ public final class ProjectPropertiesSupport {
     }
 
     public static boolean isCopySourcesEnabled(PhpProject project) {
-        boolean retval = false;
-        String copySrcFiles = project.getEvaluator().getProperty(PhpProjectProperties.COPY_SRC_FILES);
-        if (copySrcFiles != null && copySrcFiles.trim().length() > 0) {
-            retval = Boolean.parseBoolean(copySrcFiles);
-        }
-        return retval;
+        return getBoolean(project, PhpProjectProperties.COPY_SRC_FILES, false);
     }
 
     /**
@@ -131,8 +125,12 @@ public final class ProjectPropertiesSupport {
         return project.getEvaluator().getProperty(PhpProjectProperties.SOURCE_ENCODING);
     }
 
-    public static Charset getIncludePath(PhpProject project) {
-        throw new UnsupportedOperationException();
+    public static boolean areShortTagsEnabled(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.SHORT_TAGS, org.netbeans.modules.php.project.api.PhpOptions.SHORT_TAGS_ENABLED);
+    }
+
+    public static boolean areAspTagsEnabled(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.ASP_TAGS, org.netbeans.modules.php.project.api.PhpOptions.ASP_TAGS_ENABLED);
     }
 
     /**
@@ -213,5 +211,13 @@ public final class ProjectPropertiesSupport {
             // ignored
         }
         return uploadFiles;
+    }
+
+    private static boolean getBoolean(PhpProject project, String property, boolean defaultValue) {
+        String boolValue = project.getEvaluator().getProperty(property);
+        if (boolValue != null && boolValue.trim().length() > 0) {
+            return Boolean.parseBoolean(boolValue);
+        }
+        return defaultValue;
     }
 }

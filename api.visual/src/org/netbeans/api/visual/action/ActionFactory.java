@@ -626,6 +626,21 @@ public final class ActionFactory {
     }
 
     /**
+     * Creates a contiguous select action. Trigger by any left, middle or right mouse-button.
+     * If no key-modifier is held, then it behaves as a non-contiguous replace selection.
+     * If Shift key-modifier is held, then it behaves as a contiguous replace selection.
+     * If Ctrl key-modifier is held, then it behaves as a non-contiguous additive selection.
+     * If Ctrl and Shift key-modifiers are held, then it behaves as a contiguous additive selection.
+     * @param provider the contiguous select logic provider
+     * @return the contiguous select action
+     * @since 2.17
+     */
+    public static WidgetAction createContiguousSelectAction (ContiguousSelectProvider provider) {
+        assert provider != null;
+        return new ContiguousSelectAction (provider);
+    }
+
+    /**
      * Creates a switch card action with controls an active card of a widget where a card layout is used.
      * @param cardLayoutWidget the widget where a card layout is used
      * @return the switch card action

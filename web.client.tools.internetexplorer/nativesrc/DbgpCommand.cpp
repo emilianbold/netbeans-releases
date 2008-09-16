@@ -610,9 +610,10 @@ DbgpResponse *OpenUriCommand::process(DbgpConnection *pDbgpConnection, map<char,
         if(pDbgpConnection->getScriptDebugger() == NULL) {
             HWND hWnd;
             spWebBrowser->get_HWND(reinterpret_cast<SHANDLE_PTR*>(&hWnd));
-            MessageBox(hWnd, _T("Netbeans is not connected to Internet Explorer Script Debugger, client side debugging \
-is disabled. Please close the browser window, shutdown mdm.exe by using Windows Task Manager \
-and restart the debugging session"), _T("Netbeans Internet Explorer Extension"), MB_OK);
+            MessageBox(hWnd, _T("Netbeans JavaScript client side debugging is disabled because of not able \
+to connect to Internet Explorer Script Debugger.\n\nPlease shutdown mdm.exe by using Windows Task Manager \
+and restart the debugging session"), 
+            _T("Netbeans Internet Explorer Extension"), MB_OK);
             pDbgpConnection->close();
         }
     }

@@ -404,44 +404,45 @@ public class J2SEProjectProperties {
     }
     
     public void save() {
-        try {                        
-            saveLibrariesLocation();
-            // Store properties 
-            boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
-                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                public Boolean run() throws IOException {
-                    if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        J2SEProject.class.getResource("resources/build-impl.xsl")) //NOI18N
-                        & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                        if (showModifiedMessage (NbBundle.getMessage(J2SEProjectProperties.class,"TXT_ModifiedTitle"))) {
-                            //Delete user modified build-impl.xml
-                            FileObject fo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                            if (fo != null) {
-                                fo.delete();
-                            }
-                        }
-                        else {
-                            return false;
-                        }
+        try {                   
+            boolean result = true;            
+            if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                J2SEProject.class.getResource("resources/build-impl.xsl")) //NOI18N
+                & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
+                if (showModifiedMessage (NbBundle.getMessage(J2SEProjectProperties.class,"TXT_ModifiedTitle"))) {
+                    //Delete user modified build-impl.xml
+                    final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
+                    final FileObject fo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                    if (fo != null) {
+                        fo.delete();
                     }
-                    storeProperties();
-                    //Delete COS mark
-                    if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
-                        FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(evaluator.getProperty(BUILD_CLASSES_DIR));
-                        if (buildClasses != null) {
-                            FileObject mark = buildClasses.getFileObject(COS_MARK);
-                            if (mark != null) {
-                                final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-                                assert ap != null;
-                                ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
-                            }
-                        }
-                    }
-                    return true;
                 }
-            });
-            // and save the project
+                else {
+                    result = false;
+                }
+            }
             if (result) {
+                saveLibrariesLocation();
+                // Store properties 
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public Void run() throws IOException {
+                        storeProperties();
+                        //Delete COS mark
+                        if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
+                            FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(evaluator.getProperty(BUILD_CLASSES_DIR));
+                            if (buildClasses != null) {
+                                FileObject mark = buildClasses.getFileObject(COS_MARK);
+                                if (mark != null) {
+                                    final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+                                    assert ap != null;
+                                    ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
+                                }
+                            }
+                        }
+                        return null;
+                    }
+                });
+                // and save the project
                 ProjectManager.getDefault().saveProject(project);
             }
         } 
