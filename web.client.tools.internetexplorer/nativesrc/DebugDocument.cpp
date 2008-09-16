@@ -37,59 +37,41 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-#pragma once
-#include "ScriptDebugger.h"
-#include <string>
-#include <map>
-#include <list>
-#include <set>
-#include "Mshtml.h"
 
-using namespace std;
+#include "stdafx.h"
+#include "DebugDocument.h"
+#include "Utils.h"
 
-class ScriptDebugger;
-struct StackFrame;
-struct Property;
 
-class DbgpConnection {
-public:
-    DbgpConnection(tstring port, tstring sessionId, DWORD dwWebBrowserCookie);
-    BOOL connectToIDE();
-    void close();
-    static DWORD WINAPI commandHandler(LPVOID param);
-    void sendInitMessage();
-    ScriptDebugger *getScriptDebugger() {
-        return m_pScriptDebugger;
+// CDebugDocTextEvents
+STDMETHODIMP DebugDocument::onDestroy(void) {
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP DebugDocument::onInsertText(ULONG cCharacterPosition, ULONG cNumToInsert) {
+    return handleSourceChange();
+}
+    
+STDMETHODIMP DebugDocument::onRemoveText(ULONG cCharacterPosition, ULONG cNumToRemove) {
+    return handleSourceChange();
+}
+
+STDMETHODIMP DebugDocument::onReplaceText(ULONG cCharacterPosition, ULONG cNumToReplace) {
+    return handleSourceChange();
+}
+
+STDMETHODIMP DebugDocument::onUpdateTextAttributes(ULONG cCharacterPosition, ULONG cNumToUpdate) {
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP DebugDocument::onUpdateDocumentAttributes(TEXT_DOC_ATTR textdocattr) {
+    return E_NOTIMPL;
+}
+
+HRESULT DebugDocument::handleSourceChange() {
+    Utils::log(4, _T("Text modified - %s\n"), name.c_str());
+    if(pDbgpConnection != NULL) {
+        pDbgpConnection->sendReloadSourcesMessage(name);
     }
-    void setScriptDebugger(ScriptDebugger *pScriptDebugger) {
-        m_pScriptDebugger = pScriptDebugger;
-    }
-    DWORD getWebBrowserCookie() {
-        return m_dwWebBrowserCookie;
-    }
-    void handleDocumentComplete(IHTMLDocument2 *pHTMLDocument);
-    void sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID, tstring reason);
-    void sendStatusMessage(tstring status, tstring reason);
-    void sendErrorMessage(tstring message);
-    void sendReloadSourcesMessage(tstring docName);
-
-private:
-    SOCKET m_socket;
-    tstring m_port, m_sessionId;
-    SOCKET getSocket() {
-        return m_socket;
-    }
-    ScriptDebugger *m_pScriptDebugger;
-    DWORD m_dwWebBrowserCookie;
-    BOOL readCommand(char *cmdString);
-    void processCommand(char *cmdString, DbgpConnection *pDbgpConnection);
-    void sendResponse(tstring xmlString);
-    void sendWindowsMessage(IHTMLDocument2 *pHTMLDocument);
-    void sendSourcesMessage(IHTMLDocument2 *pHTMLDocument);
-    set<tstring> getFrameURLs(IHTMLDocument2 *pHTMLDocument, BOOL scriptOnly);
-    BOOL unicodeToUTF8(tstring str, char **ppBytes, int *pBytesLen);
-    BOOL UTF8toUnicode(char *str, TCHAR **ppChars);
-    tstring encodeToBase64(tstring value);
-};
-
-
+    return S_OK;
+}

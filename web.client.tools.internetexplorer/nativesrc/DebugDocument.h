@@ -37,132 +37,83 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-#include <stdafx.h>
-#include "DbgpResponse.h"
 
-/*
-tstring DbgpResponse::toString() {
-    return tag.toString();
-}
+#pragma once
+#include "stdafx.h"
+#include "resource.h"       // main symbols
+#include "Utils.h"
+#include "DbgpConnection.h"
 
+class DbgpConnection;
 
-char *StatusResponse::GetData() {
-    return NULL;
-}
+// CDebugDocTextEvents
+class ATL_NO_VTABLE DebugDocument :
+    public CComObjectRootEx<CComMultiThreadModel>,
+    public IDebugDocumentTextEvents {
+public:
+    DebugDocument() {
+    }
 
-char *FeatureGetResponse::GetData() {
-    return NULL;
-}
+BEGIN_COM_MAP(DebugDocument)
+   COM_INTERFACE_ENTRY(IDebugDocumentTextEvents)
+   COM_INTERFACE_ENTRY2(IUnknown, IDebugDocumentTextEvents)
+END_COM_MAP()
 
-char *FeatureSetResponse::GetData() {
-    return NULL;
-}
+    DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-char *RunResponse::GetData() {
-    return NULL;
-}
+    HRESULT FinalConstruct() {
+        return S_OK;
+    }
 
-char *StepIntoResponse::GetData() {
-    return NULL;
-}
+    void FinalRelease() {
+        Utils::log(4, _T("Destructing DebugDocument - %s\n"), name.c_str());
+    }
 
-char *StepOverResponse::GetData() {
-    return NULL;
-}
+public:
+    //IDebugDocumentTextEvents
+    STDMETHOD(onDestroy)(void);
+    STDMETHOD(onInsertText)( 
+        /* [in] */ ULONG cCharacterPosition,
+        /* [in] */ ULONG cNumToInsert);
+    STDMETHOD(onRemoveText)( 
+        /* [in] */ ULONG cCharacterPosition,
+        /* [in] */ ULONG cNumToRemove);
+    STDMETHOD(onReplaceText)( 
+        /* [in] */ ULONG cCharacterPosition,
+        /* [in] */ ULONG cNumToReplace);
+    STDMETHOD(onUpdateTextAttributes)( 
+        /* [in] */ ULONG cCharacterPosition,
+        /* [in] */ ULONG cNumToUpdate);
+    STDMETHOD(onUpdateDocumentAttributes)( 
+        /* [in] */ TEXT_DOC_ATTR textdocattr);
 
-char *StepOutResponse::GetData() {
-    return NULL;
-}
+    void setCookie(DWORD cookie) {
+        this->cookie = cookie;
+    }
 
-char *StopResponse::GetData() {
-    return NULL;
-}
+    void setEventCookie(DWORD cookie) {
+        this->eventCookie = eventCookie;
+    }
 
-char *DetachResponse::GetData() {
-    return NULL;
-}
+    DWORD getCookie() {
+        return this->cookie;
+    }
 
-char *BreakpointSetResponse::GetData() {
-    return NULL;
-}
+    DWORD getEventCookie() {
+        return this->eventCookie;
+    }
 
-char *BreakpointGetResponse::GetData() {
-    return NULL;
-}
+    void setDbgpConnection(DbgpConnection *pDbgpConnection) {
+        this->pDbgpConnection = pDbgpConnection;
+    }
 
-char *BreakpointUpdateResponse::GetData() {
-    return NULL;
-}
-
-char *BreakpointRemoveResponse::GetData() {
-    return NULL;
-}
-
-char *BreakpointListResponse::GetData() {
-    return NULL;
-}
-
-char *StackDepthResponse::GetData() {
-    return NULL;
-}
-
-char *StackGetResponse::GetData() {
-    return NULL;    return NULL;
-}
-
-char *ContextNamesResponse::GetData() {
-    return NULL;
-}
-
-char *ContextGetResponse::GetData() {
-    return NULL;
-}
-
-char *TypemapGetResponse::GetData() {
-    return NULL;
-}
-
-char *PropertyGetResponse::GetData() {
-    return NULL;
-}
-
-char *PropertySetResponse::GetData() {
-    return NULL;
-}
-
-char *PropertyValueResponse::GetData() {
-    return NULL;
-}
-
-char *SourceResponse::GetData() {
-    return NULL;
-}
-
-char *StdoutResponse::GetData() {
-    return NULL;
-}
-
-char *StderrResponse::GetData() {
-    return NULL;
-}
-
-char *EvalResponse::GetData() {
-    return NULL;
-}
-
-char *BreakResponse::GetData() {
-    return NULL;
-}
-
-char *OpenUriResponse::GetData() {
-    return NULL;
-}
-
-char *SourceGetResponse::GetData() {
-    return NULL;
-}
-
-char *WindowGetResponse::GetData() {
-    return NULL;
-}
-*/
+    void setDocumentName(tstring name) {
+        this->name = name;
+    }
+    
+private:
+    DWORD cookie, eventCookie;
+    tstring name;
+    DbgpConnection *pDbgpConnection;
+    HRESULT handleSourceChange();
+};
