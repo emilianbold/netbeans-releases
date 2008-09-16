@@ -91,9 +91,9 @@ var ARCHIVE_BUILDS_LINK      = "http://www.netbeans.info/downloads/dev.php";
 var DEVELOPMENT_BUILDS_LINK  = "http://bits.netbeans.org/download/trunk/nightly/latest/";
 
 // TRANSLATE NOTE: change download*.gif to download*_<locale>.gif
-var DOWNLOAD_BUTTON_NORMAL    = "img/download.gif";
-var DOWNLOAD_BUTTON_DISABLED  = "img/download_d.gif";
-var DOWNLOAD_BUTTON_HIGHLIGHT = "img/download_h.gif";
+var DOWNLOAD_BUTTON_NORMAL    = "download.gif";
+var DOWNLOAD_BUTTON_DISABLED  = "download_d.gif";
+var DOWNLOAD_BUTTON_HIGHLIGHT = "download_h.gif";
 
 // DO NOT TRANSLATE
 var START_PAGE = "start.html";

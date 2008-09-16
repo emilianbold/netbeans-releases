@@ -215,7 +215,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
-        public boolean isSmart() {            
+        public boolean isSmart() {
             return CLS_KEYWORDS.contains(getName()) ? true : super.isSmart();
         }
 
@@ -364,7 +364,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
 
 
     }
-    
+
     static class InterfaceItem extends PHPCompletionItem {
         private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
         private static ImageIcon INTERFACE_ICON = null;
@@ -382,7 +382,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
                 INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
             }
             return INTERFACE_ICON;
-        }                
+        }
     }
 
     static class VariableItem extends PHPCompletionItem {
@@ -429,7 +429,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
             insertDollarPrefix = false;
         }
     }
-    
+
     static class SpecialFunctionItem extends KeywordItem{
         public SpecialFunctionItem(String fncName, CompletionRequest request) {
             super(fncName, request);
@@ -443,7 +443,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return builder.toString();
         }
     }
-    
+
     static class ReturnItem extends KeywordItem{
         public ReturnItem(CompletionRequest request) {
             super("return", request); //NOI18N
@@ -455,28 +455,31 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
-    //TODO: dummy must show also parameters similar like FunctionItem
     static class MagicMethodItem extends FunctionDeclarationItem {
-        private static IndexedFunction createIndexedFunction(String fncName) {
-            return new IndexedFunction(fncName, null, null, null, null, 0, 0, ElementKind.METHOD);
+        public MagicMethodItem(IndexedFunction function, CompletionRequest request) {
+            super(function, request, 0,false);
         }
-        public MagicMethodItem(String fncName, CompletionRequest request) {
-            super(MagicMethodItem.createIndexedFunction(fncName), request, 0,false);
+        
+        @Override
+        public boolean isSmart() {
+            return false;
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            formatter.appendText(getName());
-            return formatter.getText();
+            return super.getLhsHtml(formatter);
         }
-
 
         @Override
-        public ImageIcon getIcon() {
-            return null;
+        protected boolean emphasisName() {
+            return false;
+        }
+
+        @Override
+        protected String getFunctionBodyForTemplate() {
+            return "${cursor};\n";//NOI18N
         }
     }
-
 
     static class FunctionItem extends PHPCompletionItem {
         private int optionalArgCount = 0;
@@ -525,7 +528,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
 
             formatter.name(kind, true);
 
-            if (getFunction().isResolved()){
+            if (emphasisName()){
                 formatter.emphasis(true);
                 formatter.appendText(getName());
                 formatter.emphasis(false);
@@ -542,6 +545,10 @@ abstract class PHPCompletionItem implements CompletionProposal {
             formatter.appendHtml(")"); // NOI18N
 
             return formatter.getText();
+        }
+
+        protected boolean emphasisName() {
+            return getFunction().isResolved();
         }
 
         @Override
@@ -620,24 +627,56 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
-        public String getCustomInsertTemplate() {
+        public final String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
             String modifierStr = getFunction().getModifiersString();
-            String functionSignature = getFunction().getFunctionSignature();
+            final String functionSignature = getFunction().getFunctionSignature();
             if (modifierStr.length() != 0) {
-                modifierStr = modifierStr.replace("abstract","").trim();//NOI18N                    
+                modifierStr = modifierStr.replace("abstract","").trim();//NOI18N
                 template.append(modifierStr);
             }
             template.append(" ").append("function");//NOI18N
             template.append(" ").append(functionSignature);//NOI18N
             template.append(" ").append("{\n");//NOI18N
+            template.append(getFunctionBodyForTemplate());//NOI18N
+            template.append("}");//NOI18N
+            return template.toString();
+        }
+
+        /**
+         * @return body or null
+         */
+        protected String getFunctionBodyForTemplate() {
+            StringBuilder template = new StringBuilder();
             if (isIface) {
                 template.append("${cursor};\n");//NOI18N
             } else {
+                String functionSignature = getFunction().getFunctionSignature();
                 template.append("${cursor}parent::"+ functionSignature +";\n");//NOI18N
             }
-            template.append("}");//NOI18N
             return template.toString();
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(super.getLhsHtml(formatter));
+            /* TODO: uncomment but first be sure that it really works
+            sb.append(" - ");//NOI18N
+            if (isIface || getFunction().isAbstract()) {
+                sb.append("implement"); //NOI18N
+            } else {
+                sb.append("override"); //NOI18N
+            }
+             */
+            //for now
+            sb.append(' ').append(NbBundle.getMessage(PHPCompletionItem.class, "Generate"));//NOI18N
+            return sb.toString();
+        }
+
+        @Override
+        public boolean isSmart() {
+            return true;
         }
     }
 
