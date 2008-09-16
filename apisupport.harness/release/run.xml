@@ -143,11 +143,12 @@ made subject to such option by the copyright holder.
         <property name="run.args.prepared" value='--branding ${branding.token} --clusters "${run.platform.clusters}"'/>
     </target>
 
-    <target name="run" depends="-prepare-as-app,-prepare-as-platform">
+        <target name="run" depends="-prepare-as-app,-prepare-as-platform">
         <touch file="${cluster}/.lastModified"/> <!-- #138427 -->
         <property name="run.args" value=""/>
         <property name="run.args.extra" value=""/>
-        <exec osfamily="windows" executable="${run.exe}" failonerror="yes">
+        <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP Windows NT (unknown) Windows Vista" 
+        executable="${run.exe}" failonerror="no" resultproperty="result.prop">
             <arg value="--jdkhome"/>
             <arg file="${run.jdkhome}"/>
             <arg line="${run.args.common}"/>
@@ -155,7 +156,8 @@ made subject to such option by the copyright holder.
             <arg line="${run.args}"/>
             <arg line="${run.args.extra}"/>
         </exec>
-        <exec osfamily="unix" dir="." executable="sh" failonerror="yes">
+        <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh"
+        failonerror="no" resultproperty="result.prop">
             <arg value="${run.sh}"/>
             <arg value="--jdkhome"/>
             <arg file="${run.jdkhome}"/>
@@ -164,7 +166,19 @@ made subject to such option by the copyright holder.
             <arg line="${run.args}"/>
             <arg line="${run.args.extra}"/>
         </exec>
+        <fail>
+The application is already running within the test user directory.
+You must shut it down before trying to run it again.
+            <condition>
+                <and>
+                    <isset property="result.prop" />
+                    <!-- unknown option exit code as returned by org.netbeans.api.sendopts.CommandLine -->
+                    <equals arg1="${result.prop}" arg2="50346" />
+                </and>
+            </condition>
+        </fail>
     </target>
+
 
     <target name="debug">
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
