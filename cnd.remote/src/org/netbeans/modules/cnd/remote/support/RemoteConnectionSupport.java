@@ -171,6 +171,7 @@ public abstract class RemoteConnectionSupport {
         }
         if (session != null) {
             session.disconnect();
+            session = null;
         }
     }
     
