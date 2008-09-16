@@ -303,7 +303,7 @@ public class MessageLabelManager extends AbstractLabelManager
                     {
                         boolean shownumbers=((DesignerScene) getScene()).getEngine().getSettingValue(SequenceDiagramEngine.SHOW_MESSAGE_NUMBERS)==Boolean.TRUE;
                         String text = ((IMessage)getModelElement()).getNameWithAlias();
-                        if(shownumbers && ((IMessage)getModelElement()).getAutoNumber()!=null)text=((IMessage)getModelElement()).getAutoNumber()+": "+name;
+                        if(shownumbers && ((IMessage)getModelElement()).getAutoNumber()!=null)text=((IMessage)getModelElement()).getAutoNumber()+": "+text;
                         if((text==null || text.length()<1))text=retrieveDefaultName();
                         widget.setLabel(text);
                     }
