@@ -193,6 +193,10 @@ void executeCommand(LauncherProperties * props, WCHAR * command, WCHAR * dir, DW
     if (CreateProcessW(NULL, command, NULL, NULL, TRUE,
     CREATE_NEW_CONSOLE | CREATE_NO_WINDOW | CREATE_DEFAULT_ERROR_MODE | priority,
     NULL, directory, &si, &pi)) {        
+        // TODO
+        // Check whether volder virtualization can brake things and provide method to disable it if necessary 
+        // I am not sure whether we need it off or on.
+        // http://www.netbeans.org/issues/show_bug.cgi?id=122186
         DWORD timeOut = ((timeLimitMillis<=0) ? DEFAULT_PROCESS_TIMEOUT: timeLimitMillis);
         props->status = ERROR_OK;
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... process created", 1);

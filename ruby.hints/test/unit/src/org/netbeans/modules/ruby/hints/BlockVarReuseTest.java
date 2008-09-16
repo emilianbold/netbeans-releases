@@ -36,9 +36,9 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public class BlockVarTest extends HintTestBase {
+public class BlockVarReuseTest extends HintTestBase {
 
-    public BlockVarTest(String testName) {
+    public BlockVarReuseTest(String testName) {
         super(testName);
     }
 
@@ -52,6 +52,20 @@ public class BlockVarTest extends HintTestBase {
     
     public void testHint1() throws Exception {
         checkHints(this, createRule(), "testfiles/blockvars.rb", null);
+    }
+
+    public void testHint2() throws Exception {
+        checkHints(this, createRule(), "testfiles/blockvars2.rb", null);
+    }
+
+    public void testFix1() throws Exception {
+        String caretLine = "3.14.each { |loc^al|";
+        applyHint(this, createRule(), "testfiles/blockvars2.rb", caretLine, "Rename the local variable");
+    }
+
+    public void testFix2() throws Exception {
+        String caretLine = "3.14.each { |loc^al|";
+        applyHint(this, createRule(), "testfiles/blockvars2.rb", caretLine, "Rename the block variable");
     }
 
     public void testBlockVarReuse() throws Exception {

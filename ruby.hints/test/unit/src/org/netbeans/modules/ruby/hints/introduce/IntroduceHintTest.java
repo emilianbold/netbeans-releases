@@ -97,7 +97,6 @@ public class IntroduceHintTest extends HintTestBase {
 
     public void testApplyExtractMethod() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
 //        applyHint(this, hint, "testfiles/introduce1.rb",
 //                "good_symbol = 50\n    x = 50^", "Extract Method...");
         applyHint(this, hint, "testfiles/introduce1.rb",
@@ -106,77 +105,66 @@ public class IntroduceHintTest extends HintTestBase {
 
     public void testApplyIntroduceConstant() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "myconstant";
         applyHint(this, hint, "testfiles/introduce1.rb",
                 "50+30^", "Introduce Constant...");
     }
 
     public void testApplyIntroduceField() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "myvar";
         applyHint(this, hint, "testfiles/introduce1.rb",
                 "x+30^", "Introduce Field...");
     }
     
     public void testApplyIntroduceVariable() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "myvar";
         applyHint(this, hint, "testfiles/introduce1.rb",
                 "50+30^", "Introduce Variable...");
     }
 
     public void testApplyIntroduceVariable2() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "myvar";
         applyHint(this, hint, "testfiles/introduce1.rb",
                 "50+30^", "Introduce Variable...");
     }
 
     public void testApplyIntroduceVariableHash() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "myhash";
         applyHint(this, hint, "testfiles/introduce9.rb",
                 "^:foo => :bar", ":foo => :bar^", "Introduce Variable...");
     }
 
     public void testApplyExtractMethod2() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce2.rb", "^newvar = 50", "usedlater = 30^", 
                 "Extract Method...");
     }
 
     public void testApplyExtractMethod3() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce3.rb", "^newvar = 50", "usedlater = 30^", 
                 "Extract Method...");
     }
 
     public void testApplyExtractMethod4() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce4.rb", "^ x = 51", "puts y+q^", 
                 "Extract Method...");
     }
 
     public void testApplyExtractMethod4b() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce4.rb", "^[1,2,3].each do |foo|", "end #block^", 
                 "Extract Method...");
     }
 
     public void testApplyExtractMethod4d() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce4.rb", "^x = x+y", "x = x+y^", 
                 "Extract Method...");
     }
 
     public void testApplyExtractMethod5() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce5.rb", "^[1,2,3].each do |foo|", "end^ #block", 
                 "Extract Method...");
     }
@@ -185,98 +173,84 @@ public class IntroduceHintTest extends HintTestBase {
         // This is the same as testApplyExtractMethod5 but I've extended the range to the next line
         // to test that it collapses whitespace correctly
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce5.rb", "^[1,2,3].each do |foo|", "^puts faen", 
                 "Extract Method...");
     }
 
     public void testApplyExtractMethod6() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce6.rb", "^[1,2,3].each do |foo|", "end^ #block", 
                 "Extract Method...");
     }
 
     public void testApplyExtractMethod7() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "extract";
         applyHint(this, hint, "testfiles/introduce7.rb", "^a = (y / 100.0).floor", "^ if os?(jd, sg)", 
                 "Extract Method...");
     }
 
     public void testApplyExtractMethodMultiAssign() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "extract";
         applyHint(this, hint, "testfiles/introduce10.rb", "^y = 10", "z = 20^", 
                 "Extract Method...");
     }
 
     public void testApplyExtractMethodConditionals1() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "extract";
         applyHint(this, hint, "testfiles/introduce11.rb", "^if (b > 4)", "c += h^", 
                 "Extract Method...");
     }
 
     public void testApplyExtractMethodConditionals2() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "extract";
         applyHint(this, hint, "testfiles/introduce11.rb", "^if (a < 5)", "c += a^", 
                 "Extract Method...");
     }
     
 //    public void testApplyIntroduceVariableNewlines1() throws Exception {
 //        IntroduceHint hint = new IntroduceHint();
-//        IntroduceHint.testName = "myvar";
 //        applyHint(this, hint, "testfiles/introduce12.rb",
 //                "case (^x)", "case (x^)", "Introduce Variable...");
 //    }
 
     public void testApplyIntroduceVariableNewlines2() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "myvar";
         applyHint(this, hint, "testfiles/introduce12.rb",
                 "call( (^x<y) && true", "call( (x<y^) && true", "Introduce Variable...");
     }
 
     public void testApplyIntroduceVariableNewlines3() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "myvar";
         applyHint(this, hint, "testfiles/introduce12.rb",
                 "if (^x < y)", "if (x < y^)", "Introduce Variable...");
     }
 
     public void testApplyIntroduceVariableNewlines4() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "myvar";
         applyHint(this, hint, "testfiles/introduce12.rb",
                 "^y+1", "y+1^", "Introduce Variable...");
     }
 
     public void testApplyIntroduceVariableNewlines5() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "myvar";
         applyHint(this, hint, "testfiles/introduce12.rb",
                 "(^1+y)", "(1+y^)", "Introduce Variable...");
     }
 
     public void testApplyIntroduceHintNoMethod1() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce13.rb",
                 "^a = 1", "b = 2^", "Extract Method...");
     }
 
     public void testApplyIntroduceHintNoMethod2() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce13.rb",
                 "^some_call1 do", "end # some_call1^", "Extract Method...");
     }
 
     public void testApplyIntroduceHintNoMethod3() throws Exception {
         IntroduceHint hint = new IntroduceHint();
-        IntroduceHint.testName = "mymethod";
         applyHint(this, hint, "testfiles/introduce13.rb",
                 "^c = 1", "d = 2^", "Extract Method...");
     }
@@ -284,7 +258,6 @@ public class IntroduceHintTest extends HintTestBase {
 // This test case doesn't work right.  Check it and fix it!    
 //    public void testWrongIntroduce() throws Exception {
 //        IntroduceHint hint = new IntroduceHint();
-//        IntroduceHint.testName = "mymethod";
 //        applyHint(this, hint, "testfiles/wrong-extract-method.rb",
 //                "^attr_accessor :x", "helper :all^", "Extract Method...");
 //    }

@@ -53,14 +53,22 @@ public class BufferedURLContent implements URLContent {
     
     private URLContent baseContent;
     private byte[] contentBuffer;
+    private InputStream inputStream;
     
     public BufferedURLContent(URLContent baseContent) {
         this.baseContent = baseContent;
         contentBuffer = null;
+        inputStream = null;
+    }
+    
+    public BufferedURLContent(InputStream inputStream) {
+        this.inputStream = inputStream;
+        this.baseContent = null;
+        this.contentBuffer = null;
     }
     
     public InputStream getInputStream() throws IOException {
-        if (baseContent == null) {
+        if (baseContent == null && inputStream == null) {
             return new ByteArrayInputStream(contentBuffer);
         }else {
             byte[] tempBuffer = new byte[0];
@@ -68,7 +76,7 @@ public class BufferedURLContent implements URLContent {
             int currentBytes = 0;
             
             try {
-                InputStream stream = baseContent.getInputStream();
+                InputStream stream = (inputStream != null) ? inputStream : baseContent.getInputStream();
                 
                 if (stream == null) {
                     String defaultMsg = NbBundle.getMessage(BufferedURLContent.class, "NO_CONTENT_MSG");
@@ -106,6 +114,7 @@ public class BufferedURLContent implements URLContent {
             
             if (totalBytes > 0) {
                 baseContent = null;
+                inputStream = null;
                 contentBuffer = new byte[totalBytes];
                 for (int i = 0; i < totalBytes; i++) {
                     contentBuffer[i] = tempBuffer[i];
@@ -113,6 +122,7 @@ public class BufferedURLContent implements URLContent {
 
                 return new ByteArrayInputStream(contentBuffer);
             } else {
+                inputStream = null;
                 return new ByteArrayInputStream(new byte[0]);
             }
         }

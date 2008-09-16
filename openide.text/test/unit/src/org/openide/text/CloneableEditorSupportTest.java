@@ -41,9 +41,10 @@
 
 package org.openide.text;
 
-
 import java.beans.PropertyChangeListener;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,11 +52,16 @@ import java.util.Collections;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.*;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 
 /** Testing different features of CloneableEditorSupport
@@ -72,7 +78,6 @@ implements CloneableEditorSupport.Env {
     /** the content of lookup of support */
     private InstanceContent ic;
 
-    @RandomlyFails
     public void testDocCanBeGCdWhenNotModifiedButOpened() throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();
@@ -87,6 +92,7 @@ implements CloneableEditorSupport.Env {
         assertTrue ("Can be closed without problems", support.close ());
     }
 
+    @RandomlyFails
     public void testDocumentIsNotGCedIfModified () throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();

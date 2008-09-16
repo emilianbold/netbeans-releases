@@ -71,7 +71,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.INFO;
+        return Level.FINEST;
     }
 
     @Override
@@ -104,80 +104,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         
         assertEquals("Nothing there", 0, to.getPrimaryFile().getChildren().length);
     }
-    
-    public void testTheSetOfSecondaryEntriesIsSaidToGetInconsistent() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            err.log(i + " getting children of to");
-            DataObject[] to1 = to.getChildren();
-            err.log(i + " getting children of from");
-            DataObject[] from1 = from.getChildren();
-            err.log(i + " getting files of object1");
-            Object[] arr1 = one.files().toArray();
-            err.log(i + " moving the object");
-            one.move(to);
-            err.log(i + " 2nd children of to");
-            DataObject[] to2 = to.getChildren();
-            err.log(i + " 2nd children of from");
-            DataObject[] from2 = from.getChildren();
-            err.log(i + " 2nd  files of object1");
-            Object[] arr2 = one.files().toArray();
-            err.log(i + " checking results");
-            
-            assertEquals("Round " + i + " To is empty: " + Arrays.asList(to1), 0, to1.length);
-            assertEquals("Round " + i + " From has one:" + Arrays.asList(from1), 1, from1.length);
-            assertEquals("Round " + i + " One has two files" + Arrays.asList(arr1), 2, arr1.length);
-            
-            assertEquals("Round " + i + " From is empty after move: " + Arrays.asList(from2), 0, from2.length);
-            assertEquals("Round " + i + " To has one:" + Arrays.asList(to2), 1, to2.length);
-            assertEquals("Round " + i + " One still has two files" + Arrays.asList(arr1), 2, arr1.length);
-            
-            err.log(i + " moving back");
-            one.move(from);
-            err.log(i + " end of cycle");
-        }
-    }
-
-    public void testConsistencyWithABitOfAsynchronicity() throws Exception {
-        err.log(" getting children of to");
-        DataObject[] to1 = to.getChildren();
-        err.log(" getting children of from");
-        DataObject[] from1 = from.getChildren();
         
-        
-        for (int i = 0; i < 10; i++) {
-            err.log(i + " getting files of object1");
-            Object[] arr1 = one.files().toArray();
-            err.log(i + " moving the object");
-            one.move(to);
-            Object[] arr2 = one.files().toArray();
-            err.log(i + " checking results");
-            
-            assertEquals("Round " + i + " One has two files" + Arrays.asList(arr1), 2, arr1.length);
-            
-            assertEquals("Round " + i + " One still has two files" + Arrays.asList(arr1), 2, arr1.length);
-            
-            err.log(i + " moving back");
-            one.move(from);
-            err.log(i + " end of cycle");
-        }
-    }
-
-    public void testConsistencyWithABitOfAsynchronicityAndNoObservationsThatWouldMangeTheState() throws Exception {
-        err.log(" getting children of to");
-        DataObject[] to1 = to.getChildren();
-        err.log(" getting children of from");
-        DataObject[] from1 = from.getChildren();
-        
-        
-        for (int i = 0; i < 10; i++) {
-            err.log(i + " moving the object");
-            one.move(to);
-            err.log(i + " moving back");
-            one.move(from);
-            err.log(i + " end of cycle");
-        }
-    }
-    
     public void testConsistencyWithContinuousQueryingForDeletedFiles() throws Exception {
         err.log(" getting children of to");
         DataObject[] to1 = to.getChildren();
@@ -270,23 +197,6 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         assertEquals("Fourty deleted files:" + que.deleted, 40, que.deleted.size());
     }
 
-    public void testAdditionsToCookieSetAreVisibleInLookup() throws Exception {
-        assertTrue(this.one instanceof SimpleObject);
-        SimpleObject s = (SimpleObject)this.one;
-        
-        class Open implements OpenCookie {
-            public void open() {
-            }
-        }
-        Open openCookie = new Open();
-        
-        
-        s.getCookieSet().add(openCookie);
-        
-        assertSame("Cookie is in the lookup", openCookie, one.getLookup().lookup(OpenCookie.class));
-    }
-
-    
     public static final class Pool extends DataLoaderPool {
         protected Enumeration loaders() {
             return Enumerations.singleton(SimpleLoader.getLoader(SimpleLoader.class));

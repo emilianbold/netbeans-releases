@@ -250,6 +250,9 @@ public class LanguageRegistry implements Iterable<Language> {
                 if (gsfLanguage != null) {
                     for (FileObject fo : gsfLanguage.getCoreLibraries()) {
                         try {
+                            if (fo == null) {
+                                continue;
+                            }
                             URL url = FileUtil.toFile(fo).toURI().toURL();
                             urls.add(url);
                             ClassIndexManager.get(language).addBootRoot(url);

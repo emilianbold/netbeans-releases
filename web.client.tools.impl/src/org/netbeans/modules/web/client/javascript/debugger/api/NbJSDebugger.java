@@ -201,7 +201,10 @@ public final class NbJSDebugger {
                 } catch (RuntimeException re) {
                     Log.getLogger().log(Level.INFO, re.getMessage(), re);
                 }
+                
                 openEditorsForWindows();
+            } else if (evt.getPropertyName().equals(JSDebugger.PROPERTY_RELOADSOURCES)) {
+                refreshCacheForSources((JSSource[])evt.getNewValue());
             }
         }
     }
@@ -876,5 +879,23 @@ public final class NbJSDebugger {
             JSSource source = JSFactory.createJSSource(strURI);
             NbJSEditorUtil.openFileObject(getFileObjectForSource(source));
         }
+    }
+    
+    private void refreshCacheForSources(JSSource[] sources) {
+        if (sources == null || sources.length == 0) {
+            return;
+        }
+        
+        for (JSSource source : sources) {
+            try {
+                URI sourceURI = source.getLocation().getURI();
+                URLFileObject urlFO = URLFileObjectFactory.findFileObject(contentProvider, sourceURI.toURL());
+                if (urlFO != null) {
+                    urlFO.invalidate();
+                }
+            } catch (MalformedURLException ex) {
+                Log.getLogger().log(Level.FINE, "Could not convert URI to URL", ex);
+            }
+        }        
     }
 }

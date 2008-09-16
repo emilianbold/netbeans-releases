@@ -116,11 +116,8 @@ public class CommandUtils {
         return getRelativePhpPath(ProjectPropertiesSupport.getWebRootDirectory(getProject()), fileObject);
     }
 
-    public String getRelativePhpPath(FileObject folder, FileObject fileObject) {
+    private String getRelativePhpPath(FileObject folder, FileObject fileObject) {
         if (fileObject != null) {
-            if (fileObject.equals(getProject().getProjectDirectory())) {
-                return ""; //NOI18N
-            }
             if (FileUtil.isParentOf(folder, fileObject)) {
                 return FileUtil.getRelativePath(folder, fileObject);
             } else if (folder.equals(fileObject)) {

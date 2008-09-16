@@ -16,11 +16,10 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="messageLabel" alignment="0" pref="501" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="nameLabel" alignment="1" max="32767" attributes="1"/>
                           <Component id="chkGrantAccess" alignment="1" pref="173" max="32767" attributes="1"/>
@@ -31,6 +30,9 @@
                           <Component id="comboDatabaseName" alignment="1" pref="323" max="32767" attributes="0"/>
                       </Group>
                   </Group>
+                  <Component id="messageLabel" alignment="0" pref="501" max="32767" attributes="0"/>
+                  <Component id="progressBar" alignment="0" pref="501" max="32767" attributes="0"/>
+                  <Component id="progressLabel" alignment="0" pref="501" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -49,9 +51,13 @@
                   <Component id="chkGrantAccess" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="comboUsers" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="messageLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="30" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="progressBar" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="progressLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -66,6 +72,8 @@
           <ResourceString bundle="org/netbeans/modules/db/mysql/ui/Bundle.properties" key="CreateDatabasePanel.nameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JProgressBar" name="progressBar">
     </Component>
     <Component class="javax.swing.JCheckBox" name="chkGrantAccess">
       <Properties>
@@ -137,6 +145,13 @@
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/db/mysql/ui/Bundle.properties" key="CreateDatabasePanel.messageLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="progressLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/mysql/ui/Bundle.properties" key="CreateDatabasePanel.progressLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
