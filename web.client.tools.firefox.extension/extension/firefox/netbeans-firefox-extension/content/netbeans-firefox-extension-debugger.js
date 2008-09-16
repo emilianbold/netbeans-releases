@@ -357,6 +357,7 @@
                 if (this.terminated) {
                     return;
                 }
+
                 if ( topWindow && context.window == topWindow ) {
                     currentFirebugContext = context;
                     releaseFirebugContext = false;
@@ -1365,7 +1366,7 @@
 
         socket.send(initMessage);
     }
-
+    
     // TODO: Do we need this?
     function sendOnloadMessage(uri)
     {
@@ -1577,6 +1578,31 @@
         
         return 'anonymous';
     }
+
+    // Format of the message is:
+    //  <reloadsources>
+    //   <window fileuri="http://..." />
+    //   <window fileuri="http://..." />
+    //   :
+    // </reloadsources>
+    function sendReloadSourcesMessage(windows) {
+        if (!socket) {
+            return;
+        }
+        try {
+            var sourcesMessage =
+            <reloadsources encoding="base64"></reloadsources>;
+            for each (var aWindow in windows) {
+                if (aWindow.top == aWindow) {
+                    buildSourcesFromWindowsMessage([aWindow], sourcesMessage);
+                }
+            }
+            socket.send(sourcesMessage);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Failed to send message in port: " + port + " sessionId: " + sessionId);
+            NetBeans.Logger.logException(exc);
+        }        
+    }
     
     // Format of the message is:
     // <windows>
@@ -1592,6 +1618,7 @@
         try {
         var windowsMessage =
         <windows encoding="base64"></windows>;
+
         for each (var aWindow in windows) {
             if (aWindow.top == aWindow) {
                 buildWindowsMessage([aWindow], windowsMessage);
@@ -1624,6 +1651,23 @@
         }
     }
 
+    function buildSourcesFromWindowsMessage(windows, sourcesMessage) {
+        if (windows.length == 0) {
+            return;
+        }
+        for each (var aWindow in windows) {
+            var sourceMessage = <source fileuri={
+            window.btoa(aWindow.document.location.href)
+            } />;
+
+            sourcesMessage.source += sourceMessage;
+            var frameWindows = aWindow.frames;
+            if (frameWindows) {
+                buildSourcesFromWindowsMessage(frameWindows, sourcesMessage);
+            }
+        }
+    }
+    
     // Format of the message is:
     // <sources>
     //   <source fileuri="http://..." />
@@ -1856,9 +1900,9 @@
 
     this.onInit = function(debuggr)
     {
-        if ( this == debuggr ) {
-    // TODO socket.send(...);
-    }
+        if ( this == debuggr) {
+            this.reloadSources = true;
+        }
     }
 
     this.onLoaded = function(url)
@@ -1883,6 +1927,11 @@
             self.detachFromWindow(win);
         }
         win.addEventListener("unload", onUnload, true);
+        
+        if (this.reloadSources) {
+            delete this.reloadSources;
+            sendReloadSourcesMessage(attachedWindows);
+        }
         sendWindowsMessage(attachedWindows);
     }
 
