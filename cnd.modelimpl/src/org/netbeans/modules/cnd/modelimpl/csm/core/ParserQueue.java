@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -431,7 +433,7 @@ public final class ParserQueue {
         }
     }
 
-    public Entry poll() throws InterruptedException {
+    public Entry poll(AtomicReference<FileImpl.State> fileState) throws InterruptedException {
 
         synchronized (suspendLock) {
             while( state == State.SUSPENDED ) {
@@ -454,6 +456,9 @@ public final class ParserQueue {
                 return null;
             }
             file = e.getFile();
+            if (fileState != null) {
+                fileState.set(file.getState());
+            }
             project = file.getProjectImpl(true);
             ProjectData data = getProjectData(project, true);
             data.filesInQueue.remove(file);
