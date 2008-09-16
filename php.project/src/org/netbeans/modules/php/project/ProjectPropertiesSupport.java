@@ -89,13 +89,16 @@ public final class ProjectPropertiesSupport {
     }
 
     public static FileObject getWebRootDirectory(PhpProject project) {
-        String webRootPath = project.getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT);
-        FileObject webRoot = project.getSourcesDirectory();
-        if (webRootPath != null && webRootPath.trim().length() > 0 && !webRootPath.equals(".")) { // NOI18N
-            webRoot = project.getSourcesDirectory().getFileObject(webRootPath);
+        return getSourceSubdirectory(project, project.getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT));
+    }
+
+    public static FileObject getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
+        FileObject subdirectory = project.getSourcesDirectory();
+        if (subdirectoryPath != null && subdirectoryPath.trim().length() > 0 && !subdirectoryPath.equals(".")) { // NOI18N
+            subdirectory = subdirectory.getFileObject(subdirectoryPath);
         }
-        assert webRoot != null : "WebRoot must be found";
-        return webRoot;
+        assert subdirectory != null : "Subdirectory " + subdirectoryPath + " must be found";
+        return subdirectory;
     }
 
     public static PhpInterpreter getPhpInterpreter(PhpProject project) {
