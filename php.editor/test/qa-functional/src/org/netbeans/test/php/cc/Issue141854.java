@@ -68,11 +68,11 @@ import java.util.List;
  * @author michaelnazarov@netbeans.org
  */
 
-public class cc_0007 extends cc
+public class Issue141854 extends cc
 {
-  static final String TEST_PHP_NAME = "PhpProject7";
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141854";
 
-  public cc_0007( String arg0 )
+  public Issue141854( String arg0 )
   {
     super( arg0 );
   }
@@ -80,9 +80,9 @@ public class cc_0007 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( cc_0007.class ).addTest(
+      NbModuleSuite.createConfiguration( Issue141854.class ).addTest(
           "CreateApplication",
-          "Issue141992"
+          "Issue141854"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -99,7 +99,7 @@ public class cc_0007 extends cc
     endTest( );
   }
 
-  public void Issue141992( ) throws Exception
+  public void Issue141854( ) throws Exception
   {
     startTest( );
 
@@ -108,18 +108,13 @@ public class cc_0007 extends cc
     Sleep( 1000 );
     // Locate comment
     eoPHP.setCaretPosition( "// put your code here", false );
-
-    // Check constructor
-    String sCode = "";
-    for( int i = 1; i < 1000; i++ )
-    {
-      sCode = sCode + "\nclass a" + i + ( ( 1 == i ) ? "" : ( " extends a" + ( i - 1 ) ) ) + "\n{\npublic $a" + i + ";\n}";
-    }
-    eoPHP.insert( sCode );
-    TypeCode( eoPHP, "\n$z = new a1000;\n$z->" );
-
+    // Add new line
+    eoPHP.insert( "\n" );
+    Sleep( 1000 );
+    // Press Ctrl+Space
+    eoPHP.typeKey( ' '/*KeyEvent.VK_SPACE*/, InputEvent.CTRL_MASK );
+    Sleep( 1000 );
     // Check code completion list
-
     CompletionJListOperator jCompl = GetCompletion( );
     List list = jCompl.getCompletionItems( );
     // Magic CC number for complete list

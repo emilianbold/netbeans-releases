@@ -489,7 +489,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
             set.add(project.getProjectDirectory());
             // Add buildfolder from makefile projects to sources. See IZ 90190.
-            Configuration[] confs = getMakeConfigurationDescriptor().getConfs().getConfs();
+            MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor();
+            if (makeConfigurationDescriptor == null) {
+                return;
+            }
+            Configuration[] confs = makeConfigurationDescriptor.getConfs().getConfs();
             for (int i = 0; i < confs.length; i++) {
                 MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
                 if (makeConfiguration.isMakefileConfiguration()) {

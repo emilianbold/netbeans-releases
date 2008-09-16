@@ -159,7 +159,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         }
 
         if (path.size() == 0) {
-            return null;
+            return DeclarationLocation.NONE;
         }
 
         path = new LinkedList<ASTNode>(path);

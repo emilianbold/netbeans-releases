@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
@@ -54,4 +55,5 @@ public interface MutableDeclarationsContainer extends CsmObject {
 
     void removeDeclaration(CsmOffsetableDeclaration declaration);
 
+    Collection<CsmOffsetableDeclaration> getDeclarations();
 }

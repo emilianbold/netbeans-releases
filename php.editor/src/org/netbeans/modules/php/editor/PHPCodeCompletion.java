@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,6 +87,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -94,6 +96,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
@@ -1425,6 +1429,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             globalContext = false;
             // add parameters to the result
 
+            Map<String, String> typeByParamName = new TreeMap<String, String>();
+            Comment comment = Utils.getCommentForNode(context.getProgram(), functionDeclaration);
+
+            if (comment instanceof PHPDocBlock) {
+                PHPDocBlock phpDoc = (PHPDocBlock) comment;
+                
+                for (PHPDocTag tag : phpDoc.getTags()){
+                    if (tag.getKind() == PHPDocTag.Type.PARAM){
+                        PHPDocParamTagData paramData = new PHPDocParamTagData(tag.getValue());
+                        typeByParamName.put(paramData.name, paramData.type);
+                    }
+                }
+            }
+            
             for (FormalParameter param : functionDeclaration.getFormalParameters()) {
                 Expression parameterName = param.getParameterName();
 
@@ -1437,6 +1455,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     String varName = CodeUtils.extractVariableName((Variable) parameterName);
                     if (varName != null) {
                         String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
+
+                        if (type == null){
+                            type = typeByParamName.get(varName);
+                        }
 
                         if (isPrefix(varName, namePrefix)) {
                             IndexedConstant ic = new IndexedConstant(varName, null,

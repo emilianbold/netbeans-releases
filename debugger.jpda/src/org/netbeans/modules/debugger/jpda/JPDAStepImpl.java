@@ -260,6 +260,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 mb.setSuspend(JPDABreakpoint.SUSPEND_NONE);
                 lastMethodExitBreakpointListener = new MethodExitBreakpointListener(mb);
                 mb.addJPDABreakpointListener(lastMethodExitBreakpointListener);
+                // TODO: mb.setSession(debugger);
+                try {
+                    java.lang.reflect.Method setSessionMethod = JPDABreakpoint.class.getDeclaredMethod("setSession", JPDADebugger.class);
+                    setSessionMethod.setAccessible(true);
+                    setSessionMethod.invoke(mb, debugger);
+                } catch (Exception ex) {
+                    org.openide.util.Exceptions.printStackTrace(ex);
+                }
                 DebuggerManager.getDebuggerManager().addBreakpoint(mb);
             }
         }

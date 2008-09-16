@@ -77,6 +77,7 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -232,6 +233,14 @@ implements Executor {
         mb.setThreadFilters(getDebuggerImpl(), new JPDAThread[] { jtr });
         lastMethodExitBreakpointListener = new MethodExitBreakpointListener(mb);
         mb.addJPDABreakpointListener(lastMethodExitBreakpointListener);
+        // TODO: mb.setSession(debugger);
+        try {
+            java.lang.reflect.Method setSessionMethod = JPDABreakpoint.class.getDeclaredMethod("setSession", JPDADebugger.class);
+            setSessionMethod.setAccessible(true);
+            setSessionMethod.invoke(mb, debugger);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
         DebuggerManager.getDebuggerManager().addBreakpoint(mb);
     }
     
