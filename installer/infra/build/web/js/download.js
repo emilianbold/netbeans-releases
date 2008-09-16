@@ -612,55 +612,12 @@ function add_download_tab(name, url) {
    download_tabs_number++;
 }
 
-function get_file_name(platform, option) {
-    var file_name = "";
-    if(platform=="zip") {
-        file_name += ZIP_FILES_PREFIX;
-    } else {
-        file_name += BUNDLE_FILES_PREFIX;
-    }
-    if (option != "all") {
-    	file_name += "-" + option;
-    }
-
-    if ( platform != "zip" ) {
-   	file_name += "-" + platform;
-    }
-    if (platform == "windows") {
-        file_name += ".exe";
-    } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
-        file_name += ".tgz";
-    } else if (platform == "macosx") {
-	file_name += ".dmg";
-    } else if(platform == "zip"){
-	file_name += ".zip"        
-    } else {
-        file_name += ".sh";
-    }
-    return file_name;
-}
-
-function get_file_url(platform, option) {
-    var basename  = "";
-	
-    if(platform=="zip") {
-        basename += "zip/";
-    } else {
-        basename += "bundles/";
-    }    
-    basename += get_file_name(platform, option);    
-    return basename;
-}
-
 function download(option) {
     var select = document.getElementById("platform_select");
     var platform = select.options[select.selectedIndex].value;
 
-    var file_url = get_file_url(platform, option);
-
-    var download_url = START_PAGE + "?" + file_url;
-
-    download_url += "&platform=" + platform;
+    var download_url = START_PAGE;
+    download_url += "?platform=" + platform;
 
     var language_select = document.getElementById("language_select");
     var language = language_select.options[language_select.selectedIndex].value;
