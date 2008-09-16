@@ -187,8 +187,17 @@ public class RevertModificationsAction extends ContextAction {
 
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) {
             return false;
+        }
+        Set<File> roots = context.getRootFiles();
+        if(roots == null) return false;
+        for (File root : roots) {
+            FileInformation info = Mercurial.getInstance().getFileStatusCache().getCachedStatus(root);
+            if(info != null && info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+                return false;
+            }
+        }
         return true; 
     }
 }
