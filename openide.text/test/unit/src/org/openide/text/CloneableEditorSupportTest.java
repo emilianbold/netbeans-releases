@@ -98,9 +98,9 @@ implements CloneableEditorSupport.Env {
         javax.swing.text.Document doc = support.openDocument ();
         assertNotNull (doc);
         doc.insertString (0, "Zmena", null);
-        
+
         assertTrue ("Is modified", support.isModified ());
-        
+
         WeakReference<Object> ref = new WeakReference<Object>(doc);
         doc = null;
 
@@ -116,7 +116,7 @@ implements CloneableEditorSupport.Env {
         }
         
         assertTrue ("Document remains loaded", support.isDocumentLoaded ());
-        
+
     }
     
     public void testDocumentIsNotGCedIfOpenedInEditor () throws Exception {
@@ -226,8 +226,7 @@ implements CloneableEditorSupport.Env {
         i = l.getLookup().lookup(Integer.class);
         assertNull ("Lookup is dynamic, so now there is nothing", i);
     }
-    
-    
+
     public void testGetInputStream () throws Exception {
         content = "goes\nto\nInputStream";
         String added = "added before\n";
