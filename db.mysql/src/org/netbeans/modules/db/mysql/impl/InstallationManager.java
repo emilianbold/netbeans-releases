@@ -97,11 +97,12 @@ public class InstallationManager {
                     stdInstalls.add(installation);
                 }
             }
-
-            INSTALLATIONS = new ArrayList<Installation>();
-            INSTALLATIONS.addAll(stackInstalls);
-            INSTALLATIONS.addAll(stdInstalls);
-            isInstalled = true;
+            if (!isInstalled) {
+                isInstalled = true;
+                INSTALLATIONS = new ArrayList<Installation>();
+                INSTALLATIONS.addAll(stackInstalls);
+                INSTALLATIONS.addAll(stdInstalls);
+            }
         }
         
         return INSTALLATIONS;
