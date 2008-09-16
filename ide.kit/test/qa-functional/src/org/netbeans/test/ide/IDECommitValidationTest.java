@@ -51,6 +51,7 @@ import java.util.Set;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
@@ -131,6 +132,21 @@ public class IDECommitValidationTest extends JellyTestCase {
 //        conf = conf.addTest("testGCProjects");
         // not in commit suite because it needs net connectivity
         // suite.addTest(new IDEValidation("testPlugins"));
-        return NbModuleSuite.create(conf);
+
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(conf));
+        suite.addTest(new IDECommitValidationTest("testPostRunCheck"));
+        return suite;
+    }
+
+    public void testPostRunCheck() throws Exception {
+        String ud = System.getProperty("netbeans.user");
+        assertNotNull("User dir is provided", ud);
+
+        File loaders = new File(new File(new File(ud), "config"), "loaders.ser");
+        if (loaders.exists()) {
+            fail("loaders.ser file shall not be created, as loaders shall now be " +
+                "defined using layers:\n" + loaders);
+        }
     }
 }

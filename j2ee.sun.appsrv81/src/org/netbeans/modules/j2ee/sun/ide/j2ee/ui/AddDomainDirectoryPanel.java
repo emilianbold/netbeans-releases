@@ -118,7 +118,7 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
         if (!creatingPersonalInstance) {
             if (domainDirStr.length() < 1) {
                 setErrorMsg("Msg_EneterValidDomainDir");  //NOI18N
-                component.setAdminPort("");
+                component.setAdminPort("");  //NOI18N
                 return false;                
             }
             String mess = Util.rootOfUsableDomain(domainDir);
@@ -153,7 +153,7 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
             byte bytes[] = path.getBytes();
             byte utf8[] = bytes;
             try {
-                utf8 = path.getBytes("UTF-8");
+                utf8 = path.getBytes("UTF-8");  //NOI18N
             } catch (java.io.UnsupportedEncodingException uee) {
                 // if we get to here... creating a domain will be the least
                 // of the users worries.  A Java VM has to support UTF-8 encoding.

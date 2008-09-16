@@ -14,7 +14,7 @@ on Libraries node in Projects view can be used to add the JSTL 1.1 library.
 
 <%-- completion for jsp tags --%>
 <%--CC
-<jsp:useBean id="bean" scope="application" class="java.lang.Date">|
+<jsp:useBean id="bean" scope="application" class="java.lang.Date"></|
 ...
 <jsp:useBean id="bean" scope="application" class="java.lang.Date"></jsp:useBean>
 --%>
@@ -28,14 +28,14 @@ on Libraries node in Projects view can be used to add the JSTL 1.1 library.
 
 <%-- completion for core lib tags --%>
 <%--CC
-<c:when test="" >|
+<c:when test="" ></|
 ...
 <c:when test="" ></c:when>
 --%>
 
 <%-- completion for core lib tags --%>
 <%--CC
-<c:forTokens delims=":;," items="items">|
+<c:forTokens delims=":;," items="items"></|
 ...
 <c:forTokens delims=":;," items="items"></c:forTokens>
 --%>
@@ -43,7 +43,7 @@ on Libraries node in Projects view can be used to add the JSTL 1.1 library.
 
 <%-- completion for html lib tags --%>
 <%--CC
-<h:inputTextarea >|
+<h:inputTextarea ></|
 ...
 <h:inputTextarea ></h:inputTextarea>
 --%>

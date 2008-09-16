@@ -72,17 +72,16 @@ public class TomcatIntegrationPanelUI extends javax.swing.JPanel {
 
         platformSelector = new org.netbeans.modules.profiler.attach.panels.components.JavaPlatformPanelComponent();
         pathsPanel = new javax.swing.JPanel();
-        directoryTomcat = new org.netbeans.modules.profiler.attach.panels.components.DirectorySelector();
         labelTomcat = new javax.swing.JLabel();
+        directoryTomcat = new org.netbeans.modules.profiler.attach.panels.components.DirectorySelector();
         labelCatalina = new javax.swing.JLabel();
         directoryCatalina = new org.netbeans.modules.profiler.attach.panels.components.DirectorySelector();
-
-        setMaximumSize(new java.awt.Dimension(800, 1200));
-        setMinimumSize(new java.awt.Dimension(400, 300));
-        setPreferredSize(new java.awt.Dimension(500, 300));
+        jPanel1 = new javax.swing.JPanel();
 
         platformSelector.setBorder(javax.swing.BorderFactory.createTitledBorder(null, org.openide.util.NbBundle.getMessage(TomcatIntegrationPanelUI.class, "TomcatIntegrationPanelUI.border.platformSelector.title"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIManager.getFont("TitledBorder.font").deriveFont(Font.BOLD))); // NOI18N
+        platformSelector.setMinimumSize(new java.awt.Dimension(0, 0));
         platformSelector.setPlatformFilter(this.model.getPlatformFilter());
+        platformSelector.setPreferredSize(new java.awt.Dimension(470, 140));
         platformSelector.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 platformSelectorPropertyChange(evt);
@@ -92,16 +91,8 @@ public class TomcatIntegrationPanelUI extends javax.swing.JPanel {
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/profiler/j2ee/tomcat/Bundle"); // NOI18N
         pathsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, bundle.getString("InformationIntegrationLabel"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIManager.getFont("TitledBorder.font").deriveFont(Font.BOLD))); // NOI18N
 
-        org.jdesktop.layout.GroupLayout pathsPanelLayout = new org.jdesktop.layout.GroupLayout(pathsPanel);
-        pathsPanel.setLayout(pathsPanelLayout);
-        pathsPanelLayout.setHorizontalGroup(
-            pathsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 488, Short.MAX_VALUE)
-        );
-        pathsPanelLayout.setVerticalGroup(
-            pathsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 35, Short.MAX_VALUE)
-        );
+        labelTomcat.setLabelFor(directoryTomcat);
+        org.openide.awt.Mnemonics.setLocalizedText(labelTomcat, bundle.getString("TomcatIntegrationProvider_TomcatInstallLabelText")); // NOI18N
 
         directoryTomcat.setHint(org.openide.util.NbBundle.getMessage(TomcatIntegrationPanelUI.class, "TomcatIntegrationPanelUI.directoryTomcat.hint")); // NOI18N
         directoryTomcat.setHintForeground(new java.awt.Color(89, 79, 191));
@@ -111,9 +102,6 @@ public class TomcatIntegrationPanelUI extends javax.swing.JPanel {
                 directoryTomcatPropertyChange(evt);
             }
         });
-
-        labelTomcat.setLabelFor(directoryTomcat);
-        org.openide.awt.Mnemonics.setLocalizedText(labelTomcat, bundle.getString("TomcatIntegrationProvider_TomcatInstallLabelText")); // NOI18N
 
         labelCatalina.setLabelFor(directoryCatalina);
         org.openide.awt.Mnemonics.setLocalizedText(labelCatalina, bundle.getString("TomcatIntegrationProvider_TomcatBaseLabelText")); // NOI18N
@@ -127,42 +115,60 @@ public class TomcatIntegrationPanelUI extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(platformSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 500, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(labelTomcat, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 488, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(directoryTomcat, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 488, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(directoryCatalina, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 488, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(labelCatalina, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 488, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(pathsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        org.jdesktop.layout.GroupLayout pathsPanelLayout = new org.jdesktop.layout.GroupLayout(pathsPanel);
+        pathsPanel.setLayout(pathsPanelLayout);
+        pathsPanelLayout.setHorizontalGroup(
+            pathsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(pathsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(pathsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(directoryTomcat, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+                    .add(labelTomcat)
+                    .add(labelCatalina)
+                    .add(directoryCatalina, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE))
+                .addContainerGap())
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(pathsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+        pathsPanelLayout.setVerticalGroup(
+            pathsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(pathsPanelLayout.createSequentialGroup()
                 .add(labelTomcat)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(directoryTomcat, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(labelCatalina)
-                    .add(directoryCatalina, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(platformSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(24, 24, 24))
+                .add(labelCatalina)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(directoryCatalina, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 500, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 13, Short.MAX_VALUE)
+        );
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, pathsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, platformSelector, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(pathsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(platformSelector, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -193,6 +199,7 @@ public class TomcatIntegrationPanelUI extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.profiler.attach.panels.components.DirectorySelector directoryCatalina;
     private org.netbeans.modules.profiler.attach.panels.components.DirectorySelector directoryTomcat;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel labelCatalina;
     private javax.swing.JLabel labelTomcat;
     private javax.swing.JPanel pathsPanel;

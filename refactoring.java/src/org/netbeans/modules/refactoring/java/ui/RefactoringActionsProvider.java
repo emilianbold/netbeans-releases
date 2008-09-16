@@ -206,8 +206,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         Node n = nodes.iterator().next();
-        if (n.getLookup().lookup(TreePathHandle.class) != null) {
-            return true;
+        TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
@@ -362,8 +363,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         for (Node n:nodes) {
-            if (n.getLookup().lookup(TreePathHandle.class) != null) {
-                return true;
+            TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
+            if (tph != null) {
+                return RetoucheUtils.isRefactorable(tph.getFileObject());
             }
             DataObject dataObject = n.getCookie(DataObject.class);
             if (dataObject == null){

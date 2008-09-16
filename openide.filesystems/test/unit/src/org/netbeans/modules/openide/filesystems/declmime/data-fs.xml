@@ -31,5 +31,11 @@
         <file name="illegal-encoding.xml"><![CDATA[<?xml version="1.0" encoding="${encoding}"?>
 <beans xmlns="http://www.springframework.org/schema/beans"/>
 ]]></file>
+	<file name="126496-skipCharNPE.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+    ]]>
+    </file>
     </folder>
 </filesystem>

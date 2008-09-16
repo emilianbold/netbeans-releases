@@ -69,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.NbBundle;
 
 /**
@@ -149,6 +150,12 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         
         resultSet.add(dir);
         
+        // save last project location
+        dirF = (dirF != null) ? dirF.getParentFile() : null;
+        if (dirF != null && dirF.exists()) {
+            ProjectChooser.setProjectsFolder (dirF);
+        }
+
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main
         return resultSet;

@@ -152,7 +152,7 @@ public class EditList {
                     if (edit.getOffset() <= positionOffset && end >= positionOffset) {
                         position = doc.createPosition(positionOffset); // Position of the comment
                     }
-                    if (edit.format) {
+                    if (edit.format && formatter != null) {
                         formatter.reindent(doc, edit.offset, end);
                     }
                 }

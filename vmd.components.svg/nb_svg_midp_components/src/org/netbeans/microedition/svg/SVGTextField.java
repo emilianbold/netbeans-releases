@@ -117,6 +117,9 @@ public class SVGTextField extends SVGComponent {
     }
     
     public void setText(String text) {
+        if (text == null) {
+            text = "";
+        }
         if ( !text.equals(myTextValue)) {
             myTextValue = text;
             setTextImpl();

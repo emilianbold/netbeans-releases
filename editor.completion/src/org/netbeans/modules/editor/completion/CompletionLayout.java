@@ -47,7 +47,6 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -275,7 +274,13 @@ public final class CompletionLayout {
             
             Rectangle occupiedBounds = popup.getAnchorOffsetBounds();
             occupiedBounds = tipPopup.unionBounds(completionPopup.unionBounds(occupiedBounds));
-            docPopup.showAlongOccupiedBounds(occupiedBounds);
+
+            if(CompletionSettings.getInstance().documentationPopupNextToCC()) {
+                docPopup.showAlongOrNextOccupiedBounds(completionPopup.getPopupBounds(), occupiedBounds);
+            } else {
+                docPopup.showAlongOccupiedBounds(occupiedBounds);
+            }
+
 
         } else if (popup == tipPopup) { // tooltip popup
             popup.showAlongAnchorBounds(); // show possibly above the caret
@@ -315,6 +320,7 @@ public final class CompletionLayout {
                 completionScrollPane = new CompletionScrollPane(
                     editorComponent, listSelectionListener,
                     new MouseAdapter() {
+                        @Override
                         public void mouseClicked(MouseEvent evt) {
 			    JTextComponent c = getEditorComponent();
                             if (SwingUtilities.isLeftMouseButton(evt)) {
@@ -400,6 +406,7 @@ public final class CompletionLayout {
             }
         }
 
+        @Override
         protected int getAnchorHorizontalShift() {
             return COMPLETION_ANCHOR_HORIZONTAL_SHIFT;
         }

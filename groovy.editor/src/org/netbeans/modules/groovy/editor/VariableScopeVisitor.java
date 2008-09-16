@@ -125,7 +125,7 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
                 ASTNode scope = it.next();
                 if (scope instanceof ClosureExpression) {
                     VariableScope variableScope = ((ClosureExpression) scope).getVariableScope();
-                    if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
                         visitClosureExpression((ClosureExpression) scope);
                         return;
                     }
@@ -139,19 +139,19 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
                     }
                 } else if (scope instanceof ForStatement) {
                     VariableScope variableScope = ((ForStatement) scope).getVariableScope();
-                    if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
                         visitForLoop((ForStatement) scope);
                         return;
                     }
                 } else if (scope instanceof BlockStatement) {
                     VariableScope variableScope = ((BlockStatement) scope).getVariableScope();
-                    if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
                         visitBlockStatement((BlockStatement) scope);
                         return;
                     }
                 } else if (scope instanceof ClosureListExpression) {
                     VariableScope variableScope = ((ClosureListExpression) scope).getVariableScope();
-                    if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+                    if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
                         visitClosureListExpression((ClosureListExpression) scope);
                         return;
                     }
@@ -171,7 +171,7 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
 
     private boolean collectMethodOrConstructor(MethodNode method, Variable variable) {
         VariableScope variableScope = method.getVariableScope();
-        if (variableScope.getDeclaredVariable(variable.getName()) != null) {
+        if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
             // method is declaring given variable, let's visit only the method,
             // but we need to check also parameters as those are not part of method visit
             for (Parameter parameter : method.getParameters()) {
@@ -273,12 +273,12 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
         VariableScope variableScope = methodNode.getVariableScope();
         if (leaf instanceof Variable) {
             String name = ((Variable) leaf).getName();
-            if (variableScope.getDeclaredVariable(name) != null) {
+            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
                 return;
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
             String name = ((ConstantExpression) leaf).getText();
-            if (variableScope.getDeclaredVariable(name) != null) {
+            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
                 return;
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
@@ -331,12 +331,12 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
         VariableScope variableScope = constructor.getVariableScope();
         if (leaf instanceof Variable) {
             String name = ((Variable) leaf).getName();
-            if (variableScope.getDeclaredVariable(name) != null) {
+            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
                 return;
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
             String name = ((ConstantExpression) leaf).getText();
-            if (variableScope.getDeclaredVariable(name) != null) {
+            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
                 return;
             }
         } else if (leaf instanceof ConstructorCallExpression) {

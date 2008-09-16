@@ -97,7 +97,7 @@ public class HugeCaches extends RepositoryAccessTestBase {
     private void invalidateProjectFiles(CsmProject project) {
 	for(CsmFile file : project.getAllFiles() ) {
 	    FileImpl impl = (FileImpl) file;
-	    impl.stateChanged(false);
+	    impl.markReparseNeeded(false);
 	    try {
 		file.scheduleParsing(false);
 		//sleep(500);

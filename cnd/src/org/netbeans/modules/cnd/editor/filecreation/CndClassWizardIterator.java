@@ -83,7 +83,7 @@ public class CndClassWizardIterator extends CCFSrcFileIterator {
         res.add(template.createFromTemplate(targetFolder, sourceFileName ));
 
         String headerExt = ExtensionsSettings.getInstance(HDataLoader.getInstance()).getDefaultExtension();
-        res.add(dobjBro.createFromTemplate(targetFolder, sourceFileName.substring(0,sourceFileName.lastIndexOf(".")+1) + headerExt));
+        res.add(dobjBro.createFromTemplate(targetFolder, sourceFileName.substring(0,sourceFileName.lastIndexOf(".")+1) + headerExt)); // NOI18N
 
         return res;
     }

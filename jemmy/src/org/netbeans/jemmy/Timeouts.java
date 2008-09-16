@@ -76,6 +76,7 @@ public class Timeouts extends Object{
     private static Timeouts defaults;
 
     private Hashtable timeouts;
+    private static double timeoutsScale = -1;
 
     /**
      * Creates empty Timeouts object.
@@ -237,17 +238,16 @@ public class Timeouts extends Object{
      * @see #setTimeout
      */
     public long getTimeout(String name) {
-	if(contains(name)) {
-            Long value = (Long)timeouts.get(name);
-            if(value != null) {
-                return(value.longValue());
-            }
-        }
-        if(this != defaults) {
-            return(getDefault(name));
+        long timeout;
+        if(contains(name) && timeouts.get(name) != null) {
+            timeout = ((Long) timeouts.get(name)).longValue();
+            timeout =  (long) ((double) timeout * getTimeoutsScale());
+        } else if(this != defaults) {
+            timeout = getDefault(name);
         } else {
-            return(-1);
+            timeout = -1;
         }
+        return timeout;
     }
 
     /**
@@ -404,5 +404,32 @@ public class Timeouts extends Object{
      */
     public void loadDebugTimeouts() throws IOException {
         load(getClass().getClassLoader().getResourceAsStream("org/netbeans/jemmy/debug.timeouts"));
+    }
+    
+    /**
+     * Get timeouts scale.
+     * Uses jemmy.timeouts.scale system property to get the value.
+     * @return timeouts scale or 1 if the property is not set.
+     */
+    public static double getTimeoutsScale() {
+        if (timeoutsScale == -1) {
+            String s = System.getProperty("jemmy.timeouts.scale", "1");
+            try {
+                timeoutsScale = Double.parseDouble(s);
+            } catch (NumberFormatException e){
+                timeoutsScale = 1;
+            }
+        }
+        if (timeoutsScale < 0) {
+            timeoutsScale = 1;
+        }
+        return timeoutsScale;
+    }
+
+    /**
+     * This method is designed to be used by unit test for testing purpose.
+     */
+    static void resetTimeoutScale() {
+        timeoutsScale = -1;
     }
 }

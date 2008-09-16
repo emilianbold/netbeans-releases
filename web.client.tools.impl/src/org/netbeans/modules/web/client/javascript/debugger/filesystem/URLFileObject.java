@@ -50,6 +50,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -71,6 +72,8 @@ public class URLFileObject extends FileObject {
     private final URLFileSystem filesystem;
     private final URLFileObject parent;
     private transient URLContent cachedContent;
+    private final Object cacheLock = new Object();
+    private boolean cacheInvalid = false;
 
     private final String relativePath;
     private Hashtable<String,Object> attributes;
@@ -185,7 +188,7 @@ public class URLFileObject extends FileObject {
     }
 
     @Override
-    public void addFileChangeListener(FileChangeListener fcl) {
+    public synchronized void addFileChangeListener(FileChangeListener fcl) {
         if (listeners == null) {
             listeners = new ArrayList<FileChangeListener>();
         }
@@ -194,7 +197,7 @@ public class URLFileObject extends FileObject {
     }
 
     @Override
-    public void removeFileChangeListener(FileChangeListener fcl) {
+    public synchronized void removeFileChangeListener(FileChangeListener fcl) {
         if (listeners != null) {
             listeners.remove(fcl);
         }
@@ -219,13 +222,29 @@ public class URLFileObject extends FileObject {
     public InputStream getInputStream() throws FileNotFoundException {
         if (isData()) {
             URLContentProvider provider = filesystem.getContentProvider();
-            if (cachedContent == null && provider != null) {
-                cachedContent = new BufferedURLContent(provider.getContent(sourceURL));
-            }else if (provider == null) {
-                String defaultMsg = NbBundle.getMessage(URLFileObject.class, "NO_CONTENT_MSG");
-                return new ByteArrayInputStream(defaultMsg.getBytes());                
+            synchronized (cacheLock) {
+                if ( (cacheInvalid || cachedContent == null) && provider != null) {
+                    if (cachedContent != null) {
+                        URLContent content = provider.getContent(sourceURL);
+                        InputStream is = null;
+                        try {
+                            is = content.getInputStream();
+                        } catch (IOException ex) {
+                            is = null;
+                        }
+                        
+                        if (is != null) {
+                            cacheInvalid = false;
+                            cachedContent = new BufferedURLContent(is);
+                        }
+                    } else {
+                        cachedContent = new BufferedURLContent(provider.getContent(sourceURL));
+                    }
+                } else if (provider == null && cachedContent == null) {
+                    String defaultMsg = NbBundle.getMessage(URLFileObject.class, "NO_CONTENT_MSG");
+                    return new ByteArrayInputStream(defaultMsg.getBytes());
+                }
             }
-            
             try {
                 return cachedContent.getInputStream();
             } catch (IOException ex) {
@@ -308,5 +327,24 @@ public class URLFileObject extends FileObject {
     @Override
     public FileObject createData(String name, String ext) throws IOException {
         throw new IOException(EXC_STRING);
+    }
+
+    public void invalidate() {
+        synchronized (cacheLock) {
+            cacheInvalid = true;
+        }
+        
+        FileChangeListener[] listenersArr = null;
+        synchronized (this) {
+            if (listeners == null) {
+                return;
+            }
+            listenersArr = listeners.toArray(new FileChangeListener[listeners.size()]);
+        }
+        
+        FileEvent event = new FileEvent(this, this, true);
+        for (FileChangeListener listener : listenersArr) {
+            listener.fileChanged(event);
+        }
     }
 }

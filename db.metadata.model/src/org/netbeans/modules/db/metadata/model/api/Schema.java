@@ -54,6 +54,10 @@ public class Schema extends MetadataObject {
         this.impl = impl;
     }
 
+    public Catalog getParent() {
+        return impl.getParent();
+    }
+
     public String getName() {
         return impl.getName();
     }

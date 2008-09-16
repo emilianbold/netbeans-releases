@@ -57,7 +57,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
@@ -78,6 +77,7 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
@@ -252,7 +252,7 @@ public final class EarProjectProperties {
     /** Utility field used by bound properties. */
     private final PropertyChangeSupport propertyChangeSupport =  new PropertyChangeSupport(this);
 
-    public EarProjectProperties(EarProject project, UpdateHelper updateHelper, 
+    EarProjectProperties(EarProject project, UpdateHelper updateHelper, 
             PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
         this.updateHelper = project.getUpdateHelper();
@@ -769,7 +769,7 @@ public final class EarProjectProperties {
                     EditableProperties ep = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     List<ClassPathSupport.Item> oldContent = project.getClassPathSupport().itemsList(
                             ep.get( JAR_CONTENT_ADDITIONAL ), TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
-                    List<ClassPathSupport.Item> l = new ArrayList(oldContent);
+                    List<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>(oldContent);
                     List<String> referencesToBeDestroyed = new ArrayList<String>();
                     for (int i = 0; i < moduleProjects.length; i++) {
                         AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType(
@@ -935,6 +935,10 @@ public final class EarProjectProperties {
                         }
                     }
                     storeProperties();
+                    //Delete COS mark
+                    if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
+                        DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir"); // NOI18N
+                    }
                     return true;
                 }
             });
@@ -994,12 +998,12 @@ public final class EarProjectProperties {
     private void resolveProjectDependencies() {
             
         // Create a set of old and new artifacts.
-        Set oldArtifacts = new HashSet();
+        Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
         oldArtifacts.addAll(cs.itemsList(projectProperties.get(DEBUG_CLASSPATH), null));
         oldArtifacts.addAll(cs.itemsList(projectProperties.get(JAR_CONTENT_ADDITIONAL), null));
 
-        Set newArtifacts = new HashSet();
+        Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll(ClassPathUiSupport.getList( DEBUG_CLASSPATH_MODEL));
         newArtifacts.addAll(ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
 
@@ -1011,15 +1015,14 @@ public final class EarProjectProperties {
         updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
         
         // Create set of removed artifacts and remove them
-        Set removed = new HashSet( oldArtifacts );
+        Set<ClassPathSupport.Item> removed = new HashSet<ClassPathSupport.Item>( oldArtifacts );
         removed.removeAll( newArtifacts );
-        Set added = new HashSet(newArtifacts);
+        Set<ClassPathSupport.Item> added = new HashSet<ClassPathSupport.Item>(newArtifacts);
         added.removeAll(oldArtifacts);
         
         // 1. first remove all project references. The method will modify
         // project property files, so it must be done separately
-        for( Iterator it = removed.iterator(); it.hasNext(); ) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
+        for (ClassPathSupport.Item item : removed) {
             if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 refHelper.destroyReference(item.getReference());
@@ -1033,8 +1036,7 @@ public final class EarProjectProperties {
         EditableProperties ep = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
         boolean changed = false;
         
-        for( Iterator it = removed.iterator(); it.hasNext(); ) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
+        for (ClassPathSupport.Item item : removed) {
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 // remove helper property pointing to library jar if there is any
                 String prop = item.getReference();

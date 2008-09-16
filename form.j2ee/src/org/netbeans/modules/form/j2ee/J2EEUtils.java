@@ -312,8 +312,10 @@ public class J2EEUtils {
             if (fob == null) {
                 List<ClassSource.Entry> cpEntries = new ArrayList<ClassSource.Entry>(urls.length);
                 for (URL url : urls) {
-                    cpEntries.add(new ClassSource.JarEntry(
-                            FileUtil.toFile(URLMapper.findFileObject(url))));
+                    FileObject jar = URLMapper.findFileObject(url);
+                    if (jar != null) {
+                        cpEntries.add(new ClassSource.JarEntry(FileUtil.toFile(jar)));
+                    }
                 }
                 return ClassPathUtils.updateProject(fileInProject, new ClassSource("", cpEntries)); // NOI18N
             }

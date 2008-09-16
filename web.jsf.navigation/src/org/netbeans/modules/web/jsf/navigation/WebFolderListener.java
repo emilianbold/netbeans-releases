@@ -55,6 +55,11 @@ public class WebFolderListener extends FileChangeAdapter {
 
     @Override
     public void fileDataCreated(FileEvent fe) {
+        // XXX #131525 PageFlowController could be destroyed already. Revise.
+        if (pfc.getView() == null) {
+            return;
+        }
+
         if( !pfc.getView().isShowing() ) {
             pfc.setFilesDirty();
             return;
@@ -72,6 +77,11 @@ public class WebFolderListener extends FileChangeAdapter {
 
     @Override
     public void fileDeleted(FileEvent fe) {
+        // XXX #131525 PageFlowController could be destroyed already. Revise.
+        if (pfc.getView() == null) {
+            return;
+        }
+
         if( !pfc.getView().isShowing() ) {
             pfc.setFilesDirty();
             return;
@@ -87,6 +97,11 @@ public class WebFolderListener extends FileChangeAdapter {
 
     @Override
     public void fileRenamed(FileRenameEvent fe) {
+        // XXX #131525 PageFlowController could be destroyed already. Revise.
+        if (pfc.getView() == null) {
+            return;
+        }
+
         if( !pfc.getView().isShowing() ) {
             pfc.setFilesDirty();
             return;
@@ -132,7 +147,6 @@ public class WebFolderListener extends FileChangeAdapter {
 
     private void fileCreatedEventHandler(FileObject fileObj) {
         PageFlowView view = pfc.getView();
-
         if (!isKnownFileEvent(fileObj)) {
 
             /* Semi Hack: The point is to update a model if a new model is created

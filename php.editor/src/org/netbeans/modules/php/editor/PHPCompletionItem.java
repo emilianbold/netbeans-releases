@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.php.editor.PHPCodeCompletion.KeywordCompletionType;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
@@ -170,6 +172,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
     static class KeywordItem extends PHPCompletionItem {
         private String description = null;
         private String keyword = null;
+        private static final List<String> CLS_KEYWORDS =
+                Arrays.asList(PHPCodeCompletion.PHP_CLASS_KEYWORDS);
 
 
         KeywordItem(String keyword, CompletionRequest request) {
@@ -208,6 +212,49 @@ abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public ImageIcon getIcon() {
             return keywordIcon;
+        }
+
+        @Override
+        public boolean isSmart() {            
+            return CLS_KEYWORDS.contains(getName()) ? true : super.isSmart();
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder builder = new StringBuilder();
+            KeywordCompletionType type = PHPCodeCompletion.PHP_KEYWORDS.get(getName());
+            if (type == null) {
+                return null;
+            }
+            switch(type) {
+                case SIMPLE:
+                    builder.append(getName());
+                    break;
+                case ENDS_WITH_SPACE:
+                    builder.append(getName());
+                    builder.append(" ${cursor}"); //NOI18N
+                    break;
+                case CURSOR_INSIDE_BRACKETS:
+                    builder.append(getName());
+                    builder.append(" (${cursor})"); //NOI18N
+                    break;
+                case ENDS_WITH_CURLY_BRACKETS:
+                    builder.append(getName());
+                    builder.append(" {${cursor}"); //NOI18N
+                    break;
+                case ENDS_WITH_SEMICOLON:
+                    builder.append(getName());
+                    builder.append(";"); //NOI18N
+                    break;
+                case ENDS_WITH_COLON:
+                    builder.append(getName());
+                    builder.append(" ${cursor}:"); //NOI18N
+                    break;
+                default:
+                    assert false : type.toString();
+                    break;
+            }
+            return builder.toString();
         }
     }
 
@@ -291,16 +338,36 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class ClassItem extends PHPCompletionItem {
+        private boolean endWithDoubleColon;
         ClassItem(IndexedClass clazz, CompletionRequest request) {
+            this(clazz, request, false);
+        }
+        ClassItem(IndexedClass clazz, CompletionRequest request, boolean endWithDoubleColon) {
             super(clazz, request);
+            this.endWithDoubleColon = endWithDoubleColon;
         }
 
         public ElementKind getKind() {
             return ElementKind.CLASS;
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            if (endWithDoubleColon) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(getName());
+                builder.append("::${cursor}"); //NOI18N
+                return builder.toString();
+            }
+            return super.getCustomInsertTemplate();
+        }
+
+
     }
     
     static class InterfaceItem extends PHPCompletionItem {
+        private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
+        private static ImageIcon INTERFACE_ICON = null;
         InterfaceItem(IndexedInterface iface, CompletionRequest request) {
             super(iface, request);
         }
@@ -308,6 +375,14 @@ abstract class PHPCompletionItem implements CompletionProposal {
         public ElementKind getKind() {
             return ElementKind.CLASS;
         }
+
+        @Override
+        public ImageIcon getIcon() {
+            if (INTERFACE_ICON == null) {
+                INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
+            }
+            return INTERFACE_ICON;
+        }                
     }
 
     static class VariableItem extends PHPCompletionItem {
@@ -381,16 +456,27 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     //TODO: dummy must show also parameters similar like FunctionItem
-    static class MagicMethodItem extends KeywordItem {
-        public MagicMethodItem(String fncName, CompletionRequest request) {
-            super(fncName, request);
+    static class MagicMethodItem extends FunctionDeclarationItem {
+        private static IndexedFunction createIndexedFunction(String fncName) {
+            return new IndexedFunction(fncName, null, null, null, null, 0, 0, ElementKind.METHOD);
         }
+        public MagicMethodItem(String fncName, CompletionRequest request) {
+            super(MagicMethodItem.createIndexedFunction(fncName), request, 0,false);
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.appendText(getName());
+            return formatter.getText();
+        }
+
 
         @Override
         public ImageIcon getIcon() {
             return null;
         }
     }
+
 
     static class FunctionItem extends PHPCompletionItem {
         private int optionalArgCount = 0;
@@ -523,6 +609,35 @@ abstract class PHPCompletionItem implements CompletionProposal {
                     }
                 }
             }
+        }
+    }
+
+    static class FunctionDeclarationItem extends FunctionItem {
+        private boolean isIface;
+        public FunctionDeclarationItem(IndexedFunction function, CompletionRequest request, int optionalArgCount,boolean isIface) {
+            super(function, request, optionalArgCount);
+            this.isIface = isIface;
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder template = new StringBuilder();
+            String modifierStr = getFunction().getModifiersString();
+            String functionSignature = getFunction().getFunctionSignature();
+            if (modifierStr.length() != 0) {
+                modifierStr = modifierStr.replace("abstract","").trim();//NOI18N                    
+                template.append(modifierStr);
+            }
+            template.append(" ").append("function");//NOI18N
+            template.append(" ").append(functionSignature);//NOI18N
+            template.append(" ").append("{\n");//NOI18N
+            if (isIface) {
+                template.append("${cursor};\n");//NOI18N
+            } else {
+                template.append("${cursor}parent::"+ functionSignature +";\n");//NOI18N
+            }
+            template.append("}");//NOI18N
+            return template.toString();
         }
     }
 

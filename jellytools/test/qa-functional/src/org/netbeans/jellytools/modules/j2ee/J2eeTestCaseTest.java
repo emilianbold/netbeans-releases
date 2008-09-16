@@ -38,6 +38,8 @@
  */
 package org.netbeans.jellytools.modules.j2ee;
 
+import java.io.File;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import org.netbeans.jellytools.JellyTestCase;
@@ -67,6 +69,20 @@ public class J2eeTestCaseTest extends JellyTestCase {
         System.clearProperty("org.netbeans.modules.tomcat.autoregister.catalinaHome");
         System.clearProperty("org.netbeans.modules.j2ee.jboss4.installRoot");
         System.clearProperty("testA");
+    }
+
+    public void testSetUp() throws Exception{
+        String tmpDirPath = System.getProperty("java.io.tmpdir");
+        File tmpDir = new File(tmpDirPath);
+        new J2eeTestCase("test").setUp();
+        String[] files = tmpDir.list();
+        int count = 0;
+        for (String file : files) {
+            if (file.startsWith("J2EE_TEST_CASE_PID_FILE")){
+                count++;
+            }
+        }
+        assertEquals("just one file", 1, count);
     }
 
     public void testNoServer() {
@@ -103,6 +119,19 @@ public class J2eeTestCaseTest extends JellyTestCase {
         t.run(new TestResult());
         assertEquals("both TD tests and emptyTest", 2, t.countTestCases());
     }
+
+    public void testGlassfishPreferedFromTomcat() throws IOException {
+        System.setProperty("glassfish.home", getWorkDirPath());
+        new File(getWorkDir(), "domains/domain1").mkdirs();
+        System.setProperty("tomcat.home", getDataDir().getPath());
+
+        Configuration conf = NbModuleSuite.createConfiguration(VerifyGlassfish.class);
+        conf = J2eeTestCase.addServerTests(conf).gui(false);
+        Test t = NbModuleSuite.create(conf);
+        t.run(new TestResult());
+        assertEquals("glassfish registered", GLASSFISH.name(), System.getProperty("registered"));
+    }
+
 
     public void testCreateAllModulesServerSuite() {
         System.setProperty("tomcat.home", getWorkDirPath());
@@ -156,4 +185,19 @@ public class J2eeTestCaseTest extends JellyTestCase {
         public void testB() {
         }
     }
+
+    public static class VerifyGlassfish extends J2eeTestCase {
+
+        public VerifyGlassfish(String str) {
+            super(str);
+        }
+
+        public void testA() {
+            if (isRegistered(GLASSFISH) && !isRegistered(TOMCAT)){
+                System.setProperty("registered", GLASSFISH.name());
+            }
+        }
+
+    }
+
 }

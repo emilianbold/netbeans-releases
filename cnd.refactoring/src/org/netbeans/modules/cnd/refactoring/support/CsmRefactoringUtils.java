@@ -27,9 +27,12 @@
  */
 package org.netbeans.modules.cnd.refactoring.support;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
@@ -94,6 +97,16 @@ public class CsmRefactoringUtils {
             // for now return all...
             Collection<CsmProject> all = CsmModelAccessor.getModel().projects();
             out = all;
+            CsmProject p = getContextCsmProject(origObject);
+            if (p != null && p.isArtificial()) {
+                // add all libraries as well
+                Set<CsmProject> libs = new HashSet<CsmProject>();
+                for (CsmProject csmProject : all) {
+                    libs.addAll(csmProject.getLibraries());
+                }
+                out = new ArrayList(all);
+                out.addAll(libs);
+            }
         }
         return out;
     }

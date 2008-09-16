@@ -151,6 +151,15 @@ public class Utils {
 
         return ( result == NotifyDescriptor.OK_OPTION );
     }
+
+    public static boolean displayYesNoDialog(String message) {
+        NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(
+                message, NotifyDescriptor.YES_NO_OPTION);
+
+        Object result = DialogDisplayer.getDefault().notify(ndesc);
+
+        return ( result == NotifyDescriptor.YES_OPTION );
+    }
     
     public static void displayErrorMessage(String message) {
         NotifyDescriptor ndesc = new NotifyDescriptor(

@@ -57,6 +57,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -68,6 +69,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -149,8 +151,10 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
 
         lookup = LookupSensitiveAction.LastActivatedWindowLookup.INSTANCE;
-        Lookup.Result result = lookup.lookupResult(Project.class);
-        result.addLookupListener(WeakListeners.create(LookupListener.class, this, result));
+        Lookup.Result resultPrj = lookup.lookupResult(Project.class);
+        Lookup.Result resultDO = lookup.lookupResult(DataObject.class);
+        resultPrj.addLookupListener(WeakListeners.create(LookupListener.class, this, resultPrj));
+        resultDO.addLookupListener(WeakListeners.create(LookupListener.class, this, resultDO));
 
         DynLayer.INSTANCE.setEnabled(true);
         refreshView(lookup);
@@ -223,7 +227,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     }
 
     public void performAction() {
-        assert false;
+        java.awt.Toolkit.getDefaultToolkit().beep();
     }
 
     @Override
@@ -501,7 +505,10 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
         if (contextPrj != null) {
             activeProjectChanged(contextPrj);
-        }
+        } //else {
+          //  currentProject = null;
+          //  activeProjectChanged(null);
+        //}
 
     }
 
@@ -515,6 +522,12 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         }
         if (result.size() > 0) {
             toReturn = result.get(0);
+        } else {
+            // find a project via DataObject
+            for (DataObject dobj : context.lookupAll(DataObject.class)) {
+                FileObject primaryFile = dobj.getPrimaryFile();
+                toReturn = FileOwnerQuery.getOwner(primaryFile);
+            }
         }
         return toReturn;
     }

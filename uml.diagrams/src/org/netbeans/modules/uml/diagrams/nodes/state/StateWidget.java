@@ -206,8 +206,7 @@ public class StateWidget extends UMLNodeWidget
             eventsWidget.addChild(exitWidget);
         }
 
-        updateTransitions();
-        updateSizeWithOptions();
+        updateTransitions();       
     }
 
     private void updateTransitions()
@@ -353,4 +352,12 @@ public class StateWidget extends UMLNodeWidget
         super.load(nodeReader);
     }
     
+    
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        assert target instanceof StateWidget;
+        
+        super.duplicate(setBounds, target);
+        ((StateWidget)target).showDetail(isDetailVisible());
+    }
 }

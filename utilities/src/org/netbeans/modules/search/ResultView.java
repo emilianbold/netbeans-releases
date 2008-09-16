@@ -69,6 +69,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
@@ -78,7 +79,6 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openidex.search.SearchType;
-import static java.lang.Thread.NORM_PRIORITY;
 
 /**
  * Panel which displays search results in explorer like manner.
@@ -323,7 +323,20 @@ final class ResultView extends TopComponent {
     private static JTree createTree(ResultTreeModel treeModel,
                                     NodeListener nodeListener) {
         JTree tree = new JTree(treeModel);
-        tree.setCellRenderer(new NodeRenderer(false));
+
+        TreeCellRenderer cellRenderer = new NodeRenderer(false);
+        tree.setCellRenderer(cellRenderer);
+        tree.setRowHeight(cellRenderer.getTreeCellRendererComponent(
+                                                tree,       //tree
+                                                treeModel,  //value
+                                                true,       //selected
+                                                true,       //expanded
+                                                false,      //leaf
+                                                0,          //row
+                                                true)       //hasFocus
+                          .getPreferredSize()
+                          .height + 2);
+
         tree.putClientProperty("JTree.lineStyle", "Angled");            //NOI18N
         
         tree.addMouseListener(nodeListener);

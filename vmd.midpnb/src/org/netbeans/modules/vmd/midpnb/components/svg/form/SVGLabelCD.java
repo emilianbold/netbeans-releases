@@ -41,12 +41,16 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
+import org.netbeans.modules.vmd.api.codegen.CodeSupport;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
@@ -78,7 +82,19 @@ public class SVGLabelCD extends ComponentDescriptor{
         return Arrays.asList(
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter()
+                MidpCodePresenterSupport.createAddImportPresenter(),
+                new CodeClassInitHeaderFooterPresenter() {
+
+            @Override
+            public void generateClassInitializationHeader(MultiGuardedSection section) {   
+            }
+
+            @Override
+            public void generateClassInitializationFooter(MultiGuardedSection section) {
+                section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(getComponent()) +".setFocusable(false);"); //NOI18N
+            }
+        }
+                
         );
     }
 

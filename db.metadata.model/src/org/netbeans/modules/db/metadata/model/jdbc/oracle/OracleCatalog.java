@@ -50,7 +50,6 @@ import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCCatalog;
-import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 
 /**
  *
@@ -70,7 +69,7 @@ public class OracleCatalog extends JDBCCatalog {
     }
 
     @Override
-    protected OracleSchema createSchema(String name, boolean _default, boolean synthetic) {
+    protected OracleSchema createJDBCSchema(String name, boolean _default, boolean synthetic) {
         return new OracleSchema(this, name, _default, synthetic);
     }
 
@@ -78,7 +77,7 @@ public class OracleCatalog extends JDBCCatalog {
     protected void createSchemas() {
         Map<String, Schema> newSchemas = new LinkedHashMap<String, Schema>();
         try {
-            ResultSet rs = getMetadata().getDmd().getSchemas();
+            ResultSet rs = getJDBCMetadata().getDmd().getSchemas();
             try {
                 while (rs.next()) {
                     String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
@@ -86,11 +85,11 @@ public class OracleCatalog extends JDBCCatalog {
                     // in DatabaseMetaData.getSchemas().
                     LOGGER.log(Level.FINE, "Read schema ''{0}''", schemaName);
                     if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
-                        defaultSchema = MetadataFactory.createSchema(createSchema(defaultSchemaName, true, false));
+                        defaultSchema = createJDBCSchema(defaultSchemaName, true, false).getSchema();
                         newSchemas.put(defaultSchema.getName(), defaultSchema);
                         LOGGER.log(Level.FINE, "Created default schema {0}", defaultSchema);
                     } else {
-                        Schema schema = MetadataFactory.createSchema(createSchema(schemaName, false, false));
+                        Schema schema = createJDBCSchema(schemaName, false, false).getSchema();
                         newSchemas.put(schemaName, schema);
                         LOGGER.log(Level.FINE, "Created schema {0}", schema);
                     }
@@ -98,7 +97,7 @@ public class OracleCatalog extends JDBCCatalog {
             } finally {
                 rs.close();
             }
-            // Schemas always supported, so no need to try to create a fallback default schema.
+            // Schemas always supported, so no need to try to create a synthetic schema.
         } catch (SQLException e) {
             throw new MetadataException(e);
         }
