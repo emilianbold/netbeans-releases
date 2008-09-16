@@ -57,7 +57,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -92,7 +91,6 @@ implements CloneableEditorSupport.Env {
         assertTrue ("Can be closed without problems", support.close ());
     }
 
-    @RandomlyFails
     public void testDocumentIsNotGCedIfModified () throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();
