@@ -83,10 +83,11 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     private boolean                     createBreakpoint = false;
     
     
+    /* Uncomment this after line breakpoint is added into New Breakpoint... dialog.
     private static LineBreakpoint createBreakpoint () {
         LineBreakpoint mb = LineBreakpoint.create (
-            EditorContextBridge.getContext().getCurrentURL (),
-            EditorContextBridge.getContext().getCurrentLineNumber ()
+            EditorContextBridge.getContext().getMostRecentURL (),
+            EditorContextBridge.getContext().getMostRecentLineNumber ()
         );
         mb.setPrintText (
             NbBundle.getBundle (LineBreakpointPanel.class).getString 
@@ -96,11 +97,12 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     }
     
     
-    /** Creates new form LineBreakpointPanel */
+    /** Creates new form LineBreakpointPanel *
     public LineBreakpointPanel () {
         this (createBreakpoint ());
         createBreakpoint = true;
     }
+     */
     
     /** Creates new form LineBreakpointPanel */
     public LineBreakpointPanel (LineBreakpoint b) {
