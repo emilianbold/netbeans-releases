@@ -535,7 +535,12 @@ public abstract class AbstractLabelManager implements LabelManager
                 setBackground(UIManager.getColor("List.selectionBackground"));
                 setForeground(UIManager.getColor("List.selectionForeground"));
 
-                setBorder(SELECTED_BORDER);
+                setBorder(SELECTED_BORDER);               
+                
+                if(this.getPreferredLocation() == null)
+                {
+                    setPreferredLocation(new Point(0,0));//getConnector().convertSceneToLocal(this.getLocation()));
+                }
             }
             else if((previousState.isSelected() == true) && (state.isSelected() == false))
             {

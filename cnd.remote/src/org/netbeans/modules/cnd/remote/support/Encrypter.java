@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.remote.support;
  */
 public class Encrypter {
     private final byte[] passPhrase;
-    private final static String emptyPwd = "$$$EmptyPassword$$$";
+    private final static String emptyPwd = "$$$EmptyPassword$$$"; // NOI18N
     Encrypter(String passPhrase) {
         this.passPhrase = passPhrase.getBytes();
     }

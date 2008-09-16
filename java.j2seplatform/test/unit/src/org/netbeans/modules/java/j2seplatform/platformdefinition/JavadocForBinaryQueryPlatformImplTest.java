@@ -109,12 +109,16 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
 
         List<URL> l = new ArrayList<URL>();
         File javadocFile = getBaseDir();
+        File api = new File (javadocFile,"api");
+        File index = new File (api,"index-files");
+        FileUtil.toFileObject(index);
+        index.mkdirs();
         l.add(javadocFile.toURI().toURL());
         J2SEPlatformImpl platformImpl = (J2SEPlatformImpl)platform;
         platformImpl.setJavadocFolders(l);
         urls = JavadocForBinaryQuery.findJavadoc(u).getRoots();
         assertEquals(1, urls.length);
-        assertEquals(javadocFile.toURI().toURL(), urls[0]);
+        assertEquals(api.toURI().toURL(), urls[0]);
     }
     
     public void testJavadocFolders () throws Exception {

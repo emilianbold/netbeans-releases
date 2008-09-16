@@ -64,9 +64,10 @@ import org.netbeans.modules.db.explorer.DbNodeLoader;
 import org.netbeans.modules.db.explorer.DbNodeLoaderSupport;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeEvent;
 import org.openide.options.SystemOption;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 public class RootNodeInfo extends DatabaseNodeInfo implements 
         ConnectionOwnerOperations, ChangeListener  {
@@ -78,6 +79,9 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     
     private Collection<DbNodeLoader> nodeLoaders;
     
+    // maps nodes to their associated RegisteredNodeInfo instance
+    private HashMap<Node, RegisteredNodeInfo> nodeMap = new HashMap<Node, RegisteredNodeInfo>();
+
     private static Logger LOGGER = 
             Logger.getLogger(RootNodeInfo.class.getName());
     
@@ -184,14 +188,43 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             if ( registerListener ) {
                 loader.addChangeListener(this);
             }
-            for ( Node node: loader.getAllNodes() ) {
-                infos.add(new RegisteredNodeInfo(this, node));
+            for ( Node node: loader.getAllNodes() ) 
+            {
+                infos.add(getRegisteredNodeInfo(node));
             }
         }    
         
         return infos;
     }
 
+    private synchronized RegisteredNodeInfo getRegisteredNodeInfo(Node node)
+    {
+        RegisteredNodeInfo info = nodeMap.get(node);
+        if (info == null)
+        {
+            info = new RegisteredNodeInfo(this, node);
+            nodeMap.put(node, info);
+            
+            node.addNodeListener(
+                new NodeAdapter()
+                {
+                    @Override
+                    public void nodeDestroyed(NodeEvent ev) 
+                    {
+                        Node node = ev.getNode();
+                        
+                        synchronized (nodeMap)
+                        {
+                            nodeMap.remove(node);
+                        }
+                    }
+                }
+            );
+        }
+        
+        return info;
+    }
+    
     @Override
     @SuppressWarnings("checked")
     public Vector getActions() {

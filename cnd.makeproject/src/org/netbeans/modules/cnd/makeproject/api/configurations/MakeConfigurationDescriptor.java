@@ -60,7 +60,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -110,7 +109,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private NativeProject nativeProject = null;
     public static String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
-    private String sourceEncoding = null;
 
     public MakeConfigurationDescriptor(String baseDir) {
         super();
@@ -120,7 +118,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         sourceRoots = new ArrayList<String>();
         setModified(true);
         ToolsPanel.addCompilerSetModifiedListener(this);
-        sourceEncoding = FileEncodingQuery.getDefaultEncoding().name();
     }
 
     /*
@@ -410,7 +407,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceRootsRaw());
-        setSourceEncoding(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceEncoding());
     }
 
     public void assign(ConfigurationDescriptor clonedConfigurationDescriptor) {
@@ -433,7 +429,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRootsRaw());
-        setSourceEncoding(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceEncoding());
     }
 
     public ConfigurationDescriptor cloneProjectDescriptor() {
@@ -445,7 +440,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
         clone.setSourceRoots(getSourceRootsRaw());
-        clone.setSourceEncoding(getSourceEncoding());
         return clone;
     }
 
@@ -486,14 +480,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         RequestProcessor.Task task = RequestProcessor.getDefault().post(saveRunnable);
         task.waitFinished();
         return saveRunnable.ret;
-    }
-
-    public String getSourceEncoding() {
-        return sourceEncoding;
-    }
-
-    public void setSourceEncoding(String sourceEncoding) {
-        this.sourceEncoding = sourceEncoding;
     }
 
     /**
@@ -594,7 +580,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             Element data = helper.getPrimaryConfigurationData(true);
             Document doc = data.getOwnerDocument();
 
-            // Remove old node
+            // Remove old project dependency node
             NodeList nodeList = data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS);
             if (nodeList != null && nodeList.getLength() > 0) {
                 for (int i = 0; i < nodeList.getLength(); i++) {
@@ -602,7 +588,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     data.removeChild(node);
                 }
             }
-            // Create new node
+            // Create new project dependency node
             Element element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.MAKE_DEP_PROJECTS);
             Set<String> subprojectLocations = getSubprojectLocations();
             for (String loc : subprojectLocations) {
@@ -613,6 +599,21 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
             data.appendChild(element);
             helper.putPrimaryConfigurationData(data, true);
+            // Create source encoding node
+            nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
+            if (nodeList != null && nodeList.getLength() > 0) {
+                // Node already there
+                Node node = nodeList.item(0);
+                node.setTextContent(((MakeProject)getProject()).getSourceEncoding());
+            }
+            else {
+                // Create node
+                Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ENCODING_TAG); // NOI18N
+                nativeProjectType.appendChild(doc.createTextNode(((MakeProject)getProject()).getSourceEncoding()));
+                data.appendChild(nativeProjectType);
+            }
+            helper.putPrimaryConfigurationData(data, true);
+            
             ProjectManager.getDefault().saveProject(project);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);

@@ -1334,6 +1334,24 @@ member_declaration
 		}
 		(LITERAL_static)? function_declarator[true, false] compound_statement //{endFunctionDefinition();}
 		{ #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
+        |       
+                // function declaration with function as return type
+		((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[false] (EOF|SEMICOLON))=> 
+		{if (statementTrace>=1) 
+			printf("external_declaration_7a[%d]: Function prototype with function as return type\n",
+				LT(1).getLine());
+		}
+		function_declaration_with_fun_as_ret_type
+		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DECLARATION, "CSM_FUNCTION_RET_FUN_DECLARATION"], #member_declaration); }
+                
+        |       // function definition with function as return type
+                ((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[true] LCURLY)=> 
+		{if (statementTrace>=1) 
+			printf("external_declaration_8b[%d]: Function definition with function as return type\n",
+				LT(1).getLine());
+		}
+		function_definition_with_fun_as_ret_type
+		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #member_declaration); }
 	|  
 		// User-defined type cast
 		((literal_inline)? conversion_function_decl_or_def)=>

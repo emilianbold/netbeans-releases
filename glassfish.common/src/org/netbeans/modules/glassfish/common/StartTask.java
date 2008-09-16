@@ -46,7 +46,6 @@ package org.netbeans.modules.glassfish.common;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -59,7 +58,6 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
-import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.DialogDisplayer;
@@ -342,7 +340,7 @@ public class StartTask extends BasicTask<OperationState> {
     
     private void readJvmArgs(File domainRoot, List<String> optList, Map<String, String> argMap) {
         Map<String, String> varMap = new HashMap<String, String>();
-        
+
         varMap.put("com.sun.aas.installRoot", fixPath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)));
         varMap.put("com.sun.aas.instanceRoot", fixPath(domainRoot.getAbsolutePath()));
         varMap.put("com.sun.aas.javaRoot", fixPath(System.getProperty("java.home")));
