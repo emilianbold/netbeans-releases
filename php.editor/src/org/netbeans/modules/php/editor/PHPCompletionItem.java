@@ -358,7 +358,6 @@ abstract class PHPCompletionItem implements CompletionProposal {
                 builder.append(getName());
                 builder.append("::${cursor}"); //NOI18N
                 return builder.toString();
-
             }
             return super.getCustomInsertTemplate();
         }
@@ -367,6 +366,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
     
     static class InterfaceItem extends PHPCompletionItem {
+        private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
+        private static ImageIcon INTERFACE_ICON = null;
         InterfaceItem(IndexedInterface iface, CompletionRequest request) {
             super(iface, request);
         }
@@ -374,6 +375,14 @@ abstract class PHPCompletionItem implements CompletionProposal {
         public ElementKind getKind() {
             return ElementKind.CLASS;
         }
+
+        @Override
+        public ImageIcon getIcon() {
+            if (INTERFACE_ICON == null) {
+                INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
+            }
+            return INTERFACE_ICON;
+        }                
     }
 
     static class VariableItem extends PHPCompletionItem {
@@ -447,10 +456,20 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     //TODO: dummy must show also parameters similar like FunctionItem
-    static class MagicMethodItem extends KeywordItem {
-        public MagicMethodItem(String fncName, CompletionRequest request) {
-            super(fncName, request);
+    static class MagicMethodItem extends FunctionDeclarationItem {
+        private static IndexedFunction createIndexedFunction(String fncName) {
+            return new IndexedFunction(fncName, null, null, null, null, 0, 0, ElementKind.METHOD);
         }
+        public MagicMethodItem(String fncName, CompletionRequest request) {
+            super(MagicMethodItem.createIndexedFunction(fncName), request, 0,false);
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.appendText(getName());
+            return formatter.getText();
+        }
+
 
         @Override
         public ImageIcon getIcon() {
@@ -594,8 +613,10 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class FunctionDeclarationItem extends FunctionItem {
-        public FunctionDeclarationItem(IndexedFunction function, CompletionRequest request, int optionalArgCount) {
+        private boolean isIface;
+        public FunctionDeclarationItem(IndexedFunction function, CompletionRequest request, int optionalArgCount,boolean isIface) {
             super(function, request, optionalArgCount);
+            this.isIface = isIface;
         }
 
         @Override
@@ -604,12 +625,17 @@ abstract class PHPCompletionItem implements CompletionProposal {
             String modifierStr = getFunction().getModifiersString();
             String functionSignature = getFunction().getFunctionSignature();
             if (modifierStr.length() != 0) {
+                modifierStr = modifierStr.replace("abstract","").trim();//NOI18N                    
                 template.append(modifierStr);
             }
             template.append(" ").append("function");//NOI18N
             template.append(" ").append(functionSignature);//NOI18N
             template.append(" ").append("{\n");//NOI18N
-            template.append("${cursor};\n");//NOI18N
+            if (isIface) {
+                template.append("${cursor};\n");//NOI18N
+            } else {
+                template.append("${cursor}parent::"+ functionSignature +";\n");//NOI18N
+            }
             template.append("}");//NOI18N
             return template.toString();
         }
