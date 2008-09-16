@@ -65,6 +65,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
@@ -76,6 +78,7 @@ import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -585,23 +588,45 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return cls;
     }
 
-    private static CsmFunction getOperator(CsmClassifier cls, CsmFunction.OperatorKind opKind) {
-        if (!CsmKindUtilities.isClass(cls)) {
+    private static CsmFunction getOperator(CsmClassifier classifier, CsmFunction.OperatorKind opKind) {
+        if (!CsmKindUtilities.isClass(classifier)) {
             return null;
         }
+        CsmClass cls = (CsmClass)classifier;
         CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter("operator ", false, true, false); // NOI18N
-        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers((CsmClass)cls, filter);
-        while(it.hasNext()) {
+        return getOperatorCheckBaseClasses(cls, filter, opKind, new HashSet<CsmClass>());
+    }
+
+    private static CsmFunction getOperatorCheckBaseClasses(CsmClass cls, CsmFilter filter, CsmFunction.OperatorKind opKind, Set<CsmClass> antiLoop) {
+        if (antiLoop.contains(cls)) {
+            return null;
+        }
+        antiLoop.add(cls);        
+        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(cls, filter);
+        while (it.hasNext()) {
             CsmMember member = it.next();
             if (CsmKindUtilities.isOperator(member)) {
-                if (((CsmFunction)member).getOperatorKind() == opKind) {
-                    return (CsmFunction)member;
+                if (((CsmFunction) member).getOperatorKind() == opKind) {
+                    return (CsmFunction) member;
+                }
+            }
+        }
+        // now check base classes as well
+        for (CsmInheritance csmInheritance : cls.getBaseClasses()) {
+            CsmClassifier baseClassifier = csmInheritance.getClassifier();
+            if (baseClassifier != null) {
+                baseClassifier = CsmBaseUtilities.getOriginalClassifier(baseClassifier);
+                if (CsmKindUtilities.isClass(baseClassifier)) {
+                    CsmFunction operatorFun = getOperatorCheckBaseClasses((CsmClass) baseClassifier, filter, opKind, antiLoop);
+                    if (operatorFun != null) {
+                        return operatorFun;
+                    }
                 }
             }
         }
         return null;
     }
-
+    
     private static CsmClassifier getClassifier(CsmType type, CsmFunction.OperatorKind operator) {
         CsmClassifier cls = type.getClassifier();
         cls = cls != null ? CsmBaseUtilities.getOriginalClassifier(cls) : cls;
