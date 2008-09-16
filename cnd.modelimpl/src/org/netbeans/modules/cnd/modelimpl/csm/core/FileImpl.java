@@ -64,6 +64,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
@@ -176,7 +177,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private int errorCount = 0;
     
-    private enum State {
+    public static enum State {
 
         /** The file has never been parsed */
 	INITIAL,
@@ -351,12 +352,29 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return this.fileBuffer;
     }
 
-    public void ensureParsed(Collection<APTPreprocHandler> handlers) {
+    /**
+     * @param stateRef a reference to the state of the file at the moment it was polled from queue.
+     *
+     * The stateRef was introduced while fixing
+     * #146900 Sync issue with parser queue causes test failure on 4-CPU machine
+     *
+     * The issue occurs under the following conditions:
+     * 1. there are several parsing threads
+     * 2. the file is #included several times and should be parsed several times with different states
+     * 3. at the moment when a parser thread "A" polled it from queue, but not yet started parsing, the following events occur:
+     *    3a. the file is marked to reparse and enqueued again
+     *    3b. another thread (thread "B") polls it from the queue
+     *    3c. thread "B" was in time to finish parse prior than thread "A" started parse
+     * In this case, thread "A" encounters that the file state is "parsed" and skips it.
+     *
+     * TODO: introduce synchronization mechanizm more appropriate to multiple parse concept
+     */
+    public void ensureParsed(Collection<APTPreprocHandler> handlers, AtomicReference<FileImpl.State> stateRef) {
         if (handlers == DUMMY_HANDLERS) {
             handlers = getPreprocHandlers();
         }
 	synchronized( stateLock ) {
-	    switch( state ) {
+	    switch( stateRef.get() ) {
 		case INITIAL:
                 case PARTIAL:
                     state = State.BEING_PARSED;
@@ -1277,6 +1295,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         synchronized (changeStateLock) {
             return state == State.PARSED;
         }
+    }
+
+    public final State getState() {
+        return state;
     }
 
     public boolean isParsingOrParsed() {
