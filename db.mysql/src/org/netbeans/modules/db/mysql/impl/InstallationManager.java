@@ -61,13 +61,14 @@ public class InstallationManager {
             Logger.getLogger(InstallationManager.class.getName());
     
     private static ArrayList<Installation> INSTALLATIONS = null;
+    private static volatile boolean isInstalled = false;
     
     private static final String INSTALLATION_PROVIDER_PATH = 
             "Databases/MySQL/Installations"; // NOI18N
 
 
     public static List<Installation> getInstallations() {
-        if ( INSTALLATIONS == null ) {
+        if (!isInstalled) {
             // First see if we're bundled with MySQL.  If so, just return
             // the bundled installation
             Installation bundled = BundledInstallation.getDefault();
@@ -100,6 +101,7 @@ public class InstallationManager {
             INSTALLATIONS = new ArrayList<Installation>();
             INSTALLATIONS.addAll(stackInstalls);
             INSTALLATIONS.addAll(stdInstalls);
+            isInstalled = true;
         }
         
         return INSTALLATIONS;
