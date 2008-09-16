@@ -96,11 +96,11 @@ public class ExtendedJTable extends JTable {
             if (System.getProperty("os.version").startsWith("10.4")) {
                 ((JLabel) getTableHeader().getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEADING);
             }
-
+		}
             // Use an iTunes-style vertical-only "grid".
             setShowHorizontalLines(false);
             setShowVerticalLines(true);
-        }
+        
     }
 
     /**
@@ -130,7 +130,7 @@ public class ExtendedJTable extends JTable {
             }
 
             // Mac OS' Aqua LAF never draws vertical grid lines, so we have to draw them ourselves.
-            if (System.getProperty("os.name").contains("Mac") && getShowVerticalLines()) {
+            if (getShowVerticalLines()) {
                 g.setColor(MAC_UNFOCUSED_UNSELECTED_VERTICAL_LINE_COLOR);
                 TableColumnModel colModel = getColumnModel();
                 int x = 0;
@@ -152,7 +152,9 @@ public class ExtendedJTable extends JTable {
             return (row % 2 == 0) ? Color.WHITE : UIManager.getColor("Table.background");
         } else if (System.getProperty("os.name").contains("Mac")) {
             return (row % 2 == 0) ? Color.WHITE : MAC_OS_ALTERNATE_ROW_COLOR;
-        }
+        } else if (System.getProperty("os.name").contains("Win")) {
+			return (row % 2 == 0) ? Color.WHITE : MAC_OS_ALTERNATE_ROW_COLOR;
+		}
         return UIManager.getColor("Table.background");
     }
 
@@ -208,7 +210,8 @@ public class ExtendedJTable extends JTable {
                 } else {
                     // FIXME: doesn't Windows have row-wide selection focus?
                     // Hide the cell focus.
-                    jc.setBorder(null);
+                    //jc.setBorder(null);
+                    jc.setBorder(new AquaTableCellBorder(selected, focused, getShowVerticalLines()));
                 }
             }
         }
@@ -294,7 +297,6 @@ public class ExtendedJTable extends JTable {
                 }
 
                 // JTable copy & paste above this point; our code below.
-
                 // Remove the scroll pane's focus ring.
                 scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
