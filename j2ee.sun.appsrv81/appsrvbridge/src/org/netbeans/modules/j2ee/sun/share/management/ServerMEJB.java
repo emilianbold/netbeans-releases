@@ -165,14 +165,15 @@ public class ServerMEJB implements ServerInterface {
             return null;
         }
         if (sunDm.isRunning(false)) {
-            if (sunDm.grabInnerDM(true)) {
+            Thread holder = Thread.currentThread();
+            if (sunDm.grabInnerDM(holder,true)) {
                 try {
                     AppserverMgmtController controller = getController();
                     if(controller != null) {
                         name = controller.getWebModuleName(contextRoot);
                     }
                 } finally {
-                    sunDm.releaseInnerDM();
+                    sunDm.releaseInnerDM(holder);
                 }
             }
         }

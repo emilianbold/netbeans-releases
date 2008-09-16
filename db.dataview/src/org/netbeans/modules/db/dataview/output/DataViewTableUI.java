@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.util.EventObject;
 import org.netbeans.modules.db.dataview.util.ExtendedJTable;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -660,6 +661,21 @@ class DataViewTableUI extends ExtendedJTable {
                 }
 
                 @Override
+                public boolean isCellEditable(EventObject evt) {                    
+                    int clickcount;
+                    if (evt instanceof MouseEvent) {
+                        if (System.getProperty("os.name").contains("Mac")) {
+                            clickcount = 1;
+                            return ((MouseEvent) evt).getClickCount() >= clickcount;
+                        }else{
+                            clickcount = 2;
+                            return ((MouseEvent) evt).getClickCount() >= clickcount;
+                        }
+                    }
+                    return true;
+                }
+
+                @Override
                 public Object getCellEditorValue() {
                     String txtVal = textField.getText();
                     if (val == null && txtVal.equals("")) { // NOI18N
@@ -676,6 +692,7 @@ class DataViewTableUI extends ExtendedJTable {
                     }
                 }
             };
+
             textField.addActionListener(delegate);
             textField.addKeyListener(new Control0KeyListener());
         }
@@ -779,7 +796,7 @@ class DataViewTableUI extends ExtendedJTable {
             } else {
                 editable = dbCol.isEditable();
             }
-            
+
             c.setEnabled(editable);
 
             panel.add(c);
