@@ -1084,6 +1084,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public void setName(String newName) {
+            if (!getMakeConfigurationDescriptor().okToChange()) {
+                return;
+            }
             String oldName = folder.getDisplayName();
             if (folder.getParent() != null && folder.getParent().findFolderByDisplayName(newName) != null) {
                 String msg = NbBundle.getMessage(MakeLogicalViewProvider.class, "CANNOT_RENAME", oldName, newName); // NOI18N
@@ -1606,6 +1609,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             fireDisplayNameChange("",displayName);
             fireIconChange();
             fireOpenedIconChange();
+        }
+    }
+    
+    class ItemRenameAction extends RenameAction {
+        @Override
+        protected void performAction(Node[] activatedNodes) {
+            if (!(getMakeConfigurationDescriptor().okToChange())) {
+                return;
+            }
         }
     }
 

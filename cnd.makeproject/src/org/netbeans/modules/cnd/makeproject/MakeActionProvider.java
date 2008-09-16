@@ -1047,7 +1047,7 @@ public class MakeActionProvider implements ActionProvider {
                 model.setShowRequiredBuildTools(true);
                 model.setShowRequiredDebugTools(false);
                 model.SetEnableRequiredCompilerCB(conf.isMakefileConfiguration());
-                if (bt.initBuildTools(model, errs)) {
+                if (bt.initBuildTools(model, errs) && pd.okToChange()) {
                     String name = model.getSelectedCompilerSetName();
                     CppSettings.getDefault().setCompilerSetName(name);
                     conf.getCRequired().setValue(model.isCRequired());
