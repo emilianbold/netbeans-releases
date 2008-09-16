@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.project;
 
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -61,18 +61,17 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import java.util.List;
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class cc_0006 extends cc
+public class project_0001 extends project
 {
-  static final String TEST_PHP_NAME = "PhpProject6";
+  static final String TEST_PHP_NAME = "PhpProject_project_0001";
 
-  public cc_0006( String arg0 )
+  public project_0001( String arg0 )
   {
     super( arg0 );
   }
@@ -80,9 +79,8 @@ public class cc_0006 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( cc_0006.class ).addTest(
-          "CreateApplication",
-          "Issue141881"
+      NbModuleSuite.createConfiguration( project_0001.class ).addTest(
+          "CreateSimpleApplication"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -90,51 +88,23 @@ public class cc_0006 extends cc
       );
   }
 
-  public void CreateApplication( )
+  public void CreateSimpleApplication( )
   {
     startTest( );
 
     CreatePHPApplicationInternal( TEST_PHP_NAME );
 
-    endTest( );
-  }
+    // Check created in tree
+    ProjectsTabOperator pto = new ProjectsTabOperator( );
+    ProjectRootNode prn = pto.getProjectRootNode(
+        TEST_PHP_NAME + "|Source Files|" + "index.php"
+      );
+    prn.select( );
 
-  public void Issue141881( ) throws Exception
-  {
-    startTest( );
-
-    // Get editor
-    EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
-    // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
-    // Add new line
-    //eoPHP.insert( "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n" );
-    //Sleep( 1000 );
-
-    // Check constructor
-    String sCode = "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n$aa ->";
-    for( int i = 0; i < sCode.length( ); i++ )
-    {
-      // Press Ctrl+Space
-      eoPHP.typeKey( sCode.charAt( i ) );
-      Sleep( 200 );
-    }
-
-    // Check code completion list
-
-    String[] asIdeals = { "xx" };
-
-    CompletionJListOperator jCompl = GetCompletion( );
-    List list = jCompl.getCompletionItems( );
-    // Magic CC number for complete list
-    if( asIdeals.length != list.size( ) )
-      fail( "Invalid CC list size: " + list.size( ) + ", expected: " + asIdeals.length );
-    // Check each
-    CheckCompletionItems( jCompl, asIdeals );
-
-    jCompl.hideAll( );
+    // Check index.php in editor
+    new EditorOperator( "index.php" );
 
     endTest( );
   }
+
 }
