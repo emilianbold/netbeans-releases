@@ -392,6 +392,21 @@ public final class RubyDebuggerTest extends TestBase {
         waitFor(p);
     }
 
+    public void testJVMArguments() throws Exception {
+        String[] testContent = {
+            "require 'java'",
+            "import 'java.lang.System'",
+            "s = System",
+        };
+        setJVMArgs("-Xmx1024m");
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 2);
+        Process p = startDebugging(createScript(testContent));
+        doContinue();
+        waitFor(p);
+    }
+
     private DebuggerEngine getEngineManager() {
         return DebuggerManager.getDebuggerManager().getCurrentEngine();
     }

@@ -85,6 +85,7 @@ public abstract class TestBase extends RubyTestBase {
 
     protected static boolean watchStepping = false;
     private RubyPlatform platform;
+    private String jvmArgs;
 
     protected TestBase(final String name, final boolean verbose) {
         super(name);
@@ -141,6 +142,10 @@ public abstract class TestBase extends RubyTestBase {
         this(name, false);
     }
 
+    public void setJVMArgs(String jvmArgs) {
+        this.jvmArgs = jvmArgs;
+    }
+
 
     protected Process startDebugging(final File f) throws RubyDebuggerException, IOException, InterruptedException {
         return startDebugging(f, true);
@@ -159,6 +164,9 @@ public abstract class TestBase extends RubyTestBase {
                 toTest.getName(), toTest.getParentFile(), toTest.getAbsolutePath());
         assertTrue(platform.hasFastDebuggerInstalled());
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(toTest.getParentFile())));
+        if (this.jvmArgs != null) {
+            desc.jvmArguments(this.jvmArgs);
+        }
         RubySession session = RubyDebugger.startDebugging(desc);
         session.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
         Process process = session.getProxy().getDebugTarged().getProcess();
