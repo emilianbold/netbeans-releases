@@ -57,110 +57,96 @@ import org.netbeans.modules.print.util.Percent;
  */
 public class ComponentProvider implements PrintProvider {
 
-  public ComponentProvider(List<JComponent> components, String name, Date lastModified) {
-    myName = name;
-    myLastModified = lastModified;
+    public ComponentProvider(List<JComponent> components, String name, Date lastModified) {
+        myName = name;
+        myLastModified = lastModified;
 
-    if (components != null) {
-      myComponent = new ComponentPanel(components);
+        if (components != null) {
+            myComponent = new ComponentPanel(components);
+        }
     }
-  }
 
-  protected JComponent getComponent() {
-    return myComponent;
-  }
-
-  public PrintPage [][] getPages(int pageWidth, int pageHeight, double pageZoom) {
-    List<ComponentPage> pages = new ArrayList<ComponentPage>();
-    JComponent component = getComponent();
-
-    if (component == null) {
-      return new PrintPage [0][0];
+    protected JComponent getComponent() {
+        return myComponent;
     }
-    int componentWidth = component.getWidth();
-    int componentHeight = component.getHeight();
 
-    double zoom = getZoom(pageZoom, pageWidth, pageHeight, componentWidth, componentHeight);
+    public PrintPage[][] getPages(int pageWidth, int pageHeight, double pageZoom) {
+        List<ComponentPage> pages = new ArrayList<ComponentPage>();
+        JComponent component = getComponent();
 
-    componentWidth = (int) Math.floor(componentWidth * zoom);
-    componentHeight = (int) Math.floor(componentHeight * zoom);
+        if (component == null) {
+            return new PrintPage[0][0];
+        }
+        int componentWidth = component.getWidth();
+        int componentHeight = component.getHeight();
 
-    int row = 0;
-    int column = 0;
+        double zoom = getZoom(pageZoom, pageWidth, pageHeight, componentWidth, componentHeight);
 
-    for (int h=0; h < componentHeight; h += pageHeight) {
-      row++;
-      column = 0;
+        componentWidth = (int) Math.floor(componentWidth * zoom);
+        componentHeight = (int) Math.floor(componentHeight * zoom);
 
-      for (int w=0; w < componentWidth; w += pageWidth) { 
-        column++;
+        int row = 0;
+        int column = 0;
 
-        Rectangle piece = new Rectangle(
-          (column - 1) * pageWidth,
-          (row - 1) * pageHeight,
-          pageWidth,
-          pageHeight
-        );
-        pages.add(new ComponentPage(
-          component,
-          piece,
-          zoom,
-          row - 1,
-          column - 1
-        ));
-      }
+        for (int h = 0; h < componentHeight; h += pageHeight) {
+            row++;
+            column = 0;
+
+            for (int w = 0; w < componentWidth; w += pageWidth) {
+                column++;
+                Rectangle piece = new Rectangle((column - 1) * pageWidth, (row - 1) * pageHeight, pageWidth, pageHeight);
+                pages.add(new ComponentPage(component, piece, zoom, row - 1, column - 1));
+            }
+        }
+        PrintPage[][] printPages = new PrintPage[row][column];
+
+        for (ComponentPage page : pages) {
+            printPages[page.getRow()][page.getColumn()] = page;
+        }
+        return printPages;
     }
-    PrintPage [][] printPages = new PrintPage [row][column];
 
-    for (ComponentPage page : pages) {
-      printPages [page.getRow()] [page.getColumn()] = page;
+    private double getZoom(double zoom, int pageWidth, int pageHeight, int componentWidth, int componentHeight) {
+        double factor = Percent.getZoomFactor(zoom, -1.0);
+
+        if (0 < factor) {
+            return factor;
+        }
+        if (Percent.isZoomPage(zoom)) {
+            factor = 0.0;
+        }
+        int zoomWidth = Percent.getZoomWidth(zoom, -1);
+        int zoomHeight = Percent.getZoomHeight(zoom, -1);
+
+        if (factor == 0.0) {
+            zoomWidth = 1;
+            zoomHeight = 1;
+        }
+        return getZoom((double) (pageWidth * zoomWidth) / (double) componentWidth, (double) (pageHeight * zoomHeight) / (double) componentHeight);
     }
-    return printPages;
-  }
 
-  private double getZoom(double zoom, int pageWidth, int pageHeight, int componentWidth, int componentHeight) {
-    double factor = Percent.getZoomFactor(zoom, -1.0);
-
-    if (0 < factor) {
-      return factor;
+    private double getZoom(double widthZoom, double heightZoom) {
+        if (widthZoom > 0 && heightZoom > 0) {
+            return Math.min(widthZoom, heightZoom);
+        }
+        if (widthZoom < 0 && heightZoom > 0) {
+            return heightZoom;
+        }
+        if (widthZoom > 0 && heightZoom < 0) {
+            return widthZoom;
+        }
+        return 1.0;
     }
-    if (Percent.isZoomPage(zoom)) {
-      factor = 0.0;
-    }
-    int zoomWidth = Percent.getZoomWidth(zoom, -1);
-    int zoomHeight = Percent.getZoomHeight(zoom, -1);
 
-    if (factor == 0.0) {
-      zoomWidth = 1;
-      zoomHeight = 1;
+    public String getName() {
+        return myName;
     }
-    return getZoom(
-      (double) (pageWidth * zoomWidth) / (double) componentWidth,
-      (double) (pageHeight * zoomHeight) / (double) componentHeight);
-  }
 
-  private double getZoom(double widthZoom, double heightZoom) {
-    if (widthZoom > 0 && heightZoom > 0) {
-      return Math.min(widthZoom, heightZoom);
+    public Date lastModified() {
+        return myLastModified;
     }
-    if (widthZoom < 0 && heightZoom > 0) {
-      return heightZoom;
-    }
-    if (widthZoom > 0 && heightZoom < 0) {
-      return widthZoom;
-    }
-    return 1.0;
-  }
 
-  public String getName() {
-    return myName;
-  }
-
-  public Date lastModified() {
-    return myLastModified;
-  }
-
-  private String myName;
-  private Date myLastModified;
-  private JComponent myComponent;
+    private String myName;
+    private Date myLastModified;
+    private JComponent myComponent;
 }

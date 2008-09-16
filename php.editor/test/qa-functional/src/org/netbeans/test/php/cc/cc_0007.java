@@ -110,11 +110,12 @@ public class cc_0007 extends cc
     eoPHP.setCaretPosition( "// put your code here", false );
 
     // Check constructor
+    String sCode = "";
     for( int i = 1; i < 1000; i++ )
     {
-      String sCode = "\nclass a" + i + ( ( 1 == i ) ? "" : ( " extends a" + ( i - 1 ) ) ) + "\n{\npublic $a1;\n}";
-      TypeCode( eoPHP, sCode );
+      sCode = sCode + "\nclass a" + i + ( ( 1 == i ) ? "" : ( " extends a" + ( i - 1 ) ) ) + "\n{\npublic $a" + i + ";\n}";
     }
+    eoPHP.insert( sCode );
     TypeCode( eoPHP, "\n$z = new a1000;\n$z->" );
 
     // Check code completion list

@@ -476,7 +476,10 @@ public final class ParserQueue {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }
         }
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: polling " + e.getFile().getAbsolutePath());
+        if( TraceFlags.TRACE_PARSER_QUEUE_POLL ) {
+            System.err.printf("ParserQueue: polling %s with %d states in thread %s\n",
+                    e.getFile().getAbsolutePath(), e.getPreprocStates().size(), Thread.currentThread().getName());
+        }
         return e;
     }
 
