@@ -79,6 +79,7 @@ public abstract class Message {
     private static final String INIT                = "init";            // NOI18N
     private static final String ONLOAD              = "onload";          // NOI18N
     private static final String SOURCES             = "sources";         // NOI18N
+    private static final String RELOADSOURCES      = "reloadsources";    // NOI18N
     private static final String WINDOWS             = "windows";         // NOI18N
     private static final String RESPONSE            = "response";        // NOI18N
     private static final String STREAM              = "stream";          // NOI18N
@@ -154,6 +155,8 @@ public abstract class Message {
             return new OnloadMessage( node );
         } else if ( SOURCES.equals( rootName) ) {
             return new SourcesMessage( node );
+        } else if ( RELOADSOURCES.equals( rootName ) ) {
+            return new ReloadSourcesMessage(node);
         } else if ( WINDOWS.equals( rootName) ) {
             return new WindowsMessage( node );
         } else if ( STREAM.equals( rootName )) {
