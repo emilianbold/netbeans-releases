@@ -491,16 +491,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static Token[] getPreceedingLineTokens(Token<PHPTokenId> token,int tokenOffset, TokenSequence tokenSequence){
         int orgOffset = tokenSequence.offset();
         LinkedList<Token> tokens = new LinkedList<Token>();
-
-        if (token.id() != PHPTokenId.WHITESPACE || token.text().subSequence(0, tokenOffset).toString().indexOf("\n") == -1) {//NOI18N
+        if (token.id() != PHPTokenId.WHITESPACE ||
+                token.text().subSequence(0, 
+                Math.min(token.text().length(), tokenOffset)).toString().indexOf("\n") == -1) {//NOI18N
             while (true) {
                 if (!tokenSequence.movePrevious()) {
                     break;
                 }
                 Token cToken = tokenSequence.token();
-                if (cToken.id() == PHPTokenId.WHITESPACE && cToken.text().toString().indexOf("\n") != -1) {//NOI18N
+                if (cToken.id() == PHPTokenId.WHITESPACE &&
+                        cToken.text().toString().indexOf("\n") != -1) {//NOI18N
                     break;
-                }
+                }                
                 tokens.addLast(cToken);
             }
         }
@@ -668,7 +670,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     boolean offerMagicAndInherited = true;
                     if (!(!tokenSequence.moveNext() && !tokenSequence.movePrevious())) {
                         Token<PHPTokenId> token = tokenSequence.token();
-                        PHPTokenId tokenId = token.id();
                         int tokenIdOffset = tokenSequence.token().offset(th);
                         offerMagicAndInherited = !lineContainsAny(token, caretOffset-tokenIdOffset, tokenSequence, Arrays.asList(new PHPTokenId[]{
                                     PHPTokenId.PHP_PRIVATE,
@@ -727,7 +728,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         }
 
                         List<String> magicMethods = new ArrayList<String>();
-                        for (String name : PredefinedSymbols.MAGIC_METHODS) {
+                        for (String name : PredefinedSymbols.MAGIC_METHODS.keySet()) {
                             if (!methodNames.contains(name)) {
                                 methodNames.add(name);
                                 magicMethods.add(name);
@@ -791,14 +792,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteMethodName(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
-        autoCompleteMagicItems(proposals, request, PredefinedSymbols.MAGIC_METHODS);
+        autoCompleteMagicItems(proposals, request, PredefinedSymbols.MAGIC_METHODS.keySet());
     }
 
     private void autoCompleteMagicItems(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request,final Collection<String> proposedTexts) {
         for (String keyword : proposedTexts) {
             if (keyword.startsWith(request.prefix)) {
-                proposals.add(new PHPCompletionItem.MagicMethodItem(keyword, request));
+                IndexedFunction magicFunc = PredefinedSymbols.MAGIC_METHODS.get(keyword);
+                if (magicFunc != null) {
+                    proposals.add(new PHPCompletionItem.MagicMethodItem(magicFunc, request));
+                }
             }
         }
     //autoCompleteKeywords(proposals, request, METHOD_NAME_PROPOSALS);
