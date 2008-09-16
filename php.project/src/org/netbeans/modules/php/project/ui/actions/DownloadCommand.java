@@ -87,8 +87,6 @@ public class DownloadCommand extends FtpCommand implements Displayable {
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 
-        // XXX project name could be cached - but is it correct?
-
         InputOutput ftpLog = getFtpLog(getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(ftpLog);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_DownloadingFiles", getProject().getName());

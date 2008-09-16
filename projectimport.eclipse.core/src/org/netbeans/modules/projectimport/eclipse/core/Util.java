@@ -44,8 +44,11 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -59,6 +62,8 @@ import org.xml.sax.SAXParseException;
  * @author Jesse Glick
  */
 public class Util {
+
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.projects"); // NOI18N
 
     private Util() {}
 
@@ -171,6 +176,19 @@ public class Util {
             Logger.getLogger(Util.class.getName()).log(Level.INFO, null, exception);
         }
         
+    }
+
+    public static void logUsage(Class srcClass, String message, Object ...params) {
+        Parameters.notNull("message", message); // NOI18N
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
     }
     
 }

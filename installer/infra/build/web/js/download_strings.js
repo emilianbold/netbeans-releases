@@ -66,6 +66,9 @@ var NOTE_MACOSX  = "Note: Java ME is only available for Windows and Linux. <br>T
 var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers. The UML Pack is available on the Update Center.";
 var NOTE_OTHER   = "Note: The UML Pack is available on the Update Center.";
 
+var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE Download";
+var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE Download";
+
 
 var NETBEANS_DOWNLOAD_HEADER = "NetBeans IDE {0} Download";
 var DEVELOPMENT_TITLE        = "Development";

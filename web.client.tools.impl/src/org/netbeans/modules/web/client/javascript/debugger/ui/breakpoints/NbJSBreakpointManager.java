@@ -48,10 +48,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.logging.Level;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObject;
 import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
@@ -73,16 +75,21 @@ public final class NbJSBreakpointManager {
      */
 
     protected final static NbJSBreakpoint createBreakpoint(final Line line) {
-    	DataObject dataObject = (DataObject)line.getLookup ().lookup (DataObject.class);
+        if(line == null || line.getLookup() == null)
+                return null;
+    	DataObject dataObject = (DataObject)line.getLookup().lookup (DataObject.class);
+        if(dataObject == null)
+            return null;
         FileObject fileObject = dataObject.getPrimaryFile();
         NbJSBreakpoint breakpoint = null;
         if (fileObject instanceof URLFileObject) {
             try {
                 URL url = fileObject.getURL();
                 breakpoint = new NbJSURIBreakpoint(url.toString(), line.getLineNumber() + 1);
+                ((NbJSURIBreakpoint)breakpoint).setOwnerLine(line);
             } catch (FileStateInvalidException e) {
-                // TODO Auto-generated catch block
-                Exceptions.printStackTrace(e);
+                Log.getLogger().log(Level.INFO, "Exception creating URI breakpoint", e);
+                return null;
             }
         } else {
             breakpoint = new NbJSFileObjectBreakpoint(line);
@@ -172,6 +179,8 @@ public final class NbJSBreakpointManager {
     }
 
     /**
+     * XXX Unused code - see <code>getCurrentLineBreakpoint</code> implementation to fix
+     * 
      * Determines if a breakpoint exists on that line.
      * @param file The fileObject of the relevant file.
      * @param line This value starts from 1 rather than 0.
@@ -198,9 +207,23 @@ public final class NbJSBreakpointManager {
             return null;
         }
 
+        FileObject fo = ((DataObject)line.getLookup().lookup(DataObject.class)).getPrimaryFile();
+        boolean isURI = fo instanceof URLFileObject;
+        String path = null;
+        if (isURI) {
+            JSURILocation tmpLocation = new JSURILocation(fo.getPath(), 1, -1);
+            path = tmpLocation.getURI().toString();
+        }
+        
         for (NbJSBreakpoint breakpoint : NbJSBreakpointManager.getBreakpoints()) {
-        	FileObject fo = ((DataObject)line.getLookup().lookup(DataObject.class)).getPrimaryFile();
-            if ( fo.equals(breakpoint.getFileObject())	&&
+            if (isURI && path != null && breakpoint instanceof NbJSURIBreakpoint) {
+                JSURILocation location = ((NbJSURIBreakpoint)breakpoint).getLocation();
+                String bpPath = location.getURI().toString();
+                if ( (bpPath.equals(path) || bpPath.equals(path + "/")) &&
+                        breakpoint.getLineNumber() == (line.getLineNumber() + 1)) {
+                    return breakpoint;
+                }
+            } else if ( fo.equals(breakpoint.getFileObject())	&&
             		breakpoint.getLineNumber() == (line.getLineNumber() + 1) ) {
                 return breakpoint;
             }

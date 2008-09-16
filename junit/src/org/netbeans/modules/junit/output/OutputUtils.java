@@ -59,7 +59,7 @@ final class OutputUtils {
     
     private OutputUtils() {
     }
-    
+
     /**
      */
     static void openCallstackFrame(Node node,
@@ -77,6 +77,32 @@ final class OutputUtils {
         final int[] lineNumStorage = new int[1];
         FileObject file = getFile(frameInfo, lineNumStorage, srcClassPath);
         Utils.openFile(file, lineNumStorage[0]);
+    }
+
+    /**
+     */
+    static void openCallstackFrame(Node node,
+                                   Report.Trouble trouble) {
+        String frameInfo = determineStackFrame(trouble);
+        if (frameInfo != null) {
+            openCallstackFrame(node, frameInfo);
+        }
+    }
+
+    /**
+     * Determines the most interesting frame for the user.
+     * When user double-clicks on a failed test method, the editor will jump
+     * to the location corresponding to that frame.
+     *
+     * @param  trouble  description of the test failure
+     * @return  string describing the chosen call-stack frame,
+     *          or {@code null} if no frame has been chosen
+     */
+    static String determineStackFrame(Report.Trouble trouble) {
+        String[] frames = trouble.stackTrace;
+        return ((frames != null) && (frames.length != 0))
+               ? frames[frames.length - 1]
+               : null;
     }
 
     /**

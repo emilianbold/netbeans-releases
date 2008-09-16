@@ -41,6 +41,7 @@ package org.netbeans.modules.html.editor.gsf;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
@@ -71,7 +72,8 @@ import org.openide.util.NbBundle;
  */
 public class HtmlGSFParser implements Parser, PositionManager {
 
-    
+    /** logger for timers/counters */
+    private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
     private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
@@ -86,8 +88,7 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 CharSequence buffer = job.reader.read(file);
                 int caretOffset = job.reader.getCaretOffset(file);
 
-                SyntaxParser parser = SyntaxParser.create(buffer);
-                List<SyntaxElement> elements = parser.parseImmutableSource();
+                List<SyntaxElement> elements = SyntaxParser.parseImmutableSource(buffer);
 
                 if (LOG) {
                     for (SyntaxElement element : elements) {
@@ -96,6 +97,12 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 }
 
                 result = new HtmlParserResult(this, file, elements);
+
+                if (TIMERS.isLoggable(Level.FINE)) {
+                    LogRecord rec = new LogRecord(Level.FINE, "HTML parse result"); // NOI18N
+                    rec.setParameters(new Object[] { result });
+                    TIMERS.log(rec);
+                }
 
                 //highlight unpaired tags
                 final DTD dtd = result.dtd();
@@ -152,19 +159,15 @@ public class HtmlGSFParser implements Parser, PositionManager {
         }
     }
     
-    public static ElementHandle resolveHandle(CompilationInfo info, ElementHandle handle) {
-        if (handle instanceof HtmlElementHandle) {
-           HtmlElementHandle element = (HtmlElementHandle)handle;
-            CompilationInfo oldInfo = element.compilationInfo();
-            if (oldInfo == info) {
-                return element;
-            }
+    public static ElementHandle resolveHandle(CompilationInfo info, ElementHandle oldElementHandle) {
+        if (oldElementHandle instanceof HtmlElementHandle) {
+           HtmlElementHandle element = (HtmlElementHandle)oldElementHandle;
             AstNode oldNode = element.node(); 
-            
-            HtmlParserResult oldResult = (HtmlParserResult)oldInfo.getEmbeddedResult(HTMLKit.HTML_MIME_TYPE, 0);
-            AstNode oldRoot = oldResult.root();
 
+            AstNode oldRoot = AstNodeUtils.getRoot(oldNode);
+            
             HtmlParserResult newResult = (HtmlParserResult)info.getEmbeddedResult(HTMLKit.HTML_MIME_TYPE, 0);
+            
             AstNode newRoot = newResult.root();
             
             if (newRoot == null) {
@@ -175,7 +178,7 @@ public class HtmlGSFParser implements Parser, PositionManager {
             AstNode newNode = find(oldRoot, oldNode, newRoot);
 
             if (newNode != null) {
-                return new HtmlElementHandle(newNode, info);
+                return new HtmlElementHandle(newNode, info.getFileObject());
             }
         }
         

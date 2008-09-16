@@ -8,7 +8,10 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
@@ -19,7 +22,6 @@ import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginsManager;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * @author David Calavera
@@ -36,13 +38,19 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
     private List<GrailsPlugin> installedPluginsList = new ArrayList<GrailsPlugin>();
     private List<GrailsPlugin> availablePluginsList = new ArrayList<GrailsPlugin>();
 
+    private final ExecutorService refreshExecutor = Executors.newCachedThreadPool();
+
     /** Creates new customizer GrailsPluginsPanel */
     public GrailsPluginsPanel(Project project) {
         initComponents();
         this.project = (GrailsProject) project;
         this.pluginsManager = GrailsPluginsManager.getInstance(this.project);
     }
-    
+
+    public void dispose() {
+        refreshExecutor.shutdownNow();
+    }
+
     /** Refresh the installed plugin list */
     private void refreshInstalled() {
         assert SwingUtilities.isEventDispatchThread();
@@ -60,32 +68,48 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         reloadInstalledButton.setEnabled(true);         
     }
     
-    private void refreshAvailable() {   
+    private void refreshAvailable() {
         assert SwingUtilities.isEventDispatchThread();
 
         final Runnable runner = new Runnable() {
             public void run() {
 
-                final List<GrailsPlugin> plugins = pluginsManager.refreshAvailablePlugins();
+                boolean interrupted = false;
 
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        // FIXME use model impl instead of private list
-                        availablePluginsList = new ArrayList<GrailsPlugin>(plugins);
-                        DefaultListModel model = new DefaultListModel();
-                        for (GrailsPlugin plugin : availablePluginsList) {
-                            if (!installedPluginsList.contains(plugin)) {
-                                model.addElement(plugin);
+                List<GrailsPlugin> plugins;
+                try {
+                    plugins = pluginsManager.refreshAvailablePlugins();
+                } catch (InterruptedException ex) {
+                    interrupted = true;
+                    plugins = Collections.emptyList();
+                }
+
+                try {
+                    final List<GrailsPlugin> pluginsToLoad = plugins;
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            // FIXME use model impl instead of private list
+                            availablePluginsList = new ArrayList<GrailsPlugin>(pluginsToLoad);
+                            DefaultListModel model = new DefaultListModel();
+                            for (GrailsPlugin plugin : availablePluginsList) {
+                                if (!installedPluginsList.contains(plugin)) {
+                                    model.addElement(plugin);
+                                }
                             }
-                        }
 
-                        availablePlugins.clearSelection();
-                        availablePlugins.setModel(model);
-                        availablePlugins.invalidate();
-                        availablePlugins.repaint();
-                        reloadAvailableButton.setEnabled(true);
+                            availablePlugins.clearSelection();
+                            availablePlugins.setModel(model);
+                            availablePlugins.invalidate();
+                            availablePlugins.repaint();
+                            reloadAvailableButton.setEnabled(true);
+                        }
+                    });
+                } finally {
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
                     }
-                });
+                }
             }
         };
         
@@ -94,7 +118,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         model.addElement(NbBundle.getMessage(GrailsPluginsPanel.class, "FetchingPlugins"));
         availablePlugins.setModel(model);
             
-        RequestProcessor.getDefault().post(runner);
+        refreshExecutor.submit(runner);
     }
     
     private void uninstallPlugins() {
@@ -208,7 +232,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(reloadInstalledButton)
                     .add(uninstallButton)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE))
                 .addContainerGap())
         );
         installedPanelLayout.setVerticalGroup(
@@ -217,7 +241,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(reloadInstalledButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(uninstallButton)
                 .addContainerGap())
@@ -226,7 +250,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         reloadInstalledButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadInstalledButton.accessibleName")); // NOI18N
         reloadInstalledButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadInstalledButton.accessibleDescription")); // NOI18N
 
-        pluginsPanel.addTab("Installed", installedPanel);
+        pluginsPanel.addTab(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.installed"), installedPanel); // NOI18N
 
         newPluginPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -279,13 +303,13 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             .add(newPluginPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(newPluginPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
                     .add(newPluginPanelLayout.createSequentialGroup()
                         .add(installButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(pluginLocationLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(pluginZipPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                        .add(pluginZipPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(pluginBrowseButton))
                     .add(reloadAvailableButton))
@@ -297,7 +321,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(reloadAvailableButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(newPluginPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(installButton)
@@ -314,7 +338,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         pluginBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginBrowseButton.accessibleName")); // NOI18N
         pluginBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginBrowseButton.accessibleDescription")); // NOI18N
 
-        pluginsPanel.addTab("New plugins", newPluginPanel);
+        pluginsPanel.addTab(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.newPlugins"), newPluginPanel); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

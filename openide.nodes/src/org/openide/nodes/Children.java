@@ -497,7 +497,7 @@ public abstract class Children extends Object {
     public final List<Node> snapshot() {
         try {
             PR.enterReadAccess();
-            return entrySupport().createSnapshot(false);
+            return entrySupport().createSnapshot();
         } finally {
             PR.exitReadAccess();
         }

@@ -33,7 +33,7 @@ class |>CLASS:test<| {
 
   static public function |>METHOD,STATIC:getX<|() {
     if (test::$|>FIELD,STATIC:test<|) {
-      return test::$test->|>FIELD:x<|;
+      return test::$|>FIELD,STATIC:test<|->|>FIELD:x<|;
     } else {
       return NULL;
     }

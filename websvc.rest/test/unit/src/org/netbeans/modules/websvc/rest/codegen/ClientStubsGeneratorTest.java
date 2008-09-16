@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
+import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.ResourceModel;
+import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.WadlModeler;
 import org.netbeans.modules.websvc.rest.support.ZipUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -35,22 +37,26 @@ public class ClientStubsGeneratorTest extends TestBase {
     public void testModelFromWadl() throws Exception {
         String appName = "WebApplication1";
         InputStream is = this.getClass().getResourceAsStream(appName.toLowerCase()+".xml");
-        ClientStubModel m = new ClientStubModel();
-        String url = m.buildModel(is);
-        assertEquals(url, "http://localhost:8080/"+appName+"/resources/");
-        assertEquals(m.getResources().size(), 6);
+        ResourceModel m = new ClientStubModel().createModel(is);
+        m.build();
+        String url = ((WadlModeler)m).getBaseUrl();
+        assertEquals("http://localhost:8080/"+appName+"/resources/", url);
+        assertEquals(6, m.getResources().size());
+    }
+
+    private void testGenerateFromWadl(String appName) throws Exception {
+        testGenerateFromWadl(appName, appName.toLowerCase());
     }
     
-    public void testGenerateFromWadl() throws Exception {
-        String appName = "WebApplication1";
+    private void testGenerateFromWadl(String appName, String fileName) throws Exception {
         FileObject stubRoot = FileUtil.createFolder(getWorkDir());
         String folder = "rest";
-        InputStream is = this.getClass().getResourceAsStream(appName.toLowerCase()+".xml");
+        InputStream is = this.getClass().getResourceAsStream(fileName+".xml");
         ClientStubsGenerator cs = new ClientStubsGenerator(stubRoot, folder, is, true);
         cs.generate(null);
         
         FileObject restFolder = stubRoot.getFileObject(folder);
-        File zipFile = new File(FileUtil.toFile(restFolder), appName.toLowerCase()+"_1.zip");
+        File zipFile = new File(FileUtil.toFile(restFolder), fileName+"_1.zip");
         if(zipFile.exists()) //clean
             zipFile.delete();
         FileObject appFolder = restFolder.getFileObject(appName.toLowerCase());
@@ -63,10 +69,26 @@ public class ClientStubsGeneratorTest extends TestBase {
         ZipUtil zipUtil = new ZipUtil();
         zipUtil.zip(zipFile, sources, paths);
         
-        File base = new File(FileUtil.toFile(restFolder), appName.toLowerCase()+".zip");
-        FileUtil.copy(this.getClass().getResourceAsStream(appName.toLowerCase()+".zip"), new FileOutputStream(base));
+        File base = new File(FileUtil.toFile(restFolder), fileName+".zip");
+        FileUtil.copy(this.getClass().getResourceAsStream(fileName+".zip"), new FileOutputStream(base));
 
-        assertEquals(zipFile.length(), base.length());
+        assertEquals(base.length(), zipFile.length());
+    }
+    
+    public void testGenerateFromWadlNonRecursiveResources() throws Exception {
+        testGenerateFromWadl("WebApplication1");
+    }
+    
+    public void testGenerateFromWadlRecursiveResources() throws Exception {
+        testGenerateFromWadl("CustomerDB");
+    }
+    
+    public void testGenerateFromWadlWithNonIdentifier() throws Exception {
+        testGenerateFromWadl("foo_war");
+    }
+    
+    public void testGenerateFromWadlRecursiveResources1() throws Exception {
+        testGenerateFromWadl("_92_168_0_104_8080_smart_selection_rest_rest", "smart_selection_rest");
     }
     
     //Tests dont work due to exception from Retouche
@@ -77,9 +99,9 @@ public class ClientStubsGeneratorTest extends TestBase {
 //        ZipUtil zipUtil = new ZipUtil();
 //        zipUtil.unzip(is, work, true);
 //        Project p = FileOwnerQuery.getOwner(work.getFileObject(appName));
-//        ClientStubModel m = new ClientStubModel();
-//        m.buildModel(p);
-//        assertEquals(m.getResources().size(), 6);
+//        ResourceModel m = new ClientStubModel().createModel(p);
+//        m.build();
+//        assertEquals(6, m.getResources().size());
 //    }
 //    
 //    public void testGenerateFromProject() throws Exception {
@@ -110,6 +132,6 @@ public class ClientStubsGeneratorTest extends TestBase {
 //        File base = new File(FileUtil.toFile(restFolder), appName.toLowerCase()+".zip");
 //        FileUtil.copy(this.getClass().getResourceAsStream(appName.toLowerCase()+".zip"), new FileOutputStream(base));
 //
-//        assertEquals(zipFile.length(), base.length());
+//        assertEquals(base.length(), zipFile.length());
 //    }
 }

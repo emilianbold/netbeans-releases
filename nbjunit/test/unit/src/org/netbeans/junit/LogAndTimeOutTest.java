@@ -49,6 +49,7 @@ import junit.framework.TestResult;
 /**
  * @author Jaroslav Tulach
  */
+@RandomlyFails // NB-Core-Build #1319
 public class LogAndTimeOutTest extends NbTestCase {
     public LogAndTimeOutTest(String name) {
         super(name);

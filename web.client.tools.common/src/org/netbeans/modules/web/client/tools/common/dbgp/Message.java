@@ -79,6 +79,7 @@ public abstract class Message {
     private static final String INIT                = "init";            // NOI18N
     private static final String ONLOAD              = "onload";          // NOI18N
     private static final String SOURCES             = "sources";         // NOI18N
+    private static final String RELOADSOURCES      = "reloadsources";    // NOI18N
     private static final String WINDOWS             = "windows";         // NOI18N
     private static final String RESPONSE            = "response";        // NOI18N
     private static final String STREAM              = "stream";          // NOI18N
@@ -154,6 +155,8 @@ public abstract class Message {
             return new OnloadMessage( node );
         } else if ( SOURCES.equals( rootName) ) {
             return new SourcesMessage( node );
+        } else if ( RELOADSOURCES.equals( rootName ) ) {
+            return new ReloadSourcesMessage(node);
         } else if ( WINDOWS.equals( rootName) ) {
             return new WindowsMessage( node );
         } else if ( STREAM.equals( rootName )) {
@@ -193,6 +196,10 @@ public abstract class Message {
     }        
     
     protected static String getNodeValue( Node node ){
+        return replaceHtmlEntities( getNodeValueImpl(node).toString() );
+    }
+    
+    protected static StringBuilder getNodeValueImpl( Node node ){
         NodeList list = node.getChildNodes();
         StringBuilder builder = new StringBuilder();
         for ( int i=0;  i<list.getLength() ;  i++) {
@@ -204,8 +211,8 @@ public abstract class Message {
                 builder.append( child.getNodeValue() );
             }
         }
-        return replaceHtmlEntities( builder.toString() );
-    }
+        return builder;
+    }    
 
     protected static String getAttribute( Node node , String attrName ){
         Node attr = node.getAttributes().getNamedItem( attrName );
@@ -331,15 +338,17 @@ public abstract class Message {
             return null;
         }
         try {
-            Document doc = BUILDER.parse( new ByteArrayInputStream( bytes ) );
-            return doc.getDocumentElement();
+            synchronized (BUILDER) {
+                Document doc = BUILDER.parse(new ByteArrayInputStream(bytes));
+                return doc.getDocumentElement();
+            }
         } catch (SAXException e) {
             notifyPacketError(e);
         }
         return null;
     }
 
-    private static String replaceHtmlEntities( String str ) {
+    protected static String replaceHtmlEntities( String str ) {
         if ( str.indexOf( "&" ) == -1 ) {
             return str;
         } else {

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statuses type="array">
+    <status>
+        <created_at>Wed Aug 20 14:42:48 +0000 2008</created_at>
+        <id>893310861</id>
+        <text>its losing optimism..., maybe time for antidepressives</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id></in_reply_to_status_id>
+        <in_reply_to_user_id></in_reply_to_user_id>
+        <favorited>true</favorited>
+        <user>
+            <id>6422032</id>
+            <name>Inka Havlova</name>
+            <screen_name>carmina</screen_name>
+            <location></location>
+            <description></description>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/25099342/Photo_115_normal.jpg</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>26</followers_count>
+        </user>
+    </status>
+</statuses>

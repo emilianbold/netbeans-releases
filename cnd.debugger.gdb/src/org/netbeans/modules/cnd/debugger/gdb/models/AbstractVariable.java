@@ -612,6 +612,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     if (map.isEmpty() && v.charAt(0) != '{') {
                         // an empty map means its a pointer to a non-struct/class/union
                         createChildrenForPointer(t, v);
+                    } else if (v.equals("<incomplete type>")) { // NOI18N
+                        addField(new AbstractField(this, "", t, v)); // NOI18N
                     } else if (v.length() > 0) {
                         int pos = v.indexOf('{');
                         assert pos != -1;

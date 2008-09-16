@@ -62,6 +62,7 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.CloneableOpenSupport;
 
@@ -140,8 +141,13 @@ public class UMLProjectDataObject extends MultiDataObject
     private String getDisplayName()
     {
         Project proj = FileOwnerQuery.getOwner(getFileObject());
-        UMLProjectHelper helper = (UMLProjectHelper) proj.getLookup().
-                                        lookup(UMLProjectHelper.class);
+        UMLProjectHelper helper = null;
+        if ( proj != null )
+        {
+            Lookup lkup = proj.getLookup();
+            helper = (lkup != null  ? lkup.lookup(UMLProjectHelper.class) : null);
+        }
+        
         if (helper != null)
             return helper.getDisplayName();
 // conover - removing the word "Model" in the Save dialog

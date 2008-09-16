@@ -92,7 +92,7 @@ public class JspNameUtil {
      * @return the components of the path
      */
     private static final String [] split(String path, String pat) {
-        Vector comps = new Vector();
+        Vector<String> comps = new Vector<String>();
         int pos = path.indexOf(pat);
         int start = 0;
         while( pos >= 0 ) {

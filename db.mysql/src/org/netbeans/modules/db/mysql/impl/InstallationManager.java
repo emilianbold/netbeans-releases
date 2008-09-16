@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.mysql.installations.BundledInstallation;
@@ -112,9 +113,10 @@ public class InstallationManager {
      *      the other ones available will not be detected.
      */
     public static Installation detectInstallation() {
-        List<Installation> installations = InstallationManager.getInstallations();
+        List<Installation> installationCopy = new CopyOnWriteArrayList<Installation>();
+        installationCopy.addAll(InstallationManager.getInstallations());
         
-        for ( Iterator it = installations.iterator() ; it.hasNext() ; ) {
+        for ( Iterator it = installationCopy.iterator() ; it.hasNext() ; ) {
             Installation installation = (Installation)it.next();
             
             LOGGER.log(Level.FINE, "Looking for MySQL installation " + 

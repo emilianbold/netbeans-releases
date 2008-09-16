@@ -181,7 +181,7 @@ public enum JavaTokenId implements TokenId {
     AT("@", "special"),
     
     WHITESPACE(null, "whitespace"),
-    LINE_COMMENT(null, "comment"),
+    LINE_COMMENT(null, "comment"), // Token includes ending new-line
     BLOCK_COMMENT(null, "comment"),
     JAVADOC_COMMENT(null, "comment"),
     

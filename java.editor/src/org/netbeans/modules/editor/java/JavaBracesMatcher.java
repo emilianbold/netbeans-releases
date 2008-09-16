@@ -28,13 +28,12 @@
 package org.netbeans.modules.editor.java;
 
 import java.util.List;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
@@ -75,94 +74,103 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
     // -----------------------------------------------------
     
     public int[] findOrigin() throws BadLocationException, InterruptedException {
-        int [] origin = BracesMatcherSupport.findChar(
-            context.getDocument(), 
-            context.getSearchOffset(), 
-            context.getLimitOffset(), 
-            PAIRS
-        );
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            int [] origin = BracesMatcherSupport.findChar(
+                context.getDocument(), 
+                context.getSearchOffset(), 
+                context.getLimitOffset(), 
+                PAIRS
+            );
 
-        if (origin != null) {
-            originOffset = origin[0];
-            originChar = PAIRS[origin[1]];
-            matchingChar = PAIRS[origin[1] + origin[2]];
-            backward = origin[2] < 0;
-            
-            // Filter out block and line comments
-            TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-            sequences = getEmbeddedTokenSequences(th, originOffset, backward, JavaTokenId.language());
+            if (origin != null) {
+                originOffset = origin[0];
+                originChar = PAIRS[origin[1]];
+                matchingChar = PAIRS[origin[1] + origin[2]];
+                backward = origin[2] < 0;
 
+                // Filter out block and line comments
+                TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
+                sequences = getEmbeddedTokenSequences(th, originOffset, backward, JavaTokenId.language());
+
+                if (!sequences.isEmpty()) {
+                    // Check special tokens
+                    TokenSequence<?> seq = sequences.get(sequences.size() - 1);
+                    seq.move(originOffset);
+                    if (seq.moveNext()) {
+                        if (seq.token().id() == JavaTokenId.BLOCK_COMMENT ||
+                            seq.token().id() == JavaTokenId.LINE_COMMENT
+                        ) {
+                            return null;
+                        }
+                    }
+                }
+
+                return new int [] { originOffset, originOffset + 1 };
+            } else {
+                return null;
+            }
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
+        }
+    }
+
+    public int[] findMatches() throws InterruptedException, BadLocationException {
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
             if (!sequences.isEmpty()) {
                 // Check special tokens
                 TokenSequence<?> seq = sequences.get(sequences.size() - 1);
                 seq.move(originOffset);
                 if (seq.moveNext()) {
-                    if (seq.token().id() == JavaTokenId.BLOCK_COMMENT ||
-                        seq.token().id() == JavaTokenId.LINE_COMMENT
-                    ) {
-                        return null;
+                    if (seq.token().id() == JavaTokenId.STRING_LITERAL) {
+                        int offset = BracesMatcherSupport.matchChar(
+                            context.getDocument(), 
+                            backward ? originOffset : originOffset + 1, 
+                            backward ? seq.offset() : seq.offset() + seq.token().length(), 
+                            originChar,
+                            matchingChar);
+                        if (offset != -1) {
+                            return new int [] { offset, offset + 1 };
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+
+                // We are in plain java
+
+                TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
+                List<TokenSequence<?>> list;
+                if (backward) {
+                    list = th.tokenSequenceList(seq.languagePath(), 0, originOffset);
+                } else {
+                    list = th.tokenSequenceList(seq.languagePath(), originOffset + 1, context.getDocument().getLength());
+                }
+
+                JavaTokenId originId = getTokenId(originChar);
+                JavaTokenId lookingForId = getTokenId(matchingChar);
+                int counter = 0;
+
+                for(TokenSequenceIterator tsi = new TokenSequenceIterator(list, backward); tsi.hasMore(); ) {
+                    TokenSequence<?> sq = tsi.getSequence();
+
+                    if (originId == sq.token().id()) {
+                        counter++;
+                    } else if (lookingForId == sq.token().id()) {
+                        if (counter == 0) {
+                            return new int [] { sq.offset(), sq.offset() + sq.token().length() };
+                        } else {
+                            counter--;
+                        }
                     }
                 }
             }
-            
-            return new int [] { originOffset, originOffset + 1 };
-        } else {
+
             return null;
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
         }
-    }
-
-    public int[] findMatches() throws InterruptedException, BadLocationException {
-
-        if (!sequences.isEmpty()) {
-            // Check special tokens
-            TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-            seq.move(originOffset);
-            if (seq.moveNext()) {
-                if (seq.token().id() == JavaTokenId.STRING_LITERAL) {
-                    int offset = BracesMatcherSupport.matchChar(
-                        context.getDocument(), 
-                        backward ? originOffset : originOffset + 1, 
-                        backward ? seq.offset() : seq.offset() + seq.token().length(), 
-                        originChar,
-                        matchingChar);
-                    if (offset != -1) {
-                        return new int [] { offset, offset + 1 };
-                    } else {
-                        return null;
-                    }
-                }
-            }
-            
-            // We are in plain java
-            
-            TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-            List<TokenSequence<?>> list;
-            if (backward) {
-                list = th.tokenSequenceList(seq.languagePath(), 0, originOffset);
-            } else {
-                list = th.tokenSequenceList(seq.languagePath(), originOffset + 1, context.getDocument().getLength());
-            }
-            
-            JavaTokenId originId = getTokenId(originChar);
-            JavaTokenId lookingForId = getTokenId(matchingChar);
-            int counter = 0;
-            
-            for(TokenSequenceIterator tsi = new TokenSequenceIterator(list, backward); tsi.hasMore(); ) {
-                TokenSequence<?> sq = tsi.getSequence();
-                
-                if (originId == sq.token().id()) {
-                    counter++;
-                } else if (lookingForId == sq.token().id()) {
-                    if (counter == 0) {
-                        return new int [] { sq.offset(), sq.offset() + sq.token().length() };
-                    } else {
-                        counter--;
-                    }
-                }
-            }
-        }
-        
-        return null;
     }
 
     // -----------------------------------------------------

@@ -83,7 +83,7 @@ public class FFormatter extends ExtFormatter {
     @Override
     public int reformat(BaseDocument doc, int startOffset, int endOffset)
     throws BadLocationException {
-        return 0;
+        return super.reformat(doc, startOffset, endOffset);
     }
 
     
@@ -177,8 +177,35 @@ public class FFormatter extends ExtFormatter {
             try {
                 FFormatSupport ffs = (FFormatSupport) createFormatSupport(fw);
                 FormatTokenPosition pos = ffs.getFormatStartPosition();
-                if (ffs.getFreeFormat() && ffs.isIndentOnly()) {  // create indentation only
-                    ffs.indentLine(pos);
+                if (ffs.getFreeFormat()) {
+                    if (ffs.isIndentOnly()) {  // create indentation only
+                        ffs.indentLine(pos);
+                    } else { // regular formatting
+                        while (pos != null) {
+                            // Indent the current line
+                            ffs.indentLine(pos);
+                            // Format the line by additional rules
+                            //formatLine(ccfs, pos);
+                            // Goto next line
+                            FormatTokenPosition pos2 = ffs.findLineEnd(pos);
+                            if (pos2 == null || pos2.getToken() == null) {
+                                break;
+                            } // the last line was processed
+                            pos = ffs.getNextPosition(pos2, javax.swing.text.Position.Bias.Forward);
+                            if (pos == pos2) {
+                                break;
+                            } // in case there is no next position
+                            if (pos == null || pos.getToken() == null) {
+                                break;
+                            } // there is nothing after the end of line
+                            FormatTokenPosition fnw = ffs.findLineFirstNonWhitespace(pos);
+                            if (fnw != null) {
+                                pos = fnw;
+                            } else { // no non-whitespace char on the line
+                                pos = ffs.findLineStart(pos);
+                            }
+                        }
+                    }
                 }
             } catch (IllegalStateException e) {
             }

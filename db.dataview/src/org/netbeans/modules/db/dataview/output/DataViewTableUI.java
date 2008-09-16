@@ -40,8 +40,13 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.util.EventObject;
+import org.netbeans.modules.db.dataview.util.ExtendedJTable;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -59,11 +64,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -76,6 +86,8 @@ import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -88,7 +100,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Ahimanikya Satapathy
  */
-class DataViewTableUI extends JTable {
+class DataViewTableUI extends ExtendedJTable {
 
     private String[] columnToolTips;
     private JPopupMenu tablePopupMenu;
@@ -109,13 +121,15 @@ class DataViewTableUI extends JTable {
 
         setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
+        setDefaultEditor(String.class, new StringTableCellEditor(new JTextField()));
+
         TableSelectionListener listener = new TableSelectionListener(this);
         this.getSelectionModel().addListSelectionListener(listener);
         this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 2;
-        setRowHeight(getFontMetrics(getFont()).getHeight() + 1);
+        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 3;
+        setRowHeight(getFontMetrics(getFont()).getHeight() + 5);
 
         createPopupMenu(handler, dataView);
     }
@@ -247,7 +261,8 @@ class DataViewTableUI extends JTable {
                     dialog.setText(createSQL + ";\n"); // NOI18N
                     dialog.setVisible(true);
                 } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(ex.getMessage());
+                    DialogDisplayer.getDefault().notify(nd);
                 }
             }
         });
@@ -270,7 +285,8 @@ class DataViewTableUI extends JTable {
                     dialog.setText(insertSQL);
                     dialog.setVisible(true);
                 } catch (DBException ex) {
-                    Exceptions.printStackTrace(ex);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(ex.getMessage());
+                    DialogDisplayer.getDefault().notify(nd);
                 }
             }
         });
@@ -486,7 +502,7 @@ class DataViewTableUI extends JTable {
             return c;
         }
     }
-    
+
     private static final class StringRenderer extends DefaultTableCellRenderer.UIResource {
 
         public StringRenderer() {
@@ -590,8 +606,8 @@ class DataViewTableUI extends JTable {
                 return TIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                if(c instanceof JComponent) {
-                    ((JComponent)c).setToolTipText(value.toString());
+                if (c instanceof JComponent) {
+                    ((JComponent) c).setToolTipText(value.toString());
                 }
                 return c;
             }
@@ -633,12 +649,30 @@ class DataViewTableUI extends JTable {
 
         public ResultSetTableCellEditor(final JTextField textField) {
             super(textField);
+            textField.setFont(getFont());
+//            textField.setForeground(Color.BLACK);
+//            textField.setBackground(Color.WHITE);
             delegate = new EditorDelegate() {
 
                 @Override
                 public void setValue(Object value) {
                     val = value;
                     textField.setText((value != null) ? value.toString() : ""); // NOI18N
+                }
+
+                @Override
+                public boolean isCellEditable(EventObject evt) {                    
+                    int clickcount;
+                    if (evt instanceof MouseEvent) {
+                        if (System.getProperty("os.name").contains("Mac")) {
+                            clickcount = 1;
+                            return ((MouseEvent) evt).getClickCount() >= clickcount;
+                        }else{
+                            clickcount = 2;
+                            return ((MouseEvent) evt).getClickCount() >= clickcount;
+                        }
+                    }
+                    return true;
                 }
 
                 @Override
@@ -658,6 +692,7 @@ class DataViewTableUI extends JTable {
                     }
                 }
             };
+
             textField.addActionListener(delegate);
             textField.addKeyListener(new Control0KeyListener());
         }
@@ -725,6 +760,79 @@ class DataViewTableUI extends JTable {
                 } else {
                     tablePanel.enableDeleteBtn(false);
                 }
+            }
+        }
+    }
+
+    public class StringTableCellEditor extends ResultSetTableCellEditor implements TableCellEditor, ActionListener {
+
+        private JButton customEditorButton = new JButton("...");
+        private JPanel panel = new JPanel(new BorderLayout());
+        private JTable table;
+        private int row,  column;
+        private boolean editable = true;
+
+        public StringTableCellEditor(final JTextField textField) {
+            super(textField);
+            customEditorButton.addActionListener(this);
+
+            // ui-tweaking
+            customEditorButton.setFocusable(false);
+            customEditorButton.setFocusPainted(false);
+            customEditorButton.setMargin(new Insets(0, 0, 0, 0));
+            customEditorButton.setPreferredSize(new Dimension(20, 10));
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            panel.removeAll();
+            Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
+
+            DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);
+            if (dbCol.isGenerated()) {
+                editable = false;
+            } else if (!tablePanel.isEditable()) {
+                editable = false;
+            } else {
+                editable = dbCol.isEditable();
+            }
+
+            c.setEnabled(editable);
+
+            panel.add(c);
+            panel.add(customEditorButton, BorderLayout.EAST);
+            panel.revalidate();
+            panel.repaint();
+
+            this.table = table;
+            this.row = row;
+            this.column = column;
+            return panel;
+        }
+
+        public final void actionPerformed(ActionEvent e) {
+            super.cancelCellEditing();
+            editCell(table, row, column);
+        }
+
+        protected void editCell(JTable table, int row, int column) {
+            JTextArea textArea = new JTextArea(10, 50);
+            Object value = table.getValueAt(row, column);
+            if (value != null) {
+                textArea.setText((String) value);
+                textArea.setCaretPosition(0);
+                textArea.setEditable(editable);
+            }
+            JScrollPane pane = new JScrollPane(textArea);
+            Component parent = WindowManager.getDefault().getMainWindow();
+
+            if (editable) {
+                int result = JOptionPane.showOptionDialog(parent, pane, (String) table.getColumnName(column), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+                if (result == JOptionPane.OK_OPTION) {
+                    table.setValueAt(textArea.getText(), row, column);
+                }
+            } else {
+                JOptionPane.showMessageDialog(parent, pane, (String) table.getColumnName(column), JOptionPane.PLAIN_MESSAGE, null);
             }
         }
     }

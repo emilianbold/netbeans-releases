@@ -44,7 +44,7 @@ package org.netbeans.modules.db.mysql.impl;
 import org.netbeans.modules.db.mysql.util.Utils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.beans.PropertyChangeSupport;
 import java.util.logging.Logger;
 import org.openide.util.NbPreferences;
 
@@ -98,8 +98,7 @@ public class MySQLOptions {
     // In milliseconds
     private static final long DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL = 5000;
     
-    private CopyOnWriteArrayList<PropertyChangeListener> listeners = 
-            new CopyOnWriteArrayList<PropertyChangeListener>();
+    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
     public static MySQLOptions getDefault() {
         return DEFAULT;
@@ -125,31 +124,20 @@ public class MySQLOptions {
     }
 
     protected final void putProperty(String key, boolean value) {
-        boolean oldval;
-        synchronized(this) {
-            oldval = getBooleanProperty(key);
-            NbPreferences.forModule(MySQLOptions.class).putBoolean(key, value);
-        }
-        
+        boolean oldval = getBooleanProperty(key);
+        NbPreferences.forModule(MySQLOptions.class).putBoolean(key, value);
         notifyPropertyChange(key, oldval, value);
     }
     
     protected final void putProperty(String key, long value, long def) {
-        long oldval;
-        synchronized(this) {
-            oldval = getLongProperty(key, def);
-            NbPreferences.forModule(MySQLOptions.class).putLong(key, value);
-        }
-        
+        long oldval = getLongProperty(key, def);
+        NbPreferences.forModule(MySQLOptions.class).putLong(key, value);
         notifyPropertyChange(key, oldval, value);
     }
     
     protected final void clearProperty(String key) {
-        String oldval;
-        synchronized(this) {
-            oldval = getProperty(key);
-            NbPreferences.forModule(MySQLOptions.class).remove(key);
-        }
+        String oldval = getProperty(key);
+        NbPreferences.forModule(MySQLOptions.class).remove(key);
         notifyPropertyChange(key, oldval, null);
     }
     
@@ -166,20 +154,17 @@ public class MySQLOptions {
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        listeners.add(listener);
+        pcs.addPropertyChangeListener(listener);
     }
     
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        listeners.remove(listener);
+        pcs.removePropertyChangeListener(listener);
     }
     
     private void notifyPropertyChange(String key, Object oldval, Object newval) {
-        PropertyChangeEvent event = new PropertyChangeEvent(
-                this, key, oldval, newval);
-                
-        for ( PropertyChangeListener listener : listeners ) {
-            listener.propertyChange(event);
-        }
+        PropertyChangeEvent event = new PropertyChangeEvent(this, key, oldval, newval);
+
+        pcs.firePropertyChange(event);
     }
 
     public String getHost() {

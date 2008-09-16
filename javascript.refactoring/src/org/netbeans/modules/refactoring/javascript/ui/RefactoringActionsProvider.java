@@ -162,10 +162,16 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 if (!(d instanceof BaseDocument)) {
                     return true;
                 }
-                int caret = textC.getCaretPosition();
-                if (LexUtilities.getToken((BaseDocument)d, caret) == null) {
-                    // Not in JavaScript code!
-                    return true;
+                BaseDocument bd = (BaseDocument)d;
+                bd.readLock();
+                try {
+                    int caret = textC.getCaretPosition();
+                    if (LexUtilities.getToken((BaseDocument)d, caret) == null) {
+                        // Not in JavaScript code!
+                        return true;
+                    }
+                } finally {
+                    bd.readUnlock();
                 }
                 
             }

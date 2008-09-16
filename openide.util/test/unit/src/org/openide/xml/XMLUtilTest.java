@@ -44,17 +44,17 @@ package org.openide.xml;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.CharConversionException;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.TestFileUtils;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -190,6 +190,25 @@ public class XMLUtilTest extends NbTestCase {
             XMLUtil.validate(r, s);
             fail();
         } catch (SAXException x) {/*OK*/}
+        // #146081: xml:base attributes get inserted sometimes and can mess up validation.
+        xsd =
+                "<xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema' targetNamespace='some://where' xmlns='some://where' elementFormDefault='qualified'>\n" +
+                " <xsd:element name='root'>\n" +
+                "  <xsd:complexType>\n" +
+                "   <xsd:sequence>\n" +
+                "    <xsd:element name='hello' type='xsd:NMTOKEN'/>\n" +
+                "   </xsd:sequence>\n" +
+                "  </xsd:complexType>\n" +
+                " </xsd:element>\n" +
+                "</xsd:schema>\n";
+        s = f.newSchema(new StreamSource(new StringReader(xsd)));
+        File d = getWorkDir();
+        File main = new File(d, "main.xml");
+        File ent = new File(d, "ent.xml");
+        TestFileUtils.writeFile(main, "<!DOCTYPE root [<!ENTITY ent SYSTEM 'ent.xml'>]> <root xmlns='some://where'>&ent;</root>");
+        TestFileUtils.writeFile(ent, "<hello xmlns='some://where'>there</hello>");
+        r = XMLUtil.parse(new InputSource(main.toURI().toString()), false, true, null, null).getDocumentElement();
+        XMLUtil.validate(r, s);
     }
     
     public void testToAttributeValue() throws IOException {

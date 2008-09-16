@@ -150,4 +150,21 @@ public class JsParserTest extends JsTestBase {
     public void testPartial12() throws Exception {
         checkNoParseAbort("testfiles/broken12.js");
     }
+
+    public void testPartial13() throws Exception {
+        // http://www.netbeans.org/issues/show_bug.cgi?id=133173
+        checkParseTree("testfiles/broken13.js", "__UNKN^OWN__", Token.NAME);
+    }
+
+    public void testPartial14() throws Exception {
+        // Variation of
+        // http://www.netbeans.org/issues/show_bug.cgi?id=133173
+        checkParseTree("testfiles/broken14.js", "__UNK^NOWN__", Token.NAME);
+    }
+
+    public void testPartial15() throws Exception {
+        // Variation of
+        // http://www.netbeans.org/issues/show_bug.cgi?id=133173
+        checkParseTree("testfiles/broken15.js", "__UNK^NOWN__", Token.FUNCTION);
+    }
 }

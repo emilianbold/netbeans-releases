@@ -39,18 +39,25 @@
 
 package org.netbeans.modules.db.metadata.model.jdbc;
 
+import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCColumn implements ColumnImplementation {
+public class JDBCColumn extends ColumnImplementation {
 
+    private final JDBCTable jdbcTable;
     private final String name;
 
-    public JDBCColumn(String name) {
+    public JDBCColumn(JDBCTable jdbcTable, String name) {
+        this.jdbcTable = jdbcTable;
         this.name = name;
+    }
+
+    public final Table getParent() {
+        return jdbcTable.getTable();
     }
 
     public final String getName() {

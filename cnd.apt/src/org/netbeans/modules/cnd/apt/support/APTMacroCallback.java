@@ -48,10 +48,13 @@ import antlr.Token;
  * @author Vladimir Voskresensky
  */
 public interface APTMacroCallback {
-    /**
-     * getting macro information
-     */
+
+    /** @return true if the macro is defined, otherwise false      */
     public boolean isDefined(Token token);
+    
+    /** @return true if the macro is defined, otherwise false      */
+    public boolean isDefined(CharSequence token);
+    
     public APTMacro getMacro(Token token);
     
 
