@@ -60,11 +60,11 @@ public class ReminderPanel extends javax.swing.JPanel {
 
         setFocusable(false);
 
-        jBottomLabel1.setText("<html>Help us improve the NetBeans IDE by providing anonymous usage data."); // NOI18N
+        jBottomLabel1.setText("<html>Help us improve the NetBeans IDE by providing anonymous usage data.</html>"); // NOI18N
         jBottomLabel1.setFocusable(false);
         jBottomLabel1.setRequestFocusEnabled(false);
 
-        jBottomLabel2.setText("<html>If you agree to participate, the IDE will send anonymous information about the high-level features that you use to a database at netbeans.org."); // NOI18N
+        jBottomLabel2.setText("<html>If you agree to participate, the IDE will send anonymous information about the high-level features that you use to a database at netbeans.org.</html>"); // NOI18N
         jBottomLabel2.setFocusable(false);
         jBottomLabel2.setRequestFocusEnabled(false);
 
@@ -108,6 +108,11 @@ public class ReminderPanel extends javax.swing.JPanel {
                 .add(lblLearnMore)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jBottomLabel1.getAccessibleContext().setAccessibleName(""); // NOI18N
+        jBottomLabel2.getAccessibleContext().setAccessibleName(""); // NOI18N
+        jBottomLabel3.getAccessibleContext().setAccessibleName(""); // NOI18N
+        lblLearnMore.getAccessibleContext().setAccessibleName(""); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void lblLearnMoreMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblLearnMoreMouseEntered

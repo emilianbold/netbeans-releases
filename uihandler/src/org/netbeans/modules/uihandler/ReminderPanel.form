@@ -50,17 +50,23 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jBottomLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;Help us improve the NetBeans IDE by providing anonymous usage data." noResource="true"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;Help us improve the NetBeans IDE by providing anonymous usage data.&lt;/html&gt;" noResource="true"/>
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="requestFocusEnabled" type="boolean" value="false"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="" noResource="true"/>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="jBottomLabel2">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;If you agree to participate, the IDE will send anonymous information about the high-level features that you use to a database at netbeans.org." noResource="true"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;If you agree to participate, the IDE will send anonymous information about the high-level features that you use to a database at netbeans.org.&lt;/html&gt;" noResource="true"/>
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="requestFocusEnabled" type="boolean" value="false"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="" noResource="true"/>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="jBottomLabel3">
       <Properties>
@@ -68,11 +74,17 @@
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="requestFocusEnabled" type="boolean" value="false"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="" noResource="true"/>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblLearnMore">
       <Properties>
         <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;font color=&quot;#0000FF&quot; &lt;u&gt;Learn more&lt;/u&gt;&lt;/font&gt;&lt;/html&gt;" noResource="true"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="" noResource="true"/>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lblLearnMoreMouseEntered"/>
         <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lblLearnMoreMousePressed"/>
