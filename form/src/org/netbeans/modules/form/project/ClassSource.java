@@ -213,7 +213,11 @@ public final class ClassSource {
         }
         public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
             URL u = jar.toURI().toURL();
-            if (FileUtil.isArchiveFile(FileUtil.toFileObject(jar))) {
+            FileObject jarFile = FileUtil.toFileObject(jar);
+            if (jarFile == null) {
+                return Boolean.FALSE; // Issue 147451
+            }
+            if (FileUtil.isArchiveFile(jarFile)) {
                 u = FileUtil.getArchiveRoot(u);
             }
             return Boolean.valueOf(ProjectClassPathModifier.addRoots(new URL[] {u}, projectArtifact, classPathType));
