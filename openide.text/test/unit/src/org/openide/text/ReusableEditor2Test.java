@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JEditorPane;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
@@ -71,6 +70,11 @@ public class ReusableEditor2Test extends NbTestCase {
         super(testName);
     }
             
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
+
 
     /**
      * Prepares few editors at the test dispoition.
@@ -100,7 +104,6 @@ public class ReusableEditor2Test extends NbTestCase {
      * 4. Open first file with ShowOpenType.REUSE
      * 5. Verify second is closed
      */
-    @RandomlyFails
     public void testReuse() {
         openAndCheck(c1, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 1
         openAndCheck(c2, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 2

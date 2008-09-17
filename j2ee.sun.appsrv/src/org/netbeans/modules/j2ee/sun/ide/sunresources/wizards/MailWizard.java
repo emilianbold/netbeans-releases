@@ -59,10 +59,9 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;

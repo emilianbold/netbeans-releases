@@ -44,6 +44,7 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.util.List;
 import java.util.Map;
+import org.netbeans.editor.ext.html.HtmlIndenter;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
@@ -525,18 +526,24 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             super.replaceSelection(target, dotPos, caret, str, overwrite);
         }
 
-        private void handleTagClosingSymbol(BaseDocument doc, int dotPos, char lastChar) throws BadLocationException {
+        private void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, char lastChar) throws BadLocationException {
             if (lastChar == '>') {
                 LanguagePath jspLanguagePath = LanguagePath.get(JspTokenId.language());
-                LanguagePath htmlInJSPPath = LanguagePath.get(jspLanguagePath, HTMLTokenId.language());
+                final LanguagePath htmlInJSPPath = LanguagePath.get(jspLanguagePath, HTMLTokenId.language());
                 HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(htmlInJSPPath);
 
                 if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
-                    reformat(doc, dotPos);
+                    doc.runAtomic(new Runnable() {
+
+                        public void run() {
+                            HtmlIndenter.indentEndTag(doc, htmlInJSPPath, dotPos, null);
+                        }
+                    });
+//                    reformat(doc, dotPos);
                 } else {
                     JSPLexerFormatter jspFormatter = new JSPLexerFormatter();
-                    
-                    if (jspFormatter.isJustAfterClosingTag(doc, dotPos)){
+
+                    if (jspFormatter.isJustAfterClosingTag(doc, dotPos)) {
                         reformat(doc, dotPos);
                     }
                 }

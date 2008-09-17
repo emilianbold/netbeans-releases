@@ -345,8 +345,11 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1500"/>
                 <attr name="extends" stringvalue="SunStudio"/>
             </file>
-            <file name="SunStudio_13.xml" url="toolchain/SunStudio_13.xml">
+            <file name="SunStudioExpress.xml" url="toolchain/SunStudioExpress.xml">
                 <attr name="position" intvalue="1600"/>
+            </file>
+            <file name="SunStudio_13.xml" url="toolchain/SunStudio_13.xml">
+                <attr name="position" intvalue="1700"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
             </file>
             <file name="SunStudio.xml" url="toolchain/SunStudio.xml">

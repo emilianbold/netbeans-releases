@@ -139,7 +139,7 @@ public class CSSStructureScanner implements StructureScanner {
                                 selectorsListText.deleteCharAt(selectorsListText.length() - 2);
                             }
 
-                            items.add(new CssRuleStructureItem(selectorsListText.toString(), CssAstElement.getElement(info, ruleNode)));
+                            items.add(new CssRuleStructureItem(selectorsListText.toString(), CssAstElement.createElement(ruleNode), source));
                         }
 
                     }
@@ -213,10 +213,19 @@ public class CSSStructureScanner implements StructureScanner {
 
         private String name;
         private CssAstElement element;
+        private int from, to;
 
-        private CssRuleStructureItem(String name, CssAstElement element) {
+        private static String escape(String s) {
+            s = s.replace("<", "&lt;");
+            s = s.replace(">", "&gt;");
+            return s;
+        }
+        
+        private CssRuleStructureItem(String name, CssAstElement element, TranslatedSource source) {
             this.name = name;
             this.element = element;
+            this.from = AstUtils.documentPosition(element.node().startOffset(), source);
+            this.to = AstUtils.documentPosition(element.node().endOffset(), source);
         }
 
         public String getName() {
@@ -228,7 +237,7 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public String getHtml(HtmlFormatter formatter) {
-            return getName();
+            return escape(getName());
         }
 
         public ElementHandle getElementHandle() {
@@ -253,11 +262,11 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public long getPosition() {
-            return AstUtils.documentPosition(element.node().startOffset(), element.translatedSource());
+            return from;
         }
 
         public long getEndPosition() {
-            return AstUtils.documentPosition(element.node().endOffset(), element.translatedSource());
+            return to;
         }
 
         public ImageIcon getCustomIcon() {

@@ -269,14 +269,25 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     List<FoldInfo>      removed = new ArrayList<FoldInfo>(currentFolds.keySet());
                     
                     for (FoldInfo i : infos) {
-                        if (removed.remove(i)) {
+                        if (currentFolds.containsKey(i)) {
+                            removed.remove(i);
                             continue ;
                         }
                         
                         int start = i.start.getOffset();
                         int end   = i.end.getOffset();
+
+                        // XXX: In some situations infos contains duplicate folds and we don't
+                        // want to add the same multiple times. The situation that I came across
+                        // was with having an empty enum subclass with javadoc. The javadoc fold
+                        // was added twice - once from visitClass and second time from visitMethod
+                        // for the <init> node, which for some reason has the same offset as the
+                        // the enum inner class.
                         
-                        if (end > start && (end - start) > (i.template.getStartGuardedLength() + i.template.getEndGuardedLength())) {
+                        if (end > start &&
+                            (end - start) > (i.template.getStartGuardedLength() + i.template.getEndGuardedLength()) &&
+                            !added.containsKey(i))
+                        {
                             Fold f    = operation.addToHierarchy(i.template.getType(),
                                                                  i.template.getDescription(),
                                                                  i.collapseByDefault,
@@ -308,7 +319,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                         }
                         
                         if (initialCommentFold == f) {
-                            initialCommentFold = f;
+                            initialCommentFold = null;
                         }
                     }
                     

@@ -60,6 +60,8 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.client.javascript.debugger.NbJSDebuggerConstants;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
 import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil;
@@ -105,6 +107,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.text.Line;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -130,7 +133,8 @@ public final class NbJSDebugger {
     private URLContentProvider contentProvider;
     private JSDebugger debugger;
     private HashMap<Breakpoint, JSBreakpointImpl> breakpointsMap = new HashMap<Breakpoint, JSBreakpointImpl>();
-
+    private StartDebuggerTask startDebuggerTask;
+    
     private class JSDebuggerEventListenerImpl implements JSDebuggerEventListener {
 
         public void onDebuggerEvent(JSDebuggerEvent debuggerEvent) {
@@ -138,7 +142,7 @@ public final class NbJSDebugger {
             setState(debuggerState);
         }
     }
-
+    
     private class JSDebuggerConsoleEventListenerImpl implements JSDebuggerConsoleEventListener {
 
         public void onConsoleEvent(JSDebuggerConsoleEvent consoleEvent) {
@@ -197,7 +201,10 @@ public final class NbJSDebugger {
                 } catch (RuntimeException re) {
                     Log.getLogger().log(Level.INFO, re.getMessage(), re);
                 }
+                
                 openEditorsForWindows();
+            } else if (evt.getPropertyName().equals(JSDebugger.PROPERTY_RELOADSOURCES)) {
+                refreshCacheForSources((JSSource[])evt.getNewValue());
             }
         }
     }
@@ -233,6 +240,44 @@ public final class NbJSDebugger {
             }
         }
     }
+    
+    private class StartDebuggerTask implements Cancellable, Runnable {
+        
+        private boolean success = false;
+        ProgressHandle handle;
+        
+        public StartDebuggerTask() {
+            this.handle = ProgressHandleFactory.createHandle(
+                    NbBundle.getMessage(NbJSDebugger.class, "MSG_TASK_INITIALIZING_JAVASCRIPT_DEBUGGER"), this);
+        }
+        
+        
+        public void run() {
+            handle.start();
+            try {
+                success = debugger.startDebugging();
+            } catch (Exception ex) {
+                Log.getLogger().log(Level.INFO, "Unexpected exception while starting debugger", ex);
+            }
+            handle.finish();
+        }
+        
+        public boolean cancel() {
+            try {
+                debugger.cancelStartDebugging();
+                return true;
+            } catch (Exception ex) {
+                Log.getLogger().log(Level.INFO, "Unexpected exception while canceling debugger start", ex);
+                return false;
+            }
+        }
+        
+        public boolean taskSucceeded() {
+            return success;
+        }
+        
+    }
+    
     private JSDebuggerEventListener debuggerListener;
     private JSDebuggerConsoleEventListener debuggerConsoleEventListener;
     private JSHttpMessageEventListener httpMessageEventListener;
@@ -316,7 +361,7 @@ public final class NbJSDebugger {
             if (jSToNbJSLocation != null) {
                 services.add(jSToNbJSLocation);
             }
-
+            
             DebuggerInfo debuggerInfo = DebuggerInfo.create(
                     NbJSDebuggerConstants.DEBUG_INFO_ID,
                     services.toArray());
@@ -326,7 +371,20 @@ public final class NbJSDebugger {
 
     public void startJSDebugging() {
         if (debugger != null) {
-            debugger.startDebugging();
+            startDebuggerTask = new StartDebuggerTask();
+            RequestProcessor.Task task = RequestProcessor.getDefault().post(startDebuggerTask);
+            task.waitFinished();
+            
+            synchronized(this) {
+                if (startDebuggerTask != null) {
+                    boolean success = startDebuggerTask.taskSucceeded();
+                    startDebuggerTask = null;
+
+                    if (!success) {
+                        setState(JSDebuggerState.DISCONNECTED);
+                    }
+                }
+            }
         }
     }
 
@@ -406,7 +464,7 @@ public final class NbJSDebugger {
         }
     }
 
-    synchronized void setState(JSDebuggerState state) {
+    synchronized void setState(JSDebuggerState state) {      
         this.state = state;
         if (state == JSDebuggerState.STARTING_INIT) {
             // Set the initial feature set
@@ -436,6 +494,7 @@ public final class NbJSDebugger {
             }
         }
         if (state.getState() == JSDebuggerState.State.SUSPENDED) {
+            setCurrentSession();
             JSCallStackFrame[] callStackFrames = getCallStackFrames();
             if (callStackFrames != null && callStackFrames.length > 0) {
                 selectFrame(callStackFrames[0]);
@@ -448,7 +507,7 @@ public final class NbJSDebugger {
         JSDebuggerEvent resourcedDebuggerEvent =
                 new JSDebuggerEvent(NbJSDebugger.this, this.state);
         fireJSDebuggerEvent(resourcedDebuggerEvent);
-        if (state.getState() == JSDebuggerState.State.DISCONNECTED) {
+        if (state.getState() == JSDebuggerState.State.DISCONNECTED) {            
             if (debuggerManagerListener != null) {
                 DebuggerManager.getDebuggerManager().removeDebuggerListener(debuggerManagerListener);
                 debuggerManagerListener = null;
@@ -465,9 +524,28 @@ public final class NbJSDebugger {
                 console.closeInputOutput();
                 console = null;
             }
+            
+            if (startDebuggerTask != null) {
+                startDebuggerTask.cancel();
+                startDebuggerTask = null;
+            }
         }
     }
 
+    private void setCurrentSession() {
+        DebuggerManager manager = DebuggerManager.getDebuggerManager();
+        
+        for (Session nextSession : manager.getSessions()) {
+            NbJSDebugger debuggr = nextSession.lookupFirst(null, NbJSDebugger.class);
+            if (debuggr == this) {
+                manager.setCurrentSession(nextSession);
+                return;
+            }
+        }
+        
+        Log.getLogger().warning("Could not find session for javascript debugger");
+    }
+    
     private void setBreakPoints() {
         for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
             if (bp instanceof NbJSBreakpoint) {
@@ -476,9 +554,11 @@ public final class NbJSDebugger {
         }
     }
 
-    private synchronized void setBreakpoint(final NbJSBreakpoint bp) {
-        if (state.getState() == JSDebuggerState.State.DISCONNECTED ||
-                state.getState() == JSDebuggerState.State.NOT_CONNECTED) {
+    private void setBreakpoint(final NbJSBreakpoint bp) {
+        JSDebuggerState currentState = getState();
+        
+        if (currentState.getState() == JSDebuggerState.State.DISCONNECTED ||
+                currentState.getState() == JSDebuggerState.State.NOT_CONNECTED) {
             return;
         }
         
@@ -486,12 +566,14 @@ public final class NbJSDebugger {
         if (bpImpl != null) {
             return;
         }
+
         JSURILocation jsURILocation = null;
         if (bp instanceof NbJSFileObjectBreakpoint) {
             jsURILocation = (JSURILocation) getJSLocation(((NbJSFileObjectBreakpoint) bp).getLocation());
         } else if (bp instanceof NbJSURIBreakpoint) {
             jsURILocation = ((NbJSURIBreakpoint) bp).getLocation();
         }
+        
         if (jsURILocation != null) {
             bpImpl = new JSBreakpointImpl(jsURILocation);
             //TODO set the type correctly for other types of breakpoints
@@ -516,9 +598,12 @@ public final class NbJSDebugger {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    String bpId = debugger.setBreakpoint(tmpBreakpointImp);
-                    if (bpId != null) {
-                        tmpBreakpointImp.setId(bpId);
+                    List<String> bpIds = debugger.setBreakpoint(tmpBreakpointImp);
+                    if (bpIds != null) {
+                        for (String bpId : bpIds) {
+                            tmpBreakpointImp.addId(bpId);
+                        }
+                        
                         breakpointsMap.put(bp, tmpBreakpointImp);
                         bp.addPropertyChangeListener(WeakListeners.propertyChange(breakpointPropertyChangeListener, bp));
                     }
@@ -528,11 +613,18 @@ public final class NbJSDebugger {
     }
 
     private void removeBreakpoint(Breakpoint bp) {
+        JSDebuggerState currentState = getState();
+        if (currentState.getState() == JSDebuggerState.State.DISCONNECTED ||
+                currentState.getState() == JSDebuggerState.State.NOT_CONNECTED) {
+            return;
+        }
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
         if (bpImpl != null) {
-            String id = bpImpl.getId();
-            // commented since remove is not implemented on extension side            
-            boolean removed = debugger.removeBreakpoint(id);
+            boolean removed = false;
+            for (String id : bpImpl.getIds()) {
+                removed = debugger.removeBreakpoint(id) || removed;
+            }
+            
             if (removed) {
                 breakpointsMap.remove(bp);
             }
@@ -540,6 +632,11 @@ public final class NbJSDebugger {
     }
 
     private void updateBreakpoint(NbJSBreakpoint bp) {
+        JSDebuggerState currentState = getState();
+        if (currentState.getState() == JSDebuggerState.State.DISCONNECTED ||
+                currentState.getState() == JSDebuggerState.State.NOT_CONNECTED) {
+            return;
+        }
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
         if (bpImpl == null) {
             Log.getLogger().log(Level.INFO, "Cannot update non existing breakpoint");   //NOI18N
@@ -559,12 +656,21 @@ public final class NbJSDebugger {
             condition = "";
         }
 
-        String id = bpImpl.getId();
-        debugger.updateBreakpoint(id, enabled, line, hitValue, hitCondition, condition);
+        for (String id : bpImpl.getIds()) {
+            debugger.updateBreakpoint(id, enabled, line, hitValue, hitCondition, condition);
+        }
     }
 
     private JSLocation getJSLocation(JSAbstractLocation nbJSLocation) {
-        Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+        Session session = null;
+        for (Session nextSession : DebuggerManager.getDebuggerManager().getSessions()) {
+            NbJSDebugger debuggr = nextSession.lookupFirst(null, NbJSDebugger.class);
+            if (debuggr == this) {
+                session = nextSession;
+                break;
+            }
+        }
+        
         if (session != null) {
             NbJSToJSLocationMapper nbJSToJSLocationMapper = session.lookupFirst(null, NbJSToJSLocationMapper.class);
             if (nbJSToJSLocationMapper != null) {
@@ -773,5 +879,23 @@ public final class NbJSDebugger {
             JSSource source = JSFactory.createJSSource(strURI);
             NbJSEditorUtil.openFileObject(getFileObjectForSource(source));
         }
+    }
+    
+    private void refreshCacheForSources(JSSource[] sources) {
+        if (sources == null || sources.length == 0) {
+            return;
+        }
+        
+        for (JSSource source : sources) {
+            try {
+                URI sourceURI = source.getLocation().getURI();
+                URLFileObject urlFO = URLFileObjectFactory.findFileObject(contentProvider, sourceURI.toURL());
+                if (urlFO != null) {
+                    urlFO.invalidate();
+                }
+            } catch (MalformedURLException ex) {
+                Log.getLogger().log(Level.FINE, "Could not convert URI to URL", ex);
+            }
+        }        
     }
 }

@@ -570,7 +570,7 @@ public class BinaryFS extends FileSystem {
             int i = method.lastIndexOf('.');
             if (i != -1) {
                 // Cf. XMLMapAttr.Attr.methodValue:
-                Class cls = findClass(method.substring(0, i));
+                Class<?> cls = findClass(method.substring(0, i));
                 String methodName = method.substring(i + 1);
                 Class[][] paramArray = {
                     {FileObject.class, String.class}, {String.class, FileObject.class},
@@ -835,7 +835,13 @@ public class BinaryFS extends FileSystem {
         /** Get all children of this folder (files and subfolders). */
         public FileObject[] getChildren() {
             initialize();
-            return childrenMap.values().toArray(NO_CHILDREN);
+            // 145775 - workaround of JDK 1.5 bug 6377302 (toArray is not thread safe)
+            // When JDK 1.6 is only supported, use just "return childrenMap.values().toArray(NO_CHILDREN);" instead
+            List<FileObject> list = new ArrayList<FileObject>(childrenMap.values().size());
+            for (FileObject fo : childrenMap.values()) {
+                list.add(fo);
+            }
+            return list.toArray(NO_CHILDREN);
         }
 
         /** Retrieve file or folder contained in this folder by name. */

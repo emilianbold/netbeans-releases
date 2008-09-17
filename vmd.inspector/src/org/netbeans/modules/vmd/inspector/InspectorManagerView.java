@@ -127,7 +127,7 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
     }
 
     private void notifyUISelectionChanged() {
-        IOUtils.runInAWTNoBlocking(new Runnable() {
+        final Runnable runnable = new Runnable() {
             public void run() {
                 if (folderWrapperTree.isLocked()) {
                     Debug.warning("Access to the Navigator is locked"); //NOI18N
@@ -150,6 +150,11 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
                 if (folderWrapperTree.getRootWrapperFolder().getNode() == null) {
                     ui.setRootNode(Node.EMPTY);
                 }
+            }
+        };
+        IOUtils.runInAWTNoBlocking( new Runnable(){
+            public void run() {
+                document.getTransactionManager().readAccess(runnable);
             }
         });
     }

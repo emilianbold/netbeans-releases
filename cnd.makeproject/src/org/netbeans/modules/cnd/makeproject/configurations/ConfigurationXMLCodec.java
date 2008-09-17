@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.VersionException;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
@@ -253,7 +254,15 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentPackagingConfiguration.getFiles().getValue().clear();
             //currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
-            currentPackagingConfiguration.getHeader().getValue().clear();
+            if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+                currentPackagingConfiguration.getSvr4Header().getValue().clear();
+            }
+            else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+                currentPackagingConfiguration.getRpmHeader().getValue().clear();
+            }
+            else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+                currentPackagingConfiguration.getDebianHeader().getValue().clear();
+            }
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
@@ -316,8 +325,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String value = atts.getValue(VALUE_ATTR); // NOI18N
             String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
             InfoElement infoElement = new InfoElement(name, value, mandatory.equals(TRUE_VALUE), false);
-            if (currentPackagingConfiguration != null)
-                currentPackagingConfiguration.getHeader().add(infoElement);
+            if (currentPackagingConfiguration != null) {
+                if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+                    currentPackagingConfiguration.getSvr4Header().add(infoElement);
+                }
+                else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+                    currentPackagingConfiguration.getRpmHeader().add(infoElement);
+                }
+                else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+                    currentPackagingConfiguration.getDebianHeader().add(infoElement);
+                }
+            }
         }
     }
     
@@ -414,7 +432,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentFolder = null;
             }
         } else if (element.equals(SOURCE_ENCODING_ELEMENT)) {
-            ((MakeConfigurationDescriptor)projectDescriptor).setSourceEncoding(currentText);
+            ((MakeProject)((MakeConfigurationDescriptor)projectDescriptor).getProject()).setSourceEncoding(currentText);
         } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
             currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {

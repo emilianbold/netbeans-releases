@@ -95,7 +95,7 @@ public class SwitchToDesignView  extends PerformanceTestCase {
     
     public ComponentOperator open() {
         log(":: open");
-        schemaComponentOperator.getDesignButton().push();
+        schemaComponentOperator.getDesignButton().pushNoBlock();
         
         return schemaComponentOperator;
     }

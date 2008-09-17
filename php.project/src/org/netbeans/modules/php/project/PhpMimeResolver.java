@@ -42,9 +42,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -71,6 +72,10 @@ public class PhpMimeResolver extends MIMEResolver {
 
     //html signs
     private static final Set<String> resolvedExt = new HashSet<String>();
+
+    public PhpMimeResolver() {
+        super(MIME_TYPE);
+    }
 
     @Override
     public String findMIMEType(FileObject fo) {
@@ -120,7 +125,9 @@ public class PhpMimeResolver extends MIMEResolver {
                 inputStream.close();
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            // #143815 - just log exception and continue
+            Logger.getLogger(PhpMimeResolver.class.getName()).log(Level.INFO, null, ex);
+            return null;
         }
         return returnMimeType(fo, UNKNOWN_MIME_TYPE);
     }

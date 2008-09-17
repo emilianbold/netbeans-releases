@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -51,22 +54,38 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  * @author vk155633
  */
 public class ParserThread implements Runnable {
-    private boolean stopped = false;
+    private volatile boolean stopped = false;
+    private boolean isStoped = false;
 
     public void stop() {
         this.stopped = true;
     }
     
     public void run() {
+        try {
+            _run();
+        } finally {
+            isStoped = true;
+        }
+    }
+    
+    public boolean isStoped(){
+        return isStoped;
+    }
+    
+    private void _run() {
 	if( TraceFlags.TRACE_PARSER_QUEUE ) trace("started"); // NOI18N
         ParserQueue queue = ParserQueue.instance();
         while( !stopped ) {
             if( TraceFlags.TRACE_PARSER_QUEUE ) trace("polling queue"); // NOI18N
             try {
-                ParserQueue.Entry entry = queue.poll();
+                AtomicReference<FileImpl.State> fileState = new AtomicReference<FileImpl.State>();
+                ParserQueue.Entry entry = queue.poll(fileState);
                 if( entry == null ) {
                     if( TraceFlags.TRACE_PARSER_QUEUE ) trace("waiting"); // NOI18N
+                    isStoped = true;
                     queue.waitReady();
+                    isStoped = false;
                 }
                 else {
                     FileImpl file = entry.getFile();
@@ -74,21 +93,28 @@ public class ParserThread implements Runnable {
                         trace("parsing started: " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS)); // NOI18N
                     }
                     Diagnostic.StopWatch stw = (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && ! file.isParsed()) ? new Diagnostic.StopWatch() : null;
-                    APTPreprocHandler preprocHandler = null;
                     try {
-			if( ! file.getProjectImpl().isDisposing() ) { // just in case check
-                            APTPreprocHandler.State state = entry.getPreprocState();
-                            if (state != null) {
-                                // init from entry
-                                preprocHandler = file.getProjectImpl().createEmptyPreprocHandler(file.getBuffer().getFile());
+                        Collection<APTPreprocHandler.State> states = entry.getPreprocStates();
+                        Collection<APTPreprocHandler> preprocHandlers = new ArrayList<APTPreprocHandler>(states.size());
+                        for (APTPreprocHandler.State state : states) {
+                            if( ! file.getProjectImpl(true).isDisposing() ) { // just in case check
+                                if (state == FileImpl.DUMMY_STATE) {
+                                    assert states.size() == 1 : "Dummy state sould never be mixed with normal states"; //NOI18N
+                                    preprocHandlers = FileImpl.DUMMY_HANDLERS;
+                                    break;
+                                }
+                                APTPreprocHandler preprocHandler = file.getProjectImpl(true).createEmptyPreprocHandler(file.getBuffer().getFile());
                                 if( TraceFlags.TRACE_PARSER_QUEUE ) {
-                                    System.err.println("before ensureParse on " + file.getAbsolutePath() + 
-                                            ParserQueue.tracePreprocState(state)); 
+                                    System.err.println("before ensureParse on " + file.getAbsolutePath() +
+                                            ParserQueue.tracePreprocState(state));
                                 }
                                 preprocHandler.setState(state);
+                                preprocHandlers.add(preprocHandler);
                             }
-                            file.ensureParsed(preprocHandler);
-			}
+                        }
+                        if( ! file.getProjectImpl(true).isDisposing() ) {
+                            file.ensureParsed(preprocHandlers, fileState);
+                        }
                     }
                     catch( Throwable thr ) {
 			DiagnosticExceptoins.register(thr);
@@ -98,7 +124,7 @@ public class ParserThread implements Runnable {
 			try {
                             queue.onFileParsingFinished(file);
                             if( TraceFlags.TRACE_PARSER_QUEUE ) trace("parsing done: " + file.getAbsolutePath()); // NOI18N
-			    Notificator.instance().flush();
+                            Notificator.instance().flush();
 			    if( TraceFlags.TRACE_PARSER_QUEUE ) trace("model event flushed"); // NOI18N
 			} catch( Throwable thr ) {
 			    thr.printStackTrace(System.err);

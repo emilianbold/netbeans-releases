@@ -304,7 +304,7 @@ public class EditorModule extends ModuleInstall {
                         Field kitsField = BaseKit.class.getDeclaredField("kits");
                         kitsField.setAccessible(true);
                         Map kitsMap = (Map) kitsField.get(null);
-                        LOG.info("Number of loaded editor kits: " + kitsMap.size());
+                        LOG.fine("Number of loaded editor kits: " + kitsMap.size());
                     } catch (Exception e) {
                         // ignore
                     }

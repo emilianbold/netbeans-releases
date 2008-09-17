@@ -545,6 +545,28 @@ public class ExtendedTokenSequence {
         }
     }
 
+    /*package local*/ boolean isOpenBraceLastLineToken(int braceDepth) {
+        int index = ts.index();
+        try {
+            while(true) {
+                if (!ts.movePrevious()){
+                    return false;
+                }
+                if (ts.token().id() == LBRACE){
+                    braceDepth--;
+                    if (braceDepth == 0){
+                        return isLastLineToken();
+                    }
+                } else if (ts.token().id() == RBRACE){
+                    braceDepth++;
+                }
+            }
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
     /*package local*/ int[] getNewLinesBeforeDeclaration(int start) {
         int res[] = new int[] {-1,-1, 0};
         int index = ts.index();
@@ -677,7 +699,7 @@ public class ExtendedTokenSequence {
                 int end = diff.getEndOffset();
                 String text = diff.getText();
                 if (startOffset > end || endOffset < start) {
-                    System.out.println("What?");
+                    System.err.println("What?" + startOffset + ":" + start + "-" + end);// NOI18N
                     continue;
                 }
                 if (endOffset < end) {

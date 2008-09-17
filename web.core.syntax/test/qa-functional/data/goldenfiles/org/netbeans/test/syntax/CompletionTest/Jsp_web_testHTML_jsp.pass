@@ -302,3 +302,6 @@ End cursor position = 358
 [<bo|, <body>, <body>, 422]
 <body>
 End cursor position = 429
+[<head><meta></|, </head>, <head><meta></head>, 516]
+</head>
+End cursor position = 536

@@ -25,5 +25,5 @@ token #23 WHITESPACE
 token #24 PHP_VARIABLE $var
 token #25 PHP_SEMICOLON ;
 token #26 WHITESPACE \n
-token #27 PHP_CLOSETAG ?>\n
-token #28 T_INLINE_HTML --EXPECTF--\nParse error: syntax error, unexpected T_START_HEREDOC in %sheredoc_013.php on line %d\n
+token #27 PHP_CLOSETAG ?>
+token #28 T_INLINE_HTML \n--EXPECTF--\nParse error: syntax error, unexpected T_START_HEREDOC in %sheredoc_013.php on line %d\n

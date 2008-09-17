@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.uml.diagrams.actions.sqd;
 
+import java.awt.event.KeyEvent;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.State;
+import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.basic.basicactions.IAction;
@@ -53,6 +56,7 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IExecutionOccurrence;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.LifelineWidget;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 
 /**
  *
@@ -70,35 +74,7 @@ public class DestroyLifelineAction extends WidgetAction.LockedAdapter {
 
     @Override
     public State mouseReleased(Widget widget, WidgetMouseEvent event) {
-        //
-        ObjectScene scene=(ObjectScene) widget.getScene();
-        IPresentationElement pE=(IPresentationElement) scene.findObject(widget);
-        Lifeline lfE=(Lifeline) pE.getFirstSubject();
-        ETList<IEventOccurrence> eventsOs=lfE.getEvents();
-        IEventOccurrence evO=null;
-        IExecutionOccurrence exO=null;
-        IActionOccurrence acO=null;
-        IAction ac=null;
-        for(int i=eventsOs.size()-1;i>=0;i--)
-        {
-            evO=eventsOs.get(i);
-            exO=evO.getStartExec();
-            if(exO instanceof IActionOccurrence)
-            {
-                acO=(IActionOccurrence) exO;
-                ac=acO.getAction();
-                if(ac instanceof DestroyAction)
-                {
-                    break;
-                }
-                else ac=null;
-            }
-        }
-        if(ac!=null)
-        {
-            lfE.removeEvent(evO);
-        }
-        else lfE.createDestructor();
+        createLifelineDestroy(widget);
         //
         lifeline=null;
        return State.CONSUMED;
@@ -107,6 +83,58 @@ public class DestroyLifelineAction extends WidgetAction.LockedAdapter {
     @Override
     protected boolean isLocked() {
         return lifeline!=null;
+    }
+
+    @Override
+    public State keyPressed(Widget widget, WidgetKeyEvent event)
+    {
+        State retVal = State.REJECTED;
+        
+        if(Util.isPaletteExecute(event) == true)
+        {
+            createLifelineDestroy(widget);
+        }
+
+        return retVal;
+    }
+    
+    private void createLifelineDestroy(Widget widget)
+    {
+        //
+        ObjectScene scene = (ObjectScene) widget.getScene();
+        IPresentationElement pE = (IPresentationElement) scene.findObject(widget);
+        Lifeline lfE = (Lifeline) pE.getFirstSubject();
+        ETList<IEventOccurrence> eventsOs = lfE.getEvents();
+        IEventOccurrence evO = null;
+        IExecutionOccurrence exO = null;
+        IActionOccurrence acO = null;
+        IAction ac = null;
+        for (int i = eventsOs.size() - 1; i >= 0; i--)
+        {
+            evO = eventsOs.get(i);
+            exO = evO.getStartExec();
+            if (exO instanceof IActionOccurrence)
+            {
+                acO = (IActionOccurrence) exO;
+                ac = acO.getAction();
+                if (ac instanceof DestroyAction)
+                {
+                    break;
+                }
+                else
+                {
+                    ac = null;
+                }
+            }
+        }
+        if (ac != null)
+        {
+            lfE.removeEvent(evO);
+        }
+        else
+        {
+            lfE.createDestructor();
+        }
     }
 
 }

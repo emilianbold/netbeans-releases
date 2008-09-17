@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -165,29 +166,34 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     // ------------------------------------------------
     
     private final void updateLineInfo(boolean fire) {
-        Position [] currentLine = getCurrentBlockPositions(component.getDocument(), caret);
-        
-        if (!comparePositions(currentLine[0], currentLineStart) ||
-            !comparePositions(currentLine[1], currentLineEnd))
-        {
-            Position changeStart = getLowerPosition(currentLine[0], currentLineStart);
-            Position changeEnd = getHigherPosition(currentLine[1], currentLineEnd);
+        ((AbstractDocument) component.getDocument()).readLock();
+        try {
+            Position [] currentLine = getCurrentBlockPositions(component.getDocument(), caret);
 
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Current row changed from [" //NOI18N
-                    + positionToString(currentLineStart) + ", " + positionToString(currentLineEnd) + "] to [" //NOI18N
-                    + positionToString(currentLine[0]) + ", " + positionToString(currentLine[1]) + "]"); //NOI18N
-            }
-            
-            currentLineStart = currentLine[0];
-            currentLineEnd = currentLine[1];
+            if (!comparePositions(currentLine[0], currentLineStart) ||
+                !comparePositions(currentLine[1], currentLineEnd))
+            {
+                Position changeStart = getLowerPosition(currentLine[0], currentLineStart);
+                Position changeEnd = getHigherPosition(currentLine[1], currentLineEnd);
 
-            if (fire) {
-                fireHighlightsChange(
-                    changeStart == null ? 0 : changeStart.getOffset(),
-                    changeEnd == null ? Integer.MAX_VALUE : changeEnd.getOffset()
-                );
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Current row changed from [" //NOI18N
+                        + positionToString(currentLineStart) + ", " + positionToString(currentLineEnd) + "] to [" //NOI18N
+                        + positionToString(currentLine[0]) + ", " + positionToString(currentLine[1]) + "]"); //NOI18N
+                }
+
+                currentLineStart = currentLine[0];
+                currentLineEnd = currentLine[1];
+
+                if (fire) {
+                    fireHighlightsChange(
+                        changeStart == null ? 0 : changeStart.getOffset(),
+                        changeEnd == null ? Integer.MAX_VALUE : changeEnd.getOffset()
+                    );
+                }
             }
+        } finally {
+            ((AbstractDocument) component.getDocument()).readUnlock();
         }
     }
     

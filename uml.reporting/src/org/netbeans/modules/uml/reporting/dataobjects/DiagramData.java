@@ -443,7 +443,7 @@ public class DiagramData extends ElementDataObject
         String path =".."; // NOI18N
         IPackage pkg = diagram.getOwningPackage();
         assert pkg!=null: "invalid package for diagram " + diagram.getName(); // NOI18N 
-        while (!pkg.equals(pkg.getProject()))
+        while (pkg != null && !pkg.equals(pkg.getProject()))
         {
             path = path + "/.."; // NOI18N
             pkg=pkg.getOwningPackage();

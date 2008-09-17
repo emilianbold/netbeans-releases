@@ -112,14 +112,28 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	    MutablePositionRegion current = new MutablePositionRegion(start, end);
 	    
 	    if (isIn(current, caretOffset)) {
-		mainRegion = current;
+            mainRegion = current;
 	    } else {
-		regions.add(current);
+            regions.add(current);
 	    }
 	}
 	
 	if (mainRegion == null) {
-	    throw new IllegalArgumentException("No highlight contains the caret."); //NOI18N
+        Logger.getLogger(InstantRenamePerformer.class.getName()).warning("No highlight contains the caret (" + caretOffset + "; highlights=" + highlights + ")"); //NOI18N
+        // Attempt to use another region - pick the one closest to the caret
+        if (regions.size() > 0) {
+            mainRegion = regions.get(0);
+            int mainDistance = Integer.MAX_VALUE;
+            for (MutablePositionRegion r : regions) {
+                int distance = caretOffset < r.getStartOffset() ? (r.getStartOffset()-caretOffset) : (caretOffset-r.getEndOffset());
+                if (distance < mainDistance) {
+                    mainRegion = r;
+                    mainDistance = distance;
+                }
+            }
+        } else {
+            return;
+        }
 	}
 	
 	regions.add(0, mainRegion);

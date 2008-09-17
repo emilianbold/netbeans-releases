@@ -252,6 +252,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     break;
                 }
             case 1:
+                if (CloneableEditor.this.pane != this.tmp) {
+                    //#138686: Cancel initialization when TC was closed in the meantime
+                    //and pane is null or even different instance
+                    phase = Integer.MAX_VALUE;
+                    break;
+                }
                 initVisual();
                 if (newInitialize()) {
                     task.schedule(1000);
@@ -529,6 +535,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * {@link org.openide.cookies.EditorCookie.Observable#PROP_OPENED_PANES}
      * property change on their own.
      */
+    @Override
     protected void componentOpened() {
         super.componentOpened();
 
@@ -544,6 +551,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * {@link org.openide.cookies.EditorCookie.Observable#PROP_OPENED_PANES}
      * property change on their own.
      */
+    @Override
     protected void componentClosed() {
         SwingUtilities.invokeLater(
             new Runnable() {

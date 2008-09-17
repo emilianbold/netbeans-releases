@@ -43,9 +43,11 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.regex.Pattern;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
 
 /**
  * First panel of <code>NewNbModuleWizardIterator</code>. Allows user to enter
@@ -104,7 +106,24 @@ final class BasicInfoWizardPanel extends BasicWizardPanel.NewTemplatePanel imple
         String prjFolder = getData().getProjectFolder();
         if (prjFolder != null) {
             File prjFolderF = new File(prjFolder);
-            if (prjFolderF.mkdir()) {
+            String name = getData().getProjectName();
+
+            String pattern;
+            String forbiddenChars;
+            if (Utilities.isWindows()) {
+                pattern = ".*[\\/:*?\"<>|].*";    // NOI18N
+                forbiddenChars = "\\ / : * ? \" < > |";    // NOI18N
+            } else {
+                pattern = ".*[\\/].*";    // NOI18N
+                forbiddenChars = "\\ /";    // NOI18N
+            }
+            // #145574: check for forbidden characters in FolderObject
+            if (Pattern.matches(pattern, name)) {
+                String message = getMessage("MSG_ProjectFolderInvalidCharacters");
+                message = String.format(message, forbiddenChars);
+                throw new WizardValidationException(getVisualPanel().nameValue, message, message);
+            }
+                    if (prjFolderF.mkdir()) {
                 prjFolderF.delete();
             } else {
                 String message = getMessage("MSG_UnableToCreateProjectFolder");

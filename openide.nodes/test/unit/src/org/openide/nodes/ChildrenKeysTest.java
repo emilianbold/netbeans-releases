@@ -46,6 +46,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,10 +60,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class ChildrenKeysTest extends NbTestCase {
@@ -1042,6 +1045,42 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals ("add", arr[2].getName ());
     }
     
+    public void testComplexReorderAndAddAndRemoveEventWithHidden () {
+        class K extends Keys {
+
+            K(String... args) {
+                super(lazy(), args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }        
+        K k = new K(new String[] {"-h1", "remove", "1", "-h2", "0" });
+        Node n = createNode (k);
+        Node[] toPreventGC = n.getChildren ().getNodes ();
+        assertEquals (3, toPreventGC.length);
+        
+        Listener l = new Listener ();
+        n.addNodeListener (l);
+        k.keys (new String[] {"-h1", "0", "-h2", "1", "add" });
+
+        l.assertRemoveEvent ("Removed index 0", 1);
+        l.assertReorderEvent ("0->1 and 1->0", new int[] { 1, 0 });
+        l.assertAddEvent ("Adding at index 2", 1);
+        l.assertNoEvents ("And that is all");
+
+        Node[] arr = n.getChildren ().getNodes ();
+        assertEquals (3, arr.length);
+        assertEquals ("0", arr[0].getName ());
+        assertEquals ("1", arr[1].getName ());
+        assertEquals ("add", arr[2].getName ());
+    }    
+
     /** Check refresh of nodes.
      */
     public void testResetOfNodes () throws Exception {
@@ -1496,7 +1535,71 @@ public class ChildrenKeysTest extends NbTestCase {
         nodes = root.getChildren().getNodes();
         assertEquals("1st is a", "a", nodes[0].getName());
         assertEquals("2nd is b", "b", nodes[1].getName());
-    }    
+    }
+
+    // test for issue #145892
+    public void testSnapshotIsUpdated() {
+
+        class K extends Keys {
+
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }
+        
+        class HoldingListener extends NodeAdapter {
+            List<Node> snapshot;
+            
+            void storeSnapshotLater(final NodeMemberEvent ev) {
+                
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        snapshot = ev.getSnapshot();
+                    }
+                });
+            }
+            @Override
+            public void childrenAdded(final NodeMemberEvent ev) {
+                storeSnapshotLater(ev);
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                storeSnapshotLater(ev);
+            }
+        }
+
+        K ch = new K();
+        Node root = createNode(ch);
+        root.getChildren().getNodesCount();
+        HoldingListener listener = new HoldingListener();
+        root.addNodeListener(listener);
+        ch.keys("a", "-a", "b");
+        AwtBlock awtBlock = new AwtBlock();
+        awtBlock.block();
+        Node[] nodes = root.getChildren().getNodes();
+        WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
+        nodes = null;
+        try {
+            assertGC("", ref);
+        } catch (Error ex) {
+            // OK
+        }
+        awtBlock.unblock();
+        ch.keys("c");
+        awtBlock.clearQueue();
+        Node n = listener.snapshot.get(0);
+        assertEquals("1st is c", "c", n.getName());
+    }
     
     @RandomlyFails // assumed to suffer from same random problem as testGetNodesFromTwoThreads57769; see Thread.sleep
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
@@ -1849,5 +1952,45 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
-    
+    static class AwtBlock implements Runnable {
+
+        public synchronized void run() {
+            notify();
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        synchronized void block() {
+            SwingUtilities.invokeLater(this);
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        void unblock() {
+            synchronized (this) {
+                notifyAll();
+            }
+            clearQueue();
+        }
+        
+        void clearQueue() {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    public void run() {
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
 }

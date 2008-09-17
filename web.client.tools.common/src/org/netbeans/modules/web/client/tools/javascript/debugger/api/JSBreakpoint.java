@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.web.client.tools.javascript.debugger.api;
 
+import java.util.Set;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 
 /**
@@ -47,6 +48,7 @@ import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
  */
 public interface JSBreakpoint {
     String getId();
+    Set<String> getIds();
     Boolean isEnabled();
     JSURILocation getLocation();
     String getFunction();

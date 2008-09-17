@@ -69,6 +69,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
+import org.netbeans.modules.db.core.SQLOptions;
 import org.netbeans.modules.db.sql.execute.ui.SQLHistoryPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -132,7 +133,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
         
         if (resultComponent != null) {
-            populateResults(results);
+        populateResults(results);
         }
     }
     
@@ -148,6 +149,10 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
 
         currentResultTabs = components;
+
+        if (! SQLOptions.getDefault().isKeepOldResultTabs()) {
+            resultComponent.removeAll();
+        }
         
         for (Component comp : components ) {
             resultComponent.add(comp);            

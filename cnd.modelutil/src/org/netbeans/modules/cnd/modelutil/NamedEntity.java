@@ -46,4 +46,5 @@ package org.netbeans.modules.cnd.modelutil;
  */
 public interface NamedEntity {
     String getName();
+    boolean isEnabledByDefault();
 }

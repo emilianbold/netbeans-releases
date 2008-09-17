@@ -135,7 +135,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         } else if (databaseName.length() > 0 && new File(derbySystemHome, databaseName).exists()) { // NOI18N
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseDirectoryExists", databaseName);
         } else if (unsupportedChar >= 0) {
-            warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameUnsupportedChar", new Character((char)unsupportedChar));
+            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameUnsupportedChar", new Character((char)unsupportedChar));
         } else if (getUser() == null || getPassword() == null) {
             warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
         }
@@ -209,7 +209,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, " ");
 
-        propertiesButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/derby/ui/Bundle").getString("LBL_Properties").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(propertiesButton, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_Properties")); // NOI18N
         propertiesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

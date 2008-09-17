@@ -101,7 +101,8 @@ public class SelectAllSimilarAction extends NodeAction
                 }
             }
         }
-        scene.setSelectedObjects(tobeSelected);
+        scene.userSelectionSuggested(tobeSelected, false);
+        scene.validate();
     }
 
     private boolean isSimilar(IPresentationElement PE1, IPresentationElement PE2) 
@@ -138,6 +139,12 @@ public class SelectAllSimilarAction extends NodeAction
     public HelpCtx getHelpCtx()
     {
         return null;
+    }
+
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
     }
 
 }

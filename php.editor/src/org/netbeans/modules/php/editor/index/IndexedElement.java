@@ -262,6 +262,14 @@ public abstract class IndexedElement extends PHPElement {
         return (flags & BodyDeclaration.Modifier.STATIC) != 0;
     }
 
+    public boolean isFinal() {
+        return (flags & BodyDeclaration.Modifier.FINAL) != 0;
+    }
+
+    public boolean isAbstract() {
+        return (flags & BodyDeclaration.Modifier.ABSTRACT) != 0;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

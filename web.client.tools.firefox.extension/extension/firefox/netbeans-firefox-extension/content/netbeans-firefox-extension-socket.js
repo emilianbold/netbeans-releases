@@ -99,6 +99,7 @@
             this.output.write(outputData, outputData.length);
 
             this.output.flush();
+            socket.sentFlag = true;
         };
 
         var inputStreamPump = {
@@ -178,8 +179,11 @@
                     } catch(exc) {
                         // TODO Use Components.results.NS_BASE_STREAM_CLOSED
                         if ( exc.result != 0x80470002) {
+                            NetBeans.Logger.logMessage("Unexpected socket failure:");
+                            NetBeans.Logger.logException(exc);
                             astream.closeWithStatus(exc.result);
                         }
+                        
                         this.onStopRequest();
                         return;
                     }

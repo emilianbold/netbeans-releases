@@ -98,7 +98,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
     
     public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        List<FileObject> files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, project.getBuildXmlName(), files);
@@ -108,7 +108,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
     }
     
     public List<FileObject> getDataFiles() {
-        List<FileObject> files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         
         FileObject docRoot = project.getAPIWebModule().getDocumentBase();
         if (docRoot != null)

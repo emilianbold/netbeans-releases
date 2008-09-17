@@ -59,6 +59,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
 import org.netbeans.modules.websvc.rest.support.Inflector;
@@ -288,7 +289,7 @@ public class Util {
         String pluralName = Inflector.getInstance().pluralize(name);
         
         if (name.equals(pluralName)) {
-            return name + "Collection";         //NOI18N
+            return name + Constants.COLLECTION;         //NOI18N
         } else {
             return pluralName;
         }
@@ -350,21 +351,29 @@ public class Util {
         if (primitiveTypes == null) {
             primitiveTypes = new HashMap<String,Class>();
             primitiveTypes.put("int", Integer.class);
-            primitiveTypes.put("int[]", Integer[].class);
+            primitiveTypes.put("int[]", int[].class);
+            primitiveTypes.put("java.lang.Integer[]", Integer[].class);
             primitiveTypes.put("boolean", Boolean.class);
-            primitiveTypes.put("boolean[]", Boolean[].class);
+            primitiveTypes.put("boolean[]", boolean[].class);
+            primitiveTypes.put("java.lang.Boolean[]", Boolean[].class);
             primitiveTypes.put("byte", Byte.class);
-            primitiveTypes.put("byte[]", Byte[].class);
+            primitiveTypes.put("byte[]", byte[].class);
+            primitiveTypes.put("java.lang.Byte[]", Byte[].class);
             primitiveTypes.put("char", Character.class);
-            primitiveTypes.put("char[]", Character[].class);
+            primitiveTypes.put("char[]", char[].class);
+            primitiveTypes.put("java.lang.Character[]", Character[].class);
             primitiveTypes.put("double", Double.class);
-            primitiveTypes.put("double[]", Double[].class);
+            primitiveTypes.put("double[]", double[].class);
+            primitiveTypes.put("java.lang.Double[]", Double[].class);
             primitiveTypes.put("float", Float.class);
-            primitiveTypes.put("float[]", Float[].class);
+            primitiveTypes.put("float[]", float[].class);
+            primitiveTypes.put("java.lang.Float[]", Float[].class);
             primitiveTypes.put("long", Long.class);
-            primitiveTypes.put("long[]", Long[].class);
+            primitiveTypes.put("long[]", long[].class);
+            primitiveTypes.put("java.lang.Long[]", Long[].class);
             primitiveTypes.put("short", Short.class);
-            primitiveTypes.put("short[]", Short[].class);
+            primitiveTypes.put("short[]", short[].class);
+            primitiveTypes.put("java.lang.Short[]", Short[].class);
         }
         return primitiveTypes.get(typeName);
     }

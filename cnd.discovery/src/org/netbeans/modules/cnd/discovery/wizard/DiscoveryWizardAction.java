@@ -120,7 +120,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         dialog.dispose();
     }
     
-    private String findBuildResult(Project project) {
+    /*package-local*/ static String findBuildResult(Project project) {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp==null){
             return null;
@@ -143,7 +143,7 @@ public final class DiscoveryWizardAction extends NodeAction {
     }
     
     
-    private String getProjectDirectoryPath(Project project) {
+    /*package-local*/ static String getProjectDirectoryPath(Project project) {
         String base = project.getProjectDirectory().getPath();
         if (Utilities.isWindows()){
             base = base.replace('\\', '/');
@@ -153,7 +153,7 @@ public final class DiscoveryWizardAction extends NodeAction {
 	return base;
     }
     
-    private String findSourceRoot(Project project) {
+    /*package-local*/ static String findSourceRoot(Project project) {
         String base = getProjectDirectoryPath(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp!=null){
@@ -282,7 +282,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         return new DiscoveryWizardIterator(panels,simplepanels);
     }
     
-    private void setupComponent(final String[] steps, final String[] advanced, final int i, final Component c) {
+    /*package-local*/ static void setupComponent(final String[] steps, final String[] advanced, final int i, final Component c) {
         if (c instanceof JComponent) { // assume Swing components
             JComponent jc = (JComponent) c;
             // Sets step number of a component

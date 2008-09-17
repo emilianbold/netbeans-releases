@@ -165,7 +165,7 @@ class NbTestMediator
   def run_mediator
     parse_args
     
-    @suites.each do |suite| 
+    @suites.each do |suite|
       @mediator = Test::Unit::UI::TestRunnerMediator.new(suite)
       attach_listeners
       start_suite_timer
@@ -181,7 +181,7 @@ class NbTestMediator
         puts "%SUITE_FINISHED% time=#{elapsed_suite_time}"
       end
     end
-    
+
   end
   
   def start_suite_timer

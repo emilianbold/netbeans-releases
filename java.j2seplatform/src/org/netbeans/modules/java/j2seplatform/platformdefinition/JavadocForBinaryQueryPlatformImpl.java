@@ -50,17 +50,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -98,14 +100,32 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
             public synchronized URL[] getRoots() {
                 if (this.cachedRoots == null) {
                     List<URL> l = new ArrayList<URL>();
-                    for (URL u : platform.getJavadocFolders()) {
-                        l.add(getIndexFolder(u));
+                    for (URL u : platform.getJavadocFolders()) {                        
+                        if (u != null) {
+                            FileObject root = URLMapper.findFileObject(u);
+                            if (root == null) {
+                                //Non existing
+                                l.add (u);
+                            }
+                            else if (root.isFolder()) {
+                                //Has to be folder
+                                try {
+                                    l.add(getIndexFolder(root));
+                                } catch (FileStateInvalidException e) {
+                                    Exceptions.printStackTrace(e);
+                                }
+                            }
+                            else {
+                                Logger.getLogger(JavadocForBinaryQueryPlatformImpl.class.getName()).warning(
+                                        "Ignoring non folder root: " + FileUtil.getFileDisplayName(root));
+                            }
+                        }
                     }
                     this.cachedRoots = l.toArray(new URL[l.size()]);
                 }
                 return this.cachedRoots;
             }
-
+            
             public synchronized void addChangeListener(ChangeListener l) {
                 assert l != null : "Listener can not be null";      //NOI18N
                 cs.addChangeListener(l);
@@ -150,21 +170,9 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
      * @param URL Javadoc folder/file
      * @return URL either the URL of folder containg the index or the given parameter if the index was not found.
      */
-    private static URL getIndexFolder (URL rootURL) {
-        if (rootURL == null) {
-            return null;
-        }
-        FileObject root = URLMapper.findFileObject(rootURL);
-        if (root == null) {
-            return rootURL;
-        }
+    private static URL getIndexFolder (FileObject root) throws FileStateInvalidException {        
         FileObject result = findIndexFolder (root);
-        try {
-            return result == null ? rootURL : result.getURL();        
-        } catch (FileStateInvalidException e) {
-            ErrorManager.getDefault().notify (e);
-            return rootURL;
-        }
+        return result == null ? root.getURL() : result.getURL();        
     }
     
     //Package private, used by tests

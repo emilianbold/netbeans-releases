@@ -1,7 +1,7 @@
 /*
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -25,7 +25,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -39,13 +39,10 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee;
 
 import java.io.File;
-import java.util.List;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -57,8 +54,8 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -76,33 +73,28 @@ public class FreeFormProjects extends J2eeTestCase {
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(FreeFormProjects.class);
         conf = addServerTests(conf,
-//                "testEarWithSources" see: http://www.netbeans.org/issues/show_bug.cgi?id=143772
+                "testEarWithSources",
                 "testEjbWithSources");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
 
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-    }
-
     @Override
-    public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
+    public void setUp() throws Exception {
+        super.setUp();
+        System.out.println("########  " + getName() + "  #######");
     }
 
     public void testEjbWithSources() {
         String travelProjectPath = new File(getDataDir(), "freeform_projects/travel").getAbsolutePath();
-        createNewEjbProjectFromExistingSources(travelProjectPath, "Travel", travelProjectPath+"-projects",
-                new String[] {"TravelAgentEJB", "CabinEJB"},
-                new String[] {"TravelAgentBean", "CabinBean"});
+        createNewEjbProjectFromExistingSources(travelProjectPath, "Travel", travelProjectPath + "-projects",
+                new String[]{"TravelAgentEJB", "CabinEJB"},
+                new String[]{"TravelAgentBean", "CabinBean"});
     }
 
     public void testEarWithSources() {
         String secureProjectPath = new File(getDataDir(), "freeform_projects/Secure").getAbsolutePath();
-        createNewEarProjectFromExistingSources(secureProjectPath, "Secure", secureProjectPath+"-projects");
+        createNewEarProjectFromExistingSources(secureProjectPath, "Secure", secureProjectPath + "-projects");
     }
 
     private void createNewEjbProjectFromExistingSources(String location, String name, String folder, String beans[], String files[]) {
@@ -124,14 +116,14 @@ public class FreeFormProjects extends J2eeTestCase {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(name);
         // wait classpath scanning finished
         ProjectSupport.waitScanFinished();
-        Node beansNode =  new Node(rootNode, Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjar.project.ui.Bundle", "LBL_node"));
+        Node beansNode = new Node(rootNode, Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjar.project.ui.Bundle", "LBL_node"));
         if (beans != null) {
-            for (int i=0; i<beans.length; i++) {
+            for (int i = 0; i < beans.length; i++) {
                 Node node = new Node(beansNode, beans[i]);
                 node.expand();
                 String children[] = node.getChildren();
                 if (children == null || children.length <= 0) {
-                    fail ("Bean node "+beans[i]+" has no children");
+                    fail("Bean node " + beans[i] + " has no children");
                 }
                 if (beans != null) {
                     new OpenAction().perform(node);
@@ -154,20 +146,27 @@ public class FreeFormProjects extends J2eeTestCase {
         npwo.selectProject("Enterprise Application with Existing Sources");
         npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
-        new JTextFieldOperator(npnlso,1).setText(location); // NOI18N
-        new JTextFieldOperator(npnlso,0).setText(name); // NOI18N
-        new JTextFieldOperator(npnlso,2).setText(folder); // NOI18N
-        new NewProjectWizardOperator().btFinish().pushNoBlock();
+        npnlso.txtLocation().setText(location);
+        npnlso.next();
+        new JComboBoxOperator(npnlso, 1).selectItem(1);
+        npnlso.next();
+        npnlso.btFinish().pushNoBlock();
         new NbDialogOperator("Warning").ok();
+        npnlso.waitClosed();
         //wait project appear in projects view
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(name);
+
+        Node n = new Node(rootNode, "Java EE Modules|Secure-war.war");
+        n.performPopupAction("Open Project");
+        n = new Node(rootNode, "Java EE Modules|Secure-ejb.jar");
+        n.performPopupAction("Open Project");
         // wait classpath scanning finished
         ProjectSupport.waitScanFinished();
-
+        MainWindowOperator mwo = MainWindowOperator.getDefault();
+        mwo.getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
         // Build project
         //rootNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Actions/Build"));
-        //MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
-        //MainWindowOperator.getDefault().waitStatusText(Bundle.getString("org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status", new String[] {name+" (build)"}));
+        rootNode.performPopupAction("Clean and Build");
+        mwo.waitStatusText("Finished");
     }
-
 }

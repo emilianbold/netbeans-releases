@@ -44,6 +44,7 @@ static const tstring WINDOW =           _T("window");
 static const tstring WINDOWS =          _T("windows");
 static const tstring _SOURCE =          _T("source");
 static const tstring SOURCES =          _T("sources");
+static const tstring RELOAD_SOURCES =   _T("reloadsources");
 static const tstring PROPERTY =         _T("property");
 
 typedef XMLTag DbgpResponseTag;
@@ -75,10 +76,6 @@ typedef XMLTag DbgpSourceTag;
 
 class DbgpSourcesTag : public XMLTag {
 public:
-    DbgpSourcesTag() {
-        this->setName(SOURCES);
-    }
-    
     DbgpSourceTag& addSourceTag() {
         return (DbgpSourceTag&)addChildTag(_SOURCE);
     }

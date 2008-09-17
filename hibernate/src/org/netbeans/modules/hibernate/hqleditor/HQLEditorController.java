@@ -60,7 +60,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
@@ -102,8 +101,8 @@ public class HQLEditorController {
             for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
                 localResourcesURLList.add(mappingFO.getURL());
             }
-            final CustomClassLoader customClassLoader = new CustomClassLoader(localResourcesURLList.toArray(new URL[]{}),
-                    this.getClass().getClassLoader());
+            final ClassLoader customClassLoader = env.getProjectClassLoader(
+                    localResourcesURLList.toArray(new URL[]{}));
 
             Thread t = new Thread() {
 
@@ -149,7 +148,7 @@ public class HQLEditorController {
     public SessionFactory getHibernateSessionFactoryForThisContext(FileObject configFileObject,
             List<FileObject> mappingFOList,
             List<Class> annotatedClassList,
-            CustomClassLoader customClassLoader) throws Exception {
+            ClassLoader customClassLoader) throws Exception {
 
         AnnotationConfiguration customConfiguration = null;
         try {
@@ -174,30 +173,28 @@ public class HQLEditorController {
                 logger.fine("Removing mapping element ..  " + node);
                 node.getParent().remove(node);
             }
-            
+
             // Fix for 142899.  The actual exception generated while creating SessionFactory is not 
             // catchable so this pre-check ensures that there's no exception window comes up during 
             // query execution. 
             String sessionName = sessionFactoryElement.attributeValue("name");
-            if(sessionName != null && (!sessionName.trim().equals(""))) {
+            if (sessionName != null && (!sessionName.trim().equals(""))) {
                 java.util.Properties prop = new java.util.Properties();
                 Iterator propertyIterator = sessionFactoryElement.elementIterator("property");
-                while(propertyIterator.hasNext()) {
-                    org.dom4j.Element propNode = (org.dom4j.Element)propertyIterator.next();
-                    if(org.hibernate.cfg.Environment.JNDI_CLASS.equals(propNode.attributeValue("name"))) {
+                while (propertyIterator.hasNext()) {
+                    org.dom4j.Element propNode = (org.dom4j.Element) propertyIterator.next();
+                    if (org.hibernate.cfg.Environment.JNDI_CLASS.equals(propNode.attributeValue("name"))) {
                         prop.setProperty(
                                 javax.naming.Context.INITIAL_CONTEXT_FACTORY,
-                                propNode.getTextTrim()
-                                );
+                                propNode.getTextTrim());
                     }
-                    if(org.hibernate.cfg.Environment.JNDI_URL.equals(propNode.attributeValue("name"))) {
+                    if (org.hibernate.cfg.Environment.JNDI_URL.equals(propNode.attributeValue("name"))) {
                         prop.setProperty(
                                 javax.naming.Context.PROVIDER_URL,
-                                propNode.getTextTrim()
-                                );
+                                propNode.getTextTrim());
                     }
                 }
-                
+
                 try {
                     javax.naming.InitialContext context = new javax.naming.InitialContext(prop);
                     context.bind("dummy", new Object());
@@ -206,9 +203,9 @@ public class HQLEditorController {
                     logger.log(Level.INFO, "Incorrect JNDI properties", namingException);
                     throw namingException;
                 }
-                
+
             }
-            
+
             // End fix for 142899.
 
             //   add mappings
@@ -245,7 +242,7 @@ public class HQLEditorController {
     }
 
     public SessionFactory processAndConstructSessionFactory(String hql, FileObject configFileObject,
-            CustomClassLoader customClassLoader, Project project) throws Exception {
+            ClassLoader customClassLoader, Project project) throws Exception {
         HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
 
         StringTokenizer hqlTokenizer = new StringTokenizer(hql, " \n\r\f\t(),"); //NOI18N
@@ -323,14 +320,14 @@ public class HQLEditorController {
     }
 
     private List<Class> getRelatedPOJOClasses(Class clazz, List<String> annotatedPOJOClassNameList,
-            CustomClassLoader ccl, Project project) {
+            ClassLoader ccl, Project project) {
         List<Class> relatedPOJOClasses = new ArrayList<Class>();
         getRelatedPOJOClassesByType(clazz, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
         return relatedPOJOClasses;
     }
 
     private void getRelatedPOJOClassesByType(Class clazz, List<String> annotatedPOJOClassNameList, List<Class> relatedPOJOClasses,
-            CustomClassLoader ccl, Project project) {
+            ClassLoader ccl, Project project) {
 
         AnnotationAccessType annotationAccessType = findAnnotationAccessType(clazz);
         if (annotationAccessType == AnnotationAccessType.METHOD_TYPE) {
@@ -356,7 +353,7 @@ public class HQLEditorController {
     }
 
     private void getRelatedPOJOClassesByMethodType(Class clazz, List<String> annotatedPOJOClassNameList, List<Class> relatedPOJOClasses,
-            CustomClassLoader ccl, Project project) {
+            ClassLoader ccl, Project project) {
 
         for (java.lang.reflect.Method m : clazz.getMethods()) {
             if (m.isAnnotationPresent(javax.persistence.ManyToOne.class) || m.isAnnotationPresent(javax.persistence.OneToOne.class) ||
@@ -453,7 +450,7 @@ public class HQLEditorController {
     }
 
     private void getRelatedPOJOClassesByFieldType(Class clazz, List<String> annotatedPOJOClassNameList,
-            List<Class> relatedPOJOClasses, CustomClassLoader ccl, Project project) {
+            List<Class> relatedPOJOClasses, ClassLoader ccl, Project project) {
         // Process declared variables.
         for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
             if (field.isAnnotationPresent(javax.persistence.ManyToOne.class) || field.isAnnotationPresent(javax.persistence.OneToOne.class) ||
@@ -616,13 +613,16 @@ public class HQLEditorController {
         return foundMatch;
     }
 
-    private Class processMatchingClass(String className, CustomClassLoader customClassLoader, Project project) {
+    private Class processMatchingClass(String className, ClassLoader customClassLoader, Project project) {
         FileObject clazzFO = HibernateUtil.findJavaFileObjectInProject(className, project);
         FileObject buildFolderFO = HibernateUtil.getBuildFO(project);
+        if(buildFolderFO == null) {
+            return null; // Unable to find the build folder.
+        }
         return checkAndCompile(className, clazzFO, buildFolderFO, customClassLoader, project);
     }
 
-    private Class checkAndCompile(String className, FileObject sourceFO, FileObject buildFolderFO, CustomClassLoader customClassLoader, Project project) {
+    private Class checkAndCompile(String className, FileObject sourceFO, FileObject buildFolderFO, ClassLoader customClassLoader, Project project) {
         Class clazz = null;
 
         try {
@@ -671,6 +671,13 @@ public class HQLEditorController {
                 //TODO diagnostic listener - plugin log
                 Boolean b = javaCompiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
                 logger.info("b = " + b);
+                if (b == false) { // Compilation errors.
+                    FileObject classfileFO = buildFolderFO.getFileObject(className + ".class");
+                    if(classfileFO != null && classfileFO.isValid()) {
+                        classfileFO.delete();
+                    }
+                    return clazz;
+                }
                 try {
                     className = className.replace(File.separator, ".");
                     clazz = customClassLoader.loadClass(className);

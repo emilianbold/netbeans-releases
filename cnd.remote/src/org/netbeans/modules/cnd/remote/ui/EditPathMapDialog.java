@@ -29,8 +29,16 @@ import org.openide.util.NbBundle;
  */
 public class EditPathMapDialog extends JPanel implements ActionListener {
 
+    public static boolean showMe(String hkey, String[] hostsList) {
+        return showMe(hkey, null, hostsList);
+    }
+
     public static boolean showMe(String hkey, String pathToValidate) {
-        EditPathMapDialog dlg = new EditPathMapDialog(hkey, pathToValidate);
+        return showMe(hkey, pathToValidate, RemoteServerList.getInstance().getServerNames());
+    }
+
+    private static boolean showMe(String hkey, String pathToValidate, String[] hostsList) {
+        EditPathMapDialog dlg = new EditPathMapDialog(hkey, pathToValidate, hostsList);
 
         DialogDescriptor dd = new DialogDescriptor(dlg,
                 NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialogTitle"),
@@ -52,12 +60,12 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private final Map<String, DefaultTableModel> cache = new HashMap<String, DefaultTableModel>();
 
     /** Creates new form EditPathMapDialog */
-    public EditPathMapDialog(String defaultHost, String pathToValidate) {
+    protected EditPathMapDialog(String defaultHost, String pathToValidate, String[] hostsList) {
         this.pathToValidate = pathToValidate;
         currentHkey = defaultHost;
         serverListModel = new DefaultComboBoxModel();
 
-        for (String hkey : RemoteServerList.getInstance().getServerNames()) {
+        for (String hkey : hostsList) {
             if (!CompilerSetManager.LOCALHOST.equals(hkey)) {
                 serverListModel.addElement(hkey);
             }

@@ -217,7 +217,7 @@ public final class LibrariesNode extends AbstractNode {
     }
 
     //Static inner classes
-    private static class LibrariesChildren extends Children.Keys implements PropertyChangeListener {
+    private static class LibrariesChildren extends Children.Keys<Key> implements PropertyChangeListener {
 
         
         /**
@@ -248,7 +248,7 @@ public final class LibrariesNode extends AbstractNode {
         private final String platformProperty;
         private final String j2eePlatformProperty;
         private final String j2eeClassPathProperty;
-        private final Set classPathIgnoreRef;
+        private final Set<String> classPathIgnoreRef;
         private final String webModuleElementName;
         private final ClassPathSupport cs;
 
@@ -266,7 +266,7 @@ public final class LibrariesNode extends AbstractNode {
             this.helper = helper;
             this.refHelper = refHelper;
             this.classPathProperty = classPathProperty;
-            this.classPathIgnoreRef = new HashSet(Arrays.asList(classPathIgnoreRef));
+            this.classPathIgnoreRef = new HashSet<String>(Arrays.asList(classPathIgnoreRef));
             this.platformProperty = platformProperty;
             this.j2eePlatformProperty = j2eePlatformProperty;
             this.j2eeClassPathProperty = j2eeClassPathProperty;
@@ -313,30 +313,27 @@ public final class LibrariesNode extends AbstractNode {
                     fsListener = null;
                 }
             }
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(Collections.<Key>emptySet());
         }
 
-        protected Node[] createNodes(Object obj) {
+        protected Node[] createNodes(Key key) {
             Node[] result = null;
-            if (obj instanceof Key) {
-                Key key = (Key) obj;
-                switch (key.getType()) {
-                    case Key.TYPE_PLATFORM:
-                        result = new Node[] {PlatformNode.create(eval, platformProperty, cs)};
-                        break;
-                    case Key.TYPE_J2EE_PLATFORM:
-                        Project p = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
-                        result = new Node[] {J2eePlatformNode.create(p, eval, j2eePlatformProperty, cs)};
-                        break;
-                    case Key.TYPE_PROJECT:
-                        result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
-                            key.getEntryId(), webModuleElementName, cs, refHelper)};
-                        break;
-                    case Key.TYPE_LIBRARY:
-                        result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
-                        break;
-                }
+            switch (key.getType()) {
+                case Key.TYPE_PLATFORM:
+                    result = new Node[] {PlatformNode.create(eval, platformProperty, cs)};
+                    break;
+                case Key.TYPE_J2EE_PLATFORM:
+                    Project p = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
+                    result = new Node[] {J2eePlatformNode.create(p, eval, j2eePlatformProperty, cs)};
+                    break;
+                case Key.TYPE_PROJECT:
+                    result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
+                        key.getEntryId(), webModuleElementName, cs, refHelper)};
+                    break;
+                case Key.TYPE_LIBRARY:
+                    result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
+                        helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
+                    break;
             }
             if (result == null) {
                 assert false : "Unknown key type";  //NOI18N
@@ -345,12 +342,12 @@ public final class LibrariesNode extends AbstractNode {
             return result;
         }
         
-        private List getKeys () {
+        private List<Key> getKeys () {
             EditableProperties projectSharedProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             EditableProperties projectPrivateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
             EditableProperties privateProps = PropertyUtils.getGlobalProperties();
-            List/*<URL>*/ rootsList = new ArrayList ();
-            List result = getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList);
+            List<URL> rootsList = new ArrayList<URL>();
+            List<Key> result = getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList);
             if (platformProperty!=null) {
                 result.add (new Key());
             }
@@ -362,7 +359,7 @@ public final class LibrariesNode extends AbstractNode {
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
             // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
-            ClassPath cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath ((URL[])rootsList.toArray(new URL[rootsList.size()]));
+            ClassPath cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath (rootsList.toArray(new URL[rootsList.size()]));
             cp.addPropertyChangeListener (this);
             cp.getRoots();
             synchronized (this) {
@@ -371,9 +368,9 @@ public final class LibrariesNode extends AbstractNode {
             return result;
         }
 
-        private List getKeys (EditableProperties projectSharedProps, EditableProperties projectPrivateProps,
-                              EditableProperties privateProps, String currentClassPath, List/*<URL>*/ rootsList) {
-            List result = new ArrayList ();
+        private List<Key> getKeys (EditableProperties projectSharedProps, EditableProperties projectPrivateProps,
+                              EditableProperties privateProps, String currentClassPath, List<URL> rootsList) {
+            List<Key> result = new ArrayList<Key>();
             String raw = projectSharedProps.getProperty (currentClassPath);
             if (raw == null) {
                 raw = projectPrivateProps.getProperty(currentClassPath);
@@ -384,9 +381,9 @@ public final class LibrariesNode extends AbstractNode {
             if (raw == null) {
                 return result;
             }
-            List pe = new ArrayList(Arrays.asList(PropertyUtils.tokenizePath( raw )));
+            List<String> pe = new ArrayList<String>(Arrays.asList(PropertyUtils.tokenizePath( raw )));
             while (pe.size()>0){
-                String prop = (String) pe.remove(0);
+                String prop = pe.remove(0);
                 String propName = CommonProjectUtils.getAntPropertyName (prop);
                 if (classPathIgnoreRef.contains(propName)) {
                     continue;
@@ -439,10 +436,12 @@ public final class LibrariesNode extends AbstractNode {
                 else if (prop.startsWith(FILE_REF_PREFIX)) {
                     //File reference
                     String evaluatedRef = eval.getProperty(propName);
-                    File file = helper.getAntProjectHelper().resolveFile(evaluatedRef);
-                    SourceGroup sg = createFileSourceGroup(file,rootsList);
-                    if (sg !=null) {
-                        result.add (new Key(sg,currentClassPath, propName));
+                    if (evaluatedRef != null) {
+                        File file = helper.getAntProjectHelper().resolveFile(evaluatedRef);
+                        SourceGroup sg = createFileSourceGroup(file,rootsList);
+                        if (sg !=null) {
+                            result.add (new Key(sg,currentClassPath, propName));
+                        }
                     }
                 }
                 else if (prop.startsWith(REF_PREFIX)) {
@@ -461,7 +460,7 @@ public final class LibrariesNode extends AbstractNode {
             return result;
         }
 
-        private static SourceGroup createFileSourceGroup (File file, List/*<URL>*/ rootsList) {
+        private static SourceGroup createFileSourceGroup (File file, List<URL> rootsList) {
             Icon icon;
             Icon openedIcon;
             String displayName;

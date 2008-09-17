@@ -93,7 +93,6 @@ import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramE
 import org.netbeans.modules.uml.drawingarea.view.Customizable;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
-import org.openide.util.NbBundle;
 
 /**
  *

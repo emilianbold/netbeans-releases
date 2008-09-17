@@ -92,12 +92,12 @@ public final class SourceNodeFactory implements NodeFactory {
         
         public List<SourceGroupKey> keys() {
             if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
-                return Collections.EMPTY_LIST;
+                return Collections.<SourceGroupKey>emptyList();
             }
             Sources sources = getSources();
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             
-            List result =  new ArrayList(groups.length);
+            List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>(groups.length);
             for( int i = 0; i < groups.length; i++ ) {
                 result.add(new SourceGroupKey(groups[i]));
             }

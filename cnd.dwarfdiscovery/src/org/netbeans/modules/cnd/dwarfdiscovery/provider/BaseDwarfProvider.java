@@ -130,6 +130,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             return list;
         } finally {
             PathCache.dispose();
+            grepBase.clear();
         }
     }
     

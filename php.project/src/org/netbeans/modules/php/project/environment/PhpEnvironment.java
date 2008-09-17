@@ -225,7 +225,10 @@ public abstract class PhpEnvironment {
             if (htDocs.isDirectory()) {
                 return htDocs;
             }
-            return findHtDocsDirectory(subDir, filenameFilter);
+            htDocs = findHtDocsDirectory(subDir, filenameFilter);
+            if (htDocs != null && htDocs.isDirectory()) {
+                return htDocs;
+            }
         }
         return null;
     }
