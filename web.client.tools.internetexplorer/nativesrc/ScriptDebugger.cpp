@@ -654,7 +654,7 @@ STDMETHODIMP ScriptDebugger::onAddChild(IDebugApplicationNode __RPC_FAR *prddpCh
             CComObject<DebugDocument>::CreateInstance(&pComDebugDoc);
             DebugDocument *pDebugDoc = (DebugDocument *)pComDebugDoc;
             pDebugDoc->setDocumentName(docName);
-            pDebugDoc->setDbgpConnection(m_pDbgpConnection);
+            pDebugDoc->setScriptDebugger(this);
             pDebugDoc->setCookie(cookie);
             CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
             cookie = registerForDebugDocTextEvents(spDebugDocText, pComDebugDoc);

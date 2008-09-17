@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,6 +71,9 @@ import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.php.editor.PredefinedSymbols.MagicIndexedFunction;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -85,6 +89,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -93,6 +98,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
@@ -283,6 +290,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private boolean caseSensitive;
     private NameKind nameKind;
 
+    @NonNull
     static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
        Document document = info.getDocument();
         if (document == null) {
@@ -319,7 +327,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         return CompletionContext.SERVER_ENTRY_CONSTANTS;
                     }
                 }
-                return null;
+                return CompletionContext.NONE;
             default:
         }
         CompletionContext clsIfaceDeclContext = getClsIfaceDeclContext(token,
@@ -422,6 +430,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return tokens.toArray(new Token[tokens.size()]);
     }
 
+    @CheckForNull
     private static CompletionContext getClsIfaceDeclContext(Token<PHPTokenId> token, int tokenOffset,TokenSequence tokenSequence) {
         boolean isClass = false;
         boolean isIface = false;
@@ -491,16 +500,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static Token[] getPreceedingLineTokens(Token<PHPTokenId> token,int tokenOffset, TokenSequence tokenSequence){
         int orgOffset = tokenSequence.offset();
         LinkedList<Token> tokens = new LinkedList<Token>();
-
-        if (token.id() != PHPTokenId.WHITESPACE || token.text().subSequence(0, tokenOffset).toString().indexOf("\n") == -1) {//NOI18N
+        if (token.id() != PHPTokenId.WHITESPACE ||
+                token.text().subSequence(0, 
+                Math.min(token.text().length(), tokenOffset)).toString().indexOf("\n") == -1) {//NOI18N
             while (true) {
                 if (!tokenSequence.movePrevious()) {
                     break;
                 }
                 Token cToken = tokenSequence.token();
-                if (cToken.id() == PHPTokenId.WHITESPACE && cToken.text().toString().indexOf("\n") != -1) {//NOI18N
+                if (cToken.id() == PHPTokenId.WHITESPACE &&
+                        cToken.text().toString().indexOf("\n") != -1) {//NOI18N
                     break;
-                }
+                }                
                 tokens.addLast(cToken);
             }
         }
@@ -668,7 +679,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     boolean offerMagicAndInherited = true;
                     if (!(!tokenSequence.moveNext() && !tokenSequence.movePrevious())) {
                         Token<PHPTokenId> token = tokenSequence.token();
-                        PHPTokenId tokenId = token.id();
                         int tokenIdOffset = tokenSequence.token().offset(th);
                         offerMagicAndInherited = !lineContainsAny(token, caretOffset-tokenIdOffset, tokenSequence, Arrays.asList(new PHPTokenId[]{
                                     PHPTokenId.PHP_PRIVATE,
@@ -727,7 +737,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         }
 
                         List<String> magicMethods = new ArrayList<String>();
-                        for (String name : PredefinedSymbols.MAGIC_METHODS) {
+                        for (String name : PredefinedSymbols.MAGIC_METHODS.keySet()) {
                             if (!methodNames.contains(name)) {
                                 methodNames.add(name);
                                 magicMethods.add(name);
@@ -791,14 +801,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteMethodName(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
-        autoCompleteMagicItems(proposals, request, PredefinedSymbols.MAGIC_METHODS);
+        autoCompleteMagicItems(proposals, request, PredefinedSymbols.MAGIC_METHODS.keySet());
     }
 
     private void autoCompleteMagicItems(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request,final Collection<String> proposedTexts) {
         for (String keyword : proposedTexts) {
             if (keyword.startsWith(request.prefix)) {
-                proposals.add(new PHPCompletionItem.MagicMethodItem(keyword, request));
+                IndexedFunction magicFunc = PredefinedSymbols.MAGIC_METHODS.get(keyword);
+                if (magicFunc != null) {
+                    proposals.add(new PHPCompletionItem.MagicMethodItem(magicFunc, request));
+                }
             }
         }
     //autoCompleteKeywords(proposals, request, METHOD_NAME_PROPOSALS);
@@ -1420,6 +1433,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             globalContext = false;
             // add parameters to the result
 
+            Map<String, String> typeByParamName = new TreeMap<String, String>();
+            Comment comment = Utils.getCommentForNode(context.getProgram(), functionDeclaration);
+
+            if (comment instanceof PHPDocBlock) {
+                PHPDocBlock phpDoc = (PHPDocBlock) comment;
+                
+                for (PHPDocTag tag : phpDoc.getTags()){
+                    if (tag.getKind() == PHPDocTag.Type.PARAM){
+                        PHPDocParamTagData paramData = new PHPDocParamTagData(tag.getValue());
+                        typeByParamName.put(paramData.name, paramData.type);
+                    }
+                }
+            }
+            
             for (FormalParameter param : functionDeclaration.getFormalParameters()) {
                 Expression parameterName = param.getParameterName();
 
@@ -1432,6 +1459,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     String varName = CodeUtils.extractVariableName((Variable) parameterName);
                     if (varName != null) {
                         String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
+
+                        if (type == null){
+                            type = typeByParamName.get(varName);
+                        }
 
                         if (isPrefix(varName, namePrefix)) {
                             IndexedConstant ic = new IndexedConstant(varName, null,
@@ -1456,7 +1487,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     public String document(CompilationInfo info, ElementHandle element) {
-        return DocRenderer.document(info, element);
+        return (element instanceof MagicIndexedFunction) ? null : 
+            DocRenderer.document(info, element);
     }
 
     public ElementHandle resolveLink(String link, ElementHandle originalHandle) {

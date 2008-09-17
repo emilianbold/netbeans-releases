@@ -47,7 +47,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Logger;
-import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
+import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.projectimport.j2seimport.AbstractProject;
 import org.netbeans.modules.projectimport.j2seimport.LoggerFactory;
 import org.netbeans.spi.java.platform.PlatformInstall;
@@ -97,11 +97,8 @@ public final class JdkSupport {
                         for (File toTest = arc; toTest != null; toTest = toTest.getParentFile()) {
                             FileObject foToTest = FileUtil.toFileObject(toTest);
                             if (foToTest != null && pi.accept(foToTest)) {
-                                NewJ2SEPlatform platform = NewJ2SEPlatform.create(foToTest);
-                                platform.run();
-                                if (platform.isValid()) {
-                                    return toTest;
-                                }
+                                J2SEPlatformCreator.createJ2SEPlatform(foToTest);
+                                return toTest;
                             } else {
                                 if (foToTest == null) {
                                     logger.finest("for archiv: " + arc + " toTest: " + toTest);//NOI18

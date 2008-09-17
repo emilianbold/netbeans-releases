@@ -154,6 +154,7 @@
     var debugState = {};
     var stepping = false;
     var debugging = false;
+    var suspendNextLine = false;
 
     var port;
     var sessionId;
@@ -366,6 +367,9 @@
                     if (features.suspendOnFirstLine) {
                         features.suspendOnFirstLine = false;
                         suspend("firstline");
+                    } else if (suspendNextLine == true) {
+                        suspendNextLine = false;
+                        suspend("suspend");
                     }
                 }
             },
@@ -1120,6 +1124,11 @@
 
     function suspend(reason)
     {
+        if (!currentFirebugContext || currentFirebugContext == null) {
+            suspendNextLine = true;
+            return;
+        }
+        
         if ( reason )
             debugState.suspendReason = reason;
         stepping = true;

@@ -164,7 +164,7 @@ public class GoToSupport {
                                     }
                                     
                                     return;
-                                } else if (location != DeclarationLocation.NONE) {
+                                } else if (location != DeclarationLocation.NONE && location != null) {
                                     URL url = location.getUrl();
                                     String invalid = location.getInvalidMessage();
                                     if (url != null) {
