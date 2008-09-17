@@ -134,7 +134,7 @@ public class CommandUtils {
 
     public static boolean isPhpFile(FileObject file) {
         assert file != null;
-        return FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE).equals(PhpSourcePath.MIME_TYPE);
+        return FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE) != null;
     }
 
     private static FileObject[] filter(Collection<? extends FileObject> files, FileObject dir) {
