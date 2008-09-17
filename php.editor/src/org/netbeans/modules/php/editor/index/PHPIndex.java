@@ -413,7 +413,7 @@ public class PHPIndex {
     /** returns local constnats of a class. */
     public Collection<IndexedConstant> getClassConstants(PHPParseResult context, String typeName, String name, NameKind kind) {
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
-        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CLASS_CONST, name, kind);
+        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CLASS_CONST, name, kind, ALL_SCOPE);
 
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
@@ -434,7 +434,7 @@ public class PHPIndex {
     /** returns methods of a class. */
     public Collection<IndexedFunction> getMethods(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
-        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_METHOD, name, kind);
+        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_METHOD, name, kind, ALL_SCOPE);
 
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
@@ -467,7 +467,7 @@ public class PHPIndex {
     /** returns fields of a class. */
     public Collection<IndexedConstant> getProperties(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
-        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_FIELD, name, kind);
+        Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_FIELD, name, kind, ALL_SCOPE);
 
         for (String signature : signaturesMap.keySet()) {
             Signature sig = Signature.get(signature);
@@ -496,11 +496,11 @@ public class PHPIndex {
         return properties;
     }
 
-    private Map<String, String> getTypeSpecificSignatures(String typeName, String fieldName, String name, NameKind kind) {
+    private Map<String, String> getTypeSpecificSignatures(String typeName, String fieldName, String name, NameKind kind, Set<SearchScope> scope) {
         final Set<SearchResult> searchResult = new HashSet<SearchResult>();
         Map<String, String> signatures = new HashMap<String, String>();
         for (String indexField : new String[]{PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_IFACE}) {
-            search(indexField, typeName.toLowerCase(), NameKind.PREFIX, searchResult, ALL_SCOPE, TERMS_BASE);
+            search(indexField, typeName.toLowerCase(), NameKind.PREFIX, searchResult, scope, TERMS_BASE);
 
             for (SearchResult typeMap : searchResult) {
                 String[] typeSignatures = typeMap.getValues(indexField);
@@ -559,11 +559,14 @@ public class PHPIndex {
         return null;
     }
 
-    /** returns GLOBAL functions. */
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
+        return getFunctions(context, name, kind, ALL_SCOPE);
+    }
+    /** returns GLOBAL functions. */
+    public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
-        search(PHPIndexer.FIELD_BASE, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
+        search(PHPIndexer.FIELD_BASE, name.toLowerCase(), NameKind.PREFIX, result, scope, TERMS_BASE);
         findFunctions(result, kind, name, functions);
         return functions;
     }
@@ -577,11 +580,14 @@ public class PHPIndex {
     }
 
 
-    /** returns GLOBAL constants. */
     public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind) {
+        return getConstants(context, name, kind, ALL_SCOPE);
+    }
+    /** returns GLOBAL constants. */
+    public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        search(PHPIndexer.FIELD_CONST, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_CONST);
+        search(PHPIndexer.FIELD_CONST, name.toLowerCase(), NameKind.PREFIX, result, scope, TERMS_CONST);
         findConstants(result, kind, name, constants);
         return constants;
     }
@@ -595,10 +601,15 @@ public class PHPIndex {
         }
         return result;
     }
+
     public Set<String> typeNamesForIdentifier(String identifierName, ElementKind kind,NameKind nameKind) {
+        return typeNamesForIdentifier(identifierName, kind, nameKind, ALL_SCOPE);
+    }
+
+    public Set<String> typeNamesForIdentifier(String identifierName, ElementKind kind,NameKind nameKind, Set<SearchScope> scope) {
         final Set<String> result = new HashSet<String>();
         final Set<SearchResult> idSearchResult = new HashSet<SearchResult>();
-        search(PHPIndexer.FIELD_IDENTIFIER_DECLARATION, identifierName.toLowerCase(), NameKind.PREFIX, idSearchResult, ALL_SCOPE, TERMS_BASE);
+        search(PHPIndexer.FIELD_IDENTIFIER_DECLARATION, identifierName.toLowerCase(), NameKind.PREFIX, idSearchResult, scope, TERMS_BASE);
         for (SearchResult searchResult : idSearchResult) {
             if (searchResult.getPersistentUrl() != null) {
                 String[] signatures = searchResult.getValues(PHPIndexer.FIELD_IDENTIFIER_DECLARATION);
@@ -641,10 +652,15 @@ public class PHPIndex {
         return result;
     }
 
+
     public Collection<IndexedClass> getClasses(PHPParseResult context, String name, NameKind kind) {
+        return getClasses(context, name, kind, ALL_SCOPE);
+    }
+
+    public Collection<IndexedClass> getClasses(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
-        search(PHPIndexer.FIELD_CLASS, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_CLASS);
+        search(PHPIndexer.FIELD_CLASS, name.toLowerCase(), NameKind.PREFIX, result, scope, TERMS_CLASS);
         findClasses(result, kind, name, classes);
 
         return classes;
