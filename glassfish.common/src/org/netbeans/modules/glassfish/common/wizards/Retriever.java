@@ -53,16 +53,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -321,82 +316,9 @@ public class Retriever implements Runnable {
                 try { jarStream.close(); } catch(IOException ex) { }
             }
         }
-        
-        if(!shutdown) {
-            // enable execute permission for asadmin on UNIX
-            ensureExecutable(targetFolder);
-        }
-        
+
+        // execute permissions on script files will be corrected in instantiate()
         return shutdown;
-    }
-    
-    // Borrowed from RubyPlatform...
-    private void ensureExecutable(File installDir) {
-        // No excute permissions on Windows. On Unix and Mac, try.
-        if(Utilities.isWindows()) {
-            return;
-        }
-
-        List<File> binList = new ArrayList<File>();
-        for(String binPath: new String[] { "bin", "glassfish/bin", "javadb/bin" }) { // NOI18N
-            File dir = new File(installDir, binPath);
-            if(dir.exists()) {
-                binList.add(dir);
-            }
-        }
-        
-        if(binList.size() == 0) {
-            return;
-        }
-
-        // Ensure that the binaries are installed as expected
-        // The following logic is from CLIHandler in core/bootstrap:
-        File chmod = new File("/bin/chmod"); // NOI18N
-
-        if(!chmod.isFile()) {
-            // Mac & Linux use /bin, Solaris /usr/bin, others hopefully one of those
-            chmod = new File("/usr/bin/chmod"); // NOI18N
-        }
-
-        if(chmod.isFile()) {
-            try {
-                for(File binDir: binList) {
-                    List<String> argv = new ArrayList<String>();
-                    argv.add(chmod.getAbsolutePath());
-                    argv.add("u+rx"); // NOI18N
-
-                    String[] files = binDir.list();
-
-                    for(String file : files) {
-                        if(file.indexOf('.') == -1) {
-                            argv.add(file);
-                        }
-                    }
-
-                    ProcessBuilder pb = new ProcessBuilder(argv);
-                    pb.directory(binDir);
-                    Process process = pb.start();
-                    int chmoded = process.waitFor();
-
-                    if(chmoded != 0) {
-                        throw new IOException(NbBundle.getMessage(
-                                Retriever.class, "ERR_ChmodFailed", argv, chmoded)); // NOI18N
-                    }
-                }
-            } catch (Exception ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
-            }
-        } else {
-            String message = NbBundle.getMessage(Retriever.class, "ERR_ChmodNotFound"); // NOI18N
-            StringBuilder builder = new StringBuilder(message.length() + 50 * binList.size());
-            builder.append(message);
-            for(File binDir: binList) {
-                builder.append('\n'); // NOI18N
-                builder.append(binDir);
-            }
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    builder.toString(), NotifyDescriptor.WARNING_MESSAGE));
-        }
     }
     
     private static final String TOP_LEVEL_PREFIX = "glassfishv3"; // NOI18N
