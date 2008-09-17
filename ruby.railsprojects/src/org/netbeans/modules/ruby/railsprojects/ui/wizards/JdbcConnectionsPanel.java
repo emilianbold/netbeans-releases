@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -58,6 +59,8 @@ import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcConnection;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * A panel for JDBC connections.
@@ -236,43 +239,16 @@ private void createProductionDbActionPerformed(java.awt.event.ActionEvent evt) {
 
     private DatabaseConnection createMySqlDb() {
         DatabaseServer mysql = DatabaseServerManager.getDatabaseServer();
-        if (!mysql.isConnected()) {
-            tryToConnect(mysql);
-        }
         DatabaseConnection result = null;
-        if (mysql.isConnected()) {
-            try {
-                CreateDatabasePanel panel = new CreateDatabasePanel(mysql);
-                result = panel.showCreateDatabaseDialog();
-                updateConnectionCombos();
-            } catch (DatabaseException dbe) {
-                Utils.displayErrorMessage(dbe.getMessage());
-            }
+        try {
+            CreateDatabasePanel panel = new CreateDatabasePanel(mysql);
+            result = panel.showCreateDatabaseDialog();
+            updateConnectionCombos();
+        } catch (DatabaseException dbe) {
+            Utils.displayErrorMessage(dbe.getMessage());
         }
         return result;
-    }
-
-    private void tryToConnect(DatabaseServer mysql) {
-        doConnect(mysql, true);
-        if (!mysql.isConnected()) {
-            if (new PropertiesDialog(mysql).displayDialog()) {
-                doConnect(mysql, false);
-            }
-        }
-    }
-    
-    private void doConnect(DatabaseServer mysql, boolean quiet) {
-        try {
-            mysql.reconnect();
-        } catch (DatabaseException ex) {
-            if (quiet) {
-                LOGGER.log(Level.FINE, "Could not connect to the MySQL server instance", ex);
-            } else {
-                String message = NbBundle.getMessage(JdbcConnectionsPanel.class, "MSG_UnableToConnect");
-                Utils.displayError(message, ex);
-            }
-        }
-    }
+    }    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton createDevelopmentDb;
