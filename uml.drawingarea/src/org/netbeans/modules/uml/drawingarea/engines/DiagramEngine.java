@@ -305,8 +305,8 @@ abstract public class DiagramEngine {
                     ImageUtil.instance().getIcon("selection-arrow.png"),
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_SelectToolAction"),
                     Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR),
-                    KeyStroke.getKeyStroke("ctrl shift S"),
-                    null));
+                    KeyStroke.getKeyStroke("ctrl alt shift S"),
+                    KeyStroke.getKeyStroke("meta ctrl shift S")));
         selectToolButton.setName(DesignerTools.SELECT);  // need a name to later identify the button
         
         JToggleButton handToolButton = new JToggleButton(
