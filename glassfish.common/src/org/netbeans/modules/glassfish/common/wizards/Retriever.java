@@ -59,6 +59,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -352,7 +354,7 @@ public class Retriever implements Runnable {
         File chmod = new File("/bin/chmod"); // NOI18N
 
         if(!chmod.isFile()) {
-            // Linux uses /bin, Solaris /usr/bin, others hopefully one of those
+            // Mac & Linux use /bin, Solaris /usr/bin, others hopefully one of those
             chmod = new File("/usr/bin/chmod"); // NOI18N
         }
 
@@ -382,8 +384,18 @@ public class Retriever implements Runnable {
                     }
                 }
             } catch (Exception ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
             }
+        } else {
+            String message = NbBundle.getMessage(Retriever.class, "ERR_ChmodNotFound"); // NOI18N
+            StringBuilder builder = new StringBuilder(message.length() + 50 * binList.size());
+            builder.append(message);
+            for(File binDir: binList) {
+                builder.append('\n'); // NOI18N
+                builder.append(binDir);
+            }
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    builder.toString(), NotifyDescriptor.WARNING_MESSAGE));
         }
     }
     
