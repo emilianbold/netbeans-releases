@@ -54,6 +54,7 @@ import java.nio.CharBuffer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
@@ -349,7 +350,9 @@ public class SourceFileObject/* implements DocumentProvider*/ {
         Language language = LanguageRegistry.getInstance().getLanguageByMimeType(this.file.getMIMEType());
         if (language != null && language.getGsfLanguage() != null) {
             org.netbeans.api.lexer.Language lexerLanguage = (org.netbeans.api.lexer.Language)language.getGsfLanguage().getLexerLanguage();
-            tokens = TokenHierarchy.create(charBuffer, true, lexerLanguage, null, null); //TODO: .createSnapshot();
+            InputAttributes attributes = new InputAttributes();
+            attributes.setValue(lexerLanguage, FileObject.class, file, false);
+            tokens = TokenHierarchy.create(charBuffer, true, lexerLanguage, null, attributes); //TODO: .createSnapshot();
         }
         return charBuffer;
     }
