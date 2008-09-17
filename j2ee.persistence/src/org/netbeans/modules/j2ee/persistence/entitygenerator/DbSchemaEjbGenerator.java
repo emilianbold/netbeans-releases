@@ -43,10 +43,12 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.dbschema.ColumnElement;
 import org.netbeans.modules.dbschema.ColumnPairElement;
 import org.netbeans.modules.dbschema.DBIdentifier;
@@ -68,6 +70,7 @@ public class DbSchemaEjbGenerator {
     private Map beans = new HashMap();
     private List relations = new ArrayList();
     private SchemaElement schemaElement;
+    private Set<String> tablesReferecedByOtherTables;
     
     /**
      * Creates a generator for a set of beans.
@@ -79,7 +82,26 @@ public class DbSchemaEjbGenerator {
         this.schemaElement = schemaElement;
         this.genTables = genTables;
     
+        tablesReferecedByOtherTables = getTablesReferecedByOtherTables(schemaElement);
         buildCMPSet();
+    }
+    
+    /**
+     * 
+     * @param schemaElement The schema
+     * @return A set of tables that are referenced by at least one another table
+     */
+    public static Set<String> getTablesReferecedByOtherTables(SchemaElement schemaElement) {
+        Set<String> tableNames = new HashSet<String>();
+        TableElement[] allTables = schemaElement.getTables();
+        for(int i = 0; i < allTables.length; i ++ ) {
+            ForeignKeyElement[] fkElements = allTables[i].getForeignKeys();
+            for(int fkix = 0; fkix < fkElements.length; fkix ++ ) {
+                tableNames.add(fkElements[fkix].getReferencedTable().getName().getName());
+            }
+        }
+        
+        return tableNames;
     }
     
     /**
@@ -87,7 +109,7 @@ public class DbSchemaEjbGenerator {
      * a join table regardless of whether the tables it joins are
      * included in the tables to generate.
      */
-    public static boolean isJoinTable(TableElement e) {
+    public static boolean isJoinTable(TableElement e, Set<String> tablesReferecedByOtherTables) {
         ForeignKeyElement[] foreignKeys = e.getForeignKeys();
         if (foreignKeys == null ||
                 foreignKeys.length != 2) {
@@ -111,6 +133,11 @@ public class DbSchemaEjbGenerator {
         
         // issue 90962: a table whose foreign keys are unique is not a join table
         if (isFkUnique(foreignKeys[0]) || isFkUnique(foreignKeys[1])) {
+            return false;
+        }
+        
+        // issue 111397: a table which is referenced by another table is not a join table.
+        if(tablesReferecedByOtherTables.contains(e.getName().getName())) {
             return false;
         }
         
@@ -169,7 +196,7 @@ public class DbSchemaEjbGenerator {
         for (String tableName : genTables.getTableNames()) {
             TableElement tableElement =
                     schemaElement.getTable(DBIdentifier.create(tableName));
-            if (isJoinTable(tableElement)) {
+            if (isJoinTable(tableElement, tablesReferecedByOtherTables)) {
                 joinTables.add(tableElement);
             } else {
                 addBean(tableName);
