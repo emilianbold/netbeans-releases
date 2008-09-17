@@ -61,14 +61,13 @@ public class InstallationManager {
             Logger.getLogger(InstallationManager.class.getName());
     
     private static ArrayList<Installation> INSTALLATIONS = null;
-    private static volatile boolean isInstalled = false;
     
     private static final String INSTALLATION_PROVIDER_PATH = 
             "Databases/MySQL/Installations"; // NOI18N
 
 
-    public static List<Installation> getInstallations() {
-        if (!isInstalled) {
+    public static synchronized List<Installation> getInstallations(Collection loadedInstallations) {
+        if ( INSTALLATIONS == null ) {
             // First see if we're bundled with MySQL.  If so, just return
             // the bundled installation
             Installation bundled = BundledInstallation.getDefault();
@@ -77,10 +76,6 @@ public class InstallationManager {
                 bundledList.add(bundled);
                 return bundledList;
             }
-
-            Collection loadedInstallations = 
-                    Lookups.forPath(INSTALLATION_PROVIDER_PATH)
-                        .lookupAll(Installation.class);
 
             // Now order them so that the stack-based installations come first.
             // See the javadoc for Installation.isStackInstall() for the reasoning 
@@ -97,12 +92,10 @@ public class InstallationManager {
                     stdInstalls.add(installation);
                 }
             }
-            if (!isInstalled) {
-                isInstalled = true;
-                INSTALLATIONS = new ArrayList<Installation>();
-                INSTALLATIONS.addAll(stackInstalls);
-                INSTALLATIONS.addAll(stdInstalls);
-            }
+
+            INSTALLATIONS = new ArrayList<Installation>();
+            INSTALLATIONS.addAll(stackInstalls);
+            INSTALLATIONS.addAll(stdInstalls);
         }
         
         return INSTALLATIONS;
@@ -117,7 +110,8 @@ public class InstallationManager {
      */
     public static Installation detectInstallation() {
         List<Installation> installationCopy = new CopyOnWriteArrayList<Installation>();
-        installationCopy.addAll(InstallationManager.getInstallations());
+        Collection loadedInstallations = Lookups.forPath(INSTALLATION_PROVIDER_PATH).lookupAll(Installation.class);
+        installationCopy.addAll(InstallationManager.getInstallations(loadedInstallations));
         
         for ( Iterator it = installationCopy.iterator() ; it.hasNext() ; ) {
             Installation installation = (Installation)it.next();

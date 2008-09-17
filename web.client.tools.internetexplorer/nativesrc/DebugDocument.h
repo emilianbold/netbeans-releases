@@ -42,7 +42,7 @@
 #include "stdafx.h"
 #include "resource.h"       // main symbols
 #include "Utils.h"
-#include "DbgpConnection.h"
+#include "ScriptDebugger.h"
 
 class DbgpConnection;
 
@@ -103,8 +103,8 @@ public:
         return this->eventCookie;
     }
 
-    void setDbgpConnection(DbgpConnection *pDbgpConnection) {
-        this->pDbgpConnection = pDbgpConnection;
+    void setScriptDebugger(ScriptDebugger *pScriptDebugger) {
+        this->pScriptDebugger = pScriptDebugger;
     }
 
     void setDocumentName(tstring name) {
@@ -114,6 +114,6 @@ public:
 private:
     DWORD cookie, eventCookie;
     tstring name;
-    DbgpConnection *pDbgpConnection;
+    ScriptDebugger *pScriptDebugger;
     HRESULT handleSourceChange();
 };
