@@ -744,7 +744,6 @@ public class CommitAction extends ContextAction {
             }
         }
         if(dirsToAdd.size() > 0) {
-            // XXX JAVAHL client.addFile(dirsToAdd.toArray(new File[dirsToAdd.size()]), false);
             for (File file : dirsToAdd) {
                 client.addFile(file);
             }
@@ -754,7 +753,6 @@ public class CommitAction extends ContextAction {
         }
 
         if(addFiles.size() > 0) {
-            // XXX JAVAHL client.addFile(addFiles.toArray(new File[addFiles.size()]), false);
             for (File file : addFiles) {
                 client.addFile(file);
             }
