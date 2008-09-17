@@ -185,6 +185,10 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
         performTrivialTest("elif_else_simple.cc", "elif_else_simple.h", 5, true);
     }
 
+    public void testElifElseModel() throws Exception {
+        performTest(new String[] {"elif_else_simple.cc", "elif_else_simple.h"}, "elif_else_simple_model");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILURES
     

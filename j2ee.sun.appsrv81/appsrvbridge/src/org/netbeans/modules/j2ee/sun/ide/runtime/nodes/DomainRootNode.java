@@ -100,13 +100,14 @@ public class DomainRootNode extends AppserverMgmtContainerNode  implements  Prop
         if (sdm.isSuspended()) {
             return;
         }
-        if (sdm.grabInnerDM(true)) {
+        Thread holder = Thread.currentThread();
+        if (sdm.grabInnerDM(holder, true)) {
             try {
                 AppserverMgmtController a= ControllerUtil.getAppserverMgmtControllerFromDeployMgr( deployMgr);
                 setAppserverMgmtController(a);
                 super.refresh();
             } finally {
-                sdm.releaseInnerDM();
+                sdm.releaseInnerDM(holder);
             }
         } else {
             javax.swing.SwingUtilities.invokeLater(new Runnable() {

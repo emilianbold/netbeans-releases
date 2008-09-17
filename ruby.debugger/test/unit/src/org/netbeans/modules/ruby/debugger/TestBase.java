@@ -86,6 +86,9 @@ public abstract class TestBase extends RubyTestBase {
     protected static boolean watchStepping = false;
     private RubyPlatform platform;
     private String jvmArgs;
+    
+    private String origGemHome;
+    private String origGemPath;
 
     protected TestBase(final String name, final boolean verbose) {
         super(name);
@@ -116,10 +119,19 @@ public abstract class TestBase extends RubyTestBase {
         assertNull("fast debugger installed: " + problems, problems);
 
         doCleanUp();
+        assertTrue("no breakpoints set", RubyBreakpointManager.getBreakpoints().length == 0);
+
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        origGemHome = jruby.getInfo().getGemHome();
+        origGemPath = jruby.getInfo().getGemPath();
     }
 
     @Override
     protected void tearDown() throws Exception {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        jruby.getInfo().setGemHome(origGemHome);
+        jruby.getInfo().setGemPath(origGemPath);
+
         super.tearDown();
         if (verbose) {
             Util.LOGGER.removeHandler(testHandler);

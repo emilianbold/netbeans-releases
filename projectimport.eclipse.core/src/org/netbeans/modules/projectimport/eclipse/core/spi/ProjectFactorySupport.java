@@ -58,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -75,6 +76,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Misc helper methods for implementors of ProjectTypeFactory.
@@ -657,4 +659,35 @@ public class ProjectFactorySupport {
         }
     }
 
+    /**
+     * Checks whether any of Eclipse source roots is already owned by a project.
+     * If it is then abort import and tell user to open that project instead.
+     * Internal source roots beneath the project directory do not pose this problem, as
+     * {@link FileOwnerQuery} should consider the new project to be the default owner of anything
+     * underneath it.
+     * @param model a model of the project being considered for import
+     * @param nbProjectDir the proposed directory to use as the NetBeans {@linkplain Project#getProjectDirectory project directory}
+     * @param importProblems problems to append to in case this returns true
+     * @return true if the import would be blocked by ownership issues; false normally
+     */
+    public static boolean areSourceRootsOwned(ProjectImportModel model, File nbProjectDir, List<String> importProblems) {
+        for (File sourceRootFile : model.getEclipseSourceRootsAsFileArray()) {
+            if (sourceRootFile.getAbsolutePath().startsWith(nbProjectDir.getAbsolutePath())) {
+                continue;
+            }
+            FileObject fo = FileUtil.toFileObject(sourceRootFile);
+            Project p = FileOwnerQuery.getOwner(fo);
+            if (p != null) {
+                for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                    if (fo.equals(sg.getRootFolder())) {
+                        importProblems.add(NbBundle.getMessage(EclipseProject.class, "MSG_SourceRootOwned", // NOI18N
+                                model.getProjectName(), sourceRootFile.getPath(),
+                                FileUtil.getFileDisplayName(p.getProjectDirectory())));
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

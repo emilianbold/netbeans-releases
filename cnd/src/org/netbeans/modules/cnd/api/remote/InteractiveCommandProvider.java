@@ -38,22 +38,18 @@
  */
 package org.netbeans.modules.cnd.api.remote;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * An interface to allow cnd modules to run a RemoteCommandSupport from cnd.remote.
  * 
  * @author gordonp
  */
-public abstract class InteractiveCommandProvider {
+public interface InteractiveCommandProvider {
 
     /**
      * Run a remote commane via cnd.remote's RemoteInteractiveCommandSupport.
@@ -63,100 +59,18 @@ public abstract class InteractiveCommandProvider {
      * @param env The (possibly null) environment to send to the remote command
      * @return true if the command started, otherwise false
      */
-    public abstract boolean run(String hkey, String cmd, Map<String, String> env);
+    public boolean run(String hkey, String cmd, Map<String, String> env);
 
-    public abstract boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env);
+    public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env);
 
-    public abstract InputStream getInputStream() throws IOException;
+    public InputStream getInputStream() throws IOException;
 
-    public abstract OutputStream getOutputStream() throws IOException;
+    public OutputStream getOutputStream() throws IOException;
 
-    public abstract void disconnect();
+    public void disconnect();
 
-    public abstract int waitFor();
+    public int waitFor();
 
-    public abstract int getExitStatus();
+    public int getExitStatus();
 
-    protected abstract void init(String hkey);
-
-    public static InteractiveCommandProvider getDefault(String hkey) {
-        if (RemoteUtils.isLocalhost(hkey)) {
-            return localInstance;
-        } else {
-            if (remoteInstance == null) {
-                remoteInstance = Lookup.getDefault().lookup(InteractiveCommandProvider.class);
-                remoteInstance.init(hkey);
-            }
-            return remoteInstance;
-        }
-    }
-    private static final InteractiveCommandProvider localInstance = new LocalInteractiveCommandProvider();
-    private static InteractiveCommandProvider remoteInstance = null;
-
-    private static final class LocalInteractiveCommandProvider extends InteractiveCommandProvider {
-
-        private Process process;
-        int exitStatus = -1;
-
-        @Override
-        public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env) {
-            ProcessBuilder pb = new ProcessBuilder(commandAndArgs);
-            Map<String, String> pbenv = pb.environment();
-            for (String key : env.keySet()) {
-                pbenv.put(key, env.get(key));
-            }
-            pb.directory(new File(workingDirectory));
-            pb.redirectErrorStream(true);
-            try {
-                process = pb.start();
-            } catch (IOException ex) {
-                //TODO: IOException 
-                Exceptions.printStackTrace(ex);
-                return false;
-            }
-            return false;
-        }
-
-        @Override
-        public InputStream getInputStream() throws IOException {
-            return process == null ? null : process.getInputStream();
-        }
-
-        @Override
-        public OutputStream getOutputStream() throws IOException {
-            return process == null ? null : process.getOutputStream();
-        }
-
-        @Override
-        public void disconnect() {
-            // do nothing
-        }
-
-        @Override
-        public int waitFor() {
-            if (process != null) {
-                try {
-                    exitStatus = process.waitFor();
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            return exitStatus;
-        }
-
-        @Override
-        public int getExitStatus() {
-            return exitStatus;
-        }
-
-        @Override
-        protected void init(String hkey) {
-            assert RemoteUtils.isLocalhost(hkey);
-        }
-
-        @Override
-        public boolean run(String hkey, String cmd, Map<String, String> env) {
-            throw new UnsupportedOperationException("deprecated."); // NOI18N
-        }
-    }
 }

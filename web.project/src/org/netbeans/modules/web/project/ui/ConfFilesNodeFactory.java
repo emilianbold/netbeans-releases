@@ -167,9 +167,13 @@ public final class ConfFilesNodeFactory implements NodeFactory {
     }
 
     private static Lookup createLookup(Project project) {
-        DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
-        // XXX Remove root folder after FindAction rewrite
-        return Lookups.fixed(new Object[]{project, rootFolder});
+        if (project.getProjectDirectory().isValid()) {
+            DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
+            // XXX Remove root folder after FindAction rewrite
+            return Lookups.fixed(new Object[]{project, rootFolder});
+        } else {
+            return Lookups.fixed(new Object[0]);
+        }
     }
 
     private static final class ConfFilesNode extends org.openide.nodes.AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
