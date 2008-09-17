@@ -315,8 +315,8 @@ abstract public class DiagramEngine {
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_HandToolAction"),
                     Utilities.createCustomCursor(scene.getView(), 
                     Utilities.icon2Image(ImageUtil.instance().getIcon("pan-open-hand.gif")), "PanOpenedHand"),
-                    KeyStroke.getKeyStroke("ctrl alt shift P"),
-                    KeyStroke.getKeyStroke("meta ctrl shift P")));
+                    KeyStroke.getKeyStroke("ctrl alt shift N"),
+                    KeyStroke.getKeyStroke("meta ctrl shift N")));
         
         JToggleButton marqueeZoomButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
