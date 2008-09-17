@@ -486,21 +486,23 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             return false;
         }
         
-        if (!customizer) {
-            Properties properties = controller.getProperties();
-            String j2eeLevel = (String)properties.getProperty("j2eeLevel"); //NOI18N
-            String currentServerInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
-            if (j2eeLevel != null && currentServerInstanceID != null) {
-                boolean currentWebModule25Version;
-                if (j2eeLevel.equals("1.5")) //NOI81N
-                    currentWebModule25Version = true;
-                else
-                    currentWebModule25Version = false;
-                if (!currentServerInstanceID.equals(serverInstanceID) || currentWebModule25Version != webModule25Version) {
-                    webModule25Version = currentWebModule25Version;
-                    serverInstanceID = currentServerInstanceID;
-                    initLibSettings(webModule25Version, serverInstanceID);
-                }
+        if (customizer) {
+            return true;
+        }
+
+        Properties properties = controller.getProperties();
+        String j2eeLevel = (String)properties.getProperty("j2eeLevel"); //NOI18N
+        String currentServerInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
+        if (j2eeLevel != null && currentServerInstanceID != null) {
+            boolean currentWebModule25Version;
+            if (j2eeLevel.equals("1.5")) //NOI81N
+                currentWebModule25Version = true;
+            else
+                currentWebModule25Version = false;
+            if (!currentServerInstanceID.equals(serverInstanceID) || currentWebModule25Version != webModule25Version) {
+                webModule25Version = currentWebModule25Version;
+                serverInstanceID = currentServerInstanceID;
+                initLibSettings(webModule25Version, serverInstanceID);
             }
         }
         
