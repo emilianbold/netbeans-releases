@@ -1309,7 +1309,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                     final URL rootURL = it.previous();
                                     it.remove();
-                                    updateFolder (rootURL,rootURL, true, mw.getForceClean(), handle);
+                                    updateFolder (rootURL,rootURL, true, mw.getForceClean());
                                 }                                
                             } catch (final TopologicalSortException tse) {
                                     final IllegalStateException ise = new IllegalStateException ();                                
@@ -1494,10 +1494,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 final URL file = sw.getFile();
                                 final URL root = sw.getRoot ();
                                 if (sw.isFolder()) {
-                                    handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Updating"));
+                                    handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompileStart"));
                                     handle.start();
                                     try {
-                                        updateFolder (file, root, sw.isInitialCompilation(), false, handle);
+                                        updateFolder (file, root, sw.isInitialCompilation(), false);
                                     } finally {
                                         handle.finish();
                                     }
@@ -1734,7 +1734,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         BinaryAnalyser ba = ci.getBinaryAnalyser();
                         BinaryAnalyser.Result finished = null;
                         try {
-                            finished = ba.start(rootURL, handle, canceled, closed);
+                            finished = ba.start(rootURL, canceled, closed);
                         } finally {
                             if (finished == null || finished == BinaryAnalyser.Result.FINISHED) {                            
                                     time = ba.finish();
@@ -1784,7 +1784,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         it.remove();                                                                                
                         if (!oldRoots.remove(rootURL) && !RepositoryUpdater.this.scannedRoots.contains(rootURL)) {
                             long startT = System.currentTimeMillis();
-                            updateFolder (rootURL,rootURL, true, false, handle);
+                            updateFolder (rootURL,rootURL, true, false);
                             long time = System.currentTimeMillis() - startT;                        
                             if (PERF_TEST) {
                                 try {
@@ -1814,20 +1814,20 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         private void parseFiles(URL root, final File classCache, boolean isInitialCompilation,
                 Iterable<? extends File> children, Iterable<? extends File> virtualChildren,
-                boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter,
+                boolean clean, JavaFileFilterImplementation filter,
                 Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile,
                 Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual)
                 throws IOException 
         {
             parseFiles(root, classCache, isInitialCompilation, children,
-                    virtualChildren, clean, handle, filter, resources, compiledFiles,
+                    virtualChildren, clean, filter, resources, compiledFiles,
                     toRecompile, misplacedSource2FQNs, allowCancel, generateVirtual,
                     null, null);
         }
 
         private void parseFiles(URL root, final File classCache, boolean isInitialCompilation,
                 Iterable<? extends File> children, Iterable<? extends File> virtualChildren,
-                boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter,
+                boolean clean, JavaFileFilterImplementation filter,
                 Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile,
                 Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual,
                 FileList digest, File folderFile) throws IOException {
@@ -2127,11 +2127,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     }
                 }
             }
-            if (!toCompile.isEmpty()) {
-                if (handle != null) {
-                    final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
-                    handle.setDisplayName(message);
-                }
+            if (!toCompile.isEmpty()) {                
                 //System.err.println("toCompile=" + toCompile);
                 errorBadgesToRefresh.addAll(batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles,
                         compiledFiles, allowCancel ? canceled : null, added,
@@ -2185,7 +2181,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }            
         }
         
-        private void updateFolder(final URL folder, final URL root, final boolean isInitialCompilation, boolean clean, final ProgressHandle handle) throws IOException {
+        private void updateFolder(final URL folder, final URL root, final boolean isInitialCompilation, boolean clean) throws IOException {
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo == null) {
                 return;
@@ -2214,10 +2210,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     return ;
                 }
                 final File folderFile = isInitialCompilation ? rootFile : FileUtil.normalizeFile(new File (URI.create(folder.toExternalForm())));
-                if (handle != null) {
-                    final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_Scannig",rootFile.getAbsolutePath());
-                    handle.setDisplayName(message);
-                }
                 //Preprocessor support
                 JavaFileFilterImplementation filter = filters.get(root);
                 if (filter == null) {
@@ -2239,7 +2231,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
                 parseFiles(root, classCache, isInitialCompilation,
                         children.getJavaFiles(), children.getVirtualJavaFiles(),
-                        clean, handle, filter, null, compiledFiles, null, misplacedSource2FQNs,
+                        clean, filter, null, compiledFiles, null, misplacedSource2FQNs,
                         false, true, children, folderFile);
                 
                 if (!misplacedSource2FQNs.isEmpty()) {
@@ -2254,7 +2246,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     
                     parseFiles(root, classCache, isInitialCompilation,
                             compiledFiles, children.getVirtualJavaFiles(),
-                            true, handle, filter, resources, null, null, misplacedSource2FQNs, false,false);
+                            true, filter, resources, null, null, misplacedSource2FQNs, false,false);
                 }
             } catch (OutputFileManager.InvalidSourcePath e) {
                 //Deleted project, ignore
@@ -2541,7 +2533,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (ba != null) {   //ba == null => IDE is exiting, indexing will be done on IDE restart
                 //todo: may also need interruption.
                 try {
-                    BinaryAnalyser.Result finished = ba.start(root, handle, new AtomicBoolean(false), new AtomicBoolean(false));
+                    BinaryAnalyser.Result finished = ba.start(root, new AtomicBoolean(false), new AtomicBoolean(false));
                     while (finished == BinaryAnalyser.Result.CANCELED) {
                         finished = ba.resume();
                     }
@@ -2679,7 +2671,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         parseFiles(root, cacheRoot, false,
                                 files, virtualFiles,
-                                true, handle, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs, cancellable, true);
+                                true, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs, cancellable, true);
 
                         if (!misplacedSource2FQNs.isEmpty()) {
                             LOGGER.log(Level.FINE, "misplaces classes detected");
@@ -2692,7 +2684,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             
                             parseFiles(root, cacheRoot, false,
                                     files, virtualFiles,
-                                    true, handle, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs, cancellable, false);
+                                    true, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs, cancellable, false);
                         }
                         
                         if (thisDepsToRecompile != null && !thisDepsToRecompile.isEmpty()) {
