@@ -90,7 +90,7 @@ public class RubyPlatformTest extends RubyTestBase {
     }
 
     public void testFindRDocWithSuffix() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.7-p72"));
         assertNotNull("rdoc found", platform.getRDoc());
     }
 
@@ -104,7 +104,7 @@ public class RubyPlatformTest extends RubyTestBase {
     }
 
     public void testFindIRBWithSuffix() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.7-p72"));
         assertNotNull("irb found", platform.getIRB());
     }
 

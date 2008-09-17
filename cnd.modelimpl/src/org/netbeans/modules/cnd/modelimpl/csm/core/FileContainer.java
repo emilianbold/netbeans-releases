@@ -640,14 +640,25 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 
         /** 
-         * This should only be called if we are sure this is the only correct state:
+         * This should only be called if we are sure this is THE ONLY correct state:
          * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
          */
         public final synchronized void setState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
             State oldState = null;
             if ((data instanceof Collection)) {
                 Collection<StatePair> states = (Collection<StatePair>) data;
-                if (states.size() > 1) {
+                // check how many good old states are there
+                // and pick a valid one to check that we aren't replacing better state by worse one 
+                int oldGoodStatesCount = 0;
+                for (StatePair pair : states) {
+                    if (pair.state != null && pair.state.isValid()) {
+                        oldGoodStatesCount++;
+                        if (oldState == null || state.isCompileContext()) {
+                            oldState = state;
+                        }
+                    }
+                }
+                if (oldGoodStatesCount > 1) {
                     if (CndUtils.isDebugMode()) {
                         StringBuilder sb = new StringBuilder("Attempt to set state while there are multiple states: " + canonical); // NOI18N
                         for (StatePair pair : states) {
@@ -655,10 +666,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                         }
                         Utils.LOG.log(Level.SEVERE, sb.toString(), new Exception(sb.toString()));
                     }
-                    return;
-                }
-                if (states.size() > 0) {
-                    oldState = states.iterator().next().state;
+                    //return;
                 }
             } else if(data instanceof StatePair) {
                 oldState = ((StatePair) data).state;
@@ -689,6 +697,16 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
             
             data = new StatePair(state, pcState);
+        }
+        
+        private static int countValidStates(Collection<StatePair> states) {
+            int cnt = 0;
+            for (StatePair pair : states) {
+                if (pair.state != null && pair.state.isValid()) {
+                    cnt++;
+                }
+            }
+            return cnt;
         }
         
         /**
