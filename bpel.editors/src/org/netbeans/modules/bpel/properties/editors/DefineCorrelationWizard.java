@@ -2078,11 +2078,15 @@ class WizardUtils implements WizardConstants {
         return (getSchemaComponentTypeName(schemaComponent) == null);
     }
     
-    public static boolean isBuiltInSimpleType(SchemaComponent schemaComponent) {
+    public static GlobalSimpleType findBuiltInType(SchemaComponent schemaComponent) {
         String typeName = getSchemaComponentTypeName(schemaComponent);
-        GlobalSimpleType builtInSimpleType = ValidationUtil.findGlobalSimpleType(typeName, 
+        GlobalSimpleType builtInType = ValidationUtil.findGlobalSimpleType(typeName, 
             ValidationUtil.BUILT_IN_SIMPLE_TYPES);
-        return (builtInSimpleType != null);
+        return builtInType;
+    }
+    
+    public static boolean isBuiltInType(SchemaComponent schemaComponent) {
+        return (findBuiltInType(schemaComponent) != null);
     }
     
     public static PortType getBpelEntityPortType(BpelEntity bpelEntity) {
@@ -2398,8 +2402,8 @@ class TypesCompatibilityValidatorImpl implements TypesCompatibilityValidator {
         SchemaComponent targetSchemaComponent) {
         this.sourceSchemaComponent = sourceSchemaComponent;
         this.targetSchemaComponent = targetSchemaComponent;
-        isSourceBuiltInType = WizardUtils.isBuiltInSimpleType(sourceSchemaComponent);
-        isTargetBuiltInType = WizardUtils.isBuiltInSimpleType(targetSchemaComponent);
+        isSourceBuiltInType = WizardUtils.isBuiltInType(sourceSchemaComponent);
+        isTargetBuiltInType = WizardUtils.isBuiltInType(targetSchemaComponent);
     }
     
     public String getResolvedTypeName() {return resolvedTypeName;}
