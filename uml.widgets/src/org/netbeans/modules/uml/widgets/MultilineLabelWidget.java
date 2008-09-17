@@ -234,7 +234,7 @@ public class MultilineLabelWidget extends LabelWidget
             String line = label.substring(startLine, index);
             Rectangle2D strBounds = metrics.getStringBounds(line, g);
 
-            if(strBounds.getWidth() < width)
+            if(strBounds.getWidth() <= width)
             {
                 previousLine = line;
                 previousHeight = strBounds.getHeight();

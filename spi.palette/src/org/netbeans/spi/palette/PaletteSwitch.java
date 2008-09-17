@@ -241,7 +241,8 @@ final class PaletteSwitch implements Runnable, LookupListener {
     }
     
     private void showHidePaletteTopComponent( PaletteController prevPalette, PaletteController newPalette ) {
-        if( prevPalette == newPalette && null != newPalette )
+        if( prevPalette == newPalette && null != newPalette 
+            || (null == prevPalette && null == newPalette) )
             return;
         
         WindowManager wm = WindowManager.getDefault();

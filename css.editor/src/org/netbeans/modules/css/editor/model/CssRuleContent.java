@@ -100,6 +100,19 @@ public class CssRuleContent {
             return  null;
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof CssRuleContent) {
+            return toString().equals(obj.toString());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
     
     //TODO remove this from the API
     public void modifyProperty(String property, String newValue) throws BadLocationException {

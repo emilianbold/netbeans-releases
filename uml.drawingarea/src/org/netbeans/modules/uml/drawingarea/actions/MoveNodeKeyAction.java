@@ -303,8 +303,8 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
                         else
                         {
                             //we have an edge label selected here..
-                            Widget selectedWidget = scene.findWidget(select);
-                            if (selectedWidget instanceof ConnectionWidget)
+                            retVal = scene.findWidget(select);
+                            if (retVal instanceof ConnectionWidget)
                             {
                                 // The only widget that is selected is an edge.
                                 retVal = null;

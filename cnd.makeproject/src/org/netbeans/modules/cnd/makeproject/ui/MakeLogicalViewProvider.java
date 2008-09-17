@@ -143,8 +143,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private final Project project;
     private FilterNode projectNode = null;
     private final SubprojectProvider spp;
-    private static final Boolean ASYNC_ROOT_NODE = Boolean.getBoolean("cnd.async.root");
-    private static final Logger log = Logger.getLogger("cnd.async.root");
+    private static final Boolean ASYNC_ROOT_NODE = Boolean.getBoolean("cnd.async.root");// NOI18N
+    private static final Logger log = Logger.getLogger("cnd.async.root");// NOI18N
     private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); // NOI18N
     static final String PRIMARY_TYPE = "application"; // NOI18N
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
@@ -162,7 +162,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     public Node createLogicalView() {
         if (ASYNC_ROOT_NODE) {
-            log.fine("creating async root node in EDT? " + SwingUtilities.isEventDispatchThread());
+            log.fine("creating async root node in EDT? " + SwingUtilities.isEventDispatchThread());// NOI18N
             InstanceContent ic = new InstanceContent();
             ic.add(project);
             return new MakeLogicalViewRootNode(project, ic);

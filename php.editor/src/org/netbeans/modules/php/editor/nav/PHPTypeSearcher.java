@@ -89,15 +89,15 @@ public class PHPTypeSearcher implements IndexSearcher {
             String className = textForQuery.substring(0, doubleColon);
             String rest = textForQuery.substring(doubleColon + 2);
 
-            for (IndexedClass clazz : index.getClasses(null, className, kind)) {
+            for (IndexedClass clazz : index.getClasses(null, className, kind, scope)) {
                 for (IndexedFunction func : index.getMethods(null, clazz.getName(), rest, kind, PHPIndex.ANY_ATTR)) {
                     result.add(new PHPTypeDescriptor(func, clazz, helper));
                 }
             }
         } else {
-            Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(textForQuery, null,NameKind.CASE_INSENSITIVE_PREFIX);
+            Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(textForQuery, null,NameKind.CASE_INSENSITIVE_PREFIX, scope);
             for (String className : typeNamesForIdentifier) {
-                for (IndexedClass clazz : index.getClasses(null, className, kind)) {
+                for (IndexedClass clazz : index.getClasses(null, className, kind, scope)) {
                     for (IndexedFunction func : index.getMethods(null, clazz.getName(), textForQuery, kind, PHPIndex.ANY_ATTR)) {
                         result.add(new PHPTypeDescriptor(func, clazz, helper));
                     }
@@ -109,13 +109,13 @@ public class PHPTypeSearcher implements IndexSearcher {
                     }
                 }
             }
-            for (IndexedElement el : index.getFunctions(null, textForQuery, kind)) {
+            for (IndexedElement el : index.getFunctions(null, textForQuery, kind, scope)) {
                 result.add(new PHPTypeDescriptor(el, helper));
             }
-            for (IndexedElement el : index.getClasses(null, textForQuery, kind)) {
+            for (IndexedElement el : index.getClasses(null, textForQuery, kind, scope)) {
                 result.add(new PHPTypeDescriptor(el, helper));
             }
-            for (IndexedElement el : index.getConstants(null, textForQuery, kind)) {
+            for (IndexedElement el : index.getConstants(null, textForQuery, kind, scope)) {
                 result.add(new PHPTypeDescriptor(el, helper));
             }
         }
