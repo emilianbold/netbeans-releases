@@ -2553,7 +2553,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             
             LOGGER.log(Level.FINEST, GOING_TO_RECOMPILE, toRecompile);
             
-            toRecompile = compileFileFromRoots(toRecompile, true, null);
+            toRecompile = compileFileFromRoots(toRecompile, true, false, null);
             
             if (!toRecompile.isEmpty()) {
                 synchronized (RepositoryUpdater.this) {
@@ -2599,7 +2599,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     depsToRecompile.put(root, toRebuild);
                 }
             } else {
-                Map<URL, Collection<File>> result = compileFileFromRoots(toCompile, false, depsToRecompile);
+                Map<URL, Collection<File>> result = compileFileFromRoots(toCompile, false, true, depsToRecompile);
 
                 assert result.isEmpty(); //not cancellable
             }
@@ -2621,7 +2621,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
         
-        private Map<URL, Collection<File>> compileFileFromRoots(Map<URL, Collection<File>> toRecompile, final boolean cancellable,  Map<URL, Collection<File>> depsToRecompile) throws IOException {
+        private Map<URL, Collection<File>> compileFileFromRoots(Map<URL, Collection<File>> toRecompile, final boolean cancellable,  final boolean useVirtual, final Map<URL, Collection<File>> depsToRecompile) throws IOException {
             List<URL> handledRoots = new LinkedList<URL>();
             
             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_RefreshingWorkspace"));
@@ -2662,7 +2662,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         
                         final Map<URI, List<String>> misplacedSource2FQNs = new HashMap<URI, List<String>>();
                         List<? extends File> virtualFiles;
-                        if (rootsWithVirtualSource.contains(root)) {
+                        if (useVirtual && rootsWithVirtualSource.contains(root)) {
                             final FileList list = new FileList(rootFile);
                             virtualFiles = list.getVirtualJavaFiles();
                         }
