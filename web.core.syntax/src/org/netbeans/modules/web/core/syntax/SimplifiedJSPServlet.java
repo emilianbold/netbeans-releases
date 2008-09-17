@@ -370,8 +370,10 @@ public class SimplifiedJSPServlet {
                     if (vars != null){
                         for (VariableInfo var : vars) {
                             // Create Variable Definitions
-                            String varDeclaration = var.getClassName() + " " + var.getVarName() + ";\n";
-                            beanDeclarationsBuff.append(varDeclaration);
+                            if (var.getVarName() != null && var.getClassName() != null){
+                                String varDeclaration = var.getClassName() + " " + var.getVarName() + ";\n";
+                                beanDeclarationsBuff.append(varDeclaration);
+                            }
                         }
                     }
                 }

@@ -70,8 +70,15 @@ STDMETHODIMP DebugDocument::onUpdateDocumentAttributes(TEXT_DOC_ATTR textdocattr
 
 HRESULT DebugDocument::handleSourceChange() {
     Utils::log(4, _T("Text modified - %s\n"), name.c_str());
-    if(pDbgpConnection != NULL) {
-        pDbgpConnection->sendReloadSourcesMessage(name);
+    if(pScriptDebugger != NULL) {
+        BreakpointManager *pMgr = pScriptDebugger->getBreakpointManager();
+        if(pMgr != NULL) {
+            pMgr->processBreakpoints(name);
+        }
+        DbgpConnection *pDbgpConnection = pScriptDebugger->getDbgpConnection();
+        if(pDbgpConnection != NULL) {
+            pDbgpConnection->sendReloadSourcesMessage(name);
+        }
     }
     return S_OK;
 }

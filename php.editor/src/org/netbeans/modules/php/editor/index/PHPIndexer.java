@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -93,7 +93,7 @@ import org.openide.util.Exceptions;
 /**
  * Index Ruby structure into the persistent store for retrieval by
  * {@link JsIndex}.
- * 
+ *
  * @todo Index methods as func.in and then distinguish between exact completion and multi-completion.
  * @todo Ensure that all the stub files are compileable!
  * @todo Should I perhaps store globals and functions using the same query prefix (since I typically
@@ -103,7 +103,7 @@ import org.openide.util.Exceptions;
  * @todo Use the JsCommentLexer to pull out relevant attributes -- @private and such -- and set these
  *     as function attributes.
  * @todo There are duplicate elements -- why???
- * 
+ *
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPIndexer implements Indexer {
@@ -113,7 +113,7 @@ public class PHPIndexer implements Indexer {
     // a workaround for issue #132388
     private static final Collection<String>INDEXABLE_EXTENSIONS = Arrays.asList(
             "php", "php3", "php4", "php5", "phtml", "inc"); //NOI18N
-    
+
     // I need to be able to search several things:
     // (1) by function root name, e.g. quickly all functions that start
     //    with "f" should find unknown.foo.
@@ -160,7 +160,7 @@ public class PHPIndexer implements Indexer {
         if (INDEXABLE_EXTENSIONS.contains(file.getExtension().toLowerCase())) {
             return true;
         }
-        
+
         return isPhpFile(file);
     }
 
@@ -181,7 +181,7 @@ public class PHPIndexer implements Indexer {
             }
         }
         assert fo != null;
-        return PHPLanguage.PHP_MIME_TYPE.equals(fo.getMIMEType());
+        return FileUtil.getMIMEType(fo, PHPLanguage.PHP_MIME_TYPE) != null;
     }
 
     public String getPersistentUrl(File file) {
@@ -199,17 +199,17 @@ public class PHPIndexer implements Indexer {
 
     public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
         PHPParseResult r = (PHPParseResult)result;
-        
+
         if (r.getProgram() == null){
             return Collections.<IndexDocument>emptyList();
         }
-        
+
         TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
         analyzer.analyze();
-        
+
         return analyzer.getDocuments();
     }
-    
+
     public String getIndexVersion() {
         // If you chane the index number, you have to regenerate preindexed
         // php runtime files. Go to the php.project/tools, modify and run
@@ -221,7 +221,7 @@ public class PHPIndexer implements Indexer {
     public String getIndexerName() {
         return "php"; // NOI18N
     }
-    
+
     private static class TreeAnalyzer {
         private final ParserFile file;
         private String url;
@@ -230,7 +230,7 @@ public class PHPIndexer implements Indexer {
         //private final BaseDocument doc;
         private IndexDocumentFactory factory;
         private List<IndexDocument> documents = new ArrayList<IndexDocument>();
-        
+
         private TreeAnalyzer(PHPParseResult result, IndexDocumentFactory factory) {
             this.result = result;
             this.file = result.getFile();
@@ -277,7 +277,7 @@ public class PHPIndexer implements Indexer {
                 }
             }
         }
-        
+
         private class IndexerVisitor extends DefaultTreePathVisitor{
             private List<IndexDocument> documents;
             private IndexDocument defaultDocument;
@@ -294,7 +294,7 @@ public class PHPIndexer implements Indexer {
                 for (IdentifierSignature idSign : values) {
                     identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true);
                 }
-            }            
+            }
             @Override
             public void visit(Identifier node) {
                 IdentifierSignature.add(node, identifiers);
@@ -345,7 +345,7 @@ public class PHPIndexer implements Indexer {
         }
 
         public void analyze() throws IOException {
-            
+
             IndexDocument defaultDocument = factory.createDocument(40); // TODO - measure!
             documents.add(defaultDocument);
 
@@ -362,25 +362,25 @@ public class PHPIndexer implements Indexer {
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
+
             assert processedFileURL.startsWith("file:");
             String processedFileAbsPath = processedFileURL.substring("file:".length());
             StringBuilder includes = new StringBuilder();
-            
+
             for (Statement statement : root.getStatements()){
                 if (statement instanceof ExpressionStatement){
                     ExpressionStatement expressionStatement = (ExpressionStatement) statement;
-                    
+
                     if (expressionStatement.getExpression() instanceof Assignment) {
                         Assignment assignment = (Assignment) expressionStatement.getExpression();
                         indexVarsInAssignment(assignment, defaultDocument);
                     }
-                    
+
                     if (expressionStatement.getExpression() instanceof Include) {
                         Include include = (Include) expressionStatement.getExpression();
-                        
+
                         Expression argExpression = include.getExpression();
-                        
+
                         if (argExpression instanceof ParenthesisExpression) {
                             ParenthesisExpression parenthesisExpression = (ParenthesisExpression) include.getExpression();
                             argExpression = parenthesisExpression.getExpression();
@@ -389,7 +389,7 @@ public class PHPIndexer implements Indexer {
                         if (argExpression instanceof Scalar) {
                             Scalar scalar = (Scalar) argExpression;
                             String rawInclude = scalar.getStringValue();
-                            
+
                             // check if the string is really quoted
                             if (isQuotedString(rawInclude)) {
                                 String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath, dequote(rawInclude));
@@ -399,7 +399,7 @@ public class PHPIndexer implements Indexer {
                     }
                 }
             }
-            
+
             defaultDocument.addPair(FIELD_INCLUDE, includes.toString(), false);
         }
 
@@ -408,17 +408,17 @@ public class PHPIndexer implements Indexer {
             classSignature.append(classDeclaration.getName().getName().toLowerCase() + ";"); //NOI18N
             classSignature.append(classDeclaration.getName().getName() + ";"); //NOI18N
             classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
-            
+
             String superClass = ""; //NOI18N
-            
+
             if (classDeclaration.getSuperClass() instanceof Identifier) {
                 Identifier identifier = (Identifier) classDeclaration.getSuperClass();
                 superClass = identifier.getName();
             }
-            
+
             classSignature.append(superClass + ";"); //NOI18N
             document.addPair(FIELD_CLASS, classSignature.toString(), true);
-            
+
             for (Statement statement : classDeclaration.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {
                     MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
@@ -428,7 +428,7 @@ public class PHPIndexer implements Indexer {
                     indexFieldsDeclaration(fieldsDeclaration, document);
                 } else if (statement instanceof ClassConstantDeclaration) {
                     ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
-                    
+
                     for (Identifier id : constDeclaration.getNames()){
                         StringBuilder signature = new StringBuilder();
                         signature.append(id.getName() + ";");
@@ -439,25 +439,25 @@ public class PHPIndexer implements Indexer {
 
             }
         }
-        
+
         private void indexInterface(InterfaceDeclaration ifaceDecl, IndexDocument document) {
             StringBuilder ifaceSign = new StringBuilder();
             ifaceSign.append(ifaceDecl.getName().getName().toLowerCase() + ";"); //NOI18N
             ifaceSign.append(ifaceDecl.getName().getName() + ";"); //NOI18N
             ifaceSign.append(ifaceDecl.getStartOffset() + ";"); //NOI18N
-            
+
             for (Iterator<Identifier> it = ifaceDecl.getInterfaes().iterator(); it.hasNext();) {
                 Identifier id = it.next();
                 ifaceSign.append(id.getName());
-                
+
                 if (it.hasNext()){
                     ifaceSign.append(',');
                 }
             }
-            
+
             ifaceSign.append(';');
             document.addPair(FIELD_IFACE, ifaceSign.toString(), true);
-            
+
             for (Statement statement : ifaceDecl.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {
                     MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
@@ -467,7 +467,7 @@ public class PHPIndexer implements Indexer {
                     indexFieldsDeclaration(fieldsDeclaration, document);
                 } else if (statement instanceof ClassConstantDeclaration) {
                     ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
-                    
+
                     for (Identifier id : constDeclaration.getNames()){
                         StringBuilder signature = new StringBuilder();
                         signature.append(id.getName() + ";");
@@ -478,7 +478,7 @@ public class PHPIndexer implements Indexer {
 
             }
         }
-        
+
         private void indexVarsInAssignment(Assignment assignment, IndexDocument document) {
             if (assignment.getLeftHandSide() instanceof Variable) {
                 Variable var = (Variable) assignment.getLeftHandSide();
@@ -501,7 +501,7 @@ public class PHPIndexer implements Indexer {
                     }
                 }
             }
-            
+
             if (assignment.getRightHandSide() instanceof Assignment) {
                 Assignment embeddedAssignment = (Assignment) assignment.getRightHandSide();
                 indexVarsInAssignment(embeddedAssignment, document);
@@ -524,7 +524,7 @@ public class PHPIndexer implements Indexer {
 
                             if (paramExpr instanceof Scalar) {
                                 String constName = ((Scalar) paramExpr).getStringValue();
-                                
+
                                 // check if const name is really quoted
                                 if (isQuotedString(constName)) {
                                     String defineVal = dequote(constName);
@@ -550,7 +550,7 @@ public class PHPIndexer implements Indexer {
 
             document.addPair(FIELD_BASE, signature.toString(), true);
         }
-        
+
         private void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {
             StringBuilder signature = new StringBuilder();
             signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
@@ -558,7 +558,7 @@ public class PHPIndexer implements Indexer {
 
             document.addPair(FIELD_METHOD, signature.toString(), false);
         }
-        
+
         private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
             StringBuilder signature = new StringBuilder();
             signature.append(functionDeclaration.getFunctionName().getName() + ";");
@@ -567,39 +567,39 @@ public class PHPIndexer implements Indexer {
 
             for (int i = 0; i < paramCount; i++) {
                 FormalParameter param = functionDeclaration.getFormalParameters().get(i);
-                
+
                 String paramName = CodeUtils.getParamDisplayName(param);
                 signature.append(paramName);
 
                 if (i < paramCount - 1) {
                     signature.append(",");
                 }
-                
+
                 if (param.getDefaultValue() != null){
                     if (defaultArgs.length() > 0){
                         defaultArgs.append(',');
                     }
-                    
+
                     defaultArgs.append(Integer.toString(i));
                 }
             }
-            
+
             signature.append(';');
             signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
             signature.append(defaultArgs + ";");
 
             String type = getReturnTypeFromPHPDoc(functionDeclaration);
-            
+
             if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)){
                 signature.append(type);
             }
-            
+
             signature.append(";"); //NOI18N
-           
+
             return signature.toString();
         }
-        
-        
+
+
         private String getReturnTypeFromPHPDoc(FunctionDeclaration functionDeclaration) {
             return getTypeFromPHPDoc(functionDeclaration, PHPDocTag.Type.RETURN);
         }
@@ -607,7 +607,7 @@ public class PHPIndexer implements Indexer {
         private String getFieldTypeFromPHPDoc(SingleFieldDeclaration field){
             return getTypeFromPHPDoc(field, PHPDocTag.Type.VAR);
         }
-        
+
         private String getTypeFromPHPDoc(ASTNode node, PHPDocTag.Type tagType){
             Comment comment = Utils.getCommentForNode(root, node);
 
@@ -631,21 +631,21 @@ public class PHPIndexer implements Indexer {
             return null;
         }
     }
-    
+
     static boolean isQuotedString(String txt) {
         if (txt.length() < 2) {
             return false;
         }
-        
+
         char firstChar = txt.charAt(0);
         return firstChar == txt.charAt(txt.length() - 1) && firstChar == '\'' || firstChar == '\"';
     }
-    
+
     static String dequote(String string){
         assert isQuotedString(string);
         return string.substring(1, string.length() - 1);
     }
-    
+
     public File getPreindexedData() {
         return null;
     }
@@ -656,14 +656,14 @@ public class PHPIndexer implements Indexer {
     public static void setPreindexedDb(FileObject preindexedDb) {
         PHPIndexer.preindexedDb = preindexedDb;
     }
-    
+
     public FileObject getPreindexedDb() {
         return null;
     }
-    
+
     /**
      * {@inheritDoc}
-     * 
+     *
      * As the above documentation states, this is a temporary solution / hack
      * for 6.1 only.
      */

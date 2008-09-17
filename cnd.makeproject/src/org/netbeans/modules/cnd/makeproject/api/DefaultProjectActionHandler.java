@@ -366,7 +366,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     } else {
                         showInput = false;
                         if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                            conType = pae.getProfile().getDefaultConsoleType();
+                            conType = RunProfile.getDefaultConsoleType();
                         }
                         if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
                             try {
