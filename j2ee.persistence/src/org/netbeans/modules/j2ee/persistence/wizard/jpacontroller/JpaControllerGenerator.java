@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -213,6 +214,22 @@ public class JpaControllerGenerator {
                         idClass = (TypeElement) declaredType.asElement();
                         embeddable[0] = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
                         idPropertyType[0] = idClass.getQualifiedName().toString();
+                    } else if (TypeKind.BOOLEAN == idType.getKind()) {
+                        idPropertyType[0] = "boolean";
+                    } else if (TypeKind.BYTE == idType.getKind()) {
+                        idPropertyType[0] = "byte";
+                    } else if (TypeKind.CHAR == idType.getKind()) {
+                        idPropertyType[0] = "char";
+                    } else if (TypeKind.DOUBLE == idType.getKind()) {
+                        idPropertyType[0] = "double";
+                    } else if (TypeKind.FLOAT == idType.getKind()) {
+                        idPropertyType[0] = "float";
+                    } else if (TypeKind.INT == idType.getKind()) {
+                        idPropertyType[0] = "int";
+                    } else if (TypeKind.LONG == idType.getKind()) {
+                        idPropertyType[0] = "long";
+                    } else if (TypeKind.SHORT == idType.getKind()) {
+                        idPropertyType[0] = "short";
                     }
                     
                     String simpleIdPropertyType = JpaControllerUtil.simpleClassName(idPropertyType[0]);
@@ -329,6 +346,20 @@ public class JpaControllerGenerator {
                                 simpleCollectionTypeName = tAsElement.getSimpleName().toString();
                                 collectionTypeClass = tAsElement.getQualifiedName().toString();
                             }
+                            String simpleCollectionImplementationTypeName = "ArrayList";    //NOI18N
+                            String collectionImplementationTypeClass = "java.util.ArrayList";    //NOI18N
+                            Class collectionTypeAsClass = null;
+                            if (isCollection) {
+                                try {
+                                    collectionTypeAsClass = Class.forName(collectionTypeClass);
+                                } catch (ClassNotFoundException cfne) {
+                                    //let collectionTypeAsClass be null
+                                }
+                                if (collectionTypeAsClass != null && Set.class.isAssignableFrom(collectionTypeAsClass)) {
+                                    simpleCollectionImplementationTypeName = "HashSet";    //NOI18N
+                                    collectionImplementationTypeClass = "java.util.HashSet";    //NOI18N
+                                }
+                            }
                             String relType = tstripped.toString();
                             String simpleRelType = JpaControllerUtil.simpleClassName(relType); //just "Pavilion"
                             String relTypeReference = simpleRelType;
@@ -352,13 +383,13 @@ public class JpaControllerGenerator {
                             
                             if (isCollection) {
                                 initCollectionsInCreate.append("if (" + fieldName + "." + mName + "() == null) {\n" +
-                                        fieldName + ".s" + mName.substring(1) + "(new ArrayList<" + relTypeReference + ">());\n" +
+                                        fieldName + ".s" + mName.substring(1) + "(new " + simpleCollectionImplementationTypeName + "<" + relTypeReference + ">());\n" +
                                         "}\n");
 
                                 
-                                modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.ArrayList");
+                                modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, collectionImplementationTypeClass);
                                 
-                                initRelatedInCreate.append("List<" + relTypeReference + "> attached" + mName.substring(3) + " = new ArrayList<" + relTypeReference + ">();\n" +
+                                initRelatedInCreate.append(simpleCollectionTypeName + "<" + relTypeReference + "> attached" + mName.substring(3) + " = new " + simpleCollectionImplementationTypeName + "<" + relTypeReference + ">();\n" +
                                         "for (" + relTypeReference + " " + relFieldToAttach + " : " + fieldName + "." + mName + "()) {\n" +
                                         relFieldToAttach + " = " + refOrMergeString +
                                         "attached" + mName.substring(3) + ".add(" + relFieldToAttach + ");\n" +
@@ -448,7 +479,7 @@ public class JpaControllerGenerator {
                                 String relFieldToAttachInEdit = newScalarRelFieldName + "ToAttach";
                                 String refOrMergeStringInEdit = getRefOrMergeString(relIdGetterElement, relFieldToAttachInEdit);
                                 String attachedRelFieldNew = "attached" + mName.substring(3) + "New";
-                                attachRelatedInEdit.append("List<" + relTypeReference + "> " + attachedRelFieldNew + " = new ArrayList<" + relTypeReference + ">();\n" +
+                                attachRelatedInEdit.append(simpleCollectionTypeName + "<" + relTypeReference + "> " + attachedRelFieldNew + " = new " + simpleCollectionImplementationTypeName + "<" + relTypeReference + ">();\n" +
                                         "for (" + relTypeReference + " " + relFieldToAttachInEdit + " : " + relFieldNew + ") {\n" +
                                         relFieldToAttachInEdit + " = " + refOrMergeStringInEdit +
                                         attachedRelFieldNew + ".add(" + relFieldToAttachInEdit + ");\n" +

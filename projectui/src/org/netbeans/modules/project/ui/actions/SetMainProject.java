@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.api.project.ProjectInformation;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -144,7 +145,8 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         subMenu.removeAll();
         ActionListener jmiActionListener = new MenuItemActionListener(); 
         
-        JRadioButtonMenuItem jmiNone = new JRadioButtonMenuItem(NbBundle.getMessage(SetMainProject.class, "LBL_NoneMainProject_Name"), null, false);
+        JRadioButtonMenuItem jmiNone = new JRadioButtonMenuItem((javax.swing.Icon) null, false);
+        Mnemonics.setLocalizedText(jmiNone, NbBundle.getMessage(SetMainProject.class, "LBL_NoneMainProject_Name"));
         jmiNone.addActionListener(jmiActionListener);
         subMenu.add(jmiNone);
         subMenu.add(new Separator());

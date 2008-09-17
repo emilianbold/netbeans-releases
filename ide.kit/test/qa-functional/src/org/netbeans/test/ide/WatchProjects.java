@@ -103,7 +103,12 @@ public final class WatchProjects {
 
         StringSelection ss = new StringSelection("");
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
-        Toolkit.getDefaultToolkit().getSystemSelection().setContents(ss, ss);
+//      Toolkit.getDefaultToolkit().getSystemSelection().setContents(ss, ss);
+//      fix for Issue 146901
+        Clipboard clipBoard = Toolkit.getDefaultToolkit().getSystemSelection();
+        if (clipBoard != null) {
+            clipBoard.setContents(ss, ss);
+        }  
         Clipboard cc = Lookup.getDefault().lookup(Clipboard.class);
         Assert.assertNotNull("There is a clipboard in lookup", cc);
         cc.setContents(ss, ss);

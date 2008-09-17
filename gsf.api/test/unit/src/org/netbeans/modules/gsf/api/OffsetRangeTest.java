@@ -123,4 +123,16 @@ public class OffsetRangeTest extends NbTestCase {
         assertTrue(new OffsetRange(5,5).isEmpty());
         assertFalse(new OffsetRange(5,6).isEmpty());
     }
+
+    public void testBoundTo() {
+        assertEquals(new OffsetRange(1,3), new OffsetRange(1,3).boundTo(1, 3));
+        assertEquals(new OffsetRange(1,3), new OffsetRange(0,4).boundTo(1, 3));
+        assertEquals(new OffsetRange(1,3), new OffsetRange(1,3).boundTo(0, 4));
+        assertEquals(new OffsetRange(1,2), new OffsetRange(1,3).boundTo(0, 2));
+        assertEquals(new OffsetRange(2,3), new OffsetRange(1,3).boundTo(2, 4));
+        assertEquals(new OffsetRange(2,2), new OffsetRange(1,3).boundTo(2, 2));
+        assertEquals(new OffsetRange(101,101), new OffsetRange(102,103).boundTo(0, 101));
+        assertEquals(new OffsetRange(100,101), new OffsetRange(100,103).boundTo(0, 101));
+        assertEquals(new OffsetRange(100,100), new OffsetRange(90,95).boundTo(100, 150));
+    }
 }

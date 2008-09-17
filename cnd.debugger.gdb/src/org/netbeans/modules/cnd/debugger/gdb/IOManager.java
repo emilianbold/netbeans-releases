@@ -73,14 +73,14 @@ public class IOManager {
     
     // variables ...............................................................
     
-    protected InputOutput                   debuggerIO = null;
-    private OutputWriter                    debuggerOut;
-    private String                          name;
+    private final InputOutput               debuggerIO;
+    private final OutputWriter              debuggerOut;
+    //private String                        name;
     private boolean                         closed = false;
     
     /** output writer Thread */
     private Hashtable                       lines = new Hashtable();
-    private Listener                        listener = new Listener();
+    private final Listener                  listener = new Listener();
     
     
     // init ....................................................................
@@ -94,7 +94,7 @@ public class IOManager {
     
     // public interface ........................................................
 
-    private LinkedList buffer = new LinkedList();
+    private final LinkedList buffer = new LinkedList();
     private RequestProcessor.Task task;
     
     /**
@@ -169,8 +169,8 @@ public class IOManager {
     }
     
     private static class Text {
-        private String text;
-        private Line line;
+        private final String text;
+        private final Line line;
      //   private int where;
         
         private Text(String text, Line line) {
@@ -181,13 +181,14 @@ public class IOManager {
     }
     
     public static class Line {
-        private String url;
-        private int lineNumber;
-        private GdbDebugger debugger;
+        private final String url;
+        private final int lineNumber;
+        private final GdbDebugger debugger;
         
         Line(String url, int lineNumber, GdbDebugger debugger) {
             this.url = url;
             this.lineNumber = lineNumber;
+            this.debugger = debugger;
         }
         
         void show() {

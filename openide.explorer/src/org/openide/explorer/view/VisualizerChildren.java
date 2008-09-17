@@ -61,8 +61,6 @@ final class VisualizerChildren extends Object {
     
     private List<Node> snapshot;
     
-    static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerChildren.prefetchCount", 50), 0);  // NOI18N
-
     /** Empty VisualizerChildren. */
     private VisualizerChildren () {
         visNodes = Collections.EMPTY_LIST;
@@ -75,12 +73,7 @@ final class VisualizerChildren extends Object {
     public VisualizerChildren(VisualizerNode parent, int size, List<Node> snapshot) {
         this.parent = parent;
         visNodes = new ArrayList<VisualizerNode>(size);
-        int prefetched = Math.min(prefetchCount, size);
-        for (int i = 0; i < prefetched; i++) {
-            VisualizerNode vn = VisualizerNode.getVisualizer(this, snapshot.get(i));
-            visNodes.add(vn);
-        }
-        for (int i = prefetched; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             visNodes.add(null);
         }
         this.snapshot = snapshot;
@@ -267,6 +260,15 @@ final class VisualizerChildren extends Object {
      */
     private int[] reorderByComparator(Comparator<VisualizerNode> c) {
         VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
+
+        for (int i = 0; i < old.length; i++) {
+            if (old[i] == null) {
+                Node node = snapshot.get(i);
+                old[i] = VisualizerNode.getVisualizer(this, node);
+                old[i].indexOf = i;
+            }
+        }
+
         Arrays.sort(old, c);
 
         int[] idxs = new int[old.length];

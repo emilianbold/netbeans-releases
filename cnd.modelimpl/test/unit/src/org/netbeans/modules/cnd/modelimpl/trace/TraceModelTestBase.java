@@ -116,7 +116,21 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             }
         }
     }
-
+    
+    protected final FileImpl findFile(String name) throws Exception{
+        ProjectBase project = this.getProject();
+        if (project != null) {
+            String toCompare = File.separator + name;
+            for (FileImpl file : project.getAllFileImpls()) {
+                if (file.getAbsolutePath().toString().endsWith(toCompare)) {
+                    return file;
+                }
+            }
+        }
+        assertTrue("CsmFile not found for " + name, false);
+        return null;
+    }
+    
     @Override
     protected void setUp() throws Exception {
         preSetUp();

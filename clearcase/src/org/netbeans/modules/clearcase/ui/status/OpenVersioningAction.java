@@ -44,12 +44,20 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
+import javax.swing.ImageIcon;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Maros Sandor
  */
 public class OpenVersioningAction extends SystemAction {
+
+    public OpenVersioningAction() {
+        putValue("noIconInMenu", Boolean.FALSE); // NOI18N
+        setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/clearcase/resources/icons/versioning-view.png"))); // NOI18N
+    }
+
 
     public String getName() {
         return NbBundle.getMessage(OpenVersioningAction.class, "OpenCCView_Name_Clearcase"); //NOI18N;

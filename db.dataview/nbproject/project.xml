@@ -89,6 +89,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.etl.editor</friend>
                 <friend>org.netbeans.modules.db.core</friend>
+				<friend>org.netbeans.modules.dm.virtual.db</friend>
                 <friend>org.netbeans.modules.edm.editor</friend>
                 <package>org.netbeans.modules.db.dataview.api</package>
                 <package>org.netbeans.modules.db.dataview.spi</package>

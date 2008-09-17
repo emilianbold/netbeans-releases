@@ -47,3 +47,15 @@ void foo7(int i) {
         label: i++;
     }  
 }
+
+void foo8(int i) {
+    switch (i) {
+        case 1:
+            label: i++;
+            break;
+        case 2:
+            goto label; 
+            break;
+    }
+}
+

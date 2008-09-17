@@ -9,8 +9,8 @@ class FooBar
     good_symbol = 50
     x = 50
     callmethod(callmethod2(50+30))
-    @myvar = x+30
-    callmethod3(callmethod4(@myvar))
+    @new_name = x+30
+    callmethod3(callmethod4(@new_name))
     puts good_symbol
     a = 25
     b = "string"

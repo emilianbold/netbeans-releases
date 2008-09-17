@@ -104,7 +104,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -201,6 +200,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private int platform;
     private PathMap pathMap;
     private Map<String, ShareInfo> shareTab;
+    private String sig = null;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -380,7 +380,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    String unbuffer = getUnbuffer();
+                    String unbuffer = Unbuffer.getPath(hkey);
                     if (unbuffer != null) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX) {
                             gdb.gdb_set("environment", "DYLD_INSERT_LIBRARIES=" + unbuffer); // NOI18N
@@ -455,9 +455,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return platform;
     }
 
-    public InputOutput getIO() {
+    /*public InputOutput getIO() {
         return iotab;
-    }
+    }*/
 
     public PathMap getPathMap() {
         return pathMap;
@@ -486,35 +486,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return csdirs;
     }
 
-    private String getUnbuffer() {
-        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
-            return Unbuffer.getRemotePath(hkey);
-        } else {
-            return Unbuffer.getLocalPath();
-        }
-    }
-
-    private static String getOsArch() {
-        String orig = System.getProperty("os.arch"); // NOI18N
-        return "-" + ((orig.equals("i386") || orig.equals("i686")) ? "x86" : orig); // NOI18N
-    }
-
-    private static String getOsName() {
-        return "-" + System.getProperty("os.name").replace(" ", "_"); // NOI18N
-    }
-
-    private static String getExtension() {
-        return Utilities.isWindows() ? ".dll" : Utilities.getOperatingSystem() == PlatformTypes.PLATFORM_MACOSX ? ".dylib" : ".so"; // NOI18N
-    }
-
-    private String fixPath(String path) {
-        if (isCygwin() && path.charAt(1) == ':') {
-            return "/cygdrive/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
-        } else if (isMinGW() && path.charAt(1) == ':') {
-            return "/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
-        } else {
-            return path;
-        }
+    public String getSignal() {
+        return sig;
     }
 
     private String getFullPath(String rundir, String path) {
@@ -1686,6 +1659,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (frame != null) {
                     map = GdbUtils.createMapFromString(frame);
                     String fullname = map.get("fullname"); // NOI18N
+                    if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && fullname != null && fullname.charAt(0) == '/') {
+                        if (fullname.startsWith("/usr")) { // NOI18N
+                            fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname.substring(4);
+                        } else {
+                            fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname;
+                        }
+                    }
                     String line = map.get("line"); // NOI18N
                     if (fullname != null && line != null) {
                         lastStop = fullname + ":" + line; // NOI18N
@@ -1703,6 +1683,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     if (tid != null && !tid.equals(currentThreadID)) {
                         currentThreadID = tid;
                     }
+                    sig = map.get("signal-name"); // NOI18N
                     gdb.stack_list_frames();
                     setStopped();
                 }
@@ -2057,6 +2038,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     } else {
                         fullname = runDirectory + file;
                         log.finest("GD.stackUpdate: Setting fullname from runDirectory + file"); // NOI18N
+                    }
+                }
+                if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && fullname != null && fullname.charAt(0) == '/') {
+                    if (fullname.startsWith("/usr")) { // NOI18N
+                        fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname.substring(4);
+                    } else {
+                        fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname;
                     }
                 }
 
@@ -2505,6 +2493,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC;
     }
 
+    /**
+     * Warning: The gdb debugger isn't very good at checking C vs C++. I'm not deprecating this call but I've
+     * discovered it isn't reliable (because gdb isn't reliable).
+     *
+     * @return True for C++, false otherwise
+     */
     public boolean isCplusPlus() {
         return cplusplus;
     }

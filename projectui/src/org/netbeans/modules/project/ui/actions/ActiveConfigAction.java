@@ -26,6 +26,7 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -57,6 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -68,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -149,8 +152,10 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
 
         lookup = LookupSensitiveAction.LastActivatedWindowLookup.INSTANCE;
-        Lookup.Result result = lookup.lookupResult(Project.class);
-        result.addLookupListener(WeakListeners.create(LookupListener.class, this, result));
+        Lookup.Result resultPrj = lookup.lookupResult(Project.class);
+        Lookup.Result resultDO = lookup.lookupResult(DataObject.class);
+        resultPrj.addLookupListener(WeakListeners.create(LookupListener.class, this, resultPrj));
+        resultDO.addLookupListener(WeakListeners.create(LookupListener.class, this, resultDO));
 
         DynLayer.INSTANCE.setEnabled(true);
         refreshView(lookup);
@@ -161,15 +166,23 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     private synchronized void configurationsListChanged(Collection<? extends ProjectConfiguration> configs) {
         LOGGER.log(Level.FINER, "configurationsListChanged: {0}", configs);
         if (configs == null) {
-            configListCombo.setModel(EMPTY_MODEL);
-            configListCombo.setEnabled(false); // possibly redundant, but just in case
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    configListCombo.setModel(EMPTY_MODEL);
+                    configListCombo.setEnabled(false); // possibly redundant, but just in case
+                }
+            });
         } else {
-            DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
+            final DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
             if (pcp.hasCustomizer()) {
                 model.addElement(CUSTOMIZE_ENTRY);
             }
-            configListCombo.setModel(model);
-            configListCombo.setEnabled(true);
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    configListCombo.setModel(model);
+                    configListCombo.setEnabled(true);
+                }
+            });
         }
         if (pcp != null) {
             activeConfigurationChanged(getActiveConfiguration(pcp));
@@ -501,7 +514,10 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
         if (contextPrj != null) {
             activeProjectChanged(contextPrj);
-        }
+        } //else {
+          //  currentProject = null;
+          //  activeProjectChanged(null);
+        //}
 
     }
 
@@ -515,6 +531,12 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         }
         if (result.size() > 0) {
             toReturn = result.get(0);
+        } else {
+            // find a project via DataObject
+            for (DataObject dobj : context.lookupAll(DataObject.class)) {
+                FileObject primaryFile = dobj.getPrimaryFile();
+                toReturn = FileOwnerQuery.getOwner(primaryFile);
+            }
         }
         return toReturn;
     }

@@ -50,16 +50,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JToggleButton;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IAutonomousElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.MetaLayerRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
+import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.keymap.DiagramKeyMapConstants;
@@ -116,9 +121,9 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
             Set<Object> selectedObjs = (Set<Object>) scene.getSelectedObjects();
             if ( selectedObjs != null && selectedObjs.size() > 0)
             {   
-                scene.userSelectionSuggested (Collections.EMPTY_SET, false);
                 scene.setFocusedObject(null);
                 scene.clearLockedSelected();
+                scene.userSelectionSuggested (Collections.EMPTY_SET, false);
                 
                 // cancel context palette
                 ContextPaletteManager contextManager = scene.getContextPaletteManager();
@@ -261,15 +266,19 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                         loc = new Point(x, y);
                     }
                 }
+                // Do relationship discovery,
                 // select all the added nodes and request 
                 // diagram top component to be in focus and active
                 if ( addedPEs != null && addedPEs.size() > 0) 
                 {
-                    scene.userSelectionSuggested( new HashSet<IPresentationElement>(addedPEs), false );
+                    // discover relationship among added nodes
+                    createConnection(scene, addedPEs);
+                    
                      if (addedPEs.size() == 1)
                     {
                         scene.setFocusedObject(addedPEs.get(0));
                     }
+                    scene.userSelectionSuggested( new HashSet<IPresentationElement>(addedPEs), false );
                     scene.getTopComponent().requestActive();
                 }
             }
@@ -307,8 +316,8 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                             sceneAcceptAction.addWidget(sceneCenter, scene, pe);
 
                             // select the added widget and set it focused
-                            scene.userSelectionSuggested(Collections.singleton(pe), false);
                             scene.setFocusedObject(pe);
+                            scene.userSelectionSuggested(Collections.singleton(pe), false);
                         }
                     }
                 }
@@ -395,6 +404,24 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                 MetaLayerRelationFactory.instance().establishImportIfNeeded(diaNameSpace.getProject(), element);
             } 
         }
+    }
+    
+    private void createConnection(DesignerScene scene, ArrayList<IPresentationElement> presentations)
+    {
+        ETList<IElement> elements = new ETArrayList<IElement> ();
+        for (IPresentationElement pe: presentations)
+        {
+            elements.add(pe.getFirstSubject());
+        }
+        DiagramEngine engine = scene.getEngine();
+        RelationshipDiscovery relDiscovery = engine.getRelationshipDiscovery();
+        
+        List < IElement > nodesOnScene = new ArrayList < IElement >();
+        for(IPresentationElement element : scene.getNodes())
+        {
+            nodesOnScene.add(element.getFirstSubject());
+        }
+        relDiscovery.discoverCommonRelations(elements, nodesOnScene);
     }
 }
 

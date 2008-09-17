@@ -60,6 +60,10 @@ public class WebXmlPackageRename extends BaseWebXmlRename{
         List<FileObject> fos = new ArrayList<FileObject>();
         RefactoringUtil.collectChildren(pkg, fos);
         for (FileObject each : fos){
+            // #142870 -- skip package-info, it is not needed in web.xml refactoring
+            if (RefactoringUtil.isPackageInfo(each)) {
+                continue;
+            }
             String oldFqn = JavaIdentifiers.getQualifiedName(each);
             String newFqn = RefactoringUtil.constructNewName(each, rename);
             result.add(new RenameItem(newFqn, oldFqn));
@@ -70,5 +74,5 @@ public class WebXmlPackageRename extends BaseWebXmlRename{
     protected AbstractRefactoring getRefactoring() {
         return rename;
     }
-    
+
 }

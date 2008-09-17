@@ -152,7 +152,7 @@ made subject to such option by the copyright holder.
         <dynamic_library_basic flags="-shared "/>
     </linker>
     <make>
-        <tool name="make,gmake"/>
+        <tool name="gmake,make"/>
         <version flags="--version" />
         <dependency_support code="include $(wildcard $(addsuffix .d, ${OBJECTFILES}))\n" />
     </make>

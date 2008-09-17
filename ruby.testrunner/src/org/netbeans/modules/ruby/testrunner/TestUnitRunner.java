@@ -59,6 +59,7 @@ import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities.DefaultTaskEvaluator;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
 import org.openide.filesystems.FileObject;
@@ -166,10 +167,13 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+        TestSession session = new TestSession(name, 
                 locator,
-                TestUnitHandlerFactory.getHandlers(),
                 debug ? SessionType.DEBUG : SessionType.TEST);
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                TestUnitHandlerFactory.getHandlers(),
+                session,
+                true);
         TestExecutionManager.getInstance().start(desc, recognizer);
     }
 
@@ -195,11 +199,13 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         // the test run is forked to a different process (by Rake::TestTask) than rake itself
         task.addRakeParameters("-r \"" + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath() + "\""); //NOI18N
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+        TestSession session = new TestSession(task.getDisplayName(),
                 locator,
-                TestUnitHandlerFactory.getHandlers(),
-                //XXX
                 debug ? SessionType.DEBUG : SessionType.TEST);
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                TestUnitHandlerFactory.getHandlers(),
+                session,
+                true);
 
         Map<String, String> env = new HashMap<String, String>(1);
         addTestUnitRunnerToEnv(env);

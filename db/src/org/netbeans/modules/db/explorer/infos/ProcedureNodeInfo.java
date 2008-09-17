@@ -59,8 +59,12 @@ import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 public class ProcedureNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-5984072379104199563L;
 
+    @Override
     public void initChildren(Vector children) throws DatabaseException {
         try {
+            if (!ensureConnected()) {
+                return;
+            }
             String name = (String)get(DatabaseNode.PROCEDURE);
             
             DriverSpecification drvSpec = getDriverSpecification();

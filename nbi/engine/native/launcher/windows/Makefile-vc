@@ -12,6 +12,21 @@ RC32="$(VC_2005)\Bin\rc.exe"
 
 BUILD_DIR32=.\build\32bit
 OUTPUT_FILE32=.\dist\nlw.exe
+MANIFEST_FILE32=.\resources\nlw.exe.manifest
+#Alternative manifest file - read more in resources\res.rc
+#MANIFEST_FILE32=.\resources\nlw-alt.exe.manifest
+
+SOURCE_FILES=\
+	.\src\ExtractUtils.c \
+	.\src\FileUtils.c \
+	.\src\JavaUtils.c \
+	.\src\Launcher.c \
+	.\src\Main.c \
+	.\src\ProcessUtils.c \
+	.\src\RegistryUtils.c \
+	.\src\StringUtils.c \
+	.\src\SystemUtils.c
+
 
 CC32_OPTS=/O1 /Os \
 	/I "$(VC_2005)\include" \
@@ -71,7 +86,7 @@ build-32:
   Set APPVER=5.01
   Set TARGETOS=WINNT
   
-  $(CC32) $(CC32_OPTS) .\src\ExtractUtils.c .\src\FileUtils.c .\src\JavaUtils.c .\src\Launcher.c .\src\Main.c .\src\ProcessUtils.c .\src\RegistryUtils.c .\src\StringUtils.c .\src\SystemUtils.c
+  $(CC32) $(CC32_OPTS) $(SOURCE_FILES)
   $(RC32) $(RC32_OPTS) resources/res.rc
   $(L32) $(L32_OPTS) $(BUILD_DIR32)\ExtractUtils.obj $(BUILD_DIR32)\FileUtils.obj $(BUILD_DIR32)\JavaUtils.obj $(BUILD_DIR32)\Launcher.obj $(BUILD_DIR32)\Main.obj $(BUILD_DIR32)\ProcessUtils.obj $(BUILD_DIR32)\RegistryUtils.obj $(BUILD_DIR32)\StringUtils.obj $(BUILD_DIR32)\SystemUtils.obj $(BUILD_DIR32)\resources.obj
-  $(MT32)  /outputresource:"$(OUTPUT_FILE32);#1" -manifest .\resources\nlw.exe.manifest $(BUILD_DIR32)\nlw.exe.intermediate.manifest
+  $(MT32)  /outputresource:"$(OUTPUT_FILE32);#1" -manifest $(MANIFEST_FILE32) $(BUILD_DIR32)\nlw.exe.intermediate.manifest

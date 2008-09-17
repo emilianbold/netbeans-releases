@@ -3625,7 +3625,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         ret = new HashSet<TypeMirror>();
                         Types types = controller.getTypes();
                         ret.add(controller.getTypes().getPrimitiveType(TypeKind.INT));
-                        ret.add(types.getDeclaredType(controller.getElements().getTypeElement("java.lang.Enum")));
+                        TypeElement te = controller.getElements().getTypeElement("java.lang.Enum"); //NOI18N
+                        if (te != null)
+                            ret.add(types.getDeclaredType(te));
                         return ret;
                     case METHOD_INVOCATION:
                         MethodInvocationTree mi = (MethodInvocationTree)tree;
@@ -3703,7 +3705,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
                         int idEndPos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
-                        if (idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
+                        if (idEndPos < 0 || idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
                             break;
                         argTypes = getArgumentsUpToPos(env, nc.getArguments(), idEndPos, lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset);
                         if (argTypes != null) {
@@ -4099,10 +4101,29 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (i == argTypes.length) {
                             if (typeArgTypes != null && param.getKind() == TypeKind.DECLARED && typeArgTypes.length == meth.getTypeVariables().size())
                                 param = tu.substitute(param, meth.getTypeVariables(), Arrays.asList(typeArgTypes));
+                            TypeMirror toAdd = null;
                             if (i < parSize)
-                                ret.add(param);
+                                toAdd = param;
                             if (varArgs && !parIt.hasNext() && param.getKind() == TypeKind.ARRAY)
-                                ret.add(((ArrayType)param).getComponentType());
+                                toAdd = ((ArrayType)param).getComponentType();
+                            if (toAdd != null && ret.add(toAdd)) {
+                                TypeMirror toRemove = null;
+                                for (TypeMirror tm : ret) {
+                                    if (tm != toAdd) {
+                                        TypeMirror tmErasure = types.erasure(tm);
+                                        TypeMirror toAddErasure = types.erasure(toAdd);
+                                        if (types.isSubtype(toAddErasure, tmErasure)) {
+                                            toRemove = toAdd;
+                                            break;
+                                        } else if (types.isSubtype(tmErasure, toAddErasure)) {
+                                            toRemove = tm;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (toRemove != null)
+                                    ret.remove(toRemove);
+                            }
                             break;
                         }
                         if (argTypes[i] == null)

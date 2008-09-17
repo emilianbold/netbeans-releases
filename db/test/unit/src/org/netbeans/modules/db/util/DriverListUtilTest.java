@@ -94,7 +94,7 @@ public class DriverListUtilTest extends TestCase {
     public void testNonParsedJdbcUrls() throws Exception {
         List<JdbcUrl> urls = DriverListUtil.getJdbcUrls();
         for ( JdbcUrl url : urls ) {
-            if (! url.urlIsParsed()) {
+            if (! url.isParseUrl()) {
                 testNonParsedUrl(url);
             }
         }
@@ -574,8 +574,8 @@ public class DriverListUtilTest extends TestCase {
         assertEquals(className, url.getClassName());
         assertEquals(template, url.getUrlTemplate());
         
-        JdbcUrl other = new JdbcUrl(url.getName(), url.getClassName(),
-                url.getType(), url.getUrlTemplate(), url.urlIsParsed());
+        JdbcUrl other = new JdbcUrl(url.getName(), url.getName(), url.getClassName(),
+                url.getType(), url.getUrlTemplate(), url.isParseUrl());
         
         assertEquals(url, other);
 

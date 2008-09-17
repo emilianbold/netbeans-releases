@@ -117,6 +117,10 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     @Override
     public String toString() {
+        return getOutput();
+    }
+
+    public String getOutput() {
         if (out != null) {
             return out.toString();
         } else {

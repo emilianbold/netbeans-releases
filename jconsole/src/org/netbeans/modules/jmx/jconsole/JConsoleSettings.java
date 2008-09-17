@@ -40,21 +40,17 @@
  */
 package org.netbeans.modules.jmx.jconsole;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.openide.*;
-//import org.openide.filesystems.FileSystemCapability;
-import org.openide.options.SystemOption;
-import org.openide.util.*;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbPreferences;
 
 
-public class JConsoleSettings extends SystemOption implements ChangeListener
+public class JConsoleSettings implements ChangeListener
 {
-    static final long serialVersionUID = -1055706114162507505L;
+    private static final JConsoleSettings INSTANCE = new JConsoleSettings();
 
     private static final String PROP_POLLING     = "POLLING"; // NOI18N
     private static final String PROP_TILE   = "TILE"; // NOI18N
@@ -70,13 +66,13 @@ public class JConsoleSettings extends SystemOption implements ChangeListener
     static {
          NETBEANS_CLASS_PATH = System.getProperty("java.class.path");// NOI18N
     }
-    
+
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(JConsoleSettings.class);
+    }
     protected void initialize () 
-    {
-        super.initialize();
-        
+    {        
         setPolling(4);
-        setTile(Boolean.TRUE);   
     }
     
     public static boolean isNetBeansJVMGreaterThanJDK15() {
@@ -99,7 +95,7 @@ public class JConsoleSettings extends SystemOption implements ChangeListener
 
     public static JConsoleSettings getDefault () 
     {
-        return (JConsoleSettings) findObject (JConsoleSettings.class, true);
+        return INSTANCE;
     }
     
     public void stateChanged (ChangeEvent e)
@@ -108,75 +104,72 @@ public class JConsoleSettings extends SystemOption implements ChangeListener
     
     public Boolean getTile()
     {
-        return (Boolean)getProperty(PROP_TILE);
+        return getPreferences().getBoolean(PROP_TILE, true);
     }
 
     public void setTile(Boolean tile)
     {
-        putProperty(PROP_TILE, tile);
+        getPreferences().putBoolean(PROP_TILE, tile);
     }
     
     public String getClassPath()
     {
-        return (String)getProperty(PROP_CLASSPATH);
+        return getPreferences().get(PROP_CLASSPATH, null);
     }
 
     public void setClassPath(String value)
     {
-        putProperty(PROP_CLASSPATH, value);
+        getPreferences().put(PROP_CLASSPATH, value);
     }
     
     public String getPluginsPath()
     {
-        return (String)getProperty(PROP_PLUGINSPATH);
+        return getPreferences().get(PROP_PLUGINSPATH, null);
     }
 
     public void setPluginsPath(String value)
     {
-        putProperty(PROP_PLUGINSPATH, value);
+        getPreferences().put(PROP_PLUGINSPATH, value);
     }
     
     public Integer getPolling()
     {
-        Integer target = (Integer)getProperty (PROP_POLLING);
-        return target;
+        return getPreferences().getInt(PROP_POLLING, 4);
     }
     
     public void setPolling(Integer polling)
     {   
-        putProperty(PROP_POLLING, polling, true);
+        getPreferences().putInt(PROP_POLLING, polling);
     }
     
     public String getVMOptions()
     {
-        String other = (String)getProperty (PROP_VM_OPTIONS);
-        return other;
+        return getPreferences().get(PROP_VM_OPTIONS, null);
     }
     
     public void setVMOptions(String other)
     {
-        putProperty (PROP_VM_OPTIONS, other, true);
+        getPreferences().put(PROP_VM_OPTIONS, other);
     }
     
     public String getOtherArgs()
     {
-        return (String)getProperty (PROP_OTHER_ARGS);
+        return getPreferences().get(PROP_OTHER_ARGS, null);
     }
     
     public void setOtherArgs(String other)
     {
-        putProperty (PROP_OTHER_ARGS, other, true);
+        getPreferences().put(PROP_OTHER_ARGS, other);
     }
     
     public String getDefaultUrl()
     {
-        String url = (String)getProperty (PROP_URL);
-        return url;
+        return getPreferences().get(PROP_URL, null);
     }
     
     public void setDefaultUrl(String url)
     {
-        putProperty (PROP_URL, url, true);
+        getPreferences().put(PROP_URL, url);
     }
     
     public HelpCtx getHelpCtx () {
