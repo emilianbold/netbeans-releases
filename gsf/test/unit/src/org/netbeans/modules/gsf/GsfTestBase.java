@@ -2932,7 +2932,7 @@ public abstract class GsfTestBase extends NbTestCase {
             long fullParseTime = fullParseEndTime-fullParseStartTime;
             // Figure out how to ensure garbage collections etc. make a fair run.
             assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns); speedup was " +
-                    fullParseTime/incrementalParseTime,
+                    ((double)fullParseTime)/incrementalParseTime,
                     ((double)incrementalParseTime)*speedupExpectation < fullParseTime);
         }
 
@@ -3667,7 +3667,7 @@ public abstract class GsfTestBase extends NbTestCase {
             assertTrue("DeclarationLocation.NONE", false);
         }
 
-        assertEquals(file, location.getFileObject().getNameExt());
+        assertEquals(file, location.getFileObject() != null ? location.getFileObject().getNameExt() : "<none>");
         assertEquals(offset, location.getOffset());
     }
 }
