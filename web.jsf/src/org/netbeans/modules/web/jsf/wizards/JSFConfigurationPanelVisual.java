@@ -613,7 +613,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
             
             if ((isJSF && isJSF12 && webModule25Version) // JSF 1.2 for Java EE 5 
-                    || (isJSF && !isJSF12 && !webModule25Version)){ // JSF 1.1 for J2EE 1.x
+                    || (isJSF && !webModule25Version)){ // JSF 1.1 for J2EE 1.x
                 rbNoneLibrary.setSelected(true);
             }
             else {
