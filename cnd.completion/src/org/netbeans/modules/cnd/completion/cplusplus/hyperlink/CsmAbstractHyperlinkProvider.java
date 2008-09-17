@@ -52,7 +52,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
@@ -100,7 +99,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         if (hyperLinkTask != null) {
             hyperLinkTask.cancel();
         }
-        hyperLinkTask = CsmModelAccessor.getModel().enqueue(run, "Following hyperlink");
+        hyperLinkTask = CsmModelAccessor.getModel().enqueue(run, "Following hyperlink");// NOI18N
     }
     
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {

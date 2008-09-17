@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.DeployOnSaveManager;
 import org.netbeans.modules.j2ee.deployment.impl.ProgressObjectUtil;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
+import org.netbeans.modules.j2ee.deployment.impl.ServerException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
@@ -172,10 +173,26 @@ public final class Deployment {
                 deploymentTarget.setTargetModules(modules);
             } else {
                 String msg = NbBundle.getMessage(Deployment.class, "MSG_ModuleNotDeployed");
-                throw new DeploymentException (msg);
+                throw new DeploymentException(msg);
             }
             return deploymentTarget.getClientUrl(clientUrlPart);
+        } catch (ServerException ex) {
+            // The thrower is expected to provide a useful message. If the throwing
+            // code provides a cause, this will forward it to the next level and
+            // the ant output.
+            //
+            String msg = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
+            java.util.logging.Logger.getLogger("global").log(Level.INFO, null, ex);
+            if (null != ex.getCause()) {
+                throw new DeploymentException(msg, ex);
+            } else {
+                throw new DeploymentException(msg);
+            }
+        } catch (DeploymentException de) {
+            throw de;
         } catch (Exception ex) {
+            // Don't know where this came from, so we send as much info as possible
+            // to the ant output.
             String msg = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
             LOGGER.log(Level.INFO, null, ex);
             throw new DeploymentException(msg, ex);
@@ -261,11 +278,13 @@ public final class Deployment {
         private DeploymentException (String s, Throwable t) {
             super (s, t);
         }
+
         /**
          * Returns a short description of this DeploymentException.
          * overwrite the one from Exception to avoid showing the class name that does nto provide any real value.
          * @return a string representation of this DeploymentException.
          */
+        @Override
         public String toString() {
             String s = getClass().getName();
             String message = getLocalizedMessage();
@@ -419,9 +438,9 @@ public final class Deployment {
      */
     public boolean canFileDeploy(String instanceId, J2eeModule mod) {
         boolean retVal = false;
-        ServerInstance instance = ServerRegistry.getInstance().getServerInstance(instanceId);
-        if (null != instance) {
-            IncrementalDeployment incr = instance.getIncrementalDeployment();
+        ServerInstance localInstance = ServerRegistry.getInstance().getServerInstance(instanceId);
+        if (null != localInstance) {
+            IncrementalDeployment incr = localInstance.getIncrementalDeployment();
             try {
                 if (null != incr && null != mod.getContentDirectory()) {
                     retVal = incr.canFileDeploy(null, mod);

@@ -122,7 +122,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="groupLabel">
           <Properties>
-            <Property name="displayedMnemonic" type="int" value="117"/>
+            <Property name="displayedMnemonic" type="int" value="71"/>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="groupTextField"/>
             </Property>
@@ -216,6 +216,9 @@
             <Property name="editable" type="boolean" value="false"/>
           </Properties>
           <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.exePermTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.exePermTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -235,6 +238,9 @@
             <Property name="editable" type="boolean" value="false"/>
           </Properties>
           <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.filePermTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.filePermTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>

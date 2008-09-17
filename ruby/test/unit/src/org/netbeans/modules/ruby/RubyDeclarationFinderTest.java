@@ -49,4 +49,16 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     public void testDeclaration3() throws Exception {
         checkDeclaration("testfiles/resolv.rb", "class UnconnectedUDP < Reque^ster", "^class Requester");
     }
+
+    public void testDeclaration4() throws Exception {
+        checkDeclaration("testfiles/declaration.rb", "attr_a^ccessor :symbol", "stub_module.rb", 9339);
+    }
+
+    public void testDeclaration5() throws Exception {
+        checkDeclaration("testfiles/declaration.rb", "ope^nssl", "openssl.rb", 0);
+    }
+
+    //public void testDeclaration6() throws Exception {
+    //    checkDeclaration("testfiles/declaration.rb", "File.safe_un^link", "ftools.rb", 1);
+    //}
 }

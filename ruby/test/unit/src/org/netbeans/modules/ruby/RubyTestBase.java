@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -52,18 +53,26 @@ import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.options.CodeStyle;
 import org.netbeans.modules.ruby.options.FmtOptions;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
  * @author Tor Norbye
  */
 public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTestBase {
+
+    static {
+        //RubyIndex.setClusterUrl("file:/bogus"); // No translation
+        try {
+            RubyIndex.setClusterUrl(TestUtil.getXTestJRubyHome().getParentFile().toURI().toURL().toExternalForm());
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     public RubyTestBase(String testName) {
         super(testName);
@@ -72,7 +81,7 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        RubyIndex.setClusterUrl("file:/bogus"); // No translation
+
         TestSourceModelFactory.currentTest = this;
     }
     

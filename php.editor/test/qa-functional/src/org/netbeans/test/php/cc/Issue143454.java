@@ -68,11 +68,11 @@ import java.util.List;
  * @author michaelnazarov@netbeans.org
  */
 
-public class cc_0003 extends cc
+public class Issue143454 extends cc
 {
-  static final String TEST_PHP_NAME = "PhpProject3";
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue143454";
 
-  public cc_0003( String arg0 )
+  public Issue143454( String arg0 )
   {
     super( arg0 );
   }
@@ -80,9 +80,9 @@ public class cc_0003 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( cc_0003.class ).addTest(
+      NbModuleSuite.createConfiguration( Issue143454.class ).addTest(
           "CreateApplication",
-          "Issue141866"
+          "Issue143454"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -99,7 +99,7 @@ public class cc_0003 extends cc
     endTest( );
   }
 
-  public void Issue141866( ) throws Exception
+  public void Issue143454( ) throws Exception
   {
     startTest( );
 
@@ -108,27 +108,6 @@ public class cc_0003 extends cc
     Sleep( 1000 );
     // Locate comment
     eoPHP.setCaretPosition( "// put your code here", false );
-    // Add new line
-    eoPHP.insert( "\n" );
-    Sleep( 1000 );
-
-    String sCode = "class a ext";
-    String sIdeal = "class a extends";
-    for( int i = 0; i < sCode.length( ); i++ )
-    {
-      // Press Ctrl+Space
-      eoPHP.typeKey( sCode.charAt( i ) );
-      Sleep( 1000 );
-    }
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
-
-    // Get code
-    String sText = eoPHP.getText( eoPHP.getLineNumber( ) );
-
-    // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
 
     endTest( );
   }
