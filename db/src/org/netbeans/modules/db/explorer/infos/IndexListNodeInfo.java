@@ -60,8 +60,12 @@ import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 public class IndexListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =5809643799834921044L;
 
+    @Override
     public void initChildren(Vector children) throws DatabaseException {
         try {
+            if (!ensureConnected()) {
+                return;
+            }
             String table = (String) get(DatabaseNode.TABLE);
             DriverSpecification drvSpec = getDriverSpecification();
             Connection con = getConnection();

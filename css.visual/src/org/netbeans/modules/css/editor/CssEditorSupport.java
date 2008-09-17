@@ -408,7 +408,7 @@ public class CssEditorSupport {
         } else {
             //something was selected
 
-            if (selectedRule == selected) {
+            if (selectedRule.equals(selected)) {
                 d("already selected rule selected, exiting");
                 return; //trying to select already selected rule, ignore
             }

@@ -61,11 +61,6 @@ function initialize() {
             parent_folder  = start_page_string.substring(0, start_page_string.lastIndexOf("/") + 1);
 
 	    if(query!="" && query != string && query.indexOf(sep)!=-1)  {
-	            url      = query.substring(0, query.indexOf(sep));	                
-	            url      = BINARIES_LOCATION + url;
-		    filename = url.substring(url.lastIndexOf("/") + 1, url.length);
-		    query = query.substring(query.indexOf(sep) + 1, query.length);
-		    
 		    while(query!="") {
 		            var lang_sep     = "lang=";
 			    var platform_sep = "platform=";
@@ -143,6 +138,14 @@ function initialize() {
 			image.src = phpRequest;
 			image.style.display="none";
 		    } 
+
+		    if (USE_BOUNCER == 1) {
+                        url      = get_file_bouncer_url(platform_id, option_id);
+                    } else {
+                        url      = get_file_url(platform_id, option_id);
+		    }
+                    filename     = get_file_name(platform_id, option_id);
+
             	    window.onload = delayedredirect;
             }
 }

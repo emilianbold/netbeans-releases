@@ -120,6 +120,10 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         // create nb project location
         File nbProjectDir = model.getNetBeansProjectLocation();
         
+        if (ProjectFactorySupport.areSourceRootsOwned(model, nbProjectDir, importProblems)) {
+            return null;
+        }
+        
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
         if (webData == null) {
             importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_MissingExtraWebFiles")); //NOI18N

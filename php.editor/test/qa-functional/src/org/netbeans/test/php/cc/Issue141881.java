@@ -68,11 +68,11 @@ import java.util.List;
  * @author michaelnazarov@netbeans.org
  */
 
-public class cc_0005 extends cc
+public class Issue141881 extends cc
 {
-  static final String TEST_PHP_NAME = "PhpProject5";
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141881";
 
-  public cc_0005( String arg0 )
+  public Issue141881( String arg0 )
   {
     super( arg0 );
   }
@@ -80,9 +80,9 @@ public class cc_0005 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( cc_0005.class ).addTest(
+      NbModuleSuite.createConfiguration( Issue141881.class ).addTest(
           "CreateApplication",
-          "Issue141880"
+          "Issue141881"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -99,7 +99,7 @@ public class cc_0005 extends cc
     endTest( );
   }
 
-  public void Issue141880( ) throws Exception
+  public void Issue141881( ) throws Exception
   {
     startTest( );
 
@@ -109,23 +109,21 @@ public class cc_0005 extends cc
     // Locate comment
     eoPHP.setCaretPosition( "// put your code here", false );
     // Add new line
-    eoPHP.insert( "\n$aaa = \"Hello\";\n" );
-    Sleep( 1000 );
+    //eoPHP.insert( "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n" );
+    //Sleep( 1000 );
 
     // Check constructor
-    String sCode = "$bbb = \"$a";
+    String sCode = "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n$aa ->";
     for( int i = 0; i < sCode.length( ); i++ )
     {
       // Press Ctrl+Space
       eoPHP.typeKey( sCode.charAt( i ) );
-      Sleep( 1000 );
+      Sleep( 200 );
     }
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
 
     // Check code completion list
 
-    String[] asIdeals = { "aaa", "argc", "argv" };
+    String[] asIdeals = { "xx" };
 
     CompletionJListOperator jCompl = GetCompletion( );
     List list = jCompl.getCompletionItems( );

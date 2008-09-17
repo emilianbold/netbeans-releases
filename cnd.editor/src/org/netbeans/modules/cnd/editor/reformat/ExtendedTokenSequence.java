@@ -699,7 +699,7 @@ public class ExtendedTokenSequence {
                 int end = diff.getEndOffset();
                 String text = diff.getText();
                 if (startOffset > end || endOffset < start) {
-                    System.out.println("What?");
+                    System.err.println("What?" + startOffset + ":" + start + "-" + end);// NOI18N
                     continue;
                 }
                 if (endOffset < end) {

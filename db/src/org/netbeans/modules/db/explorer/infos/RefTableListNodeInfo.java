@@ -51,8 +51,12 @@ import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 public class RefTableListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =318942800614012305L;
 
+    @Override
     public void initChildren(Vector children) throws DatabaseException {
         try {
+            if (!ensureConnected()) {
+                return;
+            }
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();

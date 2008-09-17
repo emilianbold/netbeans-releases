@@ -167,7 +167,7 @@ public class CompletionTestBase extends NbTestCase {
                     ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                         public Void run() throws IOException, InterruptedException {
                             BinaryAnalyser ba = cii.getBinaryAnalyser();            
-                            ba.start(url, null, new AtomicBoolean(false), new AtomicBoolean(false));
+                            ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
                             ba.finish();
                             return null;
                         }

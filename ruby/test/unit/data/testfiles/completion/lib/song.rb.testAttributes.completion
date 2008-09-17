@@ -30,6 +30,7 @@ METHOD     chop                                       Kernel
 METHOD     chop!                                      Kernel
 METHOD     class                                      Object
 METHOD     class_eval(string, filename, l             Module
+METHOD     class_exec(arg) { }                        Module
 METHOD     class_variable_defined?(symbol             Module
 METHOD     class_variable_get(symbol)                 Module
 METHOD     class_variable_set(symbol, obj             Module
@@ -77,6 +78,7 @@ METHOD     included_modules                           Module
 METHOD     inherited(subclass)                        Class
 METHOD     inspect                                    Object
 METHOD     instance_eval(string, filename             Object
+METHOD     instance_exec(arg) { }                     Object
 METHOD     instance_method(symbol)                    Module
 METHOD     instance_methods(include_super             Module
 METHOD     instance_of?(class_name)                   Object
@@ -98,6 +100,7 @@ METHOD     method_missing(symbol, *args)              Kernel
 METHOD     method_removed(p1)                         Module
 METHOD     method_undefined(p1)                       Module
 METHOD     methods                                    Object
+METHOD     module_exec(arg) { }                       Module
 METHOD     module_function(symbol)                    Module
 METHOD     name                                       Module
 METHOD     nesting                         [STATIC]   Module
@@ -161,6 +164,7 @@ METHOD     syscall(fixnum, args)                      Kernel
 METHOD     system(cmd, arg)                           Kernel
 METHOD     taint                                      Object
 METHOD     tainted?                                   Object
+METHOD     tap { }                                    Object
 METHOD     test(int_cmd, file1, file2)                Kernel
 METHOD     throw(symbol, obj)                         Kernel
 METHOD     to_a                                       Object

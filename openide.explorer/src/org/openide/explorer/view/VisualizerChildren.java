@@ -260,6 +260,15 @@ final class VisualizerChildren extends Object {
      */
     private int[] reorderByComparator(Comparator<VisualizerNode> c) {
         VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
+
+        for (int i = 0; i < old.length; i++) {
+            if (old[i] == null) {
+                Node node = snapshot.get(i);
+                old[i] = VisualizerNode.getVisualizer(this, node);
+                old[i].indexOf = i;
+            }
+        }
+
         Arrays.sort(old, c);
 
         int[] idxs = new int[old.length];
