@@ -90,6 +90,14 @@ public class MethodCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").^getPr", false);
     }
 
+    public void testCompletionInMethodCall1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods4.groovy", "        new File(\"something\").ea^", false);
+    }
+    
+    public void testCompletionInMethodCall2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods5.groovy", "        new File(\"something\").c^", false);
+    }
+    
 //    Disabled for now, since this tests undetermingly oscillates between pass and fail. 
 //    public void testMethods5() throws Exception {
 //        checkCompletion(TEST_BASE + "" + "Methods2.groovy", "        new Byte().^", false);
