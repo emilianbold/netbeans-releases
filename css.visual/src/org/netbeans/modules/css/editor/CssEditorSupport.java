@@ -273,7 +273,7 @@ public class CssEditorSupport {
     };
 
     //always called fro AWT, no need to explicit synch with cssTCDeactivated
-    public void cssTCActivated(TopComponent tc) {
+    public void cssTCActivated(final TopComponent tc) {
         d("activated: " + tc.getName());
         
         if (current != null) {
@@ -299,6 +299,22 @@ public class CssEditorSupport {
         this.fileObject = tc.getLookup().lookup(FileObject.class);
         this.model = CssModel.get(document);
 
+        //select the first rule if the caret in on zero offset
+        //once the model is updated/created the caret is set and this listener unregistered
+        model.addPropertyChangeListener( new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(CssModel.MODEL_UPDATED)) {
+                    model.removePropertyChangeListener(this);
+                    if (editorPane.getCaret().getDot() == 0) {
+                        if (model.rules().size() > 0) {
+                            d("setting caret to first rule: " + tc.getName());
+                            editorPane.getCaret().setDot(model.rules().get(0).getRuleNameOffset());
+                        }
+                    }
+                }
+            }
+        });
+
         if (!caretListenerRegistered) {
             d("added caret listener: " + tc.getName());
             editorPane.addCaretListener(CARET_LISTENER);
@@ -313,14 +329,6 @@ public class CssEditorSupport {
             d("removed css styledatalistener from old " + selected + ": " + tc.getName());
             selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
             selected = null;
-        }
-        
-                //select the first rule if the caret in on zero offset
-        if(editorPane.getCaret().getDot() == 0) {
-            if(model.rules().size() > 0) {
-                d("setting caret to first rule: " + tc.getName());
-                editorPane.getCaret().setDot(model.rules().get(0).getRuleNameOffset());
-            }
         }
         
         updateSelectedRule(editorPane.getCaret().getDot());
