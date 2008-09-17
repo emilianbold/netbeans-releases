@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -129,11 +130,11 @@ public final class ProjectPropertiesSupport {
     }
 
     public static boolean areShortTagsEnabled(PhpProject project) {
-        return getBoolean(project, PhpProjectProperties.SHORT_TAGS, org.netbeans.modules.php.project.api.PhpOptions.SHORT_TAGS_ENABLED);
+        return getBoolean(project, PhpProjectProperties.SHORT_TAGS, PhpLanguageOptions.SHORT_TAGS_ENABLED);
     }
 
     public static boolean areAspTagsEnabled(PhpProject project) {
-        return getBoolean(project, PhpProjectProperties.ASP_TAGS, org.netbeans.modules.php.project.api.PhpOptions.ASP_TAGS_ENABLED);
+        return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
     }
 
     /**
