@@ -181,7 +181,7 @@ public class PHPIndexer implements Indexer {
             }
         }
         assert fo != null;
-        return FileUtil.getMIMEType(fo, PHPLanguage.PHP_MIME_TYPE) != null;
+        return PHPLanguage.PHP_MIME_TYPE.equals(FileUtil.getMIMEType(fo, PHPLanguage.PHP_MIME_TYPE));
     }
 
     public String getPersistentUrl(File file) {
