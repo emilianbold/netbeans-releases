@@ -96,6 +96,30 @@ public class CssRule {
     public int getRuleOpenBracketOffset() {
         return ruleOpenBracketOffset.getOffset();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof CssRule) {
+            CssRule r = (CssRule)obj;
+            if(name().equals(r.name()) 
+                    && getRuleNameOffset() == r.getRuleNameOffset() 
+                    && getRuleCloseBracketOffset() == r.getRuleCloseBracketOffset() 
+                    && getRuleOpenBracketOffset() == r.getRuleOpenBracketOffset()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + (this.ruleNameOffset != null ? this.ruleNameOffset.hashCode() : 0);
+        hash = 79 * hash + (this.ruleOpenBracketOffset != null ? this.ruleOpenBracketOffset.hashCode() : 0);
+        hash = 79 * hash + (this.ruleCloseBracketOffset != null ? this.ruleCloseBracketOffset.hashCode() : 0);
+        hash = 79 * hash + (this.ruleName != null ? this.ruleName.hashCode() : 0);
+        return hash;
+    }
     
     @Override
     public String toString() {
