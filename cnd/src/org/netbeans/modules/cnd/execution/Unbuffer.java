@@ -58,10 +58,10 @@ public class Unbuffer {
     }
 
     public static String getPath(String hkey) {
-        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
-            return Unbuffer.getRemotePath(hkey);
-        } else {
+        if (hkey == null || CompilerSetManager.LOCALHOST.equals(hkey)) {
             return Unbuffer.getLocalPath();
+        } else {
+            return Unbuffer.getRemotePath(hkey);
         }
     }
     
