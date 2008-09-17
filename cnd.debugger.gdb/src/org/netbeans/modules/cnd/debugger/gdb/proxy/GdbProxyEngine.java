@@ -109,7 +109,11 @@ public class GdbProxyEngine {
                 debuggerCommand.add("-tty"); // NOI18N
                 debuggerCommand.add(tty);
             }
-        }
+        } /*else {
+            TTYProxy ttyProxy = new TTYProxy(null);
+            debuggerCommand.add("-tty"); // NOI18N
+            debuggerCommand.add(ttyProxy.getFilename());
+        }*/
         this.debugger = debugger;
         this.gdbProxy = gdbProxy;
         active = true;
