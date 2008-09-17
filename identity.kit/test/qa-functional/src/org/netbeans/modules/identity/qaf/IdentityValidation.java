@@ -101,7 +101,7 @@ import org.netbeans.modules.ws.qaf.WsValidation;
 /**
  *
  * @author jp154641
- * 
+ *
  * This test suite was created to automate most basic Identity test cases
  * such as editing of AM Profiles, securing WS and WSC in Web and EJB Module
  * Basic functionality for web services area is implemented in WSValidation class
@@ -119,7 +119,7 @@ public class IdentityValidation extends WsValidation {
     public static File PROJECTS_FOLDER_FILE;
     public static File WSP_PROJECT_FILE;
     public static File WSC_PROJECT_FILE;
-   
+
     @Override
      protected String getWsProjectName() {
         return "TestIdentityWSWebApp"; //NOI18N
@@ -144,26 +144,59 @@ public class IdentityValidation extends WsValidation {
     protected String getWsClientPackage() {
         return "org.identity.wsc.test"; //NOI18N
     }
-    
+
     /** Creates a new instance of IdentityValidation */
     public IdentityValidation(String name) {
         super(name);
     }
-    
+
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(IdentityValidation.class),
-                "prepareWSProject",
-                "prepareWSClientProject",
-                "prepareWSProject",
-                "prepareWSClientProject",
-                "testStockQuoteService",
-                "testStockQuoteClient",
-                "checkAMProfiles",
-                "testAMSecurityInWeb",
-                "testAMSecurityInEJB",
-                "testUndeployAll",
-                "stopSDKGlassfish"
-                ).enableModules(".*").clusters(".*"));
+
+        // This "nicely recursive" implementation is due to limitations in J2eeTestCase API
+        return NbModuleSuite.create(
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(), IdentityValidation.class,
+                    "prepareWSProject",
+                    "prepareWSClientProject"
+                    ), IdentityValidationInEJB.class,
+                    "prepareWSProject",
+                    "prepareWSClientProject"
+                    ), IdentitySamplesTest.class,
+                    "testStockQuoteService",
+                    "testStockQuoteClient"
+                    ), IdentityValidation.class,
+                    "checkAMProfiles",
+                    "testAMSecurityInWeb"
+                    ), IdentityValidationInEJB.class,
+                    "testAMSecurityInEJB"
+                    ), IdentitySamplesTest.class,
+                    "testUndeployAll"
+                    ), IdentityValidation.class,
+                    "stopSDKGlassfish"
+                    ).enableModules(".*").clusters(".*")
+                );
+
+
+
+//
+//        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(IdentityValidation.class),
+//                "prepareWSProject",
+//                "prepareWSClientProject",
+//                "prepareWSProject",
+//                "prepareWSClientProject",
+//                "testStockQuoteService",
+//                "testStockQuoteClient",
+//                "checkAMProfiles",
+//                "testAMSecurityInWeb",
+//                "testAMSecurityInEJB",
+//                "testUndeployAll",
+//                "stopSDKGlassfish"
+//                ).enableModules(".*").clusters(".*"));
     }
 
 //    public static TestSuite suite() {
@@ -182,41 +215,41 @@ public class IdentityValidation extends WsValidation {
 //        return suite;
 //    }
 //
-//    /** 
-//     * Use for execution inside IDE 
+//    /**
+//     * Use for execution inside IDE
 //     */
 //    public static void main(java.lang.String[] args) {
 //        // run whole suite
 //        TestRunner.run(suite());
 //    }
-    
+
     /**
      * This method creates test web project with web service and two
      * operations, then deploys it.
      * @throws java.io.IOException
      */
-    public void prepareWSProject() throws IOException {      
+    public void prepareWSProject() throws IOException {
         testCreateNewWs();
 //        testChangeServer(false);
         testAddOperation();
         testDeployWsProject();
     }
-    
+
     /**
      * This method creates web module and web service client to previously
      * deployed web service. The word Client in name ot the suite method
      * is essential for correct working of this method!
      * @throws java.io.IOException
      */
-    public void prepareWSClientProject() throws IOException {      
+    public void prepareWSClientProject() throws IOException {
         testCreateWsClient();
 //        testChangeServer(true);
         testCallWsOperationInServlet();
         testDeployWsClientProject();
     }
-    
-     /** 
-     * Add SDK Glassfish - key component to use AM security 
+
+     /**
+     * Add SDK Glassfish - key component to use AM security
      * - adds SDK Glassfish with Access manager component
      */
 //    public void addSDKGlassfish() {
@@ -242,8 +275,8 @@ public class IdentityValidation extends WsValidation {
 //        new JButtonOperator(dialog, "Finish").push(); //NOI18N
 //    }
 
-    /** 
-     * Start SDK Glassfish  - to test AM functionality 
+    /**
+     * Start SDK Glassfish  - to test AM functionality
      * - this feature is neccessary,when we want to test AM profiles,since these are
      * available in Runtime tab only if server is running
      */
@@ -254,8 +287,8 @@ public class IdentityValidation extends WsValidation {
 //        serverNode.start();
 //    }
 
-    /** 
-     * Test AM Profiles 
+    /**
+     * Test AM Profiles
      * - this test kills many birds with one stone, when it tests if AM node is present,
      * if AM Profiles are editable/configuration test and edit each of them
      */
@@ -274,8 +307,8 @@ public class IdentityValidation extends WsValidation {
         editProfile(profiles, "LibertySAMLToken"); //NOI18N
     }
 
-    /** 
-     * Method for editing of selected profile 
+    /**
+     * Method for editing of selected profile
      * - we check if Verify Response checkbox is editable
      */
     public void editProfile(Node profiles, String nodeName) {
@@ -295,9 +328,9 @@ public class IdentityValidation extends WsValidation {
         new EventTool().waitNoEvent(2000);
     }
 
-    /** 
-     * Stop SDK Glassfish 
-     * - just stops the server,after testing's done 
+    /**
+     * Stop SDK Glassfish
+     * - just stops the server,after testing's done
      */
     public void stopSDKGlassfish() {
         System.out.println("########  TestCase: " + getName() + "  #######"); //NOI18N
@@ -307,9 +340,9 @@ public class IdentityValidation extends WsValidation {
         new EventTool().waitNoEvent(2000);
     }
 
-    /** 
-     * Test of AM security in web project 
-     * - both ws provider and client 
+    /**
+     * Test of AM security in web project
+     * - both ws provider and client
      * - sets AM security in WS provider, deploys WS and then sets AM security in WSC and deploys it
      */
     public void testAMSecurityInWeb() {
@@ -318,15 +351,15 @@ public class IdentityValidation extends WsValidation {
         secureWSCinWebModule();
     }
 
-    /** 
-     * Test of AM security in ejb project 
-     * - both ws provider and client 
+    /**
+     * Test of AM security in ejb project
+     * - both ws provider and client
      * - sets AM security in WS provider, deploys WS and then sets AM security in WSC and deploys it
      */
-    
 
-    /** 
-     * Setting AM security for WS provider in web module 
+
+    /**
+     * Setting AM security for WS provider in web module
      */
     public void secureWSinWebModule() {
         ProjectsTabOperator prj = new ProjectsTabOperator();
@@ -345,12 +378,12 @@ public class IdentityValidation extends WsValidation {
         OutputTabOperator oto = new OutputTabOperator(getWsProjectName());
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000); //NOI18N
         oto.waitText("(total time: "); //NOI18N
-        assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N  
+        assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
     }
 
-  
-    /** 
-     * Setting AM security for WS client in web module 
+
+    /**
+     * Setting AM security for WS client in web module
      */
     public void secureWSCinWebModule() {
         ProjectsTabOperator prj = new ProjectsTabOperator();
@@ -374,7 +407,7 @@ public class IdentityValidation extends WsValidation {
         OutputTabOperator oto = new OutputTabOperator(getWsClientProjectName());
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000); //NOI18N
         oto.waitText("(total time: "); //NOI18N
-        assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N  
+        assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
     }
 
      /**
@@ -398,5 +431,5 @@ public class IdentityValidation extends WsValidation {
 //        JComboBoxOperator server = new JComboBoxOperator(propertiesDialogOper,0);
 //        server.selectItem(TARGET_SERVER_NAME);
 //        propertiesDialogOper.ok();
-//    }  
+//    }
 }

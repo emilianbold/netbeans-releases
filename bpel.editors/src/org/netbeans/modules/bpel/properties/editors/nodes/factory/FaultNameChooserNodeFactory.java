@@ -18,10 +18,12 @@
  */
 package org.netbeans.modules.bpel.properties.editors.nodes.factory;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.bpel.model.ext.Extensions;
 import org.netbeans.modules.bpel.nodes.CategoryFolderNode;
 import org.netbeans.modules.bpel.nodes.children.BpelUserFaultsChildren;
 import org.netbeans.modules.bpel.nodes.children.FaultNameStandardChildren;
@@ -92,13 +94,18 @@ public class FaultNameChooserNodeFactory implements NodeFactory<NodeType> {
                         new BpelUserFaultsChildren((Process)ref, lookup, 
                         standardFaultsChildren, wsdlImportFaultsChildren);
                 //
+                QName systemFault = new QName(
+                        Extensions.ERROR_EXT_URI, Extensions.SYSTEM_FAULT_NAME);
+                Node sysFaultNode = createNode(NodeType.FAULT, systemFault, lookup);
+                //
                 children.add(new Node[] {
-                    new CategoryFolderNode(NodeType.SYSTEM_FAULTS_FOLDER,
+                    new CategoryFolderNode(NodeType.STANDARD_FAULTS_FOLDER,
                             standardFaultsChildren, lookup),
                     new CategoryFolderNode(NodeType.WSDL_FILES_FOLDER,
                             wsdlImportFaultsChildren, lookup),
                     new CategoryFolderNode(NodeType.BPEL_FAULTS_FOLDER,
-                            userDefFaultsChildren, lookup)
+                            userDefFaultsChildren, lookup),
+                    sysFaultNode
                 });
                 //
                 newNode = myDelegate.createNode(nodeType, ref, children, lookup);

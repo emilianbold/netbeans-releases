@@ -136,6 +136,10 @@ public final class MoveControlPointAction extends WidgetAction.LockedAdapter {
         if (routingPolicy != null)
             movingWidget.setRoutingPolicy (routingPolicy);
         movingWidget.setControlPoints (controlPoints, false);
+        
+        movingWidget.getSourceAnchor().getRelatedWidget().revalidate();
+        movingWidget.getTargetAnchor().getRelatedWidget().revalidate();
+        
         return State.createLocked (widget, this);
     }
 

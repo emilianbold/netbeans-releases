@@ -248,7 +248,6 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         }
     }
 
-
     public UMLDiagramTopComponent(String filename) throws DataObjectNotFoundException {
         this();
         
@@ -698,6 +697,8 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         if(diagramView != null)
         {
             diagramView.putClientProperty("print.name", diagram.getNameWithAlias()); // NOI18N
+            diagramView.getAccessibleContext().setAccessibleName(diagram.getNameWithAlias());
+            diagramView.getAccessibleContext().setAccessibleDescription(getToolTipText());
         }
     }
 
@@ -934,6 +935,8 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
             diagramView.addMouseListener(this);
 
             jScrollPane1.setViewportView(view);
+            jScrollPane1.getVerticalScrollBar().setUnitIncrement(50);
+            jScrollPane1.getHorizontalScrollBar().setUnitIncrement(50);
             SceneChangeListener scListener = new SceneChangeListener(getDiagramDO(), scene);
             scene.addObjectSceneListener(scListener, 
                                          ObjectSceneEventType.OBJECT_ADDED,

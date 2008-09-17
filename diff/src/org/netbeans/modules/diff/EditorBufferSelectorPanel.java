@@ -116,7 +116,9 @@ class EditorBufferSelectorPanel extends JPanel implements ListSelectionListener 
         elementsList.setListData(elements.toArray(new EditorListElement[elements.size()]));
         elementsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         elementsList.addListSelectionListener(this);
-        jPanel1.add(elementsList);
+
+        JScrollPane sp = new JScrollPane(elementsList);
+        jPanel1.add(sp);
     }
 
     public void valueChanged(ListSelectionEvent e) {

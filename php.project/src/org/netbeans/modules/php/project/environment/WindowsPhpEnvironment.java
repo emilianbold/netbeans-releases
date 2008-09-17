@@ -44,6 +44,7 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -99,8 +100,8 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         if (htDocs != null) {
             String documentRoot = getFolderName(htDocs, projectName);
             String url = getDefaultUrl(projectName);
-            String hint = NbBundle.getMessage(SolarisPhpEnvironment.class, "TXT_HtDocs");
-            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, htDocs.canWrite()));
+            String hint = NbBundle.getMessage(WindowsPhpEnvironment.class, "TXT_HtDocs");
+            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, Utils.isFolderWritable(htDocs)));
         }
         return Collections.<DocumentRoot>emptyList();
     }
@@ -116,5 +117,4 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         return absolutePath.toLowerCase().startsWith("a:") // NOI18N
                 || absolutePath.toLowerCase().startsWith("b:"); // NOI18N
     }
-
 }

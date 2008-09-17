@@ -368,24 +368,28 @@ public final class MasterMatcher {
         }
     }
 
-    private static Collection<? extends BracesMatcherFactory> findFactories(Document document, int offset, boolean backward) {
-        MimePath mimePath = null;
-
-        TokenHierarchy<? extends Document> th = TokenHierarchy.get(document);
-        if (th.isActive()) {
-            List<TokenSequence<?>> sequences = th.embeddedTokenSequences(offset, backward);
-            if (!sequences.isEmpty()) {
-                String path = sequences.get(sequences.size() - 1).languagePath().mimePath();
-                mimePath = MimePath.parse(path);
+    private static Collection<? extends BracesMatcherFactory> findFactories(final Document document,
+            final int offset, final boolean backward
+    ) {
+        final MimePath[] mimePath = { null };
+        document.render(new Runnable() {
+            public void run() {
+                TokenHierarchy<? extends Document> th = TokenHierarchy.get(document);
+                if (th.isActive()) {
+                    List<TokenSequence<?>> sequences = th.embeddedTokenSequences(offset, backward);
+                    if (!sequences.isEmpty()) {
+                        String path = sequences.get(sequences.size() - 1).languagePath().mimePath();
+                        mimePath[0] = MimePath.parse(path);
+                    }
+                } else {
+                    String mimeType = (String) document.getProperty("mimeType"); //NOI18N
+                    mimePath[0] = mimeType != null ? MimePath.parse(mimeType) : MimePath.EMPTY;
+                }
             }
-        } else {
-            String mimeType = (String) document.getProperty("mimeType"); //NOI18N
-            mimePath = mimeType != null ? MimePath.parse(mimeType) : MimePath.EMPTY;
-        }
-
-        Collection<? extends BracesMatcherFactory> factories = mimePath == null ?
+        });
+        Collection<? extends BracesMatcherFactory> factories = mimePath[0] == null ?
             Collections.<BracesMatcherFactory>emptyList() :
-            MimeLookup.getLookup(mimePath).lookupAll(BracesMatcherFactory.class);
+            MimeLookup.getLookup(mimePath[0]).lookupAll(BracesMatcherFactory.class);
         
 //        System.out.println("@@@ '" + (mimePath == null ? "null" : mimePath.getPath()) + "', offset = " + offset + ", backward = " + backward + " -> {");
 //        for(BracesMatcherFactory f : factories) {
@@ -405,7 +409,7 @@ public final class MasterMatcher {
         private final int maxBwdLookahead;
         private final int maxFwdLookahead;
 
-        private boolean inDocumentRender = false;
+//        private boolean inDocumentRender = false;
         private volatile boolean canceled = false;
         
         private final List<Object []> highlightingJobs = new ArrayList<Object []>();
@@ -478,21 +482,30 @@ public final class MasterMatcher {
         // ------------------------------------------------
         
         public void run() {
-            // Read lock the document
-            if (!inDocumentRender) {
-                inDocumentRender = true;
-                THREAD_RESULTS.put(Thread.currentThread(), this);
-                try {
-                    document.render(this);
-                } catch (ThreadDeath t) {
-                    throw t;
-                } catch (Error t) {
-                    // ignore, can happen when the task is interrupted
-                } finally {
-                    THREAD_RESULTS.remove(Thread.currentThread());
-                }
-                return;
+            THREAD_RESULTS.put(Thread.currentThread(), this);
+            try {
+                _run();
+            } finally {
+                THREAD_RESULTS.remove(Thread.currentThread());
             }
+        }
+        
+        private void _run() {
+//            // Read lock the document
+//            if (!inDocumentRender) {
+//                inDocumentRender = true;
+//                THREAD_RESULTS.put(Thread.currentThread(), this);
+//                try {
+//                    document.render(this);
+//                } catch (ThreadDeath t) {
+//                    throw t;
+//                } catch (Error t) {
+//                    // ignore, can happen when the task is interrupted
+//                } finally {
+//                    THREAD_RESULTS.remove(Thread.currentThread());
+//                }
+//                return;
+//            }
 
             if (canceled) {
                 return;
@@ -517,12 +530,12 @@ public final class MasterMatcher {
 //                System.out.println("!!! ------------------- finding Origin ---------------------");
                 if (D_BACKWARD.equalsIgnoreCase(allowedDirection.toString())) {
                     origin = findOrigin(true, matcher);
-                    if (origin == null) {
+                    if (origin == null && !canceled) {
                         origin = findOrigin(false, matcher);
                     }
                 } else if (D_FORWARD.equalsIgnoreCase(allowedDirection.toString())) {
                     origin = findOrigin(false, matcher);
-                    if (origin == null) {
+                    if (origin == null && !canceled) {
                         origin = findOrigin(true, matcher);
                     }
                 }
@@ -533,7 +546,10 @@ public final class MasterMatcher {
                     matches = matcher[0].findMatches();
                 }
             } catch (BadLocationException ble) {
-                LOG.log(Level.WARNING, null, ble);
+                // since we are not running under document lock (see #131284) there can be exceptions
+                LOG.log(Level.FINE, null, ble);
+                return;
+                
             } catch (Exception e) {
                 for(Throwable t = e; t != null; t = t.getCause()) {
                     if (t instanceof InterruptedException) {
@@ -541,7 +557,10 @@ public final class MasterMatcher {
                         return;
                     }
                 }
-                LOG.log(Level.WARNING, null, e);
+
+                // since we are not running under document lock (see #131284) there can be exceptions
+                LOG.log(Level.FINE, null, e);
+                return;
             }
 
             // Show the results
@@ -555,16 +574,33 @@ public final class MasterMatcher {
                 MasterMatcher.this.task = null;
             }
 
-            for (Object[] job : highlightingJobs) {
-                highlightAreas(origin, matches, (OffsetsBag) job[0], (AttributeSet) job[1], (AttributeSet) job[2]);
-                if (Boolean.valueOf((String) component.getClientProperty(PROP_SHOW_SEARCH_PARAMETERS))) {
-                    showSearchParameters((OffsetsBag) job[0]);
-                }
-            }
+            final int [] _origin = origin;
+            final int [] _matches = matches;
+            document.render(new Runnable() {
+                public void run() {
+                    try {
+                        for (Object[] job : highlightingJobs) {
+                            highlightAreas(_origin, _matches, (OffsetsBag) job[0], (AttributeSet) job[1], (AttributeSet) job[2]);
+                            if (Boolean.valueOf((String) component.getClientProperty(PROP_SHOW_SEARCH_PARAMETERS))) {
+                                showSearchParameters((OffsetsBag) job[0]);
+                            }
+                        }
 
-            for(Object [] job : navigationJobs) {
-                navigateAreas(origin, matches, caretOffset, caretBias, (Caret) job[0], (Boolean) job[1]);
-            }
+                        for(Object [] job : navigationJobs) {
+                            navigateAreas(_origin, _matches, caretOffset, caretBias, (Caret) job[0], (Boolean) job[1]);
+                        }
+                    } catch (Exception e) {
+                        // the results were not computed under document lock and may be out fo sync
+                        // with the document, just ignore the exception and remove any highlights
+                        LOG.log(Level.FINE, null, e);
+
+                        // clear everything, we probably screwed it up
+                        for (Object[] job : highlightingJobs) {
+                            ((OffsetsBag) job[0]).clear();
+                        }
+                    }
+                }
+            });
         }
         
         private int [] findOrigin(
@@ -640,7 +676,8 @@ public final class MasterMatcher {
                 try {
                     origin = matcher[0].findOrigin();
                 } catch (BadLocationException ble) {
-                    LOG.log(Level.WARNING, null, ble);
+                    // since we are not running under document lock (see #131284) there can be exceptions
+                    LOG.log(Level.FINE, null, ble);
                 }
                 
                 // Check the original area for consistency
@@ -690,10 +727,12 @@ public final class MasterMatcher {
                     }
                 }
 
-                if (origin != null) {
-                    LOG.fine("[" + origin[0] + ", " + origin[1] + "] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
-                } else {
-                    LOG.fine("[null] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    if (origin != null) {
+                        LOG.fine("[" + origin[0] + ", " + origin[1] + "] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                    } else {
+                        LOG.fine("[null] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                    }
                 }
                 
                 return origin;

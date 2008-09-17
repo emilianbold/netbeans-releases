@@ -40,14 +40,13 @@
 package org.netbeans.modules.web.client.tools.javascript.debugger.api;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.web.client.tools.api.JSLocation;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -57,6 +56,7 @@ public class JSURILocation implements JSLocation {
     private URI uri;
     private int lineNumber;
     private int columnNumber;
+    private Set<URI> extraURIs;
 
     public JSURILocation(URI uri, int lineNumber) {
         this(uri, lineNumber, -1);
@@ -111,6 +111,24 @@ public class JSURILocation implements JSLocation {
 
     public String getDisplayName() {
         return getURI().toString() + ":" + getLineNumber();
+    }
+
+    public Set<URI> getEquivalentURIs() {
+        return extraURIs;
+    }
+
+    public void addEquivalentURI(URI uri) {
+        if (extraURIs == null) {
+            extraURIs = new LinkedHashSet<URI>();
+        }
+        
+        extraURIs.add(uri);
+    }
+
+    public void removeEquivalentURI(URI uri) {
+        if (extraURIs != null) {
+            extraURIs.remove(uri);
+        }
     }
 
 }

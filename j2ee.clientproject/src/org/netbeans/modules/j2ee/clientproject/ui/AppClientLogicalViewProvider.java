@@ -497,10 +497,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             }
 
             public void actionPerformed(ActionEvent e) {
-                String j2eeSpec = AppClientProjectProperties.getProperty(
-                        AppClientProjectProperties.J2EE_PLATFORM,
-                        helper.getAntProjectHelper(),
-                        AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String j2eeSpec = project.evaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM);
                 if (j2eeSpec == null) {
                     j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
                     Logger.getLogger(AppClientLogicalViewProvider.class.getName()).warning(
@@ -550,7 +547,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
 
             private void checkMissingServer() {
                 boolean old = brokenServer;
-                String servInstID = AppClientProjectProperties.getProperty(AppClientProjectProperties.J2EE_SERVER_INSTANCE, helper.getAntProjectHelper(), AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                String servInstID = project.evaluator().getProperty(AppClientProjectProperties.J2EE_SERVER_INSTANCE);
                 brokenServer = BrokenServerSupport.isBroken(servInstID);
                 if (old != brokenServer) {
                     fireIconChange();

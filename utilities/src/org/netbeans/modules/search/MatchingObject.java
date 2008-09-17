@@ -628,7 +628,6 @@ final class MatchingObject implements PropertyChangeListener {
         assert isSelected();
         
         Boolean uniformSelection = checkSubnodesSelection();
-        final boolean shouldReplaceAll = (uniformSelection == Boolean.TRUE);
         final boolean shouldReplaceNone = (uniformSelection == Boolean.FALSE);
         
         if (shouldReplaceNone) {

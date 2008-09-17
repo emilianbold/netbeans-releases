@@ -87,7 +87,6 @@ public class Tool {
     private String displayName;
     private String path;
     private CompilerSet compilerSet = null;
-    private String includeFilePrefix = null;
     
     /** Creates a new instance of GenericCompiler */
     public Tool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
@@ -98,7 +97,6 @@ public class Tool {
         this.displayName = displayName;
         this.path = path;
         compilerSet = null;
-        includeFilePrefix = null;
     }
 
     public ToolDescriptor getDescriptor() {
@@ -195,24 +193,15 @@ public class Tool {
     }
     
     public String getIncludeFilePathPrefix() {
-        if (includeFilePrefix == null) {
-            includeFilePrefix = ""; // NOI18N
-            CompilerDescriptor c = getFlavor().getToolchainDescriptor().getC();
-            if (c != null) {
-                String path = getPath().replaceAll("\\\\", "/"); // NOI18N
-                if (c.getRemoveIncludePathPrefix() != null) {
-                    int i = path.toLowerCase().indexOf("/bin"); // NOI18N
-                    if (i > 0) {
-                        includeFilePrefix = path.substring(0, i);
-                    }
-                }
-            }
-        }
-        return includeFilePrefix;
+        // TODO: someone put this here only because OutputWindowWriter in core
+        // wants to get information about compilers which are defined in makeprojects.
+        // abstract Tool shouldn't care about include paths for compilers
+        throw new UnsupportedOperationException();
     }
-    
+
+    @Deprecated
     public void setIncludeFilePathPrefix(String includeFilePrefix) {
-        this.includeFilePrefix = includeFilePrefix;
+        throw new UnsupportedOperationException();
     }
 
     @Deprecated

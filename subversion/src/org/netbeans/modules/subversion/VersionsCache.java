@@ -78,6 +78,11 @@ public class VersionsCache {
      * @return null if the file does not exit in given revision
      */
     public File getFileRevision(File base, String revision) throws IOException {
+        try {
+            SvnClientFactory.checkClientAvailable();
+        } catch (SVNClientException e) {
+            return null;
+        }
         if (Setup.REVISION_BASE.equals(revision)) {
             try {
                 File svnDir = getMetadataDir(base.getParentFile());

@@ -1,38 +1,38 @@
-[${|, integer Integer, ${integer, 856]
-calendar Calendar
-date Date
-integer Integer
-applicationScope
-cookie
-headerValues
-header
-initParam
+[${|, Integer integer, ${integer, 856]
+Calendar calendar
+Date date
+Integer integer
+applicationScope[]
+cookie[]
+headerValues[]
+header[]
+initParam[]
 pageContext
-pageScope
-paramValues
-param
-requestScope
-sessionScope
+pageScope[]
+paramValues[]
+param[]
+requestScope[]
+sessionScope[]
 End cursor position = 866
 [${p|, pageContext, ${pageContext, 900]
 pageContext
-pageScope
-paramValues
-param
+pageScope[]
+paramValues[]
+param[]
 End cursor position = 914
-[#{| }, date Date, #{date }, 938]
-calendar Calendar
-date Date
-integer Integer
-applicationScope
-cookie
-headerValues
-header
-initParam
+[#{| }, Date date, #{date }, 938]
+Calendar calendar
+Date date
+Integer integer
+applicationScope[]
+cookie[]
+headerValues[]
+header[]
+initParam[]
 pageContext
-pageScope
-paramValues
-param
-requestScope
-sessionScope
+pageScope[]
+paramValues[]
+param[]
+requestScope[]
+sessionScope[]
 End cursor position = 945

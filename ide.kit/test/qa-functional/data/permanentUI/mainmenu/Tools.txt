@@ -1,10 +1,7 @@
 | Tools |                      T (mnemonics)
 =========
-Create JUnit Tests...          U [dynamic]
-Analyze Javadoc                y [dynamic]
 Add to Favorites               A [dynamic]
 Add to Palette...              e [dynamic]
-Internationalization       >   I
 ============================
 Java Platforms                 J
 NetBeans Platforms             N

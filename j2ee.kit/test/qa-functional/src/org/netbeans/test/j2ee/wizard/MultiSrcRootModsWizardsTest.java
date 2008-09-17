@@ -83,18 +83,18 @@ public class MultiSrcRootModsWizardsTest extends J2eeTestCase {
             addTest(new NewFileWizardsTest("testMultiQueueMdbBean", "1.4"));
             addTest(new NewFileWizardsTest("testMultiTopicMdbBean", "1.4"));
             addTest(new NewFileWizardsTest("testMultiServiceLocatorInEjb", "1.4"));
-            addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInEjb", "1.4"));
+//            addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInEjb", "1.4"));
             addTest(new NewFileWizardsTest("testBuildEjbMultiRootProject", "1.4"));
 
             addTest(new NewFileWizardsTest("testOpenWebMultiRootProject", "1.4"));
             addTest(new NewFileWizardsTest("testMultiServletInWeb", "1.4"));
             addTest(new NewFileWizardsTest("testMultiServiceLocatorInWeb", "1.4"));
-            addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInWeb", "1.4"));
+//            addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInWeb", "1.4"));
 
             addTest(new NewFileWizardsTest("testBuildWebMultiRootProject", "1.4"));
             
             addTest(new LibraryTest("testDD"));
-            addTest(new LibraryTest("testDDandManifests"));
+            addTest(new LibraryTest("testDDMs"));
         }
     }
 

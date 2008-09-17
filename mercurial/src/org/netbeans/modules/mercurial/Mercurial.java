@@ -46,7 +46,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -65,7 +67,7 @@ import org.openide.util.Utilities;
 
 /**
  * Main entry point for Mercurial functionality, use getInstance() to get the Mercurial object.
- * 
+ *
  * @author Maros Sandor
  */
 public class Mercurial {
@@ -75,7 +77,7 @@ public class Mercurial {
     public static final int HG_NUMBER_FETCH_OPTIONS = 3;
     public static final int HG_NUMBER_TO_FETCH_DEFAULT = 7;
     public static final int HG_MAX_REVISION_COMBO_SIZE = HG_NUMBER_TO_FETCH_DEFAULT + HG_NUMBER_FETCH_OPTIONS;
-    
+
     public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_DisplayName"); // NOI18N
     public static final String CHANGESET_STR = "changeset:"; // NOI18N
 
@@ -84,6 +86,7 @@ public class Mercurial {
     public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial"); // NOI18N
+    private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
 
     private static final int STATUS_DIFFABLE =
             FileInformation.STATUS_VERSIONED_UPTODATE |
@@ -102,7 +105,7 @@ public class Mercurial {
     private static Mercurial instance;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private List<File> knownRoots = Collections.synchronizedList(new ArrayList<File>());
-    
+
     public static synchronized Mercurial getInstance() {
         if (instance == null) {
             instance = new Mercurial();
@@ -110,7 +113,7 @@ public class Mercurial {
         }
         return instance;
     }
-    
+
     private MercurialAnnotator   mercurialAnnotator;
     private MercurialInterceptor mercurialInterceptor;
     private FileStatusCache     fileStatusCache;
@@ -123,8 +126,8 @@ public class Mercurial {
 
     private Mercurial() {
     }
-    
-    
+
+
     private void init() {
         loadIniParserClassesWorkaround();
         setDefaultPath();
@@ -133,13 +136,13 @@ public class Mercurial {
         mercurialInterceptor = new MercurialInterceptor();
         checkVersion(); // Does the Hg check but postpones querying user until menu is activated
     }
-    
+
     private void loadIniParserClassesWorkaround() {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
         try {
             // triggers ini4j initialization in call to loadSystemAndGlobalFile()
-            HgConfigFiles.getSysInstance();   
+            HgConfigFiles.getSysInstance();
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
@@ -156,8 +159,8 @@ public class Mercurial {
                     if (HgModuleConfig.getDefault().isExecPathValid(pathNames[i])) {
                         HgModuleConfig.getDefault().setExecutableBinaryPath (pathNames[i]); // NOI18N
                         break;
-                     } 
-                 } 
+                     }
+                 }
             }
         }else if (Utilities.isWindows()) { // NOI18N
             String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath ();
@@ -165,7 +168,7 @@ public class Mercurial {
                 String path = HgUtils.findInUserPath(HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE);
                 if (path != null && !path.equals("")) { // NOI18N
                     HgModuleConfig.getDefault().setExecutableBinaryPath (path); // NOI18N
-                } 
+                }
             }
         }
     }
@@ -199,8 +202,8 @@ public class Mercurial {
         };
         rp.post(doCheck);
     }
-    
-    public void checkVersionNotify() {  
+
+    public void checkVersionNotify() {
         if (!gotVersion) {
             LOG.log(Level.FINE, "Call to hg version not finished"); // NOI18N
             return;
@@ -214,7 +217,7 @@ public class Mercurial {
                 logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_UNRECOGNIZED_VERSION_MSG", version)); // NOI18N);
                 logger.closeLog();
             }
-            goodVersion = true;         
+            goodVersion = true;
         } else if (version == null) {
             Preferences prefs = HgModuleConfig.getDefault().getPreferences();
             prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
@@ -235,15 +238,15 @@ public class Mercurial {
 
     /**
      * Gets the File Status Cache for the mercurial repository
-     * 
-     * @return FileStatusCache for the repository  
+     *
+     * @return FileStatusCache for the repository
      */
     public FileStatusCache getFileStatusCache() {
         return fileStatusCache;
     }
-    
+
    /**
-     * Tests <tt>.hg</tt> directory itself.  
+     * Tests <tt>.hg</tt> directory itself.
      */
     public boolean isAdministrative(File file) {
         String name = file.getName();
@@ -254,24 +257,30 @@ public class Mercurial {
         return fileName.equals(".hg"); // NOI18N
     }
     /**
-     * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status. 
+     * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status.
      * All files and folders that have a parent with CVS/Repository file are considered versioned.
-     * 
+     *
      * @param file a file or directory
      * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
-     */ 
+     */
     public boolean isManaged(File file) {
         return VersioningSupport.getOwner(file) instanceof MercurialVCS && !HgUtils.isPartOfMercurialMetadata(file);
     }
 
     public File getTopmostManagedParent(File file) {
-        Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent " + file);
+        long t = System.currentTimeMillis();
+        LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        if(unversionedParents.contains(file)) {
+            LOG.fine(" cached as unversioned");
+            return null;
+        }
+        Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
         File parent = getKnownParent(file);
         if(parent != null) {
             Mercurial.LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent " + parent);
             return parent;
         }
-        
+
         if (HgUtils.isPartOfMercurialMetadata(file)) {
             for (;file != null; file = file.getParentFile()) {
                 if (isAdministrative(file)) {
@@ -280,19 +289,37 @@ public class Mercurial {
                 }
             }
         }
+        Set<File> done = new HashSet<File>();
         File topmost = null;
         for (;file != null; file = file.getParentFile()) {
-            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (new File(file, ".hg").canWrite()){ // NOI18N
-                topmost =  file;
+            if(unversionedParents.contains(file)) {
+                LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
                 break;
             }
+            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
+            if (canWrite(file)){ 
+                LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
+                done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
+                topmost =  file;
+                break;
+            } else {
+                LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
+                if(file.exists()) { // could be created later ...
+                    done.add(file);
+                }
+            }
         }
-        Mercurial.LOG.log(Level.FINE, "  getTopmostManagedParent found parent " + topmost);
+        if(done.size() > 0) {
+            LOG.log(Level.FINE, " storing unversioned");
+            unversionedParents.addAll(done);
+        }
+        if(LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, " getTopmostManagedParent returns {0} after {1} millis", new Object[] { topmost, System.currentTimeMillis() - t });
+        }
         if(topmost != null) {
             knownRoots.add(topmost);
         }
-        
+
         return topmost;
     }
 
@@ -302,9 +329,13 @@ public class Mercurial {
         for (File r : roots) {
             if(Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
                 knownParent = r;
-            }             
+            }
         }
         return knownParent;
+    }
+
+    private boolean canWrite(File file) {
+        return new File(file, ".hg").canWrite();
     }
 
     public HgFileNode [] getNodes(VCSContext context, int includeStatus) {
@@ -351,7 +382,9 @@ public class Mercurial {
         return goodVersion;
     }
 
-    public void versionedFilesChanged() {    
+    public void versionedFilesChanged() {
+        LOG.fine("cleaning unversioned parents cache");
+        unversionedParents.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
 
@@ -393,7 +426,7 @@ public class Mercurial {
     /**
      * Serializes all Hg requests (moves them out of AWT).
      */
-    public RequestProcessor getRequestProcessor() { 
+    public RequestProcessor getRequestProcessor() {
         return getRequestProcessor((String)null);
     }
 
@@ -423,7 +456,7 @@ public class Mercurial {
         }
         return rp;
     }
-    
+
     public void clearRequestProcessor(String url) {
         if(processorsToUrl != null & url != null) {
              processorsToUrl.remove(url);

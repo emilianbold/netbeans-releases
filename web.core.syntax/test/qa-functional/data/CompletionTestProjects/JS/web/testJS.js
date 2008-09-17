@@ -8,19 +8,19 @@ var myvariable="variable";
 
 
 /**CC
-c|
+cons|
 const
 const
 */
 
 /**CC
-v|
+va|
 var
 var
 */
 
 /**CC
-S|
+St|
 Core JS String
 String
 */
@@ -38,7 +38,7 @@ myvariable
 */
 
 /**CC
-R|
+Ra|
 Core JS RangeError
 RangeError
 */

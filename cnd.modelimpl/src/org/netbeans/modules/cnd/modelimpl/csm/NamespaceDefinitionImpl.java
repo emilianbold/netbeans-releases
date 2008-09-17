@@ -50,6 +50,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -88,6 +89,21 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
     }
 
+    public static NamespaceDefinitionImpl findNamespaceDefionition(MutableDeclarationsContainer container, AST ast) {
+        int start = getStartOffset(ast);
+        int end = getEndOffset(ast);
+        CharSequence name = NameCache.getManager().getString(ast.getText()); // otherwise equals returns false
+        for (CsmDeclaration decl : container.getDeclarations()) {
+            if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                NamespaceDefinitionImpl candidate = (NamespaceDefinitionImpl) decl;
+                if (candidate.getStartOffset() == start && candidate.getEndOffset() == end && candidate.getName().equals(name)) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
+    }
+    
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.NAMESPACE_DEFINITION;
     }
@@ -231,8 +247,12 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         
         assert this.name != null;
         output.writeUTF(this.name.toString());
+
+        if (getName().length() == 0) {
+            writeUID(output);
+        }
     }  
-    
+
     public NamespaceDefinitionImpl(DataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -245,5 +265,9 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         
         this.name = NameCache.getManager().getString(input.readUTF());
         assert this.name != null;
+
+        if (getName().length() == 0) {
+            readUID(input);
+        }
     }      
 }

@@ -29,6 +29,7 @@ package org.netbeans.modules.gsf.api;
 
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.gsf.api.Rule.AstRule;
 import org.netbeans.modules.gsf.api.Rule.ErrorRule;
 import org.netbeans.modules.gsf.api.Rule.SelectionRule;
@@ -131,6 +132,9 @@ public interface HintsProvider {
         
         /** Return an options controller suitable for editing hints preferences */
         public abstract OptionsPanelController getOptionsController();
+
+        /** Return the Preferences associated with the given user configurable rule. */
+        public abstract Preferences getPreferences(UserConfigurableRule rule);
     }
     
     public static abstract class Factory {

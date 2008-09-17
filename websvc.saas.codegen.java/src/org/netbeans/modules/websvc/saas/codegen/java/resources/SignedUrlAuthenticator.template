@@ -78,10 +78,8 @@ public class ${name} {
                 date + "\n" +
                 getCanonicalAmazonHeaders(headerMap) +
                 getCanonicalResource(headerMap);
-        
-        System.out.println("stringToSign = " + stringToSign);
-        return stringToSign; 
-        
+   
+        return stringToSign;         
     }
     
     private static String getCanonicalAmazonHeaders(HashMap<String, String> headerMap) {

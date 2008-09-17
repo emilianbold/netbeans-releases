@@ -42,6 +42,10 @@
 package org.netbeans.modules.gsf;
 
 import java.io.IOException;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -66,11 +70,25 @@ import org.openide.windows.CloneableOpenSupport;
 
 public class GsfDataObject extends MultiDataObject {
     
+    /** Used temporarily during file creation */
+    private static Language templateLanguage;
+
     private GenericEditorSupport jes;
     private Language language;
     
     public GsfDataObject(FileObject pf, MultiFileLoader loader, Language language) throws DataObjectExistsException {
         super(pf, loader);
+
+        // If the user creates a file with a filename where we can't figure out the language
+        // (e.g. the PHP New File wizard doesn't enforce a file extension, so if you create
+        // a file named "pie.class" (issue 124044) the data loader doesn't know which language
+        // to associate this with since it isn't a GSF file extension or mimetype). However
+        // during template creation we know the language anyway so we can use it. On subsequent
+        // IDE restarts the file won't be recognized so the user will have to rename or
+        // add a new file extension to file type mapping.
+        if (language == null) {
+            language = templateLanguage;
+        }
         this.language = language;
         getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs( FileObject folder, String fileName ) throws IOException {
@@ -89,7 +107,7 @@ public class GsfDataObject extends MultiDataObject {
     }
 
     public @Override <T extends Cookie> T getCookie(Class<T> type) {
-        if (type.isAssignableFrom(GenericEditorSupport.class)) {
+        if (type.isAssignableFrom(GenericEditorSupport.class) && language != null) {
             return type.cast(createEditorSupport ());
         }
         return super.getCookie(type);
@@ -104,7 +122,7 @@ public class GsfDataObject extends MultiDataObject {
     }
 
     protected @Override DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
-        if (name == null && language.getGsfLanguage().getPreferredExtension() != null) {
+        if (name == null && language != null && language.getGsfLanguage().getPreferredExtension() != null) {
             // special case: name is null (unspecified or from one-parameter createFromTemplate)
             name = FileUtil.findFreeFileName(df.getPrimaryFile(),
                 getPrimaryFile().getName(), language.getGsfLanguage().getPreferredExtension());
@@ -114,9 +132,11 @@ public class GsfDataObject extends MultiDataObject {
 //        }
         //IndentFileEntry entry = (IndentFileEntry)getPrimaryEntry();
         //entry.initializeIndentEngine();
-        DataObject retValue = super.handleCreateFromTemplate(df, name);
-        FileObject fo = retValue.getPrimaryFile ();
-        assert fo != null;
+        try {
+            templateLanguage = language;
+            DataObject retValue = super.handleCreateFromTemplate(df, name);
+            FileObject fo = retValue.getPrimaryFile ();
+            assert fo != null;
 //        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
 //        String pkgName;
 //        if (cp != null) {
@@ -126,7 +146,10 @@ public class GsfDataObject extends MultiDataObject {
 //            pkgName = "";   //NOI18N
 //        }
 //        renameJDO (retValue, pkgName, name, this.getPrimaryFile().getName());
-        return retValue;
+            return retValue;
+        } finally {
+            templateLanguage = null;
+        }
     }            
     
     
@@ -187,11 +210,13 @@ public class GsfDataObject extends MultiDataObject {
                 }
             }
         }
-        
+
+        private Language language;
 
         public GenericEditorSupport(GsfDataObject dataObject, Language language) {
             super(dataObject, new Environment(dataObject));
             setMIMEType(language.getMimeType());
+            this.language = language;
         }
         
         
@@ -215,5 +240,17 @@ public class GsfDataObject extends MultiDataObject {
         public @Override boolean close(boolean ask) {
             return super.close(ask);
         }
+
+        @Override
+        protected StyledDocument createStyledDocument (EditorKit kit) {
+            StyledDocument doc = super.createStyledDocument(kit);
+            // Enter the file object in to InputAtrributes. It can be used by lexer.
+            InputAttributes attributes = new InputAttributes();
+            FileObject fileObject = NbEditorUtilities.getFileObject(doc);
+            attributes.setValue(language.getGsfLanguage().getLexerLanguage(), FileObject.class, fileObject, false);
+            doc.putProperty(InputAttributes.class, attributes);
+            return doc;
+        }
+
     }
 }

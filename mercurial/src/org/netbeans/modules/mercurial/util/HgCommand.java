@@ -2463,7 +2463,12 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_REMOVE_FLAG_FORCE_CMD);
         for(File f: removeFiles){
-            command.add(f.getAbsolutePath());
+            try {
+                command.add(f.getCanonicalPath());
+            } catch (IOException ioe) {
+                Mercurial.LOG.log(Level.WARNING, null, ioe); // NOI18N
+                command.add(f.getAbsolutePath()); // don't give up
+            }
         }
 
         List<String> list = exec(command);
@@ -2486,7 +2491,12 @@ public class HgCommand {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_REMOVE_FLAG_FORCE_CMD);
-        command.add(f.getAbsolutePath());
+        try {
+            command.add(f.getCanonicalPath());
+        } catch (IOException ioe) {
+            Mercurial.LOG.log(Level.WARNING, null, ioe); // NOI18N
+            command.add(f.getAbsolutePath()); // don't give up
+        }
 
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorAlreadyTracked(list.get(0)))
@@ -2749,8 +2759,6 @@ public class HgCommand {
      * Gets hg status command output line for a given file
      */
     private static List<String> doSingleStatusCmd(File repository, String cwd, String filename)  throws HgException{
-        String statusLine = null;
-
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -2764,7 +2772,14 @@ public class HgCommand {
         // In 0.9.3 hg status does not give back copy information unless we
         // use relative paths from repository. This is fixed in 0.9.4.
         // See http://www.selenic.com/mercurial/bts/issue545.
-        command.add(new File(cwd, filename).getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
+        String filePath = new File(cwd, filename).getAbsolutePath();
+        String repoPath = repository.getAbsolutePath();
+        if(repoPath.length() >= filePath.length()) {
+            Mercurial.LOG.log(Level.WARNING, "Please report! Wrong repository path: {0}, {1}, {2}", new Object[] {repository, cwd, filename});
+            command.add(filePath);
+        } else {
+            command.add(filePath.substring(repoPath.length() + 1));
+        }
 
         return exec(command);
     }
@@ -2814,7 +2829,7 @@ public class HgCommand {
     private static List<String> execEnv(List<String> command, List<String> env, boolean logUsage) throws HgException{
         if( EventQueue.isDispatchThread()){
             Mercurial.LOG.log(Level.FINE, "WARNING execEnv():  calling Hg command in AWT Thread - could stall UI"); // NOI18N
-        }        
+        }
         assert ( command != null && command.size() > 0);
         if(logUsage) {
             Utils.logVCSClientEvent("HG", "CLI");
@@ -2938,13 +2953,18 @@ public class HgCommand {
 
     private static String getHgCommand() {
         String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath();
-        if (defaultPath == null || defaultPath.length() == 0){
+        if (defaultPath == null || defaultPath.length() == 0) {
             return HG_COMMAND;
-        }else{
-            if(Utilities.isWindows()){
-                return defaultPath + File.separatorChar + HG_COMMAND + HG_WINDOWS_EXE;
-            }else{
-                return defaultPath + File.separatorChar + HG_COMMAND;
+        } else {
+            File f = new File(defaultPath);
+            if(f.isFile()) {
+                return f.getAbsolutePath();
+            } else {
+                if(Utilities.isWindows()){
+                    return defaultPath + File.separatorChar + HG_COMMAND + HG_WINDOWS_EXE;
+                } else {
+                    return defaultPath + File.separatorChar + HG_COMMAND;
+                }
             }
         }
     }

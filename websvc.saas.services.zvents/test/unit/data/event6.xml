@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp status="ok">
+    <stream_count>1</stream_count>
+    <event id="154927">
+        <name>Sunday Jazz Series at the Improv:  The Jazz Cannon</name>
+        <description>
+      Since his arrival to the Bay Area to take the position of Coordinator
+      of Jazz Studies at San Jose State University, Dr. Lington Has quickly
+      become a mainstay of the local jazz scene. A recent graduate of North
+      Texas State University, he has performed with several well-known artists:
+      Maria Schneider and the Temptations to name a few, and arranged and
+      composed for legendary trumpeter Maynard Ferguson and vocalist Jamie
+      Davis. Dr. Lington also serves as Director of the San Jose Jazz Society
+      Orchestra and Youth Jazz Orchestra. Listening samples online at
+      www.aaronlington.com
+      ---sanjosejazz.org
+        </description>
+        <summary></summary>
+        <link>http://www.zvents.com/san-jose-ca/events/show/154927-sunday-jazz-series</link>
+        <url>http://sanjosejazz.org/events.html</url>
+        <external_urls>
+            <external_url>
+                <type>Web page</type>
+                <anchor_text>Wikipedia page</anchor_text>
+                <location>http://en.wikipedia.org/wiki/Jazz</location>
+            </external_url>
+        </external_urls>
+        <performers>
+            <performer>
+                <id>1027111</id>
+                <name>The Jazz Cannon</name>
+                <link>http://www.zvents.com/performers/show/402217-the-jazz-cannon</link>
+            </performer>
+        </performers>
+        <phone>(111) 222-3333</phone>
+        <starttime>200603121500</starttime>
+        <endtime>200603121700</endtime>
+        <creator_id>3</creator_id>
+        <price/>
+        <venue_id>4553</venue_id>
+        <parent_id>154927</parent_id>
+        <tags>
+            <tag>
+                <name>live jazz</name>
+            </tag>
+        </tags>
+        <categories>
+            <category id="7">
+                <id>7</id>
+                <name>Music</name>
+                <parent_id/>
+                <depth>0</depth>
+            </category>
+        </categories>
+        <images>
+            <url>http://www.zvents.com/images/internal/img_885.jpg</url>
+        </images>
+    </event>
+    <venue id="4553">
+        <name>Improv Comedy Club</name>
+        <description></description>
+        <phone>(408) 280-7475</phone>
+        <link>http://www.zvents.com/san-jose-ca/venues/show/4553-improv-comedy-club</link>
+        <url>http://improv2.com/v3/index.php?option=content&amp;task=blogcategory&amp;id=40&amp;Itemid=50</url>
+        <creator_id>2</creator_id>
+        <address>62 S. 2nd St.</address>
+        <city>San Jose</city>
+        <zipcode>95113</zipcode>
+        <state>California</state>
+        <country>United States</country>
+        <timezone>US/Pacific</timezone>
+        <latitude>37.3362</latitude>
+        <longitude>-121.889</longitude>
+        <venue_types>
+            <venue_type>
+                <id>1</id>
+                <name>Bar</name>
+            </venue_type>
+        </venue_types>
+        <images>
+            <url>http://www.zvents.com/images/internal/img_885.jpg</url>
+        </images>
+    </venue>
+</rsp>

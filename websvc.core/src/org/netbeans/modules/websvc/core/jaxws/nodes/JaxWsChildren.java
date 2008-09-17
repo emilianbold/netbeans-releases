@@ -65,6 +65,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
@@ -75,10 +76,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlChangeListener;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.actions.SystemAction;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -369,7 +372,17 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                     }
                     return cachedIcon;
                 }
+                
+                @Override
+                public Action[] getActions(boolean context) {
+                    return new Action[]{SystemAction.get(PropertiesAction.class)};
+                }
 
+                @Override
+                public Action getPreferredAction() {
+                    return SystemAction.get(PropertiesAction.class);
+                }
+                
                 @Override
                 public String getDisplayName() {
                     return method.getOperationName()+": "+getClassName(method.getReturnType()); //NOI18N

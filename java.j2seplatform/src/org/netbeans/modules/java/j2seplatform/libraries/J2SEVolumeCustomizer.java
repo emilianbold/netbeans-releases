@@ -43,6 +43,8 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.Customizer;
 import java.io.File;
 import java.io.IOException;
@@ -53,11 +55,13 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.KeyStroke;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -168,6 +172,13 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 removeButton.setEnabled(indices.length > 0);
                 downButton.setEnabled(indices.length > 0 && indices[indices.length-1]<model.getSize()-1);
                 upButton.setEnabled(indices.length>0 && indices[0]>0);
+            }
+        });
+        //#143481
+        content.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
+        content.getActionMap().put("delete", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                removeResource(null);
             }
         });
     }
@@ -343,7 +354,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             chooser.setMultiSelectionEnabled (true);
             chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenClasses"));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
+            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
                     J2SEVolumeCustomizer.class,"TXT_Classpath"),new String[] {"ZIP","JAR"}));   //NOI18N
             chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectCP"));
             chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectCP").charAt(0));
@@ -352,7 +363,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             chooser.setMultiSelectionEnabled (true);
             chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenJavadoc"));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
+            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
                     J2SEVolumeCustomizer.class,"TXT_Javadoc"),new String[] {"ZIP","JAR"}));     //NOI18N
             chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectJD"));
             chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectJD").charAt(0));
@@ -361,7 +372,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             chooser.setMultiSelectionEnabled (true);
             chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenSources"));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
+            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
                     J2SEVolumeCustomizer.class,"TXT_Sources"),new String[] {"ZIP","JAR"}));     //NOI18N
             chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectSRC"));
             chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectSRC").charAt(0));
@@ -486,7 +497,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                         NotifyDescriptor.ERROR_MESSAGE));
                     return null;
                 } else {
-                    return FileUtil.getRelativePath(fo, root)+File.separatorChar;
+                    return FileUtil.getRelativePath(fo, root)+"/"; // NOI18N
                 }
             }
         } else if (volume.equals(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
@@ -505,7 +516,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 }
                 else {
                     assert fo.equals(root) || FileUtil.isParentOf(fo, root) : fo.toString()+" is not parent of "+root; // NOI18N
-                    return FileUtil.getRelativePath(fo, root)+File.separatorChar;
+                    return FileUtil.getRelativePath(fo, root)+"/"; // NOI18N
                 }
             }
         }
@@ -526,13 +537,13 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     }
 
 
-    private static class SimpleFileFilter extends FileFilter {
+    private static class ArchiveFileFilter extends FileFilter {
 
         private String description;
         private Collection extensions;
 
 
-        public SimpleFileFilter(String description, String[] extensions) {
+        public ArchiveFileFilter(String description, String[] extensions) {
             this.description = description;
             this.extensions = Arrays.asList(extensions);
         }
@@ -545,7 +556,15 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             if (index <= 0 || index==name.length()-1)
                 return false;
             String extension = name.substring(index+1).toUpperCase();
-            return this.extensions.contains(extension);
+            if (!this.extensions.contains(extension)) {
+                return false;
+            }
+            try {
+                return FileUtil.isArchiveFile (f.toURI().toURL());
+            } catch (MalformedURLException e) {
+                Exceptions.printStackTrace(e);
+                return false;
+            }
         }
 
         public String getDescription() {

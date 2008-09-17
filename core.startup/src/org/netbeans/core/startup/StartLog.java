@@ -43,6 +43,10 @@ package org.netbeans.core.startup;
 
 import java.util.Stack;
 import java.util.Arrays;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /** Logger that will enable the logging of important events during the startup
  * annotated with real time and possibly time differences.
@@ -50,20 +54,20 @@ import java.util.Arrays;
  * @author Petr Nejedly, Jesse Glick
  */
 public class StartLog {
-
-    private static final StartImpl impl;
+    private static final Logger LOG = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
     private static final Stack<String> actions = new Stack<String>();
     private static final Stack<Throwable> places = new Stack<Throwable>();
     private static final boolean DEBUG_NESTING = Boolean.getBoolean("org.netbeans.log.startup.debug"); // NOI18N
     
     private static final String logProp; 
     private static final String logFileProp;
+    static final Handler impl;
     
     static {
         logProp = System.getProperty( "org.netbeans.log.startup" ); // NOI18N
         //if you want to create file with measured values, we do expect the property org.netbeans.log.startup=print
         logFileProp = System.getProperty( "org.netbeans.log.startup.logfile" ); // NOI18N
-        
+
         if(logProp == null)
             impl = new StartImpl();
         else if("print".equals(logProp))
@@ -72,6 +76,13 @@ public class StartLog {
             impl = new PerformanceTestsImpl();
         else
             throw new Error("Unknown org.netbeans.log.startup value [" + logProp + "], it should be (print or tests) !"); // NOI18N
+        register();
+    }
+    
+    static void register() {
+        LOG.setUseParentHandlers(false);
+        LOG.addHandler(impl);
+        LOG.setLevel(impl.getLevel());
     }
     
     /** Start running some interval action.
@@ -79,7 +90,7 @@ public class StartLog {
      */
     public static void logStart( String action ) {
         if (willLog()) {
-            impl.start(action, System.nanoTime()/1000000);
+            LOG.log(Level.FINE, "start", action); // NOI18N
             actions.push(action);
             if (DEBUG_NESTING) {
                 places.push(new Throwable("logStart called here:")); // NOI18N
@@ -92,7 +103,9 @@ public class StartLog {
      * @param note some identifying string
      */
     public static void logProgress( String note ) {
-        if( willLog() ) impl.progress( note, System.nanoTime()/1000000 );
+        if( willLog() ) {
+            LOG.log(Level.FINE, "progress", note); // NOI18N
+        }
     }
 
     /** Stop running some interval action.
@@ -121,30 +134,28 @@ public class StartLog {
                 // Presumably you did want to keep on going at this point.
                 // Note that this can only happen when logging is off
                 // (which is the default).
+                System.err.flush();
                 System.exit(1);
             }
-            impl.end(action, System.nanoTime()/1000000);
+            LOG.log(Level.FINE, "end", action); // NOI18N
         }
     }
 
     public static boolean willLog() {
-        return impl.willLog();
+        return LOG.isLoggable(Level.FINE);
     }
     
     /** Logs the startup time. The begining is tracked by this class. 
      *  The end is passed as argument.
      */
     public static void logMeasuredStartupTime(long end){
-        if (impl instanceof PerformanceTestsImpl) {
-            ((PerformanceTestsImpl)impl).log("IDE starts t=" + Long.toString(((PerformanceTestsImpl)impl).zero) + "\nIDE is running t=" + Long.toString(end) + "\n");
-            ((PerformanceTestsImpl)impl).writeLogs();
-        }
+        LOG.log(Level.FINE, "finish", end);
     }
     
-    
-    
     /** The dummy, no-op implementation */
-    private static class StartImpl {
+    private static class StartImpl extends Handler {
+        final long zero = System.nanoTime()/1000000;
+        
         StartImpl() {}
         void start( String action, long time ) {}
         void progress( String note, long time ) {}
@@ -152,15 +163,48 @@ public class StartLog {
         boolean willLog() {
             return false;
         }
+
+        @Override
+        public Level getLevel() {
+            return willLog() ? Level.FINEST : Level.OFF;
+        }
+
+
+        @Override
+        public void publish(LogRecord rec) {
+            Object[] args = rec.getParameters();
+            String msg = (args.length >= 1 && args[0] instanceof String) ? (String)args[0] : ""; // NOI18N
+            long time = System.nanoTime()/1000000;
+            if ("start".equals(rec.getMessage())) { // NOI18N
+                start(msg, time);
+                return;
+            }
+            if ("end".equals(rec.getMessage())) { // NOI18N
+                end(msg, time);
+                return;
+            }
+            if ("progress".equals(rec.getMessage())) { // NOI18N
+                progress(msg, time);
+                return;
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public final void close() throws SecurityException {
+        }
     }
 
     private static class PrintImpl extends StartImpl {
         PrintImpl() {}
-        long zero = System.nanoTime()/1000000;
         private Stack<Long> starts = new Stack<Long>();
         long prog;
         private int indent = 0;
         
+        @Override
         synchronized void start( String action, long time ) {
             starts.push(time);
             prog=time;
@@ -170,6 +214,7 @@ public class StartLog {
             indent += 2;
         }
         
+        @Override
         synchronized void progress( String note, long time ) {
             System.err.println( getIndentString(indent) + "@" + 
                     (time - zero) + " - " + note + " dT=" + (time - prog) // NOI18N
@@ -177,6 +222,7 @@ public class StartLog {
             prog = time;
         }
         
+        @Override
         synchronized void end( String action, long time ) {
             indent -= 2;
             long start = starts.pop();
@@ -187,6 +233,7 @@ public class StartLog {
             );
         }
         
+        @Override
         boolean willLog() {
             return true;
         }
@@ -203,13 +250,13 @@ public class StartLog {
 
     private static class PerformanceTestsImpl extends StartImpl {
         private StringBuffer logs = new StringBuffer();
-        long zero = System.nanoTime()/1000000;
         private Stack<Long> starts = new Stack<Long>();
         long prog;
         private int indent = 0;
         
         PerformanceTestsImpl() {}
         
+        @Override
         synchronized void start( String action, long time ) {
             starts.push(time);
             prog=time;
@@ -219,6 +266,7 @@ public class StartLog {
             indent += 2;
         }
         
+        @Override
         synchronized void progress( String note, long time ) {
             log(getIndentString(indent) + "@" + 
                     (time - zero) + " - " + note + " dT=" + (time - prog) // NOI18N
@@ -226,6 +274,7 @@ public class StartLog {
             prog = time;
         }
         
+        @Override
         synchronized void end( String action, long time ) {
             indent -= 2;
             long start = starts.pop();
@@ -236,6 +285,7 @@ public class StartLog {
             );
         }
         
+        @Override
         boolean willLog() {
             return true;
         }
@@ -252,8 +302,18 @@ public class StartLog {
         synchronized void log(String log){
             logs.append("\n" + log);
         }
+
+        @Override
+        public void publish(LogRecord rec) {
+            super.publish(rec);
+            if ("finish".equals(rec.getMessage())) { // NOI18N
+                long end = (Long)rec.getParameters()[0];
+                log("IDE starts t = " + Long.toString(zero) + "\nIDE is running t=" + Long.toString(end) + "\n");
+            }
+        }
         
-        synchronized void writeLogs(){
+        @Override
+        public synchronized void flush(){
             if(logFileProp!=null){
                 try{
                     java.io.File logFile = new java.io.File(logFileProp);

@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
@@ -297,7 +298,9 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 }
             }
         }
-        return ts == null ? null : file.getLanguageFilter().getFilteredStream( new APTCommentsFilter(ts));
+        APTPreprocHandler preprocHandler = file.getPreprocHandler();
+        APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();        
+        return ts == null ? null : file.getLanguageFilter(ppState).getFilteredStream( new APTCommentsFilter(ts));
     }
 
     private boolean acceptReference(CsmReference ref, CsmObject targetDecl, CsmObject targetDef, 

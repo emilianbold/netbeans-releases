@@ -39,9 +39,12 @@
 
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -56,26 +59,15 @@ public class AstNode {
     private NodeType nodeType;    
     private int startOffset;
     private int endOffset;
-    private boolean closed;
-    private List<AstNode> children = new LinkedList<AstNode>();
+    private List<AstNode> children = null;
     private AstNode parent = null;
-    
-    //XXX Storing the SyntaxElement instance is a hack - the SyntaxElement-s should
-    //implement or extend the AstNode itself and the tree-maker should use those
-    //instances instead of duplicating the nodes.
-    private SyntaxElement element = null;
+    private Map<String, Object> attributes = null;
 
-    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, SyntaxElement element) {
+    AstNode(String name, NodeType nodeType, int startOffset, int endOffset) {
         this.name = name;
         this.nodeType = nodeType;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
-        this.closed = false;
-        this.element = element;
-    }
-    
-    public SyntaxElement element() {
-        return element;
     }
     
     public String name() {
@@ -95,10 +87,13 @@ public class AstNode {
     }
 
     public List<AstNode> children() {
-        return children;
+        return children == null ? Collections.EMPTY_LIST : children;
     }
     
     void addChild(AstNode child) {
+        if (children == null) {
+            children = new LinkedList<AstNode>();
+        }
         children.add(child);
         child.setParent(this);
     }
@@ -107,6 +102,17 @@ public class AstNode {
         nodeType = NodeType.UNMATCHED_TAG;
     }
 
+    void setAttribute(String key, Object value) {
+        if(attributes == null) {
+            attributes = new HashMap<String, Object>();
+        }
+        attributes.put(key, value);
+    }
+    
+    public Object getAttribute(String key) {
+        return attributes == null ? null : attributes.get(key);
+    }
+    
     @Override
     public String toString() {
         StringBuilder childrenText = new StringBuilder();

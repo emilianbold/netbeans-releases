@@ -46,6 +46,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -108,7 +109,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
     }
 
     public CsmClassifier getClassifier(Resolver parent) {
-        if (resolvedClassifier == null){
+        if (!CsmBaseUtilities.isValid(resolvedClassifier)) {
             if (getAncestorType() instanceof Resolver.SafeClassifierProvider) {
                 resolvedClassifier = ((Resolver.SafeClassifierProvider)getAncestorType()).getClassifier(parent);
             } else {

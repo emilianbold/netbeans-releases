@@ -1020,7 +1020,29 @@ public final class AntProjectHelper {
      * @return an artifact
      */
     public AntArtifact createSimpleAntArtifact(String type, String locationProperty, PropertyEvaluator eval, String targetName, String cleanTargetName) {
-        return new SimpleAntArtifact(this, type, locationProperty, eval, targetName, cleanTargetName);
+        return createSimpleAntArtifact(type, locationProperty, eval, targetName, cleanTargetName, null);
+    }
+    
+    /**
+     * Create a basic implementation of {@link AntArtifact} which assumes everything of interest
+     * is in a fixed location under a standard Ant-based project.
+     * @param type the type of artifact, e.g. <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
+     * @param locationProperty an Ant property name giving the project-relative
+     *                         location of the artifact, e.g. <samp>dist.jar</samp>
+     * @param eval a way to evaluate the location property (e.g. {@link #getStandardPropertyEvaluator})
+     * @param targetName the name of an Ant target which will build the artifact,
+     *                   e.g. <samp>jar</samp>
+     * @param cleanTargetName the name of an Ant target which will delete the artifact
+     *                        (and maybe other build products), e.g. <samp>clean</samp>
+     * @param buildScriptProperty an Ant property name giving the project-relative
+     *      location and name of the build.xml or null if default one (<samp>build.xml</samp>) 
+     *      should be used; default value is also used if property is given but its value is null
+     * @return an artifact
+     * @since org.netbeans.modules.project.ant/1 1.25
+     */
+    public AntArtifact createSimpleAntArtifact(String type, String locationProperty, PropertyEvaluator eval, 
+            String targetName, String cleanTargetName, String buildScriptProperty) {
+        return new SimpleAntArtifact(this, type, locationProperty, eval, targetName, cleanTargetName, buildScriptProperty);
     }
     
     /**

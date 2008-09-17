@@ -53,7 +53,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.security.AccessControlException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
@@ -68,9 +67,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -110,6 +111,8 @@ public class InstallSupportImpl {
     private Set<File> downloadedFiles = null;
     private boolean isGlobal;
     private int wasDownloaded = 0;
+    
+    private Future<Boolean> runningTask;
     
     private static enum STEP {
         NOTSTARTED,
@@ -186,7 +189,11 @@ public class InstallSupportImpl {
         
         boolean retval =  false;
         try {
-            retval = getExecutionService ().submit (downloadCallable).get ();
+            runningTask = getExecutionService ().submit (downloadCallable);
+            retval = runningTask.get ();
+        } catch (CancellationException ex) {
+            err.log (Level.FINE, "InstallSupport.doDownload was cancelled", ex); // NOI18N
+            return false;
         } catch(InterruptedException iex) {
             Exceptions.printStackTrace(iex);
         } catch(ExecutionException iex) {
@@ -243,7 +250,11 @@ public class InstallSupportImpl {
         };
         boolean retval =  false;
         try {
-            retval = getExecutionService ().submit (validationCallable).get ();
+            runningTask = getExecutionService ().submit (validationCallable);
+            retval = runningTask.get ();
+        } catch (CancellationException ex) {
+            err.log (Level.FINE, "InstallSupport.doValidate was cancelled", ex); // NOI18N
+            return false;
         } catch(InterruptedException iex) {
             if (iex.getCause() instanceof OperationException) {
                 throw (OperationException) iex.getCause();
@@ -417,7 +428,11 @@ public class InstallSupportImpl {
         
         boolean retval =  false;
         try {
-            retval = getExecutionService ().submit (installCallable).get ();
+            runningTask = getExecutionService ().submit (installCallable);
+            retval = runningTask.get ();
+        } catch (CancellationException ex) {
+            err.log (Level.FINE, "InstallSupport.doInstall was cancelled", ex); // NOI18N
+            return false;
         } catch(InterruptedException iex) {
             err.log (Level.INFO, iex.getLocalizedMessage (), iex);
         } catch(ExecutionException iex) {
@@ -578,12 +593,9 @@ public class InstallSupportImpl {
         synchronized(this) {
             currentStep = STEP.CANCEL;
         }
-        if (es != null) {
-            try {
-                es.shutdownNow ();
-            } catch (AccessControlException ace) {
-                err.log (Level.INFO, ace.getMessage (), ace);
-            }
+        if (runningTask != null && ! runningTask.isDone () && ! runningTask.isCancelled ()) {
+            boolean cancelled = runningTask.cancel (true);
+            assert cancelled : runningTask + " was cancelled.";
         }
         for (File f : getDownloadedFiles ()) {
             if (f != null && f.exists ()) {
@@ -960,7 +972,7 @@ public class InstallSupportImpl {
         return es;
     }
     
-    private Set<File> getDownloadedFiles () {
+    private synchronized Set<File> getDownloadedFiles () {
         if (downloadedFiles == null) {
             downloadedFiles = new HashSet<File> ();
         }

@@ -77,6 +77,12 @@ public class LibrariesHelper {
     addArchiveRefsToProject(project, targetSource, sourceJarPaths, ClassPath.SOURCE);*/
     }
 
+    public static void addDefaultJaxRpcClientJars(Project project, FileObject targetSource, WsdlSaas saas) {
+        List<String> jarPaths = getDefaultJaxRpcClientJars(saas, WsdlServiceProxyDescriptor.JarEntry.PROXY_JAR_TYPE);
+        addArchiveRefsToProject(project, targetSource, jarPaths, ClassPath.COMPILE);
+
+    }
+
     public static void addClientJars(Project project, FileObject targetSource, WadlSaas saas) {
         addArchivesToProject(project, targetSource, saas.getLibraryJars(), ClassPath.COMPILE);
     /* NOT SUPPORTED by current ProjectClassPathModifier
@@ -167,6 +173,19 @@ public class LibrariesHelper {
         List<String> jarPaths = new ArrayList<String>();
         File basePath = data.getJaxWsDescriptor().getXmlDescriptorFile().getParentFile();
         for (WsdlServiceProxyDescriptor.JarEntry jar : data.getJaxWsDescriptor().getJars()) {
+            if (jar.getType().equals(jarType)) {
+                File jarPath = new File(basePath, jar.getName());
+                jarPaths.add(jarPath.getAbsolutePath());
+            }
+        }
+        return jarPaths;
+    }
+
+    public static List<String> getDefaultJaxRpcClientJars(WsdlSaas saas, String jarType) {
+        WsdlData data = saas.getWsdlData();
+        List<String> jarPaths = new ArrayList<String>();
+        File basePath = data.getJaxRpcDescriptor().getXmlDescriptorFile().getParentFile();
+        for (WsdlServiceProxyDescriptor.JarEntry jar : data.getJaxRpcDescriptor().getJars()) {
             if (jar.getType().equals(jarType)) {
                 File jarPath = new File(basePath, jar.getName());
                 jarPaths.add(jarPath.getAbsolutePath());

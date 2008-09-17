@@ -51,8 +51,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
 import org.netbeans.spi.project.LookupProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -72,7 +70,7 @@ public class J2seJaxWsLookupProvider implements LookupProvider {
     private String JAX_WS_XML_RESOURCE="/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"; //NOI18N
     private String JAX_WS_STYLESHEET_RESOURCE="/org/netbeans/modules/websvc/jaxwsmodel/resources/jaxws-j2se.xsl"; //NOI18N
     private String JAXWS_EXTENSION = "jaxws"; //NOI18N
-    private String COMPILE_ON_SAVE_UNSUPPORTED = "compile.on.save.unsupported.jaxws"; //NOI18N
+    //private String COMPILE_ON_SAVE_UNSUPPORTED = "compile.on.save.unsupported.jaxws"; //NOI18N
     
     /** Creates a new instance of JaxWSLookupProvider */
     public J2seJaxWsLookupProvider() {
@@ -208,7 +206,7 @@ public class J2seJaxWsLookupProvider implements LookupProvider {
             extension.addDependency("-do-compile-single", "wsimport-client-compile"); //NOI18N
             
             // disable Compile On Save feature
-            disableCompileOnSave(prj);
+            //disableCompileOnSave(prj);
             ProjectManager.getDefault().saveProject(prj);
         }
     }
@@ -225,9 +223,9 @@ public class J2seJaxWsLookupProvider implements LookupProvider {
                 }
             });
             // enable Compile on Save feature
-            EditableProperties props = WSUtils.getEditableProperties(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            props.remove(COMPILE_ON_SAVE_UNSUPPORTED);
-            WSUtils.storeEditableProperties(prj,  AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+            //EditableProperties props = WSUtils.getEditableProperties(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            //props.remove(COMPILE_ON_SAVE_UNSUPPORTED);
+            //WSUtils.storeEditableProperties(prj,  AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
             
             ProjectManager.getDefault().saveProject(prj);
         }
@@ -249,9 +247,9 @@ public class J2seJaxWsLookupProvider implements LookupProvider {
      * @param prj Project
      * @throws java.io.IOException
      */
-    private void disableCompileOnSave(Project prj) throws IOException {
-        EditableProperties props = WSUtils.getEditableProperties(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        props.put(COMPILE_ON_SAVE_UNSUPPORTED, "true"); //NOI18N
-        WSUtils.storeEditableProperties(prj,  AntProjectHelper.PROJECT_PROPERTIES_PATH, props);       
-    }
+//    private void disableCompileOnSave(Project prj) throws IOException {
+//        EditableProperties props = WSUtils.getEditableProperties(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+//        props.put(COMPILE_ON_SAVE_UNSUPPORTED, "true"); //NOI18N
+//        WSUtils.storeEditableProperties(prj,  AntProjectHelper.PROJECT_PROPERTIES_PATH, props);       
+//    }
 }

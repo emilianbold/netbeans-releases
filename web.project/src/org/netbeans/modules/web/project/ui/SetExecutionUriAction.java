@@ -158,7 +158,7 @@ public final class SetExecutionUriAction extends NodeAction {
         try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
             Servlet[] servlets = webApp.getServlet();
-            java.util.List mappingList = new java.util.ArrayList();
+            java.util.List<String> mappingList = new java.util.ArrayList<String>();
             for (int i=0;i<servlets.length;i++) {
                 if (className.equals(servlets[i].getServletClass())) {
                     String servletName=servlets[i].getServletName();

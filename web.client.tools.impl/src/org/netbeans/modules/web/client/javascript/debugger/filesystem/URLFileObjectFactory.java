@@ -89,6 +89,17 @@ public final class URLFileObjectFactory {
         }
     }
 
+    public static synchronized URLFileObject findFileObject(URLContentProvider provider, URL contentURL) {
+        URLFileSystem fs = getFileSystem(provider);
+        
+        String externalForm = contentURL.toExternalForm();
+        if (externalForm.endsWith("/")) {
+            externalForm = externalForm.substring(0, externalForm.length()-1);
+        }
+        
+        return (URLFileObject)fs.findResource(externalForm);
+    }
+    
     public static synchronized FileObject[] findFileObjects(URL url) {
         if (fsCache == null || fsCache.size() == 0) {
             return null;

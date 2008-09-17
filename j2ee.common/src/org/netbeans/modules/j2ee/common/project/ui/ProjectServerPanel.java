@@ -87,7 +87,7 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
     private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(ProjectServerPanel.class, "J2EESpecLevel_14"); //NOI18N
     private static final String JAVA_EE_SPEC_50_LABEL = NbBundle.getMessage(ProjectServerPanel.class, "JavaEESpecLevel_50"); //NOI18N
 
-    private List earProjects;
+    private List<Project> earProjects;
     private Object j2eeModuleType;
     private File projectLocation;
     
@@ -720,7 +720,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
 
     private Project getSelectedEarApplication() {
         int idx = jComboBoxEnterprise.getSelectedIndex();
-        return (idx <= 0) ? null : (Project) earProjects.get(idx - 1);
+        return (idx <= 0) ? null : earProjects.get(idx - 1);
     }
     
     private void initEnterpriseApplications() {
@@ -728,7 +728,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         jComboBoxEnterprise.setSelectedIndex(0);
         
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
-        earProjects = new ArrayList();
+        earProjects = new ArrayList<Project>();
         for (int i = 0; i < allProjects.length; i++) {
             J2eeApplicationProvider j2eeAppProvider = allProjects[i].getLookup().lookup(J2eeApplicationProvider.class);
             if (j2eeAppProvider == null) {

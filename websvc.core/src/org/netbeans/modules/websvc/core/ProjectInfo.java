@@ -95,7 +95,7 @@ public class ProjectInfo {
                         serverType = getServerType(project);
                     }
                 } catch (InstanceRemovedException ex) {
-                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
+                    Logger.getLogger(getClass().getName()).log(Level.FINE, "Failed to find J2eePlatform", ex);
                 }
             }
         }

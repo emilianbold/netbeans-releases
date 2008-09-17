@@ -228,7 +228,7 @@ public final class FolderList extends javax.swing.JPanel {
             File[] files = chooser.getSelectedFiles();
             int[] indecesToSelect = new int[files.length];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
-            Set invalidRoots = new HashSet ();
+            Set<File> invalidRoots = new HashSet<File>();
             File[] relatedFolders = this.relatedFolderList == null ? 
                 new File[0] : this.relatedFolderList.getFiles();
             for (int i=0, index=model.size(); i<files.length; i++, index++) {

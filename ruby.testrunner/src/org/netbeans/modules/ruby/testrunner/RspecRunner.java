@@ -38,7 +38,11 @@
  */
 package org.netbeans.modules.ruby.testrunner;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -63,6 +67,7 @@ import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -134,7 +139,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         if (additionalArgs.isEmpty()) {
             // just display 'no tests run' immediately if there are no files to run
-            TestSession empty = new TestSession(locator, debug ? SessionType.DEBUG : SessionType.TEST);
+            TestSession empty = new TestSession(name, locator, debug ? SessionType.DEBUG : SessionType.TEST);
             Manager.getInstance().emptyTestRun(empty);
             return;
         }
@@ -162,11 +167,14 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
+        TestSession session = new TestSession(name,
+                locator,
+                debug ? SessionType.DEBUG : SessionType.TEST);
 
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                locator,
                 RspecHandlerFactory.getHandlers(),
-                debug ? SessionType.DEBUG : SessionType.TEST);
+                session,
+                false);
         TestExecutionManager.getInstance().start(desc, recognizer);
     }
 
@@ -212,6 +220,14 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
     }
 
     private static void addSpecOpts(Project project, List<String> additionalArgs) {
+        FileObject specOpts = getSpecOpts(project);
+        if (specOpts != null) {
+            additionalArgs.add("--options"); // NOI18N
+            additionalArgs.add(FileUtil.toFile(specOpts).getAbsolutePath());
+        }
+    }
+
+    private static FileObject getSpecOpts(Project project) {
         // TODO: duplicated in RSpecSupport
         FileObject projectDir = project.getProjectDirectory();
         // First look for a NetBeans-specific options file, in case you want different
@@ -223,12 +239,32 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
             specOpts = projectDir.getFileObject(SPEC_OPTS);
         }
 
-        if (specOpts != null) {
-            additionalArgs.add("--options"); // NOI18N
-            additionalArgs.add(FileUtil.toFile(specOpts).getAbsolutePath());
-        }
+        return specOpts;
     }
 
+    private String getSpecOptsContent(FileObject specOpts) {
+        StringBuilder result = new StringBuilder();
+        BufferedReader from = null;
+        try {
+            from = new BufferedReader(new InputStreamReader(specOpts.getInputStream()));
+            String line;
+            while ((line = from.readLine()) != null) {
+                result.append(line);
+                result.append(" ");
+            } 
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        } finally {
+            try {
+                from.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return result.toString();
+    }
 
     public void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug) {
         boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.SPEC_TASKS, task, new DefaultTaskEvaluator() {
@@ -251,17 +287,26 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
                 path = path.replace('\\', '/'); //NOI18N
             }
         }
-        task.addTaskParameters("SPEC_OPTS=--require '" + path + "' --runner NbRspecMediator"); //NOI18N
+        String options = "--require '" + path + "' --runner NbRspecMediator"; //NOI18N
+        FileObject specOpts = getSpecOpts(project);
+        if (specOpts != null) {
+            options += " " + getSpecOptsContent(specOpts);
+        }
+        task.addTaskParameters("SPEC_OPTS=" + options); //NOI18N
 
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+        TestSession session = new TestSession(task.getDisplayName(),
                 locator,
-                RspecHandlerFactory.getHandlers(),
                 debug ? SessionType.DEBUG : SessionType.TEST);
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                RspecHandlerFactory.getHandlers(),
+                session,
+                false);
         taskDescriptor.addOutputRecognizer(recognizer);
         // using a shorter wait time than for test/unit since the only cases
         // i've seen requiring more than 1000ms have all been test/unit executions
         taskDescriptor.setReadMaxWaitTime(1500);
+        taskDescriptor.setRerun(false);
     }
 
 }

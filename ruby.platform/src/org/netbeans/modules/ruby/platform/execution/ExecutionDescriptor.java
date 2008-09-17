@@ -74,7 +74,7 @@ public class ExecutionDescriptor {
     private Map<String, String> additionalEnv;
     private String[] additionalArgs;
     private String initialArgs;
-    private String jrubyProps;
+    private String jvmArgs;
     private FileObject fileObject;
     private String classPath;
     boolean showProgress = true;
@@ -86,6 +86,13 @@ public class ExecutionDescriptor {
     private String encoding;
     private boolean useInterpreter;
     List<OutputRecognizer> outputRecognizers;
+    /**
+     * Defines whether rerun should be allowed. <i>Currently needed
+     * only because rerunning rake test tasks in the test runner does not
+     * work reliably (might be causing #145228), likely will become obsolete
+     * once that issue has been solved</i>.
+     */
+    private boolean rerun = true;
     /**
      * The max time in ms for waiting a stream to become ready
      * before considering the process to be stalling.
@@ -193,8 +200,8 @@ public class ExecutionDescriptor {
         return this;
     }
     
-    public ExecutionDescriptor jrubyProperties(final String jrubyProps) {
-        this.jrubyProps = jrubyProps;
+    public ExecutionDescriptor jvmArguments(final String jvmArgs) {
+        this.jvmArgs = jvmArgs;
         return this;
     }
 
@@ -276,9 +283,9 @@ public class ExecutionDescriptor {
         return initialArgs == null ? null : Utilities.parseParameters(initialArgs);
     }
     
-    /** Properties to be passed to the JVM running the JRuby process. */
-    public String[] getJRubyProps() {
-        return jrubyProps == null ? null : Utilities.parseParameters(jrubyProps);
+    /** Arguments to be passed to the JVM running the JRuby process. */
+    public String[] getJVMArguments() {
+        return jvmArgs == null ? null : Utilities.parseParameters(jvmArgs);
     }
     
     public File getPwd() {
@@ -348,6 +355,20 @@ public class ExecutionDescriptor {
      */
     public void setReadMaxWaitTime(int readMaxWaitTime) {
         this.readMaxWaitTime = readMaxWaitTime;
+    }
+
+    /**
+     * @see #rerun
+     */
+    public boolean isRerun() {
+        return rerun;
+    }
+
+    /**
+     * @see #rerun
+     */
+    public void setRerun(boolean rerun) {
+        this.rerun = rerun;
     }
 
 }

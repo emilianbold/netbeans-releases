@@ -179,9 +179,7 @@ public class ServerNodeProvider implements NodeProvider {
             
             if ( ! registered ) {
                 instance.disconnect();
-            } else {
-                instance.reconnect(true, true ); // quiet, async
-            }
+            } 
             notifyChange();
         }
     }
