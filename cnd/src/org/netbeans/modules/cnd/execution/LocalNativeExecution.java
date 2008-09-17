@@ -156,11 +156,6 @@ public class LocalNativeExecution extends NativeExecution {
 //        }
     }
 
-    @Override
-    protected String getUnbufferPath(String host) {
-        return Unbuffer.getLocalPath();
-    }
-
     /** Helper class to read the input from the build */
     private static final class OutputReaderThread  extends Thread {
 

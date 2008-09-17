@@ -37,48 +37,72 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.execution;
+package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Reader;
-import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
+import java.io.Writer;
+import org.openide.util.Exceptions;
 
 /**
- * This implementation of NativeExecution provides execution on a remote server.
  *
- * @author gordonp
+ * @author eu155513
  */
-public class RemoteNativeExecution extends NativeExecution {
+public class TTYProxy {
+    private final File file;
+    private FileReader reader = null;
+    private FileWriter writer = null;
 
-    /**
-     * Execute an executable, a makefile, or a script
-     * @param runDir absolute path to directory from where the command should be executed
-     * @param executable absolute or relative path to executable, makefile, or script
-     * @param arguments space separated list of arguments
-     * @param envp environment variables (name-value pairs of the form ABC=123)
-     * @param out Output
-     * @param io Input
-     * @param parseOutput true if output should be parsed for compiler errors
-     * @return completion code
-     */
-    public int executeCommand(
-            File runDirFile,
-            String executable,
-            String arguments,
-            String[] envp,
-            PrintWriter out,
-            Reader in,
-            boolean unbuffer) throws IOException, InterruptedException {
-        RemoteNativeExecutionSupport support = null;
-        if (host != null && host.length() > 0) {
-            support = new RemoteNativeExecutionSupport(host, runDirFile, executable, arguments, envp, out, in);
+    public TTYProxy(String hkey) {
+        // TODO: need to support remote
+        file = new File("/tmp/gdbFifo");
+        ProcessBuilder pb = new ProcessBuilder("/usr/bin/mkfifo", file.getAbsolutePath()); // NOI18N
+        try {
+            pb.start();
+        } catch (IOException ex) {
         }
-        return support == null ? -1 : support.getExitStatus();
+        file.deleteOnExit();
     }
 
-    public void stop() {
+    public String getFilename() {
+        return file.getAbsolutePath();
+    }
+
+    public Reader getReader() {
+        if (reader == null) {
+            try {
+                reader = new FileReader(file);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return reader;
+    }
+
+    public Writer getWriter() {
+        if (writer == null) {
+            try {
+                writer = new FileWriter(file);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return writer;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if (reader != null) {
+            reader.close();
+        }
+        if (writer != null) {
+            writer.close();
+        }
+        if (file.exists()) {
+            file.delete();
+        }
     }
 }

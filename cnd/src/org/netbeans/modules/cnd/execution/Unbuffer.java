@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.execution;
 
 import java.io.File;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -54,6 +55,14 @@ public class Unbuffer {
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
 
     private Unbuffer() {
+    }
+
+    public static String getPath(String hkey) {
+        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
+            return Unbuffer.getRemotePath(hkey);
+        } else {
+            return Unbuffer.getLocalPath();
+        }
     }
     
     public static String getLocalPath() {
@@ -78,7 +87,7 @@ public class Unbuffer {
         if (path == null) {
             return null;
         }
-        String unbufferName = Unbuffer.getLibName(PlatformInfo.getDefault(host).getPlatform());
+        String unbufferName = getLibName(PlatformInfo.getDefault(host).getPlatform());
         if (unbufferName != null) {
             path += unbufferName;
             // check file existence
