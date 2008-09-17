@@ -403,6 +403,15 @@ public class PHPIndex {
 
             //TODO: handle name conflicts
             IndexedClass clazz = classes.toArray(new IndexedClass[classes.size()])[0];
+            if (context != null && context.getFile() != null) {
+                for (IndexedClass indexedClass : classes) {
+                    if (context.getFile().getFile().equals(indexedClass.getFile().getFile())) {
+                        // prefer the current file if possible
+                        clazz = indexedClass;
+                        break;
+                    }
+                }
+            }
             classLine.add(clazz);
             className = clazz.getSuperClass();
         }
