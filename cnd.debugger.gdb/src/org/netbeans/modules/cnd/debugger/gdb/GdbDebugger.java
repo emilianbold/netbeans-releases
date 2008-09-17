@@ -380,7 +380,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    String unbuffer = getUnbuffer();
+                    String unbuffer = Unbuffer.getPath(hkey);
                     if (unbuffer != null) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX) {
                             gdb.gdb_set("environment", "DYLD_INSERT_LIBRARIES=" + unbuffer); // NOI18N
@@ -455,9 +455,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return platform;
     }
 
-    public InputOutput getIO() {
+    /*public InputOutput getIO() {
         return iotab;
-    }
+    }*/
 
     public PathMap getPathMap() {
         return pathMap;
@@ -484,14 +484,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
 
         return csdirs;
-    }
-
-    private String getUnbuffer() {
-        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
-            return Unbuffer.getRemotePath(hkey);
-        } else {
-            return Unbuffer.getLocalPath();
-        }
     }
 
     public String getSignal() {

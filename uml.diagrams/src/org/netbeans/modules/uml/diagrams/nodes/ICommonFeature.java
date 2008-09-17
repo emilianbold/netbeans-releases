@@ -34,61 +34,23 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.uml.diagrams.border;
+package org.netbeans.modules.uml.diagrams.nodes;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import org.netbeans.api.visual.border.Border;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 
 /**
  *
- * @author sp153251
+ * @author thuy
  */
-public class NoteBorder implements Border {
-    private Color color;
-
-    public final static int TAB_WIDTH = 11;
+public interface ICommonFeature {
+   
+    public void setSelectedAttribute(IAttribute attr);
+    public IAttribute getSelectedAttribute();
     
-    public NoteBorder()
-    {
-        this(Color.BLACK);
-    }
-    
-    public NoteBorder(Color color)
-    {
-        this.color=color;
-    }
-    
-    public Insets getInsets() {
-        return new Insets(TAB_WIDTH, 2, 2, 2);
-    }
-
-    public void paint(Graphics2D gr, Rectangle bounds) {
-        gr.setColor(color);
-        
-        int leftBorder = bounds.x;
-        int top = bounds.y;
-        int rightBorder = bounds.x + bounds.width - 1;
-        int tabStartX = rightBorder - TAB_WIDTH;
-        int bottom = bounds.y + bounds.height - 1;
-        int tabBottom = bounds.y + TAB_WIDTH;
-        
-        gr.drawLine(leftBorder, top, tabStartX, top);
-        gr.drawLine(tabStartX, top, rightBorder, tabBottom);
-        gr.drawLine(rightBorder, tabBottom, tabStartX, tabBottom);
-        gr.drawLine(tabStartX, tabBottom, tabStartX, top);
-        gr.drawLine(rightBorder, tabBottom, rightBorder, bottom);
-        gr.drawLine(rightBorder, bottom, leftBorder, bottom);
-        gr.drawLine(leftBorder, bottom, leftBorder, top);
-    }
-
-    public boolean isOpaque() {
-        return true;
-    }
-
+    public void setSelectedOperation(IOperation op);
+    public IOperation getSelectedOperation();
 }

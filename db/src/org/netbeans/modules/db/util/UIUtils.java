@@ -37,48 +37,22 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.execution;
+package org.netbeans.modules.db.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Reader;
-import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
- * This implementation of NativeExecution provides execution on a remote server.
  *
- * @author gordonp
+ * @author David
  */
-public class RemoteNativeExecution extends NativeExecution {
+public class UIUtils {
+    public static boolean displayYesNoDialog(String message) {
+        NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(
+                message, NotifyDescriptor.YES_NO_OPTION);
 
-    /**
-     * Execute an executable, a makefile, or a script
-     * @param runDir absolute path to directory from where the command should be executed
-     * @param executable absolute or relative path to executable, makefile, or script
-     * @param arguments space separated list of arguments
-     * @param envp environment variables (name-value pairs of the form ABC=123)
-     * @param out Output
-     * @param io Input
-     * @param parseOutput true if output should be parsed for compiler errors
-     * @return completion code
-     */
-    public int executeCommand(
-            File runDirFile,
-            String executable,
-            String arguments,
-            String[] envp,
-            PrintWriter out,
-            Reader in,
-            boolean unbuffer) throws IOException, InterruptedException {
-        RemoteNativeExecutionSupport support = null;
-        if (host != null && host.length() > 0) {
-            support = new RemoteNativeExecutionSupport(host, runDirFile, executable, arguments, envp, out, in);
-        }
-        return support == null ? -1 : support.getExitStatus();
-    }
+        Object result = DialogDisplayer.getDefault().notify(ndesc);
 
-    public void stop() {
+        return ( result == NotifyDescriptor.YES_OPTION );
     }
 }

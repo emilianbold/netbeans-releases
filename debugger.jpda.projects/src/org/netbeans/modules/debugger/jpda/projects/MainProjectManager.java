@@ -44,13 +44,23 @@ package org.netbeans.modules.debugger.jpda.projects;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.Action;
 
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
 
 /**
  * Provies access to the main or currently selected project.
@@ -92,6 +102,12 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
     }
 
     public synchronized Project getMainProject () {
+        if (isMainProject && lastSelectedProject != null &&
+            !isDependent(lastSelectedProject, currentProject)) {
+            // If there's a main project set, but the current project has no
+            // dependency on it, return the current project.
+            return lastSelectedProject;
+        }
         return currentProject;
     }
 
@@ -114,6 +130,43 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
             pcs.firePropertyChange (PROP_MAIN_PROJECT, old, p);
         }
         return true; // unused
+    }
+
+    /**
+     * Test whether one project is dependent on the other.
+     * @param p1 dependent project
+     * @param p2 main project
+     * @return <code>true</code> if project <code>p1</code> depends on project <code>p2</code>
+     */
+    private static boolean isDependent(Project p1, Project p2) {
+        Set<URL> p1Roots = getProjectRoots(p1);
+        Set<URL> p2Roots = getProjectRoots(p2);
+
+        for (URL root : p2Roots) {
+            Set<URL> dependentRoots = SourceUtils.getDependentRoots(root);
+            for (URL sr : p1Roots) {
+                if (dependentRoots.contains(sr)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static Set<URL> getProjectRoots(Project p) {
+        Set<URL> projectRoots = new HashSet<URL>(); // roots
+        Sources sources = ProjectUtils.getSources(p);
+        SourceGroup[] sgs = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup sg : sgs) {
+            URL root;
+            try {
+                root = sg.getRootFolder().getURL();
+            } catch (FileStateInvalidException fsiex) {
+                continue;
+            }
+            projectRoots.add(root);
+        }
+        return projectRoots;
     }
 
     public void addPropertyChangeListener (PropertyChangeListener l) {

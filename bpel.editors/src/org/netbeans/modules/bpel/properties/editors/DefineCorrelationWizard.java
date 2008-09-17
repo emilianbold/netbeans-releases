@@ -2078,11 +2078,15 @@ class WizardUtils implements WizardConstants {
         return (getSchemaComponentTypeName(schemaComponent) == null);
     }
     
-    public static boolean isBuiltInSimpleType(SchemaComponent schemaComponent) {
+    public static GlobalSimpleType findBuiltInType(SchemaComponent schemaComponent) {
         String typeName = getSchemaComponentTypeName(schemaComponent);
-        GlobalSimpleType builtInSimpleType = ValidationUtil.findGlobalSimpleType(typeName, 
+        GlobalSimpleType builtInType = ValidationUtil.findGlobalSimpleType(typeName, 
             ValidationUtil.BUILT_IN_SIMPLE_TYPES);
-        return (builtInSimpleType != null);
+        return builtInType;
+    }
+    
+    public static boolean isBuiltInType(SchemaComponent schemaComponent) {
+        return (findBuiltInType(schemaComponent) != null);
     }
     
     public static PortType getBpelEntityPortType(BpelEntity bpelEntity) {
@@ -2398,8 +2402,8 @@ class TypesCompatibilityValidatorImpl implements TypesCompatibilityValidator {
         SchemaComponent targetSchemaComponent) {
         this.sourceSchemaComponent = sourceSchemaComponent;
         this.targetSchemaComponent = targetSchemaComponent;
-        isSourceBuiltInType = WizardUtils.isBuiltInSimpleType(sourceSchemaComponent);
-        isTargetBuiltInType = WizardUtils.isBuiltInSimpleType(targetSchemaComponent);
+        isSourceBuiltInType = WizardUtils.isBuiltInType(sourceSchemaComponent);
+        isTargetBuiltInType = WizardUtils.isBuiltInType(targetSchemaComponent);
     }
     
     public String getResolvedTypeName() {return resolvedTypeName;}
@@ -2715,21 +2719,21 @@ class UnnamedActivityNameHandler {
 //============================================================================//
 interface WizardProperties {
     String
-        PROPERTY_AUTO_WIZARD_STYLE = WizardDescriptor.PROP_AUTO_WIZARD_STYLE, // NOI18N
-        PROPERTY_CONTENT_DISPLAYED = WizardDescriptor.PROP_CONTENT_DISPLAYED, // NOI18N
-        PROPERTY_CONTENT_NUMBERED = WizardDescriptor.PROP_CONTENT_NUMBERED, // NOI18N
-        PROPERTY_LEFT_DIMENSION = WizardDescriptor.PROP_LEFT_DIMENSION, // NOI18N
+        PROPERTY_AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle", // NOI18N
+        PROPERTY_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed", // NOI18N
+        PROPERTY_CONTENT_NUMBERED = "WizardPanel_contentNumbered", // NOI18N
+        PROPERTY_LEFT_DIMENSION = "WizardPanel_leftDimension", // NOI18N
 
-        PROPERTY_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
-        PROPERTY_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA, // NOI18N
-        PROPERTY_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
-        PROPERTY_CONTENT_BACK_COLOR = WizardDescriptor.PROP_CONTENT_BACK_COLOR, // NOI18N
-        PROPERTY_CONTENT_FOREGROUND_COLOR = WizardDescriptor.PROP_CONTENT_FOREGROUND_COLOR, // NOI18N
-        PROPERTY_IMAGE = WizardDescriptor.PROP_IMAGE, // NOI18N
-        PROPERTY_IMAGE_ALIGNMENT = WizardDescriptor.PROP_IMAGE_ALIGNMENT, // NOI18N
+        PROPERTY_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex", // NOI18N
+        PROPERTY_CONTENT_DATA = "WizardPanel_contentData", // NOI18N
+        PROPERTY_ERROR_MESSAGE = "WizardPanel_errorMessage", // NOI18N
+        PROPERTY_CONTENT_BACK_COLOR = "WizardPanel_contentBackColor", // NOI18N
+        PROPERTY_CONTENT_FOREGROUND_COLOR = "WizardPanel_contentForegroundColor", // NOI18N
+        PROPERTY_IMAGE = "WizardPanel_image", // NOI18N
+        PROPERTY_IMAGE_ALIGNMENT = "WizardPanel_imageAlignment", // NOI18N
 
-        PROPERTY_HELP_DISPLAYED = WizardDescriptor.PROP_HELP_DISPLAYED, // NOI18N
-        PROPERTY_HELP_URL = WizardDescriptor.PROP_HELP_URL; // NOI18N
+        PROPERTY_HELP_DISPLAYED = "WizardPanel_helpDisplayed", // NOI18N
+        PROPERTY_HELP_URL = "WizardPanel_helpURL"; // NOI18N
 }
 //============================================================================//
 class CorrelationDefinitionException extends RuntimeException {

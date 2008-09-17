@@ -44,6 +44,7 @@ package org.netbeans.modules.db.explorer.infos;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -63,6 +64,8 @@ import org.netbeans.modules.db.explorer.DbActionLoaderSupport;
 import org.netbeans.modules.db.explorer.DbNodeLoader;
 import org.netbeans.modules.db.explorer.DbNodeLoaderSupport;
 import org.netbeans.modules.db.explorer.nodes.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
@@ -295,7 +298,9 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         try {
             refreshChildren();
         } catch ( DatabaseException dbe ) {
-            Exceptions.printStackTrace(dbe);
+            LOGGER.log(Level.INFO, null, dbe);
+            NotifyDescriptor ndesc = new NotifyDescriptor.Exception(dbe);
+            DialogDisplayer.getDefault().notifyLater(ndesc);
         }
     } 
     
