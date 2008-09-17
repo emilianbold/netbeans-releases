@@ -1,0 +1,5 @@
+    foo.
+    ----
+HINT:Code has no side effects
+FIX:Assign expression to variable
+FIX:Show more information about this warning
