@@ -51,9 +51,11 @@ import java.util.List;
 import java.awt.Component;
 import java.awt.Dialog;
 
+import java.io.UnsupportedEncodingException;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -459,7 +461,14 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
     private void jBtnBrowse1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowse1ActionPerformed
         // TODO add your handling code here:
         String result = browseProjectServices();
-        if (result!=null) jTxtWsdlProject.setText(result);
+        if (result != null) {
+            try {
+                jTxtWsdlProject.setText(URLDecoder.decode(result, "UTF-8")); //NOI18N
+            } catch (UnsupportedEncodingException ex) {
+                jTxtWsdlProject.setText(result);
+            }
+        }
+        
     }//GEN-LAST:event_jBtnBrowse1ActionPerformed
     
     private void jRbnUrlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnUrlActionPerformed

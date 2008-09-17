@@ -57,20 +57,13 @@ public class UnusedCodeBlocksTestCase extends TraceModelTestBase {
         super(testName);
     }
 
-    public void testUnusedBlocksSimple() throws Exception {
-        doTest("unused_blocks_simple.cc");
-    }
-
-    public void testSmartHeadersParse_1() throws Exception {
-        doTest("smart_headers_parse_1.cc", "smart_headers_parse_1.h");
-    }
-
     @Override
     protected void setUp() throws Exception {
         System.setProperty("cnd.smart.parse", "true");
         super.setUp();
     }
     
+    @Override
     protected void postTest(String[] args, Object... params) {
         assertNotNull(params);
         assertTrue(params.length > 0);
@@ -99,4 +92,16 @@ public class UnusedCodeBlocksTestCase extends TraceModelTestBase {
     private void doTest(String[] filesToParse, String fileToCheck, String goldenNameBase) throws Exception {
         super.performTest(filesToParse, goldenNameBase, (Object) fileToCheck);
     }    
+    
+    public void testUnusedBlocksSimple() throws Exception {
+        doTest("unused_blocks_simple.cc");
+    }
+
+    public void testSmartHeadersParse_1() throws Exception {
+        doTest("smart_headers_parse_1.cc", "smart_headers_parse_1.h");
+    }
+
+    public void testSmartHeadersParse_2() throws Exception {
+        doTest("smart_headers_parse_2.cc", "smart_headers_parse_2.h");
+    }
 }

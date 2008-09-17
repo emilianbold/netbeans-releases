@@ -51,56 +51,53 @@ import static org.netbeans.modules.print.ui.UI.*;
  * @version 2006.03.09
  */
 public enum Macro {
-  NAME, // the name of area
-  USER, // the user name
-  ROW, // row number
-  COLUMN, // column number
-  COUNT, // total count
-  MODIFIED_DATE, // date of the last modification
-  MODIFIED_TIME, // time of the last modification
-  PRINTED_DATE, // date of printing
-  PRINTED_TIME; // time of printing
 
-  public interface Listener {
+    NAME, // the name of area
+    USER, // the user name
+    ROW, // row number
+    COLUMN, // column number
+    COUNT, // total count
+    MODIFIED_DATE, // date of the last modification
+    MODIFIED_TIME, // time of the last modification
+    PRINTED_DATE, // date of printing
+    PRINTED_TIME; // time of printing
 
-    /**
-     * Invoked when macro buttom is pressed.
-     * @param macro name of it
-     */
-    void pressed(Macro macro);
-  }
+    public interface Listener {
 
-  private Macro() {
-    myName = "%" + name() + "%"; // NOI18N
-    myButton = new JButton();
-    myButton.setFocusable(false);
-    myButton.setToolTipText(getToolTipText());
-    myButton.setMnemonic(KeyEvent.VK_1 + ordinal());
-    myButton.setIcon(icon(getClass(), name().toLowerCase()));
-  }
+        void pressed(Macro macro);
+    }
 
-  public String getName() {
-    return myName;
-  }
+    private Macro() {
+        myName = "%" + name() + "%"; // NOI18N
+        myButton = new JButton();
+        myButton.setFocusable(false);
+        myButton.setToolTipText(getToolTipText());
+        myButton.setMnemonic(KeyEvent.VK_1 + ordinal());
+        myButton.setIcon(icon(getClass(), name().toLowerCase()));
+    }
 
-  public JButton getButton() {
-    return myButton;
-  }
+    public String getName() {
+        return myName;
+    }
 
-  private String getToolTipText() {
-    String alt = " (Alt-" + (ordinal() + 1) + ")"; // NOI18N
-    return i18n(Macro.class, name()) + alt;
-  }
+    public JButton getButton() {
+        return myButton;
+    }
 
-  public JButton getButton(final Listener listener) {
-    myButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent event) {
-        listener.pressed(Macro.this);
-      }
-    });
-    return getButton();
-  }
+    private String getToolTipText() {
+        String alt = " (Alt-" + (ordinal() + 1) + ")"; // NOI18N
+        return i18n(Macro.class, name()) + alt;
+    }
 
-  private String myName;
-  private JButton myButton;
+    public JButton getButton(final Listener listener) {
+        myButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                listener.pressed(Macro.this);
+            }
+        });
+        return getButton();
+    }
+
+    private String myName;
+    private JButton myButton;
 }

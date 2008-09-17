@@ -39,6 +39,7 @@
  */
 #include "stdafx.h"
 #include "ScriptDebugger.h"
+#include "DebugDocument.h"
 #include "Utils.h"
 #include <tlhelp32.h>
 
@@ -86,9 +87,18 @@ void ScriptDebugger::cleanup() {
     //}
     unregisterForDebugAppNodeEvents();
     m_pBreakpointMgr->removeAllBreakpoints();
-    map<tstring, DWORD>::iterator iter = debugDocumentsMap.begin();
+    map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.begin();
     while(iter != debugDocumentsMap.end()) {
-        Utils::revokeInterfaceFromGlobal(iter->second);
+        DebugDocument *pDebugDoc = iter->second;
+        DWORD cookie = pDebugDoc->getCookie();
+        CComPtr<IDebugDocument> spDebugDocument;
+        Utils::getInterfaceFromGlobal(cookie, IID_IDebugDocument, (void **)&spDebugDocument);
+        if(spDebugDocument != NULL) {
+            CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
+            unregisterForDebugDocTextEvents(spDebugDocText, pDebugDoc->getEventCookie());
+        }
+        Utils::revokeInterfaceFromGlobal(cookie);
+        pDebugDoc->Release();
         ++iter;
     }
     debugDocumentsMap.clear();
@@ -326,9 +336,10 @@ BOOL ScriptDebugger::getStackFrameDescriptor(int stackDepth, DebugStackFrameDesc
 }
 
 TCHAR *ScriptDebugger::getSourceText(tstring fileURI, int beginLine, int endLine) {
-    map<tstring, DWORD>::iterator iter = debugDocumentsMap.find(fileURI);
+    map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
     if(iter != debugDocumentsMap.end()) {
-        DWORD cookie = iter->second;
+        DebugDocument *pDebugDoc = iter->second;
+        DWORD cookie = pDebugDoc->getCookie();
         CComPtr<IDebugDocument> spDebugDocument;
         Utils::getInterfaceFromGlobal(cookie, IID_IDebugDocument, (void **)&spDebugDocument);
         if(spDebugDocument != NULL && isDocumentReady(spDebugDocument)) {
@@ -635,10 +646,20 @@ STDMETHODIMP ScriptDebugger::onAddChild(IDebugApplicationNode __RPC_FAR *prddpCh
         CComBSTR name;
         hr = spDebugDocument->GetName(DOCUMENTNAMETYPE_URL, &name);
         if(name != NULL) {
-            Utils::log(4, _T("Loaded document: %s\n"), (TCHAR *)name);
+            TCHAR *docName = (TCHAR *)name;
+            Utils::log(4, _T("Loaded document: %s\n"), docName);
             DWORD cookie;
             Utils::registerInterfaceInGlobal(spDebugDocument, IID_IDebugDocument, &cookie);
-            debugDocumentsMap.insert(pair<tstring, DWORD>((TCHAR *)(name), cookie));
+            CComObject<DebugDocument> *pComDebugDoc;
+            CComObject<DebugDocument>::CreateInstance(&pComDebugDoc);
+            DebugDocument *pDebugDoc = (DebugDocument *)pComDebugDoc;
+            pDebugDoc->setDocumentName(docName);
+            pDebugDoc->setScriptDebugger(this);
+            pDebugDoc->setCookie(cookie);
+            CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
+            cookie = registerForDebugDocTextEvents(spDebugDocText, pComDebugDoc);
+            pDebugDoc->setEventCookie(cookie);
+            debugDocumentsMap.insert(pair<tstring, DebugDocument *>(docName, pDebugDoc));
             documentLoaded = TRUE;
             pauseImpl();
         }
@@ -655,9 +676,13 @@ STDMETHODIMP ScriptDebugger::onRemoveChild(IDebugApplicationNode __RPC_FAR *prdd
         if(name != NULL) {
             TCHAR *docName = (TCHAR *)name;
             Utils::log(4, _T("Removing document: %s\n"), docName);
-            map<tstring, DWORD>::iterator iter = debugDocumentsMap.find(docName);
+            map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(docName);
             if(iter != debugDocumentsMap.end()) {
-                Utils::revokeInterfaceFromGlobal(iter->second);
+                DebugDocument *pDebugDoc = iter->second;
+                Utils::revokeInterfaceFromGlobal(pDebugDoc->getCookie());
+                CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
+                unregisterForDebugDocTextEvents(spDebugDocText, pDebugDoc->getEventCookie());
+                pDebugDoc->Release();
                 debugDocumentsMap.erase(iter);
             }
         }
@@ -722,9 +747,10 @@ BOOL ScriptDebugger::setBreakpoint(IDebugDocument *pDebugDocument, Breakpoint *p
 
 BOOL ScriptDebugger::setBreakpoint(Breakpoint *pBreakpoint, BOOL remove) {
     tstring fileURI = pBreakpoint->getFileURI();
-    map<tstring, DWORD>::iterator iter = debugDocumentsMap.find(fileURI);
+    map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
     if(iter != debugDocumentsMap.end()) {
-        DWORD cookie = iter->second;
+        DebugDocument *pDebugDoc = iter->second;
+        DWORD cookie = pDebugDoc->getCookie();
         CComPtr<IDebugDocument> spDebugDocument;
         Utils::getInterfaceFromGlobal(cookie, IID_IDebugDocument, (void **)&spDebugDocument);
         if(spDebugDocument != NULL && isDocumentReady(spDebugDocument)) {
@@ -921,6 +947,14 @@ void ScriptDebugger::registerForDebugAppNodeEvents() {
     }
 }
 
+DWORD ScriptDebugger::registerForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, CComObject<DebugDocument> *pDebugDoc) {
+    CComPtr<IDebugDocumentTextEvents> spDebugDocTextEvents;
+    DWORD cookie;
+    HRESULT hr = pDebugDoc->QueryInterface(IID_IDebugDocumentTextEvents, (void **)&spDebugDocTextEvents);
+    AtlAdvise(pDebugDocText, spDebugDocTextEvents, IID_IDebugDocumentTextEvents, &cookie);
+    return cookie;
+}
+
 void ScriptDebugger::unregisterForDebugAppNodeEvents() {
     CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
     HRESULT hr = getRemoteDebugApplication(&spRemoteDebugApp);
@@ -931,6 +965,10 @@ void ScriptDebugger::unregisterForDebugAppNodeEvents() {
             hr = AtlUnadvise(spDebugAppNode, IID_IDebugApplicationNodeEvents, m_dwDebugAppNodeEventsCookie);
         }
     }
+}
+
+void ScriptDebugger::unregisterForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, DWORD cookie) {
+    AtlUnadvise(pDebugDocText, IID_IDebugDocumentTextEvents, cookie);
 }
 
 HRESULT ScriptDebugger::getRemoteDebugApplication(IRemoteDebugApplication **ppRemoteDebugApp) {

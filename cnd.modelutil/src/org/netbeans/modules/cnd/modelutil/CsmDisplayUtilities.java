@@ -267,7 +267,7 @@ public class CsmDisplayUtilities {
         return NbBundle.getMessage(CsmDisplayUtilities.class, key, value1, value2, value3);
     } 
     
-    private final static boolean SKIP_COLORING = Boolean.getBoolean("cnd.test.skip.coloring");
+    private final static boolean SKIP_COLORING = Boolean.getBoolean("cnd.test.skip.coloring");// NOI18N
 
     private static void appendHtml(StringBuilder buf, TokenSequence<?> ts) {
         FontColorSettings settings = null;
@@ -306,10 +306,10 @@ public class CsmDisplayUtilities {
 
     public static String htmlize(CharSequence input) {
         if (input == null) {
-            System.err.println("null string");
-            return "";
+            System.err.println("null string");// NOI18N
+            return "";// NOI18N
         }
-        String temp = org.openide.util.Utilities.replaceString(input.toString(), "&", "&amp;");
+        String temp = org.openide.util.Utilities.replaceString(input.toString(), "&", "&amp;");// NOI18N
         temp = org.openide.util.Utilities.replaceString(temp, "<", "&lt;"); // NOI18N
         temp = org.openide.util.Utilities.replaceString(temp, ">", "&gt;"); // NOI18N
         return temp;

@@ -1222,7 +1222,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                             }
                             else if(labelManager.isVisible(MessageLabelManager.OPERATION))
                             {
-                                if(mesg.getKind()!=BaseElement.MK_RESULT && mesg.getKind()!=BaseElement.MK_CREATE)
+                                if(mesg.getKind()!=BaseElement.MK_RESULT)
                                 {
                                      labelManager.hideLabel(MessageLabelManager.OPERATION);
                                      labelManager.showLabel(MessageLabelManager.OPERATION);
@@ -1256,7 +1256,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                                      labelManager.showLabel(MessageLabelManager.NAME);
                                 }
                             }
-                            else if(labelManager.isVisible(MessageLabelManager.OPERATION))if(mesg.getKind()!=BaseElement.MK_RESULT && mesg.getKind()!=BaseElement.MK_CREATE)
+                            else if(labelManager.isVisible(MessageLabelManager.OPERATION))if(mesg.getKind()!=BaseElement.MK_RESULT)
                             {
                                      labelManager.hideLabel(MessageLabelManager.OPERATION);
                                      labelManager.showLabel(MessageLabelManager.OPERATION);

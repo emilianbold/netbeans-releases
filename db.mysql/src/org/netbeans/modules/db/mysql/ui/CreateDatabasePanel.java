@@ -51,11 +51,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private DialogDescriptor descriptor;
     private Dialog dialog;
     private final DatabaseServer server;
+    private final DatabaseComboModel databaseComboModel;
     private DatabaseConnection dbconn;
     private Color nbErrorForeground;
     private JButton okButton;
     private JButton cancelButton;
-    private boolean databaseCreated;
     
     private void validatePanel(String databaseName) {
         if (descriptor == null) {
@@ -92,6 +92,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
+                comboDatabaseName.setEnabled(!start);
                 okButton.setEnabled(!start);
                 if (! start) {
                     cancelButton.setEnabled(true);
@@ -122,14 +123,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         // Don't start a new task if we're still running the old one
                         return;
                     }
-
-                    if (databaseCreated) {
-                        // The user already created this database and hasn't typed
-                        // in a new database, so "OK" means they are done.  Don't
-                        // try to create the same database all over again...
-                        dialog.dispose();
-                        return;
-                    }
                     
                     startProgress();
 
@@ -142,7 +135,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     task.addTaskListener(new TaskListener() {
                         public void taskFinished(org.openide.util.Task task) {
                             stopProgress();
-                            databaseCreated = true;
+                            dialog.dispose();
                         }
                     });
                     
@@ -199,16 +192,28 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                            
             dbconn = createConnection(server, dbname);
 
-            if (dbconn != null && SampleManager.isSample(dbname)) {
-                boolean create = Utils.displayYesNoDialog(NbBundle.getMessage(CreateDatabasePanel.class,
-                        "CreateDatabasePanel.MSG_ConfirmCreateSample", dbname));
+            if (dbconn == null) {
+                return;
+            }
 
-                if (create) {
-                    // Disable cancel
-                    // TODO - make it possible to cancel a long-running sample creation task
-                    cancelButton.setEnabled(false);
-                    SampleManager.createSample(dbname, dbconn);
+            boolean create = false;
+
+            if (SampleManager.isSample(dbname)) {
+                if (! databaseComboModel.isSelectedSample()) {
+                    // This is a sample name the user typed in - make sure they want to
+                    // actually create the sample tables, objects, etc.
+                    create = Utils.displayYesNoDialog(NbBundle.getMessage(CreateDatabasePanel.class,
+                            "CreateDatabasePanel.MSG_ConfirmCreateSample", dbname));
+                } else {
+                    create = true;
                 }
+            }
+
+            if (create) {
+                // Disable cancel
+                // TODO - make it possible to cancel a long-running sample creation task
+                cancelButton.setEnabled(false);
+                SampleManager.createSample(dbname, dbconn);
             }
         } catch ( DatabaseException ex ) {
             displayCreateFailure(server, ex, dbname, dbCreated);
@@ -293,7 +298,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         initComponents();
 
-        comboDatabaseName.setModel(new DatabaseComboModel());
+        databaseComboModel = new DatabaseComboModel();
+        comboDatabaseName.setModel(databaseComboModel);
         
         comboDatabaseName.getEditor().getEditorComponent().addKeyListener(
             new KeyListener() {
@@ -310,8 +316,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     dbname = keyStr;
                 }
                 
-                // User has changed the db name, so enable creating a new db
-                databaseCreated = false;
                 validatePanel(dbname);
             }
 
@@ -454,7 +458,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
     private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDatabaseNameItemStateChanged
     
-        databaseCreated = false;
         if (evt.getStateChange() == ItemEvent.SELECTED)
         {
             validatePanel(evt.getItem().toString().trim());
@@ -467,7 +470,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
     private static class DatabaseComboModel implements ComboBoxModel {
         private final List<String> sampleNames = SampleManager.getSampleNames();
-        static final String samplePrefix =
+        static final String SAMPLE_PREFIX =
                 NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.STR_SampleDatabase") + ": ";
         
         String selected = null;
@@ -477,10 +480,14 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             selected = (String)item;
         }
 
+        public boolean isSelectedSample() {
+            return selected != null && selected.startsWith(SAMPLE_PREFIX);
+        }
+
         public Object getSelectedItem() {
-            if ( selected != null && selected.startsWith(samplePrefix)) {
+            if (isSelectedSample()) {
                 // trim off the "Sample database: " string
-                return selected.replace(samplePrefix, "");
+                return selected.replace(SAMPLE_PREFIX, "");
             } else if ( selected != null ) {
                 return selected; 
             } else {
@@ -496,7 +503,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             if (index < 0) {
                 return null;
             }
-            return samplePrefix + sampleNames.get(index).toString();
+            return SAMPLE_PREFIX + sampleNames.get(index).toString();
         }
 
         public void addListDataListener(ListDataListener listener) {

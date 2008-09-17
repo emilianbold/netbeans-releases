@@ -123,7 +123,7 @@ class IntroduceFix implements PreviewableFix {
     }
 
     public void implement() throws Exception {
-        String name = IntroduceHint.testName;
+        String name = null;
         EditList edits = createEdits(name);
         if (edits == null) {
             // Some kind of error

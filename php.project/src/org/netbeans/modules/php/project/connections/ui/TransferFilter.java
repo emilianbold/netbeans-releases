@@ -141,15 +141,21 @@ public final class TransferFilter extends javax.swing.JPanel {
                 assert false;
         }
         TransferFilter panel = new TransferFilter(new TransferFilterTable(model));
-        JButton close = new JButton();
-        close.setDefaultCapable(false);
-        Mnemonics.setLocalizedText(close, NbBundle.getMessage(TransferFilter.class, "LBL_Ok"));//NOI18N
-        DialogDescriptor descriptior = new DialogDescriptor(panel, title);
-        descriptior.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
-        descriptior.setOptions(new Object[]{close, DialogDescriptor.CANCEL_OPTION});
-        Object closeOption = DialogDisplayer.getDefault().notify(descriptior);
-        boolean continueTransfer = !DialogDescriptor.CANCEL_OPTION.equals(closeOption);        
-        return (continueTransfer) ? unwrapFileUnits(model.getFilteredUnits()) : Collections.<TransferFile>emptySet();
+        JButton okButton = new JButton();
+        Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(TransferFilter.class, "LBL_Ok"));
+        DialogDescriptor descriptor = new DialogDescriptor(
+                panel,
+                title,
+                true,
+                new Object[] {okButton, DialogDescriptor.CANCEL_OPTION},
+                okButton,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        if (DialogDisplayer.getDefault().notify(descriptor) == okButton) {
+            return unwrapFileUnits(model.getFilteredUnits());
+        }
+        return Collections.<TransferFile>emptySet();
     }
 
     private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer, TransferFileTableModel model) {
@@ -396,6 +402,28 @@ public final class TransferFilter extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = table;
         lWarning = new javax.swing.JLabel();
+
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return tfSearch;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return tfSearch;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return tfSearch;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                return tfSearch;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                return tfSearch;//end getComponentBefore
+
+            }}
+        );
 
         org.openide.awt.Mnemonics.setLocalizedText(lSelectionInfo, org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lSelectionInfo.text")); // NOI18N
 

@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
+import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
@@ -214,7 +215,7 @@ public class GdbProxyEngine {
             sb.append(' ');
         }
         
-        provider = Lookup.getDefault().lookup(InteractiveCommandProvider.class);
+        provider = InteractiveCommandProviderFactory.create(debugger.getHostKey());
         if (provider != null && provider.run(debugger.getHostKey(), sb.toString(), null)) {
             try {
                 toGdb = gdbReader(provider.getInputStream(), provider.getOutputStream());

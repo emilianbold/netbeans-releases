@@ -77,6 +77,8 @@ import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.DatabaseUser;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.util.ExecSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Mutex;
@@ -703,15 +705,16 @@ public class MySQLDatabaseServer implements DatabaseServer {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(Utils.getMessage("LBL_StoppingMySQLServer"));
                 handle.start();
                 handle.switchToIndeterminate();
+                Process proc = null;
 
                 try {
-                    runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
+                    proc = runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
 
                     // See if the connection is still active.  Try 5 times with a
                     // 1 second wait and then assume something went wrong if it's
                     // still active after that.
                     int tries = 0;
-                    while (tries <= 4) {
+                    while (tries <= 10) {
                         tries++;
 
                         try {
@@ -738,6 +741,9 @@ public class MySQLDatabaseServer implements DatabaseServer {
                         });
                     }
                 } finally {
+                    if (proc != null) {
+                        proc.destroy();
+                    }
                     handle.finish();
                 }
                 
@@ -778,7 +784,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
 
     }
 
-    private void runProcess(String command, String args, boolean displayOutput,
+    private Process runProcess(String command, String args, boolean displayOutput,
             String outputLabel) throws DatabaseException {
 
         if ( Utilities.isMac() && command.endsWith(".app") ) {  // NOI18N
@@ -795,6 +801,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
             if ( displayOutput ) {
                 new ExecSupport().displayProcessOutputs(proc, outputLabel);
             }
+            return proc;
         } catch ( Exception e ) {
             throw new DatabaseException(e);
         }
@@ -860,6 +867,11 @@ public class MySQLDatabaseServer implements DatabaseServer {
         } catch (UnknownHostException ex) {
             return false;
         } catch (IOException ex) {
+            return false;
+        } catch (NumberFormatException nfe) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_MySQL_InvalidPortNumber" + "  " + getPort()), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+            DialogDisplayer.getDefault().notify(nd);
+            LOGGER.log(Level.WARNING, nfe.getMessage());
             return false;
         }
 

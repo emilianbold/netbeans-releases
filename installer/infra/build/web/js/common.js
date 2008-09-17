@@ -211,6 +211,56 @@ function getSize(filename) {
 	return size;
 }
 
+function get_file_name(platform, option) {
+    var file_name = "";
+    if(platform=="zip") {
+        file_name += ZIP_FILES_PREFIX;
+    } else {
+        file_name += BUNDLE_FILES_PREFIX;
+    }
+    if (option != "all") {
+    	file_name += "-" + option;
+    }
+
+    if ( platform != "zip" ) {
+   	file_name += "-" + platform;
+    }
+    if (platform == "windows") {
+        file_name += ".exe";
+    } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
+        file_name += ".tgz";
+    } else if (platform == "macosx") {
+	file_name += ".dmg";
+    } else if(platform == "zip"){
+	file_name += ".zip"        
+    } else {
+        file_name += ".sh";
+    }
+    return file_name;
+}
+
+function get_file_url(platform, option) {
+    var url  = BINARIES_LOCATION;
+	
+    if(platform=="zip") {
+        url += "zip/";
+    } else {
+        url += "bundles/";
+    }    
+    url += get_file_name(platform, option);    
+    return url;
+}
+
+function get_file_bouncer_url(platform, option) {
+    var url = BOUNCER_URL;
+    url += "?" + "product=" + BOUNCER_PRODUCT_PREFIX;
+    if(option != "all") {
+        url += "-" + option;
+    }
+    url += "&" + "os=" + platform;
+    return url;
+}
+
 function message(msg) {
     document.write(msg);
 }

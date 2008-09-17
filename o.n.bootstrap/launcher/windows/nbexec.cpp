@@ -125,6 +125,7 @@ double getPreciseTime();
 \n\
 General options:\n\
   --help                show this help\n\
+  --nosplash            do not show the splash screen\n\
   --jdkhome <path>      path to JDK\n\
   -J<jvm_option>        pass <jvm_option> to JVM\n\
 \n\
