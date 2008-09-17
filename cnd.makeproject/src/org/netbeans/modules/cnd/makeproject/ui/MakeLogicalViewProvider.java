@@ -117,6 +117,7 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
 import org.openide.util.LookupEvent;
@@ -127,6 +128,8 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Utilities;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -146,6 +149,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     static final String PRIMARY_TYPE = "application"; // NOI18N
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
     static final String MASK = "mask"; // NOI18N
+    
+    static StandardNodeAction renameAction = null;
+    static StandardNodeAction deleteAction = null;
 
     public MakeLogicalViewProvider(Project project, SubprojectProvider spp) {
         this.project = project;
@@ -1084,9 +1090,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public void setName(String newName) {
-            if (!getMakeConfigurationDescriptor().okToChange()) {
-                return;
-            }
             String oldName = folder.getDisplayName();
             if (folder.getParent() != null && folder.getParent().findFolderByDisplayName(newName) != null) {
                 String msg = NbBundle.getMessage(MakeLogicalViewProvider.class, "CANNOT_RENAME", oldName, newName); // NOI18N
@@ -1165,7 +1168,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 SystemAction.get(CopyAction.class),
                 SystemAction.get(PasteAction.class),
                 SystemAction.get(RemoveFolderAction.class),
-                SystemAction.get(RenameAction.class),
+//                SystemAction.get(RenameAction.class),
+                createRenameAction(),
                 null,
                 SystemAction.get(org.openide.actions.FindAction.class ),
                 null,
@@ -1194,6 +1198,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         public Transferable paste() throws IOException {
+            if (!(getMakeConfigurationDescriptor().okToChange())) {
+                return null;
+            }
             Item item = viewItemNode.getItem();
             ItemConfiguration[] oldConfigurations = item.getItemConfigurations();
             if (type == DnDConstants.ACTION_MOVE) {
@@ -1557,9 +1564,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     newActions.add(null);
                     newActions.add(SystemAction.get(CompileSingleAction.class));
                     newActions.add(null);
+                } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
+                    newActions.add(createRenameAction());
                 } else if (oldActions[i] != null && oldActions[i] instanceof DeleteAction) {
                     newActions.add(SystemAction.get(RemoveItemAction.class));
-                    newActions.add(SystemAction.get(DeleteAction.class));
+                    newActions.add(createDeleteAction());
                 } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
                     newActions.add(SystemAction.get(PropertiesItemAction.class));
                 } else {
@@ -1612,15 +1621,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
     
-    class ItemRenameAction extends RenameAction {
-        @Override
-        protected void performAction(Node[] activatedNodes) {
-            if (!(getMakeConfigurationDescriptor().okToChange())) {
-                return;
-            }
-        }
-    }
-
     static class ViewItemTransferable extends ExTransferable.Single {
         private ViewItemNode node;
 
@@ -1744,5 +1744,82 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         public Iterator objectsToSearch() {
             return folder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }
+    }
+    
+    class StandardNodeAction extends NodeAction {
+        SystemAction systemAction;
+        
+        public StandardNodeAction(SystemAction systemAction) {
+            this.systemAction = systemAction;
+        }
+
+        @Override
+        protected void performAction(Node[] activatedNodes) {
+            if (!(getMakeConfigurationDescriptor().okToChange())) {
+                return;
+            }
+            InstanceContent ic = new InstanceContent();
+            for (int i = 0; i < activatedNodes.length; i++) {
+                ic.add(activatedNodes[i]);
+            }
+            Lookup actionContext = new AbstractLookup(ic);
+            final Action a;
+            if (systemAction instanceof NodeAction) {
+                a = ((NodeAction)systemAction).createContextAwareInstance(actionContext);
+            }
+            else if (systemAction instanceof CallbackSystemAction) {
+                a = ((CallbackSystemAction)systemAction).createContextAwareInstance(actionContext);
+            }
+            else {
+                a = null;
+                assert false;
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    a.actionPerformed(new ActionEvent(this, 0, null));
+                }
+            });
+        }
+
+        @Override
+        protected boolean enable(Node[] activatedNodes) {
+            return true;
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return systemAction.getHelpCtx();
+        }
+
+        @Override
+        public String getName() {
+            return systemAction.getName();
+        }
+    }
+    
+    class RenameNodeAction extends StandardNodeAction {
+        public RenameNodeAction() {
+            super(SystemAction.get(RenameAction.class));
+        }
+    }
+    
+    class DeleteNodeAction extends StandardNodeAction {
+        public DeleteNodeAction() {
+            super(SystemAction.get(DeleteAction.class));
+        }
+    }
+    
+    StandardNodeAction createRenameAction() {
+        if (renameAction == null) {
+            renameAction = new RenameNodeAction();
+        }
+        return renameAction;
+    }
+    
+    StandardNodeAction createDeleteAction() {
+        if (deleteAction == null) {
+            deleteAction = new DeleteNodeAction();
+        }
+        return deleteAction;
     }
 }
