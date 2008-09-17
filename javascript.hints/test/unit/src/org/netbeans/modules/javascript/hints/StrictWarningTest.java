@@ -102,6 +102,18 @@ public class StrictWarningTest extends HintTestBase {
         checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/generated.js", null);
     }
 
+    public void testSideEffects3() throws Exception {
+        goldenfileSuffix = "";
+        // See 135144
+        checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/effects_error.js", null);
+    }
+
+    public void testSideEffects4() throws Exception {
+        goldenfileSuffix = "";
+        // See 135144
+        checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/assign.js", null);
+    }
+
     // Test no false return warnings
     public void testReturnAnalysis() throws Exception {
         goldenfileSuffix = "";
@@ -117,7 +129,37 @@ public class StrictWarningTest extends HintTestBase {
         goldenfileSuffix = "";
         applyHint(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", "600px\"^,", "Remove");
     }
-    
+
+    public void testFixSideEffects1() throws Exception {
+        goldenfileSuffix = "";
+        applyHint(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/assign.js", "ba^r1", "Assign");
+    }
+
+    public void testFixSideEffects2() throws Exception {
+        goldenfileSuffix = "";
+        applyHint(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/assign.js", "ba^r2", "Assign");
+    }
+
+    public void testFixSideEffects3() throws Exception {
+        goldenfileSuffix = "";
+        applyHint(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/assign.js", "ba^r3", "Assign");
+    }
+
+    public void testFixSideEffects4() throws Exception {
+        goldenfileSuffix = "";
+        applyHint(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/assign.js", "ba^r4", "Assign");
+    }
+
+    public void testFixSideEffects5() throws Exception {
+        goldenfileSuffix = "";
+        applyHint(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/assign.js", "^3+4", "Assign");
+    }
+
+    public void testFixSideEffects6() throws Exception {
+        goldenfileSuffix = "";
+        applyHint(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/assign.js", "ba^r2", "Return");
+    }
+
 //
 //    @Override
 //    protected void customizeHintError(Error error, int start) {
