@@ -995,6 +995,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         } else {
             String fieldName = tokenSequence.token().text().toString();
+            if (fieldName.startsWith("$")) {//NOI18N
+                fieldName = fieldName.substring(1);
+            }
 
             for (IndexedConstant field : request.index.getAllProperties(request.result, preceedingType,
                     fieldName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
