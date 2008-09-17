@@ -50,8 +50,12 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.dwarfdump.FileMagic;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import org.netbeans.modules.cnd.execution.LocalNativeExecution;
+import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -122,7 +126,7 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
     
     public abstract void stop();
     
-    public final String[] prepareEnvironment(String[] envp, boolean unbuffer) {
+    public final String[] prepareEnvironment(String executableAbsolute, String[] envp, boolean unbuffer) {
         List<String> envpList = new ArrayList<String>();
         if (envp != null) {
             envpList.addAll(Arrays.asList(envp));
@@ -130,25 +134,30 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
         envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
 
         if (unbuffer) {
-            int platformType  = (host == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(host).getPlatform();
-            String unbufferPath = getUnbufferPath(host);
-            if (unbufferPath != null) {
-                if (platformType == PlatformTypes.PLATFORM_MACOSX) {
-                    envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
-                    envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
-                } else if (platformType == PlatformTypes.PLATFORM_WINDOWS) {
-                    //TODO: issue #144106
-                } else {
-                    envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+            try {
+                FileMagic magic = new FileMagic(executableAbsolute);
+                ElfReader er = new ElfReader(executableAbsolute, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
+                if (er.is32Bit()) {
+                    int platformType  = (host == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(host).getPlatform();
+                    String unbufferPath = Unbuffer.getPath(host);
+                    if (unbufferPath != null) {
+                        if (platformType == PlatformTypes.PLATFORM_MACOSX) {
+                            envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
+                            envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
+                        } else if (platformType == PlatformTypes.PLATFORM_WINDOWS) {
+                            //TODO: issue #144106
+                        } else {
+                            envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+                        }
+                    }
+                } else if (er.is64Bit()) {
+                    // TODO: need to generate 64 bit unbuffer and use it here
                 }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return envpList.toArray(new String[envpList.size()]);
-    }
-
-    // override in descendants
-    protected String getUnbufferPath(String host) {
-        return null;
     }
 
     /**
