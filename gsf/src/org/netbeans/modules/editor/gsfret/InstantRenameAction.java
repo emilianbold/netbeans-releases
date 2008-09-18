@@ -86,7 +86,7 @@ import org.openide.util.lookup.InstanceContent;
 public class InstantRenameAction extends BaseAction {
     /** Creates a new instance of InstantRenameAction */
     public InstantRenameAction() {
-        super("in-place-refactoring", ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+        super("in-place-refactoring", MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
     }
 
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
