@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -148,7 +149,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
         } else if (GroovySources.SOURCES_TYPE_GRAILS_UNKNOWN.equals(type)) {
             List<SourceGroup> result = new ArrayList<SourceGroup>();
             for (FileObject child : projectDir.getChildren()) {
-                if (child.isFolder() && !child.getName().startsWith(".") && !KNOWN_FOLDERS.contains(child.getName())) {
+                if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS.contains(child.getName())) {
                     String name = child.getName();
                     result.add(new Group(child, Character.toUpperCase(name.charAt(0)) + name.substring(1)));
                 }
@@ -156,7 +157,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             FileObject grailsAppFo = projectDir.getFileObject("grails-app");
             if (grailsAppFo != null) {
                 for (FileObject child : grailsAppFo.getChildren()) {
-                    if (child.isFolder() && !child.getName().startsWith(".") && !KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
+                    if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
                         String name = child.getName();
                         result.add(new Group(child, Character.toUpperCase(name.charAt(0)) + name.substring(1)));
                     }

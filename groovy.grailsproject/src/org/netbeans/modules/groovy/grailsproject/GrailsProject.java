@@ -45,7 +45,6 @@ import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
@@ -60,12 +59,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -125,7 +121,6 @@ public final class GrailsProject implements Project {
                 new GrailsProjectEncodingQueryImpl(),
                 new OpenHook(),
                 new AuxiliaryConfigurationImpl(),
-                getSearchInfo(projectDir),
                 new RecommendedTemplatesImpl(),
                 new GroovyFeatureImpl(),
                 logicalView, //Logical view of project implementation
@@ -135,44 +130,6 @@ public final class GrailsProject implements Project {
         return lookup;
     }
     
-    SearchInfo getSearchInfo(FileObject projectDir) {
-        
-        // LOG.setLevel(Level.FINEST);
-        
-        assert projectDir != null;
-        
-        String[] dirlist =  {   "test",
-                                "src",
-                                "grails-app",
-                                "scripts" } ;
-        
-        List<FileObject> foList = new ArrayList<FileObject>();
-        
-        String basedir = FileUtil.getFileDisplayName(projectDir) + File.separatorChar;
-        LOG.log(Level.FINEST, "basedir = " + basedir);    
-        
-        for (String dir : dirlist) {
-            LOG.log(Level.FINEST, "dir = " + dir);
-            File f = new File(basedir + dir);
-            if (f != null) {
-                if (f.isDirectory()) {
-                    foList.add(FileUtil.toFileObject(f));
-                }
-
-            } else {
-                LOG.log(Level.FINEST, "Problem creating file = " + basedir + dir);
-            }
-        }
-        
-        LOG.log(Level.FINEST, "foList: " + foList);
-        
-        FileObject[] folder = foList.toArray(new FileObject[foList.size()]);
-        
-        assert folder.length == foList.size();
-        
-        return SearchInfoFactory.createSearchInfo(folder, true, null);                                         
-    }
-
     public synchronized SourceRoots getSourceRoots() {        
         if (this.sourceRoots == null) { //Local caching, no project metadata access
             this.sourceRoots = new SourceRoots(projectDir); //NOI18N
