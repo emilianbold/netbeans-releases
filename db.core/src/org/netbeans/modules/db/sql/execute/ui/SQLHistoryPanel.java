@@ -904,11 +904,10 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
 
         public void sortData() {
-            List<SQLHistory> sqlHistoryList = view.getCurrentSQLHistoryList();
+            List<SQLHistory> sqlHistoryList = view.getSQLHistoryList();
             searchTextField.setText(""); // NOI18N
             SQLComparator sqlComparator = new SQLComparator(sortCol, sortAsc);
             Collections.sort(sqlHistoryList, sqlComparator);
-            view.setSQLHistoryList(sqlHistoryList);
             view.setCurrentSQLHistoryList(sqlHistoryList);
             refreshTable(null, sqlHistoryList);
         }
