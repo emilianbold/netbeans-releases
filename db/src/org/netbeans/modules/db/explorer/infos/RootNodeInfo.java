@@ -86,7 +86,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     // @GuardedBy("nodeMap")
     private HashMap<Node, RegisteredNodeInfo> nodeMap = new HashMap<Node, RegisteredNodeInfo>();
 
-    final private Map<DatabaseConnection, ConnectionNodeInfo> conn2Info = new HashMap<DatabaseConnection, ConnectionNodeInfo>();
+    private final Map<DatabaseConnection, ConnectionNodeInfo> conn2Info = new HashMap<DatabaseConnection, ConnectionNodeInfo>();
 
     private static Logger LOGGER = 
             Logger.getLogger(RootNodeInfo.class.getName());
@@ -96,7 +96,12 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             rootInfo = (RootNodeInfo) DatabaseNodeInfo.createNodeInfo(null, "root"); //NOI18N
         }
         return rootInfo;
-    }  
+    }
+
+    // Used by unit tests
+    Map<DatabaseConnection, ConnectionNodeInfo> getConn2InfoCache() {
+        return Collections.unmodifiableMap(conn2Info);
+    }
     
     public RootNodeInfo() {  
         try {

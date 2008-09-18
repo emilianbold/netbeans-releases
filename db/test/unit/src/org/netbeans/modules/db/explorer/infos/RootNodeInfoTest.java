@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,13 +31,13 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.explorer.nodes;
+package org.netbeans.modules.db.explorer.infos;
 
 import java.util.Iterator;
 import java.util.Vector;
@@ -46,71 +46,56 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
+import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.test.Util;
-import org.openide.nodes.Node;
 
 /**
  *
- * @author David
+ * @author David Van Couvering
  */
-public class DatabaseNodeTest extends TestCase {
-    
-    public DatabaseNodeTest(String testName) {
-        super(testName);
-    }        
-
-    @Override
-    public void setUp() throws Exception {
-        Util.clearConnections();
-        Util.deleteDriverFiles();
-    }
-    /**
-     * Use case: create the root node, and verify that the expected
-     * hierarchy of nodes and infos are created 
-     */
-    public void testRootHierarchy() throws Exception {
+public class RootNodeInfoTest extends TestCase {
+    public void testAddRemoveConnections() throws Exception {
         // Initialize the tree with a driver and a connection
         JDBCDriver driver = Util.createDummyDriver();
         JDBCDriverManager.getDefault().addDriver(driver);
-        
+        RootNodeInfo rootInfo = RootNodeInfo.getInstance();
+        assertEquals(1, rootInfo.getChildren().size());
+        validateConn2InfoCache(rootInfo);
+
         DatabaseConnection conn = DatabaseConnection.create(
                 driver, "jdbc:mark//twain", "tomsawyer", null, "whitewash", true);
         ConnectionManager.getDefault().addConnection(conn);
-        
-        // Need to force a refresh because otherwise it happens asynchronously
-        // and this test does not pass reliably
-        RootNodeInfo.getInstance().refreshChildren();
-        
-        checkConnection(RootNodeInfo.getInstance(), conn);
 
-        checkInfoChildren(RootNodeInfo.getInstance());
-        checkNodeChildren(RootNode.getInstance());
-    }
-    
-    private void checkNodeChildren(final RootNode root) throws Exception {
-        Node[] children = root.getChildren().getNodes(true);
+        rootInfo.refreshChildren();
+        assertEquals(2, rootInfo.getChildren().size());
+        validateConn2InfoCache(rootInfo);
 
-        // The Driver List Node and the connection node should be the two
-        // children
-        assertEquals(2, children.length);
-        assertTrue(children[0] instanceof DriverListNode);
-        assertTrue(children[1] instanceof ConnectionNode); 
-    }
-    
-    private void checkInfoChildren(DatabaseNodeInfo rootInfo) throws Exception {
+
+        DatabaseConnection conn2 = DatabaseConnection.create(
+                driver, "jdbc:bob//dylan", "rolling", null, "stone", true);
+        ConnectionManager.getDefault().addConnection(conn2);
+
+        rootInfo.refreshChildren();
+        assertEquals(3, rootInfo.getChildren().size());
+        validateConn2InfoCache(rootInfo);
+
+
+        ConnectionManager.getDefault().removeConnection(conn);
+
+        rootInfo.refreshChildren();
+        validateConn2InfoCache(rootInfo);
         Vector children = rootInfo.getChildren();
-        assertTrue(children.size() == 2);
+        assertEquals(2, children.size());
+        checkConnection(rootInfo, conn2);
 
-        // These aren't sorted, and this is the order they come in
-        assertTrue(children.get(0) instanceof ConnectionNodeInfo);
-        assertTrue(children.get(1) instanceof DriverListNodeInfo);
+        ConnectionManager.getDefault().removeConnection(conn2);
+        rootInfo.refreshChildren();
+        assertEquals(1, rootInfo.getChildren().size());
+        validateConn2InfoCache(rootInfo);
     }
-    
-    private void checkConnection(DatabaseNodeInfo rootInfo, 
+
+    private void checkConnection(RootNodeInfo rootInfo,
             DatabaseConnection expected) throws Exception {
 
         Vector children = rootInfo.getChildren();
@@ -126,6 +111,28 @@ public class DatabaseNodeTest extends TestCase {
                 assertTrue(conn.getDriverClass().equals(expected.getDriverClass()));
                 return;
             }
+        }
+    }
+
+    private void validateConn2InfoCache(RootNodeInfo rootInfo) throws Exception {
+        org.netbeans.modules.db.explorer.DatabaseConnection[] connections = ConnectionList.getDefault().getConnections();
+
+        assertEquals(connections.length, rootInfo.getConn2InfoCache().size());
+        Vector<DatabaseNodeInfo> children = (Vector<DatabaseNodeInfo>)rootInfo.getChildren();
+        assertEquals(children.size() - 1, connections.length);
+
+        for (org.netbeans.modules.db.explorer.DatabaseConnection dbconn : connections) {
+            DatabaseNodeInfo info = rootInfo.getConn2InfoCache().get(dbconn);
+            assertNotNull(info);
+            assertTrue(children.contains(info));
+        }
+
+        for (DatabaseNodeInfo child : children) {
+            if (! (child instanceof ConnectionNodeInfo)) {
+                continue;
+            }
+
+            assertTrue(rootInfo.getConn2InfoCache().containsValue(child));
         }
     }
 }
