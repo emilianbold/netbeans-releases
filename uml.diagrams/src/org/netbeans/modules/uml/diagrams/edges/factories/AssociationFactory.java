@@ -41,21 +41,39 @@
 package org.netbeans.modules.uml.diagrams.edges.factories;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 
 /**
  *
  * @author treyspiva
  */
-public class AssociationFactory extends AbstractRelationshipFactory
+public class AssociationFactory implements RelationshipFactory
 {
-
     public AssociationFactory()
     {
+    }
+
+    public void delete(boolean fromModel, 
+                       IPresentationElement element,
+                       IElement source, 
+                       IElement target)
+    {
+        if(fromModel == true)
+        {
+            IElement modelElement = element.getFirstSubject(); 
+            if(modelElement != null)
+            {
+                modelElement.delete();
+            }
+        }
+            
+        element.delete();
     }
 
     public IRelationship create(IElement source, IElement target)
@@ -76,14 +94,20 @@ public class AssociationFactory extends AbstractRelationshipFactory
         return retVal;
     }
 
-    public void reconnectSource(IElement relationship, IElement source)
+    public void reconnectSource(IElement relationship, 
+                                IElement oldSource, 
+                                IElement source,
+                                IElement target)
     {
         if((relationship instanceof IAssociation) &&
-           (source instanceof IClassifier))
+           (source instanceof IClassifier) &&
+           (oldSource instanceof IClassifier))
         {
             IClassifier type = (IClassifier)source;
+            IClassifier oldType = (IClassifier)oldSource;
+            
             IAssociation assoc = (IAssociation)relationship;
-            IAssociationEnd end = getAssociationEnd(type, assoc);
+            IAssociationEnd end = getAssociationEnd(oldType, assoc);
             if(end != null)
             {
                 end.setParticipant(type);
@@ -91,14 +115,20 @@ public class AssociationFactory extends AbstractRelationshipFactory
         }
     }
 
-    public void reconnectTarget(IElement relationship, IElement target)
+    public void reconnectTarget(IElement relationship, 
+                                IElement oldTarget, 
+                                IElement target,
+                                IElement source)
     {
         if((relationship instanceof IAssociation) &&
-           (target instanceof IClassifier))
+           (target instanceof IClassifier) &&
+           (oldTarget instanceof IClassifier))
         {
             IClassifier type = (IClassifier)target;
+            IClassifier oldType = (IClassifier)oldTarget;
+            
             IAssociation assoc = (IAssociation)relationship;
-            IAssociationEnd end = getAssociationEnd(type, assoc);
+            IAssociationEnd end = getAssociationEnd(oldType, assoc);
             if(end != null)
             {
                 end.setParticipant(type);

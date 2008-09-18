@@ -670,16 +670,35 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     public boolean isIncludeCompletionDisabled(int offset) {
         boolean completionDisabled = true;
-        TokenItem token = getTokenItem(offset);
-        token = shiftToNonWhiteBwd(token);
-        if (token != null) {
-            completionDisabled = !isOffsetInToken(token, INCLUDE_COMPLETION_TOKENS, offset);
+        TokenItem endToken = getTokenItem(offset);
+        if (endToken != null) {
+            TokenItem token = shiftToNonWhiteBwd(endToken);
+            if (token != null) {
+                completionDisabled = !isOffsetInToken(token, INCLUDE_COMPLETION_TOKENS, offset);
+                if (completionDisabled) {
+                    // check whether right after #include or #include_next directive
+                    switch (token.getTokenID().getNumericID()) {
+                        case CCTokenContext.CPPINCLUDE_ID:
+                        case CCTokenContext.CPPINCLUDE_NEXT_ID:
+                            return completionDisabled = false;
+                    }
+                }
+            }
+            // check for "#include prefix" (IZ 119931)
             if (completionDisabled) {
-                // check whether right after #include or #include_next directive
-                switch(token.getTokenID().getNumericID()) {
-                case CCTokenContext.CPPINCLUDE_ID:
-                case CCTokenContext.CPPINCLUDE_NEXT_ID:
-                    return completionDisabled = false;
+                token = endToken.getPrevious();
+                if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                    token = token.getPrevious();
+                    if (token != null) {
+                        token = shiftToNonWhiteBwd(token);
+                        if (token != null) {
+                            switch (token.getTokenID().getNumericID()) {
+                                case CCTokenContext.CPPINCLUDE_ID:
+                                case CCTokenContext.CPPINCLUDE_NEXT_ID:
+                                    return completionDisabled = false;
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -116,7 +116,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     private SQLHistoryView view;
     private JEditorPane editorPane;
     private String currentUrl;
-    private HistoryTableModel tableModel;
 
     /** Creates new form SQLHistoryPanel */
     public SQLHistoryPanel(final JEditorPane editorPane) {
@@ -1087,8 +1086,8 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
             switch (sortCol) {
                 case 0: // SQL
-                    String s1 = sqlHistory1.getSql().trim();
-                    String s2 = sqlHistory2.getSql().trim();
+                    String s1 = sqlHistory1.getSql().trim().toLowerCase();
+                    String s2 = sqlHistory2.getSql().trim().toLowerCase();
                     result = s1.compareTo(s2);
                     break;
                 case 1: // Date

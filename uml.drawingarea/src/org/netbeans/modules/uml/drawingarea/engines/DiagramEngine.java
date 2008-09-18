@@ -305,8 +305,8 @@ abstract public class DiagramEngine {
                     ImageUtil.instance().getIcon("selection-arrow.png"),
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_SelectToolAction"),
                     Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR),
-                    KeyStroke.getKeyStroke("ctrl shift S"),
-                    null));
+                    KeyStroke.getKeyStroke("ctrl alt shift S"),
+                    KeyStroke.getKeyStroke("meta ctrl shift S")));
         selectToolButton.setName(DesignerTools.SELECT);  // need a name to later identify the button
         
         JToggleButton handToolButton = new JToggleButton(
@@ -315,8 +315,8 @@ abstract public class DiagramEngine {
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_HandToolAction"),
                     Utilities.createCustomCursor(scene.getView(), 
                     Utilities.icon2Image(ImageUtil.instance().getIcon("pan-open-hand.gif")), "PanOpenedHand"),
-                    KeyStroke.getKeyStroke("ctrl alt shift P"),
-                    KeyStroke.getKeyStroke("meta ctrl shift P")));
+                    KeyStroke.getKeyStroke("ctrl alt shift N"),
+                    KeyStroke.getKeyStroke("meta ctrl shift N")));
         
         JToggleButton marqueeZoomButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
