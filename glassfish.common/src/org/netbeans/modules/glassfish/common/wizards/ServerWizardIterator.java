@@ -43,6 +43,7 @@ package org.netbeans.modules.glassfish.common.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +51,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -64,6 +67,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 
 /**
@@ -124,6 +128,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     
     public Set instantiate() throws IOException {
         Set<ServerInstance> result = new HashSet<ServerInstance>();
+        ensureExecutable(new File(installRoot));
         File domainDir = new File(domainsDir, domainName);
         if (!domainDir.exists() && AddServerLocationPanel.canCreate(domainDir)) {
             // Need to create a domain right here!
@@ -268,6 +273,80 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         int dex = absolutePath.lastIndexOf(File.separator);
         this.domainsDir = absolutePath.substring(0,dex);
         this.domainName = absolutePath.substring(dex+1);
+    }
+
+    // Borrowed from RubyPlatform...
+    private void ensureExecutable(File installDir) {
+        // No excute permissions on Windows. On Unix and Mac, try.
+        if(Utilities.isWindows()) {
+            return;
+        }
+
+        if(!installDir.canWrite()) {
+            // for unwritable installs (e.g root), don't even bother.
+            return;
+        }
+
+        List<File> binList = new ArrayList<File>();
+        for(String binPath: new String[] { "bin", "glassfish/bin", "javadb/bin", // NOI18N
+                "javadb/frameworks/NetworkServer/bin", "javadb/frameworks/embedded/bin" }) { // NOI18N
+            File dir = new File(installDir, binPath);
+            if(dir.exists()) {
+                binList.add(dir);
+            }
+        }
+
+        if(binList.size() == 0) {
+            return;
+        }
+
+        // Ensure that the binaries are installed as expected
+        // The following logic is from CLIHandler in core/bootstrap:
+        File chmod = new File("/bin/chmod"); // NOI18N
+
+        if(!chmod.isFile()) {
+            // Mac & Linux use /bin, Solaris /usr/bin, others hopefully one of those
+            chmod = new File("/usr/bin/chmod"); // NOI18N
+        }
+
+        if(chmod.isFile()) {
+            try {
+                for(File binDir: binList) {
+                    List<String> argv = new ArrayList<String>();
+                    argv.add(chmod.getAbsolutePath());
+                    argv.add("u+rx"); // NOI18N
+
+                    String[] files = binDir.list();
+                    for(String file : files) {
+                        if(file.indexOf('.') == -1 || file.endsWith(".ksh")) {
+                            argv.add(file);
+                        }
+                    }
+
+                    ProcessBuilder pb = new ProcessBuilder(argv);
+                    pb.directory(binDir);
+                    Process process = pb.start();
+                    int chmoded = process.waitFor();
+
+                    if(chmoded != 0) {
+                        throw new IOException(NbBundle.getMessage(
+                                Retriever.class, "ERR_ChmodFailed", argv, chmoded)); // NOI18N
+                    }
+                }
+            } catch (Exception ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
+            }
+        } else {
+            String message = NbBundle.getMessage(Retriever.class, "ERR_ChmodNotFound"); // NOI18N
+            StringBuilder builder = new StringBuilder(message.length() + 50 * binList.size());
+            builder.append(message);
+            for(File binDir: binList) {
+                builder.append('\n'); // NOI18N
+                builder.append(binDir);
+            }
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    builder.toString(), NotifyDescriptor.WARNING_MESSAGE));
+        }
     }
     
 }

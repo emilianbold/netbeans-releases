@@ -46,6 +46,7 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.actions.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
@@ -57,6 +58,7 @@ import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.actions.PasteAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -239,9 +241,11 @@ public class SrcNode extends FilterNode {
     }
 
     private static final class ObjectNode extends FilterNode {
+        private final Node originalNode;
 
         public ObjectNode(final Node originalNode) {
             super(originalNode);
+            this.originalNode = originalNode;
         }
 
         @Override
@@ -274,18 +278,35 @@ public class SrcNode extends FilterNode {
         }
 
         private Action[] getCommonActions() {
-            // not available for multiple selected nodes => create new instance every time
-            Action[] toAdd = new Action[] {
-                null,
-                ProjectSensitiveActions.projectCommandAction(RunSingleCommand.ID, RunSingleCommand.DISPLAY_NAME, null),
-                ProjectSensitiveActions.projectCommandAction(DebugSingleCommand.ID, DebugSingleCommand.DISPLAY_NAME, null),
-            };
+            Action[] toAdd = null;
+            if (CommandUtils.isPhpFile(getFileObject())) {
+                // not available for multiple selected nodes => create new instance every time
+                toAdd = new Action[] {
+                    null,
+                    ProjectSensitiveActions.projectCommandAction(RunSingleCommand.ID, RunSingleCommand.DISPLAY_NAME, null),
+                    ProjectSensitiveActions.projectCommandAction(DebugSingleCommand.ID, DebugSingleCommand.DISPLAY_NAME, null),
+                };
+            } else {
+                toAdd = new Action[0];
+            }
 
             List<Action> actions = new ArrayList<Action>(COMMON_ACTIONS.length + toAdd.length);
             actions.addAll(Arrays.asList(toAdd));
             actions.addAll(Arrays.asList(COMMON_ACTIONS));
 
             return actions.toArray(new Action[actions.size()]);
+        }
+
+        private FileObject getFileObject() {
+            FileObject fileObject = originalNode.getLookup().lookup(FileObject.class);
+            if (fileObject != null) {
+                return fileObject;
+            }
+            DataObject dataObject = originalNode.getLookup().lookup(DataObject.class);
+            assert dataObject != null;
+            fileObject = dataObject.getPrimaryFile();
+            assert fileObject != null;
+            return fileObject;
         }
     }
 }

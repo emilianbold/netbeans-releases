@@ -795,6 +795,7 @@ class LuceneIndex extends Index {
             return doc.getValues(key);
         }
         
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             Enumeration en = doc.fields();
