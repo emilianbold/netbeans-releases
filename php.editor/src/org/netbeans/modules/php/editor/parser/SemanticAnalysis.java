@@ -154,7 +154,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         // for unsed private method: name, identifier
         private final Map<String, IdentifierColoring> privateMethod;
         // this is holder of blocks, which has to be scanned for usages in the class.
-        private List<Block> needToScan;
+        private List<Block> needToScan = new ArrayList<Block>();
 
         private final TranslatedSource translatedSource;
 
@@ -236,8 +236,9 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             if (!Modifier.isAbstract(md.getModifier())) {
                 // don't scan the body now. It should be scanned after all declarations
                 // are known
-                if (md.getFunction().getBody() != null) {
-                    needToScan.add(md.getFunction().getBody());
+                Block body = md.getFunction().getBody();
+                if (body != null) {
+                    needToScan.add(body);
                 }
             }
         }

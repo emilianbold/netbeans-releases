@@ -95,6 +95,7 @@ import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -492,6 +493,9 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return CaretLocation.INSIDE_COMMENT;
             }
 
+            if (t.id() == GroovyTokenId.STRING_LITERAL) {
+                return CaretLocation.INSIDE_STRING;
+            }
             // This is a special case. If we have a NLS right behind a LINE_COMMENT it
             // should be treated as a CaretLocation.INSIDE_COMMENT. Therefore we have to rewind.
 
@@ -1669,6 +1673,12 @@ public class CodeCompleter implements CodeCompletionHandler {
             return true;
 
         }
+        // already exited if package completion
+        
+        // dont want types for objectExpression.something
+        if (request.behindDot) {
+            return false;
+        }
 
         // This ModuleNode is used to retrieve the types defined here
         // and the package name.
@@ -1975,6 +1985,10 @@ public class CodeCompleter implements CodeCompletionHandler {
      * new String().
      * [ModuleNode:ConstructorCallExpression:ExpressionStatement:ConstructorCallExpression:]
      *
+     * new String().[caret] something_unrelated
+     * [ModuleNode:ClassNode:MethodCallExpression]
+     * for this case we have to go for object expression of the method call
+     *
      * s.
      * [ModuleNode:VariableExpression:ExpressionStatement:VariableExpression:]
      *
@@ -2042,13 +2056,18 @@ public class CodeCompleter implements CodeCompletionHandler {
                 LOG.log(Level.FINEST, "* ConstructorCallExpression"); // NOI18N
                 declClass = ((ConstructorCallExpression) current).getType();
                 break;
+            } else if (current instanceof MethodCallExpression) {
+                LOG.log(Level.FINEST, "* MethodCallExpression"); // NOI18N
+                // TODO unfortunately object expression is always of type java.lang.Object
+                declClass = ((MethodCallExpression) current).getObjectExpression().getType();
+                break;
             }
         }
 
         request.declaringClass = declClass;
         return declClass;
     }
-
+   
     /**
      * Test for potential collection-type at the requesting position.
      * This could be RangeExpression, ListExpression or MapExpression
@@ -2694,11 +2713,10 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             if (definitionLine) {
                 newVars = getNewVarNameSuggestion(request.ctx);
-            }
+            } else {
 
-            if (!definitionLine) {
-
-                if (!(request.location == CaretLocation.OUTSIDE_CLASSES)) {
+                if (!(request.location == CaretLocation.OUTSIDE_CLASSES
+                        || request.location == CaretLocation.INSIDE_STRING)) {
                     // complete packages
                     completePackages(proposals, request);
 
@@ -2710,12 +2728,13 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                 if (!request.behindImport) {
 
-                    // complette keywords
-                    completeKeywords(proposals, request);
+                    if (request.location != CaretLocation.INSIDE_STRING) {
+                        // complete keywords
+                        completeKeywords(proposals, request);
 
-                    // complete methods
-                    completeMethods(proposals, request);
-
+                        // complete methods
+                        completeMethods(proposals, request);
+                    }
 
                     // complete fields
                     completeFields(proposals, request);

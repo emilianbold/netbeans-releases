@@ -95,8 +95,7 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
                 getResourcePath(),
                 NbBundle.getMessage(CommentWidget.class, "LBL_body"));
 
-//        Border border = BorderFactory.createCompositeBorder(new NoteBorder(getForeground()));
-        Border border = BorderFactory.createEmptyBorder(TAB_WIDTH);
+        Border border = BorderFactory.createEmptyBorder(TAB_WIDTH + 2);
         bodyLabel.setBorder(border);
 
         ResourceValue.initResources(getResourcePath(), bodyLabel);
