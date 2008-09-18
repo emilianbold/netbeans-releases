@@ -121,11 +121,13 @@ public class JBossJaxWsStack implements WSStackImplementation<JaxWs> {
     }
 
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxWs.Feature.JSR109 || feature == JaxWs.Feature.SERVICE_REF_INJECTION || feature == JaxWs.Feature.TESTER_PAGE || feature == JaxWs.Feature.WSIT) {
+        if (feature == JaxWs.Feature.JSR109) {
+            return true;
+        } else if (feature == JaxWs.Feature.WSIT && new File(root, "client/jbossws-metro-wsit-tools.jar").exists()) { //NOI18N
             return true;
         } else {
             return false;
-        }    
+        }
     }
     
     private String resolveImplementationVersion() throws IOException {
@@ -166,49 +168,48 @@ public class JBossJaxWsStack implements WSStackImplementation<JaxWs> {
         public URL[] getLibraries() {
             
             File clientRoot = new File(root, "client"); // NOI18N
-            File jaxWsAPILib = new File(root, "jboss-jaxws.jar"); // NOI18N
             try {
+                
+                File loggingJar = new File(clientRoot, "jboss-common-client.jar");
+                if (!loggingJar.exists()) loggingJar = new File(clientRoot, "jboss-logging-spi.jar");
+  
+                File jaxWsAPILib = new File(clientRoot, "jboss-jaxws.jar"); // NOI18N
                 // JBoss without jbossws 
                 if (jaxWsAPILib.exists()) {
                     return new URL[] {
                         new File(clientRoot, "wstx.jar").toURI().toURL(),   // NOI18N
                         new File(clientRoot, "jaxws-tools.jar").toURI().toURL(),  // NOI18N
-                        new File(clientRoot, "jboss-common-client.jar").toURI().toURL(),  // NOI18N
-                        new File(clientRoot, "jboss-logging-spi.jar").toURI().toURL(),  // NOI18N
+                        loggingJar.toURI().toURL(),
                         new File(clientRoot, "stax-api.jar").toURI().toURL(),    // NOI18N
-
+                        jaxWsAPILib.toURI().toURL(),
                         new File(clientRoot, "jbossws-client.jar").toURI().toURL(),  // NOI18N
                         new File(clientRoot, "jboss-jaxws-ext.jar").toURI().toURL(),    // NOI18N
-                        new File(clientRoot, "jboss-jaxws.jar").toURI().toURL(),    // NOI18N
                         new File(clientRoot, "jboss-saaj.jar").toURI().toURL()    // NOI18N
                     };
                 }
-                jaxWsAPILib = new File(root, "jbossws-native-jaxws.jar"); // NOI18N
+                jaxWsAPILib = new File(clientRoot, "jbossws-native-jaxws.jar"); // NOI18N
                 // JBoss+jbossws-native
-                if (jaxWsAPILib.exists()) {
+                if (jaxWsAPILib.exists()) {                 
                     return new URL[] {
                         new File(clientRoot, "wstx.jar").toURI().toURL(),   // NOI18N
-                        new File(clientRoot, "jaxws-tools.jar").toURI().toURL(),  // NOI18N
-                        new File(clientRoot, "jboss-common-client.jar").toURI().toURL(),  // NOI18N
-                        new File(clientRoot, "jboss-logging-spi.jar").toURI().toURL(),  // NOI18N
+                        new File(clientRoot, "jaxws-tools.jar").toURI().toURL(),  // NOI18N                     
+                        loggingJar.toURI().toURL(),
                         new File(clientRoot, "stax-api.jar").toURI().toURL(),    // NOI18N
-
+                        jaxWsAPILib.toURI().toURL(),    // NOI18N
                         new File(clientRoot, "jbossws-native-client.jar").toURI().toURL(),  // NOI18N
                         new File(clientRoot, "jbossws-native-jaxws-ext.jar").toURI().toURL(),    // NOI18N
-                        new File(clientRoot, "jbossws-native-jaxws.jar").toURI().toURL(),    // NOI18N
                         new File(clientRoot, "jbossws-native-saaj.jar").toURI().toURL()    // NOI18N
                     };
                 }
-                jaxWsAPILib = new File(root, "jaxws-api.jar"); // NOI18N
+                jaxWsAPILib = new File(clientRoot, "jaxws-api.jar"); // NOI18N
                 // JBoss+jbossws-metro
                 if (jaxWsAPILib.exists()) {
                     return new URL[] {
                         new File(clientRoot, "wstx.jar").toURI().toURL(),   // NOI18N
                         new File(clientRoot, "jaxws-tools.jar").toURI().toURL(),  // NOI18N
-                        new File(clientRoot, "jboss-common-client.jar").toURI().toURL(),  // NOI18N
-                        new File(clientRoot, "jboss-logging-spi.jar").toURI().toURL(),  // NOI18N
+                        loggingJar.toURI().toURL(),
                         new File(clientRoot, "stax-api.jar").toURI().toURL(),    // NOI18N
-
+                        jaxWsAPILib.toURI().toURL(),
                         new File(clientRoot, "jbossws-metro-client.jar").toURI().toURL(),  // NOI18N
                         new File(clientRoot, "saaj-api.jar").toURI().toURL()    // NOI18N
                     };
@@ -216,7 +217,7 @@ public class JBossJaxWsStack implements WSStackImplementation<JaxWs> {
             } catch (MalformedURLException ex) {
                 return new URL[0];
             }
-            return null;
+            return new URL[0];
         }
         
     }
