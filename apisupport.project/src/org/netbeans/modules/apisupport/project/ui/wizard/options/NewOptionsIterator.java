@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
  * Wizard for generating OptionsPanel
  *
  * @author Radek Matous
+ * @author Max Sauer
  */
 final class NewOptionsIterator extends BasicWizardIterator {
     
@@ -103,6 +104,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private static final int MSG_BLANK_ICONPATH = 1029;
         private static final int MSG_BLANK_PACKAGE_NAME = 1030;
         private static final int MSG_BLANK_CLASSNAME_PREFIX = 1031;
+        private static final int MSG_BLANK_KEYWORDS = 1032;
         
         
         private static final int WARNING_INCORRECT_ICON_SIZE = -1;
@@ -110,11 +112,13 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private static final String[] CATEGORY_BUNDLE_KEYS = {
             "OptionsCategory_Title", // NOI18N
             "OptionsCategory_Name", // NOI18N
+            "OptionsCategory_Keywords"
         };
         
         private static final String[] ADVANCED_BUNDLE_KEYS = {
             "AdvancedOption_DisplayName", // NOI18N
-            "AdvancedOption_Tooltip" // NOI18N
+            "AdvancedOption_Tooltip", // NOI18N
+            "AdvancedOption_Keywords" // NOI18N
         };
         
         private static final String[] TOKENS = {
@@ -149,11 +153,13 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private String primaryPanel;
         private String secondaryPanelTitle;
         private String tooltip;
+        private String primaryKeywords;
         
         //OptionsCategory
         private String primaryPanelTitle;
         private String categoryName;
         private String iconPath;
+        private String secondaryKeywords;
         private boolean allowAdvanced;
         
         private String classNamePrefix;
@@ -162,21 +168,23 @@ final class NewOptionsIterator extends BasicWizardIterator {
             super(wiz);
         }
 
-        int setDataForSecondaryPanel(final String primaryPanel, final String secondaryPanelTitle, final String tooltip) {
+        int setDataForSecondaryPanel(final String primaryPanel, final String secondaryPanelTitle, final String tooltip, final String secondaryKeywords) {
             this.advanced = true;
             this.primaryPanel = primaryPanel;
             this.secondaryPanelTitle = secondaryPanelTitle;
             this.tooltip = tooltip;
+            this.secondaryKeywords = secondaryKeywords;
             return checkFirstPanel();
         }
         
         int setDataForPrimaryPanel(final String primaryPanelTitle,
-                final String categoryName, final String iconPath, final boolean allowAdvanced) {
+                final String categoryName, final String iconPath, final boolean allowAdvanced, final String primaryKeywords) {
             this.advanced = false;
             this.primaryPanelTitle = primaryPanelTitle;
             this.categoryName = categoryName;
             this.iconPath = iconPath;
             this.allowAdvanced = allowAdvanced;
+            this.primaryKeywords = primaryKeywords;
             return checkFirstPanel();
         }
         
@@ -198,6 +206,10 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 generateCreatedModifiedFiles();
             }
             return errCode;
+        }
+
+        private String getAbsoluteIconPath() {
+            return getProject().getProjectDirectory() + "/src/" + getIconPath();
         }
         
         private Map<String, String> getTokenMap() {
@@ -225,7 +237,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
             } else if ("OptionsPanelController_INSTANCE".equals(key)) {// NOI18N
                 return getOptionsPanelControllerInstance();
             } else if ("ICON_PATH".equals(key)) {// NOI18N
-                return addCreateIconOperation(new CreatedModifiedFiles(getProject()), getIconPath());
+                return addCreateIconOperation(new CreatedModifiedFiles(getProject()), getAbsoluteIconPath());
             } else {
                 return key + "_" + getClassNamePrefix();
             }
@@ -242,6 +254,10 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 return getSecondaryPanelTitle();
             } else if (key.startsWith("AdvancedOption_Tooltip")) {// NOI18N
                 return getTooltip();
+            } else if (key.startsWith("OptionsCategory_Keywords")) {// NOI18N
+                return getPrimaryKeywords();
+            } else if (key.startsWith("AdvancedOption_Keywords")) {// NOI18N
+                return getSecondaryKeywords();
             } else {
                 throw new AssertionError(key);
             }
@@ -260,6 +276,9 @@ final class NewOptionsIterator extends BasicWizardIterator {
                     break;
                 case MSG_BLANK_PRIMARY_PANEL:
                     field = "FIELD_PrimaryPanel"; //NOI18N
+                    break;
+                case MSG_BLANK_KEYWORDS:
+                    field = "FIELD_Keywords"; // NOI18N
                     break;
                 case MSG_BLANK_PRIMARY_PANEL_TITLE:
                     field = "FIELD_PrimaryPanelTitle";//NOI18N
@@ -280,7 +299,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
                     field = "FIELD_ClassNamePrefix";//NOI18N
                     break;
                 case WARNING_INCORRECT_ICON_SIZE:
-                    File icon = new File(getIconPath());
+                    File icon = new File(getAbsoluteIconPath());
                     assert icon.exists();
                     return UIUtil.getIconDimensionWarning(icon, 32, 32);
                 default:
@@ -321,6 +340,8 @@ final class NewOptionsIterator extends BasicWizardIterator {
                     return MSG_BLANK_SECONDARY_PANEL_TITLE;
                 } else if (getTooltip().length() == 0) {
                     return MSG_BLANK_TOOLTIP;
+                } else if (getSecondaryKeywords().length() == 0) {
+                    return MSG_BLANK_KEYWORDS;
                 }
             } else {
                 if (getPrimaryPanelTitle().length() == 0) {
@@ -329,16 +350,16 @@ final class NewOptionsIterator extends BasicWizardIterator {
                     return MSG_BLANK_CATEGORY_NAME;
                 } else if (getIconPath().length() == 0) {
                     return MSG_BLANK_ICONPATH;
-                } else if (getPrimaryPanelTitle().length() == 0) {
-                    return MSG_BLANK_PRIMARY_PANEL_TITLE;
+                } else if (getPrimaryKeywords().length() == 0)  {
+                    return MSG_BLANK_KEYWORDS;
                 } else {
-                    File icon = new File(getIconPath());
+                    File icon = new File(getAbsoluteIconPath());
                     if (!icon.exists()) {
                         return MSG_BLANK_ICONPATH;
                     }
                 }
                 //warnings should go at latest
-                File icon = new File(getIconPath());
+                File icon = new File(getAbsoluteIconPath());
                 assert icon.exists();
                 if (!UIUtil.isValidIcon(icon, 32, 32)) {
                     return WARNING_INCORRECT_ICON_SIZE;
@@ -375,19 +396,17 @@ final class NewOptionsIterator extends BasicWizardIterator {
             generateDependencies();
             generateLayerEntry();
             if (!isAdvanced()) {
-                addCreateIconOperation(files, getIconPath());
+                addCreateIconOperation(files, getAbsoluteIconPath());
             }
             return files;
         }
     
         private void generateFiles() {
             if(isAdvanced()) {
-                files.add(createJavaFileCopyOperation(ADVANCED_OPTION));
                 files.add(createJavaFileCopyOperation(OPTIONS_PANEL_CONTROLLER));
                 files.add(createJavaFileCopyOperation(PANEL));
                 files.add(createFormFileCopyOperation(PANEL));
             } else {
-                files.add(createJavaFileCopyOperation(OPTIONS_CATEGORY));
                 if(!isAdvancedCategory()) {
                     files.add(createJavaFileCopyOperation(OPTIONS_PANEL_CONTROLLER));                     
                     files.add(createJavaFileCopyOperation(PANEL));
@@ -417,14 +436,32 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 String resourcePathPrefix = "OptionsDialog/"+getPrimaryPanel()+"/";  //NOI18N
                 String instanceName = getAdvancedOptionClassName();
                 String instanceFullPath = resourcePathPrefix + getPackageName().replace('.','-') + "-" + instanceName + ".instance";//NOI18N
+
                 files.add(files.createLayerEntry(instanceFullPath, null, null, null, null));
+                files.add(files.createLayerAttribute(instanceFullPath, "instanceCreate", "methodvalue:org.netbeans.spi.options.AdvancedOption.createSubCategory")); // NOI18N
+                files.add(files.createLayerAttribute(instanceFullPath, "controller", "newvalue:" + getPackageName() + "." + getOptionsPanelControllerClassName())); // NOI18N
+                files.add(files.createLayerAttribute(instanceFullPath, "displayName", "bundlevalue:" + getPackageName() + ".Bundle#" + ADVANCED_BUNDLE_KEYS[0] + "_" + getClassNamePrefix())); // NOI18N
+                files.add(files.createLayerAttribute(instanceFullPath, "toolTip", "bundlevalue:" + getPackageName() + ".Bundle#" + ADVANCED_BUNDLE_KEYS[1] + "_" + getClassNamePrefix())); // NOI18N
+                files.add(files.createLayerAttribute(instanceFullPath, "keywords", "bundlevalue:" + getPackageName() + ".Bundle#" + ADVANCED_BUNDLE_KEYS[2] + "_" + getClassNamePrefix())); // NOI18N
+                files.add(files.createLayerAttribute(instanceFullPath, "keywordsCategory", getPrimaryPanel() + "/" + getCategoryName()));
             } else {
-                String resourcePathPrefix = "OptionsDialog/";  //NOI18N
+                String resourcePathPrefix = "OptionsDialog/"; //NOI18N
                 String instanceName = getOptionsCategoryClassName();
-                String instanceFullPath = resourcePathPrefix + instanceName + ".instance";//NOI18N
-                Map<String, Object> attrsMap = new HashMap<String, Object>(1);
-                attrsMap.put("instanceClass", getPackageName()+"."+instanceName);  //NOI18N
+                String instanceFullPath = resourcePathPrefix + instanceName + ".instance"; //NOI18N
+                Map<String, Object> attrsMap = new HashMap<String, Object>(7);
+                attrsMap.put("iconBase", iconPath); // NOI18N
+                attrsMap.put("keywordsCategory", getClassNamePrefix()); //NOI18N
+
                 files.add(files.createLayerEntry(instanceFullPath, null, null, null, attrsMap));
+                files.add(files.createLayerAttribute(instanceFullPath, "instanceCreate", "methodvalue:org.netbeans.spi.options.OptionsCategory.createCategory")); //NOI18N
+                files.add(files.createLayerAttribute(instanceFullPath, "title", "bundlevalue:" + getPackageName() + ".Bundle#" + CATEGORY_BUNDLE_KEYS[0] + "_" + getClassNamePrefix())); //NOI18N
+                files.add(files.createLayerAttribute(instanceFullPath, "categoryName", "bundlevalue:" + getPackageName() + ".Bundle#" + CATEGORY_BUNDLE_KEYS[1] + "_" + getClassNamePrefix())); //NOI18N
+                if (allowAdvanced) {
+                    files.add(files.createLayerAttribute(instanceFullPath, "advancedOptionsFolder", resourcePathPrefix + instanceName)); //NOI18N
+                } else {
+                    files.add(files.createLayerAttribute(instanceFullPath, "controller", "newvalue:" + getPackageName() + "." + getOptionsPanelControllerClassName())); //NOI18N
+                }
+                files.add(files.createLayerAttribute(instanceFullPath, "keywords", "bundlevalue:" + getPackageName() + ".Bundle#" + CATEGORY_BUNDLE_KEYS[2] + "_" + getClassNamePrefix())); //NOI18N
             }
         }
 
@@ -478,7 +515,16 @@ final class NewOptionsIterator extends BasicWizardIterator {
             assert isAdvanced() || primaryPanelTitle != null;
             return primaryPanelTitle;
         }
-        
+
+        private String getPrimaryKeywords() {
+            assert isAdvanced() || primaryKeywords != null;
+            return primaryKeywords;
+        }
+
+        private String getSecondaryKeywords() {
+            assert !isAdvanced() || secondaryKeywords != null;
+            return secondaryKeywords;
+        }
         
         private String getCategoryName() {
             assert isAdvanced() || categoryName != null;

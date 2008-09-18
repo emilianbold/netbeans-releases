@@ -406,7 +406,7 @@ public final class CreatedModifiedFiles {
      *        project's layer. It <strong>must</strong> exist.
      * @param attrName value of the name attribute of the <em>&lt;attr&gt;</em>
      *        element.
-     * @param attrValue value of the attribute (may specially be a string prefixed with "newvalue:" or "methodvalue:")
+     * @param attrValue value of the attribute (may specially be a string prefixed with "newvalue:", "bundlevalue:" or "methodvalue:")
      * @return see {@link Operation}
      */
     public CreatedModifiedFiles.Operation createLayerAttribute(final String parentPath,
