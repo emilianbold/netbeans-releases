@@ -58,6 +58,9 @@ public class CndRemoteSetupProvider implements SetupProvider {
         binarySetupMap.put("unbuffer-Linux-x86.so", "bin/unbuffer-Linux-x86.so"); // NOI18N
         binarySetupMap.put("unbuffer-SunOS-x86.so", "bin/unbuffer-SunOS-x86.so"); // NOI18N
         binarySetupMap.put("unbuffer-SunOS-sparc.so", "bin/unbuffer-SunOS-sparc.so"); // NOI18N
+        binarySetupMap.put("unbuffer-Linux-x86_64.so", "bin/unbuffer-Linux-x86_64.so"); // NOI18N
+        binarySetupMap.put("unbuffer-SunOS-x86_64.so", "bin/unbuffer-SunOS-x86_64.so"); // NOI18N
+        binarySetupMap.put("unbuffer-SunOS-sparc_64.so", "bin/unbuffer-SunOS-sparc_64.so"); // NOI18N
     }
 
     public Map<String, String> getBinaryFiles() {
