@@ -119,10 +119,16 @@ public class Retriever implements Runnable {
     }
     
     private void setDownloadState(int newState) {
-        status = newState;
-        updateMessage(STATUS_MESSAGE[newState]);
+        setDownloadState(newState, true);
     }
     
+    private void setDownloadState(int newState, boolean display) {
+        status = newState;
+        if(display) {
+            updateMessage(STATUS_MESSAGE[newState]);
+        }
+    }
+
     private void setDownloadState(int newState, String msg, Exception ex) {
         status = newState;
         Object [] args = new Object [] { msg, ex.getMessage()};
@@ -166,7 +172,8 @@ public class Retriever implements Runnable {
         InputStream in = null;
         File backupDir = null;
         long start = System.currentTimeMillis();
-        
+        String message = null;
+
         try {
             backupDir = backupInstallDir(targetInstallDir);
             
@@ -186,11 +193,11 @@ public class Retriever implements Runnable {
             if(!shutdown) {
                 long end = System.currentTimeMillis();
                 String duration = getDurationString((int) (end - start));
-                setDownloadState(STATUS_COMPLETE);
-                updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadComplete", duration)); // NOI18N
+                setDownloadState(STATUS_COMPLETE, false);
+                message = NbBundle.getMessage(Retriever.class, "MSG_DownloadComplete", duration); // NOI18N
             } else {
-                setDownloadState(STATUS_TERMINATED);
-                updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadCancelled")); // NOI18N
+                setDownloadState(STATUS_TERMINATED, false);
+                message = NbBundle.getMessage(Retriever.class, "MSG_DownloadCancelled"); // NOI18N
             }
         } catch(ConnectException ex) {
             Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
@@ -211,7 +218,9 @@ public class Retriever implements Runnable {
             if(in != null) {
                 try { in.close(); } catch(IOException ex) { }
             }
-            
+            if(message != null) {
+                updateMessage(message);
+            }
             updater.clearCancelState();
         }
     }
