@@ -458,6 +458,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             super(master, def);
         }
 
+        @Override
         public String getOption() {
             if (getValue()) {
                 String option;
