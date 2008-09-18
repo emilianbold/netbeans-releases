@@ -377,7 +377,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.css.devtools</friend>
+                <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.erlang.editing</friend>
                 <friend>org.netbeans.modules.erlang.platform</friend>
                 <friend>org.netbeans.modules.erlang.project</friend>
@@ -395,6 +395,7 @@
                 <friend>org.netbeans.modules.scala.platform</friend>
                 <friend>org.netbeans.modules.scala.project</friend>
                 <package>org.netbeans.napi.gsfret.source</package>
+                <package>org.netbeans.napi.gsfret.source.support</package>
             </friend-packages>
         </data>
     </configuration>

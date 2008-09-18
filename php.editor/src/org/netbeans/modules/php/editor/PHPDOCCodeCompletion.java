@@ -61,6 +61,7 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileUtil;
@@ -99,29 +100,30 @@ public class PHPDOCCodeCompletion {
     
     static boolean isTypeCtx(PHPCompletionItem.CompletionRequest request){
         Document document = request.info.getDocument();
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence<PHPTokenId> topLevelTS = th.tokenSequence();
-        topLevelTS.move(request.anchor);
-        topLevelTS.moveNext();
-        TokenSequence<PHPDocCommentTokenId> tokenSequence = topLevelTS.embedded(PHPDocCommentTokenId.language());
-        tokenSequence.move(request.anchor);
-        if (tokenSequence.movePrevious()) {
+        TokenSequence<PHPTokenId> phpTS = LexUtilities.getPHPTokenSequence(document, request.anchor);
+        if (phpTS != null) {
+            phpTS.move(request.anchor);
+            phpTS.moveNext();
+            TokenSequence<PHPDocCommentTokenId> tokenSequence = phpTS.embedded(PHPDocCommentTokenId.language());
+            tokenSequence.move(request.anchor);
+            if (tokenSequence.movePrevious()) {
 
-            if (TYPE_TOKENS.contains(tokenSequence.token().id())) {
-                int offset = tokenSequence.offset() + tokenSequence.token().length();
-                try {
-                    // text between PHPDoc directive and begining of the prefix, should only contain white spaces
-                    String txt = document.getText(offset, request.anchor - offset);
+                if (TYPE_TOKENS.contains(tokenSequence.token().id())) {
+                    int offset = tokenSequence.offset() + tokenSequence.token().length();
+                    try {
+                        // text between PHPDoc directive and begining of the prefix, should only contain white spaces
+                        String txt = document.getText(offset, request.anchor - offset);
 
-                    for (int i = 0; i < txt.length(); i++) {
-                        if (!Character.isWhitespace(txt.charAt(i))) {
-                            return false;
+                        for (int i = 0; i < txt.length(); i++) {
+                            if (!Character.isWhitespace(txt.charAt(i))) {
+                                return false;
+                            }
                         }
-                    }
 
-                    return true;
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                        return true;
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }

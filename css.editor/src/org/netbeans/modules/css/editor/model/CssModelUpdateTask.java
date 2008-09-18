@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,66 +38,73 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.css.editor.model;
 
-package org.netbeans.modules.websvc.jaxrpc.actions;
-
-
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.nodes.Node;
-import org.openide.loaders.DataObject;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
-
-
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import javax.swing.text.Document;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.Source.Priority;
+import org.netbeans.napi.gsfret.source.support.EditorAwareSourceTaskFactory;
+import org.openide.filesystems.FileObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
+import org.netbeans.napi.gsfret.source.CompilationInfo;
 
 /**
- *
- * @author Peter Williams
+ * 
+ * @author Marek Fukala
  */
-public class RefreshClientsAction extends NodeAction {
-	
-	protected boolean enable(Node[] activatedNodes) {
-            return (activatedNodes != null && activatedNodes.length == 1);
-	}
-	
-	public HelpCtx getHelpCtx() {
-		// !PW FIXME use correct help context when known.
-		return HelpCtx.DEFAULT_HELP;
-	}
-	
-	public String getName() {
-		return "Refresh View";
-	}
-	
-	protected void performAction(Node[] activatedNodes) {
-		
-		assert (activatedNodes != null && activatedNodes.length == 1);
-		
-		// Invoked on ClientRootNode to refresh the list of webservice clients
-		// in this project.
-		WebServicesClientSupport clientSupport = null;
-		
-		// Find WebServicesClientSupport from activated node.
-		DataObject dobj = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
-		if(dobj != null) {
-			clientSupport = WebServicesClientSupport.getWebServicesClientSupport(dobj.getPrimaryFile());
-		}
-		
-		if(clientSupport == null) {
-			String mes = "Can't locate web services client support for Node: " + activatedNodes[0];
-			NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-			DialogDisplayer.getDefault().notify(desc);
-			return;
-		}
-		
-		String mes = "Not Implemented Yet";
-		NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-		DialogDisplayer.getDefault().notify(desc);
-	}
-	
-	protected boolean asynchronous() {
-		return false;
-	}
+public final class CssModelUpdateTask implements CancellableTask<CompilationInfo> {
+
+    private FileObject file;
+
+    CssModelUpdateTask(FileObject file) {
+        this.file = file;
+    }
+
+    public Document getDocument() {
+        return DataLoadersBridge.getDefault().getDocument(file);
+    }
+    private boolean cancel;
+
+    synchronized boolean isCanceled() {
+        return cancel;
+    }
+
+    public synchronized void cancel() {
+        cancel = true;
+    }
+
+    synchronized void resume() {
+        cancel = false;
+    }
+
+    public void run(CompilationInfo info) {
+        resume();
+
+        Document doc = getDocument();
+
+        if (doc == null) {
+            Logger.getLogger(CssModelUpdateTask.class.getName()).log(Level.INFO, "Cannot get document!");
+            return;
+        }
+
+        CssModel.get(getDocument()).parsed(info);
+    }
+
+    public static class CssModelUpdateTaskFactory extends EditorAwareSourceTaskFactory {
+
+        /**
+         * Creates a new instance of GsfHintsFactory
+         */
+        public CssModelUpdateTaskFactory() {
+            super(Phase.PARSED, Priority.BELOW_NORMAL);
+        }
+
+        public CancellableTask<CompilationInfo> createTask(FileObject file) {
+            return new CssModelUpdateTask(file);
+        }
+    }
 }
+

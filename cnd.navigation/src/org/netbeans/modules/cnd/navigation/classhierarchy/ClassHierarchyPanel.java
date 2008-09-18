@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.navigation.classhierarchy;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -55,6 +56,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
@@ -130,6 +132,10 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     public void clearClose() {
         close = null;
         getTreeView().addCloseAction(close);
+    }
+
+    private Color getBorderColor(){
+        return UIManager.getDefaults().getColor("SplitPane.shadow"); // NOI18N
     }
 
     private MyBeanTreeView getTreeView(){
@@ -256,7 +262,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         add(toolBar, gridBagConstraints);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("SplitPane.shadow")));
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(getBorderColor()));
         jPanel2.setFocusable(false);
         jPanel2.setMinimumSize(new java.awt.Dimension(1, 1));
         jPanel2.setPreferredSize(new java.awt.Dimension(1, 1));
