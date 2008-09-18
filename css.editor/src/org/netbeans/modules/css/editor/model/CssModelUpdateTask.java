@@ -38,29 +38,73 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.css.editor.model;
 
-package org.netbeans.modules.cnd.loaders;
-
+import javax.swing.text.Document;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.Source.Priority;
+import org.netbeans.napi.gsfret.source.support.EditorAwareSourceTaskFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
+import org.netbeans.napi.gsfret.source.CompilationInfo;
 
-
-/** Represents a C++ object in the Repository.
- *
+/**
+ * 
+ * @author Marek Fukala
  */
+public final class CssModelUpdateTask implements CancellableTask<CompilationInfo> {
 
-public class CDataObject extends CndDataObject {
+    private FileObject file;
 
-    /** Serial version number */
-    static final long serialVersionUID = 6859476492905347073L;
-
-    public CDataObject(FileObject pf, CndAbstractDataLoader loader)
-			    throws DataObjectExistsException {
-	super(pf, loader);
+    CssModelUpdateTask(FileObject file) {
+        this.file = file;
     }
 
-    protected Node createNodeDelegate() {
-	return new CDataNode(this);
+    public Document getDocument() {
+        return DataLoadersBridge.getDefault().getDocument(file);
+    }
+    private boolean cancel;
+
+    synchronized boolean isCanceled() {
+        return cancel;
+    }
+
+    public synchronized void cancel() {
+        cancel = true;
+    }
+
+    synchronized void resume() {
+        cancel = false;
+    }
+
+    public void run(CompilationInfo info) {
+        resume();
+
+        Document doc = getDocument();
+
+        if (doc == null) {
+            Logger.getLogger(CssModelUpdateTask.class.getName()).log(Level.INFO, "Cannot get document!");
+            return;
+        }
+
+        CssModel.get(getDocument()).parsed(info);
+    }
+
+    public static class CssModelUpdateTaskFactory extends EditorAwareSourceTaskFactory {
+
+        /**
+         * Creates a new instance of GsfHintsFactory
+         */
+        public CssModelUpdateTaskFactory() {
+            super(Phase.PARSED, Priority.BELOW_NORMAL);
+        }
+
+        public CancellableTask<CompilationInfo> createTask(FileObject file) {
+            return new CssModelUpdateTask(file);
+        }
     }
 }
+
