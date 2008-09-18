@@ -242,6 +242,46 @@ public class JarWithModuleAttributes extends Jar {
                 added.addConfiguredAttribute(new Manifest.Attribute(key, newRequires));
             }
             addConfiguredManifest(added);
+            
+            // bundle properties
+            added.addConfiguredAttribute(new Manifest.Attribute("Bundle-ManifestVersion", "2")); // NOI18N
+            added.addConfiguredAttribute(new Manifest.Attribute("Bundle-SymbolicName", added.getMainSection().getAttributeValue("OpenIDE-Module"))); // NOI18N
+            added.addConfiguredAttribute(new Manifest.Attribute("Bundle-Version", added.getMainSection().getAttributeValue("OpenIDE-Module-Specification-Version"))); // NOI18N
+            {
+                String exp = added.getMainSection().getAttributeValue("OpenIDE-Module-Public-Packages");
+                if (exp != null && !exp.equals("-")) {
+                    added.addConfiguredAttribute(new Manifest.Attribute("Export-Package", exp.replaceAll("\\.\\*", ""))); // NOI18N
+                }
+            }
+            {
+
+                String depends = added.getMainSection().getAttributeValue("OpenIDE-Module-Module-Dependencies");
+                if (depends != null) {
+                    StringBuilder sb = new StringBuilder();
+                    String sep = "";
+                    for (String one : depends.split(",")) {
+                        int great = one.indexOf('>');
+                        sb.append(sep);
+                        sep = ",\n   ";
+                        if (great == -1) {
+                            int equals = one.indexOf('=');
+                            if (equals == -1) {
+                                sb.append(one);
+                            } else {
+                                sb.append(one.substring(0, equals));
+                            }
+                        } else {
+                            double version = Double.parseDouble(one.substring(great + 1));
+                            sb.append(one.substring(0, great).trim()).append(";version=\"[").append(version).
+                               append(", ").append((int)(Math.floor(version) + 1)).
+                               append(")\"");
+                        }
+                    }
+
+                    added.addConfiguredAttribute(new Manifest.Attribute("Require-Bundle", sb.toString())); // NOI18N
+                }
+            }
+
         } catch (Exception e) {
             throw new BuildException(e, getLocation());
         }
