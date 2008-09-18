@@ -226,7 +226,9 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             }
 
             Identifier identifier = md.getFunction().getFunctionName();
-            if (isPrivate) {
+            String name = identifier.getName();
+            // don't color private magic private method. methods which start __
+            if (isPrivate && name != null && !name.startsWith("__")) {
                 privateMethod.put(identifier.getName(), new IdentifierColoring(identifier, coloring));
             }
             else {
