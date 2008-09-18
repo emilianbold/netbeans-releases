@@ -115,7 +115,7 @@ public class BracketCompletion {
                 TokenID tokenAtDot = support.getTokenID(dotPos - 1);
                 if (tokenAtDot == CCTokenContext.THIS) {
                     doc.remove(dotPos, 1);
-                    doc.insertString(dotPos, "->", null);
+                    doc.insertString(dotPos, "->", null);// NOI18N
                     caret.setDot(dotPos + 2);
                 }
             }

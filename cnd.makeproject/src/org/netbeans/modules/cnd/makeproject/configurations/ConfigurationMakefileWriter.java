@@ -328,7 +328,7 @@ public class ConfigurationMakefileWriter {
         for (LibraryItem lib : libs) {
             String libPath = lib.getPath();
             if (libPath != null && libPath.length() > 0) {
-                bw.write(output + ": " + libPath + "\n\n"); // NOI18N
+                bw.write(output + ": " + IpeUtils.escapeOddCharacters(libPath) + "\n\n"); // NOI18N
             }
         }
         bw.write(output + ": ${OBJECTFILES}\n"); // NOI18N
@@ -631,7 +631,8 @@ public class ConfigurationMakefileWriter {
     }
         
     private void writePackagingScriptBody(BufferedWriter bw, MakeConfiguration conf) throws IOException {
-        String tmpdir = getObjectDir(conf) + "/tmp-packaging"; // NOI18N
+        String tmpDirName = "tmp-packaging"; // NOI18N
+        String tmpdir = getObjectDir(conf) + "/" + tmpDirName; // NOI18N
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         String output = packagingConfiguration.getOutputValue();
         
@@ -650,6 +651,7 @@ public class ConfigurationMakefileWriter {
         bw.write("TOP=" + "`pwd`" + "\n"); // NOI18N
         bw.write("PLATFORM=" + conf.getVariant() + "\n"); // NOI18N
         bw.write("TMPDIR=" + tmpdir + "\n"); // NOI18N
+        bw.write("TMPDIRNAME=" + tmpDirName + "\n"); // NOI18N
         String projectOutput = conf.getOutputValue();
         if (projectOutput == null || projectOutput.length() == 0) {
             projectOutput = "MissingOutputInProject"; // NOI18N
@@ -1025,7 +1027,7 @@ public class ConfigurationMakefileWriter {
         bw.write("# Create RPM Package\n"); // NOI18N
         bw.write("cd \"${TOP}\"\n"); // NOI18N
         bw.write("LOG_FILE=${TMPDIR}/../${OUTPUT_BASENAME}.log\n"); // NOI18N
-        bw.write("rpmbuild -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
+        bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("cat ${LOG_FILE}\n"); // NOI18N
         bw.write("RPM_PATH=`cat $LOG_FILE | grep .rpm | tail -1 |awk -F: '{ print $2 }'`\n"); // NOI18N
@@ -1045,6 +1047,80 @@ public class ConfigurationMakefileWriter {
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         List<FileElement> fileList = (List<FileElement>)packagingConfiguration.getFiles().getValue();
         
+        bw.write("# Copy files and create directories and links\n"); // NOI18N
+        for (FileElement elem : fileList) {
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            if (elem.getType() == FileElement.FileType.FILE) {
+                String toDir = IpeUtils.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
+                if (toDir != null && toDir.length() >= 0) {
+                    bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                }
+                bw.write("copyFileToTmpDir " + elem.getFrom() + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                String toDir = IpeUtils.getDirName(elem.getTo());
+                String toName = IpeUtils.getBaseName(elem.getTo());
+                if (toDir != null && toDir.length() >= 0) {
+                    bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                }
+                bw.write("cd " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.UNKNOWN) {
+                // skip ???
+            }
+            else {
+                assert false;
+            }
+            bw.write("\n"); // NOI18N
+        }
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Create control file\n"); // NOI18N
+        bw.write("cd \"${TOP}\"\n"); // NOI18N
+        bw.write("CONTROL_FILE=${TMPDIR}/DEBIAN/control\n"); // NOI18N
+        bw.write("rm -f ${CONTROL_FILE}\n"); // NOI18N
+        bw.write("mkdir -p ${TMPDIR}/DEBIAN\n"); // NOI18N
+        bw.write("\n"); // NOI18N        
+        bw.write("cd \"${TOP}\"\n"); // NOI18N
+        List<InfoElement> infoList = packagingConfiguration.getDebianHeader().getValue();
+        for (InfoElement elem : infoList) {
+            String value = elem.getValue();
+            int i = 0;
+            int j = value.indexOf("\\n"); // NOI18N 
+            while (j >= 0) {
+                if (i == 0) {
+                    bw.write("echo \'" + elem.getName() + ": " + value.substring(i, j) + "\' >> ${CONTROL_FILE}\n"); // NOI18N 
+                }
+                else {
+                    bw.write("echo \'" + value.substring(i, j) + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+                }
+                i = j+2;
+                j = value.indexOf("\\n", i); // NOI18N 
+            }
+            if (i < value.length()) {
+                if (i == 0) {
+                    bw.write("echo \'" + elem.getName() + ": " + value.substring(i) + "\' >> ${CONTROL_FILE}\n"); // NOI18N 
+                }
+                else {
+                    bw.write("echo \'" + value.substring(i) + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+                }
+            }
+        }
+        
+        bw.write("\n"); // NOI18N
+        bw.write("# Create Debian Package\n"); // NOI18N
+        bw.write("cd \"${TOP}\"\n"); // NOI18N
+        bw.write("cd \"${TMPDIR}/..\"\n"); // NOI18N
+        bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue()+ " --build ${TMPDIRNAME}\n"); // NOI18N
+        bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("cd \"${TOP}\"\n"); // NOI18N
+        bw.write("mkdir -p  " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
+        bw.write("mv ${TMPDIR}.deb " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+        bw.write("checkReturnCode\n"); // NOI18N
         
         bw.write("echo Debian: " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
         bw.write("\n"); // NOI18N

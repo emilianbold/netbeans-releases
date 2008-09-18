@@ -51,11 +51,15 @@ import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 public class ViewListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =2854540580610981370L;
 
+    @Override
     public void initChildren(Vector children) throws DatabaseException {
         if (!isConnected()) {
             return;
         }
         try {
+            if (!ensureConnected()) {
+                return;
+            }
             String[] types = new String[] {"VIEW"}; // NOI18N
 
             DriverSpecification drvSpec = getDriverSpecification();

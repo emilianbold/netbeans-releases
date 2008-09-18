@@ -143,9 +143,6 @@ public class MainClassChooser extends JPanel {
     }
     
     private Object[] getWarmupList () {        
-//        return JMManager.getManager().isScanInProgress() ?
-//            new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_SCANNING_MESSAGE")}:
-//            new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")}; // NOI18N
           return new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")}; //NOI18N
     }
     

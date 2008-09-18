@@ -52,6 +52,9 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -66,7 +69,9 @@ import org.xml.sax.helpers.DefaultHandler;
 public final class TreeParser extends DefaultHandler {
 
     private static Logger LOGGER = Logger.getLogger("glassfish");
-    
+    private static final boolean isFinestLoggable = LOGGER.isLoggable(Level.FINEST);
+    private static final boolean isFinerLoggable = LOGGER.isLoggable(Level.FINER);
+
     public static boolean readXml(File xmlFile, List<Path> pathList) throws IllegalStateException {
         boolean result = false;
         InputStream is = null;
@@ -127,19 +132,19 @@ public final class TreeParser extends DefaultHandler {
         if(skipping != null) {
             depth++;
             if(childNodeReader != null) {
-                LOGGER.log(Level.FINER, "Skip: reading " + qname);
+                if(isFinerLoggable) LOGGER.log(Level.FINER, "Skip: reading " + qname);
                 childNodeReader.readChildren(qname, attributes);
             }
-            LOGGER.log(Level.FINEST, "Skip: descend, depth is " + depth + ", qn is " + qname);
+            if(isFinestLoggable) LOGGER.log(Level.FINEST, "Skip: descend, depth is " + depth + ", qn is " + qname);
         } else {
             Node child = rover.findChild(qname);
             if(child != null) {
                 rover = child;
-                LOGGER.log(Level.FINER, "Rover descend to " + rover);
+                if(isFinerLoggable) LOGGER.log(Level.FINER, "Rover descend to " + rover);
                 
                 NodeReader reader = rover.getReader();
                 if(reader != null) {
-                    LOGGER.log(Level.FINER, "Rover enter & read node " + qname);
+                    if(isFinerLoggable) LOGGER.log(Level.FINER, "Rover enter & read node " + qname);
                     reader.readAttributes(qname, attributes);
                 }
             } else {
@@ -147,10 +152,10 @@ public final class TreeParser extends DefaultHandler {
                 depth = 1;
                 childNodeReader = rover.getReader();
                 if(childNodeReader != null) {
-                    LOGGER.log(Level.FINER, "Skip: reading " + qname);
+                    if(isFinerLoggable) LOGGER.log(Level.FINER, "Skip: reading " + qname);
                     childNodeReader.readChildren(qname, attributes);
                 }
-                LOGGER.log(Level.FINEST, "Skip: start, depth is " + depth + ", qn is " + qname);
+                if(isFinestLoggable) LOGGER.log(Level.FINEST, "Skip: start, depth is " + depth + ", qn is " + qname);
             }
         }
     }
@@ -162,20 +167,20 @@ public final class TreeParser extends DefaultHandler {
                 if(!skipping.equals(qname)) {
                     LOGGER.log(Level.WARNING, "Skip: " + skipping + " does not match " + qname + " at depth " + depth);
                 }
-                LOGGER.log(Level.FINEST, "Skip: ascend, depth is " + depth);
+                if(isFinestLoggable) LOGGER.log(Level.FINEST, "Skip: ascend, depth is " + depth);
                 skipping = null;
                 childNodeReader = null;
             } else {
-                LOGGER.log(Level.FINEST, "Skip: ascend, depth is " + depth);
+                if(isFinestLoggable) LOGGER.log(Level.FINEST, "Skip: ascend, depth is " + depth);
             }
         } else {
             NodeReader reader = rover.getReader();
             if(reader != null) {
-                LOGGER.log(Level.FINER, "Rover exit & read node " + qname);
+                if(isFinerLoggable) LOGGER.log(Level.FINER, "Rover exit & read node " + qname);
                 reader.endNode(qname);
             }
             rover = rover.getParent();
-            LOGGER.log(Level.FINER, "Rover ascend to " + rover);
+            if(isFinerLoggable) LOGGER.log(Level.FINER, "Rover ascend to " + rover);
         }
     }
 
@@ -189,7 +194,33 @@ public final class TreeParser extends DefaultHandler {
     @Override
     public void endDocument() throws SAXException {
     }
-    
+
+    @Override
+    public InputSource resolveEntity(String publicId, String systemId) throws IOException, SAXException {
+        LOGGER.log(Level.INFO, "Requested Entity: public id = " + publicId + ", system id = " + systemId);
+
+        // We only expect a few entries here so use linear search directly.  If
+        // this changes, considering caching using HashMap<String, String>
+        //
+        InputSource source = null;
+        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+        FileObject folder = sfs.findResource("DTDs/GlassFish");
+        if(folder != null) {
+            for(FileObject fo: folder.getChildren()) {
+                Object attr;
+                if((attr = fo.getAttribute("publicId")) instanceof String && attr.equals(publicId)) {
+                    source = new InputSource(fo.getInputStream());
+                    break;
+                } else if((attr = fo.getAttribute("systemId")) instanceof String && attr.equals(systemId)) {
+                    source = new InputSource(fo.getInputStream());
+                    break;
+                }
+            }
+        }
+
+        return source;
+    }
+
     public static abstract class NodeReader {
 
         public void readAttributes(String qname, Attributes attributes) throws SAXException {
@@ -248,7 +279,7 @@ public final class TreeParser extends DefaultHandler {
                 continue;
             }
             if(root == null) {
-                LOGGER.log(Level.FINER, "Root node created: " + parts[0]);
+                if(isFinerLoggable) LOGGER.log(Level.FINER, "Root node created: " + parts[0]);
                 root = new Node(parts[0]);
             }
             Node rover = root;
@@ -256,10 +287,10 @@ public final class TreeParser extends DefaultHandler {
                 if(parts[i] != null && parts[i].length() > 0) {
                     Node existing = rover.findChild(parts[i]);
                     if(existing != null) {
-                        LOGGER.log(Level.FINER, "Existing node " + parts[i] + " at level " + i);
+                        if(isFinerLoggable) LOGGER.log(Level.FINER, "Existing node " + parts[i] + " at level " + i);
                         rover = existing;
                     } else {
-                        LOGGER.log(Level.FINER, "Adding node " + parts[i] + " at level " + i);
+                        if(isFinerLoggable) LOGGER.log(Level.FINER, "Adding node " + parts[i] + " at level " + i);
                         rover = rover.addChild(parts[i]);
                     }
                 } else {

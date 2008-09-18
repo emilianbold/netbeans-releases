@@ -67,7 +67,6 @@ import org.openide.util.Utilities;
 /**
  * Rather dummy implementation of the Java Platform, but sufficient for communication
  * inside the Wizard.
- * Made public to allow ide/projectimport to reuse it
  */
 public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable {
     
@@ -214,11 +213,3 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
         }
     }
 }
-
-
-
-
-
-
-
-

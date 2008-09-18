@@ -351,6 +351,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("labels.cc", 31, 12, "labels.cc", 33, 9);
         performTest("labels.cc", 38, 12, "labels.cc", 40, 9);
         performTest("labels.cc", 45, 12, "labels.cc", 47, 9);
+        performTest("labels.cc", 57, 19, "labels.cc", 54, 13);
     }
 
     public void testStaticConstInNamespace() throws Exception {

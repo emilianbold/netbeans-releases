@@ -74,7 +74,7 @@ public class IDESettingsTest extends BasicTestForImport {
     
     public void testIgnoredFiles() throws Exception {
         //java.lang.String
-        assertProperty("IgnoredFiles","^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store))$|^\\.[#_]|~$");
+        assertProperty("IgnoredFiles","^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store))$|^\\.[#_]|~$");
     }
     
     public void testUIMode() throws Exception {

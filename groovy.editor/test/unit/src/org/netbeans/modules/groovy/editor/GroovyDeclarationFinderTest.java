@@ -42,8 +42,6 @@
 package org.netbeans.modules.groovy.editor;
 
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 
 /**
  *
@@ -68,38 +66,4 @@ public class GroovyDeclarationFinderTest extends GroovyTestBase {
     public void testClass1() throws Exception {
         checkDeclaration(TEST_BASE + "Consumer.groovy", "        Fin^der finder = new Finder()", "class ^Finder {");
     }
-    
-    
-
-    private void checkDeclaration(String relFilePath, String caretLine, String declarationLine) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
-
-        String text = info.getText();
-
-        int caretDelta = caretLine.indexOf('^');
-        assertTrue(caretDelta != -1);
-        caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-        int lineOffset = text.indexOf(caretLine);
-        assertTrue(lineOffset != -1);
-        int caretOffset = lineOffset + caretDelta;
-
-        GroovyDeclarationFinder finder = new GroovyDeclarationFinder();
-        DeclarationLocation location = finder.findDeclaration(info, caretOffset);
-
-
-        if (location == DeclarationLocation.NONE) {
-            // if we dont found a declaration, bail out. 
-            assertTrue("DeclarationLocation.NONE",false);
-        }
-
-        caretDelta = declarationLine.indexOf('^');
-        assertTrue(caretDelta != -1);
-        declarationLine = declarationLine.substring(0, caretDelta) + declarationLine.substring(caretDelta + 1);
-        lineOffset = text.indexOf(declarationLine);
-        assertTrue(lineOffset != -1);
-        caretOffset = lineOffset + caretDelta;
-
-        assertEquals(caretOffset, location.getOffset());
-}
-
 }

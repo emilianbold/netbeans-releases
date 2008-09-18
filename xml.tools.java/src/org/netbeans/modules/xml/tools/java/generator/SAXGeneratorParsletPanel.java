@@ -137,13 +137,13 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
         setPreferredSize(new java.awt.Dimension(480, 350));
         setLayout(new java.awt.GridBagLayout());
 
-        descTextArea.setWrapStyleWord(true);
-        descTextArea.setLineWrap(true);
         descTextArea.setEditable(false);
-        descTextArea.setForeground(new java.awt.Color(102, 102, 153));
         descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/tools/generator/Bundle"); // NOI18N
+        descTextArea.setForeground(new java.awt.Color(102, 102, 153));
+        descTextArea.setLineWrap(true);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/tools/java/generator/Bundle"); // NOI18N
         descTextArea.setText(bundle.getString("DESC_saxw_convertors")); // NOI18N
+        descTextArea.setWrapStyleWord(true);
         descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         descTextArea.setEnabled(false);
         descTextArea.setOpaque(false);
@@ -190,6 +190,8 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
         table.setModel(tableModel);        
         tableScrollPane.setViewportView(table);  //install it
         
+        //set some height margin to take care of [] 
+        int margin = 5;
         int height = table.getRowHeight();
     
         // Determine highest cell in the row
@@ -199,8 +201,8 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
             int h = comp.getPreferredSize().height;
             height = Math.max(height, h);
         }
-        table.setRowHeight(height);
-        initAccessibility();
+        table.setRowHeight(height + margin);
+        
         initAccessibility();
     }
 

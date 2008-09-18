@@ -70,6 +70,8 @@ import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import java.awt.Component;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -280,13 +282,20 @@ public class TableCustomizerMainPanel extends javax.swing.JPanel implements Desi
                         dataProviderComboBoxModel.addElement(objectArray);
                     }
                 }
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run(){
-                        cbxTableDataprovider.setModel(dataProviderComboBoxModel);
-                        setTableDataProviderDesignState(currentTableDataProviderDesignState);
-                        cbxTableDataprovider.setSelectedItem(currentModelBean);
-                    }
-                });
+
+                if (currentTableDataProviderDesignState == null) {
+                    // XXX #138226 Logs illegal state, instead of NPE.
+                    info(new IllegalStateException("There is no table data provider design state for design contexts, designContexts="
+                            + (designContexts == null ? null : java.util.Arrays.asList(designContexts)))); // NOI18N
+                } else {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run(){
+                            cbxTableDataprovider.setModel(dataProviderComboBoxModel);
+                            setTableDataProviderDesignState(currentTableDataProviderDesignState);
+                            cbxTableDataprovider.setSelectedItem(currentModelBean);
+                        }
+                    });
+                }
             }
         });
         dataProviderNodeThread.setPriority(Thread.MIN_PRIORITY);
@@ -1511,4 +1520,9 @@ public class TableCustomizerMainPanel extends javax.swing.JPanel implements Desi
     private javax.swing.JTextField widthField;
     // End of variables declaration//GEN-END:variables
     // </editor-fold>
+
+
+    private static void info(Exception ex) {
+        Logger.getLogger(TableCustomizerMainPanel.class.getName()).log(Level.INFO, null, ex);
+    }
 }

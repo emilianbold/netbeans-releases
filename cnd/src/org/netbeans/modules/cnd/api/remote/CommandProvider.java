@@ -53,10 +53,16 @@ public interface CommandProvider {
      * 
      * @param hkey The user and remote host (user@host)
      * @param cmd The command to run
+     * @param env Environment
      * @return The exit status of the command
      */
     public int run(String hkey, String cmd, Map<String, String> env);
-    
-    @Override
-    public String toString();
+
+
+    /**
+     * Return the output of the remote command.
+     *
+     * @return The output in a continuous string.
+     */
+    public String getOutput();
 }

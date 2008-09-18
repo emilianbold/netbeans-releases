@@ -108,16 +108,11 @@ public class CreateDatabaseAction extends CookieAction {
 
         final DatabaseServer server = node.getCookie(DatabaseServer.class);
 
-        // Run in background because it gets information from the server
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
                 try {
-                    CreateDatabasePanel.showCreateDatabaseDialog(server);
+                    CreateDatabasePanel panel = new CreateDatabasePanel(server);
+                    panel.showCreateDatabaseDialog();
                 } catch (DatabaseException dbe) {
                     Utils.displayErrorMessage(dbe.getMessage());
                 }
-            }            
-        });
     }
 }

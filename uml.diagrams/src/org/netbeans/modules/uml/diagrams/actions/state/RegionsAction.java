@@ -44,6 +44,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.api.visual.widget.SeparatorWidget.Orientation;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
@@ -52,11 +53,10 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.diagrams.actions.DeleteCompartmentWidgetAction;
+import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
 import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.diagrams.nodes.state.CompositeStateWidget;
-
-import org.netbeans.modules.uml.diagrams.nodes.state.RegionWidget;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
@@ -120,20 +120,20 @@ public class RegionsAction extends SceneNodeAction implements ContextAwareAction
         popupMenu.setEnabled(scene.isReadOnly() == false);
 
         CompositeStateWidget widget = getCompositeStateWidget();
-        if ((widget.getRegionWidgets().size() == 1))
+        if ((widget.getCompartmentWidgets().size() == 1))
         {
             popupMenu.add(new AddColumnAction(loc("CTL_AddRegionColumn")));
             popupMenu.add(new AddRowAction(loc("CTL_AddRegionRow")));
         }
         else 
-            popupMenu.add(widget.isHorizontalLayout() ? 
+            popupMenu.add(widget.getOrientation() == Orientation.HORIZONTAL ? 
                 new AddColumnAction(loc("CTL_AddRegionColumn")) : new AddRowAction(loc("CTL_AddRegionRow")));
         
-        for (RegionWidget w : widget.getRegionWidgets())
+        for (CompartmentWidget w : widget.getCompartmentWidgets())
         {
             if (w.isSelected())
             {
-                String name = widget.isHorizontalLayout()? 
+                String name = widget.getOrientation() == Orientation.HORIZONTAL? 
                     loc("CTL_DeleteRegionColumn") : loc("CTL_DeleteRegionRow");
                 popupMenu.add(new DeleteCompartmentWidgetAction(w, name));
                 break;
@@ -182,7 +182,7 @@ public class RegionsAction extends SceneNodeAction implements ContextAwareAction
 
         protected void setLayout(CompositeStateWidget w)
         {
-            w.setHorizontalLayout(true);
+            w.setOrientation(Orientation.HORIZONTAL);
         }
     }
 
@@ -196,7 +196,7 @@ public class RegionsAction extends SceneNodeAction implements ContextAwareAction
 
         protected void setLayout(CompositeStateWidget w)
         {
-            w.setHorizontalLayout(false);
+            w.setOrientation(Orientation.VERTICAL);
         }
     }
 }

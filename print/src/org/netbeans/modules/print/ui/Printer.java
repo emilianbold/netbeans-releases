@@ -56,37 +56,36 @@ import static org.netbeans.modules.print.ui.UI.*;
  */
 final class Printer implements Printable {
 
-  void print(List<Paper> papers) {
-    PrinterJob job = PrinterJob.getPrinterJob();
-    myPapers = papers;
+    void print(List<Paper> papers) {
+        PrinterJob job = PrinterJob.getPrinterJob();
+        myPapers = papers;
 //out("SET PAPER: " + myPapers);
 
-    if (job == null) {
-      return;
-    }
-    job.setPrintable(this, Config.getDefault().getPageFormat());
-    
-    try {
-      if (job.printDialog()) {
-        job.print();
-      }
-    }
-    catch (PrinterException e) {
-      printError(i18n(Printer.class, "ERR_Printer_Problem", e.getLocalizedMessage())); // NOI18N
-    }
-    myPapers = null;
-  }
+        if (job == null) {
+            return;
+        }
+        job.setPrintable(this, Config.getDefault().getPageFormat());
 
-  public int print(Graphics g, PageFormat pageFormat, int index) throws PrinterException {
+        try {
+            if (job.printDialog()) {
+                job.print();
+            }
+        } catch (PrinterException e) {
+            printError(i18n(Printer.class, "ERR_Printer_Problem", e.getLocalizedMessage())); // NOI18N
+        }
+        myPapers = null;
+    }
+
+    public int print(Graphics g, PageFormat pageFormat, int index) throws PrinterException {
 //out("PAPER IS: " + myPapers.size());
-    if (index == myPapers.size()) {
-      return NO_SUCH_PAGE;
-    }
+        if (index == myPapers.size()) {
+            return NO_SUCH_PAGE;
+        }
 //out("  print: " + index);
-    myPapers.get(index).print(g);
-  
-    return PAGE_EXISTS;
-  }
+        myPapers.get(index).print(g);
 
-  private List<Paper> myPapers;
+        return PAGE_EXISTS;
+    }
+
+    private List<Paper> myPapers;
 }
