@@ -126,30 +126,34 @@ DbgpResponse *FeatureGetCommand::process(DbgpConnection *pDbgpConnection, map<ch
 //<response command="feature_set" success=<0|1> transaction_id=xxx/>          
 DbgpResponse *FeatureSetCommand::process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap) {
     ScriptDebugger *pScriptDebugger = pDbgpConnection->getScriptDebugger();
-    tstring feature = argsMap.find('n')->second;
-    BOOL value = argsMap.find('v')->second == _T("true") ? TRUE : FALSE;
-    if(value) {
-        if(feature == _T("showFunctions")) {
-            pScriptDebugger->setFeature(SHOW_FUNCTIONS);
-        }else if(feature == _T("showConstants")) {
-            pScriptDebugger->setFeature(SHOW_CONSTANTS);
-        }else if(feature == _T("bypassConstructors")) {
-            pScriptDebugger->setFeature(BY_PASS_CONSTRUCTORS);
-        }else if(feature == _T("stepFiltersEnabled")) {
-            pScriptDebugger->setFeature(STEP_FILTERS_ENABLED);
-        }else if(feature == _T("suspendOnFirstLine")) {
-            pScriptDebugger->setFeature(SUSPEND_ON_FIRSTLINE);
-        }else if(feature == _T("suspendOnExceptions")) {
-            pScriptDebugger->setFeature(SUSPEND_ON_EXCEPTIONS);
-        }else if(feature == _T("suspendOnErrors")) {
-            pScriptDebugger->setFeature(SUSPEND_ON_ERRORS);
-        }else if(feature == _T("suspendOnDebuggerKeyword")) {
-            pScriptDebugger->setFeature(SUSPEND_ON_DEBUGGER_KEYWORD);
-        }
-    }
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(FEATURE_SET, argsMap.find('i')->second);
-    pDbgpResponse->addAttribute(SUCCESS, 1);
+    tstring feature = argsMap.find('n')->second;
+    pDbgpResponse->addAttribute(SUCCESS, 0);
     pDbgpResponse->addAttribute(FEATURE, feature);
+    if(pScriptDebugger != NULL) {
+        BOOL value = argsMap.find('v')->second == _T("true") ? TRUE : FALSE;
+        if(value) {
+            if(feature == _T("showFunctions")) {
+                pScriptDebugger->setFeature(SHOW_FUNCTIONS);
+            }else if(feature == _T("showConstants")) {
+                pScriptDebugger->setFeature(SHOW_CONSTANTS);
+            }else if(feature == _T("bypassConstructors")) {
+                pScriptDebugger->setFeature(BY_PASS_CONSTRUCTORS);
+            }else if(feature == _T("stepFiltersEnabled")) {
+                pScriptDebugger->setFeature(STEP_FILTERS_ENABLED);
+            }else if(feature == _T("suspendOnFirstLine")) {
+                pScriptDebugger->setFeature(SUSPEND_ON_FIRSTLINE);
+            }else if(feature == _T("suspendOnExceptions")) {
+                pScriptDebugger->setFeature(SUSPEND_ON_EXCEPTIONS);
+            }else if(feature == _T("suspendOnErrors")) {
+                pScriptDebugger->setFeature(SUSPEND_ON_ERRORS);
+            }else if(feature == _T("suspendOnDebuggerKeyword")) {
+                pScriptDebugger->setFeature(SUSPEND_ON_DEBUGGER_KEYWORD);
+            }
+        }
+        pDbgpResponse->addAttribute(SUCCESS, 1);
+    }
+
     return pDbgpResponse;
 }
 
@@ -214,23 +218,26 @@ DbgpResponse *PauseCommand::process(DbgpConnection *pDbgpConnection, map<char, t
 //<response command="breakpoint_set" state="enabled/disabled" id=xxx transaction_id=xxx/>          
 DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap) {
     ScriptDebugger *pScriptDebugger = pDbgpConnection->getScriptDebugger();
-    BreakpointManager *pMgr = pScriptDebugger->getBreakpointManager();
-    tstring fileURI = argsMap.find('f')->second;
-    int lineNo = _ttoi(argsMap.find('n')->second.c_str());
-    Breakpoint *pBreakpoint = pMgr->createBreakpoint(fileURI, lineNo);
-    BreakpointUpdateCommand::setUpdatableValues(pBreakpoint, argsMap);
-    pMgr->setBreakpoint(pBreakpoint);
+    Breakpoint *pBreakpoint = NULL;
+    if(pScriptDebugger != NULL) {
+        BreakpointManager *pMgr = pScriptDebugger->getBreakpointManager();
+        tstring fileURI = argsMap.find('f')->second;
+        int lineNo = _ttoi(argsMap.find('n')->second.c_str());
+        pBreakpoint = pMgr->createBreakpoint(fileURI, lineNo);
+        BreakpointUpdateCommand::setUpdatableValues(pBreakpoint, argsMap);
+        pMgr->setBreakpoint(pBreakpoint);
 
-    //check for run to cursor request
-    map<char, tstring>::iterator iter = argsMap.find('r');
-    if(iter != argsMap.end() && (_ttoi(iter->second.c_str()) == 1)) {
-        pBreakpoint->setTemporary(TRUE);
-        pScriptDebugger->run();
+        //check for run to cursor request
+        map<char, tstring>::iterator iter = argsMap.find('r');
+        if(iter != argsMap.end() && (_ttoi(iter->second.c_str()) == 1)) {
+            pBreakpoint->setTemporary(TRUE);
+            pScriptDebugger->run();
+        }
     }
 
     //Generate response
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(BREAKPOINT_SET, argsMap.find('i')->second);
-    pDbgpResponse->addAttribute(_T("id"), pBreakpoint->getID());
+    pDbgpResponse->addAttribute(_T("id"), pBreakpoint != NULL ? pBreakpoint->getID() : _T(""));
     pDbgpResponse->addAttribute(_T("state"), argsMap.find('s')->second);
     return pDbgpResponse;
 }
@@ -600,6 +607,14 @@ DbgpResponse *OpenUriCommand::process(DbgpConnection *pDbgpConnection, map<char,
                                                 IID_IWebBrowser2, (void **)&spWebBrowser);
     if(hr == S_OK) {
         hr = spWebBrowser->Navigate(bstrURL, &emptyVar, &emptyVar, &emptyVar, &emptyVar);
+        if(pDbgpConnection->getScriptDebugger() == NULL) {
+            HWND hWnd;
+            spWebBrowser->get_HWND(reinterpret_cast<SHANDLE_PTR*>(&hWnd));
+            MessageBox(hWnd, _T("Netbeans is not connected to Internet Explorer Script Debugger, client side debugging \
+is disabled. Please close the browser window, shutdown mdm.exe by using Windows Task Manager \
+and restart the debugging session"), _T("Netbeans Internet Explorer Extension"), MB_OK);
+            pDbgpConnection->close();
+        }
     }
     return NULL;
 }

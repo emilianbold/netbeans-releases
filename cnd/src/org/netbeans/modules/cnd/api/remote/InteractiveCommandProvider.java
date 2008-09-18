@@ -156,7 +156,7 @@ public abstract class InteractiveCommandProvider {
 
         @Override
         public boolean run(String hkey, String cmd, Map<String, String> env) {
-            throw new UnsupportedOperationException("deprecated.");
+            throw new UnsupportedOperationException("deprecated."); // NOI18N
         }
     }
 }

@@ -249,6 +249,11 @@
     firebugDebugger.wrappedJSObject = firebugDebugger;
 
     this.initDebugger = function(_port, _sessionId) {
+        if (!this.nbDebuggerInitialized) {
+            this.nbDebuggerInitialized = true;
+        } else {
+            return;
+        }
         port = _port;
         sessionId = _sessionId;
 
@@ -263,7 +268,9 @@
                 handleCommand(command);
             },
             onDBGPClose: function() {
-                window.NetBeans.Debugger.shutdown();
+                if (window && window.NetBeans) {
+                  window.NetBeans.Debugger.shutdown();
+                }
             }
         };
 
@@ -284,6 +291,10 @@
             // #1 Accept Context / Decline Context
             acceptContext: function(win,uri)
             {
+                if (this.terminated) {
+                    return;
+                }
+                
                 if ( !topWindow ) {
                     topWindow = win;
                     browser = NetBeans.Utils.getBrowserByWindow(win);
@@ -301,6 +312,9 @@
 
             declineContext: function(win,uri)
             {
+                if (this.terminated) {
+                    return false;
+                }
                 if ( topWindow ) {
                     return true;
                 }
@@ -310,6 +324,9 @@
             // #2 Unwatch Window ( For Reset )
             unwatchWindow: function(context, win)
             {
+                if (this.terminated) {
+                    return;
+                }
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     netBeansDebugger.detachFromWindow(win);
                     if (features["http_monitor"]  ) {
@@ -323,6 +340,9 @@
             // #3 Destroy Context ( For Reset )
             destroyContext: function(context)
             {
+                if (this.terminated) {
+                    return;
+                }
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     releaseFirebugContext = true;
                     netBeansDebugger.onDestroy(netBeansDebugger);
@@ -334,6 +354,10 @@
             // #4 Init Context
             initContext: function(context)
             {
+                if (this.terminated) {
+                    return;
+                }
+
                 if ( topWindow && context.window == topWindow ) {
                     currentFirebugContext = context;
                     releaseFirebugContext = false;
@@ -348,13 +372,17 @@
 
             // #5 Show Current Context - we didn't need this.'
             showContext: function(browser, context) {
-
+                if (this.terminated) {
+                    return;
+                }
             },
 
             // #6 Watch Window ( attachToWindow )
             watchWindow: function(context, win)
             {
-
+                if (this.terminated) {
+                    return;
+                }
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     netBeansDebugger.attachToWindow(win);
                     // We would be better off using the Firefox preferences so we can observe and turn on and off
@@ -371,6 +399,9 @@
             // #7 Loaded Context
             loadedContext: function(context)
             {
+                if (this.terminated) {
+                    return;
+                }
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     netBeansDebugger.onLoaded(currentUrl);
                     delete currentUrl;
@@ -460,6 +491,9 @@
 
         Firebug.registerExtension(NetBeansDebuggerExtension);
 
+        netBeansDebugger.netbeansDebuggerExtension = NetBeansDebuggerExtension;
+        netBeansDebugger.old_isHostEnabled = Firebug.Debugger.isHostEnabled;
+
         Firebug.Debugger.isHostEnabled = function(context) {
             return topWindow && context.window == topWindow;
         }
@@ -478,13 +512,9 @@
 
     function disableFirebugDebugger()
     {
-        Firebug.Debugger.removeListener(DebuggerListener);
-        if ( topWindow && currentFirebugContext && !releaseFirebugContext ) {
+        if ( TabWatcher && topWindow && currentFirebugContext && !releaseFirebugContext ) {
             TabWatcher.unwatchTopWindow(topWindow);
         }
-        topWindow = null;
-        unwrapBrowserDestroy();
-        browser = null;
     }
 
     function abortFirebugDebugger()
@@ -529,14 +559,17 @@
 
     this.shutdown = function()
     {
-
         this.shutdownInProgress = true;
-        if ( !jsDebuggerService )
+        
+        if ( !jsDebuggerService ) {
             return;
-        if ( !((currentFirebugContext == null) || releaseFirebugContext) )
-            return;
-        disable();
-
+        }
+        if ( !((currentFirebugContext == null) || releaseFirebugContext) ) {
+            disable(true);
+        } else {
+            disable(false);
+        }
+        
         if ( socket ) {
             socket.close();
             socket = null;
@@ -579,7 +612,7 @@
             window.NetBeans.Logger.logException(e);
             excMsg = e.message;
         } finally {
-            if (transactionId && !socket.sentFlag && wantsAcknowledgment(cmd)) {
+            if (transactionId && socket && !socket.sentFlag && wantsAcknowledgment(cmd)) {
                 var errorResponse =
                     <response command="runtime_error"
                     transaction_id={
@@ -1006,16 +1039,42 @@
         Firebug.Debugger.addListener(DebuggerListener);
     }
 
-    function disable()
+    function disable(keepFirebugDebugger)
     {
         if (!enabled)
             return;
+        
         enabled = false;
 
+        cleanupHooks();
+        unregisterExtension();
         clearAllBreakpoints();
-        disableFirebugDebugger();
+        if (!keepFirebugDebugger) {
+          disableFirebugDebugger();
+        }
     }
 
+    function cleanupHooks() {
+        Firebug.Debugger.removeListener(DebuggerListener);
+        if (NetBeans.Debugger.old_isHostEnabled) {
+          Firebug.Debugger.isHostEnabled = NetBeans.Debugger.old_isHostEnabled;
+          delete NetBeans.Debugger.old_isHostEnabled;
+        }
+        topWindow = null;
+        unwrapBrowserDestroy();
+        browser = null;
+    }
+    
+    function unregisterExtension() {
+        if (NetBeans.Debugger.netbeansDebuggerExtension) {
+            NetBeans.Debugger.netbeansDebuggerExtension.terminated = true;
+            if (TabWatcher && TabWatcher.removeListener) {
+                TabWatcher.removeListener(NetBeans.Debugger.netbeansDebuggerExtension);
+            }
+            delete NetBeans.Debugger.netbeansDebuggerExtension;
+        }
+    }
+    
     // 4. open_uri
     const open_uriCommandRegularExpression = /^-f\s*(\S+)\s*$/;
     function open_uri(command) {
@@ -1307,7 +1366,7 @@
 
         socket.send(initMessage);
     }
-
+    
     // TODO: Do we need this?
     function sendOnloadMessage(uri)
     {
@@ -1519,6 +1578,31 @@
         
         return 'anonymous';
     }
+
+    // Format of the message is:
+    //  <reloadsources>
+    //   <window fileuri="http://..." />
+    //   <window fileuri="http://..." />
+    //   :
+    // </reloadsources>
+    function sendReloadSourcesMessage(windows) {
+        if (!socket) {
+            return;
+        }
+        try {
+            var sourcesMessage =
+            <reloadsources encoding="base64"></reloadsources>;
+            for each (var aWindow in windows) {
+                if (aWindow.top == aWindow) {
+                    buildSourcesFromWindowsMessage([aWindow], sourcesMessage);
+                }
+            }
+            socket.send(sourcesMessage);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Failed to send message in port: " + port + " sessionId: " + sessionId);
+            NetBeans.Logger.logException(exc);
+        }        
+    }
     
     // Format of the message is:
     // <windows>
@@ -1528,14 +1612,23 @@
     // </windows>
     function sendWindowsMessage(windows)
     {
+        if (!socket) {
+            return;
+        }
+        try {
         var windowsMessage =
         <windows encoding="base64"></windows>;
+
         for each (var aWindow in windows) {
             if (aWindow.top == aWindow) {
                 buildWindowsMessage([aWindow], windowsMessage);
             }
         }
         socket.send(windowsMessage);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Failed to send message in port: " + port + " sessionId: " + sessionId);
+            NetBeans.Logger.logException(exc);
+        }
     }
 
     function buildWindowsMessage(windows, windowsMessage)
@@ -1558,6 +1651,23 @@
         }
     }
 
+    function buildSourcesFromWindowsMessage(windows, sourcesMessage) {
+        if (windows.length == 0) {
+            return;
+        }
+        for each (var aWindow in windows) {
+            var sourceMessage = <source fileuri={
+            window.btoa(aWindow.document.location.href)
+            } />;
+
+            sourcesMessage.source += sourceMessage;
+            var frameWindows = aWindow.frames;
+            if (frameWindows) {
+                buildSourcesFromWindowsMessage(frameWindows, sourcesMessage);
+            }
+        }
+    }
+    
     // Format of the message is:
     // <sources>
     //   <source fileuri="http://..." />
@@ -1582,15 +1692,15 @@
     function terminate()
     {
         const delayShutdownIfDebugging = function() {
-            disable();
             NetBeans.Debugger.shutdown();
             // XXX not closing the browser window causes strange problems so subsequent
             // debug sessions do not work correctly - should be fixed some other way if possible
-            window.close();
+            //window.close();
         };
 
         if (debugging) {
             debugState.shutdownHook = delayShutdownIfDebugging;
+            clearAllBreakpoints();
             abortFirebugDebugger();
         } else {
             delayShutdownIfDebugging();
@@ -1790,9 +1900,9 @@
 
     this.onInit = function(debuggr)
     {
-        if ( this == debuggr ) {
-    // TODO socket.send(...);
-    }
+        if ( this == debuggr) {
+            this.reloadSources = true;
+        }
     }
 
     this.onLoaded = function(url)
@@ -1817,6 +1927,11 @@
             self.detachFromWindow(win);
         }
         win.addEventListener("unload", onUnload, true);
+        
+        if (this.reloadSources) {
+            delete this.reloadSources;
+            sendReloadSourcesMessage(attachedWindows);
+        }
         sendWindowsMessage(attachedWindows);
     }
 
@@ -2401,16 +2516,18 @@
     function fbsClearAllBreakpoints(hrefs) {
         var sourceFiles = [];
         var sourceFile;
-
+        
         for (var i = 0; i < hrefs.length; i++) {
-            sourceFile = currentFirebugContext.sourceFileMap[hrefs[i]];
+            if (currentFirebugContext && currentFirebugContext.sourceFileMap) {
+                sourceFile = currentFirebugContext.sourceFileMap[hrefs[i]];
+            }
             if (sourceFile) {
                 sourceFiles.push(sourceFile);
             } else {
-                NetBeans.Logger.logMessage("clearAllBreakpoints() - Could not find source: " + hrefs[i]);
                 sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, hrefs[i]);
                 sourceFiles.push(sourceFile);
             }
+            sourceFile = undefined;
         }
 
         firebugDebuggerService.clearAllBreakpoints(sourceFiles);

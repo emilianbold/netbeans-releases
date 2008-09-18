@@ -61,7 +61,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("templateParameters.h", 109, 15, "templateParameters.h", 100, 24);// _Alloc
     }
 
-    public void checkPtrOperator() throws Exception {
+    public void testPtrOperator() throws Exception {
         // noIZ:fixed ptr operator handling
         performTest("checkPtrOperator.cc", 16, 15, "checkPtrOperator.cc", 11, 9);
     }
@@ -608,6 +608,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz145077.cc", 173, 22, "iz145077.cc", 143, 9);
     }
     
+    public void testIZ145071() throws Exception {
+        // IZ#145071 : forward declarations marked as error
+        performTest("IZ145071.cc", 4, 23, "IZ145071.cc", 4, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

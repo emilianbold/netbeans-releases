@@ -157,7 +157,11 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
                 }
                 Project prj = ProjectManager.getDefault().findProject(fDir);
                 if (prj != null) {
-                    prj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+                    NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+                    if (nbprj != null) { //#147006 how can this happen?
+                        // maybe when the archetype contains netbeans specific project files?
+                        prj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+                    }
                 }
             }
             return resultSet;

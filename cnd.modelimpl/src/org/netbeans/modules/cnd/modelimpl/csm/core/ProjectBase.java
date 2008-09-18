@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -1047,6 +1048,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
 
             APTPreprocHandler.State newState = preprocHandler.getState();
+            
+//            if (TraceFlags.TRACE_PC_STATE) {
+//                System.err.printf("onFileIncluded  %s %s %s\n", //NOI18N
+//                        csmFile.getAbsolutePath(),
+//                        TraceUtils.getPreprocStateString(preprocHandler.getState()),
+//                        TraceUtils.getMacroString(preprocHandler, TraceFlags.logMacros));
+//            }
 
             FileContainer.Entry entry = getFileContainer().getEntry(csmFile.getBuffer().getFile());
             int entryModCount = 0;
@@ -1151,12 +1159,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                                 statesToParse.add(pair.state);
                             }
                         }
-                        csmFile.markReparseNeeded(false);
-                    } else {
-                        csmFile.markMoreParseNeeded();
                     }
                     entry.setStates(statesToKeep, new FileContainer.StatePair(newState, pcState));
-                    scheduleIncludedFileParsing(csmFile, statesToParse, clean);
+                    ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
+                            clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
                     if (TraceFlags.TRACE_PC_STATE) {
                         traceIncludeScheduling(csmFile, newState, pcState, clean,
                                 statesToParse, statesToKeep);
@@ -1170,7 +1176,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private static void traceIncludeScheduling(
-            CsmFile file, APTPreprocHandler.State newState, FilePreprocessorConditionState pcState,
+            FileImpl file, APTPreprocHandler.State newState, FilePreprocessorConditionState pcState,
             boolean clean, Collection<APTPreprocHandler.State> statesToParse, Collection<FileContainer.StatePair> statesToKeep) {
 
         StringBuilder sb = new StringBuilder();
@@ -1181,9 +1187,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             sb.append(pair.pcState);
         }
 
-        System.err.printf("scheduling %s (1) %s valid %b context %b %s keeping [%s]\n",
+
+        APTPreprocHandler preprocHandler = file.getProjectImpl(true).createEmptyPreprocHandler(file.getBuffer().getFile());
+        preprocHandler.setState(newState);
+        
+        System.err.printf("scheduling %s (1) %s %s %s %s keeping [%s]\n",
                 (clean ? "reparse" : "  parse"), file.getAbsolutePath(),
-                newState.isValid(), newState.isCompileContext(), pcState, sb);
+                TraceUtils.getPreprocStateString(preprocHandler.getState()),
+                TraceUtils.getMacroString(preprocHandler, TraceFlags.logMacros), 
+                pcState, sb);
 
         for (APTPreprocHandler.State state : statesToParse) {
             if (!newState.equals(state)) {
@@ -1384,7 +1396,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public abstract void onFileRemoved(List<NativeFileItem> items);
     public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
     public abstract void onFilePropertyChanged(List<NativeFileItem> items);
-    protected abstract void scheduleIncludedFileParsing(FileImpl csmFile, Collection<APTPreprocHandler.State> states, boolean replaceStates);
+    protected abstract ParserQueue.Position getIncludedFileParserQueuePosition();
     public abstract NativeFileItem getNativeFileItem(CsmUID<CsmFile> file);
     protected abstract void putNativeFileItem(CsmUID<CsmFile> file, NativeFileItem nativeFileItem);
     protected abstract void removeNativeFileItem(CsmUID<CsmFile> file);

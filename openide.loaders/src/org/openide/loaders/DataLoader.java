@@ -236,11 +236,11 @@ public abstract class DataLoader extends SharedClassObject implements DataObject
     }
     
     /**
-     * Get default actions. Now deprecated;
-     * instead of overriding this method it 
-     * is preferable to override {@link #actionsContext}.
+     * Get default actions.
+     * @deprecated Instead of overriding this method it is preferable to override {@link #actionsContext}.
      * @return array of default system actions
      */
+    @Deprecated
     protected SystemAction[] defaultActions () {
         SystemAction[] actions = NodeOp.getDefaultActions();
         return actions;
@@ -463,6 +463,7 @@ public abstract class DataLoader extends SharedClassObject implements DataObject
     /** Writes nothing to the stream.
     * @param oo ignored
     */
+    @Override
     public void writeExternal (ObjectOutput oo) throws IOException {
         oo.writeObject( new Integer(LOADER_VERSION) );
         
@@ -494,6 +495,7 @@ public abstract class DataLoader extends SharedClassObject implements DataObject
     *    stream, but all the content has been read ok. Subclasses can
     *    catch this exception and continue reading from the stream
     */
+    @Override
     public void readExternal (ObjectInput oi)
     throws IOException, ClassNotFoundException {
         Exception main = null;
@@ -570,6 +572,7 @@ public abstract class DataLoader extends SharedClassObject implements DataObject
         }
     }
 
+    @Override
     protected boolean clearSharedData () {
         return false;
     }

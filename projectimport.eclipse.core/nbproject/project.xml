@@ -88,7 +88,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <implementation-version/>
+                        <specification-version>1.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -248,7 +248,7 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.openide.filesystems</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>                    
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>

@@ -62,12 +62,14 @@ public class ForwardClass extends ClassImpl {
         super(ast, file);
     }
 
-    public static ForwardClass create(String name, CsmFile file, AST ast, CsmScope scope) {
+    public static ForwardClass create(String name, CsmFile file, AST ast, CsmScope scope, boolean registerInProject) {
         ForwardClass fwd = new ForwardClass(name, file, ast);
         fwd.initQualifiedName(scope, ast);
         if (fwd.getProject().findClassifier(fwd.getQualifiedName()) == null) {
             fwd.initScope(scope, ast);
-            fwd.register(scope, false);
+            if(registerInProject) {
+                fwd.register(scope, false);
+            }
             return fwd;
         }
         return null;

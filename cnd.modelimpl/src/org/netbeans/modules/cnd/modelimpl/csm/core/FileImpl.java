@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -88,6 +89,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -102,9 +104,11 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 public class FileImpl implements CsmFile, MutableDeclarationsContainer, 
         Disposable, Persistent, SelfPersistent {
     
-    public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
+    public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;    
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
-    private static final boolean reportState = Boolean.getBoolean("parser.log.state");
+    // the next flag(s) make sense only in the casew reportParse is true
+    private static final boolean logState = Boolean.getBoolean("parser.log.state");
+//    private static final boolean logEmptyTokenStream = Boolean.getBoolean("parser.log.empty");
     
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
 
@@ -117,6 +121,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static final int HEADER_FILE = 4;
 
     private FileBuffer fileBuffer;
+    
 
     /**
      * DUMMY_STATE and DUMMY_HANDLERS are used when we need to ensure that the file will be arsed.
@@ -152,7 +157,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     };
     
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)  
-    private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
+    private Object projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
 
     /** 
@@ -190,7 +195,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	BEING_PARSED 
     }
     
-    private State state;
+    private volatile State state;
 
     private int fileType = UNDEFINED_FILE;
     
@@ -231,7 +236,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	state = State.INITIAL;
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
-        this.projectRef = null;
+        this.projectRef = new WeakReference(project); 
         this.fileType = fileType;
         if (nativeFileItem != null){
             project.putNativeFileItem(getUID(), nativeFileItem);
@@ -250,12 +255,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private ProjectBase _getProject(boolean assertNotNull) {
         projectLock.readLock().lock();
         try {
-            ProjectBase prj = this.projectRef;
+            ProjectBase prj = null;
+            if (projectRef instanceof ProjectBase) {
+                prj = (ProjectBase)projectRef;
+            } else if (projectRef instanceof Reference) {
+                prj = ((Reference<ProjectBase>)projectRef).get();
+            }
             if (prj == null) {
                 prj = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
                 if (assertNotNull) {
                     assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
                 }
+                projectRef = new WeakReference<ProjectBase>(prj);
             }
             return prj;
         } finally {
@@ -482,13 +493,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if( reportParse || TraceFlags.DEBUG ) logParse("ReParsing", preprocHandler); //NOI18N
         AST ast = doParse(preprocHandler);
         if (ast != null) {
-            disposeAll(false);
-            render(ast);
+            if( isValid() ) {
+                disposeAll(false);
+                render(ast);
+            }
         } else {
             //System.err.println("null ast for file " + getAbsolutePath());
         }
     }
-
+    
     public void dispose() {
         onDispose();
         Notificator.instance().registerRemovedFile(this);
@@ -585,11 +598,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private void logParse(String title, APTPreprocHandler preprocHandler) {
         if( reportParse || TraceFlags.DEBUG ) {
-            APTPreprocHandler.State state = preprocHandler.getState();
-            System.err.printf("# %s %s (valid=%b, compile-context=%b) (Thread=%s)\n", title, fileBuffer.getFile().getPath(),
-                    state.isValid(), state.isCompileContext(), Thread.currentThread().getName());
-            if (reportState) {
-                System.err.printf("%s\n\n", preprocHandler.getState());
+            System.err.printf("# %s %s (%s %s) (Thread=%s)\n", //NOI18N
+                    title, fileBuffer.getFile().getPath(), 
+                    TraceUtils.getPreprocStateString(preprocHandler.getState()),
+                    TraceUtils.getMacroString(preprocHandler, TraceFlags.logMacros),
+                    Thread.currentThread().getName());
+            if (logState) {
+                System.err.printf("%s\n\n", preprocHandler.getState()); //NOI18N
             }
         }
     }
@@ -848,7 +863,21 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
             }
-            clearFakeRegistrations();
+            clearFakeRegistrations();   
+
+//            if (reportParse && logEmptyTokenStream) {
+//                APTParseFileWalker walker2 = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
+//                walker2.addMacroAndIncludes(false);
+//                TokenStream  ts = walker2.getFilteredTokenStream(getLanguageFilter(ppState));
+//                try {
+//                    boolean empty = ts.nextToken().getType() == APTToken.EOF_TYPE;
+//                    System.err.printf("\tFile %s empty tokens ? %b (Thread=%s)\n",
+//                            getAbsolutePath(), empty, Thread.currentThread().getName());
+//                } catch (TokenStreamException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
@@ -1263,7 +1292,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 fixFakes = wait;
             } else {
                 while( ! isParsed() ) {
-                    ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE), ParserQueue.Position.HEAD, false);
+                    ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE), 
+                            ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
                     if( wait ) {
                         stateLock.wait();
                     } else {

@@ -44,6 +44,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
+import java.util.HashMap;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
@@ -56,6 +57,7 @@ import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WindowStyleResizeProvider;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
@@ -236,6 +238,44 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
         return clientArea;
     }
     
+    public CompartmentWidget findCompartmentWidget(IElement element)
+    {
+        if (element != null)
+        {
+            for (CompartmentWidget compartmentWidget : getCompartmentWidgets())
+            {
+                if (compartmentWidget.getElement().equals(element))
+                {
+                    return compartmentWidget;
+                }
+            }
+        }
+        return null;
+    }
+    
+    @Override
+    public void save(NodeWriter nodeWriter)
+    {
+        HashMap map = nodeWriter.getProperties();
+        map.put("Orientation", getOrientation().toString());
+        nodeWriter.setProperties(map);
+        super.save(nodeWriter);
+    }
+    
+    public void clear()
+    {
+        for (ConnectionWidget connection: Util.getAllContainedEdges(this))
+        {
+            connection.removeFromParent();
+        }
+        for (CompartmentWidget compartment: getCompartmentWidgets())
+        {
+            compartment.removeFromParent();
+        }
+        getCompartmentWidgets().clear();      
+    }
+       
+    
     public abstract String getContextPalettePath();
     public abstract UMLNameWidget getNameWidget();
     public abstract void setOrientation(SeparatorWidget.Orientation orientation);
@@ -243,7 +283,6 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
     public abstract CompartmentWidget addCompartment(IElement element);
     public abstract Collection<CompartmentWidget> getCompartmentWidgets();    
     public abstract void removeCompartment(CompartmentWidget widget);
-    public abstract void clear();
     
   
     public class CompositeNodeResizeProvider extends WindowStyleResizeProvider

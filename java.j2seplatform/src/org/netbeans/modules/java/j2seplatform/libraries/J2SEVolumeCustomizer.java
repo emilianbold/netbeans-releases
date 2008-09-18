@@ -354,7 +354,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             chooser.setMultiSelectionEnabled (true);
             chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenClasses"));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
+            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
                     J2SEVolumeCustomizer.class,"TXT_Classpath"),new String[] {"ZIP","JAR"}));   //NOI18N
             chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectCP"));
             chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectCP").charAt(0));
@@ -363,7 +363,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             chooser.setMultiSelectionEnabled (true);
             chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenJavadoc"));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
+            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
                     J2SEVolumeCustomizer.class,"TXT_Javadoc"),new String[] {"ZIP","JAR"}));     //NOI18N
             chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectJD"));
             chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectJD").charAt(0));
@@ -372,7 +372,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             chooser.setMultiSelectionEnabled (true);
             chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenSources"));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
+            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
                     J2SEVolumeCustomizer.class,"TXT_Sources"),new String[] {"ZIP","JAR"}));     //NOI18N
             chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectSRC"));
             chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectSRC").charAt(0));
@@ -537,13 +537,13 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     }
 
 
-    private static class SimpleFileFilter extends FileFilter {
+    private static class ArchiveFileFilter extends FileFilter {
 
         private String description;
         private Collection extensions;
 
 
-        public SimpleFileFilter(String description, String[] extensions) {
+        public ArchiveFileFilter(String description, String[] extensions) {
             this.description = description;
             this.extensions = Arrays.asList(extensions);
         }
@@ -556,7 +556,15 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             if (index <= 0 || index==name.length()-1)
                 return false;
             String extension = name.substring(index+1).toUpperCase();
-            return this.extensions.contains(extension);
+            if (!this.extensions.contains(extension)) {
+                return false;
+            }
+            try {
+                return FileUtil.isArchiveFile (f.toURI().toURL());
+            } catch (MalformedURLException e) {
+                Exceptions.printStackTrace(e);
+                return false;
+            }
         }
 
         public String getDescription() {

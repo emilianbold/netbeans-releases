@@ -89,10 +89,13 @@ public class HijackAction extends AbstractAction {
     }
 
     private int getActionStatus() {
+        Set<File> files = context.getFiles();
+        for (File file : files) {
+            if(file.isDirectory()) return STATUS_DISABLED;
+        }
         if (!ClearcaseUtils.containsSnapshot(context)) return STATUS_DISABLED;
         FileStatusCache cache = Clearcase.getInstance().getFileStatusCache();
         int actionStatus = STATUS_DISABLED;
-        Set<File> files = context.getFiles();
         for (File file : files) {
             if ((cache.getInfo(file).getStatus() & ALLOW_HIJACK) != 0) {
                 if (actionStatus == STATUS_UNHIJACK) return STATUS_DISABLED;

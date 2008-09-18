@@ -80,6 +80,7 @@ public final class RubySession {
     private final RubyFrame[] EMPTY_FRAMES = new RubyFrame[0];
     private final RubyVariable[] EMPTY_VARIABLES = new RubyVariable[0];
     
+    private Session session;
     private final RubyDebuggerProxy proxy;
     private RubyDebuggerActionProvider actionProvider;
     private final FileLocator fileLocator;
@@ -92,6 +93,7 @@ public final class RubySession {
     File runningToFile;
     int runningToLine;
 
+
     public enum State { STARTING, RUNNING, STOPPED };
 
     RubySession(final RubyDebuggerProxy proxy, final FileLocator fileLocator) {
@@ -102,6 +104,10 @@ public final class RubySession {
         this.runningToLine = -1;
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_SESSION, sessionListener);
+    }
+
+    public void setSession(final Session session) {
+        this.session = session;
     }
 
     void setActionProvider(RubyDebuggerActionProvider actionProvider) {
@@ -138,11 +144,19 @@ public final class RubySession {
     
     void stepOver() {
         try {
+            stepOver(forceNewLine());
+        } catch (RubyDebuggerException e) {
+            Util.severe("Cannot step over", e); // NOI18N
+        }
+    }
+
+    void stepOver(boolean forceNewLine) {
+        try {
             beforeProceed();
             if (!activeThread.canStepOver()) {
                 return;
             }
-            activeThread.stepOver(forceNewLine());
+            activeThread.stepOver(forceNewLine);
             state = State.RUNNING;
         } catch (RubyDebuggerException e) {
             Util.severe("Cannot step over", e); // NOI18N
@@ -328,6 +342,7 @@ public final class RubySession {
                 if (frame == null) {
                     return;
                 }
+                DebuggerManager.getDebuggerManager().setCurrentSession(session);
                 EditorUtil.markCurrent(resolveAbsolutePath(frame.getFile()), frame.getLine() - 1);
                 annotateCallStack(thread);
                 if (contextProvider != null) {

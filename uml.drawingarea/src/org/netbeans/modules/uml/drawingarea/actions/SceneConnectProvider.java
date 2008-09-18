@@ -51,16 +51,9 @@ package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDropEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
@@ -80,7 +73,6 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
-import org.netbeans.modules.uml.drawingarea.dataobject.PaletteItem;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.palette.NodeInitializer;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
@@ -209,9 +201,6 @@ public class SceneConnectProvider implements ExConnectProvider
             GraphScene scene = (GraphScene) sourceWidget.getScene();
             IPresentationElement sourceElement = getElement(sourceWidget);
             IPresentationElement targetElement = getElement(targetWidget);
-
-
-            
             createConnection(scene, sourceElement, targetElement);
         }
     }
@@ -278,10 +267,8 @@ public class SceneConnectProvider implements ExConnectProvider
         {
             scene.setFocusedObject(conn.get(0));
         }
-        
         HashSet < IPresentationElement > selected = new HashSet < IPresentationElement>(conn);
-
-        scene.userSelectionSuggested(selected, false);
+        scene.userSelectionSuggested(selected, false);  
     }
 
     public boolean hasTargetWidgetCreator()

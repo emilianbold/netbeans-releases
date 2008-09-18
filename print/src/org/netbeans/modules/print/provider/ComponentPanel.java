@@ -59,104 +59,105 @@ import static org.netbeans.modules.print.ui.UI.*;
  */
 final class ComponentPanel extends JPanel {
 
-  ComponentPanel(List<JComponent> components) {
-    myComponents = sort(components);
+    ComponentPanel(List<JComponent> components) {
+        myComponents = sort(components);
 
-    myHeight = 0;
-    myWidth = 0;
+        myHeight = 0;
+        myWidth = 0;
 
-    for (int i=0; i < myComponents.size(); i++) {
-      JComponent component = myComponents.get(i);
+        for (int i = 0; i < myComponents.size(); i++) {
+            JComponent component = myComponents.get(i);
 //out();
 //out("see: " + component.getClass().getName());
-      int width = getWidth(component);
-      int height = getHeight(component);
+            int width = getWidth(component);
+            int height = getHeight(component);
 //out("   width: " + width);
 //out("  height: " + height);
-      myWidth += width;
+            myWidth += width;
 
-      if (height > myHeight) {
-        myHeight = height;
-      }
+            if (height > myHeight) {
+                myHeight = height;
+            }
+        }
     }
-  }
 
-  @Override
-  public void print(Graphics g) {
-    for (JComponent component : myComponents) {
-      component.print(g);
+    @Override
+    public void print(Graphics g) {
+        for (JComponent component : myComponents) {
+            component.print(g);
 //    g.setColor(java.awt.Color.green);
 //    g.drawRect(0, 0, getWidth(component), getHeight(component));
-      g.translate(getWidth(component), 0);
-    }
-  }
-
-  @Override
-  public int getWidth() {
-    return myWidth;
-  }
-
-  @Override
-  public int getHeight() {
-    return myHeight;
-  }
-
-  private int getWidth(JComponent component) {
-    Dimension size = getSize(component);
-
-    if (size == null) {
-      return component.getWidth();
-    }
-    return size.width;
-  }
-
-  private int getHeight(JComponent component) {
-    Dimension size = getSize(component);
-
-    if (size == null) {
-      return component.getHeight();
-    }
-    return size.height;
-  }
-
-  private Dimension getSize(JComponent component) {
-    Object object = component.getClientProperty(PrintManager.PRINT_SIZE);
-      
-    if (object instanceof Dimension) {
-      return (Dimension) object;
-    }
-    return null;
-  }
-
-  private List<JComponent> sort(List<JComponent> components) {
-    Collections.sort(components, new Comparator<JComponent>() {
-      public int compare(JComponent component1, JComponent component2) {
-        int order1 = getInteger(component1).intValue();
-        int order2 = getInteger(component2).intValue();
-
-        if (order1 < order2) {
-          return -1;
+            g.translate(getWidth(component), 0);
         }
-        if (order1 == order2) {
-          return 0;
+    }
+
+    @Override
+    public int getWidth() {
+        return myWidth;
+    }
+
+    @Override
+    public int getHeight() {
+        return myHeight;
+    }
+
+    private int getWidth(JComponent component) {
+        Dimension size = getSize(component);
+
+        if (size == null) {
+            return component.getWidth();
         }
-        return 1;
-      }
+        return size.width;
+    }
 
-      private Integer getInteger(JComponent component) {
-        Object object = component.getClientProperty(PrintManager.PRINT_ORDER);
+    private int getHeight(JComponent component) {
+        Dimension size = getSize(component);
 
-        if (object instanceof Integer) {
-          return (Integer) object;
+        if (size == null) {
+            return component.getHeight();
         }
-        return Integer.MIN_VALUE;
-      }
-    });
+        return size.height;
+    }
 
-    return components;
-  }
+    private Dimension getSize(JComponent component) {
+        Object object = component.getClientProperty(PrintManager.PRINT_SIZE);
 
-  private int myWidth;
-  private int myHeight;
-  private List<JComponent> myComponents;
+        if (object instanceof Dimension) {
+            return (Dimension) object;
+        }
+        return null;
+    }
+
+    private List<JComponent> sort(List<JComponent> components) {
+        Collections.sort(components, new Comparator<JComponent>() {
+
+            public int compare(JComponent component1, JComponent component2) {
+                int order1 = getInteger(component1).intValue();
+                int order2 = getInteger(component2).intValue();
+
+                if (order1 < order2) {
+                    return -1;
+                }
+                if (order1 == order2) {
+                    return 0;
+                }
+                return 1;
+            }
+
+            private Integer getInteger(JComponent component) {
+                Object object = component.getClientProperty(PrintManager.PRINT_ORDER);
+
+                if (object instanceof Integer) {
+                    return (Integer) object;
+                }
+                return Integer.MIN_VALUE;
+            }
+        });
+
+        return components;
+    }
+
+    private int myWidth;
+    private int myHeight;
+    private List<JComponent> myComponents;
 }

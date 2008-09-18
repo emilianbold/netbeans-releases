@@ -1822,7 +1822,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             parseFiles(root, classCache, isInitialCompilation, children,
                     virtualChildren, clean, handle, filter, resources, compiledFiles,
                     toRecompile, misplacedSource2FQNs, allowCancel, generateVirtual,
-                    true, null);
+                    null, null);
         }
 
         private void parseFiles(URL root, final File classCache, boolean isInitialCompilation,
@@ -1830,7 +1830,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter,
                 Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile,
                 Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual,
-                boolean digestChanged, File folderFile) throws IOException {
+                FileList digest, File folderFile) throws IOException {
         
             assert !allowCancel || compiledFiles != null;
             LOGGER.finer("parseFiles: " + root);            
@@ -1928,7 +1928,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 //IDE is exiting, indeces are already closed.
                 return;
             }
-            if (clean == false && digestChanged == false) {
+            if (digest != null && !digest.resolveDigest(root) && !clean) {
                 // no need to recompile whole root and no change detected
                 // in source root.
                 return;
@@ -2240,7 +2240,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 parseFiles(root, classCache, isInitialCompilation,
                         children.getJavaFiles(), children.getVirtualJavaFiles(),
                         clean, handle, filter, null, compiledFiles, null, misplacedSource2FQNs,
-                        false, true, children.digestChanged(), folderFile);
+                        false, true, children, folderFile);
                 
                 if (!misplacedSource2FQNs.isEmpty()) {
                     LOGGER.log(Level.FINE, "misplaces classes detected");
@@ -2759,7 +2759,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
              
              if (f != null) {
                  sb.append("(");
-                 if (f.exists()) {
+                 if (f.isFile()) {
                      sb.append(f.lastModified());
                  } else {
                      sb.append("-1");
@@ -2788,7 +2788,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private final List<File> javaFiles = new LinkedList<File>();
         private final List<File> virtualJavaFiles = new LinkedList<File>();
         private boolean initialized;
-        private boolean digestChanged = true;
+        private String digest;
 
         public FileList (final File root) {
             assert root != null;
@@ -2814,8 +2814,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
 
-        private boolean digestChanged() {
-            return digestChanged;
+        private boolean resolveDigest(URL rootUrl) {
+            try {
+                return ensureAttributeValue(rootUrl, DIGEST, digest, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return true;
+            }
         }
 
         private void computeDigest(File root, final List<File> javaFiles) {
@@ -2827,18 +2832,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 MessageDigest md5 = MessageDigest.getInstance("MD5"); // NOI18N
                 byte[] b = sb.toString().getBytes();
                 byte[] digest = md5.digest(b);
-                URL rootUrl = root.toURI().toURL();
-                String data = getAttribute(rootUrl, DIGEST, null);
-                if (data != null && getAttribute(rootUrl, DIRTY_ROOT, null) == null) {
-                    String newDigest = printDigest(digest);
-                    if (data.equals(newDigest) == true) {
-                        digestChanged = false;
-                        return;
-                    }
-                }
-                boolean dirty = (data == null || getAttribute(rootUrl, DIRTY_ROOT, null) != null) ? true : false;
-                ensureAttributeValue(rootUrl, DIGEST, printDigest(digest), dirty);
-            } catch (IOException e) {
+                this.digest = printDigest(digest);
             } catch (NoSuchAlgorithmException ex) {
                 Exceptions.printStackTrace(ex);
             }

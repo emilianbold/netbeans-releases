@@ -156,10 +156,7 @@ public class RspecHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            String timeInSeconds = matcher.group(1);
-            Report result = session.getReport();
-            result.elapsedTimeMillis = toMillis(matcher.group(2));
-            manager.displayReport(session, result);
+            manager.displayReport(session, session.getReport(toMillis(matcher.group(2))));
         }
     }
 

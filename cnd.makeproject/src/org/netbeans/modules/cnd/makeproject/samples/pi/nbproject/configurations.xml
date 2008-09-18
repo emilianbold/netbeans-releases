@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="47">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>pi_omp.c</itemPath>
+      <itemPath>pi_pthreads.c</itemPath>
+      <itemPath>pi_pthreads_correct.c</itemPath>
+      <itemPath>pi_pthreads_hot.c</itemPath>
+      <itemPath>pi_serial.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <defaultConf>0</defaultConf>
+  <confs>
+    <conf name="Serial" type="1">
+      <compileType>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="pi_omp.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads_correct.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads_hot.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_serial.c">
+        <itemTool>0</itemTool>
+      </item>
+    </conf>
+    <conf name="Pthreads" type="1">
+      <compileType>
+        <cCompilerTool>
+          <commandLine>-xinstrument=datarace</commandLine>
+          <mtLevel>1</mtLevel>
+        </cCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="pi_omp.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads_correct.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads_hot.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_serial.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+    </conf>
+    <conf name="Pthreads_safe" type="1">
+      <compileType>
+        <cCompilerTool>
+          <commandLine>-xinstrument=datarace</commandLine>
+          <mtLevel>1</mtLevel>
+        </cCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="pi_omp.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads_correct.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads_hot.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_serial.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+    </conf>
+    <conf name="Pthread_Hot" type="1">
+      <compileType>
+        <cCompilerTool>
+          <commandLine>-xinstrument=datarace</commandLine>
+          <mtLevel>1</mtLevel>
+        </cCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="pi_omp.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads_correct.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads_hot.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_serial.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+    </conf>
+    <conf name="OpenMP" type="1">
+      <compileType>
+        <cCompilerTool>
+          <commandLine>-xinstrument=datarace</commandLine>
+          <mtLevel>3</mtLevel>
+        </cCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="pi_omp.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads_correct.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_pthreads_hot.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+      <item path="pi_serial.c">
+        <itemExcluded>true</itemExcluded>
+        <itemTool>0</itemTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
