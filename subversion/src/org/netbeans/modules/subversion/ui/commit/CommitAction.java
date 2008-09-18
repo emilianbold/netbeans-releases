@@ -232,8 +232,32 @@ public class CommitAction extends ContextAction {
                     }
                 }                
             }
-        }   
+        }
+
+        fileList.addAll(getUnversionedParents(fileList, true));
         return fileList;
+    }
+
+    private static Set<File> getUnversionedParents(List<File> fileList, boolean onlyCached) {
+        Set<File> checked = new HashSet<File>();
+        Set<File> ret = new HashSet<File>();
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        for (File file : fileList) {
+            File parent = null;;
+            while((parent = file.getParentFile()) != null) {
+                if(checked.contains(parent)) break;
+                checked.add(parent);
+                if(!SvnUtils.isManaged(parent)) break;
+                FileInformation info = onlyCached ? cache.getCachedStatus(file) : cache.getStatus(file);
+                if(info == null) continue;
+                if(info.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY ||
+                   info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)
+                {
+                    ret.add(parent);
+                }
+            }
+        }
+        return ret;
     }
     
     /**
@@ -388,7 +412,7 @@ public class CommitAction extends ContextAction {
                     if(fileList.size()==0) {
                         return; 
                     }  
-
+                    fileList.addAll(getUnversionedParents(fileList, false));
                     ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
                     SvnFileNode[] nodes;
                     for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
@@ -744,7 +768,6 @@ public class CommitAction extends ContextAction {
             }
         }
         if(dirsToAdd.size() > 0) {
-            // XXX JAVAHL client.addFile(dirsToAdd.toArray(new File[dirsToAdd.size()]), false);
             for (File file : dirsToAdd) {
                 client.addFile(file);
             }
@@ -754,7 +777,6 @@ public class CommitAction extends ContextAction {
         }
 
         if(addFiles.size() > 0) {
-            // XXX JAVAHL client.addFile(addFiles.toArray(new File[addFiles.size()]), false);
             for (File file : addFiles) {
                 client.addFile(file);
             }
