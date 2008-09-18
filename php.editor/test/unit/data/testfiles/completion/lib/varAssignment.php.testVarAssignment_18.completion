@@ -1,5 +1,5 @@
 Code completion result for source line:
 $aParam2->|aCreateA();
 (QueryType=COMPLETION, NameKind=PREFIX)
-METHOD     aCreateA()                                 clsAVarAssignment
-METHOD     aCreateC()                                 clsAVarAssignment
+METHOD     aCreateA()                      [PUBLIC]   clsAVarAssignment
+METHOD     aCreateC()                      [PUBLIC]   clsAVarAssignment

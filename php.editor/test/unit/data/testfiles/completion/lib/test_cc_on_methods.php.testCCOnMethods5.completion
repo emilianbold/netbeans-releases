@@ -1,7 +1,7 @@
 Code completion result for source line:
 foo_TestCCOnMethods()->|newInstance()->newInstance();
 (QueryType=COMPLETION, NameKind=PREFIX)
-METHOD     newInstance()                              TestCCOnMethods
-METHOD     parentInstance()                           ParentClass
+METHOD     newInstance()                   [PUBLIC]   TestCCOnMethods
+METHOD     parentInstance()                [PUBLIC]   ParentClass
 ------------------------------------
-METHOD     publicParentMethod()                       ParentClass
+METHOD     publicParentMethod()            [PUBLIC]   ParentClass
