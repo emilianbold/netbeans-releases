@@ -94,7 +94,6 @@
   </persistence-unit>
   <persistence-unit name="pu12" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>oracle.toplink.essentials.PersistenceProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>

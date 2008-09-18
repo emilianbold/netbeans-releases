@@ -136,6 +136,10 @@ public class KeyUtilities {
     public static CharSequence getKeyName(Key key){
         if (key instanceof OffsetableKey) {
             return ((OffsetableKey)key).getName();
+        } else if(key instanceof FileKey) {
+            return ((FileKey) key).getName();
+        } else if(key instanceof ProjectKey) {
+            return ((ProjectKey) key).getProjectName();
         }
         return null;
     }

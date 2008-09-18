@@ -1,0 +1,14 @@
+Code completion result for source line:
+new File("something").c|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     canRead()                                  boolean
+METHOD     canWrite()                                 boolean
+METHOD     collect(Closure)                           List
+METHOD     collect(Collection, Closure)               Collection
+METHOD     compareTo(File)                            int
+METHOD     compareTo(Object)                          int
+METHOD     createNewFile()                            boolean
+METHOD     createTempFile(String, String)             File
+METHOD     createTempFile(String, String,             File
+FIELD      counter                                    int

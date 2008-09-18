@@ -40,19 +40,30 @@
 package org.netbeans.modules.db.metadata.model.spi;
 
 import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
 
 /**
  *
  * @author Andrei Badea
  */
-public interface MetadataImplementation {
+public abstract class MetadataImplementation {
 
-    public Catalog getDefaultCatalog();
+    private Metadata metadata;
 
-    public Collection<Catalog> getCatalogs();
+    public final Metadata getMetadata() {
+        if (metadata == null) {
+            metadata = MetadataAccessor.getDefault().createMetadata(this);
+        }
+        return metadata;
+    }
 
-    public Catalog getCatalog(String name);
+    public abstract Catalog getDefaultCatalog();
 
-    public void refresh();
+    public abstract Collection<Catalog> getCatalogs();
+
+    public abstract Catalog getCatalog(String name);
+
+    public abstract void refresh();
 }

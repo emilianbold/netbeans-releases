@@ -98,5 +98,5 @@ token #96 PHP_SEMICOLON ;
 token #97 WHITESPACE     \n
 token #98 PHP_CURLY_CLOSE }
 token #99 WHITESPACE \n
-token #100 PHP_CLOSETAG ?>\n
-token #101 T_INLINE_HTML --EXPECT--\n1234\n
+token #100 PHP_CLOSETAG ?>
+token #101 T_INLINE_HTML \n--EXPECT--\n1234\n

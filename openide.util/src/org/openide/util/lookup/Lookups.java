@@ -220,7 +220,7 @@ public class Lookups {
      * assertEquals("Returns C as A.class is not between B and C", c, l2.lookup(B.class));
      * </pre>
      * For more info check the
-     * <a href="http://www.netbeans.org/source/browse/openide/util/test/unit/src/org/openide/util/lookup/ExcludingLookupTest.java">
+     * <a href="http://hg.netbeans.org/main-golden/annotate/4883eaeda744/openide.util/test/unit/src/org/openide/util/lookup/ExcludingLookupTest.java">
      * excluding lookup tests</a> and the discussion in issue
      * <a href="http://openide.netbeans.org/issues/show_bug.cgi?id=53058">53058</a>.
      *

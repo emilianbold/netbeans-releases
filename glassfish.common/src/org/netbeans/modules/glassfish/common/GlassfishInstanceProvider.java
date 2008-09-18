@@ -435,7 +435,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         }
                     }
                 }
-            } catch (IOException ioe) {
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
     }

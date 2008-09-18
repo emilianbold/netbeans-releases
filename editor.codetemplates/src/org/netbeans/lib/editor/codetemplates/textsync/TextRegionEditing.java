@@ -113,6 +113,7 @@ public final class TextRegionEditing {
     private boolean overridingKeys;
     
     private ActionMap origActionMap;
+    private ActionMap overrideActionMap;
     
     private TextRegionEditing(JTextComponent component) {
         this.component = component;
@@ -247,7 +248,9 @@ public final class TextRegionEditing {
                     // Not adding listener permanently in constructor since
                     // it grabbed the TAB key from code-template expansion
                     component.addKeyListener(OverrideKeysListener.INSTANCE);
-                    origActionMap = OverrideAction.installOverrideActionMap(component);
+                    ActionMap [] maps = OverrideAction.installOverrideActionMap(component);
+                    origActionMap = maps[0];
+                    overrideActionMap = maps[1];
                 }
             }
         }
@@ -273,7 +276,19 @@ public final class TextRegionEditing {
                 if (overridingKeys) {
                     overridingKeys = false;
                     component.removeKeyListener(OverrideKeysListener.INSTANCE);
-                    component.setActionMap(origActionMap);
+
+                    // check if the action map is still our overrideActionMap
+                    if (overrideActionMap != component.getActionMap()) {
+                        LOG.warning("The action map got tampered with! component=" //NOI18
+                            + component.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(component)) //NOI18N
+                            + "; doc=" + component.getDocument()); //NOI18N
+                    } else {
+                        component.setActionMap(origActionMap);
+                    }
+                    
+                    overrideActionMap.clear();
+                    origActionMap = null;
+                    overrideActionMap = null;
                 }
             }
 
@@ -375,7 +390,7 @@ public final class TextRegionEditing {
         }
         
     }
-    
+
     private static final class OverrideAction extends TextAction {
 
         private static final String ORIGINAL_ACTION_PROPERTY = "original-action"; // NOI18N
@@ -384,7 +399,7 @@ public final class TextRegionEditing {
         private static final int SHIFT_TAB = 2;
         private static final int ENTER = 3;
 
-        public static ActionMap installOverrideActionMap(JTextComponent component) {
+        public static ActionMap [] installOverrideActionMap(JTextComponent component) {
             ActionMap origActionMap = component.getActionMap();
             ActionMap actionMap = new ActionMap();
             OverrideAction[] actions = new OverrideAction[]{
@@ -408,7 +423,7 @@ public final class TextRegionEditing {
             actionMap.setParent(origActionMap);
             // Install the new action map and return the original action map
             component.setActionMap(actionMap);
-            return origActionMap;
+            return new ActionMap [] { origActionMap, actionMap };
         }
 
         private static String actionType2Name(int actionType) {

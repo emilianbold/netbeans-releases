@@ -72,11 +72,12 @@ public class HighlighterSupport {
                     for (i = 0; i < k; i++) {
                         if (eps [i].getDocument () == doc) {
                             final JEditorPane ep = eps [i];
-                            try {
-                                ep.scrollRectToVisible (ep.modelToView (offset));
-                            } catch (BadLocationException ex) {
-                                ErrorManager.getDefault ().notify (ex);
-                            }
+                            if (ep != null)
+                                try {
+                                    ep.scrollRectToVisible (ep.modelToView (offset));
+                                } catch (BadLocationException ex) {
+                                    ErrorManager.getDefault ().notify (ex);
+                                }
                         }
                     }
                 }

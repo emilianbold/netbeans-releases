@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -198,6 +199,7 @@ final class ParsingTask extends Thread implements HyperlinkListener {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             m_svgView.showImage(svgImage);
+                            m_svgView.enableImageContext();
                         }
                     });
                 } else {
@@ -305,7 +307,15 @@ final class ParsingTask extends Thread implements HyperlinkListener {
             XMLUtil.parse( isource, true, true, errorHandler, EntityCatalog.getDefault());
         } catch( SAXException e) { 
             //Not interested in these errors ...
-        } catch (Exception e) {
+        }
+        // Fix for IZ#145734 .
+        catch ( ConnectException e ){
+            /*
+             * Ignore this exception . It can be caused by connection 
+             * error from entity resolver.
+             */
+        }    
+        catch (Exception e) {
             SceneManager.error("Error during document parse", e); //NOI18N
         } finally {
             try {

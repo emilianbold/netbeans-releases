@@ -37,5 +37,5 @@ token #35 WHITESPACE
 token #36 PHP_CONSTANT_ENCAPSED_STRING "\n"
 token #37 PHP_SEMICOLON ;
 token #38 WHITESPACE \n\n
-token #39 PHP_CLOSETAG ?>\n
-token #40 T_INLINE_HTML --EXPECTF--\nIf you DON'T see this, something's wrong.\n
+token #39 PHP_CLOSETAG ?>
+token #40 T_INLINE_HTML \n--EXPECTF--\nIf you DON'T see this, something's wrong.\n

@@ -88,8 +88,8 @@ import org.netbeans.modules.websvc.saas.util.SaasUtil;
 public abstract class SaasBean extends GenericResourceBean {
 
     public static final String RESOURCE_TEMPLATE = SaasClientCodeGenerator.TEMPLATES_SAAS+"WrapperResource.java"; //NOI18N
-    private String outputWrapperName;
-    private String wrapperPackageName;
+    private List<String> outputWrapperNames = new ArrayList<String>();
+    private List<String> wrapperPackageNames = new ArrayList<String>();
     private List<ParameterInfo> inputParams;
     private List<ParameterInfo> headerParams;
     private List<ParameterInfo> templateParams;
@@ -220,28 +220,28 @@ public abstract class SaasBean extends GenericResourceBean {
         return queryParams;
     }
     
-    public String getOutputWrapperName() {
-        if (outputWrapperName == null) {
-            outputWrapperName = getName();
-
-            if (outputWrapperName.endsWith(RESOURCE_SUFFIX)) {
-                outputWrapperName = outputWrapperName.substring(0, outputWrapperName.length() - 8);
+    public List<String> getOutputWrapperNames() {
+        if (outputWrapperNames.isEmpty()) {
+            String wName = getName();
+            if (wName.endsWith(RESOURCE_SUFFIX)) {
+                wName = wName.substring(0, wName.length() - 8);
             }
-            outputWrapperName += SaasClientCodeGenerator.CONVERTER_SUFFIX;
+            wName += SaasClientCodeGenerator.CONVERTER_SUFFIX;
+            outputWrapperNames.add(wName);
         }
-        return outputWrapperName;
+        return outputWrapperNames;
     }
     
-    public void setOutputWrapperName(String outputWrapperName) {
-        this.outputWrapperName = outputWrapperName;
+    public void addOutputWrapperName(String outputWrapperName) {
+        this.outputWrapperNames.add(outputWrapperName);
     }
 
-    public String getOutputWrapperPackageName() {
-        return wrapperPackageName;
+    public List<String> getOutputWrapperPackageNames() {
+        return wrapperPackageNames;
     }
 
-    public void setOutputWrapperPackageName(String packageName) {
-        wrapperPackageName = packageName;
+    public void addOutputWrapperPackageName(String packageName) {
+        this.wrapperPackageNames.add(packageName);
     }
 
     @Override
@@ -249,10 +249,12 @@ public abstract class SaasBean extends GenericResourceBean {
         if (getMimeTypes().length == 1 && getMimeTypes()[0] == MimeType.HTML) {
             return new String[]{String.class.getName()};
         } else {
-            String rep = getOutputWrapperPackageName() + "." + getOutputWrapperName();
             List<String> repList = new ArrayList<String>();
-            for(MimeType m:getMimeTypes()) {//stuff rep with as much mimetype length
-                repList.add(rep);
+            for(int i=0;i<getOutputWrapperNames().size();i++) {
+                String rep = getOutputWrapperPackageNames().get(i) + "." + getOutputWrapperNames().get(i);
+                for(MimeType m:getMimeTypes()) {//stuff rep with as much mimetype length
+                    repList.add(rep);
+                }
             }
             return repList.toArray(new String[0]);
         }

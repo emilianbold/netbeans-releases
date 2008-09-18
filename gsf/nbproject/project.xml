@@ -154,7 +154,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <release-version>2</release-version>
                         <specification-version>1.1.1</specification-version>
                     </run-dependency>
                 </dependency>
@@ -377,7 +377,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.css.devtools</friend>
+                <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.erlang.editing</friend>
                 <friend>org.netbeans.modules.erlang.platform</friend>
                 <friend>org.netbeans.modules.erlang.project</friend>
@@ -395,6 +395,7 @@
                 <friend>org.netbeans.modules.scala.platform</friend>
                 <friend>org.netbeans.modules.scala.project</friend>
                 <package>org.netbeans.napi.gsfret.source</package>
+                <package>org.netbeans.napi.gsfret.source.support</package>
             </friend-packages>
         </data>
     </configuration>

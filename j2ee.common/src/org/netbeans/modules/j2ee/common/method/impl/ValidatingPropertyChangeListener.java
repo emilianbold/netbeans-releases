@@ -43,12 +43,9 @@ package org.netbeans.modules.j2ee.common.method.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.openide.NotifyDescriptor;
@@ -87,13 +84,13 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
         // method name
         String name = panel.getMethodName();
         if (!Utilities.isJavaIdentifier(name)) {
-            setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_nameNonJavaIdentifier"));
+            setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_nameNonJavaIdentifier"));  // NOI18N
             return false;
         }
         // return type
         String returnType = panel.getReturnType();
-        if ("".equals(returnType)) {
-            setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_returnTypeInvalid"));
+        if ("".equals(returnType)) {  // NOI18N
+            setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_returnTypeInvalid"));  // NOI18N
             return false;
         }
         // interfaces
@@ -101,11 +98,11 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
             boolean local = panel.hasLocal();
             boolean remote = panel.hasRemote();
             if (!local && !remote) {
-                setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_selectSomeInterface"));
+                setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_selectSomeInterface"));  // NOI18N
                 return false;
             }
             if (local && remote) {
-                setWarning(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "LBL_commonImplForBothInterfaces"));
+                setWarning(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "LBL_commonImplForBothInterfaces"));  // NOI18N
             }
         }
         // existing methods
@@ -113,7 +110,7 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
             List<MethodModel.Variable> proposedParams = panel.getParameters();
             for (MethodModel methodModel : existingMethods) {
                 if (sameParams(proposedParams, methodModel.getParameters())) {
-                    setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_methodExists"));
+                    setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_methodExists"));  // NOI18N
                     return false;
                 }
             }
@@ -157,7 +154,7 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
     
     private void unsetError() {
         notifyDescriptor.setValid(true);
-        panel.setError("");
+        panel.setError("");  // NOI18N
     }
     
 }

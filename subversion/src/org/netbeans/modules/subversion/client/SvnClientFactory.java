@@ -212,6 +212,11 @@ public class SvnClientFactory {
         if(exception != null) throw exception;
     }
 
+    public static boolean isClientAvailable() {
+        init();
+        return exception == null;
+    }
+
     public static boolean wasJavahlCrash() {
         init();
         if(javahlCrash) {

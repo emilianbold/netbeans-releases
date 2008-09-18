@@ -133,7 +133,7 @@ public enum CSSTokenId implements TokenId {
     DIMEN("number"),
     PERCENTAGE("number"),
     NUMBER("number"),
-    RGB("rgb"),
+    RGB("default"),
     FUNCTION("function"),
     IDENT("identifier"),
     NAME("default"),

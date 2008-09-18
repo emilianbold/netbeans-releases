@@ -110,6 +110,15 @@ public class BracketCompletion {
                     doc.remove(dotPos + 1, 1);
                 }
             }
+        } else if (ch == '.') {
+            if (dotPos > 0) {
+                TokenID tokenAtDot = support.getTokenID(dotPos - 1);
+                if (tokenAtDot == CCTokenContext.THIS) {
+                    doc.remove(dotPos, 1);
+                    doc.insertString(dotPos, "->", null);// NOI18N
+                    caret.setDot(dotPos + 2);
+                }
+            }
         }
     }
     

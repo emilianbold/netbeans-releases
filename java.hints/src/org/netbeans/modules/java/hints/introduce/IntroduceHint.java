@@ -52,6 +52,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
@@ -183,7 +184,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (type == null || NOT_ACCEPTED_TYPES.contains(type.getKind()))
                 continue;
 
-            if (tp.getParentPath().getLeaf().getKind() == Kind.EXPRESSION_STATEMENT)
+            if(tp.getLeaf().getKind() == Kind.ASSIGNMENT)
                 continue;
 
             if (tp.getLeaf().getKind() == Kind.ANNOTATION)
@@ -352,7 +353,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         if (resolved != null) {
             TreePathHandle h = TreePathHandle.create(resolved, info);
             TreePath method   = findMethod(resolved);
-            boolean isConstant = checkConstantExpression(info, resolved);
+            boolean expressionStatement = resolved.getParentPath().getLeaf().getKind() == Kind.EXPRESSION_STATEMENT;
+            boolean isConstant = checkConstantExpression(info, resolved) && !expressionStatement;
             boolean isVariable = findStatement(resolved) != null && method != null;
             List<TreePath> duplicatesForVariable = isVariable ? CopyFinder.computeDuplicates(info, resolved, method, cancel) : null;
             List<TreePath> duplicatesForConstant = /*isConstant ? */CopyFinder.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()), cancel);// : null;
@@ -364,7 +366,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             Fix field = null;
             Fix methodFix = null;
 
-            if (method != null && !isInAnnotationType(info, method)) {
+            if (method != null && !isInAnnotationType(info, method) && !expressionStatement) {
                 int[] initilizeIn = computeInitializeIn(info, resolved, duplicatesForConstant);
 
                 if (statik) {
@@ -537,7 +539,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         List<TreePathHandle> exits = new LinkedList<TreePathHandle>();
 
         for (TreePath tp : scanner.selectionExits) {
-            exits.add(TreePathHandle.create(tp, info));
+            if(isInsideSameClass(tp, method))
+                exits.add(TreePathHandle.create(tp, info));
         }
 
         TypeMirror returnType;
@@ -577,6 +580,35 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return new IntroduceMethodFix(info.getJavaSource(), h, paramTypes, paramNames, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnName, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1]);
     }
 
+    private static boolean isInsideSameClass(TreePath one, TreePath two) {
+        ClassTree oneClass = null;
+        ClassTree twoClass = null;
+
+        while (one.getLeaf().getKind() != Kind.COMPILATION_UNIT && one.getLeaf().getKind() != null) {
+            Tree t = one.getLeaf();
+            if (t.getKind() == Kind.CLASS) {
+                oneClass = (ClassTree) t;
+                break;
+            }
+            one = one.getParentPath();
+        }
+
+        while (two.getLeaf().getKind() != Kind.COMPILATION_UNIT && two.getLeaf().getKind() != null) {
+            Tree t = two.getLeaf();
+            if (t.getKind() == Kind.CLASS) {
+                twoClass = (ClassTree) t;
+                break;
+            }
+            two = two.getParentPath();
+        }
+
+        if (oneClass != null && oneClass.equals(twoClass))
+            return true;
+        
+        return false;
+    }
+
+
     static boolean checkConstantExpression(CompilationInfo info, TreePath path) {
         Tree expr = path.getLeaf();
 
@@ -587,11 +619,27 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                    && checkConstantExpression(info, new TreePath(path, bt.getRightOperand()));
         }
 
-        if (expr.getKind() == Kind.IDENTIFIER || expr.getKind() == Kind.MEMBER_SELECT) {
+        if (expr.getKind() == Kind.IDENTIFIER || expr.getKind() == Kind.MEMBER_SELECT || expr.getKind() == Kind.METHOD_INVOCATION) {
             Element e = info.getTrees().getElement(path);
 
             if (e == null)
                 return false;
+
+            if (e.getKind() == ElementKind.METHOD) {
+                List<? extends ExpressionTree> arguments = ((MethodInvocationTree) expr).getArguments();
+                for (ExpressionTree et : arguments) {
+                    Element element = info.getTrees().getElement(new TreePath(path, et));
+                    if (element != null && element.getKind() == ElementKind.FIELD && !info.getTrees().getElement(new TreePath(path, et)).getModifiers().contains(Modifier.STATIC)) {
+                        return false;
+                    }
+                }
+
+                if (e.getModifiers().contains(Modifier.STATIC)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
 
             if (e.getKind() != ElementKind.FIELD)
                 return false;
@@ -1251,6 +1299,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     ModifiersTree mods;
                     final TreeMaker make = parameter.getTreeMaker();
 
+                    boolean expressionStatement = resolved.getParentPath().getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT;
+
                     switch (kind) {
                         case CREATE_CONSTANT:
                             //find first class:
@@ -1323,13 +1373,17 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             nueStatements.add(index, make.Variable(mods, name, make.Type(tm), expressionCopy/*(ExpressionTree) resolved.getLeaf()*//*(ExpressionTree) resolved.getLeaf()*/));
 
+                            if (expressionStatement)
+                                nueStatements.remove(resolved.getParentPath().getLeaf());
+
                             BlockTree nueBlock = make.Block(nueStatements, false);
 
                             parameter.rewrite(statements, nueBlock);
                             break;
                     }
 
-                    parameter.rewrite(resolved.getLeaf(), make.Identifier(name));
+                    if (!expressionStatement)
+                        parameter.rewrite(resolved.getLeaf(), make.Identifier(name));
                 }
             }).commit();
             return null;

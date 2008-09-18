@@ -396,7 +396,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         parent.mkdirs();                
         try {         
             File oldFile = VersionsCache.getInstance().getFileRevision(event.getFile(), Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()));
-            file.delete();
+            for (int i = 1; i < 7; i++) {
+                if (file.delete()) break;
+                try { Thread.sleep(i * 34); } catch (InterruptedException e) { }
+            }
             FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");                
         } catch (IOException e) {
             Subversion.LOG.log(Level.SEVERE, null, e);
@@ -460,8 +463,17 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision.Event) {
             RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-            FileObject fo = FileUtil.toFileObject(drev.getFile());
-            org.netbeans.modules.versioning.util.Utils.openFile(fo, drev.getLogInfoHeader().getLog().getRevision().toString());
+            File originFile = drev.getFile();
+            String rev = drev.getLogInfoHeader().getLog().getRevision().toString();
+            File file = null;
+            try {
+                file = VersionsCache.getInstance().getFileRevision(originFile, rev);
+            } catch (IOException e) {
+                Subversion.LOG.log(Level.SEVERE, null, e);
+                return;
+            }
+            FileObject fo = FileUtil.toFileObject(file);
+            org.netbeans.modules.versioning.util.Utils.openFile(fo, rev);
         }
     }
     private void diffPrevious(int idx) {

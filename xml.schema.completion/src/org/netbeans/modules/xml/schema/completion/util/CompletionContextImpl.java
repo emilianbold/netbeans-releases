@@ -253,7 +253,8 @@ public class CompletionContextImpl extends CompletionContext {
                         if(completionAtOffset > element.getElementOffset() + 1 &&
                            completionAtOffset <= element.getElementOffset() + 1 + tag.getTagName().length()) {
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                            typedChars = tag.getTagName();
+                            int index = completionAtOffset-element.getElementOffset()-1;
+                            typedChars = index<0?tag.getTagName():tag.getTagName().substring(0, index);
                             pathFromRoot = getPathFromRoot(element.getPrevious());
                             break;
                         }                        
@@ -273,12 +274,9 @@ public class CompletionContextImpl extends CompletionContext {
                             typedChars = null;
                         } else {
                             StartTag tag = (StartTag)element;
-                            typedChars = tag.getTagName();
+                            int index = completionAtOffset-element.getElementOffset()-1;
+                            typedChars = index<0?tag.getTagName():tag.getTagName().substring(0, index);
                         }
-                    }
-                    if(lastTypedChar == '>') {
-                        completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
-                        break;
                     }
                     completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
                     pathFromRoot = getPathFromRoot(element.getPrevious());
@@ -298,6 +296,9 @@ public class CompletionContextImpl extends CompletionContext {
                     
                 //user enters = character, we should ignore all other operators
                 case XMLDefaultTokenContext.OPERATOR_ID:
+                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                    break;
+                    
                 //user enters either ' or "
                 case XMLDefaultTokenContext.VALUE_ID: {
                     //user enters start quote and no end quote exists
@@ -315,6 +316,8 @@ public class CompletionContextImpl extends CompletionContext {
                             (str.startsWith("\"") || str.startsWith("\'")) &&
                             (str.endsWith("\"") || str.endsWith("\'")) ) {
                             typedChars = str.substring(1, str.length()-1);
+                            if(completionAtOffset == token.getOffset()+1)
+                                typedChars = "";
                         }
                     }
                     attribute = element.getPrevious().toString();                    

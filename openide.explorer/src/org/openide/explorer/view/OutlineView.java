@@ -345,7 +345,8 @@ public class OutlineView extends JScrollPane {
     /** Synchronize the root context from the manager of this Explorer.
     */
     final void synchronizeRootContext() {
-        treeModel.setNode(manager.getRootContext());
+        if( null != treeModel )
+            treeModel.setNode(manager.getRootContext());
     }
 
     /** Synchronize the selected nodes from the manager of this Explorer.

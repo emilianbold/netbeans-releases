@@ -46,8 +46,61 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.websvc.jaxrpc16</code-name-base>
             <module-dependencies>
-                </module-dependencies>
-            <public-packages/>
+            </module-dependencies>
+            <public-packages>
+                <package>com.sun.xml.rpc.spi</package>
+                <package>com.sun.xml.rpc.spi.model</package>
+                <package>com.sun.xml.rpc.processor.model</package>
+                <package>com.sun.xml.rpc.soap</package>
+                <package>com.sun.xml.rpc.processor.modeler</package>
+                <package>com.sun.xml.rpc.processor.config</package>
+                <package>com.sun.xml.rpc.processor.model.java</package>
+                <package>com.sun.xml.rpc.processor</package>
+                <package>com.sun.xml.rpc.processor.modeler.wsdl</package>
+                <package>com.sun.xml.rpc.processor.util</package>
+                <package>com.sun.xml.rpc.util</package>               
+                <package>com.sun.xml.rpc.spi.tools</package>
+                <package>com.sun.xml.rpc.wsdl.document.soap</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/jaxrpc-api.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/jaxrpc-impl.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/jaxrpc-spi.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/saaj-api.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/saaj-impl.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/xsdlib.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/activation.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/FastInfoset.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/jaxp-api.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/jax-qname.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/jsr173_api.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/mail.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc16/relaxngDatatype.jar</runtime-relative-path>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

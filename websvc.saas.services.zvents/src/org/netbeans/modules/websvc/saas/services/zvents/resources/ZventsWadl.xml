@@ -56,7 +56,6 @@
                 <request>
                     <param name="key" type="xsd:string" required="true" style="query"/>
                     <param name="id" type="xsd:integer" required="true" style="query"/>
-                    <param name="rec" type="xsd:integer" required="false" style="query"/>
                 </request>
                 <response>
                     <representation mediaType="text/xml" element="z:rsp"/>
@@ -179,6 +178,20 @@
                 </response>
             </method>
         </resource>
+        <resource path="event_recent">
+            <method name="GET" id="getRecentEvents">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="where" type="xsd:string" required="false" style="query"/>
+                    <param name="radius" type="xsd:float" required="false" style="query"/>
+                    <param name="limit" type="xsd:integer" required="false" style="query"/>
+                    <param name="offset" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
         <resource path="search">
             <method name="GET" id="searchEvents">
                 <request>
@@ -193,7 +206,6 @@
                     <param name="sort" type="xsd:integer" required="false" style="query"/>
                     <param name="cat" type="xsd:integer" required="false" style="query"/>
                     <param name="catex" type="xsd:integer" required="false" style="query"/>
-                    <param name="rec" type="xsd:integer" required="false" style="query"/>
                 </request>
                 <response>
                     <representation mediaType="text/xml" element="z:rsp"/>
@@ -239,7 +251,6 @@
                     <param name="sort" type="xsd:integer" required="false" style="query"/>
                     <param name="cat" type="xsd:integer" required="false" style="query"/>
                     <param name="catex" type="xsd:integer" required="false" style="query"/>
-                    <param name="rec" type="xsd:integer" required="false" style="query"/>
                 </request>
                 <response>
                     <representation mediaType="text/xml" element="z:rsp"/>
@@ -403,7 +414,7 @@
                 </response>
             </method>
         </resource>
-        <resource path="event_delete">
+        <resource path="group_delete">
             <method name="POST" id="deleteGroup">
                 <request>
                     <param name="key" type="xsd:string" required="true" style="query"/>
@@ -619,6 +630,19 @@
                     <param name="ed" type="xsd:integer" required="false" style="query"/>
                     <param name="st" type="xsd:string" required="false" style="query"/>
                     <param name="et" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="user_created_venues">
+            <method name="GET" id="getUserCreatedVenues">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:string" required="true" style="query"/>
+                    <param name="limit" type="xsd:integer" required="false" style="query"/>
+                    <param name="offset" type="xsd:integer" required="false" style="query"/>
                 </request>
                 <response>
                     <representation mediaType="text/xml" element="z:rsp"/>

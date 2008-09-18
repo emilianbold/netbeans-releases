@@ -41,27 +41,37 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.SyncFailedException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem.FSCallable;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
+import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
-import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
-import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
-import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
  * @author rm111737
@@ -73,8 +83,6 @@ public final class FolderObj extends BaseFileObj {
 
     private FolderChildrenCache folderChildren;
     boolean valid = true;    
-    private int bitmask = 0;
-    //#43278 section
 
     /**
      * Creates a new instance of FolderImpl
@@ -88,8 +96,12 @@ public final class FolderObj extends BaseFileObj {
         return true;
     }
 
-     @Override
+    @Override
     public FileObject getFileObject(String relativePath) {
+        if(relativePath.indexOf('\\') != -1) {
+            // #47885 - relative path must not contain back slashes
+            return null;
+        }
         if (relativePath.startsWith("/")) {
             relativePath = relativePath.substring(1);
         }
@@ -97,7 +109,7 @@ public final class FolderObj extends BaseFileObj {
         FileObjectFactory factory = getFactory();
         return factory.getValidFileObject(file, FileObjectFactory.Caller.GetFileObject);
     }
-    
+
 
     public final FileObject getFileObject(final String name, final String ext) {
         File file = BaseFileObj.getFile(getFileName().getFile(), name, ext);

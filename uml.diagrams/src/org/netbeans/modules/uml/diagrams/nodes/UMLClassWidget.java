@@ -83,7 +83,7 @@ import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.openide.util.NbBundle;
 
 
-public class UMLClassWidget  extends SwitchableWidget
+public class UMLClassWidget  extends SwitchableWidget implements ICommonFeature
 {
     private UMLNameWidget nameWidget = null;
     
@@ -147,6 +147,18 @@ public class UMLClassWidget  extends SwitchableWidget
         operations = null;
         parameterWidget = null;
         
+        for(ElementListWidget widget : operationRedefinedMap.values())
+        {
+            widget.removeFromParent();
+        }
+        operationRedefinedMap.clear();
+        
+        for(ElementListWidget widget : attributeRedefinedMap.values())
+        {
+            widget.removeFromParent();
+        }
+        attributeRedefinedMap.clear();
+        
         //cleanup lookup: remove CollapsibleWidgetManager from lookup
         Collection<? extends CollapsibleWidgetManager> mgrList = getLookup().lookupAll(CollapsibleWidgetManager.class);
         CollapsibleWidgetManager[] mgrArray = new CollapsibleWidgetManager[mgrList.size()];
@@ -159,14 +171,6 @@ public class UMLClassWidget  extends SwitchableWidget
             }
         }
         getScene().validate();
-    }
-
-    public void selectAttributeAfterCreation(IAttribute attr) {
-        this.attributeToSelect=attr;
-    }
-
-    public void selectOperationAfterCreation(IOperation op) {
-        this.operationToSelect=op;
     }
 
     protected Widget initializeContents(IClassifier clazz)
@@ -612,20 +616,20 @@ public class UMLClassWidget  extends SwitchableWidget
                 {
                     IOperation op=(IOperation)newVal;
                     OperationWidget operW=addOperation(op);
-                    if(operW!=null && op==operationToSelect)
+                    if(operW!=null && op == getSelectedOperation())
                     {
                         operW.select();
-                        operationToSelect=null;
+                        setSelectedOperation(null);
                     }
                 }
                 else if(newVal instanceof IAttribute)
                 {
                     IAttribute attr=(IAttribute)newVal;
                     AttributeWidget attrW=addAttribute(attr);
-                    if(attrW!=null && attr==attributeToSelect)
+                    if(attrW!=null && attr == getSelectedAttribute())
                     {
                         attrW.select();
-                        attributeToSelect=null;
+                        setSelectedAttribute(null);
                     }
                 }
             }
@@ -915,6 +919,26 @@ public class UMLClassWidget  extends SwitchableWidget
             classView.revalidate();
         }
         revalidate();
+    }
+
+    public void setSelectedAttribute(IAttribute attr)
+    {
+        this.attributeToSelect = attr;
+    }
+
+    public void setSelectedOperation(IOperation op)
+    {
+        this.operationToSelect = op;
+    }
+
+    public IAttribute getSelectedAttribute()
+    {
+        return this.attributeToSelect;
+    }
+
+    public IOperation getSelectedOperation()
+    {
+        return this.operationToSelect;
     }
 
 }

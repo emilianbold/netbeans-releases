@@ -11,7 +11,7 @@ def blocktest
     z = 50
     q = 60
     [1,2,3].each do |foo|
-      mymethod(q)
+      new_name(q)
        z = z+50
        puts beforeblock
        readlater = 50
@@ -29,7 +29,7 @@ def blocktest
 end
 
 # TODO Comment
-def mymethod(q)
+def new_name(q)
   x = 51
   y = 30
   x = x+y

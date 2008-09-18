@@ -40,11 +40,15 @@ var BUILD_DISPLAY_VERSION_SHORT = "{build.display.version.short}";
 
 var ZIP_FILES_PREFIX            = "{nb.zip.files.prefix}";
 var BUNDLE_FILES_PREFIX         = "{nb.bundle.files.prefix}";
+var BOUNCER_PRODUCT_PREFIX      = "{nb.bundle.files.prefix}";
 
 var BINARIES_LOCATION = "";
 
 var LOAD_OMNITURE_CODE = 0;
 var LOAD_GOOGLE_ANALYTICS_CODE = 0;
+var USE_BOUNCER = 0;
+var BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
+
 
 function add_download_tabs() {
 	add_download_tab("6.1", "http://download.netbeans.org/netbeans/6.1/final/");

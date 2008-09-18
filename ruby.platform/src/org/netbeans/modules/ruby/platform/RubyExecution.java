@@ -165,21 +165,19 @@ public class RubyExecution extends ExecutionService {
             // Additional execution flags specified in the JRuby startup script:
             argvList.add("-Xverify:none"); // NOI18N
             argvList.add("-da"); // NOI18N
-            
-            String extraArgs = System.getenv("JRUBY_EXTRA_VM_ARGS"); // NOI18N
 
             String javaMemory = "-Xmx512m"; // NOI18N
             String javaStack = "-Xss1024k"; // NOI18N
-            
-            if (extraArgs != null) {
-                if (extraArgs.indexOf("-Xmx") != -1) { // NOI18N
-                    javaMemory = null;
-                }
-                if (extraArgs.indexOf("-Xss") != -1) { // NOI18N
-                    javaStack = null;
-                }
-                String[] jrubyArgs = Utilities.parseParameters(extraArgs);
-                for (String arg : jrubyArgs) {
+
+            String[] jvmArgs = descriptor == null ? null : descriptor.getJVMArguments();
+            if (jvmArgs != null) {
+                for (String arg : jvmArgs) {
+                    if (arg.contains("-Xmx")) { // NOI18N
+                        javaMemory = null;
+                    }
+                    if (arg.contains("-Xss")) { // NOI18N
+                        javaStack = null;
+                    }
                     argvList.add(arg);
                 }
             }
@@ -227,13 +225,6 @@ public class RubyExecution extends ExecutionService {
             } else {
                 argvList.add("-Djruby.shell=/bin/sh"); // NOI18N
                 argvList.add("-Djruby.script=jruby"); // NOI18N
-            }
-
-            String[] jrubyProps = descriptor == null ? null : descriptor.getJRubyProps();
-            if (jrubyProps != null) {
-                for (String prop : jrubyProps) {
-                    argvList.add(prop);
-                }
             }
 
             // Main class

@@ -160,6 +160,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         cbEffects.getAccessibleContext ().setAccessibleName (loc ("AN_Effects"));
         cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Effects"));
         cbEffects.addActionListener (this);
+        ((JComponent)cbEffectColor.getEditor()).addPropertyChangeListener (this);
         cbEffectColor.addActionListener (this);
         
         loc(bFont, "CTL_Font_button");

@@ -89,32 +89,17 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
         return (SoapClientSaasBean) super.getBean();
     }
 
-   
     private String genPhpParms(SoapClientSaasBean bean) {
         StringBuffer params = new StringBuffer("");
         List<ParameterInfo> parameters = bean.getInputParameters();
         for (ParameterInfo parameter : parameters) {
             String parmName = parameter.getName();
             String parmTypeName = parameter.getTypeName();
-            if (!parameter.getType().isPrimitive() && !parmTypeName.equals("java.lang.String")) {
-                params.append("'" + parmName + "'" + "=> NULL, \n");
+            String def = (String) parameter.getDefaultValue();
+            if (def != null) {
+                params.append("'" + parmName + "'" + "=> \"" + def + "\", \n");
             } else {
-                String def = (String) parameter.getDefaultValue();
-                if (parmTypeName.equals("java.lang.String") ||
-                        parmTypeName.equals("String")) {
-                    if (def != null) {
-                        params.append("'" + parmName + "'" + "=> \"" + def + "\", \n");
-                    } else {
-                        params.append("'" + parmName + "'" + "=> \"\",\n");
-                    }
-
-                } else {
-                    if (def != null) {
-                        params.append("'" + parmName + "'" + "=>" + def + ", \n");
-                    } else {
-                        params.append("'" + parmName + "'" + "=> 0,\n");
-                    }
-                }
+                params.append("'" + parmName + "'" + "=> \"\",\n");
             }
         }
         return params.toString();
@@ -145,5 +130,4 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
         methodBody += indent2 + "}\n";
         return methodBody;
     }
-
 }

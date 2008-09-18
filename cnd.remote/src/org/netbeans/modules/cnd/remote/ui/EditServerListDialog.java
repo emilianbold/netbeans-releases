@@ -47,7 +47,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -59,10 +58,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
@@ -93,7 +92,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         initComponents();
         initServerList(cache);
         desc = null;
-        lbReason.setText(" "); // this keeps the dialog from resizing
+        lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
         tfReason.setVisible(false);
         pbarStatusPanel.setVisible(false);
         initListeners();
@@ -239,7 +238,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
     
     private void showPathMapper() {
-        EditPathMapDialog.showMe((String) lstDevHosts.getSelectedValue(), null);
+        EditPathMapDialog.showMe((String) lstDevHosts.getSelectedValue(), getHostKeyList());
     }
     
     private void setButtons(boolean enable) {
@@ -277,7 +276,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             tfStatus.setText(record.getStateAsText());
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
             btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(key));
-            btPathMapper.setEnabled(!CompilerSetManager.LOCALHOST.equals(lstDevHosts.getSelectedValue()) && buttonsEnabled);
+
+            btPathMapper.setEnabled(buttonsEnabled && !RemoteUtils.isLocalhost(key) && record.isOnline());
             if (!record.isOnline()) {
                 showReason(record.getReason());
                 btRetry.setEnabled(true);
@@ -297,7 +297,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
     
     private void hideReason() {
-        lbReason.setText(" ");
+        lbReason.setText(" "); // NOI18N
         tfReason.setVisible(false);
     }
     

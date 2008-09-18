@@ -177,15 +177,9 @@ final class TestMethodNode extends AbstractNode {
      */
     @Override
     public Action getPreferredAction() {
-        Report.Trouble trouble = testcase.trouble;
-        String callstackFrameInfo =
-                ((trouble != null)
-                        && (trouble.stackTrace != null)
-                        && (trouble.stackTrace.length != 0))
-                ? trouble.stackTrace[0]
-                : null;
-        
-        return new JumpAction(this, callstackFrameInfo);
+        return (testcase.trouble != null)
+               ? new JumpAction(this, testcase.trouble)
+               : null;
     }
     
     @Override

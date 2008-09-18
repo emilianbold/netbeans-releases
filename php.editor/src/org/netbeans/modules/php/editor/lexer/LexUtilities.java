@@ -176,9 +176,9 @@ public class LexUtilities {
 //    }
 //    
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
+    public static TokenSequence<PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-        TokenSequence<?extends PHPTokenId> ts = th == null ? null : th.tokenSequence(PHPTokenId.language());
+        TokenSequence<PHPTokenId> ts = th == null ? null : th.tokenSequence(PHPTokenId.language());
 
         if (ts == null) {
             // Possibly an embedding scenario such as an RHTML file
@@ -588,20 +588,21 @@ public class LexUtilities {
                 return 0;
             }
 
-            int balance = 0;
+            int upCount = 0;
+            int downCount = 0;
 
             do {
                 Token<?extends PHPTokenId> token = ts.token();
                 TokenId id = token.id();
 
                 if (id == up) {
-                    balance++;
-                } else if (id == down) {
-                    balance--;
+                    upCount++;
+                } else if (id == down && upCount > 0) {
+                    downCount++;
                 }
             } while (ts.moveNext() && (ts.offset() <= end));
 
-            return balance;
+            return (upCount-downCount);
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
 

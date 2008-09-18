@@ -85,7 +85,7 @@ import org.openide.util.RequestProcessor;
 public class CommonServerSupport implements GlassfishModule, RefreshModulesCookie {
 
     public static final String URI_PREFIX = "deployer:gfv3";
-    
+
     private final transient Lookup lookup;
     private final Map<String, String> properties =
             Collections.synchronizedMap(new HashMap<String, String>(37));
@@ -108,12 +108,11 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
         
         updateString(ip, GlassfishModule.DOMAINS_FOLDER_ATTR, 
-                glassfishRoot+File.separator+"domains"); // NOI18N)
+                glassfishRoot + File.separator + GlassfishInstance.DEFAULT_DOMAINS_FOLDER); // NOI18N)
         updateString(ip,GlassfishModule.DOMAIN_NAME_ATTR, GlassfishInstance.DEFAULT_DOMAIN_NAME);
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
-            String deployerUrl = "[" + glassfishRoot + "]" + URI_PREFIX + ":" + 
-                    hostName + ":" + httpPort;
+            String deployerUrl = formatUri(glassfishRoot, hostName, httpPort);
             ip.put(URL_ATTR, deployerUrl);
         }
 
@@ -134,6 +133,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         }
     }
     
+    public static String formatUri(String glassfishRoot, String host, int port) {
+        return "[" + glassfishRoot + "]" + URI_PREFIX + ":" + host + ":" + port;
+    }
+
     private static String updateString(Map<String, String> map, String key, String defaultValue) {
         String result = map.get(key);
         if(result == null) {
@@ -216,7 +219,8 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public String getDomainsRoot() {
         String retVal = properties.get(DOMAINS_FOLDER_ATTR);
         if (null == retVal) {
-            retVal = properties.get(GLASSFISH_FOLDER_ATTR)+File.separator+"domains"; // NOI18N
+            retVal = properties.get(GLASSFISH_FOLDER_ATTR) + File.separator +
+                    GlassfishInstance.DEFAULT_DOMAINS_FOLDER; // NOI18N
         }
         return retVal;
     }

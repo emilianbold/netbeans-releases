@@ -109,6 +109,13 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
      * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
      */
     List<FileObject> getAllHibernateConfigFileObjects();
+    
+    /**
+     * Returns configuration fileobjects if any contained under the source root in this project.
+     * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
+     */
+    List<FileObject> getDefaultHibernateConfigFileObjects();
+    
 
     /**
      * Returns the list of 'HibernateConfiguration' (schema2beans bean) for
@@ -157,7 +164,16 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
 
     List<String> getDatabaseTables(FileObject mappingFile);
 
-    FileObject getLocation();
+    FileObject getSourceLocation();
+    
+    /**
+     * Prepares and returns a custom classloader for this project.
+     * The classloader is capable of loading project classes and resources.
+     * 
+     * @param classpaths, custom classpaths that are registered along with project based classpath.
+     * @return classloader which is a URLClassLoader instance.
+     */
+    ClassLoader getProjectClassLoader(URL[] classpaths);
 
     /**
      * Returns the NetBeans project to which this HibernateEnvironment instance is bound.
@@ -174,6 +190,14 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
      * @return List of java.io.File objects representing each entry on the classpath.
      */
     List<URL> getProjectClassPath(FileObject projectFile);
+    
+    /**
+     * Returns the project classpath including project build paths.
+     * Can be used to set classpath for custom classloader.
+     * 
+     * @return List of java.io.File objects representing each entry on the classpath.
+     */
+    List<URL> getProjectClassPath();
 
     /**
      * Tries to load the JDBC driver read from the configuration.The classpath

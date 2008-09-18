@@ -407,13 +407,16 @@ public class CssRuleCreateActionDialog extends javax.swing.JPanel {
     
     private void moveRuleDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveRuleDownActionPerformed
         int index = ruleHierarchyList.getSelectedIndex();
-        if(index < selectedRules.getSize()){
+        if(index >=0 && index < selectedRules.getSize()){
             Object currentObject = selectedRules.get(index);
-            Object prevObject = selectedRules.get(index+1);
-            selectedRules.setElementAt(currentObject, index+1);
-            selectedRules.setElementAt(prevObject, index);
-            ruleHierarchyList.setSelectedIndex(index+1);
-            resetRuleHierarchy();
+            int nextIndex = index+1;
+            if(nextIndex < selectedRules.getSize()) {
+                Object prevObject = selectedRules.get(nextIndex);
+                selectedRules.setElementAt(currentObject, index+1);
+                selectedRules.setElementAt(prevObject, index);
+                ruleHierarchyList.setSelectedIndex(index+1);
+                resetRuleHierarchy();
+            }
         }
     }//GEN-LAST:event_moveRuleDownActionPerformed
     

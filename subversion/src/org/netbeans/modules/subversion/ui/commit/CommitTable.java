@@ -236,7 +236,7 @@ public class CommitTable implements AncestorListener, TableModelListener {
         if (idx != -1) table.getSelectionModel().addSelectionInterval(idx, idx);
     }
 
-    TableModel getTableModel() {
+    public TableModel getTableModel() {
         return tableModel;
     }
 
