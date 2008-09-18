@@ -82,7 +82,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	output = new StringConfiguration(null, ""); // NOI18N
 	additionalLibs = new VectorConfiguration(null);
 	dynamicSearch = new VectorConfiguration(null);
-	stripOption = new BooleanConfiguration(null, false, "", "-s"); // NOI18N
+	stripOption = new LinkerStripConfigurtion(null, false); // NOI18N
 	picOption = new BooleanConfiguration(null, true, "", "-Kpic"); // NOI18N
 	norunpathOption = new BooleanConfiguration(null, true, "", "-norunpath"); // NOI18N
 	nameassignOption = new BooleanConfiguration(null, true);
@@ -450,6 +450,28 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 return;
             }
             super.setValue(v);
+        }
+    }
+    
+    private class LinkerStripConfigurtion extends BooleanConfiguration {
+        public LinkerStripConfigurtion(BooleanConfiguration master, boolean def) {
+            super(master, def);
+        }
+
+        @Override
+        public String getOption() {
+            if (getValue()) {
+                String option;
+                if (getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                    option = "-Wl,-S "; // NOI18N
+                }
+                else {
+                    option= "-s ";  // NOI18N
+                }
+                return option;
+            } else {
+                return ""; // NOI18N
+            }
         }
     }
     

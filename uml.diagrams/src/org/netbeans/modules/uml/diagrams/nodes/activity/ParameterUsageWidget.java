@@ -65,6 +65,7 @@ public class ParameterUsageWidget extends ActivityNodeWidget
     public ParameterUsageWidget(Scene scene)
     {
         super(scene, true, false);
+        setMinimumSize(new Dimension(MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
     }
 
     @Override
@@ -78,9 +79,7 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             //create main view 
             MainViewWidget mainView = new MainViewWidget(scene,
                                                                  getResourcePath(),
-                                                                 bundle.getString("LBL_body"));
-           mainView.setPreferredSize(new Dimension(
-                                      MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
+                                                                 bundle.getString("LBL_body"));        
             mainView.setLayout(
                     LayoutFactory.createVerticalFlowLayout(
                     LayoutFactory.SerialAlignment.JUSTIFY, 2));
@@ -112,6 +111,13 @@ public class ParameterUsageWidget extends ActivityNodeWidget
         super.initializeNode(presentation);
     }
 
+    @Override
+    public Dimension getDefaultMinimumSize()
+    {
+        return new Dimension(MIN_NODE_WIDTH, MIN_NODE_HEIGHT);
+    }
+    
+    
     public String getWidgetID()
     {
         return UMLWidgetIDString.PARAMUSAGEWIDGET.toString();

@@ -53,6 +53,7 @@ public enum CaretLocation {
     INSIDE_CLOSURE("INSIDE_CLOSURE"),       // inside a closure definition.
     INSIDE_PARAMETERS("INSIDE_PARAMETERS"), // inside a parameter-list definition (signature) of a method.
     INSIDE_COMMENT("INSIDE_COMMENT"),       // inside a line or block comment
+    INSIDE_STRING("INSIDE_STRING"),         // inside string literal
     UNDEFINED("UNDEFINED");
     
     private String id;

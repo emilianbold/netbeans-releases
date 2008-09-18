@@ -104,7 +104,8 @@ public class CssRule {
             if(name().equals(r.name()) 
                     && getRuleNameOffset() == r.getRuleNameOffset() 
                     && getRuleCloseBracketOffset() == r.getRuleCloseBracketOffset() 
-                    && getRuleOpenBracketOffset() == r.getRuleOpenBracketOffset()) {
+                    && getRuleOpenBracketOffset() == r.getRuleOpenBracketOffset()
+                    && ruleContent().equals(r.ruleContent())) {
                 return true;
             }
         }
@@ -113,13 +114,16 @@ public class CssRule {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + (this.ruleNameOffset != null ? this.ruleNameOffset.hashCode() : 0);
-        hash = 79 * hash + (this.ruleOpenBracketOffset != null ? this.ruleOpenBracketOffset.hashCode() : 0);
-        hash = 79 * hash + (this.ruleCloseBracketOffset != null ? this.ruleCloseBracketOffset.hashCode() : 0);
-        hash = 79 * hash + (this.ruleName != null ? this.ruleName.hashCode() : 0);
+        int hash = 5;
+        hash = 17 * hash + (this.ruleNameOffset != null ? this.ruleNameOffset.hashCode() : 0);
+        hash = 17 * hash + (this.ruleOpenBracketOffset != null ? this.ruleOpenBracketOffset.hashCode() : 0);
+        hash = 17 * hash + (this.ruleCloseBracketOffset != null ? this.ruleCloseBracketOffset.hashCode() : 0);
+        hash = 17 * hash + (this.ruleName != null ? this.ruleName.hashCode() : 0);
+        hash = 17 * hash + (this.styleData != null ? this.styleData.hashCode() : 0);
         return hash;
     }
+
+    
     
     @Override
     public String toString() {

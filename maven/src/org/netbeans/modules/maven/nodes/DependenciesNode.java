@@ -214,6 +214,7 @@ public class DependenciesNode extends AbstractNode {
                 int cnt = nonCPcount;
                 nonCPcount = 0;
                 lst.removeAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
+                lst.removeAll(create(mp.getRuntimeDependencies(), mp.getArtifacts()));
                 nonCPcount = cnt - nonCPcount;
                 if (nonCPcount == 0) {
                     lst.remove(NULL);

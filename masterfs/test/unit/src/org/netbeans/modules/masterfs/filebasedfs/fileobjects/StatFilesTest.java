@@ -145,6 +145,7 @@ public class StatFilesTest extends NbTestCase {
 
     /** Testing that queries for siblings in fully expanded folder do not generate
      * new disk touches. */
+    @RandomlyFails // NB-Core-Build #1377
     public void testGetChildrenCaches() throws IOException {
         FileObject fobj = getFileObject(testFile);
         FileObject parent = fobj.getParent();

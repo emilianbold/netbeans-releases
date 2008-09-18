@@ -433,6 +433,11 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
 
     void confirmChanges(PropertyChangeEvent evt) throws PropertyVetoException {
 
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
+                && !PropertyEnv.STATE_VALID.equals(evt.getNewValue())) {
+            return;
+        }
+
         // if the user created a new action and assigned it to this component
         if(panel.isNewActionCreated()) {
             if(!panel.canCreateNewAction()) {
