@@ -339,8 +339,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public Object run() throws Exception {
 
                     loadIndexingContext(repo);
-                    checkIndexAvailability(repo);
                     try {
+                        checkIndexAvailability(repo);
                         Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                         IndexingContext indexingContext = indexingContexts.get(repo.getId());
                         if (indexingContext == null) {
@@ -387,8 +387,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
 
                 public Object run() throws Exception {
                     loadIndexingContext(repo);
-                    checkIndexAvailability(repo);
                     try {
+                        checkIndexAvailability(repo);
                         Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                         IndexingContext indexingContext = indexingContexts.get(repo.getId());
                         if (indexingContext == null) {
@@ -443,7 +443,13 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public Set<String> run() throws Exception {
                     Set<String> groups = new TreeSet<String>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
+                    try {
+                        checkIndexAvailability(allrepos);
+                    } catch (Throwable t) {
+                        unloadIndexingContext(allrepos);
+                        return Collections.<String>emptySet();
+                    }
+
                     List<RepositoryInfo> slowCheck = new ArrayList<RepositoryInfo>();
                     for (RepositoryInfo repo : repos) {
                         if (repo.isLocal() || repo.isRemoteDownloadable()) {
@@ -509,8 +515,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public List<NBVersionInfo> run() throws Exception {
                     List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     try {
+                        checkIndexAvailability(allrepos);
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + AbstractIndexCreator.FS + artifactId + AbstractIndexCreator.FS + version + AbstractIndexCreator.FS;
                         bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
@@ -538,8 +544,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                     Set<String> artifacts = new TreeSet<String>();
                     BooleanQuery bq = new BooleanQuery();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     try {
+                        checkIndexAvailability(allrepos);
                         String id = groupId + AbstractIndexCreator.FS;
                         bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
                         Collection<ArtifactInfo> search = indexer.searchFlat(ArtifactInfo.VERSION_COMPARATOR, bq);
@@ -566,8 +572,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public List<NBVersionInfo> run() throws Exception {
                     final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     try {
+                        checkIndexAvailability(allrepos);
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + AbstractIndexCreator.FS + artifactId + AbstractIndexCreator.FS;
                         bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
@@ -593,9 +599,9 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public List<NBVersionInfo> run() throws Exception {
                     List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     String clsname = className.replace(".", "/");
                     try {
+                        checkIndexAvailability(allrepos);
                         Collection<ArtifactInfo> searchResult = indexer.searchFlat(ArtifactInfo.VERSION_COMPARATOR,
                                 indexer.constructQuery(ArtifactInfo.NAMES, clsname.toLowerCase()));
                         infos.addAll(convertToNBVersionInfo(postProcessClasses(searchResult, clsname)));
@@ -647,8 +653,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public List<NBVersionInfo> run() throws Exception {
                     List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     try {
+                        checkIndexAvailability(allrepos);
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause((indexer.constructQuery(ArtifactInfo.MD5, (md5))), BooleanClause.Occur.SHOULD));
                         Collection<ArtifactInfo> search = indexer.searchFlat(ArtifactInfo.VERSION_COMPARATOR, bq);
@@ -673,8 +679,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public List<NBVersionInfo> run() throws Exception {
                     List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     try {
+                        checkIndexAvailability(allrepos);
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause((indexer.constructQuery(ArtifactInfo.SHA1, sha1)), BooleanClause.Occur.SHOULD));
                         Collection<ArtifactInfo> search = indexer.searchFlat(ArtifactInfo.VERSION_COMPARATOR, bq);
@@ -699,8 +705,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public List<NBVersionInfo> run() throws Exception {
                     List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     try {
+                        checkIndexAvailability(allrepos);
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-archetype")), BooleanClause.Occur.MUST)); //NOI18N
                         Collection<ArtifactInfo> search = indexer.searchFlat(ArtifactInfo.VERSION_COMPARATOR, bq);
@@ -725,8 +731,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public Set<String> run() throws Exception {
                     Set<String> artifacts = new TreeSet<String>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     try {
+                        checkIndexAvailability(allrepos);
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + AbstractIndexCreator.FS + prefix;
                         bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
@@ -755,8 +761,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public Set<String> run() throws Exception {
                     Set<String> artifacts = new TreeSet<String>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     try {
+                        checkIndexAvailability(allrepos);
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
                         bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, prefix)), BooleanClause.Occur.MUST));
@@ -784,8 +790,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public Set<String> run() throws Exception {
                     Set<String> artifacts = new TreeSet<String>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     try {
+                        checkIndexAvailability(allrepos);
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + AbstractIndexCreator.FS + prefix;
                         bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
@@ -814,8 +820,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public List<NBVersionInfo> run() throws Exception {
                     List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
                     loadIndexingContext(allrepos);
-                    checkIndexAvailability(allrepos);
                     try {
+                        checkIndexAvailability(allrepos);
                         BooleanQuery bq = new BooleanQuery();
                         for (QueryField field : fields) {
                             BooleanClause.Occur occur = field.getOccur() == QueryField.OCCUR_SHOULD ? BooleanClause.Occur.SHOULD : BooleanClause.Occur.MUST;
