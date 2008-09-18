@@ -63,6 +63,7 @@ public class JsTestMimeResolver extends MIMEResolver {
     public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
     
     public JsTestMimeResolver() {
+        super(JAVASCRIPT_MIME_TYPE);
     }
     
     public static boolean isJavaScriptExt(String ext) {
