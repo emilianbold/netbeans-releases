@@ -300,6 +300,8 @@ public class SceneAcceptProvider implements AcceptProvider
                         }
                         else
                         {
+                            engine.getScene().removeNode(presentation);
+                            
                             presentations.remove(presentation);
                             presentation.removeSubject(pre.getFirstSubject());
                             presentation.delete();

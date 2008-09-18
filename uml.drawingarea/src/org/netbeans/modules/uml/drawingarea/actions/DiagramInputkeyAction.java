@@ -267,19 +267,21 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                     }
                 }
                 // Do relationship discovery,
-                // select all the added nodes and request 
-                // diagram top component to be in focus and active
-                if ( addedPEs != null && addedPEs.size() > 0) 
+                // request diagram top component to be in focus and active,
+                // select all the added nodes
+                if (addedPEs != null && addedPEs.size() > 0)
                 {
                     // discover relationship among added nodes
                     createConnection(scene, addedPEs);
-                    
-                     if (addedPEs.size() == 1)
+
+                    // request diagram top component to be in focus and active
+                    scene.getTopComponent().requestActive();
+
+                    if (addedPEs.size() == 1)
                     {
                         scene.setFocusedObject(addedPEs.get(0));
                     }
-                    scene.userSelectionSuggested( new HashSet<IPresentationElement>(addedPEs), false );
-                    scene.getTopComponent().requestActive();
+                    scene.userSelectionSuggested(new HashSet<IPresentationElement>(addedPEs), false);
                 }
             }
         }
@@ -314,7 +316,10 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
 
                             // add the target widget to the scene at the translated location.
                             sceneAcceptAction.addWidget(sceneCenter, scene, pe);
-
+                            
+                            // request diagram top component to be in focus and active
+                            scene.getTopComponent().requestActive();
+                            
                             // select the added widget and set it focused
                             scene.setFocusedObject(pe);
                             scene.userSelectionSuggested(Collections.singleton(pe), false);
@@ -322,12 +327,10 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                     }
                 }
                 // clear selection on the palette and
-                // request diagram top component to be in focus and active
                 if (sceneAcceptAction != null)
                 {
                     sceneAcceptAction.clearPalette(scene);
                 }
-                scene.getTopComponent().requestActive();
             }
         } catch (UnsupportedFlavorException ex)
         {
