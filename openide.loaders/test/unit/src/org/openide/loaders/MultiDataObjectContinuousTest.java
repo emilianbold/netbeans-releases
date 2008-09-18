@@ -43,7 +43,6 @@ package org.openide.loaders;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.openide.cookies.OpenCookie;
 
 import org.openide.filesystems.*;
 import org.netbeans.junit.*;
@@ -71,12 +70,13 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.FINEST;
+        return Level.INFO;
     }
 
     @Override
     protected int timeOut() {
-        return 15000;
+        // 10 minutes
+        return 600000;
     }
 
     @Override
