@@ -155,7 +155,7 @@ public class WSDLDataObject extends MultiDataObject {
     @Override
     public Lookup getLookup() {
         if (myLookup.get() == null) {
-            Lookup superLookup = super.getLookup();
+            Lookup superLookup = getCookieSet().getLookup();
             //
             Lookup[] lookupArr = new Lookup[] {
                 Lookups.fixed(new Object[] {
