@@ -380,7 +380,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    String unbuffer = Unbuffer.getPath(hkey);
+                    // TODO: put correct 64 bit flag here (see issue 147407)
+                    String unbuffer = Unbuffer.getPath(hkey, /*!*/false);
                     if (unbuffer != null) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX) {
                             gdb.gdb_set("environment", "DYLD_INSERT_LIBRARIES=" + unbuffer); // NOI18N
