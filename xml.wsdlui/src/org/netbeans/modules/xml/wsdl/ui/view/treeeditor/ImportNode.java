@@ -65,6 +65,7 @@ import org.openide.actions.NewAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.cookies.SaveCookie;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -110,9 +111,9 @@ public class ImportNode extends WSDLElementNode<Import> {
         SystemAction.get(PropertiesAction.class)
     };
 
-    public ImportNode(Children children,
+    public ImportNode(ChildFactory factory,
             Import wsdlConstruct) {
-        super(children, wsdlConstruct);
+        super(factory, wsdlConstruct);
         this.mPropertyAdapter = new ImportPropertyAdapter();
     }
 

@@ -81,6 +81,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.LineCookie;
 import org.openide.text.Line;
+import org.openide.windows.TopComponent;
 
 /**
  * @author Jeri Lockhart
@@ -401,7 +402,7 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
         editor.syncModel();
         editor.removeUndoManagerFromDocument();
     }
-    
+
     
     
     @Override
