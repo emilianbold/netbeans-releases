@@ -101,7 +101,6 @@ public class WrapperBookmarkAction extends NodeAction {
                 if (ec != null) {
                     JEditorPane panes[] = ec.getOpenedPanes();
                     if (panes != null && panes.length > 0) {
-                        System.out.println(panes [0]);
                         editors.add (panes [0]);
                     }
                 }
