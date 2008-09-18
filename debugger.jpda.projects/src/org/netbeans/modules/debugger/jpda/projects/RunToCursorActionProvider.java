@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import java.beans.PropertyChangeEvent;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
