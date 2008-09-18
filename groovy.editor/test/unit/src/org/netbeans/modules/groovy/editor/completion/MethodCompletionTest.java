@@ -98,6 +98,10 @@ public class MethodCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Methods5.groovy", "        new File(\"something\").c^", false);
     }
     
+    public void testCompletionInMethodCall3() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods6.groovy", "if (new File(\"/\").is^) {", false);
+    }    
+    
 //    Disabled for now, since this tests undetermingly oscillates between pass and fail. 
 //    public void testMethods5() throws Exception {
 //        checkCompletion(TEST_BASE + "" + "Methods2.groovy", "        new Byte().^", false);
