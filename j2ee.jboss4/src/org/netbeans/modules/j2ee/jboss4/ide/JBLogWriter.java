@@ -373,12 +373,12 @@ public final class JBLogWriter {
     }
     
     /**
-     * According to the issue #81951, the BefferedReader.read() method must be used 
-     * instead of the BefferedReader.readLine() method, otherwise it hangs on Windows 
+     * According to the issue #81951, the BufferedReader.read() method must be used 
+     * instead of the BufferedReader.readLine() method, otherwise it hangs on Windows 
      * in the underlying native method call after the server process has been stopped. 
-     * On Linux the BefferedReader.readLine() method correctly returns.
+     * On Linux the BufferedReader.readLine() method correctly returns.
      *
-     * Parsing is done manually to simulate behavior of the BefferedReader.readLine() method. 
+     * Parsing is done manually to simulate behavior of the BufferedReader.readLine() method. 
      * According to this, a line is considered to be terminated by any one
      * of a line feed ('\n'), a carriage return ('\r'), or a carriage return
      * followed immediately by a line feed.

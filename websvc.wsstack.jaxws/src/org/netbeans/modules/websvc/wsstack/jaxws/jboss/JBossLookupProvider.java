@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,47 +37,25 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.websvc.wsstack.jaxws.jboss;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import java.io.File;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.LookupProvider;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
- * hack :-)
  *
- * @author marek
+ * @author mkuchtiak
  */
-public class EditorAwareSourceTaskSupport {
-    
-    private static EditorAwareSourceTaskSupport INSTANCE;
-    
-    public static synchronized EditorAwareSourceTaskSupport instance() {
-        if(INSTANCE == null) {
-            INSTANCE = new EditorAwareSourceTaskSupport();
-        }
-        return INSTANCE;
-    }
-    
-    private List<Listener> listeners = new ArrayList<Listener>();
-    
-    /** registers a listener being called once automatic parse of edited document finishes. */
-    public synchronized void addListener(Listener l) {
-        listeners.add(l);
-    }
-    
-    public synchronized void removeListener(Listener l) {
-        listeners.remove(l);
-    }
-    
-    synchronized void fire(CompilationInfo ci) {
-        for(Listener l : listeners) {
-            l.parsed(ci);
-        }
-    }
-    
-    public static interface Listener {
-        public void parsed(CompilationInfo info);
+public class JBossLookupProvider implements LookupProvider {
+
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        File root = baseContext.lookup(File.class);
+        return Lookups.fixed(WSStackFactory.createWSStack(JaxWs.class ,new JBossJaxWsStack(root), WSStack.Source.SERVER));
     }
 
 }

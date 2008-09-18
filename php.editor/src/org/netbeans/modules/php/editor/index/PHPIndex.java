@@ -496,7 +496,7 @@ public class PHPIndex {
                 }
 
                 IndexedConstant prop = new IndexedConstant(propName, typeName,
-                        this, signaturesMap.get(signature), offset, flags, type);
+                        this, signaturesMap.get(signature), offset, flags, type,ElementKind.FIELD);
 
                 properties.add(prop);
             }
@@ -579,11 +579,13 @@ public class PHPIndex {
         findFunctions(result, kind, name, functions);
         return functions;
     }
-
     public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, NameKind kind) {
+        return getTopLevelVariables(context, name, kind, ALL_SCOPE);
+    }    
+    public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
-        search(PHPIndexer.FIELD_VAR, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_VAR);
+        search(PHPIndexer.FIELD_VAR, name.toLowerCase(), NameKind.PREFIX, result, scope, TERMS_VAR);
         findTopVariables(result, kind, name, vars);
         return vars;
     }
@@ -676,12 +678,16 @@ public class PHPIndex {
     }
 
     public Collection<IndexedInterface> getInterfaces(PHPParseResult context, String name, NameKind kind) {
+        return getInterfaces(context, name, kind, ALL_SCOPE);
+    }
+
+    public Collection<IndexedInterface> getInterfaces(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedInterface> ifaces = new ArrayList<IndexedInterface>();
         if (name != null && name.trim().length() > 0) {
-            search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
+            search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), NameKind.PREFIX, result, scope, TERMS_BASE);
         } else {
-            search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, null);
+            search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), NameKind.PREFIX, result, scope, null);
         }
 
         for (SearchResult map : result) {

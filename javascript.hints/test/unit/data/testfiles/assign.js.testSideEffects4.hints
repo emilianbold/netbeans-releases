@@ -1,0 +1,35 @@
+    bar1
+    ----
+HINT:Code has no side effects
+FIX:Assign expression to variable
+FIX:Show more information about this warning
+    ; // empty
+    -
+HINT:Code has no side effects
+FIX:Show more information about this warning
+    bar2
+    ----
+HINT:Code has no side effects
+FIX:Assign expression to variable
+FIX:Return expression
+FIX:Show more information about this warning
+    bar3
+    ----
+HINT:Code has no side effects
+FIX:Assign expression to variable
+FIX:Show more information about this warning
+    bar4
+    ----
+HINT:Code has no side effects
+FIX:Assign expression to variable
+FIX:Show more information about this warning
+    baz
+    ---
+HINT:Code has no side effects
+FIX:Assign expression to variable
+FIX:Show more information about this warning
+    3+4
+    -
+HINT:Code has no side effects
+FIX:Assign expression to variable
+FIX:Show more information about this warning
