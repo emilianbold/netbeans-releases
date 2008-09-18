@@ -373,7 +373,7 @@ public class CssEditorSupport {
         EditorCookie ec = tc.getLookup().lookup(EditorCookie.class);
         if (ec != null) {
             JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes.length > 0) {
+            if (panes != null && panes.length > 0) {
                 return panes[0];
             }
         }
