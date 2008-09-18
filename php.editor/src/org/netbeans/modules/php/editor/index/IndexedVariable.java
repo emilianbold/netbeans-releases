@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.editor.index;
 
+import org.netbeans.modules.gsf.api.ElementKind;
+
 
 /**
  *
@@ -48,7 +50,7 @@ public class IndexedVariable extends IndexedConstant {
         
     public IndexedVariable(String name, String in, PHPIndex index, String fileUrl,
             int offset, int flags, String typeName){
-        super(name, in, index, fileUrl, offset, flags, typeName);
+        super(name, in, index, fileUrl, offset, flags, typeName, ElementKind.VARIABLE);
     }
 
 }

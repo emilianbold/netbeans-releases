@@ -50,7 +50,7 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.php.editor.PHPCodeCompletion.KeywordCompletionType;
+import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-abstract class PHPCompletionItem implements CompletionProposal {
+public abstract class PHPCompletionItem implements CompletionProposal {
     private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
     protected static ImageIcon keywordIcon = null;
     protected final CompletionRequest request;
@@ -365,6 +365,10 @@ abstract class PHPCompletionItem implements CompletionProposal {
 
     }
 
+    public static ImageIcon getInterfaceIcon() {
+        return InterfaceItem.icon();
+    }
+
     static class InterfaceItem extends PHPCompletionItem {
         private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
         private static ImageIcon INTERFACE_ICON = null;
@@ -376,12 +380,16 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return ElementKind.CLASS;
         }
 
-        @Override
-        public ImageIcon getIcon() {
+        private static ImageIcon icon() {
             if (INTERFACE_ICON == null) {
                 INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
             }
             return INTERFACE_ICON;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return icon();
         }
     }
 

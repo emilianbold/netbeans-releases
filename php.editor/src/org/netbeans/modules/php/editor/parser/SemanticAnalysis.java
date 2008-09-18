@@ -154,7 +154,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         // for unsed private method: name, identifier
         private final Map<String, IdentifierColoring> privateMethod;
         // this is holder of blocks, which has to be scanned for usages in the class.
-        private List<Block> needToScan;
+        private List<Block> needToScan = new ArrayList<Block>();
 
         private final TranslatedSource translatedSource;
 
@@ -226,7 +226,9 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             }
 
             Identifier identifier = md.getFunction().getFunctionName();
-            if (isPrivate) {
+            String name = identifier.getName();
+            // don't color private magic private method. methods which start __
+            if (isPrivate && name != null && !name.startsWith("__")) {
                 privateMethod.put(identifier.getName(), new IdentifierColoring(identifier, coloring));
             }
             else {
@@ -236,8 +238,9 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             if (!Modifier.isAbstract(md.getModifier())) {
                 // don't scan the body now. It should be scanned after all declarations
                 // are known
-                if (md.getFunction().getBody() != null) {
-                    needToScan.add(md.getFunction().getBody());
+                Block body = md.getFunction().getBody();
+                if (body != null) {
+                    needToScan.add(body);
                 }
             }
         }

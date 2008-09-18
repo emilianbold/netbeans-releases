@@ -37,47 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.uml.diagrams.nodes;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 
 /**
- * hack :-)
  *
- * @author marek
+ * @author thuy
  */
-public class EditorAwareSourceTaskSupport {
+public interface ICommonFeature {
+   
+    public void setSelectedAttribute(IAttribute attr);
+    public IAttribute getSelectedAttribute();
     
-    private static EditorAwareSourceTaskSupport INSTANCE;
-    
-    public static synchronized EditorAwareSourceTaskSupport instance() {
-        if(INSTANCE == null) {
-            INSTANCE = new EditorAwareSourceTaskSupport();
-        }
-        return INSTANCE;
-    }
-    
-    private List<Listener> listeners = new ArrayList<Listener>();
-    
-    /** registers a listener being called once automatic parse of edited document finishes. */
-    public synchronized void addListener(Listener l) {
-        listeners.add(l);
-    }
-    
-    public synchronized void removeListener(Listener l) {
-        listeners.remove(l);
-    }
-    
-    synchronized void fire(CompilationInfo ci) {
-        for(Listener l : listeners) {
-            l.parsed(ci);
-        }
-    }
-    
-    public static interface Listener {
-        public void parsed(CompilationInfo info);
-    }
-
+    public void setSelectedOperation(IOperation op);
+    public IOperation getSelectedOperation();
 }

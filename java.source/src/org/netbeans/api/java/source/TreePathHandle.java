@@ -408,7 +408,9 @@ public final class TreePathHandle {
             }
             tp = compilationInfo.getTreeUtilities().pathFor(position.getOffset() + 1);
             while (tp != null) {
-                if (new KindPath(tp).equals(kindPath)) {
+                KindPath kindPath1 = new KindPath(tp);
+                kindPath.getList().remove(Tree.Kind.ERRONEOUS);
+                if (kindPath1.equals(kindPath)) {
                     return tp;
                 }
                 tp = tp.getParentPath();
@@ -531,6 +533,10 @@ public final class TreePathHandle {
                     return kindPath.equals(((KindPath) object).kindPath);
                 }
                 return false;
+            }
+
+            public ArrayList<Tree.Kind> getList() {
+                return kindPath;
             }
         }
 

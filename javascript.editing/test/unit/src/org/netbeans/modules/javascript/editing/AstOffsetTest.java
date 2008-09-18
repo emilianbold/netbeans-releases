@@ -224,6 +224,10 @@ public class AstOffsetTest extends JsTestBase {
         checkOffsets("testfiles/semantic8.js", "new^");
     }
 
+    public void testOffsets9() throws Exception {
+        checkOffsets("testfiles/semantic9.js");
+    }
+
     public void testOffsetsE4x() throws Exception {
         checkOffsets("testfiles/e4x.js", "order^");
     }

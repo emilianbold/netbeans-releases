@@ -429,6 +429,33 @@ public class PHPBracketCompleterTest extends NbTestCase {
         insertChar("clas^", 's', "class^");
     }
 
+    public void testInsertBreakAfterClass() throws Exception {
+        insertBreak("class Foo {^", "class Foo {\n    ^\n}");
+    }
+
+    public void testInsertBreakAfterFunction() throws Exception {
+        insertBreak("function foo() {^", "function foo() {\n    ^\n}");
+    }
+
+    public void testInsertBreakAfterIf() throws Exception {
+        insertBreak("if (1) {^", "if (1) {\n    ^\n}");
+    }
+
+    public void testInsertBreakAfterIfElse() throws Exception {
+        insertBreak("if (1) {\n    \n} else {^", "if (1) {\n    \n} else {\n    ^\n}");
+    }
+    public void testInsertBreakAfterWhile() throws Exception {
+        insertBreak("while (1) {^", "while (1) {\n    ^\n}");
+    }
+    public void testInsertBreakAfterCatch() throws Exception {
+        insertBreak("try {\n    \n} catch (Exception $exc) {^",
+                "try {\n    \n} catch (Exception $exc) {\n    ^\n}");
+    }
+    public void testInsertBreakAfterForEach() throws Exception {
+        insertBreak("foreach ($array_variable as $number_variable => $variable) {^",
+                "foreach ($array_variable as $number_variable => $variable) {\n    ^\n}");
+    }
+
     public void testNoMatchInComments() throws Exception {
         insertChar("// Hello^", '"', "// Hello\"^");
         insertChar("// Hello^", '\'', "// Hello'^");

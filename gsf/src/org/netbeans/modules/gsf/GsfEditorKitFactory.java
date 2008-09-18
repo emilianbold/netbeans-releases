@@ -164,7 +164,6 @@ public class GsfEditorKitFactory {
         @Override
         public SyntaxSupport createSyntaxSupport(final BaseDocument doc) {
             return new ExtSyntaxSupport(doc) {
-            
                 @Override
                 public int[] findMatchingBlock(int offset, boolean simpleSearch)
                         throws BadLocationException {

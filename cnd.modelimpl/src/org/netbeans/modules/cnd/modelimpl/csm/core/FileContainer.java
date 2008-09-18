@@ -511,7 +511,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         Collection<StatePair> getStates();
         
         void setState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
-        void setStates(Collection<StatePair> pairs);
+        //void setStates(Collection<StatePair> pairs);
         void setStates(Collection<StatePair> pairs, StatePair yetOneMore);
 
         public void invalidateStates();
@@ -520,7 +520,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          * Sets (replaces) new conditions state for the existent pair
          * @return true in the case of success, otherwise (if no ppState found) false
          */
-        boolean setPCState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
+        //boolean setPCState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
         
         int size();
 
@@ -645,6 +645,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          */
         public final synchronized void setState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
             State oldState = null;
+            if( state != null && ! state.isCleaned() ) {
+                state = APTHandlersSupport.createCleanPreprocState(state);
+            }
             if ((data instanceof Collection)) {
                 Collection<StatePair> states = (Collection<StatePair>) data;
                 // check how many good old states are there
@@ -713,47 +716,53 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          * Sets (replaces) new conditions state for the existent pair
          * @return true in the case of success, otherwise (if no ppState found) false
          */
-        public synchronized boolean setPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
-            assert state != null : "state should not be null"; //NOI18N
-            if (state == null) {
-                return false;
-            }
-            if (data instanceof StatePair) {
-                StatePair pair = (StatePair) data;
-                if (state.equals(pair.state)) {
-                    data = new StatePair(state, new FilePreprocessorConditionState(pcState));
-                    return true;
-                } else {
-                    return false;
-                }
-                
-            } else {
-                List<StatePair> list = (List<StatePair>) data;
-                for (int i = 0; i < list.size(); i++) {
-                    StatePair pair = list.get(i);
-                    if (state.equals(pair.state)) {
-                        list.set(i, new StatePair(state, new FilePreprocessorConditionState(pcState)));
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }
+//        public synchronized boolean setPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
+//            assert state != null : "state should not be null"; //NOI18N
+//            if (state == null) {
+//                return false;
+//            }
+//            if( state != null && ! state.isCleaned() ) {
+//                state = APTHandlersSupport.createCleanPreprocState(state);
+//            }
+//            if (data instanceof StatePair) {
+//                StatePair pair = (StatePair) data;
+//                if (state.equals(pair.state)) {
+//                    data = new StatePair(state, new FilePreprocessorConditionState(pcState));
+//                    return true;
+//                } else {
+//                    return false;
+//                }
+//
+//            } else {
+//                List<StatePair> list = (List<StatePair>) data;
+//                for (int i = 0; i < list.size(); i++) {
+//                    StatePair pair = list.get(i);
+//                    if (state.equals(pair.state)) {
+//                        list.set(i, new StatePair(state, new FilePreprocessorConditionState(pcState)));
+//                        return true;
+//                    }
+//                }
+//                return false;
+//            }
+//        }
         
-        public synchronized void setStates(Collection<StatePair> pairs) {
-            incrementModCount();
-            if (pairs.size() == 1) {
-                data = pairs.iterator().next();
-            } else {
-                data = new ArrayList<StatePair>(pairs);
-            }
-            if (CndUtils.isDebugMode()) {
-                checkConsistency();
-            }
-        }
+//        public synchronized void setStates(Collection<StatePair> pairs) {
+//            incrementModCount();
+//            if (pairs.size() == 1) {
+//                data = pairs.iterator().next();
+//            } else {
+//                data = new ArrayList<StatePair>(pairs);
+//            }
+//            if (CndUtils.isDebugMode()) {
+//                checkConsistency();
+//            }
+//        }
 
         public synchronized void setStates(Collection<StatePair> pairs, StatePair yetOneMore) {
             incrementModCount();
+            if (yetOneMore != null && yetOneMore.state != null && !yetOneMore.state.isCleaned()) {
+                yetOneMore = new StatePair(APTHandlersSupport.createCleanPreprocState(yetOneMore.state), yetOneMore.pcState);
+            }
             if (pairs.size() == 0) {
                 data = yetOneMore;
             } else {

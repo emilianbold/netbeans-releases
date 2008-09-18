@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,61 +34,28 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.uml.diagrams.border;
+package org.netbeans.modules.websvc.wsstack.jaxws.jboss;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import org.netbeans.api.visual.border.Border;
+import java.io.File;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.LookupProvider;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author sp153251
+ * @author mkuchtiak
  */
-public class NoteBorder implements Border {
-    private Color color;
+public class JBossLookupProvider implements LookupProvider {
 
-    public final static int TAB_WIDTH = 11;
-    
-    public NoteBorder()
-    {
-        this(Color.BLACK);
-    }
-    
-    public NoteBorder(Color color)
-    {
-        this.color=color;
-    }
-    
-    public Insets getInsets() {
-        return new Insets(TAB_WIDTH, 2, 2, 2);
-    }
-
-    public void paint(Graphics2D gr, Rectangle bounds) {
-        gr.setColor(color);
-        
-        int leftBorder = bounds.x;
-        int top = bounds.y;
-        int rightBorder = bounds.x + bounds.width - 1;
-        int tabStartX = rightBorder - TAB_WIDTH;
-        int bottom = bounds.y + bounds.height - 1;
-        int tabBottom = bounds.y + TAB_WIDTH;
-        
-        gr.drawLine(leftBorder, top, tabStartX, top);
-        gr.drawLine(tabStartX, top, rightBorder, tabBottom);
-        gr.drawLine(rightBorder, tabBottom, tabStartX, tabBottom);
-        gr.drawLine(tabStartX, tabBottom, tabStartX, top);
-        gr.drawLine(rightBorder, tabBottom, rightBorder, bottom);
-        gr.drawLine(rightBorder, bottom, leftBorder, bottom);
-        gr.drawLine(leftBorder, bottom, leftBorder, top);
-    }
-
-    public boolean isOpaque() {
-        return true;
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        File root = baseContext.lookup(File.class);
+        return Lookups.fixed(WSStackFactory.createWSStack(JaxWs.class ,new JBossJaxWsStack(root), WSStack.Source.SERVER));
     }
 
 }

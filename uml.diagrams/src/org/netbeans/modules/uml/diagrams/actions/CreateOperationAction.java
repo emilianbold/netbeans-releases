@@ -50,9 +50,11 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
+import org.netbeans.modules.uml.diagrams.nodes.ICommonFeature;
 import org.netbeans.modules.uml.diagrams.nodes.UMLClassWidget;
 import org.netbeans.modules.uml.drawingarea.actions.SceneCookieAction;
 import org.netbeans.modules.uml.drawingarea.util.Util;
+import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -88,19 +90,19 @@ public final class CreateOperationAction extends SceneCookieAction
             IOperation op = classifier.createOperation3();
             classifier.addOperation(op);
             Widget nW = scene.findWidget(pe);
-            UMLClassWidget cW = null;
+            SwitchableWidget cW = null;
             
-            if (nW instanceof UMLClassWidget)
+            if (nW instanceof SwitchableWidget)
             {
-                cW = (UMLClassWidget) nW;
+                cW = (SwitchableWidget) nW;
             } else if (nW instanceof FeatureWidget)
             {
-                cW = (UMLClassWidget) Util.getParentWidgetByClass(nW, UMLClassWidget.class);
+                cW = (SwitchableWidget) Util.getParentWidgetByClass(nW, SwitchableWidget.class);
             }
             
-            if (cW != null)
+             if (cW != null && cW instanceof ICommonFeature)
             {
-                cW.selectOperationAfterCreation(op);
+                ((ICommonFeature)cW).setSelectedOperation(op);
             }
         }
     }

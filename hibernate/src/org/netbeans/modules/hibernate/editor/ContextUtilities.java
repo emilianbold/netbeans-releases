@@ -98,7 +98,7 @@ public final class ContextUtilities {
             if(equalsToken == null)
                 return null;
             
-            while(equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
+            while(equalsToken != null && equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
                 equalsToken = equalsToken.getPrevious();
             }
         
@@ -106,7 +106,7 @@ public final class ContextUtilities {
             if(argumentToken == null)
                 return null;
             
-            while(argumentToken.getTokenID().getNumericID() != XMLDefaultTokenContext.ARGUMENT_ID) {
+            while(argumentToken != null && argumentToken.getTokenID().getNumericID() != XMLDefaultTokenContext.ARGUMENT_ID) {
                 argumentToken = argumentToken.getPrevious();
             }
         
@@ -141,7 +141,7 @@ public final class ContextUtilities {
             if(equalsToken.getTokenID() == null) {
                 return null;
             }
-            while(equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
+            while(equalsToken != null && equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
                 equalsToken = equalsToken.getPrevious();
             }
         
@@ -149,7 +149,7 @@ public final class ContextUtilities {
             if(argumentToken == null)
                 return null;
             
-            while(argumentToken.getTokenID().getNumericID() != XMLDefaultTokenContext.ARGUMENT_ID) {
+            while(argumentToken != null && argumentToken.getTokenID().getNumericID() != XMLDefaultTokenContext.ARGUMENT_ID) {
                 argumentToken = argumentToken.getPrevious();
             }
         
