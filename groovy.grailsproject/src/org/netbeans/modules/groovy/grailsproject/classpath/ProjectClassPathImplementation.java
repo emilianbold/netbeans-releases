@@ -72,16 +72,21 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
 
     private List<PathResourceImplementation> getPath() {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        // lib directory from project root
         addLibs(projectRoot, result);
         File pluginsDir = new File(projectRoot, "plugins"); // NOI18N
         if (pluginsDir.isDirectory()) {
             for (String name : pluginsDir.list()) {
                 File file = new File(pluginsDir, name);
                 if (file.isDirectory()) {
+                    // lib directories of installed plugins
                     addLibs(file, result);
+                    // sources of installed plugins
+                    addSources(file, result);
                 }
             }
         }
+        
         return Collections.unmodifiableList(result);
     }
 
@@ -101,6 +106,14 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
                     assert false : mue;
                 }
             }
+        }
+    }
+
+    // XXX I am handling plugin sources as 'library' for owning project, is that correct?
+    private static void addSources(File root, List<PathResourceImplementation> result) {
+        SourceRoots sourceRoots = new SourceRoots(FileUtil.toFileObject(root));
+        for (URL url : sourceRoots.getRootURLs()) {
+            result.add(ClassPathSupport.createResource(url));
         }
     }
 
