@@ -73,6 +73,7 @@ import org.hibernate.cfg.JDBCMetaDataConfiguration;
 import org.hibernate.cfg.reveng.DefaultReverseEngineeringStrategy;
 import org.hibernate.cfg.reveng.OverrideRepository;
 import org.hibernate.cfg.reveng.ReverseEngineeringSettings;
+import org.hibernate.cfg.reveng.ReverseEngineeringStrategy;
 import org.hibernate.tool.hbm2x.HibernateMappingExporter;
 import org.hibernate.tool.hbm2x.POJOExporter;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
@@ -313,15 +314,24 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             try {
 
                 cfg = new JDBCMetaDataConfiguration();
+                
+                DefaultReverseEngineeringStrategy defaultStrategy = new DefaultReverseEngineeringStrategy();
+                ReverseEngineeringStrategy revStrategy = defaultStrategy;
                 OverrideRepository or = new OverrideRepository();
                 Configuration c = cfg.configure(confFile);
                 or.addFile(FileUtil.toFile(revengFile));
-                DefaultReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
-                settings = new ReverseEngineeringSettings(strategy);
+                revStrategy = or.getReverseEngineeringStrategy(revStrategy);
+
+                settings = new ReverseEngineeringSettings(revStrategy);
                 settings.setDefaultPackageName(helper.getPackageName());
-                strategy.setSettings(settings);
-                cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(strategy));
+
+                defaultStrategy.setSettings(settings);
+                revStrategy.setSettings(settings);
+
+                cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
+                
                 cfg.readFromJDBC();
+                cfg.buildMappings();
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
@@ -338,7 +348,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-
+            
             // Generating Mappings
             try {
                 if (helper.getHbmGen()) {
@@ -349,7 +359,6 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
