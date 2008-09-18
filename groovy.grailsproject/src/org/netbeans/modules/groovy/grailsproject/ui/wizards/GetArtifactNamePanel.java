@@ -110,7 +110,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewUnitTest"));
                 subDirName = "unit";
                 dirPrefix = "test" + File.separatorChar;
-                suffix = "UnitTests";
+                suffix = "Tests";
                 break;
             case SCRIPTS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SCRIPTS")); // NOI18N

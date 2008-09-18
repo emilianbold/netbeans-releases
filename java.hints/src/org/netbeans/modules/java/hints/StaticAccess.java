@@ -39,6 +39,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -261,6 +263,11 @@ public class StaticAccess extends AbstractHint {
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.RESOLVED);
             TreePath path = expr.resolve(copy);
+
+            if (path == null) {
+                Logger.getLogger("org.netbeans.modules.java.hints").log(Level.INFO, "Cannot resolve target.");
+            }
+
             Element element = type.resolveElement(copy);
             ExpressionTree idt = copy.getTreeMaker().QualIdent(element);
             copy.rewrite(path.getLeaf(), idt);

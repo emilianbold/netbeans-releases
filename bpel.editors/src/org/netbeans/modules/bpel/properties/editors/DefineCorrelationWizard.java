@@ -1458,17 +1458,19 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
 
             public boolean canConnect() {
-                boolean canConnect = isLeaf();
-                if (! canConnect) return false;
-                
-                canConnect &= ! ((userObject instanceof Attribute) & 
-                    WizardUtils.isAttributeUnknownType((SchemaComponent) userObject)); 
+                boolean canConnect = isLeaf() || 
+                    ((userObject instanceof Part) && (super.getChildCount() < 1));
                 if (! canConnect) return false;
 
-                canConnect &= (ValidationUtil.getBuiltInSimpleType(
-                    (SchemaComponent) userObject) != null); 
-                if (! canConnect) return false;
-                
+                if (userObject instanceof SchemaComponent) {
+                    canConnect &= ! ((userObject instanceof Attribute) & 
+                        WizardUtils.isAttributeUnknownType((SchemaComponent) userObject)); 
+                    if (! canConnect) return false;
+
+                    canConnect &= (ValidationUtil.getBuiltInSimpleType(
+                        (SchemaComponent) userObject) != null); 
+                    if (! canConnect) return false;
+                }
                 return canConnect;
             }
             
@@ -1482,17 +1484,25 @@ public class DefineCorrelationWizard implements WizardProperties {
                 return null;
             }
             
-            private List<CorrelationMapperTreeNode> getPartNodeChildList(Part part) {
+            public SchemaComponent getPartNodeSchemaComponent(Part part) {
                 NamedComponentReference<GlobalElement> partElementRef = part.getElement();
                 if (partElementRef != null) {
                     GlobalElement partElement = partElementRef.get();
-                    return getSchemaComponentNodeChildList(partElement);                    
+                    return partElement;                    
                 } else {
                     NamedComponentReference<GlobalType> partTypeRef = part.getType();
                     if (partTypeRef != null) {
                         GlobalType partType = partTypeRef.get();
-                        return getSchemaComponentNodeChildList(partType); 
+                        return partType; 
                     }
+                }
+                return null;
+            }
+            
+            private List<CorrelationMapperTreeNode> getPartNodeChildList(Part part) {
+                SchemaComponent partSchemaComponent = getPartNodeSchemaComponent(part);
+                if (partSchemaComponent != null) {
+                    return getSchemaComponentNodeChildList(partSchemaComponent);                    
                 }
                 return null;
             }
@@ -1731,10 +1741,17 @@ public class DefineCorrelationWizard implements WizardProperties {
                     targetTreeNode = 
                         (CorrelationMapperTreeNode) targetTreePath.getLastPathComponent();
                 if ((sourceTreeNode == null) || (targetTreeNode == null)) return;
-                
+
+                Object
+                    sourceUserObject  = sourceTreeNode.getUserObject(),
+                    targetUserObject  = targetTreeNode.getUserObject();
                 SchemaComponent 
-                    sourceSchemaComponent = (SchemaComponent) sourceTreeNode.getUserObject(),
-                    targetSchemaComponent = (SchemaComponent) targetTreeNode.getUserObject();
+                    sourceSchemaComponent = sourceUserObject instanceof Part ? 
+                        sourceTreeNode.getPartNodeSchemaComponent((Part) sourceUserObject) : 
+                        (SchemaComponent) sourceUserObject,
+                    targetSchemaComponent = targetUserObject instanceof Part ?
+                        targetTreeNode.getPartNodeSchemaComponent((Part) targetUserObject) :
+                        (SchemaComponent) targetUserObject;
                 TypesCompatibilityValidator typesValidator = new TypesCompatibilityValidatorImpl(
                     sourceSchemaComponent, targetSchemaComponent);
                 typesValidator.checkSchemaComponentTypesCompatibility();

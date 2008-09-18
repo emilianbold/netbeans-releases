@@ -100,7 +100,7 @@ public abstract class SharedRubyProjectProperties {
     
     private final Project project;
     private RubyPlatform platform;
-    private final PropertyEvaluator evaluator;
+    protected final PropertyEvaluator evaluator;
     private final UpdateHelper updateHelper;
     private final GeneratedFilesHelper genFileHelper;
     private final ProjectPropertyExtender cs;
