@@ -119,7 +119,7 @@ public class EditList {
     /** Apply the given list of edits in the current document. If positionOffset is a position
      * within one of the regions, return a document Position that corresponds to it.
      */
-    public Position apply(int positionOffset) {
+    public Position apply(final int positionOffset) {
         if (edits.size() == 0) {
             if (positionOffset >= 0) {
                 try {
@@ -131,45 +131,47 @@ public class EditList {
             return null;
         }
 
-        Position position = null;
-
         Collections.sort(edits);
         Collections.reverse(edits);
 
-        try {
-            doc.atomicLock();
-            int lastOffset = edits.get(0).offset;
-            Position lastPos = doc.createPosition(lastOffset, Position.Bias.Forward);
-            
-            // Apply edits in reverse order (to keep offsets accurate)
-            for (Edit edit : edits) {
-                if (edit.removeLen > 0) {
-                    doc.remove(edit.offset, edit.removeLen);
-                }
-                if (edit.getInsertText() != null) {
-                    doc.insertString(edit.offset, edit.insertText, null);
-                    int end = edit.offset + edit.insertText.length();
-                    if (edit.getOffset() <= positionOffset && end >= positionOffset) {
-                        position = doc.createPosition(positionOffset); // Position of the comment
-                    }
-                    if (edit.format && formatter != null) {
-                        formatter.reindent(doc, edit.offset, end);
-                    }
-                }
-            }
-            
-            if (formatAll) {
-                int firstOffset = edits.get(edits.size()-1).offset;
-                lastOffset = lastPos.getOffset();
-                formatter.reindent(doc, firstOffset, lastOffset);
-            }
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-        } finally {
-            doc.atomicUnlock();
-        }
+        final Position[] positionHolder = new Position[1];
 
-        return position;
+        doc.runAtomic(new Runnable() {
+
+            public void run() {
+                try {
+                    int lastOffset = edits.get(0).offset;
+                    Position lastPos = doc.createPosition(lastOffset, Position.Bias.Forward);
+
+                    // Apply edits in reverse order (to keep offsets accurate)
+                    for (Edit edit : edits) {
+                        if (edit.removeLen > 0) {
+                            doc.remove(edit.offset, edit.removeLen);
+                        }
+                        if (edit.getInsertText() != null) {
+                            doc.insertString(edit.offset, edit.insertText, null);
+                            int end = edit.offset + edit.insertText.length();
+                            if (edit.getOffset() <= positionOffset && end >= positionOffset) {
+                                positionHolder[0] = doc.createPosition(positionOffset); // Position of the comment
+                            }
+                            if (edit.format && formatter != null) {
+                                formatter.reindent(doc, edit.offset, end);
+                            }
+                        }
+                    }
+
+                    if (formatAll) {
+                        int firstOffset = edits.get(edits.size() - 1).offset;
+                        lastOffset = lastPos.getOffset();
+                        formatter.reindent(doc, firstOffset, lastOffset);
+                    }
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
+                }
+            }
+        });
+
+        return positionHolder[0];
     }
     
     public OffsetRange getRange() {
