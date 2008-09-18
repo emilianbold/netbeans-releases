@@ -72,11 +72,7 @@ import org.openide.util.Exceptions;
 public class CSSStructureScanner implements StructureScanner {
 
     public List<? extends StructureItem> scan(final CompilationInfo info) {
-        //hack
-        EditorAwareSourceTaskSupport.instance().fire(info);
-        //eof hack
-        
-        //so far the css parser always parses the whole css content
+         //so far the css parser always parses the whole css content
         Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
         if(!presultIterator.hasNext()) {
             return Collections.emptyList();
