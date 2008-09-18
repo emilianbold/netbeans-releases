@@ -90,6 +90,40 @@ public class DatabaseNodeTest extends TestCase {
         checkInfoChildren(RootNodeInfo.getInstance());
         checkNodeChildren(RootNode.getInstance());
     }
+
+    public void testAddRemoveConnectionNodes() throws Exception {
+        // Initialize the tree with a driver and a connection
+        JDBCDriver driver = Util.createDummyDriver();
+        JDBCDriverManager.getDefault().addDriver(driver);
+
+        DatabaseConnection conn = DatabaseConnection.create(
+                driver, "jdbc:mark//twain", "tomsawyer", null, "whitewash", true);
+        ConnectionManager.getDefault().addConnection(conn);
+
+        RootNodeInfo.getInstance().refreshChildren();
+
+        assertEquals(2, RootNodeInfo.getInstance().getChildren().size());
+
+        DatabaseConnection conn2 = DatabaseConnection.create(
+                driver, "jdbc:bob//dylan", "rolling", null, "stone", true);
+        ConnectionManager.getDefault().addConnection(conn2);
+        RootNodeInfo.getInstance().refreshChildren();
+
+        assertEquals(3, RootNodeInfo.getInstance().getChildren().size());
+
+        ConnectionManager.getDefault().removeConnection(conn);
+        RootNodeInfo.getInstance().refreshChildren();
+
+        Vector children = RootNodeInfo.getInstance().getChildren();
+        assertEquals(2, children.size());
+        checkConnection(RootNodeInfo.getInstance(), conn2);
+
+        ConnectionManager.getDefault().removeConnection(conn2);
+        RootNodeInfo.getInstance().refreshChildren();
+
+        assertEquals(1, RootNodeInfo.getInstance().getChildren().size());
+
+    }
     
     private void checkNodeChildren(final RootNode root) throws Exception {
         Node[] children = root.getChildren().getNodes(true);
