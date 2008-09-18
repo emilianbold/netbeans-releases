@@ -55,9 +55,10 @@ public class GdbRemoteSetupProvider implements SetupProvider {
 
     public GdbRemoteSetupProvider() {
         binarySetupMap = new HashMap<String, String>();
-        binarySetupMap.put("GdbHelper-Linux-x86.so", "bin/GdbHelper-Linux-x86.so"); // NOI18N
+        // Not used any more
+        /*binarySetupMap.put("GdbHelper-Linux-x86.so", "bin/GdbHelper-Linux-x86.so"); // NOI18N
         binarySetupMap.put("GdbHelper-SunOS-x86.so", "bin/GdbHelper-SunOS-x86.so"); // NOI18N
-        binarySetupMap.put("GdbHelper-SunOS-sparc.so", "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
+        binarySetupMap.put("GdbHelper-SunOS-sparc.so", "bin/GdbHelper-SunOS-sparc.so"); // NOI18N*/
     }
 
     public Map<String, String> getBinaryFiles() {

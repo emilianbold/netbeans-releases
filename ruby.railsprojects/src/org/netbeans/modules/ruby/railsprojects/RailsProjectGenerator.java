@@ -175,13 +175,16 @@ public class RailsProjectGenerator {
         }
 
         RakeSupport.refreshTasks(p);
+        String railsVersion = data.getRailsVersion() != null
+                ? data.getRailsVersion()
+                : platform.getGemManager().getLatestVersion("rails"); // NOI18N
         Util.logUsage(RailsProjectGenerator.class, "USG_PROJECT_CREATE_RAILS", // NOI18N
                 platform.getInfo().getKind(),
                 platform.getInfo().getPlatformVersion(),
                 platform.getInfo().getGemVersion(),
                 data.getServerInstanceId(),
                 data.getDatabase().getDisplayName(),
-                data.getRailsVersion());
+                railsVersion);
 
         return h;
     }

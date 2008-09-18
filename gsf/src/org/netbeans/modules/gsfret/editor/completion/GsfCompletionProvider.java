@@ -54,6 +54,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -74,12 +75,15 @@ import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Registry;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.GsfLanguage;
-import org.netbeans.spi.editor.completion.*;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.ErrorManager;
@@ -220,7 +224,8 @@ public class GsfCompletionProvider implements CompletionProvider {
         JavaCompletionQuery query = new JavaCompletionQuery(DOCUMENTATION_QUERY_TYPE, -1);
         query.element = element;
 
-        return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
+        //return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
+        return new AsyncCompletionTask(query, EditorRegistry.lastFocusedComponent());
     }
 
     static final class JavaCompletionQuery extends AsyncCompletionQuery implements CancellableTask<CompilationController> {
