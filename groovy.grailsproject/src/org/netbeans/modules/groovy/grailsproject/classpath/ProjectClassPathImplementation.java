@@ -72,8 +72,21 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
 
     private List<PathResourceImplementation> getPath() {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-        
-        File[] jars = new File(projectRoot, "lib").listFiles();
+        addLibs(projectRoot, result);
+        File pluginsDir = new File(projectRoot, "plugins"); // NOI18N
+        if (pluginsDir.isDirectory()) {
+            for (String name : pluginsDir.list()) {
+                File file = new File(pluginsDir, name);
+                if (file.isDirectory()) {
+                    addLibs(file, result);
+                }
+            }
+        }
+        return Collections.unmodifiableList(result);
+    }
+
+    private static void addLibs(File root, List<PathResourceImplementation> result) {
+        File[] jars = new File(root, "lib").listFiles(); // NOI18N
         if (jars != null) {
             for (File f : jars) {
                 try {
@@ -89,7 +102,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
                 }
             }
         }
-        return Collections.unmodifiableList(result);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
