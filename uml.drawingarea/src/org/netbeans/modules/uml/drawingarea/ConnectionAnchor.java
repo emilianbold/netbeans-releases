@@ -2,14 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.uml.diagrams.edges;
+package org.netbeans.modules.uml.drawingarea;
 
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.util.List;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
@@ -17,10 +14,17 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public class ConnectionAnchor extends Anchor
 {
-
+    private double locationRatio = 0.5;
+    
     public ConnectionAnchor(ConnectionWidget connection)
     {
+        this(connection, 0.5);
+    }
+    
+    public ConnectionAnchor(ConnectionWidget connection, double location)
+    {
         super(connection);
+        locationRatio = location;
     }
 
     /**
@@ -29,14 +33,14 @@ public class ConnectionAnchor extends Anchor
      */
     public Point getRelatedSceneLocation () 
     {
-        return getLocationPoint(0.5);
+        return getLocationPoint(locationRatio);
     }
     
     @Override
     public Anchor.Result compute(Entry entry)
     {
         
-        Point center = getLocationPoint(0.5);
+        Point center = getLocationPoint(locationRatio);
         return new Anchor.Result(center, Anchor.DIRECTION_ANY);
     }
 
@@ -54,7 +58,8 @@ public class ConnectionAnchor extends Anchor
             distances[i] = totalDistance += GeomUtil.distanceSq(controlPoints.get(i), controlPoints.get(i + 1));
         }
 
-        // For now I always want the center of the connectoin widget.
+        // For now I always want the center and the left and right sides of the
+        // connectoin widget.
         double lineDistance = totalDistance * location;
 
         return getLinePointDistance(distances, (int)lineDistance, controlPoints);

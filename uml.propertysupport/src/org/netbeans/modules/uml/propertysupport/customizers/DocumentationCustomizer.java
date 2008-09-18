@@ -65,7 +65,7 @@ public class DocumentationCustomizer extends DocumentationPane
     
     public Object getPropertyValue() throws IllegalStateException
     {
-        String doc = getDocumentText();
+        String doc = getTrimmedDocumentation();
         element.setValue(doc);
         element.save();
         return doc;

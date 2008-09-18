@@ -51,6 +51,7 @@ import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.php.editor.index.NbUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 
 /**
  *
@@ -59,7 +60,7 @@ import org.openide.util.Exceptions;
 public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTask<CompilationInfo> {
     private boolean accept = false;
     private int caretOffset;
-    private PHPCodeCompletion.CompletionContext context;
+    private CompletionContext context;
 
     public PHPCodeTemplateFilter(JTextComponent component, int offset) {
         this.caretOffset = offset;
@@ -81,7 +82,7 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     public boolean accept(CodeTemplate template) {
         if (template.getContexts().contains("php-code")) //NOI18N
         {
-            if (context == PHPCodeCompletion.CompletionContext.CLASS_CONTEXT_KEYWORDS) {
+            if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
                 return template.getAbbreviation().equals("fnc");//NOI18N
             }
             return accept;
@@ -98,7 +99,7 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
         document.readLock();
         
         try{
-            context = PHPCodeCompletion.findCompletionContext(parameter, caretOffset);
+            context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
             switch(context){
                 case EXPRESSION:
                     accept = true;
