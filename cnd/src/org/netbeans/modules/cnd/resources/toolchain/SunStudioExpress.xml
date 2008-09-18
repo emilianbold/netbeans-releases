@@ -188,7 +188,7 @@ made subject to such option by the copyright holder.
         <library_search flags="-L"/>
         <dynamic_library_search flags="-R"/>
         <library flags="-l"/>
-        <PIC flags="-Kpic "/>
+        <PIC flags="-KPIC "/>
         <static_library flags="-Bstatic"/>
         <dynamic_library flags="-Bdynamic"/>
         <dynamic_library_basic flags="-G "/>
