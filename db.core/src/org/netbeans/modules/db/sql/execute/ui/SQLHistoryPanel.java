@@ -54,6 +54,8 @@ import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -114,6 +116,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     private SQLHistoryView view;
     private JEditorPane editorPane;
     private String currentUrl;
+    private HistoryTableModel tableModel;
 
     /** Creates new form SQLHistoryPanel */
     public SQLHistoryPanel(final JEditorPane editorPane) {
@@ -670,6 +673,8 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private final class HistoryTableModel extends DefaultTableModel implements ActionListener, DocumentListener {
         List<String> sqlList;
         List<String> dateList;
+        int sortCol = 0;
+        boolean sortAsc = true;
             
         @Override
         public int getRowCount() {
@@ -899,9 +904,10 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
 
         public void sortData() {
-            List<SQLHistory> sqlHistoryList = view.getSQLHistoryList();
+            List<SQLHistory> sqlHistoryList = view.getCurrentSQLHistoryList();
             searchTextField.setText(""); // NOI18N
-            Collections.reverse(sqlHistoryList);
+            SQLComparator sqlComparator = new SQLComparator(sortCol, sortAsc);
+            Collections.sort(sqlHistoryList, sqlComparator);
             view.setSQLHistoryList(sqlHistoryList);
             view.setCurrentSQLHistoryList(sqlHistoryList);
             refreshTable(null, sqlHistoryList);
@@ -1045,12 +1051,74 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         @Override
         public void mouseClicked(MouseEvent e) {
             HistoryTableModel model = (HistoryTableModel)sqlHistoryTable.getModel();
+            TableColumnModel colModel = sqlHistoryTable.getColumnModel();
+            int colModelIndex = colModel.getColumnIndexAtX(e.getX());
+            int modelIndex = colModel.getColumn(colModelIndex).getModelIndex();
+            if (modelIndex < 0) {
+                return;
+            }
+            if (model.sortCol == modelIndex) {
+                model.sortAsc = !model.sortAsc;
+            } else {
+                model.sortCol = modelIndex;
+            }
             model.sortData();
             sqlHistoryTable.tableChanged(new TableModelEvent(model));
             sqlHistoryTable.repaint();
         }
     }
 
+    private class SQLComparator implements Comparator<SQLHistory> {
 
+        protected int sortCol;
+        protected boolean sortAsc;
 
+        public SQLComparator(int sortCol, boolean sortAsc) {
+            this.sortCol = sortCol;
+            this.sortAsc = sortAsc;
+        }
+
+        public int compare(SQLHistory sql1, SQLHistory sql2) {
+            int result = 0;
+            if (!(sql1 instanceof SQLHistory) || !(sql2 instanceof SQLHistory)) {
+                return result;
+            }
+            SQLHistory sqlHistory1 = (SQLHistory) sql1;
+            SQLHistory sqlHistory2 = (SQLHistory) sql2;
+
+            switch (sortCol) {
+                case 0: // SQL
+                    String s1 = sqlHistory1.getSql().trim();
+                    String s2 = sqlHistory2.getSql().trim();
+                    result = s1.compareTo(s2);
+                    break;
+                case 1: // Date
+                    Date d1 = sqlHistory1.getDate();
+                    Date d2 = sqlHistory2.getDate();
+                    result = d1.compareTo(d2);
+                    break;
+            }
+            if (!sortAsc) {
+                result = -result;
+            }
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof SQLComparator) {
+                SQLComparator compObj = (SQLComparator) obj;
+                return (compObj.sortCol == sortCol) && (compObj.sortAsc == sortAsc);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 17 * hash + this.sortCol;
+            hash = 17 * hash + (this.sortAsc ? 1 : 0);
+            return hash;
+        }
+    }
 }
