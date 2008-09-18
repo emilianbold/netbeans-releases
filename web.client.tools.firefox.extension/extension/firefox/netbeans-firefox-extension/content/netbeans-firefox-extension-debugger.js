@@ -272,7 +272,7 @@
         NetBeans.Utils.CI("jsdIDebuggerService"));
 
         firebugDebuggerService = NetBeans.Utils.CC(NetBeans.Constants.FirebugCID).getService().wrappedJSObject;
-
+        
         const socketListener = {
             onDBGPCommand: function(command) {
                 handleCommand(command);
@@ -288,6 +288,10 @@
         socket = NetBeans.SocketUtils.createSocket("127.0.0.1", port, socketListener);
 
         fbsRegisterDebugger(firebugDebugger);
+
+        // Do this instead of setting browser preference; must be done after registering
+        // debugger
+        firebugDebuggerService.trackThrowCatch = true;
 
         initialize(this);
         sendInitMessage();
