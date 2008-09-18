@@ -43,6 +43,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSContextProviderWrapper;
+import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.tools.api.JSAbstractLocation;
 import org.netbeans.modules.web.client.tools.api.JSLocation;
 import org.netbeans.modules.web.client.tools.api.NbJSLocation;
@@ -232,6 +233,11 @@ public abstract class NbJSBreakpoint extends Breakpoint {
     public String getResolvedLocation() {
         Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
         if (session != null) {
+            NbJSDebugger debugger = session.lookupFirst(null, NbJSDebugger.class);
+            if (debugger != null && debugger.isIgnoringQueryStrings() && getLocation().getJSLocation().getURI().getQuery() != null) {
+                return "";
+            }
+
             NbJSToJSLocationMapper nbJSToJSLocationMapper = session.lookupFirst(null, NbJSToJSLocationMapper.class);
             if (nbJSToJSLocationMapper != null) {
                 JSAbstractLocation nbJSALoc = getLocation();
