@@ -919,8 +919,8 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
             diagramView.addMouseListener(this);
 
             jScrollPane1.setViewportView(view);
-            jScrollPane1.getVerticalScrollBar().setUnitIncrement(50);
-            jScrollPane1.getHorizontalScrollBar().setUnitIncrement(50);
+            jScrollPane1.getVerticalScrollBar().setUnitIncrement(20);
+            jScrollPane1.getHorizontalScrollBar().setUnitIncrement(20);
             SceneChangeListener scListener = new SceneChangeListener(getDiagramDO(), scene);
             scene.addObjectSceneListener(scListener, 
                                          ObjectSceneEventType.OBJECT_ADDED,
