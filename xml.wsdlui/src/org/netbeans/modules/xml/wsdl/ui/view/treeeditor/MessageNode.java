@@ -84,7 +84,7 @@ public class MessageNode extends WSDLExtensibilityElementNode<Message> {
     private MessagePropertyAdapter mPropertyAdapter;
     
     public MessageNode(Message wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<Message>(wsdlConstruct), wsdlConstruct, new MessageNewTypesFactory());
+        super(wsdlConstruct, new MessageNewTypesFactory());
         
         this.mPropertyAdapter = new MessagePropertyAdapter();
         super.setNamedPropertyAdapter(this.mPropertyAdapter);
