@@ -208,7 +208,12 @@ public class NativeExecutor implements Runnable {
 
         if (unbuffer) {
             try {
-                String executableAbsolute = new File(runDir, executable).getAbsolutePath();
+                File exeFile = new File(runDir, executable);
+                if (!exeFile.exists()) {
+                    //try to resolve from the root
+                    exeFile = new File(executable);
+                }
+                String executableAbsolute = exeFile.getAbsolutePath();
                 FileMagic magic = new FileMagic(executableAbsolute);
                 ElfReader er = new ElfReader(executableAbsolute, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
                 if (er.is32Bit() || er.is64Bit()) {
