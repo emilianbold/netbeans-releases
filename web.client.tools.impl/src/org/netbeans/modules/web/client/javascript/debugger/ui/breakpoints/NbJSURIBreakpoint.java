@@ -147,7 +147,9 @@ public final class NbJSURIBreakpoint extends NbJSBreakpoint {
         FileObject fo = null;
         NbJSDebugger jsDebugger = engine.lookupFirst(null, NbJSDebugger.class);
         if (jsDebugger != null) {
-            fo = jsDebugger.getURLFileObjectForSource(createJSSource());
+            if (!jsDebugger.isIgnoringQueryStrings() || getLocation().getURI().getQuery() == null) {
+                fo = jsDebugger.getURLFileObjectForSource(createJSSource());
+            }
         }
         return fo;
     }
