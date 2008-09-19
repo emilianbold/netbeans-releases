@@ -593,6 +593,9 @@ NodeActionsProvider {
                             filters.remove (node);
                             enabledFilters.remove (node);
                         }
+                        debugger.getSmartSteppingFilter ().removeExclusionPatterns (
+                            Collections.singleton (node)
+                        );
                     } else {
                         synchronized (SourcesModel.this) {
                             additionalSourceRoots.remove(node);
