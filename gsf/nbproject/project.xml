@@ -371,6 +371,12 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>

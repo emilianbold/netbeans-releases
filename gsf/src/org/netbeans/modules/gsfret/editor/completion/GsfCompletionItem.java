@@ -47,7 +47,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.net.URL;
-import java.util.*;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
@@ -103,6 +102,10 @@ public abstract class GsfCompletionItem implements CompletionItem {
         }
         
         public int getSortPriority() {
+            if (item.getSortPrioOverride() != 0) {
+                return item.getSortPrioOverride();
+            }
+
             switch (item.getKind()) {
             case ERROR: return -5000;
             case DB: return item.isSmart() ? 155 - SMART_TYPE : 155;
@@ -345,50 +348,9 @@ public abstract class GsfCompletionItem implements CompletionItem {
                 return;
             }
             
-            List<String> params = item.getInsertParams();
-            if (params == null || params.size() == 0) {
-                // TODO - call getParamListDelimiters here as well!
-                super.substituteText(c, offset, len, toAdd);
-                return;
-            }
-
             super.substituteText(c, offset, len, toAdd);
-            
-            BaseDocument doc = (BaseDocument)c.getDocument();
-            CodeTemplateManager ctm = CodeTemplateManager.get(doc);
-            if (ctm != null) {
-                StringBuilder sb = new StringBuilder();
-                String[] delimiters = item.getParamListDelimiters();
-                assert delimiters.length == 2;
-                sb.append(delimiters[0]);
-                int id = 1;
-                for (Iterator<String> it = params.iterator(); it.hasNext();) {
-                    String paramDesc = it.next();
-                    sb.append("${"); //NOI18N
-                    // Ensure that we don't use one of the "known" logical parameters
-                    // such that a parameter like "path" gets replaced with the source file
-                    // path!
-                    sb.append("gsf-cc-"); // NOI18N
-                    sb.append(Integer.toString(id++));
-                    sb.append(" default=\""); // NOI18N
-                    sb.append(paramDesc);
-                    sb.append("\""); // NOI18N
-                    sb.append("}"); //NOI18N
-                    if (it.hasNext())
-                        sb.append(", "); //NOI18N
-                }
-                sb.append(delimiters[1]);
-                sb.append("${cursor}");
-                ctm.createTemporary(sb.toString()).insert(c);
-                // TODO - set the actual method to be used here so I don't have to 
-                // work quite as hard...
-                //tipProposal = item;
-                Completion.get().showToolTip();
-            }
-            
         }        
     }
-    
 
     public static final GsfCompletionItem createItem(CompletionProposal proposal, CodeCompletionResult result, CompilationInfo info) {
         return new DelegatedItem(info, result, proposal);
