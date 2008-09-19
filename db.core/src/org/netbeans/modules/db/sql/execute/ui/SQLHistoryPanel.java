@@ -191,8 +191,8 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     
     private void initSQLHistoryTableData() {
             // Initialize sql column data          
-            List<String> sqlList = view.getSQLList();
-            List<String> dateList = view.getDateList();
+            List<String> sqlList = view.getSQLList(null);
+            List<String> dateList = view.getDateList(null);
             data = new Object[sqlList.size()][2];
             int row = 0;
             int maxLength; 
@@ -509,7 +509,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
          * @return    - formatted SQL statement for the specified row, col
          */
         public String getSQLHistoryTooltipValue(int row, int col) {
-            List<SQLHistory> sqlHistoryListForTooltip =  view.filterSQLHistoryList();
+            List<SQLHistory> sqlHistoryListForTooltip =  view.getCurrentSQLHistoryList();
             if (row < sqlHistoryListForTooltip.size()) {
                 if (col == 0) {
                     String sqlRow = sqlHistoryListForTooltip.get(row).getSql().trim();
@@ -562,8 +562,11 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             return urlList;
         }
 
-        public List<String> getSQLList() {
+        public List<String> getSQLList(List<SQLHistory> sqlHistoryList) {
             List<String> sqlList = new ArrayList<String>();
+            if (sqlHistoryList == null) {
+                sqlHistoryList = getSQLHistoryList();
+            }
 
             for (SQLHistory sqlHistory : sqlHistoryList) {
                 String sql = sqlHistory.getSql();
@@ -574,9 +577,12 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             return sqlList;
         }
 
-        public List<String> getDateList() {
+        public List<String> getDateList(List<SQLHistory> sqlHistoryList) {
             List<String> dateList = new ArrayList<String>();
             List<String> sqlList = new ArrayList<String>();
+            if (sqlHistoryList == null) {
+                sqlHistoryList = getSQLHistoryList();
+            }
 
             for (SQLHistory sqlHistory : sqlHistoryList) {
                 String date = DateFormat.getInstance().format(sqlHistory.getDate());
@@ -810,15 +816,17 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
 
         public void insertUpdate(DocumentEvent evt) {
+            List<String> currentSQLList = view.getSQLList(sortData());
+
             // Read the contents
             try {
                 String matchText = read(evt.getDocument());
-                Object[][] localData = new Object[sqlList.size()][2];
+                Object[][] localData = new Object[currentSQLList.size()][2];
                 int row = 0;
                 int length;
                 int maxLength;
                 Iterator dateIterator = dateList.iterator();
-                for (String sql : sqlList) {
+                for (String sql : currentSQLList) {
                     if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
                         length = sql.trim().length();
                         maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
@@ -849,15 +857,17 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
 
         public void removeUpdate(DocumentEvent evt) {
+            List<String> currentSQLList = view.getSQLList(sortData());
+
              // Read the contents
             try {
                 String matchText = read(evt.getDocument());
-                Object[][] localData = new Object[sqlList.size()][2];
+                Object[][] localData = new Object[currentSQLList.size()][2];
                 int row = 0;
                 int length;
                 int maxLength;                                
                 Iterator dateIterator = dateList.iterator();
-                for (String sql : sqlList) {
+                for (String sql : currentSQLList) {
                     if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
                         length = sql.trim().length();
                         maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
@@ -901,13 +911,17 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             sqlHistoryTable.repaint();
         }
 
-        public void sortData() {
+        public List<SQLHistory> sortData() {
+            // Refresh the table
+//            sqlHistoryTable.revalidate();
             List<SQLHistory> sqlHistoryList = view.getSQLHistoryList();
-            searchTextField.setText(""); // NOI18N
+//            searchTextField.setText(""); // NOI18N
+            List<SQLHistory> filteredSQLHistoryList = view.filterSQLHistoryList();
             SQLComparator sqlComparator = new SQLComparator(sortCol, sortAsc);
-            Collections.sort(sqlHistoryList, sqlComparator);
-            view.setCurrentSQLHistoryList(sqlHistoryList);
-            refreshTable(null, sqlHistoryList);
+            Collections.sort(filteredSQLHistoryList, sqlComparator);
+            view.setCurrentSQLHistoryList(filteredSQLHistoryList);
+            refreshTable(null, filteredSQLHistoryList);
+            return filteredSQLHistoryList;
         }
     }
 
