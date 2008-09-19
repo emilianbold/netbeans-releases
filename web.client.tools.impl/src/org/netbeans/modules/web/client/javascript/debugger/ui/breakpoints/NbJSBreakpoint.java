@@ -234,9 +234,6 @@ public abstract class NbJSBreakpoint extends Breakpoint {
         Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
         if (session != null) {
             NbJSDebugger debugger = session.lookupFirst(null, NbJSDebugger.class);
-            if (debugger != null && debugger.isIgnoringQueryStrings() && getLocation().getJSLocation().getURI().getQuery() != null) {
-                return "";
-            }
 
             NbJSToJSLocationMapper nbJSToJSLocationMapper = session.lookupFirst(null, NbJSToJSLocationMapper.class);
             if (nbJSToJSLocationMapper != null) {
@@ -247,7 +244,10 @@ public abstract class NbJSBreakpoint extends Breakpoint {
                 } else if( nbJSALoc instanceof JSLocation ){
                     jsLocation = (JSLocation)nbJSALoc;
                 }
-                if (jsLocation != null) {
+
+                if (debugger != null && jsLocation != null && debugger.isIgnoringQueryStrings() && jsLocation.getURI().getQuery() != null) {
+                    return "";
+                } else if (jsLocation != null) {
                     return jsLocation.getDisplayName();
                 }
             }
