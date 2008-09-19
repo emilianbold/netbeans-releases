@@ -1303,12 +1303,24 @@ exists or setup the property manually. For example like this:
             
             <target name="connect-debugger" if="do.debug.server" unless="is.debugged">
                 <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
-                    <classpath>
-                        <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}:${{ws.debug.classpaths}}"/>
-                    </classpath>
-                    <sourcepath>
-                        <path path="${{web.docbase.dir}}:${{ws.web.docbase.dirs}}"/>
-                    </sourcepath>
+                    <xsl:choose>
+                        <xsl:when test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service|/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
+                            <classpath>
+                                <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}:${{ws.debug.classpaths}}"/>
+                            </classpath>
+                            <sourcepath>
+                                <path path="${{web.docbase.dir}}:${{ws.web.docbase.dirs}}"/>
+                            </sourcepath>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <classpath>
+                                <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}"/>
+                            </classpath>
+                            <sourcepath>
+                                <path path="${{web.docbase.dir}}"/>
+                            </sourcepath>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                         <bootclasspath>
                             <path path="${{platform.bootcp}}"/>

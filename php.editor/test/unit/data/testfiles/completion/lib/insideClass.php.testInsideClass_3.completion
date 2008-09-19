@@ -1,4 +1,4 @@
 Code completion result for source line:
 $this->setFl|d(1);
 (QueryType=COMPLETION, NameKind=PREFIX)
-METHOD     setFld($fld)                               InsideClass
+METHOD     setFld($fld)                    [PUBLIC]   InsideClass

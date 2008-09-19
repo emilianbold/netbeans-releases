@@ -388,7 +388,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
             "simple-files" // NOI18N
         };
         private static final String[] PRIVILEGED_NAMES = new String[]{
-            "Templates/CAPS/ETL.etl" ,
+            "Templates/CAPS/Collaboration.etl" ,//For the right click in Project-New->should have ETL by default
         };
     
 

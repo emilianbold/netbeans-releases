@@ -68,8 +68,6 @@ import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.turbo.CustomProviders;     
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.TurboProvider;
-import org.netbeans.modules.turbo.TurboProvider;
-import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;

@@ -60,12 +60,15 @@ public class ScriptingMeasureActionsTest {
 
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
+                .addTest(CreatePHPProject.class)
                 .addTest(CreatePHPSampleProject.class)
                 
                 .addTest(CreateScriptingPackFiles.class)
                 .addTest(ScriptingExpandFolder.class)
                 .addTest(EditorMenuPopup.class)
+                .addTest(CloseScriptingFiles.class)
                 .addTest(TypingInScriptingEditor.class)
+                .addTest(ScriptingCodeCompletionInEditor.class)
 
                 // Saving modified document
                 .addTest(SaveModifiedScriptingFiles.class)

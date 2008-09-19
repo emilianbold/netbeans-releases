@@ -459,7 +459,7 @@ public final class ModuleManager {
         public InputStream getResourceAsStream(String name) {
             if (JRE_PROVIDED_FACTORIES.contains(name)) {
                 // #146082: prefer JRE versions of JAXP factories when available.
-                // #147082: use empty file rather than deleting to ClassLoader.systemClassLoader to work around JAXP #6723276
+                // #147082: use empty file rather than null (~ delegation to ClassLoader.systemClassLoader) to work around JAXP #6723276
                 return new ByteArrayInputStream(new byte[0]);
             } else {
                 return super.getResourceAsStream(name);

@@ -379,6 +379,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
     private void setGrantAccess(boolean grant) {
         this.chkGrantAccess.setSelected(grant);
+        comboUsers.setEnabled(grant);
     }
     
     private boolean isGrantAccess() {

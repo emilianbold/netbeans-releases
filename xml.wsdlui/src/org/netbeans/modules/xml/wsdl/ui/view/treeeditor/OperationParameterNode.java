@@ -115,7 +115,7 @@ public abstract class OperationParameterNode<T extends OperationParameter> exten
     };
 
     public OperationParameterNode(OperationParameter wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<OperationParameter>(wsdlConstruct), wsdlConstruct);
+        super(wsdlConstruct);
         this.mPropertyAdapter = new OperationInputOutputFaultPropertyAdapter(wsdlConstruct);
         super.setNamedPropertyAdapter(this.mPropertyAdapter);
     }
