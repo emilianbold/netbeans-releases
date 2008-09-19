@@ -105,13 +105,14 @@ public class JsfJspDataLoader extends UniFileLoader {
             return null;
         }
 
-        // It is most likely a JSP file, however, we need to see if there is already a JsfJspDataObject registered
-        // for this file object.  There is a case where by in middle of refactoring, the JSP and the JAVA file are not
-        // linked as they should be, but there is still a JsfJspDataObject registered uner this file object
-        DataObject dataObject = JsfJavaDataLoader.DataObjectPoolFind(fo);
-        if (dataObject instanceof JsfJspDataObject) {
-            return fo;
-        }
+        // XXX #146796 The lines below are redundant. If the fileobject is already assigned to data object, than this method is not called.
+//        // It is most likely a JSP file, however, we need to see if there is already a JsfJspDataObject registered
+//        // for this file object.  There is a case where by in middle of refactoring, the JSP and the JAVA file are not
+//        // linked as they should be, but there is still a JsfJspDataObject registered uner this file object
+//        DataObject dataObject = JsfJavaDataLoader.DataObjectPoolFind(fo);
+//        if (dataObject instanceof JsfJspDataObject) {
+//            return fo;
+//        }
         
         // Handle DataObject during template instantiation specially since the
         // corresponding java file may not have been generated yet

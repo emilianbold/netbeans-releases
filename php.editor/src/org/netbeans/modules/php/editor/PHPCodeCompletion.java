@@ -444,7 +444,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         }
 
-        int startPos = tokenSequence.offset();
+        int rightExpressionBoundary = tokenSequence.offset();
 
         while (!CTX_DELIMITERS.contains(tokenSequence.token().id())
                 && findLHSExpressionType_skipArgs(tokenSequence)
@@ -461,10 +461,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
 
+        int leftExpressionBoundary = tokenSequence.offset(); // dbg only
+
         if (LOGGER.isLoggable(Level.FINE)){
             try {
                 LOGGER.fine("evaluating expression '" + request.info.getDocument().getText(
-                        tokenSequence.offset(), startPos - tokenSequence.offset()) + "'");
+                        leftExpressionBoundary, rightExpressionBoundary - leftExpressionBoundary) + "'");
 
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
@@ -555,13 +557,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 return preceedingType;
             }
         }
-        if (preceedingType == null || tokenSequence.offset() == startPos){
+        if (preceedingType == null || tokenSequence.offset() == rightExpressionBoundary){
             return preceedingType;
         }
 
-        if (startPos < tokenSequence.offset()){
-            String errorMsg = String.format("caretOffset=%d, startPos=%d, tokenSequence:\n%s",
-                    request.anchor, startPos, tokenSequence.toString()); //NOI18N
+        if (rightExpressionBoundary < tokenSequence.offset()){
+            String errorMsg = String.format("caretOffset=%d, leftExpressionBoundary=%d," +
+                    " rightExpressionBoundary=%d, tokenSequence:\n%s",
+                    request.anchor, leftExpressionBoundary, rightExpressionBoundary, tokenSequence.toString()); //NOI18N
 
             LOGGER.severe(errorMsg);
             throw new IllegalStateException("Error finding expression boundary," +
@@ -570,7 +573,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
         return findLHSExpressionType_recursive(tokenSequence, request,
-                preceedingType, staticContex, startPos);
+                preceedingType, staticContex, rightExpressionBoundary);
     }
 
      private boolean findLHSExpressionType_skipArgs(TokenSequence<PHPTokenId> tokenSequence){
@@ -592,7 +595,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private String findLHSExpressionType_recursive(TokenSequence<PHPTokenId> tokenSequence,
             PHPCompletionItem.CompletionRequest request,
-            String preceedingType, boolean staticContext, int startPos){
+            String preceedingType, boolean staticContext, int rightExpressionBoundary){
         String type = null;
 
         do {
@@ -628,14 +631,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
 
-        if (type == null || tokenSequence.offset() == startPos)
+        if (type == null || tokenSequence.offset() == rightExpressionBoundary)
         {
             return type;
         }
 
-        if (startPos < tokenSequence.offset()){
-            String errorMsg = String.format("caretOffset=%d, startPos=%d, tokenSequence:\n%s",
-                    request.anchor, startPos, tokenSequence.toString()); //NOI18N
+        if (rightExpressionBoundary < tokenSequence.offset()){
+            String errorMsg = String.format("caretOffset=%d, rightExpressionBoundary=%d, tokenSequence:\n%s",
+                    request.anchor, rightExpressionBoundary, tokenSequence.toString()); //NOI18N
 
             LOGGER.severe(errorMsg);
             throw new IllegalStateException("Error finding expression boundary," +
@@ -644,7 +647,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
         
         return findLHSExpressionType_recursive(tokenSequence, request,
-                type, staticContext, startPos);
+                type, staticContext, rightExpressionBoundary);
     }
 
     private String findLHSideExpressionType_extractFunctionNameFromCall(TokenSequence tokenSequence) {
@@ -713,8 +716,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (classDecl != null) {
                     typeName = classDecl.getName().getName();
-                    staticContext = instanceContext = true;
-                    includeInherited = false;
+                    staticContext = true;
+                    includeInherited = true;
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else if (varName.equals("parent")) { //NOI18N
@@ -802,7 +805,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     Collection<IndexedConstant> classConstants = request.index.getAllClassConstants(
                             request.result, typeName, request.prefix, nameKind);
                     for (IndexedConstant constant : classConstants) {
-                        proposals.add(new PHPCompletionItem.VariableItem(constant, request));
+                        proposals.add(new PHPCompletionItem.ClassConstantItem(constant, request));
                     }
                 }
             }

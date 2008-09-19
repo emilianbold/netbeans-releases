@@ -652,7 +652,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // **************************************************************************
     
     public void stateChanged(ChangeEvent e) {
-        //adjustTreeScrollBar();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                adjustTreeScrollBar(-1);
+            }
+        });
     }
 
     // **************************************************************************

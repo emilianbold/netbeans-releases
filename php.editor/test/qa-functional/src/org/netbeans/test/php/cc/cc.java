@@ -122,4 +122,40 @@ public class cc extends GeneralPHP
       }
     }
 
+  protected void WaitCompletionScanning( )
+  {
+    // Wait till disappear or contains more then dummy item
+    CompletionJListOperator comp = null;
+    while( true )
+    {
+      try
+      {
+        comp = new CompletionJListOperator( );
+        if( null == comp )
+          return;
+        try
+        {
+          Object o = comp.getCompletionItems( ).get( 0 );
+          if(
+              !o.toString( ).contains( "No suggestions" )
+              && !o.toString( ).contains( "Scanning in progress..." )
+            )
+          {
+            return;
+          }
+          Sleep( 100 );
+        }
+        catch( java.lang.Exception ex )
+        {
+          return;
+        }
+      }
+      catch( JemmyException ex )
+      {
+        return;
+      }
+      Sleep( 100 );
+    }
+  }
+
 }

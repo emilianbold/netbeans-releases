@@ -44,8 +44,12 @@ package org.netbeans.modules.j2ee.archive.wizard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
@@ -62,6 +66,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 class DeployablePanelVisual extends JPanel implements DocumentListener, ActionListener {
+    
+    private static final Logger log = Logger.getLogger(DeployablePanelVisual.class.getName());
     
     private transient DeployableWizardPanel panel;
     private static File savedArchiveLoc = null;
@@ -296,26 +302,23 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
     private javax.swing.JLabel targetServerLabel;
     // End of variables declaration//GEN-END:variables
     
+    @Override
     public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();
     }
     
-    private static final String WP_eM = WizardDescriptor.PROP_ERROR_MESSAGE; //NOI18N
-    
     private static final ResourceBundle bundle = NbBundle.getBundle(DeployablePanelVisual.class);
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (projectNameTextField.getText().length() == 0) {
-            wizardDescriptor.putProperty(WP_eM,
-                    bundle.getString("ERR_valid_folder_name")); //NOI18N
+            setError(wizardDescriptor, "ERR_valid_folder_name");  //NOI18N
             return false; // Display name not specified
         }
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
         if (!f.isDirectory()) {
-            String message = bundle.getString("ERR_valid_path");    //NOI18N
-            wizardDescriptor.putProperty(WP_eM, message);
+            setError(wizardDescriptor, "ERR_valid_path");  //NOI18N
             return false;
         }
         final File destFolder = FileUtil.normalizeFile(new File(createdFolderTextField.getText()).getAbsoluteFile());
@@ -325,76 +328,109 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty(WP_eM,
-                    bundle.getString("ERR_cannot_write_folder"));   // NOI18N
+            setError(wizardDescriptor, "ERR_cannot_write_folder");  //NOI18N
             return false;
         }
         
         if (FileUtil.toFileObject(projLoc) == null) {
-            String message = bundle.getString("ERR_valid_path");    // NOI18N
-            wizardDescriptor.putProperty(WP_eM, message);
+            setError(wizardDescriptor, "ERR_valid_path");  //NOI18N
             return false;
         }
         
         File[] kids = destFolder.listFiles();
         if (destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty(WP_eM,
-                    bundle.getString("ERR_folder_not_empty"));  // NOI18N
+            setError(wizardDescriptor, "ERR_folder_not_empty");  //NOI18N
             return false;
         }
-        f = FileUtil.normalizeFile(new File(archiveFileField.getText()).getAbsoluteFile());
+        
+        String archName = archiveFileField.getText();
+        if (archName.trim().length() < 1) {
+            setInfo(wizardDescriptor, "ERR_empty_archive_name");  //NOI18N
+            return false;
+        }
+        f = FileUtil.normalizeFile(new File(archName).getAbsoluteFile());
         if (!f.exists() || !f.isFile() || !f.canRead()) {
-            String message = bundle.getString("ERR_invalid_archive");   // NOI18N
-            wizardDescriptor.putProperty(WP_eM, message);
+            setError(wizardDescriptor, "ERR_invalid_archive");  //NOI18N
             return false;
         }
         if (serverInstanceComboBox.getItemCount() == 0) {
-            String message = bundle.getString("ERR_no_possible_target");    // NOI18N
-            wizardDescriptor.putProperty(WP_eM, message);
+            setError(wizardDescriptor, "ERR_no_possible_target");  //NOI18N
             return false;
         }
         if (serverInstanceComboBox.getSelectedItem() == null) {
-            String message = bundle.getString("ERR_no_target"); // NOI18N
-            wizardDescriptor.putProperty(WP_eM, message);
+            setError(wizardDescriptor, "ERR_no_target");  //NOI18N
             return false;
         }
         
         // this may take a while to compute...
         //
-        if (!acceptableArchive(f.getAbsoluteFile().getAbsolutePath(), wizardDescriptor)) {
-            String message = bundle.getString("ERR_unsupported_archive"); // NOI18N
-            wizardDescriptor.putProperty(WP_eM, message);
+        String archiveName = f.getAbsoluteFile().getAbsolutePath();
+        if (!acceptableArchive(archiveName, wizardDescriptor)) {
+            setError(wizardDescriptor, "ERR_unsupported_archive");  //NOI18N
             return false;
         }
-        wizardDescriptor.putProperty(WP_eM, "");                                // NOI18N
+        
+        if (ArchiveProjectProperties.PROJECT_TYPE_VALUE_UNKNOWN.equals(
+                wizardDescriptor.getProperty(DeployableWizardIterator.PROJECT_TYPE_PROP)))
+        {
+            final File archiveFile = new File(archiveName);
+            // do a bit of digging...
+            boolean unknownType;
+            try {
+                JarFile jf = new JarFile(archiveFile);
+                boolean isJar = DeployableWizardIterator.isEjbJar(jf);
+                boolean isCar = DeployableWizardIterator.hasMain(jf);
+                unknownType = !isJar && !isCar;
+            }
+            catch (IOException ex) {
+                log.log(Level.WARNING, "Error during archive type discovery", ex);
+                unknownType = true;
+            }
+            if (unknownType) {
+                setError(wizardDescriptor, "ERR_Cannot_Deteremine_Type");  //NOI18N
+                return false;
+            }
+        }
+        
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");  // NOI18N
         return true;
+    }
+    
+    private void setError(WizardDescriptor wizardDescriptor, String msgKey) {
+        String message = bundle.getString(msgKey);
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+    }
+
+    private void setInfo(WizardDescriptor wizardDescriptor, String msgKey) {
+        String message = bundle.getString(msgKey);
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
     }
     
     boolean acceptableArchive(String aPath, WizardDescriptor d) {
         // do the easy test first
         boolean retVal = false;
-        if (aPath.endsWith("war")) {    // NOI18N
+        if (aPath.endsWith(".war")) {    // NOI18N
             d.putProperty(DeployableWizardIterator.PROJECT_TYPE_PROP,
                     ArchiveProjectProperties.PROJECT_TYPE_VALUE_WAR);
             retVal = true;
         }
-        if (aPath.endsWith("car")) {    // NOI18N
+        if (aPath.endsWith(".car")) {    // NOI18N
             d.putProperty(DeployableWizardIterator.PROJECT_TYPE_PROP,
                     ArchiveProjectProperties.PROJECT_TYPE_VALUE_CAR);
             retVal = true;
         }
-        if (aPath.endsWith("rar")) {    // NOI18N
+        if (aPath.endsWith(".rar")) {    // NOI18N
             d.putProperty(DeployableWizardIterator.PROJECT_TYPE_PROP,
                     ArchiveProjectProperties.PROJECT_TYPE_VALUE_RAR);
             retVal = true;
         }
-        if (aPath.endsWith("ear")) {    // NOI18N
+        if (aPath.endsWith(".ear")) {    // NOI18N
             d.putProperty(DeployableWizardIterator.PROJECT_TYPE_PROP,
                     ArchiveProjectProperties.PROJECT_TYPE_VALUE_EAR);
             retVal = true;
         }
-        if (aPath.endsWith("jar")) {    // NOI18N
+        if (aPath.endsWith(".jar")) {    // NOI18N
             d.putProperty(DeployableWizardIterator.PROJECT_TYPE_PROP,
                     ArchiveProjectProperties.PROJECT_TYPE_VALUE_UNKNOWN);
             retVal = true;
@@ -484,22 +520,8 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
     }
     
     private boolean acceptableArchive(String aPath) {
-        boolean retVal = false;
-        if (aPath.endsWith("war")) {    // NOI18N
-            retVal = true;
-        }
-        if (aPath.endsWith("car")) {    // NOI18N
-            retVal = true;
-        }
-        if (aPath.endsWith("ear")) {    // NOI18N
-            retVal = true;
-        }
-        if (aPath.endsWith("jar")) {    // NOI18N
-            retVal = true;
-        }
-        if (aPath.endsWith("rar")) {    // NOI18N
-            retVal = true;
-        }
-        return retVal;
+        return (aPath.endsWith(".war") || aPath.endsWith(".car") ||  // NOI18N
+            aPath.endsWith(".ear") || aPath.endsWith(".jar") ||  // NOI18N
+            aPath.endsWith(".rar"));  // NOI18N
     }
 }

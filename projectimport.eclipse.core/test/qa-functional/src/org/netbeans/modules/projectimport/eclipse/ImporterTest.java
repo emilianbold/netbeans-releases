@@ -49,8 +49,8 @@ import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithTransitiv
 import org.netbeans.modules.projectimport.eclipse.gui.ImporterMenu;
 import org.netbeans.modules.projectimport.eclipse.gui.ImporterWizard;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleJavaProjectFromWS;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleWebProjectFromWS;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportSourceFilters;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportTestProjects;
 
 /**
  *
@@ -69,6 +69,7 @@ public class ImporterTest {
                 addTest(ImportAppRunParams.class).
                 addTest(ImportJavaCParams.class).
                 addTest(ImportSourceFilters.class).
+                addTest(ImportTestProjects.class).
                 enableModules(".*").clusters(".*").
                 gui(true).reuseUserDir(true));
     }

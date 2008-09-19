@@ -121,6 +121,8 @@ public class Issue141992 extends cc
     // Check code completion list
 
     CompletionJListOperator jCompl = GetCompletion( );
+    if( null == jCompl )
+      fail( "Unale to find completion list in any form." );
     List list = jCompl.getCompletionItems( );
     // Magic CC number for complete list
     if( COMPLETE_CC_LIST_SIZE != list.size( ) )

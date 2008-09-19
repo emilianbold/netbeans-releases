@@ -58,8 +58,6 @@ import org.openide.util.Lookup;
  */
 public class SQLDataObject extends MultiDataObject {
 
-    private Lookup lookup;
-
     public SQLDataObject(FileObject primaryFile, UniFileLoader loader) throws DataObjectExistsException {
         super(primaryFile, loader);
         CookieSet cookies = getCookieSet();

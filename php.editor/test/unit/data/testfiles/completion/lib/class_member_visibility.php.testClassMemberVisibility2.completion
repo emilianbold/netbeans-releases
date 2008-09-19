@@ -3,3 +3,4 @@ parent::|protectedParentMethod();
 (QueryType=COMPLETION, NameKind=PREFIX)
 METHOD     protectedParentMethod()         [PROTECTE  ParentClass
 METHOD     publicParentMethod()            [PUBLIC]   ParentClass
+CONSTANT   ? ParentClassConst                         ParentClass

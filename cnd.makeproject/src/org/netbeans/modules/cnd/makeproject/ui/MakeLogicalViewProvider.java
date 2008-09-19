@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
@@ -462,7 +463,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private void updateAnnotationFiles() {
             HashSet set = new HashSet();
             // Add project directory
-            if (project.getProjectDirectory() == null) {
+            FileObject fo = project.getProjectDirectory();
+            if (fo == null || !fo.isValid()) {
                 // See IZ 125880
                 Logger.getLogger("cnd.makeproject").warning("project.getProjectDirectory() == null - " + project);
             }
@@ -472,9 +474,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
             // Add buildfolder from makefile projects to sources. See IZ 90190.
             MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor();
-            Configuration[] confs = makeConfigurationDescriptor.getConfs().getConfs();
-            for (int i = 0; i < confs.length; i++) {
-                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+            if (makeConfigurationDescriptor == null) {
+                return;
+            }
+            Configurations confs = makeConfigurationDescriptor.getConfs();
+            if (confs == null) {
+                return;
+            }
+            for (Configuration conf : confs.getConfs()){
+                MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
                 if (makeConfiguration.isMakefileConfiguration()) {
                     MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
                     String path = makefileConfiguration.getAbsBuildCommandWorkingDir();

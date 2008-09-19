@@ -191,7 +191,7 @@ public class FFormatter extends ExtFormatter {
             try {
                 FFormatSupport ffs = (FFormatSupport) createFormatSupport(fw);
                 FormatTokenPosition pos = ffs.getFormatStartPosition();
-                if (ffs.getFreeFormat()) {
+                //if (ffs.getFreeFormat()) {
                     if (ffs.isIndentOnly()) {  // create indentation only
                         ffs.indentLine(pos);
                     } else { // regular formatting
@@ -220,7 +220,7 @@ public class FFormatter extends ExtFormatter {
                             }
                         }
                     }
-                }
+                //}
             } catch (IllegalStateException e) {
             }
         }

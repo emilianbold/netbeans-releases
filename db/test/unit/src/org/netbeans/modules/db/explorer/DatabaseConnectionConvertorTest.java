@@ -140,17 +140,6 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         assertTrue(DOMCompare.compareDocuments(doc, goldenDoc));
     }
     
-    /**
-     * Tests that the instance retrieved from the DO created by DCC.create(DCI dbconn) is the same object as dbconn.
-     */
-    public void testSameInstanceAfterCreate() throws Exception {
-        DatabaseConnection dbconn = new DatabaseConnection("org.bar.BarDriver", 
-                "bar_driver", "jdbc:bar:localhost", "schema", "user", "password");
-        dbconn.setRememberPassword(true);
-        DataObject dobj = DatabaseConnectionConvertor.create(dbconn);
-        assertSame(dbconn, ((InstanceCookie)dobj.getCookie(InstanceCookie.class)).instanceCreate());
-    }
-    
     public void testSaveOnPropertyChange() throws Exception {
         DatabaseConnection dbconn = new DatabaseConnection("a", "b", "c", "d", "e", null);
         FileObject fo = DatabaseConnectionConvertor.create(dbconn).getPrimaryFile();
