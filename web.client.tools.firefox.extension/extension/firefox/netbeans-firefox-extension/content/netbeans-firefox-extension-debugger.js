@@ -280,6 +280,15 @@
             onDBGPClose: function() {
                 if (window && window.NetBeans) {
                   window.NetBeans.Debugger.shutdown();
+                } else {
+                    if (firebugDebuggerService) {
+                        fbsUnregisterDebugger(firebugDebugger);
+                    }
+
+                    if (socket) {
+                        socket.close();
+                        socket = null;
+                    }
                 }
             }
         };
@@ -287,10 +296,16 @@
         // create DBGP socket
         socket = NetBeans.SocketUtils.createSocket("127.0.0.1", port, socketListener);
 
-        fbsRegisterDebugger(firebugDebugger);
-
-        // Do this instead of setting browser preference; must be done after registering
-        // debugger
+        try {
+            var prefs =
+                NetBeans.Utils.CCSV("@mozilla.org/preferences-service;1",
+                Components.interfaces.nsIPrefBranch2);
+            
+            prefs.setBoolPref("extensions.firebug-service.trackThrowCatch", true);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Could not set trackThrowCatch")
+            NetBeans.Logger.logException(exc);
+        }
         firebugDebuggerService.trackThrowCatch = true;
 
         initialize(this);
@@ -312,7 +327,7 @@
                 if ( !topWindow ) {
                     topWindow = win;
                     browser = NetBeans.Utils.getBrowserByWindow(win);
-                    wrapBrowserDestroy();
+                    wrapBrowserDestroy(browser);
                     currentUrl = uri.prePath+uri.path;
                     return true;
                 } else if ( topWindow == win && browser == NetBeans.Utils.getBrowserByWindow(win) ) {
@@ -388,10 +403,12 @@
             },
 
             // #5 Show Current Context - we didn't need this.'
-            showContext: function(browser, context) {
+            showContext: function(currentBrowser, context) {
                 if (this.terminated) {
                     return;
                 }
+
+                wrapBrowserDestroy(currentBrowser);
             },
 
             // #6 Watch Window ( attachToWindow )
@@ -494,8 +511,12 @@
         );
 
         // Make sure we our shutdown when the browser is destroyed.
-        function wrapBrowserDestroy()
+        function wrapBrowserDestroy(browser)
         {
+            if (browser._destroy) {
+                return;
+            }
+
             browser._destroy = browser.destroy;
             browser.destroy = function() {
                 netBeansDebugger.shutdown();
@@ -506,6 +527,8 @@
             }
         }
 
+        fbsRegisterDebugger(firebugDebugger);
+
         Firebug.registerExtension(NetBeansDebuggerExtension);
 
         netBeansDebugger.netbeansDebuggerExtension = NetBeansDebuggerExtension;
@@ -514,7 +537,6 @@
         Firebug.Debugger.isHostEnabled = function(context) {
             return topWindow && context.window == topWindow;
         }
-
     }
 
 
@@ -577,7 +599,7 @@
     this.shutdown = function()
     {
         this.shutdownInProgress = true;
-        
+
         if ( !jsDebuggerService ) {
             return;
         }
