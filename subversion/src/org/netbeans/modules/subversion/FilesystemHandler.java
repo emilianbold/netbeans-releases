@@ -107,7 +107,9 @@ class FilesystemHandler extends VCSInterceptor {
                 // with the cache refresh we rely on afterDelete
             } catch (SVNClientException e) {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
-                return;
+                IOException ex = new IOException("Subversion failed to delete " + file.getAbsolutePath()); // NOI18N
+                ex.initCause(e);
+                throw ex;
             } finally {
                 internalyDeletedFiles.add(file);
             }

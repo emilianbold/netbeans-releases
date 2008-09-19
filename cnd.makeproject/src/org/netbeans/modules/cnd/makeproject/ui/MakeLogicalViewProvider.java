@@ -356,6 +356,34 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
+    public static void refreshBrokenItems(final Project project) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                refreshBrokenItemsImpl(project);
+            }
+        });
+    }
+
+    private static void refreshBrokenItemsImpl(Project project) {
+        Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+        refreshBrokenItemsImpl(findProjectNode(rootNode, project));
+    }
+
+    private static void refreshBrokenItemsImpl(Node root) {
+        if (root != null) {
+            if (root.isLeaf()) {
+                Object o = root.getLookup().lookup(BrokenViewItemNode.class);
+                if (o != null) {
+                    ((BrokenViewItemNode)o).refresh();
+                }
+            } else {
+                for (Node node : root.getChildren().getNodes(true)) {
+                    refreshBrokenItemsImpl(node);
+                }
+            }
+        }
+    }
+
     private static Node findProjectNode(Node root, Project p) {
         Node[] n = root.getChildren().getNodes(true);
         Template t = new Template(null, null, p);
@@ -1394,6 +1422,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             };
         }
 
+        public void refresh() {
+            childrenKeys.refreshItem(item);
+        }
+
         @Override
         public boolean canRename() {
             return false;
@@ -1433,16 +1465,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         public void actionPerformed(ActionEvent e) {
             if (item != null) {
-                refresh(item);
+                childrenKeys.refreshItem(item);
             } else {
                 Item[] items = folder.getItemsAsArray();
-                for (int i = 0; i < items.length; i++)
-                    refresh(items[i]);
+                for (int i = 0; i < items.length; i++) {
+                    childrenKeys.refreshItem(items[i]);
+                }
             }
-        }
-
-        private void refresh(Item item) {
-            childrenKeys.refreshItem(item);
         }
     }
 

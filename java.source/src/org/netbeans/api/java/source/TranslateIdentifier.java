@@ -334,7 +334,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         if (element != null) {
             // solve the imports only when declared type!!!
             if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
-                if (element == rootElement) {
+                TreePath elmPath = info.getTrees().getPath(element);
+                if ((path == null && element == rootElement)
+                        || (path != null && elmPath != null && path.getCompilationUnit().getSourceFile() == elmPath.getCompilationUnit().getSourceFile())) {
                     return make.Identifier(element.getSimpleName());
                 } else {
                     return make.QualIdent(element);

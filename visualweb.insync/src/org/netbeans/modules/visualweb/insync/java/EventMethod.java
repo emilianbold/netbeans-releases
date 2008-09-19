@@ -44,6 +44,7 @@ package org.netbeans.modules.visualweb.insync.java;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import java.util.List;
@@ -112,7 +113,13 @@ public class EventMethod extends Method{
         return (String)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
                 ExecutableElement execElement = execElementHandle.resolve(cinfo);
-                BlockTree block = cinfo.getTrees().getTree(execElement).getBody();
+//                BlockTree block = cinfo.getTrees().getTree(execElement).getBody();
+                MethodTree methodTree = cinfo.getTrees().getTree(execElement);
+                if (methodTree == null) {
+                    // #139727 NPE
+                    return null;
+                }
+                BlockTree block = methodTree.getBody();
                 List<? extends StatementTree> stmts = block.getStatements();
                 if(stmts.size() > 0) {
                     StatementTree stmt = stmts.get(stmts.size() - 1);

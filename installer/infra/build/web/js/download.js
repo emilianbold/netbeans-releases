@@ -43,8 +43,6 @@ var PROPERTY_CND       = 32;
 var PROPERTY_PHP       = 64;
 var PROPERTY_HIDDEN    = 128;
 
-var IMG_LOCATION = "img/";
-
 var INFO_ICON   = IMG_LOCATION + "info_icon.gif";
 var INFO_ICON_H = IMG_LOCATION + "info_icon_h.gif";
 

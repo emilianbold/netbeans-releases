@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.openide.nodes.AbstractNode;
@@ -51,13 +53,14 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author mkleint
  * @author Anuradha
  */
-public class GroupListChildren extends Children.Keys {
+public class GroupListChildren extends Children.Keys implements ChangeListener {
 
     public static final Object LOADING = new Object();
    private RepositoryInfo info;
@@ -78,6 +81,7 @@ public class GroupListChildren extends Children.Keys {
 
     public GroupListChildren(RepositoryInfo info) {
         this.info = info;
+        
     }
 
     /** Creates a new instance of GroupListChildren */
@@ -95,6 +99,7 @@ public class GroupListChildren extends Children.Keys {
     protected void addNotify() {
         super.addNotify();
         refreshGroups();
+        info.addChangeListener(WeakListeners.change(this, info));
     }
     
     public void refreshGroups() {
@@ -112,5 +117,9 @@ public class GroupListChildren extends Children.Keys {
         super.removeNotify();
         keys = Collections.EMPTY_LIST;
         setKeys(Collections.EMPTY_LIST);
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        refreshGroups();
     }
 }
