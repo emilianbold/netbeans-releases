@@ -109,11 +109,21 @@ public final class Path {
 
     public static ArrayList<String> getPathWithDefaultCompilerLocations() {
         ArrayList<String> alist = (ArrayList<String>) list.clone();
+        String dir;
 
         if (Utilities.isWindows()) {
-            alist.add(CppUtils.getCygwinBase());
-            alist.add(CppUtils.getMinGWBase());
-            alist.add(CppUtils.getMSysBase());
+            dir = CppUtils.getCygwinBase();
+            if (dir != null) {
+                alist.add(dir + "\\bin"); // NOI18N
+            }
+            dir = CppUtils.getMinGWBase();
+            if (dir != null) {
+                alist.add(dir + "\\bin"); // NOI18N
+            }
+            dir = CppUtils.getMSysBase();
+            if (dir != null) {
+                alist.add(dir + "\\bin"); // NOI18N
+            }
         } else if (Utilities.isUnix()) {
             if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                 if (isOpenSolaris()) {
