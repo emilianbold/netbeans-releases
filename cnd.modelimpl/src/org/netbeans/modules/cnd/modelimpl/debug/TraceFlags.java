@@ -146,10 +146,10 @@ public class TraceFlags {
     
     public static final String[] logMacros;
     static {
-         String text = System.getProperty("parser.log.macro");
+         String text = System.getProperty("parser.log.macro"); //NOI18N
          if (text != null && text.length() > 0) {
              List<String> l = new ArrayList<String>();
-             for (StringTokenizer stringTokenizer = new StringTokenizer(text, ","); stringTokenizer.hasMoreTokens();) {
+             for (StringTokenizer stringTokenizer = new StringTokenizer(text, ","); stringTokenizer.hasMoreTokens();) { //NOI18N
                  l.add(stringTokenizer.nextToken());
              }
              logMacros = l.toArray(new String[l.size()]);

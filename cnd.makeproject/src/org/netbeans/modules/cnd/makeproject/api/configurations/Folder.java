@@ -403,7 +403,6 @@ public class Folder {
             for (int i = 0; i < configurations.length; i++)
                 configurations[i].removeAuxObject(item.getId()/*ItemConfiguration.getId(item.getPath())*/);
         }
-        item.removePropertyChangeListener();
         item.setFolder(null);
         fireChangeEvent();
         return ret;

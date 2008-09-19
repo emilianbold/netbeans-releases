@@ -211,9 +211,9 @@ public class NativeExecutor implements Runnable {
                 String executableAbsolute = new File(runDir, executable).getAbsolutePath();
                 FileMagic magic = new FileMagic(executableAbsolute);
                 ElfReader er = new ElfReader(executableAbsolute, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
-                if (er.is32Bit()) {
+                if (er.is32Bit() || er.is64Bit()) {
                     int platformType  = (hkey == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(hkey).getPlatform();
-                    String unbufferPath = Unbuffer.getPath(hkey);
+                    String unbufferPath = Unbuffer.getPath(hkey, er.is64Bit());
                     if (unbufferPath != null) {
                         if (platformType == PlatformTypes.PLATFORM_MACOSX) {
                             envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
@@ -224,8 +224,6 @@ public class NativeExecutor implements Runnable {
                             envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
                         }
                     }
-                } else if (er.is64Bit()) {
-                    // TODO: need to generate 64 bit unbuffer and use it here
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);

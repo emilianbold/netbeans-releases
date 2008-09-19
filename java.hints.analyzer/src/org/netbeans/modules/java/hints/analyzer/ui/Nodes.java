@@ -360,7 +360,7 @@ public class Nodes {
 
         @Override
         public String getHtmlDisplayName() {
-            System.err.println("fix.isFixed()=" + fix.isFixed());
+//            System.err.println("fix.isFixed()=" + fix.isFixed());
             if (fix.isFixed()) {
                 return "<html><s>" + getDisplayName();
             } else {
@@ -369,7 +369,7 @@ public class Nodes {
         }
 
         public void stateChanged(ChangeEvent e) {
-            System.err.println("state changed");
+//            System.err.println("state changed");
             fireDisplayNameChange(null, null);
         }
 

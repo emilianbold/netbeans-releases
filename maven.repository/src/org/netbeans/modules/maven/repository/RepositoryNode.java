@@ -173,27 +173,12 @@ public class RepositoryNode extends AbstractNode {
             basicProps.put(new Node.Property[] {
                 id, name, type, local, localRepoLocation, remoteDownloadable, repoURL, indexURL
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
             });
         } catch (NoSuchMethodException exc) {
             exc.printStackTrace();
         }
         return sheet;
     }
-    
 
     public class RefreshIndexAction extends AbstractAction {
 
@@ -207,7 +192,6 @@ public class RepositoryNode extends AbstractNode {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     RepositoryIndexer.indexRepo(info);
-                    ((GroupListChildren)getChildren()).refreshGroups();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             RefreshIndexAction.this.setEnabled(true);
