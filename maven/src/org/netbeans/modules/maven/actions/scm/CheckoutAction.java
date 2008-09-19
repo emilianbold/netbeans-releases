@@ -92,6 +92,9 @@ public class CheckoutAction extends AbstractAction {
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (checkoutUI.getCheckoutButton() == ret) {
             final RunConfig rc = checkoutUI.getRunConfig();
+            if (!rc.getExecutionDirectory().exists()) {
+                rc.getExecutionDirectory().mkdirs();
+            }
             ExecutorTask task = RunUtils.executeMaven(rc);
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(Task task) {
