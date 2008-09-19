@@ -50,6 +50,7 @@ import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeatu
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
@@ -166,10 +167,8 @@ public class MessageAuthenticationProfile extends ProfileBase
         if ((keyAlias == null) && (trustAlias == null)  && (trustLoc == null) && (keyLoc == null) && (trustPasswd == null) && (keyPasswd == null)) {
             String user = ProprietarySecurityPolicyModelHelper.getDefaultUsername((Binding)component);
             String passwd = ProprietarySecurityPolicyModelHelper.getDefaultPassword((Binding)component);
-            if ((DEFAULT_PASSWORD.equals(passwd)) && (DEFAULT_USERNAME.equals(user))) {
-                if ((trustLoc == null) && (trustPasswd == null) && (keyPasswd != null) && (keyLoc == null)) {
-                    return true;
-                }
+            if (Util.isEqual(DEFAULT_PASSWORD, passwd) && Util.isEqual(DEFAULT_USERNAME, user)) {
+                return true;
             }
         }
         return false;

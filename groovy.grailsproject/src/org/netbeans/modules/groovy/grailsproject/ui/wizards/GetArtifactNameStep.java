@@ -98,14 +98,23 @@ public class GetArtifactNameStep implements  WizardDescriptor.Panel<WizardDescri
 
     public boolean isValid() {
         getComponent();
-        
         if(!serverConfigured) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
-                NbBundle.getMessage(NewGrailsProjectWizardIterator.class, 
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
                 "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
-            }
-        
-        return  !serverRunning && serverConfigured && component.valid( wizardDescriptor );
+            return false;
+        }
+        if (serverRunning) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetProjectLocationStep.ServerIsRunning"));
+            return false;
+        }
+        if (!component.valid(wizardDescriptor)) {
+            return false;
+        }
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
+        return true;
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -150,10 +159,6 @@ public class GetArtifactNameStep implements  WizardDescriptor.Panel<WizardDescri
     
     public GrailsProject getGrailsProject() {
         return project;
-    }
-    
-    public void setArtifactName(String text){
-        component.setArtifactName(text);
     }
     
 }

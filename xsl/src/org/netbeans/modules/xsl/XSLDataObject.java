@@ -96,14 +96,12 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
         TextEditorSupport.TextEditorSupportFactory editorFactory =
             new TextEditorSupport.TextEditorSupportFactory (this, XMLKit.MIME_TYPE);
         editorFactory.registerCookies (set);
-		
+
+        set.assign(XmlFileEncodingQueryImpl.class, XmlFileEncodingQueryImpl.singleton());
     }
 
     public final Lookup getLookup() {
-        return Lookups.fixed(new Object[]{
-            super.getLookup(),
-            this,
-            XmlFileEncodingQueryImpl.singleton()});
+        return getCookieSet().getLookup();
     }
 
     /**

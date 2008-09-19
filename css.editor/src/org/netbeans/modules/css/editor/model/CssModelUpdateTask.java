@@ -95,16 +95,25 @@ public final class CssModelUpdateTask implements CancellableTask<CompilationInfo
 
     public static class CssModelUpdateTaskFactory extends EditorAwareSourceTaskFactory {
 
-        /**
-         * Creates a new instance of GsfHintsFactory
-         */
         public CssModelUpdateTaskFactory() {
             super(Phase.PARSED, Priority.BELOW_NORMAL);
         }
 
         public CancellableTask<CompilationInfo> createTask(FileObject file) {
-            return new CssModelUpdateTask(file);
+            if ("text/x-css".equals(file.getMIMEType())) { //NOI18N
+                return new CssModelUpdateTask(file);
+            } else {
+                //return empty task for non css files
+                return new CancellableTask<CompilationInfo>() {
+                    public void cancel() {
+                    }
+                    public void run(CompilationInfo parameter) throws Exception {
+                    }
+                };
+            }
         }
     }
+    
+    
 }
 
