@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.nav;
@@ -184,7 +184,7 @@ public class SemiAttribute extends DefaultVisitor {
                 if (name != null) {
                     node2Element.put(vb, scopes.peek().enterWrite(name, Kind.VARIABLE, access, at));
                 }
-            } 
+            }
 
             String name = extractVariableName((Variable) vb);
 
@@ -741,11 +741,11 @@ public class SemiAttribute extends DefaultVisitor {
     //TODO converge this method with CodeUtils.extractVariableName()
     public static String extractVariableName(Variable var) {
         String varName = CodeUtils.extractVariableName(var);
-        
+
         if (varName != null && varName.startsWith("$")){ //NOI18N
             return varName.substring(1);
         }
-        
+
         return varName;
     }
 
@@ -829,9 +829,6 @@ public class SemiAttribute extends DefaultVisitor {
             this.writes = new LinkedList<Union2<ASTNode, IndexedElement>>();
             this.writesTypes = new LinkedList<AttributedType>();
             this.writes.add(n);
-            if (n.hasFirst() && n.first() == null) {
-                System.out.println("");
-            }
 
             this.writesTypes.add(type);
             this.name = name;
@@ -864,9 +861,6 @@ public class SemiAttribute extends DefaultVisitor {
         }
 
         void addWrite(Union2<ASTNode, IndexedElement> node, AttributedType type) {
-            if (node.hasFirst() && node.first() == null) {
-                System.out.println("");
-            }
             writes.add(node);
             writesTypes.add(type);
         }
@@ -874,7 +868,7 @@ public class SemiAttribute extends DefaultVisitor {
         Types getTypes() {
             return new Types(this);
         }
-        
+
         public String getScopeName() {
             String retval = "";//NOI18N
             Types types = getTypes();
@@ -931,7 +925,7 @@ public class SemiAttribute extends DefaultVisitor {
         public String getScopeName() {
             return getClassName();
         }
-        
+
         public int getModifier() {
             return modifier;
         }
@@ -1042,7 +1036,7 @@ public class SemiAttribute extends DefaultVisitor {
             Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
             PHPIndex index = PHPIndex.get(i);
             int attrs = PHPIndex.ANY_ATTR;
-            
+
             switch(k) {
                 case CONST:
                 for (IndexedConstant m : index.getAllClassConstants(null, getName(), name, NameKind.PREFIX)) {
@@ -1060,7 +1054,7 @@ public class SemiAttribute extends DefaultVisitor {
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.VARIABLE, m);
                 } break;
-                    
+
             }
             return enclosedElements.lookup(name, k);
         }
@@ -1171,7 +1165,7 @@ public class SemiAttribute extends DefaultVisitor {
 
         void initialized() {
             initialized = true;
-        }                
+        }
     }
 
     public  class DefinitionScope {
@@ -1221,7 +1215,7 @@ public class SemiAttribute extends DefaultVisitor {
                     return SemiAttribute.this.enterGlobalVariable(name);
                 }
             }
-            
+
             Map<String, AttributedElement> name2El = name2Writes.get(k);
 
             if (name2El == null) {
@@ -1292,7 +1286,7 @@ public class SemiAttribute extends DefaultVisitor {
                     for (IndexedConstant m : index.getConstants(null, name, NameKind.PREFIX)) {
                         String idxName = m.getName();
                         el = enterWrite(idxName, Kind.CONST, m);
-                    } 
+                    }
                     break;
                 }
             }
