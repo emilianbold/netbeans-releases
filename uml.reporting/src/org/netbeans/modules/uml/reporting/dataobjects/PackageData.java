@@ -43,9 +43,7 @@
 package org.netbeans.modules.uml.reporting.dataobjects;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -62,6 +60,7 @@ import org.netbeans.modules.uml.project.ui.nodes.AbstractModelElementNode;
 import org.netbeans.modules.uml.reporting.ReportTask;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
+import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.openide.util.NbBundle;
 
