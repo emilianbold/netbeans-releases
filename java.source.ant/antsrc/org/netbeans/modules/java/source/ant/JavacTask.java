@@ -50,7 +50,6 @@ import org.apache.tools.ant.taskdefs.Javac;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
