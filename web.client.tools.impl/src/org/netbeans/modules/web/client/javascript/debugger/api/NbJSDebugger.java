@@ -97,8 +97,11 @@ import org.netbeans.modules.web.client.tools.api.JSLocation;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.NbJSLocation;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -120,6 +123,8 @@ import org.openide.windows.InputOutput;
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
 public final class NbJSDebugger {
+
+    private static final Object SESSION_LOCK = new Object();
 
     private final URI uri;
     private final Factory browser;
@@ -355,6 +360,31 @@ public final class NbJSDebugger {
                 // TODO
             }
         } else {
+            DebuggerManager manager = DebuggerManager.getDebuggerManager();
+
+            // disallow multiple Firefox debugging sessions
+            if (browser == WebClientToolsProjectUtils.getFirefoxBrowser()) {
+                synchronized (SESSION_LOCK) {
+                    Session runningSession = null;
+                    Session[] sessions = manager.getSessions();
+                    for (Session session : sessions) {
+                        NbJSDebugger runningNbJSDebugger = session.lookupFirst(null, NbJSDebugger.class);
+                        if (runningNbJSDebugger != null && runningNbJSDebugger.getBrowser() == browser) {
+                            runningSession = session;
+                            break;
+                        }
+                    }
+                    if (runningSession != null) {
+                        boolean reload = displayReloadSessionDialog();
+                        if (!reload) {
+                            return;
+                        } else {
+                            runningSession.kill();
+                        }
+                    }
+                }
+            }
+
             NbJSDebugger nbJSdebugger = new NbJSDebugger(uri, browser, lookup, factory.startDebugging(browser, uri));
             List<? super Object> services = new ArrayList<Object>();
             services.add(nbJSdebugger);
@@ -375,7 +405,7 @@ public final class NbJSDebugger {
             DebuggerInfo debuggerInfo = DebuggerInfo.create(
                     NbJSDebuggerConstants.DEBUG_INFO_ID,
                     services.toArray());
-            DebuggerManager.getDebuggerManager().startDebugging(debuggerInfo);
+            manager.startDebugging(debuggerInfo);
         }
     }
 
@@ -396,6 +426,10 @@ public final class NbJSDebugger {
                 }
             }
         }
+    }
+
+    public HtmlBrowser.Factory getBrowser() {
+        return browser;
     }
 
     public String getID() {
@@ -1002,5 +1036,13 @@ public final class NbJSDebugger {
                 Log.getLogger().log(Level.FINE, "Could not convert URI to URL", ex);
             }
         }        
+    }
+
+    private static boolean displayReloadSessionDialog() {
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(NbJSDebugger.class, "RELOAD_DEBUGGER_QUESTION"),
+                NotifyDescriptor.OK_CANCEL_OPTION);
+        Object result = DialogDisplayer.getDefault().notify(nd);
+        return result == NotifyDescriptor.OK_OPTION;
     }
 }
