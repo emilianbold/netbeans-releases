@@ -125,6 +125,7 @@ public class IdentifierSignature {
                 break;
             case CONSTANT:
                 mask |= KIND_CONST;
+                break;
             case CLASS:
                 mask |= KIND_CLASS;
                 break;
@@ -292,7 +293,7 @@ public class IdentifierSignature {
     private static void add(ClassConstantDeclaration declaration, String typename, Boolean clsMember, List<IdentifierSignature> results) {
         List<Identifier> ids = declaration.getNames();
         for (Identifier identifier : ids) {
-            results.add(new IdentifierSignature(identifier, 0, ElementKind.METHOD, typename, true, clsMember));
+            results.add(new IdentifierSignature(identifier, 0, ElementKind.CONSTANT, typename, true, clsMember));
         }
     }
 
