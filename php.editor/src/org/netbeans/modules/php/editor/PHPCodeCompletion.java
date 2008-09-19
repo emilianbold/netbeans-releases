@@ -696,8 +696,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (classDecl != null) {
                     typeName = classDecl.getName().getName();
-                    staticContext = instanceContext = true;
-                    includeInherited = false;
+                    staticContext = true;
+                    includeInherited = true;
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else if (varName.equals("parent")) { //NOI18N
