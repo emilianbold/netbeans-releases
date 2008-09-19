@@ -64,6 +64,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.actions.Selectable;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
@@ -164,7 +165,7 @@ public class UseCaseWidget extends UMLNodeWidget
                 NbBundle.getMessage(UseCaseWidget.class, "LBL_ExtensionPoints"), // NOI18N
                 getWidgetID() + "." + "extensionPoint", 
                 NbBundle.getMessage(UseCaseWidget.class, "LBL_ExtensionPoint_Label")); // NOI18N
-        extPtLabel.setForeground(null);
+//        extPtLabel.setForeground(null);
         extPtLabel.setAlignment(LabelWidget.Alignment.CENTER);
         extPtLabel.setBorder(BorderFactory.createEmptyBorder(5));
 
@@ -274,7 +275,13 @@ public class UseCaseWidget extends UMLNodeWidget
         if (extPt != null)
         {
             ExtensionPointWidget widget = new ExtensionPointWidget(getScene(), extPt);
+            widget.setForeground(null);
             extPtListWidget.addChild(widget);
+            Selectable selectable = widget.getLookup().lookup(Selectable.class);
+            if (selectable != null) 
+            {
+                selectable.select(widget);
+            }
         }
     }
     

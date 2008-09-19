@@ -134,7 +134,11 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     }
     
     public Controller getController () {
-        return type.getController();
+        if (type != null) {
+            return type.getController();
+        } else {
+            return null;
+        }
     }
     
     

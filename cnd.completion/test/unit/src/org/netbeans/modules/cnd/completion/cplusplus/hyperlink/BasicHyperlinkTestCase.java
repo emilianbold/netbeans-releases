@@ -497,6 +497,14 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ147627.cc", 9, 28, "IZ147627.cc", 8, 14); // NOI18N
     }
 
+    public void testIZ147632() throws Exception {
+        // IZ#147632 : IDE highlights global variable in 'if' as wrong
+        performTest("IZ147632.cc", 8, 16, "IZ147632.cc", 1, 1);
+        performTest("IZ147632.cc", 8, 25, "IZ147632.cc", 3, 5);
+        performTest("IZ147632.cc", 10, 25, "IZ147632.cc", 3, 5);
+        performTest("IZ147632.cc", 12, 25, "IZ147632.cc", 3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
