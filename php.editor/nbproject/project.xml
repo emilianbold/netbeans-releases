@@ -118,8 +118,8 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1.1</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>1.6.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -147,15 +147,6 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jumpto</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -318,10 +309,32 @@
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                 </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jemmy</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
+                <friend>org.netbeans.modules.php.prado</friend>
+                <friend>org.netbeans.modules.php.symfony</friend>
                 <package>org.netbeans.modules.php.editor.index</package>
                 <package>org.netbeans.modules.php.editor.lexer</package>
                 <package>org.netbeans.modules.php.editor.parser</package>

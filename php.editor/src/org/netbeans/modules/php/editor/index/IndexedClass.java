@@ -50,13 +50,11 @@ public class IndexedClass extends IndexedElement {
 
     public IndexedClass(String name, String in, PHPIndex index, String fileUrl,
             String superClass, int offset,  int flags){
-        super(name, in, index, fileUrl, offset, flags, ElementKind.GLOBAL);
+        super(name, in, index, fileUrl, offset, flags, ElementKind.CLASS);
         this.superClass = superClass;
     }
     
     public String getSuperClass(){
         return superClass;
     }
-
-    
 }

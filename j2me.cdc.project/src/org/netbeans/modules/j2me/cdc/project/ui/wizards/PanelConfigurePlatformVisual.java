@@ -373,10 +373,12 @@ final class PanelConfigurePlatformVisual extends javax.swing.JPanel {
                     if (platform.getInstallFolders().size()>0 && (accepted == null || accepted.contains(((CDCPlatform)platform).getType()))) {
                         PlatformKey pk = new PlatformKey(platform);
                         orderedNames.add (pk);
-                        if (this.selectedPlatform == null) {
-                            this.selectedPlatform = pk;
-                        }
                     }
+                }
+                // Fix for IZ#146204 - Platform selected by default in "New CDC Project" wizard is not always the first
+                if ( !orderedNames.isEmpty() && selectedPlatform == null ){
+                    selectedPlatform = orderedNames.iterator().next();
+                        
                 }
                 this.platformNamesCache = orderedNames.toArray(new PlatformKey[orderedNames.size()]);
             }

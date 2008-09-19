@@ -431,46 +431,45 @@ public class RhtmlKit extends HTMLKit {
             return true;
         }
         
-        private void commentUncomment(ActionEvent evt, JTextComponent target, Boolean forceComment) {
+        private void commentUncomment(ActionEvent evt, final JTextComponent target, final Boolean forceComment) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
                     return;
                 }
-                Caret caret = target.getCaret();
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                try {
-                    doc.atomicLock();
-                    try {
-                        int startPos;
-                        int endPos;
-                        
-                        if (caret.isSelectionVisible()) {
-                            startPos = Utilities.getRowStart(doc, target.getSelectionStart());
-                            endPos = target.getSelectionEnd();
-                            if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos && endPos > startPos) {
-                                endPos--;
+                final BaseDocument doc = (BaseDocument)target.getDocument();
+                doc.runAtomic(new Runnable() {
+                    public void run() {
+                        try {
+                            Caret caret = target.getCaret();
+                            int startPos;
+                            int endPos;
+
+                            if (caret.isSelectionVisible()) {
+                                startPos = Utilities.getRowStart(doc, target.getSelectionStart());
+                                endPos = target.getSelectionEnd();
+                                if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos && endPos > startPos) {
+                                    endPos--;
+                                }
+                                endPos = Utilities.getRowEnd(doc, endPos);
+                            } else { // selection not visible
+                                startPos = Utilities.getRowStart(doc, caret.getDot());
+                                endPos = Utilities.getRowEnd(doc, caret.getDot());
                             }
-                            endPos = Utilities.getRowEnd(doc, endPos);
-                        } else { // selection not visible
-                            startPos = Utilities.getRowStart(doc, caret.getDot());
-                            endPos = Utilities.getRowEnd(doc, caret.getDot());
+
+                            int lineCount = Utilities.getRowCount(doc, startPos, endPos);
+                            boolean comment = forceComment != null ? forceComment : !allComments(doc, startPos, lineCount);
+
+                            if (comment) {
+                                comment(doc, startPos, lineCount);
+                            } else {
+                                uncomment(doc, startPos, lineCount);
+                            }
+                        } catch (BadLocationException e) {
+                            target.getToolkit().beep();
                         }
-                        
-                        int lineCount = Utilities.getRowCount(doc, startPos, endPos);
-                        boolean comment = forceComment != null ? forceComment : !allComments(doc, startPos, lineCount);
-                        
-                        if (comment) {
-                            comment(doc, startPos, lineCount);
-                        } else {
-                            uncomment(doc, startPos, lineCount);
-                        }
-                    } finally {
-                        doc.atomicUnlock();
                     }
-                } catch (BadLocationException e) {
-                    target.getToolkit().beep();
-                }
+                });
             }
         }
         

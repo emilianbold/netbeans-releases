@@ -80,8 +80,13 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
     private Reference<Object> lastWindowDeactivatedSource = new WeakReference<Object>(null);
 
     public NbClipboard() {
+        //for unit testing
+        this( Toolkit.getDefaultToolkit().getSystemClipboard() );
+    }
+    
+    NbClipboard( Clipboard systemClipboard ) {
         super("NBClipboard");   // NOI18N
-        systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        this.systemClipboard = systemClipboard;
         log = Logger.getLogger("org.netbeans.core.NbClipboard"); // NOI18N
 
         result = Lookup.getDefault().lookupResult(ExClipboard.Convertor.class);
@@ -254,7 +259,16 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
             dataOwner = null;
         }
         if (cnts != null) {
-            systemClipboard.setContents(cnts, ownr);
+            try {
+                systemClipboard.setContents(cnts, ownr);
+            } catch( IllegalStateException e ) {
+                //#139616
+                log.log (Level.FINE, "systemClipboard not available", e); // NOI18N
+                data = cnts;
+                dataOwner = ownr;
+                syncTask.schedule(100);
+                return;
+            } 
             if (log.isLoggable (Level.FINE)) {
                 log.log (Level.FINE, "systemClipboard updated:"); // NOI18N
                 logFlavors (cnts, Level.FINE, log.isLoggable(Level.FINEST));

@@ -92,7 +92,7 @@ public final class UIUtilities {
             headerRenderer = table.getTableHeader().getDefaultRenderer();
         }
         Component comp = headerRenderer.getTableCellRendererComponent(
-                null, column.getHeaderValue(), false, false, 0, 0);
+                table, column.getHeaderValue(), false, false, 0, 0);
         int width = comp.getPreferredSize().width;
         
         // get preferred size of the long value (remeber max of the pref. size for header and long value)

@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
           "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 <type name="org-netbeans-modules-j2ee-sunserver"
       description_key="LBL_error_annotation"
-      localizing_bundle="org.netbeans.modules.j2ee.sun.ude.j2ee.Bundle"
+      localizing_bundle="org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle"
       visible="true"
       glyph="nbresloc:/org/netbeans/modules/j2ee/sun/ide/resources/error-glyph.gif"
       highlight="#FF8080"

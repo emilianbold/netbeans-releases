@@ -159,9 +159,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="propertiesButton">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/derby/ui/Bundle.properties" key="LBL_Properties" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/derby/ui/Bundle.properties" key="LBL_Properties" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

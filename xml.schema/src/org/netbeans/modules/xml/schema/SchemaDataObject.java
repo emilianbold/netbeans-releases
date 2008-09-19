@@ -108,16 +108,14 @@ public final class SchemaDataObject extends MultiDataObject {
             public void saveAs(FileObject folder, String fileName) throws IOException {
                 schemaEditorSupport.saveAs( folder, fileName );
             }
-        });                
+        });
+        set.assign(SearchProvider.class, new SearchProvider(this));
+        set.assign(XmlFileEncodingQueryImpl.class, XmlFileEncodingQueryImpl.singleton());
     }
 
     @Override
     public final Lookup getLookup() {
-        return Lookups.fixed(new Object[]{
-                 super.getLookup(),
-                 this,
-                 new SearchProvider(this),
-                 XmlFileEncodingQueryImpl.singleton()}); 
+        return getCookieSet().getLookup();
     }
     
     public void addSaveCookie(SaveCookie cookie){

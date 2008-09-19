@@ -1,0 +1,5 @@
+Code completion result for source line:
+$self1->|aCreateA();
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     aCreateA()                      [PUBLIC]   clsAVarAssignment
+METHOD     aCreateC()                      [PUBLIC]   clsAVarAssignment

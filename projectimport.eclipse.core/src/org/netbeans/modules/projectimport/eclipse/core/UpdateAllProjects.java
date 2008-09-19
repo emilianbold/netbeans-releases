@@ -206,7 +206,7 @@ public class UpdateAllProjects {
      *  and any problem aborts update
      */
     public void update(boolean silent) {
-        LOG.info("Eclipse resynchronize started ("+silent+")"); //NOI18N
+        LOG.fine("Eclipse resynchronize started ("+silent+")"); //NOI18N
         WorkspaceFactory.getInstance().resetCache();
         List<String> importProblems = new ArrayList<String>();
         List<UpgradableProject> projs = getListOfUpdatableProjects();

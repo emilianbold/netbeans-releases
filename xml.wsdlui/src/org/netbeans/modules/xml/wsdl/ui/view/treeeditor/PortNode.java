@@ -96,7 +96,7 @@ public class PortNode extends WSDLExtensibilityElementNode<Port> {
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/serviceport.png");
     
     public PortNode(Port wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<Port>(wsdlConstruct), wsdlConstruct, new ServicePortNewTypesFactory());
+        super(wsdlConstruct, new ServicePortNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         

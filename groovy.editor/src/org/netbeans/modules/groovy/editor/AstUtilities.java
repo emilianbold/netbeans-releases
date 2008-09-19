@@ -78,6 +78,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.Utilities;
@@ -97,7 +98,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  * @author Martin Adamek
  */
 public class AstUtilities {
-    
+
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
         ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
@@ -107,7 +108,7 @@ public class AstUtilities {
                 return ts.getAstOffset(lexOffset);
             }
         }
-              
+
         return lexOffset;
     }
 
@@ -200,11 +201,14 @@ public class AstUtilities {
             if (end < 0) {
                 end = 0;
             }
+            if (start > end) {
+                return OffsetRange.NONE;
+            }
             return new OffsetRange(start, end);
     }
-    
+
     public static OffsetRange getRange(ASTNode node, BaseDocument doc) {
-        
+
         // Warning! The implicit class and some other nodes has line/column numbers below 1
         // if line is wrong, let's invalidate also column and vice versa
         int lineNumber = node.getLineNumber();
@@ -222,40 +226,40 @@ public class AstUtilities {
             // after the "class" keyword, plus an indefinite nuber of spaces
             // FIXME: have to check what happens with other whitespaces between
             // the keyword and the identifier (like newline)
-            
+
             // happens in some cases when groovy source uses some non-imported java class
             if (doc != null) {
-                
+
                 // if we are dealing with an empty groovy-file, we have take into consideration,
-                // that even though we're running on an ClassNode, there is no "class " String 
+                // that even though we're running on an ClassNode, there is no "class " String
                 // in the sourcefile. So take doc.getLength() as maximum.
-                
+
                 int start = getOffset(doc, lineNumber, columnNumber) + "class".length(); // NOI18N
                 int docLength = doc.getLength();
-                
+
                 if (start > docLength) {
                     start = docLength;
-                } 
-                
+                }
+
                 try {
                     start = Utilities.getFirstNonWhiteFwd(doc, start);
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                
+
                 // This seems to happen every now and then ...
                 if (start < 0){
                     start = 0;
                 }
 
                 ClassNode classNode = (ClassNode) node;
-                
+
                 int end = start + classNode.getNameWithoutPackage().length();
-                
+
                 if (end > docLength) {
                     end = docLength;
                 }
-                
+
                 return new OffsetRange(start, end);
             }
         } else if (node instanceof ConstructorNode) {
@@ -306,15 +310,15 @@ public class AstUtilities {
         }
         return OffsetRange.NONE;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static List<ASTNode> children(ASTNode root) {
-        
+
         // Logger PRIV_LOG = Logger.getLogger(AstUtilities.class.getName());
         // PRIV_LOG.log(Level.FINEST, "children(ASTNode):Name" + root.getClass().getName() +":"+ root.getText());
-        
+
         List<ASTNode> children = new ArrayList<ASTNode>();
-        
+
         if (root instanceof ModuleNode) {
             ModuleNode moduleNode = (ModuleNode) root;
             children.addAll(moduleNode.getClasses());
@@ -336,18 +340,18 @@ public class AstUtilities {
                     children.add(field);
                 }
             }
-            
+
             for (Object object : classNode.getDeclaredConstructors()) {
                 ConstructorNode constructor = (ConstructorNode) object;
-                
+
                 if (constructor.getLineNumber() >= 0) {
                     children.add(constructor);
                 }
                 // PRIV_LOG.log(Level.FINEST, "Constructor found: " + constructor.toString());
             }
-            
-            
-            
+
+
+
         } else if (root instanceof MethodNode) {
             MethodNode methodNode = (MethodNode) root;
             children.add(methodNode.getCode());
@@ -366,11 +370,11 @@ public class AstUtilities {
             root.visit(astChildrenSupport);
             children = astChildrenSupport.children();
         }
-        
+
         // PRIV_LOG.log(Level.FINEST, "List:" + children.toString());
         return children;
     }
-    
+
     /**
      * Find offset in text for given line and column
      * Never returns negative number
@@ -381,15 +385,15 @@ public class AstUtilities {
 
         int offset = Utilities.getRowStartFromLineOffset(doc, lineNumber - 1);
         offset += (columnNumber - 1);
-        
-        // some sanity checks 
+
+        // some sanity checks
         if (offset < 0){
             offset = 0;
         }
-        
+
         return offset;
     }
-    
+
     public static ASTNode getForeignNode(final IndexedElement o/*, ASTNode[] foreignRootRet*/) {
 
         final ASTNode[] nodes = new ASTNode[1];
@@ -414,7 +418,7 @@ public class AstUtilities {
                             return;
                         }
                     }
-                    
+
                 }
                 public void cancel() {}
             });
@@ -423,7 +427,7 @@ public class AstUtilities {
         }
         return nodes[0];
     }
-    
+
     private static ASTNode findBySignature(AstElement root, String signature) {
 
         if (signature.equals(root.getSignature())) {
@@ -465,19 +469,21 @@ public class AstUtilities {
         // ^Map bar = ...
         // find first token that is identifier and that matches given name
         TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
-        if (ts.token().id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(ts.token().text(), fieldName)) {
+        Token<? extends GroovyTokenId> token = ts.token();
+        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
             int offset = ts.offset();
             return new OffsetRange(offset, offset + fieldName.length());
         }
         while (ts.moveNext()) {
-            if (ts.token().id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(ts.token().text(), fieldName)) {
+            token = ts.token();
+            if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
                 int offset = ts.offset();
                 return new OffsetRange(offset, offset + fieldName.length());
             }
         }
         return OffsetRange.NONE;
     }
-    
+
     /**
      * Compute the surrounding class name for the given node path or empty string
      * if none was found
@@ -697,7 +703,7 @@ public class AstUtilities {
 
         private final String text;
         private final ASTNode orig;
-        
+
         public FakeASTNode(ASTNode orig, String text) {
             this.orig = orig;
             this.text = text;

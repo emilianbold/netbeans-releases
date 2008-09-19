@@ -204,7 +204,7 @@ public final class NbModuleProject implements Project {
         });
         lookup = createLookup(new Info(), aux, helper, fileBuilt, sourcesHelper);
     }
-    
+
     public @Override String toString() {
         return "NbModuleProject[" + getProjectDirectory() + "]"; // NOI18N
     }
@@ -673,7 +673,12 @@ public final class NbModuleProject implements Project {
     public void setRunInAtomicAction(boolean runInAtomicAction) {
         eval.setRunInAtomicAction(runInAtomicAction);
     }
-        
+    
+    /** See issue #69440 for more details. */
+    public boolean isRunInAtomicAction() {
+        return eval.isRunInAtomicAction();
+    }
+    
     private final class Info implements ProjectInformation, PropertyChangeListener {
         
         private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);

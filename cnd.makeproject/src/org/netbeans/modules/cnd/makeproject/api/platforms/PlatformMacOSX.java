@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public class PlatformMacOSX extends Platform {
@@ -76,9 +77,10 @@ public class PlatformMacOSX extends Platform {
                 libName = libName.substring(0, i);
             if (libName.startsWith("lib")) // NOI18N
                 libName = libName.substring(3);
-            return compilerSet.getLibrarySearchOption() + libDir + " " + compilerSet.getLibraryOption() + libName; // NOI18N
+            return compilerSet.getLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N
         } else {
-            return libPath;
+            return IpeUtils.escapeOddCharacters(libPath);
         }
     }
 }

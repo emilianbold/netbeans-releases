@@ -66,7 +66,16 @@ public class CamelCaseNamesTest extends HintTestBase {
     public void testHint1() throws Exception {
         checkHints(this, createRule(), "testfiles/camelcasenames.rb", null);
     }
-    
+
+    public void testHint2() throws Exception {
+        checkHints(this, createRule(), "testfiles/nb_descriptions.rb", null);
+    }
+
+    public void testFix1() throws Exception {
+        String caretLine = "argL^ist = \"(pattern)\";";
+        applyHint(this, createRule(), "testfiles/nb_descriptions.rb", caretLine, "arg_list");
+    }
+
     public void testCamelCase() throws Exception {
         List<FileObject> files = getBigSourceFiles();
         for (FileObject f : files) {

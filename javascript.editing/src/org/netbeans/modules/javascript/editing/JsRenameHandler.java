@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.javascript.editing;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -193,9 +194,21 @@ public class JsRenameHandler implements InstantRenamer {
             }
             name = leaf.getString();
         }
-        Map<String,List<Node>> localVars = v.getLocalVars(leaf);
+        if (!name.equals(leaf.getString()) && parameterName != null) {
+            // Probably renaming something from a document comment @param item
+            // Find the corresponding node.
+            List<Node> parameters = new ArrayList<Node>();
+            Node func = AstUtilities.findLocalScope(leaf, path);
+            AstUtilities.addNodesByType(func, new int[] { Token.PARAMETER }, parameters);
+            for (Node parameter : parameters) {
+                if (parameter.getString().equals(parameterName)) {
+                    leaf = parameter;
+                    break;
+                }
+            }
+        }
 
-        List<Node> nodes = localVars.get(name);
+        List<Node> nodes = v.getVarOccurrences(leaf);
         
         Set<OffsetRange> regions = new HashSet<OffsetRange>();
         Node parameterNode = null;

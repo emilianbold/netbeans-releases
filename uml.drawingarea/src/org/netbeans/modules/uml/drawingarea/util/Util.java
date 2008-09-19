@@ -42,6 +42,7 @@ package org.netbeans.modules.uml.drawingarea.util;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,6 +52,7 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -61,6 +63,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
+import org.netbeans.modules.uml.drawingarea.support.ModelElementBridge;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -69,6 +72,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -197,6 +201,31 @@ public class Util
         return retVal;
     }
     
+    /**
+     * First checks if the widget is in the viewable area.  If the widget is
+     * not in the viewable area, then center the widget.
+     * 
+     * @param widget The widget to make vieable.
+     */
+    public static void makeSureWidgetIsVisible(Widget widget)
+    {
+        Scene contextScene = widget.getScene();
+        Rectangle visibleRect = contextScene.getView().getVisibleRect();
+        Rectangle sceneRect = widget.convertLocalToScene(widget.getBounds());
+        Rectangle viewWidgetRect = contextScene.convertSceneToView(sceneRect);
+
+        if(visibleRect.contains(viewWidgetRect) == false)
+        {
+            Util.centerWidget(widget);
+        }
+    }
+    
+    /**
+     * Tries to move the scene viewable area so that the the widget is in the 
+     * center of the view.  
+     * 
+     * @param widget The widget to be centered.
+     */
     public static void centerWidget(Widget widget)
     {
         Scene scene = widget.getScene();
@@ -217,7 +246,7 @@ public class Util
                 Object obj = objectScene.findObject(widget);
                 HashSet<Object> set = new HashSet<Object>();
                 set.add(obj);
-                objectScene.setSelectedObjects(set);
+                objectScene.userSelectionSuggested(set, false);
             }
         }
     }
@@ -346,4 +375,34 @@ public class Util
         }
         return ret;
     }    
+    
+     public static Point center (Rectangle rectangle) {
+        return new Point (rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2);
+    }
+     
+     
+    
+    public static boolean isPaletteExecute(WidgetKeyEvent event)
+    {
+        boolean retVal = false;
+        
+        if(Utilities.isMac() == true)
+        {
+            if((event.isMetaDown() == true) && 
+                (event.getKeyCode() == KeyEvent.VK_ENTER))
+            {
+               retVal = true; 
+            }
+        }
+        else
+        {
+            if((event.isControlDown() == true) && 
+                (event.getKeyCode() == KeyEvent.VK_ENTER))
+            {
+               retVal = true; 
+            }
+        }
+        
+        return retVal;
+    }
 }

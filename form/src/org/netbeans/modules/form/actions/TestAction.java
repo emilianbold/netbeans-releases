@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.awt.*;
 
+import javax.swing.plaf.synth.SynthLookAndFeel;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.nodes.*;
@@ -244,10 +245,25 @@ public class TestAction extends CallableSystemAction implements Runnable {
             JMenuItem mi;
             if (!initialized) {
                 popup.removeAll();
+
+                boolean isSynthLAF = UIManager.getLookAndFeel() instanceof SynthLookAndFeel;
+                String lafName = UIManager.getLookAndFeel().getClass().getName();
                 
                 // Swing L&Fs
                 UIManager.LookAndFeelInfo[] lafs = UIManager.getInstalledLookAndFeels();
                 for (int i=0; i<lafs.length; i++) {
+                    String className = lafs[i].getClassName();
+                    if (isSynthLAF) {
+                        try {
+                            Class lafClass = Class.forName(className);
+                            if (!lafName.equals(className) && SynthLookAndFeel.class.isAssignableFrom(lafClass)) {
+                                continue; // 134848, 145807: Cannot use two different SynthLookAndFeels
+                            }
+                        } catch (ClassNotFoundException cnfex) {
+                            // should not happen
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, cnfex);
+                        }
+                    }
                     mi = new JMenuItem(lafs[i].getName());
                     mi.putClientProperty("lafInfo", new LookAndFeelItem(lafs[i].getClassName())); // NOI18N
                     mi.addActionListener(this);
@@ -271,6 +287,10 @@ public class TestAction extends CallableSystemAction implements Runnable {
                                 if ((clazz != null) && (LookAndFeel.class.isAssignableFrom(clazz))) {
                                     LookAndFeel laf = (LookAndFeel)clazz.newInstance();
                                     supported = laf.isSupportedLookAndFeel();
+                                    if (supported && isSynthLAF && !lafName.equals(pitem.getComponentClassName())
+                                            && SynthLookAndFeel.class.isAssignableFrom(clazz)) {
+                                        supported = false; // 134848, 145807: Cannot use two different SynthLookAndFeels
+                                    }
                                 }
                             } catch (Exception ex) {
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

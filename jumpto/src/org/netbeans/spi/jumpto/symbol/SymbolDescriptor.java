@@ -66,7 +66,7 @@ public abstract class SymbolDescriptor {
     
     /**
      * Returns display name of the owner in which the symbol is declared.
-     * @return the owner dsiplay name
+     * @return the owner display name
      */
     public abstract String getOwnerName();
         
@@ -83,7 +83,7 @@ public abstract class SymbolDescriptor {
      * Return an icon that is applicable for the project owning the file containing the
      * symbol declaration.
      * Generally, this should be the same as the project icon.  This method will only
-     * be calld if {@link #getProjectName} returned a non-null value.
+     * be called if {@link #getProjectName} returned a non-null value.
      * 
      * @return A project icon corresponding to the project owning the file containing the
      * symbol declaration.

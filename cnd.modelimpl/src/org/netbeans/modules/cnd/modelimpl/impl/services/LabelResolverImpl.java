@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
@@ -107,6 +108,7 @@ public class LabelResolverImpl extends CsmLabelResolver {
                     processInnerStatements(((CsmIfStatement) statement).getElse(), res);
                     break;
                 case SWITCH:
+                    processInnerStatements(((CsmSwitchStatement) statement).getBody(), res);
                 case CASE:
                 case BREAK:
                 case DEFAULT:

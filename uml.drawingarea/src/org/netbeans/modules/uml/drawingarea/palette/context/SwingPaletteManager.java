@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea.palette.context;
 
+import java.util.List;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
 import org.netbeans.modules.uml.drawingarea.palette.context.*;
@@ -47,16 +48,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.Iterator;
-import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
-import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.util.Lookup;
 
 /**
@@ -107,8 +105,26 @@ public class SwingPaletteManager implements ContextPaletteManager
      * Changes the palette to represent the select widget.  If more than one 
      * widget is selected, or no widgets are selected then the palette is 
      * removed.
+     * 
+     * @param scenePoint Specifies the location to place the palette.  If null
+     *                   is specified the best location if determined.
      */
     public void selectionChanged(Point scenePoint)
+    {
+        selectionChanged(scenePoint, false);
+    }
+    
+    /**
+     * Changes the palette to represent the select widget.  If more than one 
+     * widget is selected, or no widgets are selected then the palette is 
+     * removed.
+     * 
+     * @param scenePoint Specifies the location to place the palette.  If null
+     *                   is specified the best location if determined.
+     * @param forceShow If true the palette will be show even if more than 
+     *                  one widget is selected.
+     */
+    protected void selectionChanged(Point scenePoint, boolean forceShow)
     {
         // Clear the previous palette
         cancelPalette();
@@ -119,35 +135,31 @@ public class SwingPaletteManager implements ContextPaletteManager
             return;
         }
         
-        // 
-        Set selectedObjects = getScene().getSelectedObjects();
-        if(selectedObjects.size() == 1)
+        // The palette need to decorate the first selected node.
+        DesignerScene scene = (DesignerScene)getScene();
+        List selectedObjects = scene.getOrderedSelection();
+        if((selectedObjects.size() == 1) || 
+           ((selectedObjects.size() > 1) && (forceShow == true)))
         {
-            // Since the set interface does not have a method to simply 
-            // retrieve the first item.  I will have to use the iterator.
-            Iterator iter = selectedObjects.iterator();
-            Widget selectedWidget = getScene().findWidget(iter.next());
+            Widget selectedWidget = getFirstNode(scene, selectedObjects);
+            
             cancelledWidget=selectedWidget;
             
-            if(selectedWidget instanceof UMLEdgeWidget)
-            {
-                //do nothing
-            }
-            else if(selectedWidget != null)
+            if(selectedWidget != null)
             {
                 showPaletteFor(selectedWidget);
-                
+
                 ContextPaletteModel.FOLLOWMODE follow = ContextPaletteModel.FOLLOWMODE.NONE;
                 if(paletteWidget != null)
                 {
                     follow = paletteWidget.getModel().getFollowMouseMode();
                 }
-                
+
                 if(follow != ContextPaletteModel.FOLLOWMODE.NONE)
                 {
                     String activeTool = getScene().getActiveTool();
                     WidgetAction.Chain actions = selectedWidget.createActions(activeTool);
-                    
+
                     if(follow==ContextPaletteModel.FOLLOWMODE.VERTICAL_ONLY)
                     {
                         actions.addAction(followAction);
@@ -156,7 +168,7 @@ public class SwingPaletteManager implements ContextPaletteManager
                     {
                         actions.addAction(followLRAction);
                     }
-                    
+
                     if(scenePoint!=null && paletteWidget != null)
                     {
                         //TBD avoid duplicate code here and in FollowAction
@@ -181,16 +193,8 @@ public class SwingPaletteManager implements ContextPaletteManager
             getDecoratorLayer().repaint();
             paletteWidget = null;
             
-            //Set selectedObjects = getScene().getSelectedObjects();
-            //if(selectedObjects.size() == 1)
             if(cancelledWidget!=null)//remove from widget to which actions was assigned
             {
-                // Since the set interface does not have a method to simply 
-                // retrieve the first item.  I will have to use the iterator.
-                //Iterator iter = selectedObjects.iterator();
-                //Widget selectedWidget = getScene().findWidget(iter.next());
-
-                //WidgetAction.Chain actionChain = selectedWidget.getActions(getScene().getActiveTool());
                 WidgetAction.Chain actionChain = cancelledWidget.getActions(getScene().getActiveTool());
                 if(actionChain != null)
                 {
@@ -214,15 +218,30 @@ public class SwingPaletteManager implements ContextPaletteManager
         return retVal;
     }
     
-   /* public boolean isFollowCursor()
+    /**
+     * Request that the context palette recieve input focus.
+     */
+    public void requestFocus()
     {
-        return followCursor;
+        if(paletteWidget != null)
+        {
+            paletteWidget.requestFocusInWindow(); 
+        }
+        else
+        {
+            selectionChanged(null, true);
+            if(paletteWidget != null)
+            {
+                paletteWidget.requestFocusInWindow();
+            }
+        }
+        
+        // Need to make sure that the attached Widget is visible.
+        if(paletteWidget != null)
+        {
+            
+        }
     }
-
-    public void setFollowCursor(boolean followCursor)
-    {
-        this.followCursor = followCursor;
-    }*/
 
     ///////////////////////////////////////////////////////////////
     // Helper Methods
@@ -235,6 +254,19 @@ public class SwingPaletteManager implements ContextPaletteManager
             ContextPaletteModel model = lookup.lookup(ContextPaletteModel.class);
             if(model != null)
             {
+                // For some reason when you use tab key, and the new widget is 
+                // off the screen the palette is not being removed off the screen
+                // correctly, therefore the current paletteWidget gets orphaned.
+                //
+                // I think that this is because the selectionChanged method is
+                // being called twice (however the selectionChanged method also
+                // calls cancelPalettte so it should be removed).  So, instead 
+                // requiring others to manage the events, the palette manager
+                // should make sure that things are cleaned up correctly.
+                if(paletteWidget != null)
+                {
+                    paletteWidget.getParent().remove(paletteWidget);
+                }
 
                 paletteWidget = new ContextPalette(model);            
                 paletteWidget.revalidate();
@@ -297,7 +329,9 @@ public class SwingPaletteManager implements ContextPaletteManager
                 JComponent view = getScene().getView();
 
                 int expandedWidth = palette.getExpandedWidth();
-                if(view.getWidth() < xPos + expandedWidth)
+                Rectangle viewableRec = view.getVisibleRect();
+                int rightViewBounds = viewableRec.x + viewableRec.width;
+                if(rightViewBounds < (xPos + expandedWidth))
                 {
                     xPos = viewLocation.x - SPACE_FROM_WIDGET - collapsedDim.width;
                     palette.setDirection(PaletteDirection.LEFT);
@@ -387,7 +421,23 @@ public class SwingPaletteManager implements ContextPaletteManager
     {
         this.scene = scene;
     }
-    
+
+    private Widget getFirstNode(DesignerScene scene, List selectedObjects)
+    {
+        Widget retVal = null;
+        
+        for(Object curObject : selectedObjects)
+        {
+            if(scene.isNode(curObject) == true)
+            {
+                retVal = scene.findWidget(curObject);
+                break;
+            }
+        }
+                
+        return retVal;
+    }
+
     public class FollowCursorAction extends WidgetAction.Adapter
     {
 

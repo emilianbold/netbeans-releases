@@ -213,7 +213,8 @@ public class MultiTargetChooserPanelGUI extends javax.swing.JPanel implements Ac
     }
         
     public FileObject getRootFolder() {
-        return ((SourceGroup) rootComboBox.getSelectedItem()).getRootFolder();        
+        SourceGroup sourceGroup = (SourceGroup) rootComboBox.getSelectedItem();
+        return sourceGroup == null ? null : sourceGroup.getRootFolder();
     }
     
     public String getPackageFileName() {
@@ -464,8 +465,11 @@ public class MultiTargetChooserPanelGUI extends javax.swing.JPanel implements Ac
             
                 public void run() {
                     if ( !SwingUtilities.isEventDispatchThread() ) {
-                        model = PackageView.createListView((SourceGroup) rootComboBox.getSelectedItem());                        
-                        SwingUtilities.invokeLater( this );
+                        SourceGroup sourceGroup = (SourceGroup) rootComboBox.getSelectedItem();
+                        if (sourceGroup != null) {
+                            model = PackageView.createListView(sourceGroup);
+                            SwingUtilities.invokeLater( this );
+                        }
                     }
                     else {
                         if ( !clean ) {
@@ -509,6 +513,9 @@ public class MultiTargetChooserPanelGUI extends javax.swing.JPanel implements Ac
                 return groups[i];
             }
         }
+        if (groups == null || groups.length == 0) {
+            return null;
+        }
         return groups[0];
     }
     
@@ -518,7 +525,7 @@ public class MultiTargetChooserPanelGUI extends javax.swing.JPanel implements Ac
      * package but it is not listed among the packages shown in the list model.
      */
     private Object getPreselectedPackage(SourceGroup group, FileObject folder, ListModel model) {
-        if ( folder == null ) {
+        if ( folder == null || group == null ) {
             return null;
         }
         FileObject root = group.getRootFolder();
@@ -559,8 +566,10 @@ public class MultiTargetChooserPanelGUI extends javax.swing.JPanel implements Ac
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             SourceGroup g = (SourceGroup) value;
-            super.getListCellRendererComponent(list, g.getDisplayName(), index, isSelected, cellHasFocus);
-            setIcon(g.getIcon(false));
+            if (g != null) {
+                super.getListCellRendererComponent(list, g.getDisplayName(), index, isSelected, cellHasFocus);
+                setIcon(g.getIcon(false));
+            }
             return this;
         }
         

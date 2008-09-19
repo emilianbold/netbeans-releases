@@ -97,7 +97,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
             // Check for unsupported projects. #142296
             if (hibernateEnv == null) {
-                logger.info("Unsupported project " + project + ". Existing config wizard.");
+                logger.info("Unsupported project " + project + ". Exiting config wizard.");
                 panels = new WizardDescriptor.Panel[]{
                             WizardErrorPanel.getWizardErrorWizardPanel()
                 };
@@ -221,7 +221,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
                 new HibernateConfigurationWizardDescriptor(project);
         if (Templates.getTargetFolder(wizard) == null) {
             HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
-            FileObject location = provider != null ? provider.getLocation() : null;
+            FileObject location = provider != null ? provider.getSourceLocation() : null;
             if (location != null) {
                 Templates.setTargetFolder(wizard, location);
             }

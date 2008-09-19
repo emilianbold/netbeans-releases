@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -133,7 +134,8 @@ public class FileChangeSupportTest extends NbTestCase {
         dir.delete();
         assertEquals("got file deletion event after dir deleted", Collections.singletonList("D:" + fileF), l.check());
     }
-    
+
+    @RandomlyFails // #146525: jtulach claims failures possible
     public void testDiskChanges() throws Exception {
         File fileF = new File(scratchPath + SEP + "dir" + SEP + "file2");
         L l = new L();

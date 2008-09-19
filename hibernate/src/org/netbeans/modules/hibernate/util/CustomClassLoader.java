@@ -33,7 +33,6 @@
  * made subject to such option by the copyright holder.
  * 
  * Contributor(s):
- * leon@hts.dev.java.net
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */

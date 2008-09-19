@@ -56,6 +56,7 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     private List<String> parameters;
     private int[] optionalArgs;
     private String returnType;
+    private boolean includeIn;
     
     public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
         super(name, in, index, fileUrl, offset, flags, kind);
@@ -69,9 +70,18 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     @Override
     public String getSignature() {
-        if (textSignature == null) {
+        return getSignatureImpl(true);
+    }
+
+    public String getFunctionSignature() {
+        return getSignatureImpl(false);
+    }
+
+    private String getSignatureImpl(boolean includeIn) {
+        if (textSignature == null || this.includeIn != includeIn) {
+            this.includeIn = includeIn;
             StringBuilder sb = new StringBuilder();
-            if (in != null) {
+            if (in != null && includeIn) {
                 sb.append(in);
                 sb.append('.');
             }
@@ -135,9 +145,6 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     @Override
     public Set<Modifier> getModifiers() {
-        
-        
-        
         return super.getModifiers();
     }
 

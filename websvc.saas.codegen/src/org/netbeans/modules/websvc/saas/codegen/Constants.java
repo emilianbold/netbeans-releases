@@ -108,6 +108,8 @@ public class Constants {
     
     public static final String GET_ANNOTATION = "GET";   //NOI18N
     
+    public static final String HEAD_ANNOTATION = "HEAD";   //NOI18N
+
     public static final String POST_ANNOTATION = "POST";   //NOI18N
     
     public static final String PUT_ANNOTATION = "PUT";   //NOI18N
@@ -126,6 +128,8 @@ public class Constants {
     
     public static final String GET = REST_API_PACKAGE + GET_ANNOTATION;
     
+    public static final String HEAD = REST_API_PACKAGE + HEAD_ANNOTATION;
+     
     public static final String POST = REST_API_PACKAGE + POST_ANNOTATION;
     
     public static final String PUT = REST_API_PACKAGE + PUT_ANNOTATION;
@@ -252,7 +256,8 @@ public class Constants {
     }
     
     public enum HttpMethodType {
-        GET("get", Constants.GET), 
+        GET("get", Constants.GET),
+        HEAD("head", Constants.HEAD),
         PUT("put", Constants.PUT),
         POST("post", Constants.POST),
         DELETE("delete", Constants.DELETE);

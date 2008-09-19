@@ -69,7 +69,6 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         // d.putProperty( "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty( "projectFolder", new File(projectFolderTextField.getText().trim()) ); // NOI18N
         d.putProperty( "projectName", projectNameTextField.getText() ); // NOI18N
-        parentStep.fireChangeEvent();
     }
     
     

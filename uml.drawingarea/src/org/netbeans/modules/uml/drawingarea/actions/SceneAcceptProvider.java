@@ -245,7 +245,8 @@ public class SceneAcceptProvider implements AcceptProvider
                     for (IPresentationElement pre : list)
                     {
                         Widget w = ((DiagramEngine) sourceEngine).getScene().findWidget(pre);
-
+                        if (w == null)
+                            continue;
                         // remove those contained elements from list; they will be recreated by their container widget
                         if (isContained(w, elements))
                             elements.remove(pre);
@@ -288,11 +289,22 @@ public class SceneAcceptProvider implements AcceptProvider
                             setLocPoint=getNewLocation(startingPoint, point, original.getLocation());
                         }
                         Widget copy = engine.addWidget(presentation, setLocPoint);
-                        duplicates.put(pre, presentation);
-                        engine.getScene().validate();
-                        if (original instanceof UMLNodeWidget)
+                        if(copy != null)
                         {
-                            ((UMLNodeWidget) original).duplicate(true, copy);
+                            duplicates.put(pre, presentation);
+                            engine.getScene().validate();
+                            if (original instanceof UMLNodeWidget)
+                            {
+                                ((UMLNodeWidget) original).duplicate(true, copy);
+                            }
+                        }
+                        else
+                        {
+                            engine.getScene().removeNode(presentation);
+                            
+                            presentations.remove(presentation);
+                            presentation.removeSubject(pre.getFirstSubject());
+                            presentation.delete();
                         }
                     }
 
@@ -327,6 +339,7 @@ public class SceneAcceptProvider implements AcceptProvider
                                 {
                                     edge.addSubject(rel);
                                 }
+                                presentations.add(edge);
                                 DesignerScene scene = engine.getScene();
                                 Widget copy = scene.addEdge(edge);
 
@@ -541,7 +554,7 @@ public class SceneAcceptProvider implements AcceptProvider
 
             if (!presentations.isEmpty())
             {
-                engine.getScene().setSelectedObjects(new HashSet<IPresentationElement>(presentations));
+                engine.getScene().userSelectionSuggested(new HashSet<IPresentationElement>(presentations), false);
             }
         } catch (UnsupportedFlavorException ex)
         {
@@ -669,7 +682,7 @@ public class SceneAcceptProvider implements AcceptProvider
         ObjectScene scene = (ObjectScene)w.getScene();
         Widget parent = w.getParentWidget();
         
-        while (parent != scene)
+        while (parent != null && parent != scene)
         {
             if (list.contains(scene.findObject(parent)))
                 return true;

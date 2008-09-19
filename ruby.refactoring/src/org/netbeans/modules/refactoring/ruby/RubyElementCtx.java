@@ -158,10 +158,10 @@ public class RubyElementCtx {
         initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
     }
 
-    public RubyElementCtx(IndexedElement element, CompilationInfo info) {
-        Node[] rootRet = new Node[1];
-        Node node = AstUtilities.getForeignNode(element, rootRet);
-        Node root = rootRet[0];
+    public RubyElementCtx(IndexedElement element) {
+        CompilationInfo[] infoHolder = new CompilationInfo[1];
+        Node node = AstUtilities.getForeignNode(element, infoHolder);
+        CompilationInfo info = infoHolder[0];
 
         Element e = AstElement.create(info, node);
 

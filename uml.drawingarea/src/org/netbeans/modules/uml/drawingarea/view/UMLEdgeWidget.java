@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import javax.accessibility.AccessibleRole;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.AnchorShapeFactory;
@@ -85,6 +86,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
     {
         super(scene);
         this.scene = (DesignerScene) scene;
+        setAccessibleContext(new UMLEdgeWidgetAccessibleContext(this));
     }
 
     protected LabelManager getLabelManager()
@@ -219,39 +221,39 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
 
     public void duplicate(Widget copy)
     {
-        if (copy instanceof ConnectionWidget)
+        assert copy instanceof UMLEdgeWidget;
+        
+        //((UMLEdgeWidget)copy).initialize(((UMLEdgeWidget)copy).getObject());
+        ((ConnectionWidget) copy).setControlPointsCursor(this.getControlPointsCursor());
+        ConnectionWidget dup = (ConnectionWidget) copy;
+
+        Anchor sourceAnchor = dup.getSourceAnchor();
+        Anchor targetAnchor = dup.getTargetAnchor();
+        if (sourceAnchor == null || targetAnchor == null)
         {
-            ((ConnectionWidget) copy).setControlPointsCursor(this.getControlPointsCursor());
-            ConnectionWidget dup = (ConnectionWidget) copy;
-            
-            Anchor sourceAnchor = dup.getSourceAnchor();
-            Anchor targetAnchor = dup.getTargetAnchor();
-            if (sourceAnchor == null || targetAnchor == null)
-            {
-                return;
-            }
-            
-            List<Point> list = new ArrayList<Point>();
-
-            ArrayList<Point> oldList = new ArrayList<Point>(getControlPoints());
-            oldList.remove(getFirstControlPoint());
-            oldList.remove(getLastControlPoint());
-          
-            Point sourceP = sourceAnchor.compute(dup.getSourceAnchorEntry()).getAnchorSceneLocation();
-            list.add(sourceP);
-            
-            int dx = sourceP.x - getFirstControlPoint().x;
-            int dy = sourceP.y - getFirstControlPoint().y;
-            
-            for (Point p: oldList)
-            {
-                Point np = new Point(p.x + dx, p.y + dy);
-                list.add(np);
-            }
-            list.add(targetAnchor.compute(dup.getTargetAnchorEntry()).getAnchorSceneLocation());
-
-            dup.setControlPoints(list, true);
+            return;
         }
+
+        List<Point> list = new ArrayList<Point>();
+
+        ArrayList<Point> oldList = new ArrayList<Point>(getControlPoints());
+        oldList.remove(getFirstControlPoint());
+        oldList.remove(getLastControlPoint());
+
+        Point sourceP = sourceAnchor.compute(dup.getSourceAnchorEntry()).getAnchorSceneLocation();
+        list.add(sourceP);
+
+        int dx = sourceAnchor.getRelatedSceneLocation().x - getSourceAnchor().getRelatedSceneLocation().x;
+        int dy = sourceAnchor.getRelatedSceneLocation().y - getSourceAnchor().getRelatedSceneLocation().y;
+
+        for (Point p: oldList)
+        {
+            Point np = new Point(p.x + dx, p.y + dy);
+            list.add(np);
+        }
+        list.add(targetAnchor.compute(dup.getTargetAnchorEntry()).getAnchorSceneLocation());
+
+        dup.setControlPoints(list, true);        
     }
 
     public IPresentationElement getObject()
@@ -274,4 +276,25 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         }
     }
     abstract public void initialize(IPresentationElement element);
+
+
+
+    ///////////// 
+    // Accessible
+    /////////////
+   
+
+    public class UMLEdgeWidgetAccessibleContext extends UMLWidgetAccessibleContext
+    {
+        public UMLEdgeWidgetAccessibleContext(Widget w) 
+        {
+            super(w);
+        }
+
+        public AccessibleRole getAccessibleRole () {
+            return UMLAccessibleRole.GRAPH_EDGE;
+        }
+        
+    }
+    
 }

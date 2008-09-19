@@ -8,9 +8,6 @@
     <fontcolor name="ANY_OPERATOR" default="operator"/>
     <fontcolor name="STRING_LITERAL" default="string"/>
     <fontcolor name="BLOCK_COMMENT" default="comment"/>
-    <!--
-    <fontcolor name="REGEXP_LITERAL" foreColor="9933CC" default="regexp"/>
-    -->
     <fontcolor name="ERROR" default="error"/>
     <fontcolor name="LINE_COMMENT" default="comment"/>
     <fontcolor name="IDENTIFIER" default="identifier"/>

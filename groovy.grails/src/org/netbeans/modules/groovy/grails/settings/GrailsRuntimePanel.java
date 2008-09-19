@@ -1,5 +1,6 @@
 package org.netbeans.modules.groovy.grails.settings;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import javax.swing.JFileChooser;
@@ -8,25 +9,24 @@ import org.openide.DialogDisplayer;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-final class GrailsRuntimePanel extends javax.swing.JPanel {
+public final class GrailsRuntimePanel extends javax.swing.JPanel implements GroovyOptionsSubpanel {
 
-    private final GrailsRuntimeOptionsPanelController controller;
     private final GrailsSettings settings;
 
-    GrailsRuntimePanel(GrailsRuntimeOptionsPanelController controller) {
-        this.controller = controller;
+    public GrailsRuntimePanel() {
         this.settings = GrailsSettings.getInstance();
         initComponents();
         // TODO listen to changes in form fields and call controller.changed()
     }
     
-    boolean checkForGrailsExecutable ( File pathToGrails ) {
+    private boolean checkForGrailsExecutable ( File pathToGrails ) {
         String GRAILS_BINARY = "grails";
         
         if(Utilities.isWindows()){
@@ -36,7 +36,7 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
         return new File (new File (pathToGrails, "bin"), GRAILS_BINARY).isFile ();
         }
     
-    void displayGrailsHomeWarning() {
+    private void displayGrailsHomeWarning() {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
             NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Not_grails_home"),
             NotifyDescriptor.Message.WARNING_MESSAGE
@@ -87,31 +87,29 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel5)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(linkLabel)
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(chooseDir))))
+                    .add(jLabel5)
+                    .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(chooseDir))
+            .add(layout.createSequentialGroup()
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(linkLabel)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(jLabel5)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel5)
                     .add(chooseDir)
                     .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
-                    .add(linkLabel))
-                .add(24, 24, 24))
+                    .add(linkLabel)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -150,25 +148,28 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_linkLabelMousePressed
 
-    void load() {
+    public Component getComponent() {
+        return this;
+    }
 
+    public void load() {
         grailsHomeLocation.setText(settings.getGrailsBase());
     }
 
-    void store() {
+    public void store() {
         String location = grailsHomeLocation.getText();
-        
+        if ("".equals(location.trim())) { // NOI18N
+            return;
+        }
         if (!checkForGrailsExecutable(new File(location))) {
             displayGrailsHomeWarning();
             return;
-            }
-        else {
+        } else {
             settings.setGrailsBase(location);
-            }
-        
+        }
     }
 
-    boolean valid() {
+    public boolean valid() {
         // TODO check whether form is consistent and complete
         return true;
     }

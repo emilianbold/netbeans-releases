@@ -44,12 +44,15 @@ package org.netbeans.modules.web.jspparser_ext;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -61,11 +64,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -103,6 +104,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -149,8 +151,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     ServletContext editorContext;
     ServletContext diskContext;
     private JspRuntimeContext rctxt;
-    private URLClassLoader waClassLoader;
-    URLClassLoader waContextClassLoader;
+    private ParserClassLoader waClassLoader;
+    private ParserClassLoader waContextClassLoader;
+
+    // This is intended for tests exclusively!!!
+    private static boolean noReset = false;
 
     // @GuardedBy(this)
     /**
@@ -221,6 +226,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             return new JspParserAPI.JspOpenInfo(epd.isXMLSyntax(), epd.getEncoding());
         } catch (Exception e) {
             LOG.fine(e.getMessage());
+        } finally {
+            resetClassLoaders();
         }
         return DEFAULT_JSP_OPEN_INFO;
     }
@@ -315,6 +322,17 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         waClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
         waContextClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
     }
+
+    // #128360
+    private void resetClassLoaders() {
+        try {
+            waClassLoader.reset();
+            waContextClassLoader.reset();
+        } catch (Exception e) {
+            // the code in try block is _NOT_ API
+            Exceptions.printStackTrace(e);
+        }
+     }
 
     // #127379
     private FileObject getWebInf() {
@@ -415,7 +433,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         checkReinitCachesTask();
         JspCompilationContext ctxt = createCompilationContext(jspFile, true);
 
-        return callTomcatParser(jspFile, ctxt, waContextClassLoader, errorReportingMode);
+        try {
+            return callTomcatParser(jspFile, ctxt, waContextClassLoader, errorReportingMode);
+        } finally {
+            resetClassLoaders();
+        }
     }
 
     /**
@@ -443,6 +465,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         if (cpCurrent.get() != 0L) {
             reinitOptions();
         }
+        // XXX #128360 - classloader is leaking out - no chance to close it
         return waClassLoader;
     }
 
@@ -781,7 +804,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      * The classloader is hiding some resources to avoid commons logging
      * related jar locking. See issue 128360.
      */
-    public static class ParserClassLoader extends URLClassLoader {
+    public static class ParserClassLoader extends URLClassLoader implements Closeable {
 
         private static final Logger LOGGER = Logger.getLogger(ParserClassLoader.class.getName());
 
@@ -793,15 +816,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
          */
         private static final String LOGGING_CONFIG = "commons-logging.properties"; // NOI18N
         private static final String SERVICES_FOLDER = "META-INF/services/"; // NOI18N
-        private static final Set<String> FORBIDDEN_PACKAGES = new HashSet<String>();
         // suppress annoying warning
         private static final List<String> LOG4J_CONFIGS = Arrays.asList("log4j.properties", "log4j.xml");
-
-        static {
-            // #134455 (see #67017 and #128360 as well)
-            // commenting for NB 6.5M1, let's see whether some issues caused by this change will happen or whether this code can be removed
-            //Collections.addAll(FORBIDDEN_PACKAGES, "org.apache.log4j", "org.apache.commons.logging"); // NOI18N
-        }
 
         private final URL[] tomcatURLs;
 
@@ -874,24 +890,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
 
         @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
-            boolean forbidden = false;
-            for (String packageName : FORBIDDEN_PACKAGES) {
-                if (name.startsWith(packageName)) {
-                    forbidden = true;
-                    break;
-                }
-            }
-            if (forbidden) {
-                if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.log(Level.FINER, "Denying access to " + name); // NOI18N
-                }
-                throw new ClassNotFoundException(name);
-            }
-            return super.findClass(name);
-        }
-
-        @Override
         public URL findResource(String name) {
             if (LOGGING_CONFIG.equals(name) || name.startsWith(SERVICES_FOLDER)) {
                 if (LOGGER.isLoggable(Level.FINER)) {
@@ -920,6 +918,85 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             sb.append(", parent : "); // NOI18N
             sb.append(getParent().toString());
             return sb.toString();
+        }
+
+        public void reset() {
+            if (noReset || !Utilities.isWindows()) {
+                return;
+            }
+
+            URL[] urls = super.getURLs();
+
+            // Test we can fix classloader later
+            Method getJavaNetAccess = null;
+            Method getURLClasspath = null;
+            Method push = null;
+
+            try {
+                Class clazz = Class.forName("sun.misc.SharedSecrets"); // NOI18N
+                getJavaNetAccess = clazz.getMethod("getJavaNetAccess", new Class[]{}); // NOI18N
+
+                getURLClasspath = getJavaNetAccess.getReturnType().getMethod("getURLClassPath", //NOI18N
+                        new Class[] {URLClassLoader.class});
+                getURLClasspath.setAccessible(true);
+
+                push = getURLClasspath.getReturnType().getDeclaredMethod("push", // NOI18N
+                        new Class[] {urls.getClass()});
+                push.setAccessible(true);
+            } catch (ClassNotFoundException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return; // Bad luck - will be locked
+            } catch (NoSuchMethodException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return; // Bad luck - will be locked
+            } catch (SecurityException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return; // Bad luck - will be locked
+            }
+
+            // Release loader
+            try {
+                Class clazz = Class.forName("sun.misc.ClassLoaderUtil"); // NOI18N
+                if (clazz != null) {
+                    Method releaseMethod = clazz.getMethod("releaseLoader", URLClassLoader.class); // NOI18N
+                    if (releaseMethod != null) {
+                        releaseMethod.invoke(null, new Object[]{this});
+                    }
+                }
+            } catch (ClassNotFoundException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return; // Bad luck - will be locked
+            } catch (NoSuchMethodException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return; // Bad luck - will be locked
+            } catch (IllegalAccessException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return; // Bad luck - will be locked
+            } catch (InvocationTargetException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return; // Bad luck - will be locked
+            }
+
+            LOGGER.log(Level.FINE, "Classloader released");
+
+            // Fix the classpath
+            try {
+                Object javaNetAccess = getJavaNetAccess.invoke(null, new Object[]{});
+                Object urlClasspath = getURLClasspath.invoke(javaNetAccess, new Object[]{this});
+                push.invoke(urlClasspath, new Object[] {urls});
+            } catch (IllegalAccessException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return; // TODO Unusable classloader
+            } catch (InvocationTargetException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return; // TODO Unusable classloader
+            }
+
+            LOGGER.log(Level.FINE, "Classloader reinitialized");
+        }
+
+        public void close() throws IOException {
+            reset();
         }
     }
 

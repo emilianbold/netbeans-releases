@@ -240,7 +240,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             return null;
         }
     }
-    
+
+    public boolean requireLegalArtifactSaving() {     
+       return false;                                   
+    }    
+
     @Override
     public boolean allowModifyMode() {
         return false;

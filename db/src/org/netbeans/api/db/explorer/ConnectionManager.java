@@ -41,6 +41,10 @@
 
 package org.netbeans.api.db.explorer;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.modules.db.explorer.ConnectionList;
@@ -72,6 +76,8 @@ import org.openide.util.Mutex;
  * @author Andrei Badea
  */
 public final class ConnectionManager {
+
+    private static Logger LOGGER = Logger.getLogger((ConnectionManager.class.getName()));
 
     /**
      * The ConnectionManager singleton instance.
@@ -136,7 +142,7 @@ public final class ConnectionManager {
         if (dbconn == null) {
             throw new NullPointerException();
         }
-        ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnectionNoConnect(dbconn.getDelegate());
+        ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(dbconn.getDelegate());
     }
 
     /**
@@ -173,6 +179,15 @@ public final class ConnectionManager {
 
         if (SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("This method can not be called on the event dispatch thread."); // NOI18N
+        }
+
+        Connection conn = dbconn.getJDBCConnection();
+        try {
+            if (conn != null && (! conn.isClosed())) {
+                return true;
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.FINE, null, e);
         }
 
         dbconn.getDelegate().connectSync();

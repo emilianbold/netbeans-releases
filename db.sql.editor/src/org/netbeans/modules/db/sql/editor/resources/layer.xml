@@ -54,6 +54,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance"/>
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
+            <file name="org-netbeans-modules-db-sql-editor-ui-actions-ToggleKeepOldResultTabsAction.instance"/>
         </folder>
     </folder>
 
@@ -121,6 +122,9 @@ made subject to such option by the copyright holder.
                         </file>
                         <file name="org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance">
                             <attr name="position" intvalue="920"/>
+                        </file>
+                        <file name="org-netbeans-modules-db-sql-editor-ui-actions-ToggleKeepOldResultTabsAction.instance">
+                            <attr name="position" intvalue="940"/>
                         </file>
                     </folder>
                 </folder>

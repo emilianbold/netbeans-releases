@@ -27,6 +27,12 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-css-editor-CssBracesMatcherFactory.instance">
+                        <attr name="position" intvalue="45"/>
+                    </file>
+                </folder>
+                
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -52,6 +58,9 @@
                 <folder name="Actions">
                     <file name="org-openide-actions-CopyAction.instance">
                         <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="550"/>
                     </file>
                     <file name="org-openide-actions-CutAction.instance">
                         <attr name="position" intvalue="400"/>

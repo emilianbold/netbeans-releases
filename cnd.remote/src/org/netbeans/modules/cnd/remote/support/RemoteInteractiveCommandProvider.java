@@ -42,8 +42,10 @@ package org.netbeans.modules.cnd.remote.support;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
+import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 
 /**
  * Run a remote command which requires interactive I/O. The caller is responsible for setting up the
@@ -52,11 +54,28 @@ import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
  * @author gordonp
  */
 public class RemoteInteractiveCommandProvider implements InteractiveCommandProvider {
+
+    public RemoteInteractiveCommandProvider(String hkey) {
+        this.hkey = hkey;
+    }
     
     private RemoteInteractiveCommandSupport support;
+    private String hkey;
 
     public boolean run(String hkey, String cmd, Map<String, String> env) {
         support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
+        return !support.isFailedOrCancelled();
+    }
+
+    public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env) {
+        assert hkey != null;
+        StringBuilder plainCommand = new StringBuilder();
+        
+        for (String arg : commandAndArgs) {
+            plainCommand.append(arg);
+            plainCommand.append(' ');
+        }
+        support = new RemoteInteractiveCommandSupport(hkey, plainCommand.toString(), env);
         return !support.isFailedOrCancelled();
     }
 
@@ -66,14 +85,24 @@ public class RemoteInteractiveCommandProvider implements InteractiveCommandProvi
     }
 
     public InputStream getInputStream() throws IOException {
-        return support.getInputStream();
+        return support == null ? null : support.getInputStream();
     }
 
     public OutputStream getOutputStream() throws IOException {
-        return support.getOutputStream();
+        return support == null ? null : support.getOutputStream();
     }
     
     public void disconnect() {
-        support.disconnect();
+        if (support != null) {
+            support.disconnect();
+        }
+    }
+
+    public int waitFor() {
+        return support == null ? -1 : support.waitFor();
+    }
+
+    public int getExitStatus() {
+        return support == null ? -1 : support.getExitStatus();
     }
 }

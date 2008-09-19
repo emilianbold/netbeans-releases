@@ -157,7 +157,14 @@ public class AssociateAction extends CookieAction
             thread.run();
         }
     }
-    
+
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
+
+
     ///////////////////////////////////////////////////////////////////////////
     // Helper Methods
 }

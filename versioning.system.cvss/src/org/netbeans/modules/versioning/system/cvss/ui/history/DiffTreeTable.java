@@ -116,7 +116,7 @@ class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionL
     }
     
     public void mouseClicked(MouseEvent e) {
-        Point p = e.getPoint();
+        Point p = new Point(e.getPoint());
         SearchHistoryPanel.DispRevision drev = getRevisionWithTagsAt(p);
         if (drev != null) {
             Window w = SwingUtilities.windowForComponent(treeTable);
@@ -125,6 +125,7 @@ class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionL
             p.y += 10;
             SummaryView.showAllTags(w, p, drev);
         }
+        p = new Point(e.getPoint());
         drev = getRevisionWithPropertyAt(p, "messageRevision"); // NOI18N
         if (drev != null) {
             Window w = SwingUtilities.windowForComponent(treeTable);

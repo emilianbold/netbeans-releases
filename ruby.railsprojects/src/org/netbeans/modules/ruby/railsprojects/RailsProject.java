@@ -201,7 +201,6 @@ public class RailsProject extends RubyBaseProject {
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/Ruby/_view.rhtml", // NOI18N
             "Templates/Ruby/_view.erb", // NOI18N
             "Templates/Ruby/main.rb", // NOI18N
             "Templates/Ruby/test.rb", // NOI18N
@@ -209,6 +208,7 @@ public class RailsProject extends RubyBaseProject {
             "Templates/Ruby/module.rb", // NOI18N
             "Templates/Ruby/rspec.rb", // NOI18N
             "Templates/Ruby/empty.rjs", // NOI18N
+            "Templates/Ruby/_view.rhtml", // NOI18N
         };
         
         public String[] getRecommendedTypes() {

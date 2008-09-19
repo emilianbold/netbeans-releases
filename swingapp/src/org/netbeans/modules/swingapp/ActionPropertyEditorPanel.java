@@ -69,6 +69,7 @@ import org.netbeans.modules.swingapp.ProxyAction.Scope;
 import org.netbeans.modules.swingapp.actions.AcceleratorKeyListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -205,12 +206,36 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         ActionListener modifierListener = new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 acceleratorListener.updateFromModifiers();
+                updateState();
             }
         };
         altCheckbox.addActionListener(modifierListener);
         controlCheckbox.addActionListener(modifierListener);
         metaCheckbox.addActionListener(modifierListener);
         shiftCheckbox.addActionListener(modifierListener);
+        
+        acceleratorText.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                updateState();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                updateState();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                updateState();
+            }
+        });
+    }
+
+    void updateState() {
+        if (env != null) {
+            if ("".equals(acceleratorText.getText()) // NOI18N
+                    && (altCheckbox.isSelected() || controlCheckbox.isSelected() || metaCheckbox.isSelected() || shiftCheckbox.isSelected())) {
+                env.setState(PropertyEnv.STATE_INVALID);
+            } else {
+                env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+            }
+        }
     }
     
     /* update the selected and enabled combos based on the class of the action
@@ -306,6 +331,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         controlCheckbox.setSelected(false);
         metaCheckbox.setSelected(false);
         shiftCheckbox.setSelected(false);
+        updateState();
     }
     
     private void updateFieldsFromAction(final ProxyAction act) {
@@ -825,6 +851,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
                 firePropertyChange("action",null,getSelectedAction()); // NOI18N
             }
         }
+        updateState();
     }//GEN-LAST:event_actionsComboActionPerformed
 
     private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundTaskCheckboxActionPerformed
@@ -846,7 +873,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         if(cp.getSelectedFile() != null && cp.isConfirmed()) {
             selectedSourceFile = cp.getSelectedFile();
             String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
-            if(AppFrameworkSupport.getFileForClass(sourceFile, selectedClass) == null) {
+            if ((selectedClass == null) || (AppFrameworkSupport.getFileForClass(sourceFile, selectedClass) == null)) {
                 //            classLabel.setText(""); // NOI18N
                 classField.setText(""); // NOI18N
             } else {
@@ -1332,6 +1359,11 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass().getName());
+    }
+
+    private PropertyEnv env;
+    protected void attachEnv(PropertyEnv env) {
+        this.env = env;
     }
             
 }
