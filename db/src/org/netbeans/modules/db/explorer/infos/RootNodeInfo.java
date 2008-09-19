@@ -86,6 +86,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     // @GuardedBy("nodeMap")
     private HashMap<Node, RegisteredNodeInfo> nodeMap = new HashMap<Node, RegisteredNodeInfo>();
 
+    // @GuardedBy("conn2Info")
     final private Map<DatabaseConnection, ConnectionNodeInfo> conn2Info = new HashMap<DatabaseConnection, ConnectionNodeInfo>();
 
     private static Logger LOGGER = 
@@ -276,17 +277,12 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     }
 
     private ConnectionNodeInfo createConnectionNodeInfo(DatabaseConnection dbconn) throws DatabaseException {
-        System.out.println("For " + dbconn);
         synchronized (conn2Info) {
             ConnectionNodeInfo ninfo = conn2Info.get(dbconn);
             if (ninfo != null) {
                 return ninfo;
             }
             ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
-            ninfo.setUser(dbconn.getUser());
-            ninfo.setDatabase(dbconn.getDatabase());
-            ninfo.setSchema(dbconn.getSchema());
-            ninfo.setName(dbconn.getName());
             ninfo.setDatabaseConnection(dbconn);
             if (DatabaseConnection.test(dbconn.getConnection(), dbconn.getName())) {
                 ninfo.connect(dbconn);
