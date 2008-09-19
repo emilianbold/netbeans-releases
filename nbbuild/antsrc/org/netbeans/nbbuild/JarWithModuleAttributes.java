@@ -48,8 +48,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
@@ -262,7 +260,7 @@ public class JarWithModuleAttributes extends Jar {
                     for (String one : depends.split(",")) {
                         int great = one.indexOf('>');
                         sb.append(sep);
-                        sep = ",\n   ";
+                        sep = ",";
                         if (great == -1) {
                             int equals = one.indexOf('=');
                             if (equals == -1) {
