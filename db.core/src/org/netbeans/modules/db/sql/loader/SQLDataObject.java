@@ -51,8 +51,6 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -66,17 +64,17 @@ public class SQLDataObject extends MultiDataObject {
         super(primaryFile, loader);
         CookieSet cookies = getCookieSet();
         cookies.add(new SQLEditorSupport(this));
+        cookies.assign(FileEncodingQueryImpl.class, new FileEncodingQueryImpl());
     }
 
+    @Override
     protected Node createNodeDelegate() {
         return new SQLNode(this);
     }
 
-    public synchronized Lookup getLookup() {
-        if (lookup == null) {
-            lookup = new ProxyLookup(getCookieSet().getLookup(), Lookups.singleton(new FileEncodingQueryImpl()));
-        }
-        return lookup;
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
 
     public boolean isConsole() {
