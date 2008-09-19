@@ -70,6 +70,8 @@ public enum PHPDocCommentTokenId implements TokenId {
     PHPDOC_TUTORIAL("@tutorial", "phpdockeyword"), //NOI18N
     PHPDOC_METHOD("@method", "phpdockeyword"), //NOI18N
     PHPDOC_PROPERTY("@property", "phpdockeyword"), //NOI18N
+    PHPDOC_PROPERTY_READ("@property-write", "phpdockeyword"), //NOI18N
+    PHPDOC_PROPERTY_WRITE("@property-read", "phpdockeyword"), //NOI18N
     PHPDOC_USES("@uses", "phpdockeyword"), //NOI18N
     PHPDOC_CATEGORY("@category", "phpdockeyword"), //NOI18N
     PHPDOC_FINAL("@final", "phpdockeyword"), //NOI18N
