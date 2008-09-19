@@ -62,6 +62,7 @@ import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -325,7 +326,7 @@ public class PHPIndex {
     /** returns constnats of a class. */
     public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String typeName, String name, NameKind kind) {
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, typeName);
+        List<IndexedClass> inheritanceLine = getClassAncestors(context, typeName);
 
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
@@ -348,7 +349,7 @@ public class PHPIndex {
     /** returns all methods of a class or an interface. */
     public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
-        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, typeName);
+        List<IndexedClass> inheritanceLine = getClassAncestors(context, typeName);
 
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
@@ -371,7 +372,7 @@ public class PHPIndex {
     /** returns all fields of a class or an interface. */
     public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
-        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, typeName);
+        List<IndexedClass> inheritanceLine = getClassAncestors(context, typeName);
 
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
@@ -383,40 +384,42 @@ public class PHPIndex {
         return properties;
     }
 
-    /** return a list of all superclasses of the given class. */
-    public List<IndexedClass>getClassInheritanceLine(PHPParseResult context, String className){
-        List<IndexedClass>classLine = new LinkedList<IndexedClass>();
-        Collection<String> processedClasses = new TreeSet<String>();
+    /** return a list of all superclasses of the given class.
+     *  The head item will be the queried class, otherwise it not safe to rely on the element order
+     */
+    @NonNull
+    public List<IndexedClass>getClassAncestors(PHPParseResult context, String className){
+        return getClassAncestors(context, className, new TreeSet<String>());
+    }
 
-        while (className != null && className.length() > 0){
-            if (processedClasses.contains(className)){
-                break; //TODO: circular reference, warn the user
-            }
+    @NonNull
+    private List<IndexedClass>getClassAncestors(PHPParseResult context, String className, Collection<String> processedClasses){
+        List<IndexedClass> ancestors = new LinkedList<IndexedClass>();
 
-            processedClasses.add(className);
-
-            Collection<IndexedClass>classes = getClasses(context, className, NameKind.EXACT_NAME);
-
-            if (classes == null || classes.size() == 0){
-                break;
-            }
-
-            //TODO: handle name conflicts
-            IndexedClass clazz = classes.toArray(new IndexedClass[classes.size()])[0];
-            if (context != null && context.getFile() != null) {
-                for (IndexedClass indexedClass : classes) {
-                    if (context.getFile().getFile().equals(indexedClass.getFile().getFile())) {
-                        // prefer the current file if possible
-                        clazz = indexedClass;
-                        break;
-                    }
-                }
-            }
-            classLine.add(clazz);
-            className = clazz.getSuperClass();
+        if (processedClasses.contains(className)) {
+            return Collections.<IndexedClass>emptyList(); //TODO: circular reference, warn the user
         }
 
-        return classLine;
+        processedClasses.add(className);
+        List<String> assumedParents = new LinkedList<String>();
+        Collection<IndexedClass>classes = getClasses(context, className, NameKind.EXACT_NAME);
+        
+        if (classes != null) {
+            for (IndexedClass clazz : classes) {
+                ancestors.add(clazz);
+                String parent = clazz.getSuperClass();
+
+                if (parent != null) {
+                    assumedParents.add(parent);
+                }
+            }
+        }
+
+        for (String parent : assumedParents){
+            ancestors.addAll(getClassAncestors(context, parent, processedClasses));
+        }
+
+        return ancestors;
     }
 
     /** returns local constnats of a class. */
