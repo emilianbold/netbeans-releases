@@ -359,6 +359,15 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testInsideClass_8() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass.php", "InsideClass::^", false);
     }
+    public void testInsideClass_9() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass3.php", "func^", false);
+    }
+    public void testInsideClass_10() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass3.php", "privat^", false);
+    }
+    public void testInsideClass_11() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass3.php", "cons^", false);
+    }
     public void testInsideClassAdv() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass2.php", "$this->^", false);
     }

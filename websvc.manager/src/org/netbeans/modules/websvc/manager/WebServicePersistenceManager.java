@@ -56,7 +56,10 @@ import java.io.BufferedOutputStream;
 import java.util.*;
 
 import java.beans.ExceptionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
@@ -150,7 +153,13 @@ public class WebServicePersistenceManager implements ExceptionListener {
 
                 for (WebServiceData wsData : wsDatas) {
                     if (imported) { // we don't need to import generated artifacts
-
+                        try {
+                            WsdlModel wsdlModel = WebServiceManager.getInstance().getWsdlModel(wsData);
+                            wsData.setWsdlService(wsdlModel.getServiceByName(wsData.getName()));
+                        } catch (IOException ex) {
+                            Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        }
+                        
                         if (wsData.getJaxRpcDescriptorPath() != null) {
                             wsData.setJaxRpcDescriptor(loadDescriptorFile(websvcDir + File.separator + wsData.getJaxRpcDescriptorPath()));
                         }
