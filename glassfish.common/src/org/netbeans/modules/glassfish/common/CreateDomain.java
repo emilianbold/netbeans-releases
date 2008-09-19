@@ -87,7 +87,7 @@ public class CreateDomain extends Thread {
 
     static private void computePorts(Map<String, String> ip, Map<String, String> createProps) {
         int portBase = 8900;
-        int kicker = ((new Date()).toString() + ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR)+ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() % 50000;
+        int kicker = ((new Date()).toString() + ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR)+ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() % 40000;
         kicker = kicker < 0 ? -kicker : kicker;
         
         int httpPort = portBase + kicker + 80;
