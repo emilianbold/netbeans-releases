@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.insert;
 
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -59,20 +59,23 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141866 extends cc
+public class insert_0001 extends insert
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141866";
+  static final String TEST_PHP_NAME = "PhpProject_insert_0001";
 
-  public Issue141866( String arg0 )
+  public insert_0001( String arg0 )
   {
     super( arg0 );
   }
@@ -80,9 +83,10 @@ public class Issue141866 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141866.class ).addTest(
+      NbModuleSuite.createConfiguration( insert_0001.class ).addTest(
           "CreateApplication",
-          "Issue141866"
+          "InsertEmpty",
+          "InsertConstructor"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -99,7 +103,53 @@ public class Issue141866 extends cc
     endTest( );
   }
 
-  public void Issue141866( ) throws Exception
+    public class CComponentChooser implements ComponentChooser
+    {
+      String s;
+      public CComponentChooser( String _s )
+      {
+        super( );
+        s = _s;
+      }
+
+      public java.lang.String getDescription() { return "looking for happy"; }
+      public boolean checkComponent( java.awt.Component comp )
+      {
+        System.out.println( s + comp );
+        //if( !s.equals( ( ( JToggleButton )comp ).getText( ) ) )
+          return false;
+        //return true;
+      }
+    };
+
+  public void InsertEmpty( )
+  {
+    startTest( );
+
+    // Invoke Alt+Insert without any code
+    // List should contain two database related items
+
+    // Get editor
+    EditorOperator eoPHP = new EditorOperator( "index.php" );
+    Sleep( 1000 );
+    // Locate comment
+    eoPHP.setCaretPosition( "// put your code here", false );
+    // Add new line
+    eoPHP.insert( "\n" );
+    Sleep( 1000 );
+
+    InvokeInsert( eoPHP );
+
+    // Get list
+    //JComboBoxOperator jc = new JComboBoxOperator( MainWindowOperator.getDefault( ), 0 );
+    //jc.selectItem( 1 );
+
+    //new ComponentOperator( MainWindowOperator.getDefault( ), new CComponentChooser( "+++2+++" ) );
+
+    endTest( );
+  }
+
+  public void InsertConstructor( ) throws Exception
   {
     startTest( );
 
@@ -111,19 +161,6 @@ public class Issue141866 extends cc
     // Add new line
     eoPHP.insert( "\n" );
     Sleep( 1000 );
-
-    String sCode = "class a ext";
-    String sIdeal = "class a extends";
-    TypeCode( eoPHP, sCode );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    WaitCompletionScanning( );
-
-    // Get code
-    String sText = eoPHP.getText( eoPHP.getLineNumber( ) );
-
-    // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
 
     endTest( );
   }

@@ -39,27 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.brackets;
 
-import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.test.php.GeneralPHP;
 import org.netbeans.jemmy.JemmyException;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import junit.framework.Test;
-import org.netbeans.jemmy.operators.JToggleButtonOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
 
@@ -68,63 +51,11 @@ import java.util.List;
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141866 extends cc
+public class brackets extends GeneralPHP
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141866";
 
-  public Issue141866( String arg0 )
+  public brackets( String arg0 )
   {
     super( arg0 );
-  }
-
-  public static Test suite( )
-  {
-    return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141866.class ).addTest(
-          "CreateApplication",
-          "Issue141866"
-        )
-        .enableModules( ".*" )
-        .clusters( ".*" )
-        //.gui( true )
-      );
-  }
-
-  public void CreateApplication( )
-  {
-    startTest( );
-
-    CreatePHPApplicationInternal( TEST_PHP_NAME );
-
-    endTest( );
-  }
-
-  public void Issue141866( ) throws Exception
-  {
-    startTest( );
-
-    // Get editor
-    EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
-    // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
-    // Add new line
-    eoPHP.insert( "\n" );
-    Sleep( 1000 );
-
-    String sCode = "class a ext";
-    String sIdeal = "class a extends";
-    TypeCode( eoPHP, sCode );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    WaitCompletionScanning( );
-
-    // Get code
-    String sText = eoPHP.getText( eoPHP.getLineNumber( ) );
-
-    // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
-
-    endTest( );
   }
 }

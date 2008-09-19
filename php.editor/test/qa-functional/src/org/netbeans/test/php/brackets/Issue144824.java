@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.brackets;
 
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -68,11 +68,11 @@ import java.util.List;
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141866 extends cc
+public class Issue144824 extends brackets
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141866";
+  static final String TEST_PHP_NAME = "PhpProject_brackets_Issue144824";
 
-  public Issue141866( String arg0 )
+  public Issue144824( String arg0 )
   {
     super( arg0 );
   }
@@ -80,9 +80,9 @@ public class Issue141866 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141866.class ).addTest(
+      NbModuleSuite.createConfiguration( Issue144824.class ).addTest(
           "CreateApplication",
-          "Issue141866"
+          "Issue144824"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -99,7 +99,7 @@ public class Issue141866 extends cc
     endTest( );
   }
 
-  public void Issue141866( ) throws Exception
+  public void Issue144824( )
   {
     startTest( );
 
@@ -112,18 +112,9 @@ public class Issue141866 extends cc
     eoPHP.insert( "\n" );
     Sleep( 1000 );
 
-    String sCode = "class a ext";
-    String sIdeal = "class a extends";
-    TypeCode( eoPHP, sCode );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    WaitCompletionScanning( );
-
-    // Get code
-    String sText = eoPHP.getText( eoPHP.getLineNumber( ) );
-
-    // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
+    // Empty block
+    TypeCode( eoPHP, "{\n" );
+    CheckResult( eoPHP, "}", 1 );
 
     endTest( );
   }
