@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -146,9 +147,16 @@ public class URLFileSystem extends FileSystem {
     public SystemAction[] getActions() {
         return new SystemAction[0];
     }
-    
+
+    protected void fireStatusChange(URLFileObject obj) {
+        FileStatusEvent evt = new FileStatusEvent(this, obj, false, true);
+        fireFileStatusChanged(evt);
+    }
+
     private static final class URLStatus implements Status, Serializable {
         private static final long serialVersionUID = 620102785902L;
+
+        private static final int MAX_SIZE = 20;
         
         private static Image JAVASCRIPT_IMAGE = new ImageIcon(URLFileSystem.class.getResource("javascript.png")).getImage();
         private static Image HTML_IMAGE = new ImageIcon(URLFileSystem.class.getResource("html.png")).getImage();
@@ -157,12 +165,33 @@ public class URLFileSystem extends FileSystem {
             for (FileObject fo : files) {
                 if (fo instanceof URLFileObject) {
                     URLFileObject urlFO = (URLFileObject)fo;
-                    URL sourceURL = urlFO.getSourceURL();
+                    URL sourceURL = urlFO.getActualURL();
                     
                     if (sourceURL != null && urlFO.getNameExt().equals(name)) {
-                        String host = sourceURL.getProtocol() + "://.../" + name;
-                        
-                        return host;
+                        String displayName = sourceURL.toExternalForm();
+                        if (displayName.length() <= MAX_SIZE) {
+                            return displayName;
+                        } else {
+                            String file = sourceURL.getFile();
+                            String protocol = sourceURL.getProtocol();
+
+                            int lastSlashIndex = -1;
+                            if (file != null) {
+                                for (int i = file.length() - 2; i >= 0; i--) {
+                                    if (file.charAt(i) == '/') {
+                                        lastSlashIndex = i;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (lastSlashIndex == -1) {
+                                return displayName;
+                            } else {
+                                String truncatedName = protocol + "://..." + file.substring(lastSlashIndex);
+                                return truncatedName;
+                            }
+                        }
                     }
                 }
             }

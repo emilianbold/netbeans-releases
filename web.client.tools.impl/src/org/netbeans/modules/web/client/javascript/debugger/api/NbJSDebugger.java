@@ -44,6 +44,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -130,10 +131,12 @@ public final class NbJSDebugger {
     private JSCallStackFrame selectedFrame;
     public static final String PROPERTY_SOURCES = JSDebugger.PROPERTY_SOURCES;
     public static final String PROPERTY_WINDOWS = JSDebugger.PROPERTY_WINDOWS;
+    public static final String PROPERTY_RELOADSOURCES = JSDebugger.PROPERTY_RELOADSOURCES;
     private URLContentProvider contentProvider;
     private JSDebugger debugger;
     private HashMap<Breakpoint, JSBreakpointImpl> breakpointsMap = new HashMap<Breakpoint, JSBreakpointImpl>();
     private StartDebuggerTask startDebuggerTask;
+    private final boolean ignoreQueryStrings;
     
     private class JSDebuggerEventListenerImpl implements JSDebuggerEventListener {
 
@@ -192,7 +195,8 @@ public final class NbJSDebugger {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(JSDebugger.PROPERTY_SOURCES) ||
-                    evt.getPropertyName().equals(JSDebugger.PROPERTY_WINDOWS)) {
+                    evt.getPropertyName().equals(JSDebugger.PROPERTY_WINDOWS) ||
+                    evt.getPropertyName().equals(JSDebugger.PROPERTY_RELOADSOURCES)) {
                 try {
                     propertyChangeSupport.firePropertyChange(
                             evt.getPropertyName(),
@@ -201,7 +205,10 @@ public final class NbJSDebugger {
                 } catch (RuntimeException re) {
                     Log.getLogger().log(Level.INFO, re.getMessage(), re);
                 }
-                
+            }
+
+            if (evt.getPropertyName().equals(JSDebugger.PROPERTY_SOURCES) ||
+                    evt.getPropertyName().equals(JSDebugger.PROPERTY_WINDOWS)) {
                 openEditorsForWindows();
             } else if (evt.getPropertyName().equals(JSDebugger.PROPERTY_RELOADSOURCES)) {
                 refreshCacheForSources((JSSource[])evt.getNewValue());
@@ -332,6 +339,9 @@ public final class NbJSDebugger {
 
         console = IOProvider.getDefault().getIO(
                 NbBundle.getMessage(NbJSDebugger.class, "TITLE_CONSOLE", getURI(), getID()), true); // NOI18N
+
+        NbJSPreferences prefs = NbJSPreferences.getInstance();
+        ignoreQueryStrings = prefs.getIgnoreQueryStrings();
     }
 
     public static void startDebugging(URI uri, HtmlBrowser.Factory browser, Lookup lookup) {
@@ -393,6 +403,10 @@ public final class NbJSDebugger {
             return debugger.getID();
         }
         return null;
+    }
+
+    public boolean isIgnoringQueryStrings() {
+        return ignoreQueryStrings;
     }
 
     // Event listener
@@ -476,6 +490,7 @@ public final class NbJSDebugger {
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_EXCEPTIONS, preferences.getSuspendOnExceptions());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_ERRORS, preferences.getSuspendOnErrors());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_DEBUGGERKEYWORD, preferences.getSuspendOnDebuggerKeyword());
+            debugger.setBooleanFeature(Feature.Name.IGNORE_QUERY_STRINGS, ignoreQueryStrings);
 
             //We probably need to figure out the best place to specify the Http Monitor being on or off by default.  
             debugger.setBooleanFeature(Feature.Name.HTTP_MONITOR, preferences.getHttpMonitorEnabled());
@@ -701,11 +716,22 @@ public final class NbJSDebugger {
     }
 
     public FileObject getFileObjectForSource(JSSource source) {
+        return getFileObjectForSource(source, false);
+    }
+
+    public FileObject getFileObjectForSource(JSSource source, boolean modifyActualURL) {
         JSToNbJSLocationMapper mapper = null;
+        JSSource originalSource = source;
 
         if (lookup != null) {
             mapper = lookup.lookup(JSToNbJSLocationMapper.class);
         }
+
+        if (ignoreQueryStrings) {
+            URI originalURI = source.getLocation().getURI();
+            source = JSFactory.createJSSource(getURIWithoutQuery(originalURI).toString());
+        }
+
         JSLocation location = source.getLocation();
 
         if (mapper != null) {
@@ -715,15 +741,80 @@ public final class NbJSDebugger {
             }
         }
 
-        return getURLFileObjectForSource(source);
+        if (ignoreQueryStrings && (modifyActualURL || !isURLLoaded(source))) {
+            return getURLFileObjectForSource(originalSource, source);
+        } else if (ignoreQueryStrings) {
+            return sourceToURLFileObject(source);
+        } else {
+            return getURLFileObjectForSource(source);
+        }
     }
 
-    public FileObject getURLFileObjectForSource(JSSource source) {
+    private boolean isURLLoaded(JSSource source) {
+        URI srcURI = source.getLocation().getURI();
+        try {
+            return URLFileObjectFactory.findFileObject(contentProvider, srcURI.toURL()) != null;
+        } catch (MalformedURLException ex) {
+            return false;
+        }
+    }
+
+    private URI getURIWithoutQuery(URI originalURI) {
+            try {
+                URI uriWithoutQuery = new URI(
+                        originalURI.getScheme(),
+                        originalURI.getUserInfo(),
+                        originalURI.getHost(),
+                        originalURI.getPort(),
+                        originalURI.getPath(),
+                        null,
+                        originalURI.getFragment());
+                return uriWithoutQuery;
+            } catch (URISyntaxException ex) {
+                Log.getLogger().log(Level.INFO, "Could not remove query string from URI: " + originalURI.toASCIIString());
+                return originalURI;
+            }
+    }
+
+
+    private URLFileObject sourceToURLFileObject(JSSource source) {
         URI srcURI = source.getLocation().getURI();
         try {
             return getURLFileObject(srcURI.toURL());
         } catch (MalformedURLException ex) {
             return null;
+        }
+    }
+
+    private FileObject getURLFileObjectForSource(JSSource actualSource, JSSource sourceWithoutQuery) {
+        URLFileObject result = sourceToURLFileObject(sourceWithoutQuery);
+        if (result != null) {
+            try {
+                result.setActualURL(actualSource.getLocation().getURI().toURL());
+            } catch (MalformedURLException ex) {
+                Log.getLogger().log(Level.INFO, "URI with query string could not be converted to URL: " +
+                        actualSource.getLocation().getURI().toASCIIString());
+            }
+        }
+
+        return result;
+    }
+
+    public FileObject getURLFileObjectForSource(JSSource source) {
+        return getURLFileObjectForSource(source, false);
+    }
+
+    public FileObject getURLFileObjectForSource(JSSource source, boolean modifyActualURL) {
+        if (ignoreQueryStrings) {
+            URI originalURI = source.getLocation().getURI();
+            JSSource sourceWithoutQuery = JSFactory.createJSSource(getURIWithoutQuery(originalURI).toString());
+            if (modifyActualURL) {
+                return getURLFileObjectForSource(source, sourceWithoutQuery);
+            } else {
+                return sourceToURLFileObject(sourceWithoutQuery);
+            }
+        } else {
+            return sourceToURLFileObject(source);
         }
     }
 
@@ -877,7 +968,7 @@ public final class NbJSDebugger {
         for (JSWindow window : windows) {
             String strURI = window.getURI();
             JSSource source = JSFactory.createJSSource(strURI);
-            NbJSEditorUtil.openFileObject(getFileObjectForSource(source));
+            NbJSEditorUtil.openFileObject(getFileObjectForSource(source, true));
         }
     }
     
@@ -889,8 +980,22 @@ public final class NbJSDebugger {
         for (JSSource source : sources) {
             try {
                 URI sourceURI = source.getLocation().getURI();
-                URLFileObject urlFO = URLFileObjectFactory.findFileObject(contentProvider, sourceURI.toURL());
-                if (urlFO != null) {
+                URI uriWithoutQuery = ignoreQueryStrings ? getURIWithoutQuery(sourceURI) : null;
+
+                URLFileObject urlFO = URLFileObjectFactory.findFileObject(contentProvider,
+                        uriWithoutQuery != null ? uriWithoutQuery.toURL() : sourceURI.toURL());
+
+                boolean invalidated = false;
+                if (urlFO != null && uriWithoutQuery != null) {
+                    URL lastActualURL = urlFO.getActualURL();
+                    URL newActualURL = sourceURI.toURL();
+                    if (!lastActualURL.toExternalForm().equals(newActualURL.toExternalForm())) {
+                        urlFO.setActualURL(sourceURI.toURL());
+                        invalidated = true;
+                    }
+                }
+                
+                if (urlFO != null && !invalidated) {
                     urlFO.invalidate();
                 }
             } catch (MalformedURLException ex) {
