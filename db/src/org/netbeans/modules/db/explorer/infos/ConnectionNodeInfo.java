@@ -85,6 +85,13 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
                 if ( propertyName.equals(DatabaseNodeInfo.DATABASE) ||
                      propertyName.equals(DatabaseNodeInfo.SCHEMA) ||
                      propertyName.equals(DatabaseNodeInfo.USER) ) {
+                    
+                    try {
+                        resetChildren();
+                    } catch (DatabaseException dbe) {
+                        Exceptions.printStackTrace(dbe);
+                    }
+                    
                     setDisplayName(getDatabaseConnection().getName());
                 }
                 else if (propertyName.equals(DatabaseNodeInfo.CONNECTION)) {
@@ -312,10 +319,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         } catch (Exception ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-
-        // Create subnodes
-
-
     }
     
     
@@ -445,7 +448,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
                 
                 message = MessageFormat.format(bundle().getString("EXC_ConnectionError"), exc.getMessage()); // NOI18N
             }
-            
+
             // XXX hack for Derby
             DerbyConectionEventListener.getDefault().afterDisconnect(getDatabaseConnection(), connection);
             
