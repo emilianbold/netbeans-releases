@@ -92,48 +92,44 @@ public class CsmStatementResolver {
         
         CsmStatement.Kind kind = stmt.getKind();
         boolean found = true;
-        if( kind == CsmStatement.Kind.COMPOUND ) {
-            found = findInner((CsmCompoundStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.IF ) {
-            found = findInner((CsmIfStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.TRY_CATCH ) {
-            found = findInner((CsmTryCatchStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.CATCH ) {
-            found = findInner((CsmExceptionHandler) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.DECLARATION ) {
-            found = findInner((CsmDeclarationStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.WHILE || kind == CsmStatement.Kind.DO_WHILE ) {
-            found = findInner((CsmLoopStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.FOR ) {
-            found = findInner((CsmForStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.SWITCH ) {
-            found = findInner((CsmSwitchStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.BREAK ) {
-        }
-        else if( kind == CsmStatement.Kind.CASE ) {
-        }
-        else if( kind == CsmStatement.Kind.CONTINUE ) {
-        }
-        else if( kind == CsmStatement.Kind.DEFAULT ) {
-        }
-        else if( kind == CsmStatement.Kind.EXPRESSION ) {
-        }
-        else if( kind == CsmStatement.Kind.GOTO ) {
-        }
-        else if( kind == CsmStatement.Kind.LABEL ) {
-        }
-        else if( kind == CsmStatement.Kind.RETURN ) {
-        }
-        else  {
-            if (CsmUtilities.DEBUG) print("unexpected statement kind"); //NOI18N
+        switch (kind) {
+            case COMPOUND:
+                found = findInner((CsmCompoundStatement) stmt, offset, context);
+                break;
+            case IF:
+                found = findInner((CsmIfStatement) stmt, offset, context);
+                break;
+            case TRY_CATCH:
+                found = findInner((CsmTryCatchStatement) stmt, offset, context);
+                break;
+            case CATCH:
+                found = findInner((CsmExceptionHandler) stmt, offset, context);
+                break;
+            case DECLARATION:
+                found = findInner((CsmDeclarationStatement) stmt, offset, context);
+                break;
+            case WHILE:
+            case DO_WHILE:
+                found = findInner((CsmLoopStatement) stmt, offset, context);
+                break;
+            case FOR:
+                found = findInner((CsmForStatement) stmt, offset, context);
+                break;
+            case SWITCH:
+                found = findInner((CsmSwitchStatement) stmt, offset, context);
+                break;
+            case BREAK:
+            case CASE:
+            case CONTINUE:
+            case DEFAULT:
+            case EXPRESSION:
+            case GOTO:
+            case LABEL:
+            case RETURN:
+                break;
+            default:
+                if (CsmUtilities.DEBUG) print("unexpected statement kind"); //NOI18N
+                break;
         }
         return found;
     }

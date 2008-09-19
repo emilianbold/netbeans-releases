@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,65 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.jaxrpc.actions;
+package org.netbeans.test.php.insert;
 
-
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.nodes.Node;
-import org.openide.loaders.DataObject;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
-
-
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.test.php.GeneralPHP;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import java.util.List;
 
 /**
  *
- * @author Peter Williams
+ * @author michaelnazarov@netbeans.org
  */
-public class RefreshClientsAction extends NodeAction {
-	
-	protected boolean enable(Node[] activatedNodes) {
-            return (activatedNodes != null && activatedNodes.length == 1);
-	}
-	
-	public HelpCtx getHelpCtx() {
-		// !PW FIXME use correct help context when known.
-		return HelpCtx.DEFAULT_HELP;
-	}
-	
-	public String getName() {
-		return "Refresh View";
-	}
-	
-	protected void performAction(Node[] activatedNodes) {
-		
-		assert (activatedNodes != null && activatedNodes.length == 1);
-		
-		// Invoked on ClientRootNode to refresh the list of webservice clients
-		// in this project.
-		WebServicesClientSupport clientSupport = null;
-		
-		// Find WebServicesClientSupport from activated node.
-		DataObject dobj = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
-		if(dobj != null) {
-			clientSupport = WebServicesClientSupport.getWebServicesClientSupport(dobj.getPrimaryFile());
-		}
-		
-		if(clientSupport == null) {
-			String mes = "Can't locate web services client support for Node: " + activatedNodes[0];
-			NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-			DialogDisplayer.getDefault().notify(desc);
-			return;
-		}
-		
-		String mes = "Not Implemented Yet";
-		NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-		DialogDisplayer.getDefault().notify(desc);
-	}
-	
-	protected boolean asynchronous() {
-		return false;
-	}
+
+public class insert extends GeneralPHP
+{
+
+  public insert( String arg0 )
+  {
+    super( arg0 );
+  }
+
+  protected void InvokeInsert( EditorOperator eoPHP )
+  {
+    // Type Alt+Insert
+    eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+    Sleep( 1000 );
+  }
 }

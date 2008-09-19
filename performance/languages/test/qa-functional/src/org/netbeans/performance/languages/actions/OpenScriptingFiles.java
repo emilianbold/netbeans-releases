@@ -47,12 +47,13 @@ import java.awt.Container;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
@@ -94,7 +95,9 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
     protected void initialize(){
         log("::initialize");
         EditorOperator.closeDiscardAll();        
- 
+
+        closeAllModal();
+        
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         
     }
@@ -167,7 +170,7 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
         testProject = Projects.RUBY_PROJECT;
         setRubyEditorCaretFilteringOn();
         WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
+        menuItem = OPEN;
         fileName = "ruby20kb.rb";
         nodePath = "Source Files";        
         doMeasurement();        
@@ -179,7 +182,7 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
         testProject = Projects.RAILS_PROJECT;
         setRHTMLEditorCaretFilteringOn();
         WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
+        menuItem = OPEN;
         fileName = "rhtml20kb.rhtml";
         nodePath = "Views";        
         doMeasurement();          
@@ -192,11 +195,22 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
         testProject = Projects.SCRIPTING_PROJECT;
         setRubyEditorCaretFilteringOn();
         WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
+        menuItem = OPEN;
         fileName = "javascript20kb.js";
         nodePath = "Web Pages";        
         doMeasurement();          
     }
+
+    public void testOpening20kbPHPFile() {
+        testProject = Projects.PHP_PROJECT;
+        setRubyEditorCaretFilteringOn();
+        WAIT_AFTER_OPEN = 1500;
+        menuItem = OPEN;
+        fileName = "php20kb.php";
+        nodePath = "Source Files";
+        doMeasurement();
+    }
+
     protected void setJSEditorCaretFilteringOn() {
         //setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);        
     }    
@@ -243,15 +257,13 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
         Thread.sleep(60*1000);
         runTestGC(EDITOR_REFS);
     }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
 
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(OpenScriptingFiles.class)
+            .enableModules(".*")
+            .clusters(".*")
+            .reuseUserDir(true)
+        );
     }
-    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());        
-    }
-
-    
 }

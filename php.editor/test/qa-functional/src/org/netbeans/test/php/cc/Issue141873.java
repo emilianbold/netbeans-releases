@@ -117,7 +117,7 @@ public class Issue141873 extends cc
     String sIdeal = "function __construct()";
     TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 15000 );
+    WaitCompletionScanning( );
 
     // Get code
     String sText = eoPHP.getText( eoPHP.getLineNumber( ) );
@@ -133,7 +133,7 @@ public class Issue141873 extends cc
     sIdeal = "function __destruct()";
     TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
+    WaitCompletionScanning( );
 
     // Get code
     sText = eoPHP.getText( eoPHP.getLineNumber( ) );

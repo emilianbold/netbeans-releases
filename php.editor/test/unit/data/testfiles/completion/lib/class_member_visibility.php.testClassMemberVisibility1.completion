@@ -1,6 +1,4 @@
 Code completion result for source line:
-self::|privateParentMethod();
+self::|ParentClassConst;
 (QueryType=COMPLETION, NameKind=PREFIX)
-METHOD     privateParentMethod()                      ParentClass
-METHOD     protectedParentMethod()                    ParentClass
-METHOD     publicParentMethod()                       ParentClass
+CONSTANT   ? ParentClassConst                         ParentClass

@@ -421,7 +421,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 result = (CsmClassifier) o;
             }
             if (result == null) {
-                specializationQname[last] = qname[last].toString() + "<>";
+                specializationQname[last] = qname[last].toString() + "<>"; //NOI18N
                 o = resolver.resolve(specializationQname, Resolver.CLASSIFIER);
                 if( CsmKindUtilities.isClassifier(o) ) {
                     result = (CsmClassifier) o;

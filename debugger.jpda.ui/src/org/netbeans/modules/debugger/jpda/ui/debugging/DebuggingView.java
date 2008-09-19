@@ -368,7 +368,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         manager.setRootContext(root);
         refreshView();
         updateSessionsComboBox();
-        adjustTreeScrollBar();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                adjustTreeScrollBar(-1);
+            }
+        });
     }
     
     public ExplorerManager getExplorerManager() {
@@ -600,35 +604,34 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }, 20);
     }
 
-    private void adjustTreeScrollBar() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                JViewport viewport = treeView.getViewport();
-                Point point = viewport.getViewPosition();
-                if (point.y < 0) {
-                    viewport.setViewPosition(new Point(point.x, 0));
-                }
-                Dimension viewSize = viewport.getExtentSize();
-                Dimension treeSize = viewport.getViewSize();
-                int unitHeight = treeView.getUnitHeight();
-                if (unitHeight > 0) {
-                    JScrollBar sbar = mainScrollPane.getVerticalScrollBar();
-                    if (sbar.getUnitIncrement() != unitHeight) {
-                        sbar.setUnitIncrement(unitHeight);
-                    }
-                }
-                if (treeSize.width <= viewSize.width) {
-                    scrollBarPanel.setVisible(false);
-                } else {
-                    scrollBarPanel.setVisible(true);
-                    treeScrollBar.setMaximum(treeSize.width);
-                    treeScrollBar.setVisibleAmount(viewSize.width);
-                    if (unitHeight > 0) {
-                        treeScrollBar.setUnitIncrement(unitHeight / 2);
-                    }
-                } // else
-            } // run()
-        });
+    private void adjustTreeScrollBar(int treeViewWidth) {
+        JViewport viewport = treeView.getViewport();
+        Point point = viewport.getViewPosition();
+        if (point.y < 0) {
+            viewport.setViewPosition(new Point(point.x, 0));
+        }
+        Dimension viewSize = viewport.getExtentSize();
+        Dimension treeSize = viewport.getViewSize();
+        if (treeViewWidth < 0) {
+            treeViewWidth = treeSize.width;
+        }
+        int unitHeight = treeView.getUnitHeight();
+        if (unitHeight > 0) {
+            JScrollBar sbar = mainScrollPane.getVerticalScrollBar();
+            if (sbar.getUnitIncrement() != unitHeight) {
+                sbar.setUnitIncrement(unitHeight);
+            }
+        }
+        if (treeViewWidth <= viewSize.width) {
+            scrollBarPanel.setVisible(false);
+        } else {
+            treeScrollBar.setMaximum(treeViewWidth);
+            treeScrollBar.setVisibleAmount(viewSize.width);
+            if (unitHeight > 0) {
+                treeScrollBar.setUnitIncrement(unitHeight / 2);
+            }
+            scrollBarPanel.setVisible(true);
+        } // else
     }
     
     // **************************************************************************
@@ -645,11 +648,15 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     }
     
     // **************************************************************************
-    // implementation of ComponentListener on treeView
+    // implementation of ChangeListener on treeView
     // **************************************************************************
     
     public void stateChanged(ChangeEvent e) {
-        adjustTreeScrollBar();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                adjustTreeScrollBar(-1);
+            }
+        });
     }
 
     // **************************************************************************
@@ -772,6 +779,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             mainScrollPane.revalidate();
             mainPanel.revalidate();
             treeView.repaint();
+
+            adjustTreeScrollBar(treeViewWidth);
         }
 
         private void addPanels(Object jpdaObject, boolean current, boolean atBreakpoint,

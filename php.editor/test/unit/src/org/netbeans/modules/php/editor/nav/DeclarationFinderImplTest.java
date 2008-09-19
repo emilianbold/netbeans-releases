@@ -93,6 +93,16 @@ public class DeclarationFinderImplTest extends TestBase {
      * 1/public static ^$count = 0, $animal;
      * 2/^public static $count = 0, $animal;
      */
+    public void testFuncParamAsReference() throws Exception {
+        String animalTest = prepareTestFile(
+                "testfiles/basicTest.php",
+                "function funcWithRefParam(&$param) {",
+                "function funcWithRefParam(&^$param) {",
+                "$param++;",
+                "$par|am++;;"
+                );
+        performTestSimpleFindDeclaration(-1, animalTest);
+    }
     public void testStaticFieldAccess() throws Exception {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",

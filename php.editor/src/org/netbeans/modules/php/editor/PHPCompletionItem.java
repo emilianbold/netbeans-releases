@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-abstract class PHPCompletionItem implements CompletionProposal {
+public abstract class PHPCompletionItem implements CompletionProposal {
     private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
     protected static ImageIcon keywordIcon = null;
     protected final CompletionRequest request;
@@ -365,6 +365,10 @@ abstract class PHPCompletionItem implements CompletionProposal {
 
     }
 
+    public static ImageIcon getInterfaceIcon() {
+        return InterfaceItem.icon();
+    }
+
     static class InterfaceItem extends PHPCompletionItem {
         private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
         private static ImageIcon INTERFACE_ICON = null;
@@ -376,12 +380,16 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return ElementKind.CLASS;
         }
 
-        @Override
-        public ImageIcon getIcon() {
+        private static ImageIcon icon() {
             if (INTERFACE_ICON == null) {
                 INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
             }
             return INTERFACE_ICON;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return icon();
         }
     }
 
@@ -429,6 +437,18 @@ abstract class PHPCompletionItem implements CompletionProposal {
             insertDollarPrefix = false;
         }
     }
+
+    static class ClassConstantItem extends VariableItem {
+        ClassConstantItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CONSTANT;
+        }
+    }
+
 
     static class SpecialFunctionItem extends KeywordItem{
         public SpecialFunctionItem(String fncName, CompletionRequest request) {

@@ -75,6 +75,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.openide.WizardDescriptor;
 
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -83,7 +84,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
@@ -113,7 +113,13 @@ public class STSWizard implements TemplateWizard.Iterator {
         File tempFolder = new File(System.getProperty("netbeans.user"));     //NOI18N
         DataObject folderDO = DataObject.find(FileUtil.toFileObject(tempFolder));
 
-        final File wsdlFile = new File(System.getProperty("netbeans.user") + File.separator + "sts.wsdl");
+        final String fileName;
+        if (ConfigVersion.CONFIG_1_0.equals(wiz.getProperty("cfgVersion"))) {
+            fileName = "sts";
+        } else {
+            fileName = "sts13";
+        }
+        final File wsdlFile = new File(System.getProperty("netbeans.user") + File.separator + fileName + ".wsdl");
 
         FileUtil.runAtomicAction(new Runnable() {
 
@@ -145,7 +151,7 @@ public class STSWizard implements TemplateWizard.Iterator {
                     OutputStream wsdlos = null;
                     try {
                         if (!wsdlFile.exists()) {
-                            final InputStream wsdlIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts.template"); //NOI18N
+                            final InputStream wsdlIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/" + fileName + ".template"); //NOI18N
                             wsdlFile.createNewFile();
                             wsdlos = new FileOutputStream(wsdlFile);
                             FileUtil.copy(wsdlIS, wsdlos);
@@ -294,6 +300,8 @@ public class STSWizard implements TemplateWizard.Iterator {
     private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private transient TemplateWizard wiz;
 
+    private transient STSVersionPanel versionPanel = null;
+    
     public void initialize(TemplateWizard wiz) {
         this.wiz = wiz;
         index = 0;
@@ -302,12 +310,13 @@ public class STSWizard implements TemplateWizard.Iterator {
 
         boolean wizardEnabled = Util.isJavaEE5orHigher(project) && Util.isGlassfish(project);
 
+        versionPanel = new STSVersionPanel(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         WizardDescriptor.Panel firstPanel; //special case: use Java Chooser
         if (sourceGroups.length == 0) {
-            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, null), wizardEnabled);
+            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, versionPanel), wizardEnabled);
         } else {
-            firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, null), wizardEnabled);
+            firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, versionPanel), wizardEnabled);
         }
         JComponent comp = (JComponent) firstPanel.getComponent();
         Util.changeLabelInComponent(comp, NbBundle.getMessage(STSWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"),
@@ -343,6 +352,7 @@ public class STSWizard implements TemplateWizard.Iterator {
         if (this.wiz != null) {
             this.wiz.putProperty(WizardProperties.WEB_SERVICE_TYPE, null);
         }
+        versionPanel = null;
         panels = null;
     }
 

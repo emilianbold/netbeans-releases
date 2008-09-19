@@ -282,7 +282,7 @@ public class FileStatusCache {
      * @param file file to check
      * @return give file's status or null if the file's status is not in cache
      */ 
-    FileInformation getCachedStatus(File file) {
+    public FileInformation getCachedStatus(File file) {
         File parent = file.getParentFile();
         if (parent == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
         Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
