@@ -756,7 +756,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             view.setCurrentSQLHistoryList(view.filterSQLHistoryList());
             sqlHistoryTable.repaint();
             sqlHistoryTable.clearSelection();
-            searchTextField.setText(""); // NOI18N
             refreshTable(evt, view.getCurrentSQLHistoryList());
         }
         
