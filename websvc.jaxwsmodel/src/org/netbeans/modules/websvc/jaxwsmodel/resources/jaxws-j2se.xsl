@@ -80,14 +80,14 @@ made subject to such option by the copyright holder.
                 <xsl:variable name="wsimportoptions" select="jaxws:wsimport-options"/>
                 
                 <target name="wsimport-client-{$wsname}" depends="wsimport-init">
-                    <property name="wsdl" location="xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"/> 
+                    <property name="wsdl-{$wsname}" location="xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"/>
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <wsimport
                             xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             destdir="${{build.generated.dir}}/wsimport/client"
                             package="{$package_name}"
-                            wsdl="${{wsdl}}"
+                            wsdl="${{wsdl-{$wsname}}}"
                             wsdlLocation="{$wsdl_url_actual}"
                             catalog="{$catalog}">
                             <xsl:if test="$wsimportoptions">
@@ -134,7 +134,7 @@ made subject to such option by the copyright holder.
                             xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             destdir="${{build.generated.dir}}/wsimport/client"
-                            wsdl="${{wsdl}}"
+                             wsdl="${{wsdl-{$wsname}}}"
                             wsdlLocation="{$wsdl_url_actual}"
                             catalog="{$catalog}">
                             <xsl:if test="$wsimportoptions">
