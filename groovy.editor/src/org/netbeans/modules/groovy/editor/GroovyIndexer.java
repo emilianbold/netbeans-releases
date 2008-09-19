@@ -62,12 +62,9 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
- * @todo should index version follow some GSF rules?
  * 
  * @author Tor Norbye
  * @author Martin Adamek
@@ -138,14 +135,15 @@ public class GroovyIndexer implements Indexer {
     }
 
     public FileObject getPreindexedDb() {
-        if (preindexedDb == null) {
-            File preindexed = InstalledFileLocator.getDefault().locate(
-                    "preindexed-groovy", "org.netbeans.modules.groovy.editor", false); // NOI18N
-            if (preindexed == null || !preindexed.isDirectory()) {
-                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
-            }
-            preindexedDb = FileUtil.toFileObject(preindexed);
-        }
+        // no preindexed libraries for now
+//        if (preindexedDb == null) {
+//            File preindexed = InstalledFileLocator.getDefault().locate(
+//                    "preindexed-groovy", "org.netbeans.modules.groovy.editor", false); // NOI18N
+//            if (preindexed == null || !preindexed.isDirectory()) {
+//                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
+//            }
+//            preindexedDb = FileUtil.toFileObject(preindexed);
+//        }
         return preindexedDb;
     }
     
