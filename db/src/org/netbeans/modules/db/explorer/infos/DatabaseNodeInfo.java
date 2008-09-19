@@ -705,6 +705,12 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     {
     }
     
+    public void resetChildren() throws DatabaseException {
+        Vector children = new Vector();
+        initChildren(children);
+        put(CHILDREN, children);
+    }
+    
     public boolean isChildrenInitialized() {
         Vector children = (Vector)get(CHILDREN);
 
