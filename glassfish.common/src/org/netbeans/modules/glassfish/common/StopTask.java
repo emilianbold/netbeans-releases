@@ -116,6 +116,7 @@ public class StopTask extends BasicTask<OperationState> {
         while(System.currentTimeMillis() - start < STOP_TIMEOUT) {
             // Send the 'completed' event and return when the server is stopped
             if(!CommonServerSupport.isRunning(host, port)) {
+                ip.put(GlassfishModule.DEBUG_PORT, "");
                 try {
                     Thread.sleep(1000); // flush the process
                 } catch (InterruptedException e) {
