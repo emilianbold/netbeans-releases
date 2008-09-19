@@ -3215,6 +3215,8 @@ public class ADProjectTreeEngine
             IProjectTreeModel treeModel = getTreeModel();
             String diagramName = proxy.getNameWithAlias();
             IProject project = proxy.getProject();
+            if (project == null)
+                return;
             long diagramSortPriority = m_TreeBuilder.getSortPriority(proxy.getDiagramKindName());
             
             // 1st, add the diagram node under Diagrams root node if the node 

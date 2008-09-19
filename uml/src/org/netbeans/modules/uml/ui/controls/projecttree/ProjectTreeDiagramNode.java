@@ -108,19 +108,20 @@ public class ProjectTreeDiagramNode extends ProjectTreeNode
    /**
     * @param string
     */
-   protected void setFilename(String value)
-   {
-      IProjectTreeItem data = getData();
-      
-      if(data != null)
-      {
-         String filename = StringUtilities.ensureExtension(value, FileExtensions.DIAGRAM_LAYOUT_EXT);
-         if(filename.length() > 0)
-         {
-            data.setDescription(filename);
-         }
-      }
-   }
+    protected void setFilename(String value)
+    {
+        IProjectTreeItem data = getData();
+
+        if (data != null)
+        {
+//            String filename = StringUtilities.ensureExtension(value, FileExtensions.DIAGRAM_LAYOUT_EXT);
+//            if (filename.length() > 0)
+            if (value.length() > 0)
+            {
+                data.setDescription(value);
+            }
+        }
+    }
    
    public boolean equals(Object obj)
    {
