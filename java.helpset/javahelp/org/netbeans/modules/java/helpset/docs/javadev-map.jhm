@@ -40,7 +40,7 @@
 <mapID target="debug.fix.watch" url="debug/debug_fix_watch.html" />
 <mapID target="debug.new.watch" url="debug/debug_new_watch.html" />
 <mapID target="debug.customize.watch" url="debug/debug_new_watch.html" />
-<mapID target="debug.pop" url="debug/debug_pop.html" />
+<mapID target="debug.pop" url="debug/debug_callstack.html#pop" />
 <mapID target="debug.callstack" url="debug/debug_callstack.html" />
 <mapID target="debug.variables" url="debug/debug_variables.html" />
 <mapID target="breakpoint.about" url="debug/breakpoint_about.html" />
@@ -54,7 +54,9 @@
 <mapID target="debug.remote" url="debug/debug_remote.html" /> 
 <mapID target="debug.expression" url="debug/debug_expression.html" /> 
 <mapID target="debug_expressionstep" url="debug/debug_expressionstep.html" />
-<mapID target="debug.window" url="debug/CSH/debug_window.html" /> 
+<mapID target="debug.window" url="debug/CSH/debug_window.html" />
+<!-- Debugging window id -->
+<mapID target="DebuggingView" url="debug/debug_debuggingwindow.html" /> 
 <!-- Topic for Debugger Instances view - need help id -->
 <!-- <mapID target="" url="debug/CSH/instances_view.html" /> --> 
 
@@ -465,7 +467,7 @@
 <mapID target="NetbeansDebuggerFixAction" url="debug/debug_fix.html"/>
 <mapID target="NetbeansDebuggerGoToCalledMethodAction" url="debug/debug_callstack.html"/>
 <mapID target="NetbeansDebuggerGoToCallingMethodAction" url="debug/debug_callstack.html"/>
-<mapID target="NetbeansDebuggerPopTopmostFrameAction" url="debug/debug_pop.html"/>
+<mapID target="NetbeansDebuggerPopTopmostFrameAction" url="debug/debug_callstack.html#pop"/>
 
     <!-- New File Persistence CSH -->
     
@@ -505,6 +507,10 @@
     
     <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
     <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="hibernate/csh/hibernate_fromdbwiz_codegen.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor" url="hibernate/hibernate_mapping.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengNameLocationWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor" url="hibernate/hibernate_cfg.html" />
+
 
 
 

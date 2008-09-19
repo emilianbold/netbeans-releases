@@ -43,19 +43,23 @@ var PROPERTY_CND       = 32;
 var PROPERTY_PHP       = 64;
 var PROPERTY_HIDDEN    = 128;
 
-var INFO_ICON   = "img/info_icon.gif";
-var INFO_ICON_H = "img/info_icon_h.gif";
+var INFO_ICON   = IMG_LOCATION + "info_icon.gif";
+var INFO_ICON_H = IMG_LOCATION + "info_icon_h.gif";
 
-var CHECKED_WHITE_SRC = "img/checked_badge_white.gif";
-var CHECKED_BEIGE_SRC = "img/checked_badge_beige.gif";
-var WARNING_WHITE_SRC = "img/warning_badge_white.gif";
-var WARNING_BEIGE_SRC = "img/warning_badge_beige.gif";
-var CHECKED_WHITE_NA_SRC = "img/checked_badge_notavailable.gif";
+var CHECKED_WHITE_SRC = IMG_LOCATION + "checked_badge_white.gif";
+var CHECKED_BEIGE_SRC = IMG_LOCATION + "checked_badge_beige.gif";
+var WARNING_WHITE_SRC = IMG_LOCATION + "warning_badge_white.gif";
+var WARNING_BEIGE_SRC = IMG_LOCATION + "warning_badge_beige.gif";
+var CHECKED_WHITE_NA_SRC = IMG_LOCATION + "checked_badge_notavailable.gif";
 
 var IMAGE_CHECKED_WHITE_NOT_AVAILABLE = '<img src="' + CHECKED_WHITE_NA_SRC + '"/>';
 
-var DOWNLOAD_IMG = '<img onmouseover="this.src=&quot;' + DOWNLOAD_BUTTON_HIGHLIGHT + '&quot;" onmouseout="this.src=&quot;' + DOWNLOAD_BUTTON_NORMAL + '&quot;" src="' + DOWNLOAD_BUTTON_NORMAL + '" style="cursor: pointer; border: 0;"/>';
-var DOWNLOAD_IMG_DISABLED = '<img src="' + DOWNLOAD_BUTTON_DISABLED + '" style="border: 0;"/>';
+var DOWNLOAD_BUTTON_NORMAL_SRC    = IMG_LOCATION + DOWNLOAD_BUTTON_NORMAL;
+var DOWNLOAD_BUTTON_DISABLED_SRC  = IMG_LOCATION + DOWNLOAD_BUTTON_DISABLED;
+var DOWNLOAD_BUTTON_HIGHLIGHT_SRC = IMG_LOCATION + DOWNLOAD_BUTTON_HIGHLIGHT;
+
+var DOWNLOAD_IMG = '<img onmouseover="this.src=&quot;' + DOWNLOAD_BUTTON_HIGHLIGHT_SRC + '&quot;" onmouseout="this.src=&quot;' + DOWNLOAD_BUTTON_NORMAL_SRC + '&quot;" src="' + DOWNLOAD_BUTTON_NORMAL_SRC + '" style="cursor: pointer; border: 0;"/>';
+var DOWNLOAD_IMG_DISABLED = '<img src="' + DOWNLOAD_BUTTON_DISABLED_SRC + '" style="border: 0;"/>';
 
     
 var IMAGE_CHECKED_WHITE = '<img src="' + CHECKED_WHITE_SRC + '"/>';
@@ -74,13 +78,11 @@ function handle_keyup(event) {
 function initialize() {
  if (document.images) {
      download_on = new Image();
-     download_on.src  = DOWNLOAD_BUTTON_NORMAL; 
+     download_on.src  = DOWNLOAD_BUTTON_NORMAL_SRC; 
      download_off= new Image();
-     download_off.src = DOWNLOAD_BUTTON_DISABLED;
+     download_off.src = DOWNLOAD_BUTTON_DISABLED_SRC;
      download_hl = new Image();
-     download_hl.src  = DOWNLOAD_BUTTON_HIGHLIGHT;
-     download_hl = new Image();
-     download_hl.src  = DOWNLOAD_BUTTON_HIGHLIGHT; 
+     download_hl.src  = DOWNLOAD_BUTTON_HIGHLIGHT_SRC;
      info = new Image();
      info.src  = INFO_ICON;
      info_h = new Image();
@@ -612,55 +614,12 @@ function add_download_tab(name, url) {
    download_tabs_number++;
 }
 
-function get_file_name(platform, option) {
-    var file_name = "";
-    if(platform=="zip") {
-        file_name += ZIP_FILES_PREFIX;
-    } else {
-        file_name += BUNDLE_FILES_PREFIX;
-    }
-    if (option != "all") {
-    	file_name += "-" + option;
-    }
-
-    if ( platform != "zip" ) {
-   	file_name += "-" + platform;
-    }
-    if (platform == "windows") {
-        file_name += ".exe";
-    } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
-        file_name += ".tgz";
-    } else if (platform == "macosx") {
-	file_name += ".dmg";
-    } else if(platform == "zip"){
-	file_name += ".zip"        
-    } else {
-        file_name += ".sh";
-    }
-    return file_name;
-}
-
-function get_file_url(platform, option) {
-    var basename  = "";
-	
-    if(platform=="zip") {
-        basename += "zip/";
-    } else {
-        basename += "bundles/";
-    }    
-    basename += get_file_name(platform, option);    
-    return basename;
-}
-
 function download(option) {
     var select = document.getElementById("platform_select");
     var platform = select.options[select.selectedIndex].value;
 
-    var file_url = get_file_url(platform, option);
-
-    var download_url = START_PAGE + "?" + file_url;
-
-    download_url += "&platform=" + platform;
+    var download_url = START_PAGE;
+    download_url += "?platform=" + platform;
 
     var language_select = document.getElementById("language_select");
     var language = language_select.options[language_select.selectedIndex].value;

@@ -6,7 +6,7 @@ class FooBar
   # Has documentation
   private
   def good_method
-    good_symbol, x = mymethod
+    good_symbol, x = new_name
     callmethod(callmethod2(50+30))
     callmethod3(callmethod4(x+30))
     puts good_symbol
@@ -17,7 +17,7 @@ class FooBar
   end
   
   # TODO Comment
-  def mymethod
+  def new_name
     good_symbol = 50
     x = 50
     return good_symbol, x

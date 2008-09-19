@@ -131,7 +131,20 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
             success = ExecutionEngine.getDefault().execute(inst.getName(), new Runnable() {
                 public void run() {
                     try {
-                        final Process p = Runtime.getRuntime().exec(new String[] {inst.getAbsolutePath()});
+                        /*
+                         *Fix for #131598 - java.io.IOException: Cannot run program
+                         * "C:\Users\tester\.netbeans\dev\config\platform_installers\
+                         * Sun-Java-Wireless-Toolkit252-for-CLDC-for-Windows_200710311754.exe":
+                         * CreateProcess error=740, The requ
+                         */
+                        String[] args ;
+                        if ( Utilities.getOperatingSystem() == Utilities.OS_WINVISTA ){
+                            args = new String[] { "cmd.exe" ,"/c" , inst.getAbsolutePath()}; // NOI18N
+                        }
+                        else {
+                            args = new String[] {inst.getAbsolutePath()};
+                        }
+                        final Process p = Runtime.getRuntime().exec(  args);
                         RequestProcessor.getDefault().post(new StreamPumper(io.getIn(), new OutputStreamWriter(p.getOutputStream())));
                         RequestProcessor.getDefault().post(new StreamPumper(new InputStreamReader(p.getInputStream()), io.getOut()));
                         RequestProcessor.getDefault().post(new StreamPumper(new InputStreamReader(p.getErrorStream()), io.getErr()));

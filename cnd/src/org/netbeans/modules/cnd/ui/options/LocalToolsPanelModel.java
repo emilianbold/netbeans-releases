@@ -54,6 +54,7 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
 //    private String fortranCompilerName;
 //    private String gdbPath;
 //    private boolean gdbEnabled;
+    private boolean enableDevelopmentHostChange = true;
     private boolean makeRequired;
     private boolean gdbRequired;
     private boolean cRequired;
@@ -226,5 +227,15 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     @Override
     public boolean enableRequiredCompilerCB() {
         return enableRequiredCompilersCB;
+    }
+
+    @Override
+    public void setEnableDevelopmentHostChange(boolean value) {
+        enableDevelopmentHostChange = value;
+    }
+
+    @Override
+    public boolean getEnableDevelopmentHostChange() {
+        return enableDevelopmentHostChange;
     }
 }

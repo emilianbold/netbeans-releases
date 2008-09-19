@@ -1,4 +1,4 @@
 Code completion result for source line:
 foo_TestCCOnMethods()->newInstance()->n|ewInstance();
 (QueryType=COMPLETION, NameKind=PREFIX)
-METHOD     newInstance()                              TestCCOnMethods
+METHOD     newInstance()                   [PUBLIC]   TestCCOnMethods

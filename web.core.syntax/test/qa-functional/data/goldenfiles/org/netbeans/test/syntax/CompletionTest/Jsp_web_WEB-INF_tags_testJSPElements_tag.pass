@@ -1,18 +1,24 @@
 [<jsp:|, < jsp:text >, <jsp:text, 143]
 < jsp:attribute >
 < jsp:body >
-< jsp:doBody />
+< jsp:declaration >
+< jsp:directive.attribute / >
+< jsp:directive.include / >
+< jsp:directive.tag / >
+< jsp:directive.variable / >
+< jsp:doBody / >
 < jsp:element >
 < jsp:expression >
 < jsp:fallback >
 < jsp:forward >
-< jsp:getProperty />
+< jsp:getProperty / >
 < jsp:include >
 < jsp:invoke >
-< jsp:param />
+< jsp:param / >
 < jsp:params >
 < jsp:plugin >
-< jsp:setProperty />
+< jsp:scriptlet >
+< jsp:setProperty / >
 < jsp:text >
 < jsp:useBean >
 End cursor position = 153

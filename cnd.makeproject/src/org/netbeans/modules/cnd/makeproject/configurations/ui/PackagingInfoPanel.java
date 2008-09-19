@@ -109,7 +109,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
     
     class AddEntryButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-	    PackagingNewEntryPanel packagingNewEntryPanel = new PackagingNewEntryPanel();
+	    PackagingNewEntryPanel packagingNewEntryPanel = new PackagingNewEntryPanel(packagingConfiguration);
 	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, getString("AddNewParameterDialogTitle"));
 	    DialogDisplayer.getDefault().notify(dialogDescriptor);
 	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)

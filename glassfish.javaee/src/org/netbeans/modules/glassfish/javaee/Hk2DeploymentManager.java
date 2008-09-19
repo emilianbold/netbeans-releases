@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -291,9 +292,16 @@ public class Hk2DeploymentManager implements DeploymentManager {
         if(commonSupport != null) {
             AppDesc [] appList = commonSupport.getModuleList(GlassfishModule.WEB_CONTAINER);
             if(appList != null && appList.length > 0) {
-                for(AppDesc app: appList) {
-                    moduleList.add(new Hk2TargetModuleID(targetList[0], app.getName(), 
-                            app.getName(), app.getPath()));
+                if(targetList[0] instanceof Hk2Target) {
+                    Hk2Target target = (Hk2Target) targetList[0];
+                    for(AppDesc app: appList) {
+                        moduleList.add(new Hk2TargetModuleID(target, app.getName(),
+                                app.getContextRoot(), app.getPath()));
+                    }
+                } else {
+                    String targetDesc = targetList[0] != null ? targetList[0].toString() : "(null)";
+                    throw new TargetException(NbBundle.getMessage(
+                            Hk2DeploymentManager.class, "ERR_WrongTarget", targetDesc));
                 }
             }
         }

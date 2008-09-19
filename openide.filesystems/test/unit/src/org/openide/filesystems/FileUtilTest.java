@@ -42,9 +42,11 @@
 package org.openide.filesystems;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
@@ -158,6 +160,63 @@ public class FileUtilTest extends NbTestCase {
         };
         for (int i = 0; i < urls.length; i++) {
             assertEquals("FileUtil.getArchiveFile failed.", new URL(urls[i][1]), FileUtil.getArchiveFile(new URL(urls[i][0])));
+        }
+    }
+    
+    /** Tests whether java.io.File(".") is normalized. */
+    public void testNormalizeFile137407() {
+        File file = new File(".");
+        assertTrue("java.io.File(\".\") not normalized.", FileUtil.normalizeFile(FileUtil.normalizeFile(file)).equals(FileUtil.normalizeFile(file)));
+    }
+
+    /** Tests that only resolvers are queried which supply at least one of
+     * MIME types given in array in FileUtil.getMIMEType(fo, String[]).
+     * See issue 137734.
+     */
+    public void testGetMIMETypeConstrained() throws IOException {
+        MyResolver resolver = new MyResolver();
+        MockLookup.setInstances(resolver);
+        assertNotNull(Lookup.getDefault().lookup(MyResolver.class));
+        FileObject testFolder = FileUtil.createMemoryFileSystem().getRoot();
+
+        FileObject fo = FileUtil.createData(testFolder, "fo1.mime1");
+        String[] withinMIMETypes = null;
+        try {
+            FileUtil.getMIMEType(fo, withinMIMETypes);
+            fail("FileUtil.getMIMEType(fo, null) should throw IllegalArgumentException.");
+        } catch (NullPointerException npe) {
+            // exception correctly thrown
+        }
+        
+        fo = FileUtil.createData(testFolder, "fo2.mime1");
+        withinMIMETypes = new String[0];
+        assertTrue("Resolver should be queried if array of desired MIME types is empty.", MyResolver.QUERIED.equals(FileUtil.getMIMEType(fo, withinMIMETypes)));
+        
+        fo = FileUtil.createData(testFolder, "fo3.mime1");
+        withinMIMETypes = new String[]{"mime3", "mime4"};
+        assertFalse("Resolver should not be queried if array of desired MIME types doesn't match MIMEResolver.getMIMETypes.", MyResolver.QUERIED.equals(FileUtil.getMIMEType(fo, withinMIMETypes)));
+
+        fo = FileUtil.createData(testFolder, "fo4.mime1");
+        withinMIMETypes = new String[]{"mime1", "mime4"};
+        assertTrue("Resolver should be queried if one item in array of desired MIME types matches MIMEResolver.getMIMETypes.", MyResolver.QUERIED.equals(FileUtil.getMIMEType(fo, withinMIMETypes)));
+
+        fo = FileUtil.createData(testFolder, "fo5.mime1");
+        withinMIMETypes = new String[]{"mime1", "mime2"};
+        assertTrue("Resolver should be queried if both items in array of desired MIME types matches MIMEResolver.getMIMETypes.", MyResolver.QUERIED.equals(FileUtil.getMIMEType(fo, withinMIMETypes)));
+    }
+
+    /** MIMEResolver used in testGetMIMETypeConstrained. */
+    public static final class MyResolver extends MIMEResolver {
+
+        public static final String QUERIED = "QUERIED";
+        
+        public MyResolver() {
+            super("mime1", "mime2");
+        }
+        
+        /** Always returns the same just to signal it's been queried. */
+        public String findMIMEType(FileObject fo) {
+            return QUERIED;
         }
     }
 }

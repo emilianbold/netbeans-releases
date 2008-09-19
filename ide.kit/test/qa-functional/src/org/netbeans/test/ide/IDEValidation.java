@@ -201,6 +201,7 @@ public class IDEValidation extends JellyTestCase {
      * - wait classpath scanning finished
      */
     public void testNewProject() {
+        NewProjectWizardOperator.invoke().cancel();
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         // "Standard"
         String standardLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");

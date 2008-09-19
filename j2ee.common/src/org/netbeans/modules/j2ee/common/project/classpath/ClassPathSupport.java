@@ -42,7 +42,9 @@
 package org.netbeans.modules.j2ee.common.project.classpath;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -55,6 +57,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -67,7 +70,10 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -122,7 +128,7 @@ public final class ClassPathSupport {
         //Map warMap = ( webModuleLibraries != null ) ? callback.createWarIncludesMap( antProjectHelper, webModuleLibraries) : new LinkedHashMap();
         
         String pe[] = PropertyUtils.tokenizePath( propertyValue == null ? "": propertyValue ); // NOI18N        
-        List items = new ArrayList( pe.length );        
+        List<Item> items = new ArrayList<Item>( pe.length );        
         for( int i = 0; i < pe.length; i++ ) {
             //String property = ProjectProperties.getAntPropertyName( pe[i] );
             
@@ -905,6 +911,76 @@ public final class ClassPathSupport {
          */
         void storeAdditionalProperties(List<Item> items, String projectXMLElement);
         
+    }
+
+    /**
+     * Method makes sure that sharable project always has a correct version of 
+     * CopyLibs library. As described in issue 146736 CopyLibs library
+     * was enhanced in NetBeans version 6.5 and needs to be automatically upgraded
+     * which is ensured by this method as well.
+     * @since org.netbeans.modules.j2ee.common/1 1.29
+     */
+    public static void makeSureProjectHasCopyLibsLibrary(final AntProjectHelper helper, final ReferenceHelper refHelper) {
+        if (!helper.isSharableProject()) {
+            return;
+        }
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run()  {
+                Library lib = refHelper.getProjectLibraryManager().getLibrary("CopyLibs");
+                if (lib == null) {
+                    try {
+                        refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    // #146736 - check that NB6.5 version of CopyLibs is available:
+                    List<URL> roots = lib.getContent("classpath"); // NOI18N
+                    // CopyFiles.class was not present in NB 6.1
+                    boolean version61 = org.netbeans.spi.java.classpath.support.ClassPathSupport.
+                            createClassPath(roots.toArray(new URL[roots.size()])).
+                            findResource("org/netbeans/modules/java/j2seproject/copylibstask/CopyFiles.class") == null; // NOI18N
+                    if (!version61) {
+                        return;
+                    }
+                    // update 6.1 version of CopyLibs library to the latest one:
+                    try {
+                        refHelper.getProjectLibraryManager().removeLibrary(lib);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    // perform removal of library files in separate try/catch:
+                    // if removal fails we can still add CopyLibs library
+                    try {
+                        FileObject parent = null;
+                        for (URL u : roots) {
+                            URL u2 = FileUtil.getArchiveFile(u);
+                            if (u2 != null) {
+                                u = u2;
+                            }
+                            FileObject fo = URLMapper.findFileObject(u);
+                            if (fo != null) {
+                                if (parent == null) {
+                                    parent = fo.getParent();
+                                }
+                                fo.delete();
+                            }
+                        }
+                        if (parent != null && parent.getChildren().length == 0 && parent.getNameExt().equals("CopyLibs")) { // NOI18N
+                            parent.delete();
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    try {
+                        // this should recreate latest version of library
+                        refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
     }
     
 }

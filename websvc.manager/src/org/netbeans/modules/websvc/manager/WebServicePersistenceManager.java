@@ -56,7 +56,10 @@ import java.io.BufferedOutputStream;
 import java.util.*;
 
 import java.beans.ExceptionListener;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
@@ -150,7 +153,13 @@ public class WebServicePersistenceManager implements ExceptionListener {
 
                 for (WebServiceData wsData : wsDatas) {
                     if (imported) { // we don't need to import generated artifacts
-
+                        try {
+                            WsdlModel wsdlModel = WebServiceManager.getInstance().getWsdlModel(wsData);
+                            wsData.setWsdlService(wsdlModel.getServiceByName(wsData.getName()));
+                        } catch (IOException ex) {
+                            Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        }
+                        
                         if (wsData.getJaxRpcDescriptorPath() != null) {
                             wsData.setJaxRpcDescriptor(loadDescriptorFile(websvcDir + File.separator + wsData.getJaxRpcDescriptorPath()));
                         }
@@ -225,7 +234,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
             encoder.setExceptionListener(this);
 
             DefaultPersistenceDelegate delegate = new WebServiceDataPersistenceDelegate();
-            encoder.setPersistenceDelegate(WsdlService.class, delegate);
+            encoder.setPersistenceDelegate(WSService.class, delegate);
             encoder.setPersistenceDelegate(WebServiceDescriptor.class, delegate);
 
             encoder.writeObject(model.getPartnerServices());
@@ -251,7 +260,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
             encoder.flush();
 
             delegate = new DefaultPersistenceDelegate();
-            encoder.setPersistenceDelegate(WsdlService.class, delegate);
+            encoder.setPersistenceDelegate(WSService.class, delegate);
             encoder.setPersistenceDelegate(WebServiceDescriptor.class, delegate);
 
             if (descriptorsToWrite != null) {
@@ -413,7 +422,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
         XMLEncoder encoder = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(descriptor.getXmlDescriptor())));
         encoder.setExceptionListener(this);
         DefaultPersistenceDelegate delegate = new WebServiceDataPersistenceDelegate();
-        encoder.setPersistenceDelegate(WsdlService.class, delegate);
+        encoder.setPersistenceDelegate(WSService.class, delegate);
         encoder.writeObject(descriptor);
 
         encoder.close();
@@ -441,7 +450,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
          */
         @Override
         public void writeObject(Object oldInstance, Encoder out) {
-            if (oldInstance instanceof WsdlService) {
+            if (oldInstance instanceof WSService) {
                 return;
             } else if (oldInstance instanceof WebServiceDescriptor) {
                 //RESOLVE: I am taking out saving the descriptors during saving

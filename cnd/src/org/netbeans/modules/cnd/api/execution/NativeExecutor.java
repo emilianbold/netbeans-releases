@@ -48,15 +48,23 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.dwarfdump.FileMagic;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
+import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -72,7 +80,7 @@ public class NativeExecutor implements Runnable {
     private final String actionName;
     private final boolean parseOutputForErrors;
     private final boolean showInput;
-    private final String host;
+    private final String hkey;
     private final boolean unbuffer;
     
     private String rcfile;
@@ -92,7 +100,7 @@ public class NativeExecutor implements Runnable {
      * The real constructor. This class is used to manage native execution, but run and build.
      */
     public NativeExecutor(
-	    String host,
+	    String hkey,
             String runDir,
             String executable,
             String arguments,
@@ -102,7 +110,7 @@ public class NativeExecutor implements Runnable {
             boolean parseOutputForErrors,
             boolean showInput,
             boolean unbuffer) {
-        this.host = host;
+        this.hkey = hkey;
         this.runDir = runDir;
         this.executable = executable;
         this.arguments = arguments;
@@ -190,6 +198,39 @@ public class NativeExecutor implements Runnable {
     public void setExitValueOverride(String rcfile) {
         this.rcfile = rcfile;
     }
+
+    private final String[] prepareEnvironment() {
+        List<String> envpList = new ArrayList<String>();
+        if (envp != null) {
+            envpList.addAll(Arrays.asList(envp));
+        }
+        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
+
+        if (unbuffer) {
+            try {
+                String executableAbsolute = new File(runDir, executable).getAbsolutePath();
+                FileMagic magic = new FileMagic(executableAbsolute);
+                ElfReader er = new ElfReader(executableAbsolute, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
+                if (er.is32Bit() || er.is64Bit()) {
+                    int platformType  = (hkey == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(hkey).getPlatform();
+                    String unbufferPath = Unbuffer.getPath(hkey, er.is64Bit());
+                    if (unbufferPath != null) {
+                        if (platformType == PlatformTypes.PLATFORM_MACOSX) {
+                            envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
+                            envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
+                        } else if (platformType == PlatformTypes.PLATFORM_WINDOWS) {
+                            //TODO: issue #144106
+                        } else {
+                            envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return envpList.toArray(new String[envpList.size()]);
+    }
     
     /**
      *  Call execute(), not this method directly!
@@ -204,7 +245,7 @@ public class NativeExecutor implements Runnable {
         
         File runDirFile = new File(runDir);
         if (parseOutputForErrors)
-            out = new PrintWriter(new OutputWindowWriter(io.getOut(), FileUtil.toFileObject(runDirFile), parseOutputForErrors));
+            out = new PrintWriter(new OutputWindowWriter(hkey, io.getOut(), FileUtil.toFileObject(runDirFile), parseOutputForErrors));
         else
             out = io.getOut();
         executionStarted();
@@ -212,13 +253,12 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution = NativeExecution.getDefault(host).getNativeExecution();
-            String[] preparedEnvp = nativeExecution.prepareEnvironment(envp, unbuffer);
+            nativeExecution = NativeExecution.getDefault(hkey).getNativeExecution();
             rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,
                     arguments,
-                    preparedEnvp,
+                    prepareEnvironment(),
                     out,
 		    showInput ? io.getIn() : null,
                     unbuffer);
@@ -279,8 +319,8 @@ public class NativeExecutor implements Runnable {
     
     private void executionStarted() {
         if( showHeader ) {
-            String runDirToShow = CompilerSetManager.LOCALHOST.equals(host) ?
-                runDir : HostInfoProvider.getDefault().getMapper(host).getRemotePath(runDir);
+            String runDirToShow = CompilerSetManager.LOCALHOST.equals(hkey) ?
+                runDir : HostInfoProvider.getDefault().getMapper(hkey).getRemotePath(runDir);
             
             String preText = MessageFormat.format(getString("PRETEXT"),
 		    new Object[] {exePlusArgsQuoted(executable, arguments), runDirToShow});

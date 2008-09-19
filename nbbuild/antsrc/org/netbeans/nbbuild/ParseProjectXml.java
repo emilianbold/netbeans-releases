@@ -613,6 +613,9 @@ public final class ParseProjectXml extends Task {
                 if (implVers == null) {
                     throw new BuildException("No OpenIDE-Module-Implementation-Version found in " + codenamebase);
                 }
+                if (implVers.equals(getProject().getProperty("buildnumber"))) {
+                    throw new BuildException("Cannot depend on module " + codenamebase + " using build number as an implementation version");
+                }
                 b.append(implVers);
             }
             return b.toString();

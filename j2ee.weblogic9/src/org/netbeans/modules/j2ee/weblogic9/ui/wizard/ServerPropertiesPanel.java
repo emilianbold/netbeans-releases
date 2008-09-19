@@ -90,12 +90,6 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
     private static final String DEFAULT_PASSWORD = "weblogic"; // NOI18N
 
     /**
-     * Since the WizardDescriptor does not expose the property name for the
-     * error message label, we have to keep it here also
-     */
-    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
-
-    /**
      * The parent wizard descriptor handle
      */
     private transient WizardDescriptor wizardDescriptor;
@@ -158,35 +152,41 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
      * @return true if the entered installation directory is valid, false
      *      otherwise
      */
+    @Override
     public boolean isValid() {
         // clear the error message
-        wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, ""); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
 
         // if the server instance is local, then check the profile root
         // directory for validity
         if (serverTypeCombo.getSelectedItem().equals(NbBundle.getMessage(ServerPropertiesPanel.class, "SERVER_TYPE_LOCAL"))) { // NOI18N
             if (!isValidDomainRoot(domainPathField.getText())) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         instantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
                 return false;
             }
         }
 
         if (InstanceProperties.getInstanceProperties(getUrl()) != null) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
-                    instantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_ALREADY_REGISTERED")));
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    instantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
             return false;
         }
 
         // check the host field (not empty)
-        if (hostField.getText().trim().equals("")) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+        if (hostField.getText().trim().length() < 1) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                     instantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_INVALID_HOST"))); // NOI18N
         }
 
         // check the port field (not empty and a positive integer)
-        if (!portField.getText().trim().matches("[0-9]+")) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+        if (portField.getText().trim().length() < 1) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                    instantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_EMPTY_PORT"))); // NOI18N
+        }
+        if (!portField.getText().trim().matches("[0-9]+")) {  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     instantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_INVALID_PORT"))); // NOI18N
         }
 
@@ -298,7 +298,7 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
             String line;
             while ((line = lnr.readLine()) != null) {
                 // skip the comments
-                if (line.startsWith("#")) {
+                if (line.startsWith("#")) {  // NOI18N
                     continue;
                 }
 
@@ -309,9 +309,9 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
                 result.add(path);
             }
         } catch (FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);   // NOI18N
         } catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);   // NOI18N
         } finally {
             try {
                 // close the stream
@@ -319,7 +319,7 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
                     lnr.close();
                 }
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
             }
         }
 
@@ -370,9 +370,9 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
                         NodeList nl = child.getChildNodes();
 
                         // desclare the server's name/host/port
-                        String name = "";
-                        String port = "";
-                        String host = "";
+                        String name = "";  // NOI18N
+                        String port = "";  // NOI18N
+                        String host = "";  // NOI18N
 
                         // iterate over the children
                         for (int k = 0; k < nl.getLength(); k++) {
@@ -410,20 +410,20 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
                     }
                 }
             } catch (FileNotFoundException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
             } catch (ParserConfigurationException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
             } catch (SAXException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
             } finally {
                 try {
                     if (inputStream != null) {
                         inputStream.close();
                     }
                 } catch (IOException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
                 }
             }
         }

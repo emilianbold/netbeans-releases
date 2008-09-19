@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -83,11 +81,9 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     private DeploymentStatus deploymentStatus;
     private Hk2DeploymentManager dm;
     private String serverName;
-    private List<ProgressListener> listeners = 
+    private List<ProgressListener> listeners =
             new CopyOnWriteArrayList<ProgressListener>();
     private InstanceProperties ip;
-    private static Map<String, Object> isDebugModeUri = 
-            Collections.synchronizedMap(new HashMap<String, Object>(2,1));
     private String url;
     
     public Hk2StartServer(DeploymentManager jdm) {
@@ -138,7 +134,6 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                 }
             });
         }
-        removeDebugModeUri();
         return this;
     }
     
@@ -157,7 +152,6 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                 }
             });
         }
-        removeDebugModeUri();
         return this;
     }
     
@@ -198,25 +192,15 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                 }
             });
         }
-        addDebugModeUri();
         return this;
     }
     
-    private void addDebugModeUri() {
-        isDebugModeUri.put(url, new Object());
-    }
-    
-    private void removeDebugModeUri() {
-        isDebugModeUri.remove(url);
-    }
-    
-    private boolean existsDebugModeUri() {
-        return isDebugModeUri.containsKey(url);
-    }
-    
     public boolean isDebuggable(Target target) {
-        if (!existsDebugModeUri()) {
-            return false;
+        GlassfishModule commonSupport = getCommonServerSupport();
+        if(commonSupport != null) {
+            if(!GlassfishModule.DEBUG_MODE.equals(commonSupport.getInstanceProperties().get(GlassfishModule.JVM_MODE))) {
+                return false;
+            }
         }
         if (!isRunning()) {
             return false;
@@ -229,8 +213,13 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     }
     
     public ServerDebugInfo getDebugInfo(Target target) {
-        return new ServerDebugInfo(ip.getProperty(GlassfishModule.HOSTNAME_ATTR), 
-                Integer.parseInt(getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DEBUG_PORT)));
+        String debugPort = getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DEBUG_PORT);
+        ServerDebugInfo retVal = null;
+        if (null != debugPort && !"".equals(debugPort)) {
+            retVal = new ServerDebugInfo(ip.getProperty(GlassfishModule.HOSTNAME_ATTR), 
+                Integer.parseInt(debugPort));
+        }
+        return retVal;
     }
     
     public boolean supportsStartDeploymentManager() {
@@ -291,7 +280,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     public void fireHandleProgressEvent(TargetModuleID targetModuleID, DeploymentStatus deploymentStatus) {
         ProgressEvent evt = new ProgressEvent(this, targetModuleID, deploymentStatus);
         this.deploymentStatus = deploymentStatus;
-        
+
         Iterator<ProgressListener> iter = listeners.iterator();
         while(iter.hasNext()) {
             iter.next().handleProgressEvent(evt);

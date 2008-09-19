@@ -41,7 +41,9 @@ package org.netbeans.modules.groovy.editor.completion;
 
 import org.netbeans.modules.groovy.editor.*;
 import groovy.lang.MetaMethod;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -54,7 +56,6 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import javax.lang.model.element.ExecutableElement;
 import org.codehaus.groovy.ast.Variable;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
@@ -88,6 +89,45 @@ import org.netbeans.modules.groovy.support.api.GroovySources;
             LOG.setLevel(Level.OFF);
         }
 
+        public static Collection<javax.lang.model.element.Modifier> toModel(int modifiers) {
+            Set<javax.lang.model.element.Modifier> ret = new HashSet<javax.lang.model.element.Modifier>();
+            
+            if (java.lang.reflect.Modifier.isAbstract(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.ABSTRACT);
+            }
+            if (java.lang.reflect.Modifier.isFinal(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.FINAL);
+            }
+            if (java.lang.reflect.Modifier.isNative(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.NATIVE);
+            }
+            if (java.lang.reflect.Modifier.isStatic(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.STATIC);
+            }
+            if (java.lang.reflect.Modifier.isStrict(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.STRICTFP);
+            }
+            if (java.lang.reflect.Modifier.isSynchronized(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.SYNCHRONIZED);
+            }
+//            if (java.lang.reflect.Modifier.isTransient(modifiers)) {
+//                ret.add(javax.lang.model.element.Modifier.TRANSIENT);
+//            }
+//            if (java.lang.reflect.Modifier.isVolatile(modifiers)) {
+//                ret.add(javax.lang.model.element.Modifier.VOLATILE);
+//            }
+            
+            if (java.lang.reflect.Modifier.isPrivate(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.PRIVATE);
+            } else if (java.lang.reflect.Modifier.isProtected(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.PROTECTED);
+            } else if (java.lang.reflect.Modifier.isPublic(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.PUBLIC);
+            }
+
+            return ret;
+        }
+        
         public int getAnchorOffset() {
             return anchorOffset;
         }
@@ -270,12 +310,7 @@ import org.netbeans.modules.groovy.support.api.GroovySources;
         public String getLhsHtml(HtmlFormatter formatter) {
 
             ElementKind kind = getKind();
-            boolean emphasize = false;
 
-            if (method.isStatic()) {
-                emphasize = true;
-                formatter.emphasis(true);
-            }
             formatter.name(kind, true);
 
             if (isGDK) {
@@ -307,9 +342,6 @@ import org.netbeans.modules.groovy.support.api.GroovySources;
 
             formatter.name(kind, false);
 
-            if (emphasize) {
-                formatter.emphasis(false);
-            }
             return formatter.getText();
         }
 
@@ -327,9 +359,9 @@ import org.netbeans.modules.groovy.support.api.GroovySources;
 
         @Override
         public ImageIcon getIcon() {
-
             if (!isGDK) {
-                return null;
+                return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.METHOD,
+                        GroovyCompletionItem.toModel(method.getModifiers()));
             }
 
             if (groovyIcon == null) {

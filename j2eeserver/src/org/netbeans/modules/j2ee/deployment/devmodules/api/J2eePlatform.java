@@ -302,7 +302,6 @@ public final class J2eePlatform {
      *
      * @param  toolName tool name, for example {@link #TOOL_APP_CLIENT_RUNTIME}.
      * @return classpath for the specified tool.
-     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public File[] getToolClasspathEntries(String toolName) {
         return impl.getToolClasspathEntries(toolName);

@@ -189,19 +189,19 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
             if(proxyDiagram != null)
             {
                 diagram = proxyDiagram.getDiagram();
-                if(diagram != null)
+                if(diagram != null) // the diagram is opened
                 {
                     diagram.setDirty(false);
                     lock=diagram.setReadOnly(true);
                 }
-            }
-            
-            IProductDiagramManager manager = ProductHelper.getProductDiagramManager();
-            if(manager != null)
-            {
-                if(diagram!=null)manager.setDiagramDirty(diagram,false);
-                manager.closeDiagram3(proxyDiagram);
-                closedDiagram(proxyDiagram,lock);
+                IProductDiagramManager manager = ProductHelper.getProductDiagramManager();
+                if(manager != null)
+                {
+                    //if(diagram!=null)manager.setDiagramDirty(diagram,false);
+                    manager.closeDiagram3(proxyDiagram);
+                    closedDiagram(proxyDiagram,lock);
+                    fileList.remove(sDiagramFullFilename);
+                }
             }
         }
     }
@@ -221,6 +221,12 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                         FileObject parentFolder = diagFO.getParent(); 
                         String fileNameWithoutExt = diagFO.getName(); 
                         FileObject destFolderFO = FileUtil.createFolder(parentFolder, "DiagramBackup");
+
+                        FileObject destFO = destFolderFO.getFileObject(fileNameWithoutExt, diagFO.getExt());
+                        if (destFO != null) 
+                        {
+                            destFO.delete();
+                        }
                         
                         //move diagram file to backupp folder
                         FileUtil.copyFile(diagFO, destFolderFO, fileNameWithoutExt);

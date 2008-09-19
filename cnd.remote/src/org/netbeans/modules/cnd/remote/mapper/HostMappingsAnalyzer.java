@@ -85,6 +85,10 @@ public class HostMappingsAnalyzer {
                 Map<String, String> map = provider.findMappings(secondPI.getHkey(), firstPI.getHkey());
                 mappingsFirst2Second.putAll(map);
             }
+            if (provider.isApplicable(firstPI, secondPI)) {
+                Map<String, String> map = provider.findMappings(firstPI.getHkey(), secondPI.getHkey());
+                mappingsFirst2Second.putAll(map);
+            }
         }
 
         return mappingsFirst2Second;
@@ -109,10 +113,11 @@ public class HostMappingsAnalyzer {
         //providers
         pairedProviders = new ArrayList<HostMappingProvider>();
         singularProviders = new ArrayList<HostMappingProvider>();
-        // should it be Lookup?
+        // TODO: should it be Lookup?
         pairedProviders.add(new HostMappingProviderWindows());
         pairedProviders.add(new HostMappingProviderSamba());
-
+        // TODO: this kind of API is st...range 
         singularProviders.add(new HostMappingProviderSolaris());
+        singularProviders.add(new HostMappingProviderLinux());
     }
 }

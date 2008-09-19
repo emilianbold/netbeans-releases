@@ -263,7 +263,7 @@ public final class ToolchainManager {
         }
         String base = readRegestry(key, pattern);
         if (base != null && d.getBaseFolderSuffix() != null){
-            base += "/"+d.getBaseFolderSuffix();
+            base += "/"+d.getBaseFolderSuffix(); // NOI18N
         }
         return base;
     }
@@ -286,7 +286,7 @@ public final class ToolchainManager {
             pattern = d.getCommandFolderPathPattern();
             if (pattern != null && pattern.length() > 0 ) {
                 Pattern p = Pattern.compile(pattern);
-                for (String dir : Path.getPath()) {
+                for (String dir : Path.getPathWithDefaultCompilerLocations()) {
                     if (p.matcher(dir).find()) {
                         base = dir;
                         break;
@@ -1103,13 +1103,13 @@ public final class ToolchainManager {
             buf.append("Toolchain ["+toolChainName+"/"+family+"] "+toolChainDisplay+"\n"); // NOI18N
             buf.append("\tPlatforms ["+platforms+"]\n"); // NOI18N
             buf.append("\tDrive Letter Prefix ["+driveLetterPrefix+"]\n"); // NOI18N
-            buf.append("\tBase Folder Key ["+baseFolderKey+"] Pattern ["+baseFolderPattern+
+            buf.append("\tBase Folder Key ["+baseFolderKey+"] Pattern ["+baseFolderPattern+ // NOI18N
                        "] Suffix ["+baseFolderSuffix+"] Path Pattern["+baseFolderPattern+"] \n"); // NOI18N
-            buf.append("\tCommand Folder Key ["+commandFolderKey+"] Pattern ["+commandFolderPattern+
+            buf.append("\tCommand Folder Key ["+commandFolderKey+"] Pattern ["+commandFolderPattern+ // NOI18N
                        "] Suffix ["+commandFolderSuffix+"] Path Pattern["+commandFolderPattern+"] \n"); // NOI18N
-            buf.append("C compiler ["+c.name+"] Recognize path ["+c.pathPattern+
+            buf.append("C compiler ["+c.name+"] Recognize path ["+c.pathPattern+ // NOI18N
                        "] Version ["+c.versionFlags+";"+c.versionPattern+"]\n"); // NOI18N
-            buf.append("\tInclude flags ["+c.includeFlags+"] parser ["+c.includeOutputParser+
+            buf.append("\tInclude flags ["+c.includeFlags+"] parser ["+c.includeOutputParser+ // NOI18N
                        "] remove from path["+c.removeIncludePathPrefix+"] remove from output ["+c.removeIncludeOutputPrefix+"]\n"); // NOI18N
             buf.append("\tMacros flags ["+c.macrosFlags+"] parser ["+c.macrosOutputParser+"]\n"); // NOI18N
             buf.append("\tDevelopment mode "+c.developmentMode+"\n"); // NOI18N
@@ -1120,9 +1120,9 @@ public final class ToolchainManager {
             if (c.standard.isValid()) buf.append("\tStandard ["+c.standard+"]\n"); // NOI18N
             if (c.languageExtension.isValid()) buf.append("\tLanguage ["+c.languageExtension+"]\n"); // NOI18N
             if (c.library.isValid()) buf.append("\tLibrary ["+c.library+"]\n"); // NOI18N
-            buf.append("C++ compiler ["+cpp.name+"] Recognize path ["+cpp.pathPattern+
+            buf.append("C++ compiler ["+cpp.name+"] Recognize path ["+cpp.pathPattern+ // NOI18N
                        "] Version ["+cpp.versionFlags+";"+cpp.versionPattern+"]\n"); // NOI18N
-            buf.append("\tInclude flags ["+cpp.includeFlags+"] parser ["+cpp.includeOutputParser+
+            buf.append("\tInclude flags ["+cpp.includeFlags+"] parser ["+cpp.includeOutputParser+ // NOI18N
                        "] remove from path["+cpp.removeIncludePathPrefix+"] remove from output ["+cpp.removeIncludeOutputPrefix+"]\n"); // NOI18N
             buf.append("\tMacros flags ["+cpp.macrosFlags+"] parser ["+cpp.macrosOutputParser+"]\n"); // NOI18N
             buf.append("\tDevelopment mode "+cpp.developmentMode+"\n"); // NOI18N
@@ -1135,7 +1135,7 @@ public final class ToolchainManager {
             if (cpp.languageExtension.isValid()) buf.append("\tLanguage "+cpp.languageExtension+"\n"); // NOI18N
             if (cpp.library.isValid()) buf.append("\tLibrary "+cpp.library+"\n"); // NOI18N
             if (fortran.isValid()) {
-            buf.append("Fortran compiler ["+fortran.name+"] Recognize path ["+fortran.pathPattern+
+            buf.append("Fortran compiler ["+fortran.name+"] Recognize path ["+fortran.pathPattern+ // NOI18N
                        "] Version ["+fortran.versionFlags+";"+fortran.versionPattern+"]\n"); // NOI18N
             buf.append("\tDevelopment mode "+fortran.developmentMode+"\n"); // NOI18N
             buf.append("\tWarning Level "+fortran.warningLevel+"\n"); // NOI18N
@@ -1802,7 +1802,7 @@ public final class ToolchainManager {
         }
         @Override
         public String toString() {
-            return v.toolChainName+"/"+v.family+"/"+v.platforms;
+            return v.toolChainName+"/"+v.family+"/"+v.platforms; // NOI18N
         }
     }
 

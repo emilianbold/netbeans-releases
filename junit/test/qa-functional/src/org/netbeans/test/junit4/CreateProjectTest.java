@@ -55,7 +55,6 @@ public class CreateProjectTest extends ExtJellyTestCase {
         newOp.next();
         new JTextFieldOperator(newOp, 0).typeText(TEST_PROJECT_NAME);
         newOp.finish();
-        ProjectSupport.waitScanFinished();
 
         // select source packages node
         ProjectsTabOperator pto = new ProjectsTabOperator();

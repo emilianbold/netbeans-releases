@@ -23,13 +23,13 @@
 	</script>-->
 	<script type="text/javascript">
                 var store = "__CONTAINER_NAME__";
-                var storeUrl = "___BASE_URL___/__CONTAINER_PATH_NAME__/";
+                var storeUrl = "__BASE_URL__/__CONTAINER_PATH_NAME__/";
 		function loadResourcesTable() {
                     var restStore = eval('new rdj.data.'+store+'Store({serviceUrl:"'+storeUrl+'"})');
                     var tableElement = djd43.byId("content");
                     var query = null;
                     //Uncomment below if using proxy for javascript cross-domain.
-                    //rdj.setProxy("___BASE_URL___/../restproxy");
+                    //rdj.setProxy("__BASE_URL__/../restproxy");
                     rdj.displayResourcesTable(restStore, query, tableElement);
 		}		
 		djd43.addOnLoad(loadResourcesTable);

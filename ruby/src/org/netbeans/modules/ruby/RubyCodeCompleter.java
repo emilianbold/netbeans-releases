@@ -2250,6 +2250,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             if ((prefix.length() == 0) || (first == '$') || showSymbols) {
                 if (prefix.startsWith("$") || showSymbols) {
                     completeGlobals(proposals, request, showSymbols);
+                    // Dollar variables too
+                    completeKeywords(proposals, request, showSymbols);
                     if (!showSymbols) {
                         return completionResult;
                     }
@@ -3013,7 +3015,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 element = com;
             }
 
-            node = AstUtilities.getForeignNode(com, null);
+            node = AstUtilities.getForeignNode(com, (Node[])null);
 
             if (node == null) {
                 return null;
@@ -3451,7 +3453,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return ParameterInfo.NONE;
         }
         int index = paramIndexHolder[0];
-        int anchorOffset = anchorOffsetHolder[0];
+        int astAnchorOffset = anchorOffsetHolder[0];
+        int anchorOffset = LexUtilities.getLexerOffset(info, astAnchorOffset);
 
 
         // TODO: Make sure the caret offset is inside the arguments portion

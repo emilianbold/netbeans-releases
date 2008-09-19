@@ -91,12 +91,14 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
+import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
@@ -147,11 +149,11 @@ class WebActionProvider implements ActionProvider {
     // Ant project helper of the project
     private UpdateHelper updateHelper;
     /** Map from commands to ant targets */
-    Map/*<String,String[]>*/ commands;
+    Map<String,String[]> commands;
 
     public WebActionProvider(WebProject project, UpdateHelper updateHelper) {
 
-        commands = new HashMap();
+        commands = new HashMap<String, String[]>();
         commands.put(COMMAND_BUILD, new String[]{"dist"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[]{"clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[]{"clean", "dist"}); // NOI18N
@@ -205,13 +207,31 @@ class WebActionProvider implements ActionProvider {
             return;
         }
 
+        String realCommand = command;
+        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()) {
+            boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
+                    new DeployOnSaveUtils.CustomizerPresenter() {
+
+                public void showCustomizer(String category) {
+                    CustomizerProviderImpl provider = project.getLookup().lookup(CustomizerProviderImpl.class);
+                    provider.showCustomizer(category);
+                }
+            });
+            if (cleanAndBuild) {
+                realCommand = COMMAND_REBUILD;
+            } else {
+                return;
+            }
+        }
+
+        final String commandToExecute = realCommand;
         Runnable action = new Runnable() {
 
             public void run() {
                 Properties p = new Properties();
                 String[] targetNames;
 
-                targetNames = getTargetNames(command, context, p);
+                targetNames = getTargetNames(commandToExecute, context, p);
                 if (targetNames == null) {
                     return;
                 }
@@ -244,7 +264,7 @@ class WebActionProvider implements ActionProvider {
      * @return array of targets or null to stop execution; can return empty array
      */
     String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        String[] targetNames = (String[]) commands.get(command);
+        String[] targetNames = commands.get(command);
 
         // RUN-SINGLE
         if (command.equals(COMMAND_RUN_SINGLE)) {
@@ -527,7 +547,7 @@ class WebActionProvider implements ActionProvider {
             if (wscs != null) { //project contains ws reference
                 List serviceClients = wscs.getServiceClients();
                 //we store all ws client names into hash set for later fast searching
-                HashSet scNames = new HashSet();
+                HashSet<String> scNames = new HashSet<String>();
                 for (Iterator scIt = serviceClients.iterator(); scIt.hasNext();) {
                     WsCompileClientEditorSupport.ServiceSettings serviceClientSettings =
                             (WsCompileClientEditorSupport.ServiceSettings) scIt.next();
@@ -538,11 +558,10 @@ class WebActionProvider implements ActionProvider {
                 StringBuffer clientWDD = new StringBuffer();//additional web.docbase.dir
 
                 //we find all projects containg a web service            
-                Set globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
-                HashSet serverNames = new HashSet();
+                Set<FileObject> globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
+                HashSet<String> serverNames = new HashSet<String>();
                 //iteration through all source roots
-                for (Iterator iter = globalPath.iterator(); iter.hasNext();) {
-                    FileObject sourceRoot = (FileObject) iter.next();
+                for (FileObject sourceRoot : globalPath) {
                     Project serverProject = FileOwnerQuery.getOwner(sourceRoot);
                     if (serverProject != null) {
                         if (!serverNames.add(serverProject.getProjectDirectory().getName())) //project was already visited
@@ -602,8 +621,12 @@ class WebActionProvider implements ActionProvider {
                         }
                     }
                 }
-                p.setProperty(WebProjectProperties.WS_DEBUG_CLASSPATHS, clientDCP.toString());
-                p.setProperty(WebProjectProperties.WS_WEB_DOCBASE_DIRS, clientWDD.toString());
+                if (clientDCP.length()>0) {
+                    p.setProperty(WebProjectProperties.WS_DEBUG_CLASSPATHS, clientDCP.toString());
+                }
+                if (clientWDD.length() > 0) {
+                    p.setProperty(WebProjectProperties.WS_WEB_DOCBASE_DIRS, clientWDD.toString());
+                }
             }
 
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
@@ -902,11 +925,9 @@ class WebActionProvider implements ActionProvider {
             return false;
         }
 
-        boolean cos = !Boolean.parseBoolean((String) project.getWebProjectProperties().get(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE));
         // build or compile source file (JSP compilation allowed)
-        if (cos && (COMMAND_BUILD.equals(command)
-                || (COMMAND_COMPILE_SINGLE.equals(command)
-                    && (findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null)))) {
+        if (isCosEnabled() && (COMMAND_COMPILE_SINGLE.equals(command)
+                    && (findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null))) {
 
             return false;
         }
@@ -976,15 +997,8 @@ class WebActionProvider implements ActionProvider {
             throw new IllegalArgumentException("Not a folder: " + dir); // NOI18N
         }
 
-        List/*<FileObject>*/ files = new ArrayList();
-        Iterator it = context.lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
-
-
-
-
-
-        while (it.hasNext()) {
-            DataObject d = (DataObject) it.next();
+        List<FileObject> files = new ArrayList<FileObject>();
+        for (DataObject d : context.lookupAll(DataObject.class)) {
             FileObject f = d.getPrimaryFile();
             boolean matches = FileUtil.toFile(f) != null;
             if (dir != null) {
@@ -1008,7 +1022,7 @@ class WebActionProvider implements ActionProvider {
         if (files.isEmpty()) {
             return null;
         }
-        return (FileObject[]) files.toArray(
+        return files.toArray(
                 new FileObject[files.size()]);
     }
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
@@ -1395,4 +1409,7 @@ class WebActionProvider implements ActionProvider {
         return foundWebServiceAnnotation[0];
     }
 
+    private boolean isCosEnabled() {
+        return !Boolean.parseBoolean(project.evaluator().getProperty(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE));
+    }
 }

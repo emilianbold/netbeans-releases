@@ -46,6 +46,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.CppTokenProcessor;
+import static org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression.*;
 
 /**
 * Token processor that parses the text and produces jc expressions.
@@ -56,49 +57,6 @@ import org.netbeans.cnd.api.lexer.CppTokenProcessor;
 
 final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements TokenProcessor*/ {
 
-    private static final int CONSTANT = CsmCompletionExpression.CONSTANT;
-    private static final int VARIABLE = CsmCompletionExpression.VARIABLE;
-    private static final int OPERATOR = CsmCompletionExpression.OPERATOR;
-    private static final int UNARY_OPERATOR = CsmCompletionExpression.UNARY_OPERATOR;
-    private static final int DOT = CsmCompletionExpression.DOT;
-    private static final int DOT_OPEN = CsmCompletionExpression.DOT_OPEN; 
-    private static final int ARROW = CsmCompletionExpression.ARROW;
-    private static final int ARROW_OPEN = CsmCompletionExpression.ARROW_OPEN;
-    private static final int SCOPE = CsmCompletionExpression.SCOPE;
-    private static final int SCOPE_OPEN = CsmCompletionExpression.SCOPE_OPEN;
-    private static final int ARRAY_OPEN = CsmCompletionExpression.ARRAY_OPEN;
-    private static final int ARRAY = CsmCompletionExpression.ARRAY;
-    private static final int PARENTHESIS_OPEN = CsmCompletionExpression.PARENTHESIS_OPEN;
-    private static final int PARENTHESIS = CsmCompletionExpression.PARENTHESIS;
-    private static final int METHOD_OPEN = CsmCompletionExpression.METHOD_OPEN;
-    private static final int METHOD = CsmCompletionExpression.METHOD;
-    private static final int CONSTRUCTOR = CsmCompletionExpression.CONSTRUCTOR;
-    private static final int CONVERSION = CsmCompletionExpression.CONVERSION;
-    private static final int CONVERSION_OPEN = CsmCompletionExpression.CONVERSION_OPEN;
-    private static final int TYPE = CsmCompletionExpression.TYPE;
-    private static final int NEW = CsmCompletionExpression.NEW;
-    private static final int GOTO = CsmCompletionExpression.GOTO;
-    private static final int LABEL = CsmCompletionExpression.LABEL;
-    private static final int INSTANCEOF = CsmCompletionExpression.INSTANCEOF;
-    private static final int GENERIC_TYPE = CsmCompletionExpression.GENERIC_TYPE;
-    private static final int GENERIC_TYPE_OPEN = CsmCompletionExpression.GENERIC_TYPE_OPEN;
-    private static final int GENERIC_WILD_CHAR = CsmCompletionExpression.GENERIC_WILD_CHAR;
-    private static final int ANNOTATION = CsmCompletionExpression.ANNOTATION;
-    private static final int ANNOTATION_OPEN = CsmCompletionExpression.ANNOTATION_OPEN;
-//    private static final int CPPINCLUDE = CsmCompletionExpression.CPPINCLUDE;
-    private static final int CASE = CsmCompletionExpression.CASE;
-    /** "const" as type prefix in the 'const A*'*/
-    private static final int TYPE_PREFIX = CsmCompletionExpression.TYPE_PREFIX;
-    /** "const" as type postfix in the 'char* const'*/
-    private static final int TYPE_POSTFIX = CsmCompletionExpression.TYPE_PREFIX;
-    /** "*" or "&" at type postfix in the 'char*' or 'int &'*/
-    private static final int TYPE_REFERENCE = CsmCompletionExpression.TYPE_REFERENCE;    
-    /** dereference "*" or address-of "&" operators in the '*value' or '&value'*/
-    private static final int MEMBER_POINTER = CsmCompletionExpression.MEMBER_POINTER;
-    private static final int MEMBER_POINTER_OPEN = CsmCompletionExpression.MEMBER_POINTER_OPEN;
-    private static final int CLASSIFIER = CsmCompletionExpression.CLASSIFIER;
-    private static final int PREPROC_DIRECTIVE = CsmCompletionExpression.PREPROC_DIRECTIVE;
-    private static final int PREPROC_DIRECTIVE_OPEN = CsmCompletionExpression.PREPROC_DIRECTIVE_OPEN;
     private static final int NO_EXP = -1;
 
     /** Buffer that is scanned */
@@ -189,6 +147,28 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
         return CndLexerUtilities.isSeparatorOrOperator(tokenID);
     }
 
+    private boolean isEqOperator(CppTokenId tokenID) {
+        switch (tokenID) {
+            case EQ:
+            case EQEQ:
+            case GTEQ:
+            case GTGTEQ:
+            case AMPEQ:
+            case LTEQ:
+            case LTLTEQ:
+            case PLUSEQ:
+            case NOTEQ:
+            case MINUSEQ:
+            case STAREQ:
+            case SLASHEQ:
+            case BAREQ:
+            case CARETEQ:
+            case PERCENTEQ:
+                return true;
+        }
+        return false;
+    }
+
     /** Push exp to top of stack */
     private void pushExp(CsmCompletionExpression exp) {
         expStack.add(exp);
@@ -244,6 +224,14 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                 return ARROW_OPEN;
             case SCOPE: // '::' found    
                 return SCOPE_OPEN;
+            case IF:
+                return IF;
+            case FOR:
+                return FOR;
+            case SWITCH:
+                return SWITCH;
+            case WHILE:
+                return WHILE;
             default:
                 assert (false) : "unexpected tokenID " + tokenID;
         }
@@ -409,6 +397,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             switch(tokenID) { 
                                 case LPAREN:
                                 case SCOPE:
+                                case LBRACKET:
                                     break;
                                 default:                            
                                     popExp();
@@ -610,12 +599,13 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
         if (tokenID != null){
             String category = tokenID.primaryCategory();
             if (CppTokenId.KEYWORD_CATEGORY.equals(category)){
-                if (tokenOffset+tokenLen == endScanOffset)
+                if (tokenOffset+tokenLen == endScanOffset) {
                     tokenID = CppTokenId.IDENTIFIER;
+                }
             }
         }
 
-        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER) {
+        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER || tokenID == CppTokenId.SIZEOF) {
             // change preproc identifier into normal identifier
             // to simplify handling of result expression
             tokenID = CppTokenId.IDENTIFIER;
@@ -792,6 +782,16 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         pushExp(createTokenExp(CASE));
                         break;
 
+                    case FOR:
+                    case IF:
+                    case SWITCH:
+                    case WHILE:
+                        if (topID == NO_EXP) {
+                            pushExp(createTokenExp(tokenID2OpenExpID(tokenID)));
+                        } else {
+                            errorState = true;
+                        }
+                        break;
 //                    case EXTENDS:
 //                        if (topID == GENERIC_WILD_CHAR)
 //                            break;
@@ -805,6 +805,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case SCOPE_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             case METHOD_OPEN:
                             case MEMBER_POINTER_OPEN:
                             case NEW:
@@ -824,6 +825,10 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case TYPE_PREFIX:
                                 pushExp(createTokenExp(VARIABLE));
                                 break;
+                            case TERNARY_OPERATOR:
+                                popExp();
+                                pushExp(createTokenExp(VARIABLE));
+                                break;
 
                             case GENERIC_WILD_CHAR:
                                 top.setExpID(VARIABLE);
@@ -831,15 +836,21 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                                 break;
 
                             case TYPE:
+                                if (getValidExpID(peekExp2()) != METHOD_OPEN) {
+                                    popExp();
+                                    pushExp(createTokenExp(VARIABLE));
+                                    break;
+                                }
+                                // no break;
                             case VARIABLE:
                                 if (getValidExpID(peekExp2()) == METHOD_OPEN) {
                                     //top.setExpID(VARIABLE);
                                     addTokenTo(top);
                                     //pushExp(createTokenExp(VARIABLE));
                                     // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
-                                    break;
+                                } else {
+                                    errorState = true;
                                 }
-                                errorState = true;
                                 break;
                             case TYPE_REFERENCE:
                                 if (getValidExpID(peekExp2()) == METHOD_OPEN) {
@@ -850,9 +861,9 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                                     var.addParameter(top);
                                     pushExp(var);
                                     // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
-                                    break;
+                                } else {
+                                    errorState = true;
                                 }
-                                errorState = true;
                                 break;
                             case PREPROC_DIRECTIVE_OPEN:
                                 top.setExpID(PREPROC_DIRECTIVE);
@@ -870,6 +881,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             pushExp(new CsmCompletionExpression(GENERIC_WILD_CHAR));
                         } else {
                             nrQuestions++;
+                            pushExp(new CsmCompletionExpression(TERNARY_OPERATOR));
                         }
                         break;
 
@@ -885,6 +897,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             //case OPERATOR: ??? collision with usual operator behavior
                             //case UNARY_OPERATOR:
                             case NO_EXP:
@@ -903,6 +916,14 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                                 exp.addParameter(top);
                                 pushExp(exp);
                                 pointer = true;
+                                break;
+                            case OPERATOR:
+                                if (top.getTokenCount() == 1 && isEqOperator(top.getTokenID(0))) {
+                                    // member pointer operator
+                                    CsmCompletionExpression memPtrExp = createTokenExp(MEMBER_POINTER_OPEN);
+                                    pushExp(memPtrExp); // add operator as new exp
+                                    pointer = true;
+                                }
                                 break;
                         }
                         if (pointer) {
@@ -1280,6 +1301,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             case MEMBER_POINTER_OPEN:
                             case OPERATOR:
                             case UNARY_OPERATOR:
@@ -1325,6 +1347,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             case MEMBER_POINTER_OPEN:
                             case OPERATOR:
                             case NO_EXP:
@@ -1346,6 +1369,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             case OPERATOR:
                             case UNARY_OPERATOR:
                             case MEMBER_POINTER:
@@ -1417,6 +1441,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
 
                             case METHOD_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             case OPERATOR:
                             case UNARY_OPERATOR:
                             case NO_EXP: // alone :: is OK as access to global context
@@ -1548,6 +1573,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
 
                             case ARRAY_OPEN:       // a[(
                             case PARENTHESIS_OPEN: // ((
+                            case SPECIAL_PARENTHESIS_OPEN: // if((
                             case METHOD_OPEN:      // a((
                             case NO_EXP:
                             case OPERATOR:         // 3+(
@@ -1556,6 +1582,14 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case PARENTHESIS:      // if (a > b) (
                             case GENERIC_TYPE_OPEN:// a < (
                                 pushExp(createTokenExp(PARENTHESIS_OPEN));
+                                break;
+
+                            case IF:
+                            case FOR:
+                            case SWITCH:
+                            case WHILE:
+                                popExp();
+                                pushExp(createTokenExp(SPECIAL_PARENTHESIS_OPEN));
                                 break;
 
                             default:
@@ -1620,6 +1654,11 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                                             top2.setExpID(CsmCompletionExpression.isValidType(top) ? CONVERSION : PARENTHESIS);
                                             addTokenTo(top2);
                                         }
+                                        break;
+
+                                    case SPECIAL_PARENTHESIS_OPEN:
+                                        popExp();
+                                        popExp();
                                         break;
 
                                     case GENERIC_TYPE_OPEN:
@@ -1890,6 +1929,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
 
             case ARRAY_OPEN:
             case PARENTHESIS_OPEN:
+            case SPECIAL_PARENTHESIS_OPEN:
             case PARENTHESIS: // can be conversion
             case METHOD_OPEN:
             case ANNOTATION_OPEN:
@@ -1915,6 +1955,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
 
         if (kwdType != null) { // keyword constant (in conversions)
             switch (topID) {
+            case NO_EXP: // declaration started with type name
             case NEW: // possibly new kwdType[]
             case PARENTHESIS_OPEN: // conversion
             {
@@ -2008,6 +2049,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         break;
                     }
                     // else continue, it was (...) ? (...) : (...)
+                case QUESTION:
                 case WHITESPACE:
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
@@ -2130,9 +2172,13 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             reScan = false;
                         }
                         break;
+                    case MEMBER_POINTER_OPEN:
+                        popExp();
+                        top2.addParameter(top);
+                        reScan = false; // by default do not nest more - can be changed if necessary
+                        break;
                     }
                     break;
-                    
                 case ARRAY_OPEN:
                 case PARENTHESIS_OPEN:
                     pushExp(CsmCompletionExpression.createEmptyVariable(

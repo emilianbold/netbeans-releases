@@ -42,6 +42,7 @@ import java.awt.event.KeyEvent;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
+import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
@@ -91,6 +92,19 @@ public class LockSelectionAction extends WidgetAction.Adapter
         return retVal;
     }
 
+    @Override
+    public State mousePressed(Widget widget, WidgetMouseEvent event)
+    {
+        if (widget.getScene() instanceof DesignerScene)
+        {
+            DesignerScene scene = (DesignerScene)widget.getScene();
+            scene.clearLockedSelected();
+        }
+        
+        return State.REJECTED;
+    }
+
+    
     private IPresentationElement getWidgetDataObject(ObjectScene scene, Widget widget)
     {
         IPresentationElement retVal = null;

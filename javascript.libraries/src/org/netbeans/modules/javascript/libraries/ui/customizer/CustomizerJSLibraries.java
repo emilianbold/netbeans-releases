@@ -66,7 +66,9 @@ public class CustomizerJSLibraries extends JPanel {
     private final ProjectCustomizer.Category category;
     private final Project project;
     private final JavaScriptLibraryListModel listModel;
-    private final PropertyChangeListener libraryChangeListener;
+    private final PropertyChangeListener libraryChangeListener;    
+    private final String RUBY_PROJECT = "org.netbeans.modules.ruby.railsprojects.RailsProject"; // NOI18N
+    private final String RUBY_DEFAULT_JS_LIB_NAME = "prototype";        
     
     /** Creates new form JavaScriptLibrariesCustomizer */
     public CustomizerJSLibraries(ProjectCustomizer.Category category, Project project) {
@@ -157,25 +159,25 @@ public class CustomizerJSLibraries extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(libraryListLabel)
-                    .add(librariesListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(removeLibraryJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(addLibraryJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)))
-            .add(layout.createSequentialGroup()
-                .add(locationLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(locationDisplay, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(libraryListLabel)
+                            .add(librariesListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(removeLibraryJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(addLibraryJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 110, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(layout.createSequentialGroup()
+                        .add(locationLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(locationDisplay, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(locationLabel)
-                    .add(locationDisplay, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(26, 26, 26)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(libraryListLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -184,7 +186,11 @@ public class CustomizerJSLibraries extends JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeLibraryJButton))
                     .add(librariesListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE))
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(locationLabel)
+                    .add(locationDisplay, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(32, 32, 32))
         );
 
         locationDisplay.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.locationDisplay.AccessibleContext.accessibleName")); // NOI18N
@@ -205,7 +211,13 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
             currentLibs.add(library);
         }
     }
-
+    
+    /* If it's a ruby project do not display the prototype js library, it's */
+    /* included by default and not managed by the js library mananger. */
+    String projectClassName = JSLibraryProjectUtils.getProjectClassName(project);
+    if (projectClassName.equals(RUBY_PROJECT)) {
+        currentLibs.add(manager.getLibrary(RUBY_DEFAULT_JS_LIB_NAME));
+    }    
     LibraryChooser.Filter filter = JSLibraryProjectUtils.createDefaultFilter(currentLibs);
     List<JSLibraryData> addedLibraries = JSLibraryProjectUtils.displayAddLibraryDialog(project, filter);
 

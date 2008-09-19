@@ -72,13 +72,13 @@ public final class SvnPropertiesAction extends ContextAction {
     }
     
     protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_IN_REPOSITORY;
+        return FileInformation.STATUS_VERSIONED 
+             | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
 
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
-             & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
-             & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+             & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
     public String getName() {

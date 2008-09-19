@@ -371,10 +371,19 @@ public final class UIUtil {
     
     /**
      * Create combobox containing packages from the given {@link SourceGroup}.
+     *
+     * When null srcRoot is passed, combo box is disabled and shows a warning message (#143392).
      */
     public static JComboBox createPackageComboBox(SourceGroup srcRoot) {
-        JComboBox packagesComboBox = new JComboBox(PackageView.createListView(srcRoot));
-        packagesComboBox.setRenderer(PackageView.listRenderer());
+        JComboBox packagesComboBox;
+        if (srcRoot != null) {
+            packagesComboBox = new JComboBox(PackageView.createListView(srcRoot));
+            packagesComboBox.setRenderer(PackageView.listRenderer());
+        } else {
+            packagesComboBox = new JComboBox();
+            packagesComboBox.addItem(NbBundle.getMessage(UIUtil.class, "MSG_Missing_Source_Root"));
+            packagesComboBox.setEnabled(false);
+        }
         return packagesComboBox;
     }
     

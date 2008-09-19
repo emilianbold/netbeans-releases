@@ -1059,7 +1059,12 @@ public class ResourceSupport {
         if (!isResourceableProperty(property))
             return null;
 
-        return getResourceSupport(property).createResourcePanel0(property, force);
+        ResourceSupport support = getResourceSupport(property);
+        if (support == null) {
+            return null; // Issue 145626
+        } else {
+            return support.createResourcePanel0(property, force);
+        }
     }
 
     private ResourcePanel createResourcePanel0(FormProperty prop, boolean force) {

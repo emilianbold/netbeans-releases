@@ -5,7 +5,7 @@ class Date
       y -= 1
       m += 12
     end
-    b, jd = extract(d, m, y)
+    b, jd = new_name(d, m, y)
     if os?(jd, sg)
       jd -= b
     end
@@ -13,7 +13,7 @@ class Date
   end
   
   # TODO Comment
-  def extract(d, m, y)
+  def new_name(d, m, y)
     a = (y / 100.0).floor
     b = 2 - a + (a / 4.0).floor
     jd = (365.25 * (y + 4716)).floor +

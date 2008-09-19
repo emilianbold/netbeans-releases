@@ -1,0 +1,13 @@
+select from customers.|
+
+--
+<unknown>
+  customers*
+    customer
+      customer_id
+  accounting
+    invoice
+      invoice_id
+      customer_id
+    customer
+      customer_id

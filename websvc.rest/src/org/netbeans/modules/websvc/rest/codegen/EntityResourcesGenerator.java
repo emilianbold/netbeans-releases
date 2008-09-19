@@ -268,7 +268,8 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         }
 
         //Make necessary changes to the persistence.xml
-        PersistenceHelper.modifyPersistenceXml(project, !RestUtils.hasJTASupport(project));
+        new PersistenceHelper(project).configure(model.getBuilder().getAllEntityNames(),
+                !RestUtils.hasJTASupport(project));
 
         //
         //Delegate to J2eeEntityResourcesGenerator or SpringEntityResourceGenerator to
@@ -814,14 +815,17 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         String bodyText = "{";
 
         if (!injectEntityManager) {
-            bodyText += "try {";
+            bodyText += "PersistenceService persistenceSvc = PersistenceService.getInstance();" +
+                    "try {" +
+                    "persistenceSvc.beginTx();";
         }
 
         bodyText += "return new $CONVERTER$(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);";
 
         if (!injectEntityManager) {
             bodyText += "} finally {" +
-                    "PersistenceService.getInstance().close();" +
+                    "persistenceSvc.commitTx();" +
+                    "persistenceSvc.close();" +
                     "}";
         }
 
@@ -1111,7 +1115,9 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         String bodyText = "{";
 
         if (!injectEntityManager) {
-            bodyText += "try {";
+            bodyText += "PersistenceService persistenceSvc = PersistenceService.getInstance();" +
+                    "try {" +
+                    "persistenceSvc.beginTx();";
         }
 
         bodyText += "return  new $CONVERTER$(getEntity(), uriInfo.getAbsolutePath(), expandLevel);";
@@ -1707,7 +1713,15 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
             bodyText = "{this.entity = entity;" +
                     "this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(" +
                     getIdFieldToUriStmt(bean.getEntityClassInfo().getIdFieldInfo()) + " + \"/\").build() : uri;" +
-                    "this.expandLevel = expandLevel;}";         //NOI18N
+                    "this.expandLevel = expandLevel;";
+            
+            for (FieldInfo f : bean.getEntityClassInfo().getFieldInfos()) {
+                if (f.isRelationship()) {
+                    bodyText += getGetterName(f) + "();";
+                }
+            }
+            
+            bodyText += "}";         //NOI18N
 
             comment = "Creates a new instance of " + converterName + ".\n\n" +
                     "@param entity associated entity\n" +
@@ -1737,7 +1751,12 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
             types = new Object[]{typeTree, Constants.URI_TYPE, Integer.TYPE.getName()};
 
-            bodyText = "{this.entities = entities; this.uri = uri; this.expandLevel = expandLevel}"; //NOI18N
+            bodyText = "{" +
+                    "this.entities = entities; " +
+                    "this.uri = uri; " +
+                    "this.expandLevel = expandLevel;" +
+                    "get" + getItemName(bean) + "();" +
+                    "}"; //NOI18N
 
             comment = "Creates a new instance of " + converterName + ".\n\n" +
                     "@param entities associated entities\n" +

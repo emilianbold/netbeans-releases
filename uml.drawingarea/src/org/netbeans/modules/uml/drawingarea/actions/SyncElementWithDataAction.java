@@ -89,4 +89,9 @@ public class SyncElementWithDataAction extends CookieAction
         
         return retVal;
     }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 }

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
@@ -54,8 +55,11 @@ import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
@@ -88,48 +92,44 @@ public class CsmStatementResolver {
         
         CsmStatement.Kind kind = stmt.getKind();
         boolean found = true;
-        if( kind == CsmStatement.Kind.COMPOUND ) {
-            found = findInner((CsmCompoundStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.IF ) {
-            found = findInner((CsmIfStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.TRY_CATCH ) {
-            found = findInner((CsmTryCatchStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.CATCH ) {
-            found = findInner((CsmExceptionHandler) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.DECLARATION ) {
-            found = findInner((CsmDeclarationStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.WHILE || kind == CsmStatement.Kind.DO_WHILE ) {
-            found = findInner((CsmLoopStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.FOR ) {
-            found = findInner((CsmForStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.SWITCH ) {
-            found = findInner((CsmSwitchStatement) stmt, offset, context);
-        }
-        else if( kind == CsmStatement.Kind.BREAK ) {
-        }
-        else if( kind == CsmStatement.Kind.CASE ) {
-        }
-        else if( kind == CsmStatement.Kind.CONTINUE ) {
-        }
-        else if( kind == CsmStatement.Kind.DEFAULT ) {
-        }
-        else if( kind == CsmStatement.Kind.EXPRESSION ) {
-        }
-        else if( kind == CsmStatement.Kind.GOTO ) {
-        }
-        else if( kind == CsmStatement.Kind.LABEL ) {
-        }
-        else if( kind == CsmStatement.Kind.RETURN ) {
-        }
-        else  {
-            if (CsmUtilities.DEBUG) print("unexpected statement kind"); //NOI18N
+        switch (kind) {
+            case COMPOUND:
+                found = findInner((CsmCompoundStatement) stmt, offset, context);
+                break;
+            case IF:
+                found = findInner((CsmIfStatement) stmt, offset, context);
+                break;
+            case TRY_CATCH:
+                found = findInner((CsmTryCatchStatement) stmt, offset, context);
+                break;
+            case CATCH:
+                found = findInner((CsmExceptionHandler) stmt, offset, context);
+                break;
+            case DECLARATION:
+                found = findInner((CsmDeclarationStatement) stmt, offset, context);
+                break;
+            case WHILE:
+            case DO_WHILE:
+                found = findInner((CsmLoopStatement) stmt, offset, context);
+                break;
+            case FOR:
+                found = findInner((CsmForStatement) stmt, offset, context);
+                break;
+            case SWITCH:
+                found = findInner((CsmSwitchStatement) stmt, offset, context);
+                break;
+            case BREAK:
+            case CASE:
+            case CONTINUE:
+            case DEFAULT:
+            case EXPRESSION:
+            case GOTO:
+            case LABEL:
+            case RETURN:
+                break;
+            default:
+                if (CsmUtilities.DEBUG) print("unexpected statement kind"); //NOI18N
+                break;
         }
         return found;
     }
@@ -192,6 +192,22 @@ public class CsmStatementResolver {
             if (CsmUtilities.DEBUG) print("we have declarator " + decl); //NOI18N
             if (CsmKindUtilities.isClass(decl)) {
                 findInner((CsmClass)decl, offset, context);
+            }
+            if (CsmKindUtilities.isFunction(decl)) {
+                CsmFunction fun = (CsmFunction) decl;
+                
+                // check if offset in parameters
+                Collection<CsmParameter> params = fun.getParameters();
+                CsmParameter param = CsmOffsetUtilities.findObject(params, context, offset);
+                if (param != null) {
+                    context.add(fun);
+                    CsmType type = param.getType();
+                    if (CsmOffsetUtilities.isInObject(type, offset)) {
+                        context.setLastObject(type);
+                    } else {
+                        context.setLastObject(param);
+                    }
+                }
             }
             return true;
         }

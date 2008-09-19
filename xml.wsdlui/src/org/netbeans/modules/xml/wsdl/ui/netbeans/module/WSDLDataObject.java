@@ -41,7 +41,6 @@
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
@@ -56,8 +55,6 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.xml.sax.InputSource;
 
 /**
@@ -83,6 +80,9 @@ public class WSDLDataObject extends MultiDataObject {
         set.add(new WSDLMultiViewSupport(this));
         //add validate action here
         set.add(new WSDLValidateXMLCookie(this));
+
+        set.assign(SearchProvider.class, new SearchProvider(this));
+        set.assign(XmlFileEncodingQueryImpl.class, XmlFileEncodingQueryImpl.singleton());
     }
 
     @Override
@@ -154,23 +154,8 @@ public class WSDLDataObject extends MultiDataObject {
 
     @Override
     public Lookup getLookup() {
-        if (myLookup.get() == null) {
-            Lookup superLookup = super.getLookup();
-            //
-            Lookup[] lookupArr = new Lookup[] {
-                Lookups.fixed(new Object[] {
-                    new SearchProvider(this),
-                    XmlFileEncodingQueryImpl.singleton()}),
-                superLookup};
-            //
-            Lookup newLookup = new ProxyLookup(lookupArr);
-            myLookup.compareAndSet(null, newLookup);
-        }
-        return myLookup.get();
+        return getCookieSet().getLookup();
     }
-    
-    private transient AtomicReference<Lookup> myLookup = 
-        new AtomicReference<Lookup>();
     
     private static final long serialVersionUID = 6338889116068357651L;
     public static final String WSDL_ICON_BASE_WITH_EXT = "org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png";

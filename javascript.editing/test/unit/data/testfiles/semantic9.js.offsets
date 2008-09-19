@@ -1,0 +1,22 @@
+
+<SCRIPT>
+            <FUNCTION>function <FUNCNAME>foo</FUNCNAME>(<PARAMETER>text</PARAMETER>)<BLOCK>{
+            <RETURN>return <NUMBER>10</NUMBER></RETURN>;</BLOCK>
+        }</FUNCTION>
+        
+
+        <EXPR_RESULT><CALL><NAME>dojo</NAME>.<GETPROP><STRING>provide</STRING></GETPROP>(<STRING>"dojox.wire.ml.tests.markup.Action"</STRING>)</CALL></EXPR_RESULT>;
+
+        <EXPR_RESULT><CALL><NAME>dojo</NAME>.<GETPROP><STRING>require</STRING></GETPROP>(<STRING>"dojo.parser"</STRING>)</CALL></EXPR_RESULT>;
+
+        <EXPR_RESULT><CALL><NAME>dojo</NAME>.<GETPROP><STRING>addOnLoad</STRING></GETPROP>(<FUNCTION>function()<BLOCK>{
+            <EXPR_VOID><CALL><NAME>doh</NAME>.<GETPROP><STRING>register</STRING></GETPROP>(<STRING>"dojox.wire.ml.tests.markup.Action"</STRING>, [
+                <ARRAYLIT><FUNCTION>function <FUNCNAME>test_Action_triggerEvent</FUNCNAME>(<PARAMETER>t</PARAMETER>)<BLOCK>{
+                    <NAME>dojox</NAME>.<GETPROP><STRING>wire</STRING></GETPROP>.<GETPROP><STRING>ml</STRING></GETPROP>.<GETPROP><STRING>tests</STRING></GETPROP>.<GETPROP><STRING>markup</STRING></GETPROP>.<EXPR_VOID><SETPROP><GETPROP><STRING>Action</STRING></GETPROP>.<STRING>target</STRING> = <OBJECTLIT>{}</OBJECTLIT></SETPROP></EXPR_VOID>;
+                </BLOCK><RETURN/>}</FUNCTION>,
+            ]</ARRAYLIT>)</CALL></EXPR_VOID>;
+            <EXPR_VOID><CALL><NAME>doh</NAME>.<GETPROP><STRING>run</STRING></GETPROP>()</CALL></EXPR_VOID>;
+        </BLOCK><RETURN/>}</FUNCTION>
+    )</CALL></EXPR_RESULT>;</SCRIPT>
+        
+

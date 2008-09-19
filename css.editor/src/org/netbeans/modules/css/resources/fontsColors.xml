@@ -56,7 +56,6 @@ made subject to such option by the copyright holder.
      * comment
      * keyword
      * number
-     * rgb
      * identifier
      * function
      * unknown
@@ -72,7 +71,6 @@ made subject to such option by the copyright holder.
     <fontcolor name="url" default="string"/>
     <fontcolor name="keyword" default="keyword"/>
     <fontcolor name="number" default="number"/>
-    <fontcolor name="rgb" default="string"/>
     <fontcolor name="identifier" default="identifier"/>
     <fontcolor name="unknown" default="error"/>
     <!-- whitespaces including comments -->
