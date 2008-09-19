@@ -621,8 +621,12 @@ class WebActionProvider implements ActionProvider {
                         }
                     }
                 }
-                p.setProperty(WebProjectProperties.WS_DEBUG_CLASSPATHS, clientDCP.toString());
-                p.setProperty(WebProjectProperties.WS_WEB_DOCBASE_DIRS, clientWDD.toString());
+                if (clientDCP.length()>0) {
+                    p.setProperty(WebProjectProperties.WS_DEBUG_CLASSPATHS, clientDCP.toString());
+                }
+                if (clientWDD.length() > 0) {
+                    p.setProperty(WebProjectProperties.WS_WEB_DOCBASE_DIRS, clientWDD.toString());
+                }
             }
 
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
