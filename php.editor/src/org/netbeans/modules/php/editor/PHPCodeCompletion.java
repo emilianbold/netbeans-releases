@@ -559,7 +559,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return preceedingType;
         }
 
-        assert startPos > tokenSequence.offset();
+        if (startPos < tokenSequence.offset()){
+            String errorMsg = String.format("caretOffset=%d, startPos=%d, tokenSequence:\n%s",
+                    request.anchor, startPos, tokenSequence.toString()); //NOI18N
+
+            LOGGER.severe(errorMsg);
+            throw new IllegalStateException("Error finding expression boundary," +
+                    " please report a bug and attach the log file." +
+                    " WARNING: the log file will contain the content of edited document");
+        }
 
         return findLHSExpressionType_recursive(tokenSequence, request,
                 preceedingType, staticContex, startPos);
@@ -625,7 +633,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return type;
         }
 
-        assert startPos > tokenSequence.offset();
+        if (startPos < tokenSequence.offset()){
+            String errorMsg = String.format("caretOffset=%d, startPos=%d, tokenSequence:\n%s",
+                    request.anchor, startPos, tokenSequence.toString()); //NOI18N
+
+            LOGGER.severe(errorMsg);
+            throw new IllegalStateException("Error finding expression boundary," +
+                    " please report a bug and attach the log file." +
+                    " WARNING: the log file will contain the content of edited document");
+        }
+        
         return findLHSExpressionType_recursive(tokenSequence, request,
                 type, staticContext, startPos);
     }

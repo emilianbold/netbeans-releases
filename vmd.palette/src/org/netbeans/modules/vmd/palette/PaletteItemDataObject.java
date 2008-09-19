@@ -53,6 +53,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /**
@@ -78,6 +79,11 @@ public class PaletteItemDataObject extends MultiDataObject implements FileChange
     @Override
     protected Node createNodeDelegate() {
         return new PaletteItemDataNode(this);
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
     private void readProperties(FileObject pf) throws IOException {

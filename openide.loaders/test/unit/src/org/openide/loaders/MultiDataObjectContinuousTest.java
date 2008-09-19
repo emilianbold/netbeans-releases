@@ -43,13 +43,15 @@ package org.openide.loaders;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import org.openide.filesystems.*;
 import org.netbeans.junit.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
-import org.openide.*;
+import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 
 /**
@@ -60,7 +62,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
     DataObject one;
     DataFolder from;
     DataFolder to;
-    ErrorManager err;
+    Logger err;
     
     
     /** Creates new DataObjectTest */
@@ -87,7 +89,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         
         MockServices.setServices(Pool.class);
         
-        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
+        err = Logger.getLogger("TEST." + getName());
         
         LocalFileSystem lfs = new LocalFileSystem();
         lfs.setRootDirectory(getWorkDir());
@@ -106,14 +108,14 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
     }
         
     public void testConsistencyWithContinuousQueryingForDeletedFiles() throws Exception {
-        err.log(" getting children of to");
+        err.info(" getting children of to");
         DataObject[] to1 = to.getChildren();
-        err.log(" getting children of from");
+        err.info(" getting children of from");
         DataObject[] from1 = from.getChildren();
         
         class Queri extends Thread 
         implements FileChangeListener, DataLoader.RecognizedFiles, PropertyChangeListener {
-            public boolean stop;
+            public volatile boolean stop;
             private List deleted = Collections.synchronizedList(new ArrayList());
             public Exception problem;
             
@@ -146,12 +148,12 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
                 while(!stop) {
                     FileObject[] arr = (FileObject[]) deleted.toArray(new FileObject[0]);
                     DataLoader loader = SimpleLoader.getLoader(SimpleLoader.class);
-                    err.log("Next round");
+                    err.info("Next round, for " + arr.length);
                     for (int i = 0; i < arr.length; i++) {
                         try {
-                            err.log("Checking " + arr[i]);
+                            err.info("Checking " + arr[i]);
                             DataObject x = loader.findDataObject(arr[i], this);
-                            err.log("  has dobj: " + x);
+                            err.info("  has dobj: " + x);
                         } catch (IOException ex) {
                             if (problem == null) {
                                 problem = ex;
@@ -179,17 +181,20 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         que.start();
         try {
             for (int i = 0; i < 10; i++) {
-                err.log(i + " moving the object");
+                err.info(i + " moving the object");
                 one.move(to);
-                err.log(i + " moving back");
+                err.info(i + " moving back");
                 one.move(from);
-                err.log(i + " end of cycle");
+                err.info(i + " end of cycle");
             }
         } finally {
             que.stop = true;
+            err.info("stopping the que");
         }
         
-        que.join();
+        err.info("waiting for join");
+        que.join(10000);
+        err.info("joined");
         if (que.problem != null) {
             throw que.problem;
         }

@@ -47,7 +47,7 @@ package org.netbeans.modules.servicetag;
  * {@link Registry#removeServiceTag remove} 
  * a service tag from a {@link Registry}.
  */
-public class UnauthorizedAccessException extends RuntimeException {
+class UnauthorizedAccessException extends RuntimeException {
 
     /**
      * Constructs an <code>UnauthorizedAccessException</code> object 

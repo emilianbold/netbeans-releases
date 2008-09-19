@@ -45,6 +45,7 @@ import java.util.*;
 import java.io.*;
 import java.beans.*;
 
+import org.openide.util.Lookup;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -66,7 +67,7 @@ import org.netbeans.modules.form.project.ClassSource;
  * @author Tomas Pavek
  */
 
-class PaletteItemDataObject extends MultiDataObject {
+class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory {
 
     static final String XML_ROOT = "palette_item"; // NOI18N
     static final String ATTR_VERSION = "version"; // NOI18N
@@ -111,6 +112,7 @@ class PaletteItemDataObject extends MultiDataObject {
         throws DataObjectExistsException
     {
         super(fo, loader);
+        getCookieSet().add(PaletteItem.class, this);
     }
 
     boolean isFileRead() {
@@ -151,14 +153,13 @@ class PaletteItemDataObject extends MultiDataObject {
         return new ItemNode();
     }
 
-    @Override
-    public <T extends Node.Cookie> T getCookie(Class<T> cookieClass) {
+    public <T extends Node.Cookie> T createCookie(Class<T> cookieClass) {
         if (PaletteItem.class.equals(cookieClass)) {
             if (!fileLoaded)
                 loadFile();
             return cookieClass.cast(paletteItem);
         }
-        return super.getCookie(cookieClass);
+        return null;
     }
 
     // -------
@@ -527,4 +528,8 @@ class PaletteItemDataObject extends MultiDataObject {
         }
     }
     
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 }

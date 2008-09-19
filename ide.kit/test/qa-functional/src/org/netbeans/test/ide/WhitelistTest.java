@@ -101,12 +101,14 @@ public class WhitelistTest extends JellyTestCase {
 
     public void testWhitelist1() throws Exception {
         stage = 1;
+        Thread.sleep(3000);
         testWhitelist();
     }
 
     public void testWhitelist2() throws Exception {
         stage = 2;
         try {
+            Thread.sleep(3000);
             testWhitelist();
         } finally {
             openLime6Project();
