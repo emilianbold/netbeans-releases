@@ -64,10 +64,11 @@ public class JavacTask extends Javac {
         
         p.log("Overridden Javac task called", Project.MSG_DEBUG);
 
-        String ensureBuilt = p.getProperty("ensure.built.source.roots");
+        boolean ensureBuilt =    p.getProperty("ensure.built.source.roots") != null
+                              || Boolean.valueOf(p.getProperty("deploy.on.save"));
         
-        if (ensureBuilt != null) {
-            for (String path : PropertyUtils.tokenizePath(ensureBuilt)) {
+        if (ensureBuilt) {
+            for (String path : getSrcdir().list()) {
                 File f = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), path);
                 
                 try {
