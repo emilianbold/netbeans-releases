@@ -82,7 +82,7 @@ public final class RubyPlatform {
     public static final String DEFAULT_RUBY_RELEASE = "1.8"; // NOI18N
 
     /** Version number of the rubystubs */
-    private static final String RUBYSTUBS_VERSION = "1.8.6-p110"; // NOI18N
+    private static final String RUBYSTUBS_VERSION = "1.8.7-p72"; // NOI18N
 
     /** Name of the Ruby Debug IDE gem. */
     static final String RUBY_DEBUG_IDE_NAME = "ruby-debug-ide"; // NOI18N
@@ -956,12 +956,34 @@ public final class RubyPlatform {
             return releaseDate;
         }
 
+        /**
+         * Returns JRuby version as specified by <code>JRUBY_VERSION</code>
+         * JRuby constant. Supported by JRuby only.
+         *
+         * @return JRuby version
+         */
         public String getJVersion() {
             return jversion;
         }
 
+        /**
+         * Returns Ruby version as specified by <code>RUBY_VERSION</code>
+         * constant. Supported by all interpreters.
+         *
+         * @return Ruby version
+         */
         public String getVersion() {
             return version;
+        }
+
+        /**
+         * Get version specific for the platform. E.g. in the case of JRuby it
+         * returns e.g. 1.1.4 instead of 1.8.6.
+         *
+         * @return platform specific version
+         */
+        public String getPlatformVersion() {
+            return isJRuby() ? getJVersion() : getVersion();
         }
 
         /** Returns content of <code>RbConfig::CONFIG['rubylibdir']</code>. */

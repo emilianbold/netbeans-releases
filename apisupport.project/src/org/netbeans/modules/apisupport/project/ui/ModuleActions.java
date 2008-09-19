@@ -88,6 +88,8 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 public final class ModuleActions implements ActionProvider {
+    static final String TEST_USERDIR_LOCK_PROP_NAME = "run.args.extra";    // NOI18N
+    static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
     
     static Action[] getProjectActions(NbModuleProject project) {
         List<Action> actions = new ArrayList<Action>();
@@ -373,13 +375,12 @@ public final class ModuleActions implements ActionProvider {
             promptForPublicPackagesToDocument();
             return;
         } else {
-            if (command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) { // #63652
-                if (project.getTestUserDirLockFile().isFile()) {
-                    notifyCannotReRun();
-                    // XXX would be nice to offer to delete the lock file and continue
-                    return;
-                }
+            if ((command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) // #63652
+                    && project.getTestUserDirLockFile().isFile()) {
+                // #141069: lock file exists, run with bogus option
+                p.setProperty(TEST_USERDIR_LOCK_PROP_NAME,TEST_USERDIR_LOCK_PROP_VALUE);
             }
+            
             targetNames = globalCommands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
@@ -632,10 +633,6 @@ public final class ModuleActions implements ActionProvider {
                 }
             }
         };
-    }
-
-    static void notifyCannotReRun() {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "LBL_cannot_rerun"), NotifyDescriptor.WARNING_MESSAGE));
     }
     
 }

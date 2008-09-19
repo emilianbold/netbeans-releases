@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.websvc.saas.codegen.ui;
 
-import org.netbeans.modules.websvc.saas.codegen.*;
+import java.awt.Dialog;
+import java.awt.event.KeyEvent;
 import java.awt.Component;
+import java.awt.event.KeyListener;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
@@ -57,7 +59,6 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
-import org.netbeans.modules.websvc.saas.codegen.util.Inflector;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,6 +75,7 @@ public class CodeSetupPanel extends javax.swing.JPanel {
     private List<ParameterInfo> inputParams;
     private boolean methodNameModified = false;
     private boolean showParamTypes;
+    private Dialog dialog;
 
     /** Creates new form CodeSetupPanel */
     public CodeSetupPanel(List<ParameterInfo> inputParams) { 
@@ -88,6 +90,29 @@ public class CodeSetupPanel extends javax.swing.JPanel {
         this.showParamTypes = showParamTypes;
         tableModel = new ParamTableModel();
         paramTable.setModel(tableModel);
+        paramTable.addKeyListener(new TableKeyListener());
+    }
+
+    public void setDialog(Dialog d) {
+        this.dialog = d;
+    }
+    
+    private class TableKeyListener implements KeyListener {
+        
+        public TableKeyListener() {
+        }
+
+        public void keyTyped(KeyEvent e) {
+        }
+
+        public void keyPressed(KeyEvent e) {
+            if(e.getKeyCode() == 10) //Carriage return
+                dialog.dispose();
+        }
+
+        public void keyReleased(KeyEvent e) {
+        }
+
     }
 
     private class ParamTable extends JTable {

@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -285,6 +286,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         configureSources(helper, projectProperties, privateProperties);
         configureEncoding(projectProperties, privateProperties);
+        configureTags(projectProperties, privateProperties);
         configureIncludePath(projectProperties, privateProperties);
 
         if (getRunAsType() != null) {
@@ -341,6 +343,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         projectPoperties.setProperty(PhpProjectProperties.SOURCE_ENCODING, charset.name());
         // #136917
         FileEncodingQuery.setDefaultEncoding(charset);
+    }
+
+    private void configureTags(EditableProperties projectPoperties, EditableProperties privateProperties) {
+        projectPoperties.setProperty(PhpProjectProperties.SHORT_TAGS, String.valueOf(PhpLanguageOptions.SHORT_TAGS_ENABLED));
+        projectPoperties.setProperty(PhpProjectProperties.ASP_TAGS, String.valueOf(PhpLanguageOptions.ASP_TAGS_ENABLED));
     }
 
     private void configureIncludePath(EditableProperties projectProperties, EditableProperties privateProperties) {

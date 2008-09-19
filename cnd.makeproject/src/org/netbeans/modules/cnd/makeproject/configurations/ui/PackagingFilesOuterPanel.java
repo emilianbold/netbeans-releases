@@ -296,7 +296,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         defaultsPanel.add(ownerTextField, gridBagConstraints);
         ownerTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.ownerTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
-        groupLabel.setDisplayedMnemonic('u');
+        groupLabel.setDisplayedMnemonic('G');
         groupLabel.setLabelFor(groupTextField);
         groupLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.groupLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -371,6 +371,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         defaultsPanel.add(exePermTextField, gridBagConstraints);
+        exePermTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.exePermTextField.AccessibleContext.accessibleName")); // NOI18N
         exePermTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.exePermTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
         filePermTextField.setColumns(3);
@@ -386,6 +387,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         defaultsPanel.add(filePermTextField, gridBagConstraints);
+        filePermTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.filePermTextField.AccessibleContext.accessibleName")); // NOI18N
         filePermTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.filePermTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
         rLabel1.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.rLabel1.text")); // NOI18N

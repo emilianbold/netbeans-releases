@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mercurial.ui.diff;
 
+import java.util.Set;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
@@ -47,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
 
+import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -82,7 +84,18 @@ public class ExportDiffAction extends ContextAction {
     }
 
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        Set<File> roots = context.getFiles();
+        if(roots == null) return false;
+        if(HgUtils.getRootFile(context) == null) return false;
+        for (File root : roots) {
+            FileInformation info = Mercurial.getInstance().getFileStatusCache().getCachedStatus(root);
+            if(info != null &&
+               (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY ||
+                info.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void exportDiff(VCSContext ctx) {

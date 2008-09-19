@@ -1,3 +1,4 @@
+GtkZZZZZ
 s2Struct
 str
 si int
@@ -12,11 +13,13 @@ sss s2Struct
 aliases() void
 f1() void
 f2() void
+foo() int
 innerNS3Func() void
 main(int argc, char** argv) int
 usingS1() void
 usingS1S2() void
 usingS2() void
+Gtk
 S1
 S2
 S3

@@ -46,12 +46,17 @@ import org.netbeans.modules.gsf.api.HintSeverity;
  * @author tor
  */
 public class StrictWarningTest extends HintTestBase {
+    private String goldenfileSuffix;
+
     
     public StrictWarningTest(String testName) {
         super(testName);
     }            
     
-    private String goldenfileSuffix;
+    @Override
+    protected String getGoldenFileSuffix() {
+        return goldenfileSuffix;
+    }
 
     public void testStrict() throws Exception {
         // Add builtin wrappers for strict warnings
@@ -113,8 +118,14 @@ public class StrictWarningTest extends HintTestBase {
         applyHint(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", "600px\"^,", "Remove");
     }
     
-    @Override
-    protected String getGoldenFileSuffix() {
-        return goldenfileSuffix;
-    }
+//
+//    @Override
+//    protected void customizeHintError(Error error, int start) {
+//        if (error.getParameters() != null && error.getParameters().length > 0 && error.getParameters()[0] instanceof Node) {
+//            Node node = (Node) error.getParameters()[0];
+//            // Tweak Node AST offsets as well
+//            int nodeLength = node.getSourceEnd()-node.getSourceStart();
+//            node.setSourceBounds(start, start+nodeLength);
+//        }
+//    }
 }

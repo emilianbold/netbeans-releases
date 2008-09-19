@@ -72,7 +72,7 @@ public class RunLocalCommand extends Command implements Displayable {
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
         PhpInterpreter phpInterpreter = ProjectPropertiesSupport.getPhpInterpreter(getProject());
-        final FileObject scriptFo = (context == null) ? fileForProject() : fileForContext(context);
+        final FileObject scriptFo = (context == null) ? fileForProject(false) : fileForContext(context);
         final File scriptFile = (scriptFo != null) ? FileUtil.toFile(scriptFo) : null;
         if (!phpInterpreter.isValid() || scriptFile == null) {
             //TODO mising error handling
@@ -112,7 +112,7 @@ public class RunLocalCommand extends Command implements Displayable {
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return ((context == null) ? fileForProject() : fileForContext(context)) != null;
+        return ((context == null) ? fileForProject(false) : fileForContext(context)) != null;
     }
 
     @Override

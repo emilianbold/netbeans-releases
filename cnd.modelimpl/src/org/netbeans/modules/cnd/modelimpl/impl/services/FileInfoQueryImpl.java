@@ -124,24 +124,25 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                         walker.visit();
                         out = walker.getBlocks();
                     } else {
-                        Comparator<CsmOffsetable> comparator = new OffsetableComparator();
-                        TreeSet<CsmOffsetable> result = new TreeSet<CsmOffsetable>(comparator);
+                        //Comparator<CsmOffsetable> comparator = new OffsetableComparator();
+                        //TreeSet<CsmOffsetable> result = new TreeSet<CsmOffsetable>(comparator);
+                        List<CsmOffsetable> result = new  ArrayList<CsmOffsetable>();
                         boolean first = true;
                         for (APTPreprocHandler handler : handlers) {
                             APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler);
                             walker.visit();
                             List<CsmOffsetable> blocks = walker.getBlocks();
                             if (first) {
-                                result.addAll(blocks);
+                                result = blocks;
                                 first = false;
                             } else {
-                                result.retainAll(blocks);
-                                if (result == null) {
+                                result = intersection(result, blocks);
+                                if (result.isEmpty()) {
                                     break;
                                 }
                             }
                         }
-                        out = new ArrayList<CsmOffsetable>(result);
+                        out = result;
                     }
                 }
             } catch (IOException ex) {
@@ -150,6 +151,35 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
         return out;
+    }
+    
+    private static boolean contains(CsmOffsetable bigger, CsmOffsetable smaller) {
+        if (bigger != null && smaller != null) {
+            if (bigger.getStartOffset() <= smaller.getStartOffset() &&
+                smaller.getEndOffset() <= bigger.getEndOffset()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static List<CsmOffsetable> intersection(Collection<CsmOffsetable> first, Collection<CsmOffsetable> second) {
+        List<CsmOffsetable> result = new ArrayList(Math.max(first.size(), second.size()));
+        for (CsmOffsetable o1 : first) {
+            for (CsmOffsetable o2 : second) {
+                if (o1 != null) { //paranoia
+                    if (o1.equals(o2)) {
+                        result.add(o1);
+                    } else if (contains(o1, o2)) {
+                        result.add(o2);
+                        
+                    } else if (contains(o2, o1)) {
+                        result.add(o1);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private static boolean hasConditionalsDirectives(APTFile apt) {

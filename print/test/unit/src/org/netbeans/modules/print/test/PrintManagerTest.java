@@ -51,23 +51,23 @@ import org.netbeans.api.print.PrintManager;
  */
 public class PrintManagerTest extends TestCase {
 
-  public void testPrintAction() {
-    Action action = getPrintAction();
-    assertTrue("Print action can't be null", action != null);
-  }
+    public void testPrintAction() {
+        Action action = getPrintAction();
+        assertTrue("Print action can't be null", action != null);
+    }
 
-  public void testPrintActionProperties() {
-    Action action = getPrintAction();
-    checkProperty(action, Action.SHORT_DESCRIPTION);
-    checkProperty(action, Action.SHORT_DESCRIPTION);
-    checkProperty(action, Action.SMALL_ICON);
-  }
+    public void testPrintActionProperties() {
+        Action action = getPrintAction();
+        checkProperty(action, Action.SHORT_DESCRIPTION);
+        checkProperty(action, Action.SHORT_DESCRIPTION);
+        checkProperty(action, Action.SMALL_ICON);
+    }
 
-  private Action getPrintAction() {
-    return PrintManager.printAction((JComponent) null);
-  }
+    private Action getPrintAction() {
+        return PrintManager.printAction((JComponent) null);
+    }
 
-  private void checkProperty(Action action, String property) {
-    assertTrue("Print action." + property + " can't be null", action.getValue(property) != null);
-  }
+    private void checkProperty(Action action, String property) {
+        assertTrue("Print action." + property + " can't be null", action.getValue(property) != null);
+    }
 }

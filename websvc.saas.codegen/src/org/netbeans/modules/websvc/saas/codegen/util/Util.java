@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.saas.codegen.util;
 import java.awt.Component;
 import javax.swing.JLabel;
 import java.awt.Container;
+import java.awt.Dialog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -107,6 +108,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthenticatio
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Token;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
+import org.netbeans.modules.websvc.saas.codegen.ui.ProgressDialog;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
@@ -119,6 +121,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase.Use;
+import org.openide.DialogDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -1493,6 +1496,40 @@ public class Util {
             }
         }
         return false;
+    }
+    
+    public static boolean showDialog(String displayName, List<ParameterInfo> allParams, 
+            Document targetDoc) {
+        if (!allParams.isEmpty()) {
+            boolean showParamTypes = Util.isJava(targetDoc) || Util.isJsp(targetDoc);
+            CodeSetupPanel panel = new CodeSetupPanel(allParams, showParamTypes);
+
+            DialogDescriptor desc = new DialogDescriptor(panel,
+                    NbBundle.getMessage(CodeSetupPanel.class,
+                    "LBL_CustomizeSaasService", displayName));
+
+            Dialog d = DialogDisplayer.getDefault().createDialog(desc);
+            panel.setDialog(d);
+            d.setVisible(true);
+            Object response = (desc.getValue() != null) ? desc.getValue() : NotifyDescriptor.CLOSED_OPTION;
+            if (response.equals(NotifyDescriptor.CANCEL_OPTION) ||
+                    response.equals(NotifyDescriptor.CLOSED_OPTION)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public static void doGenerateCode(SaasClientCodeGenerator codegen,
+            ProgressDialog progress, List<Exception> errors) {
+        try {
+            codegen.initProgressReporting(progress.getProgressHandle());
+            codegen.generate();
+        } catch (IOException ex) {
+            if (!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS)) {
+                errors.add(ex);
+            }
+        }
     }
 
 }

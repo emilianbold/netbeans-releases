@@ -26,6 +26,7 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -165,15 +166,23 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     private synchronized void configurationsListChanged(Collection<? extends ProjectConfiguration> configs) {
         LOGGER.log(Level.FINER, "configurationsListChanged: {0}", configs);
         if (configs == null) {
-            configListCombo.setModel(EMPTY_MODEL);
-            configListCombo.setEnabled(false); // possibly redundant, but just in case
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    configListCombo.setModel(EMPTY_MODEL);
+                    configListCombo.setEnabled(false); // possibly redundant, but just in case
+                }
+            });
         } else {
-            DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
+            final DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
             if (pcp.hasCustomizer()) {
                 model.addElement(CUSTOMIZE_ENTRY);
             }
-            configListCombo.setModel(model);
-            configListCombo.setEnabled(true);
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    configListCombo.setModel(model);
+                    configListCombo.setEnabled(true);
+                }
+            });
         }
         if (pcp != null) {
             activeConfigurationChanged(getActiveConfiguration(pcp));
@@ -505,9 +514,10 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
         if (contextPrj != null) {
             activeProjectChanged(contextPrj);
-        } else {
-            activeProjectChanged(null);
-        }
+        } //else {
+          //  currentProject = null;
+          //  activeProjectChanged(null);
+        //}
 
     }
 

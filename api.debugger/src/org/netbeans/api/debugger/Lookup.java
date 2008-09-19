@@ -213,17 +213,17 @@ abstract class Lookup implements ContextProvider {
         private static final String HIDDEN = "-hidden"; // NOI18N
         
         private String rootFolder;
-        private Map<String,List<String>> registrationCache = new HashMap<String,List<String>>();
-        private HashMap<String, Object> instanceCache = new HashMap<String, Object>();
+        private final Map<String,List<String>> registrationCache = new HashMap<String,List<String>>();
+        private final HashMap<String, Object> instanceCache = new HashMap<String, Object>();
         private Lookup context;
         private org.openide.util.Lookup.Result<ModuleInfo> moduleLookupResult;
         private ModuleChangeListener modulesChangeListener;
-        private Map<ClassLoader, ModuleChangeListener> moduleChangeListeners
+        private final Map<ClassLoader, ModuleChangeListener> moduleChangeListeners
                 = new HashMap<ClassLoader, ModuleChangeListener>();
-        private Map<ModuleInfo, ModuleChangeListener> disabledModuleChangeListeners
+        private final Map<ModuleInfo, ModuleChangeListener> disabledModuleChangeListeners
                 = new HashMap<ModuleInfo, ModuleChangeListener>();
-        private Set<MetaInfLookupList> lookupLists = new WeakSet<MetaInfLookupList>();
-        private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final Set<MetaInfLookupList> lookupLists = new WeakSet<MetaInfLookupList>();
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
         
         MetaInf (String rootFolder) {
@@ -607,10 +607,6 @@ abstract class Lookup implements ContextProvider {
                     Object instance = null;
                     synchronized(instanceCache) {
                         instance = instanceCache.get (className);
-                        if (instance == null) {
-                            instance = createInstance (className);
-                            instanceCache.put (className, instance);
-                        }
                     }
                     if (instance != null) {
                         try {
@@ -619,6 +615,8 @@ abstract class Lookup implements ContextProvider {
                             Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
                         }
                         listenOn(instance.getClass().getClassLoader());
+                    } else {
+                        add(new LazyInstance<T>(service, className), className);
                     }
                 }
             }
@@ -685,6 +683,38 @@ abstract class Lookup implements ContextProvider {
                     l.propertyChange(evt);
                 }
             }
+
+            private class LazyInstance<T> extends LookupLazyEntry<T> {
+                private String className;
+                private Class<T> service;
+                public LazyInstance(Class<T> service, String className) {
+                    this.service = service;
+                    this.className = className;
+                }
+
+                protected T getEntry() {
+                    Object instance = null;
+                    synchronized(instanceCache) {
+                        instance = instanceCache.get (className);
+                        if (instance == null) {
+                            instance = createInstance (className);
+                            instanceCache.put (className, instance);
+                        }
+                    }
+                    if (instance != null) {
+                        try {
+                            return service.cast(instance);
+                        } catch (ClassCastException cce) {
+                            Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
+                            return null;
+                        } finally {
+                            listenOn(instance.getClass().getClassLoader());
+                        }
+                    } else {
+                        return null;
+                    }
+                }
+            }
             
         }
     }
@@ -693,10 +723,10 @@ abstract class Lookup implements ContextProvider {
      * A special List implementation, which ensures that hidden elements
      * are removed when adding items into the list.
      */
-    private static class LookupList<T> extends ArrayList<T> {
+    private static class LookupList<T> extends LazyArrayList<T> {
 
         protected Set<String> hiddenClassNames;
-        private LinkedHashMap<T, String> instanceClassNames = new LinkedHashMap<T, String>();
+        private LinkedHashMap<Object, String> instanceClassNames = new LinkedHashMap<Object, String>();
 
         public LookupList(Set<String> hiddenClassNames) {
             this.hiddenClassNames = hiddenClassNames;
@@ -707,6 +737,11 @@ abstract class Lookup implements ContextProvider {
             instanceClassNames.put(instance, className);
         }
         
+        void add(LazyArrayList.LazyEntry instance, String className) {
+            super.add(instance);
+            instanceClassNames.put(instance, className);
+        }
+
         @Override
         public boolean addAll(Collection<? extends T> c) {
             if (c instanceof LookupList) {
@@ -739,10 +774,15 @@ abstract class Lookup implements ContextProvider {
                     }
                     ensureCapacity(size() + ll.size());
                     boolean addedAnything = false;
-                    for (T instance : ll) {
-                        String className = ll.instanceClassNames.get(instance);
+                    for (int i = 0; i < ll.size(); i++) {
+                        Object entry = ll.getEntry(i);
+                        String className = ll.instanceClassNames.get(entry);
                         if (hiddenClassNames == null || !hiddenClassNames.contains(className)) {
-                            add(instance, className);
+                            if (entry instanceof LazyEntry) {
+                                add((LazyEntry) entry, className);
+                            } else {
+                                add((T) entry, className);
+                            }
                             addedAnything = true;
                         }
                     }
@@ -758,6 +798,21 @@ abstract class Lookup implements ContextProvider {
         public void clear() {
             super.clear();
             instanceClassNames.clear();
+        }
+
+        protected abstract class LookupLazyEntry<T> extends LazyEntry<T> {
+            protected final T get() {
+                T e = getEntry();
+                synchronized (LookupList.this) {
+                    String className = instanceClassNames.remove(this);
+                    if (className != null) {
+                        instanceClassNames.put(e, className);
+                    }
+                }
+                return e;
+            }
+
+            protected abstract T getEntry();
         }
         
     }

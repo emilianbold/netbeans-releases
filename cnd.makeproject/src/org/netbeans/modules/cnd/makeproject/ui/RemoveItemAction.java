@@ -45,8 +45,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -68,6 +70,13 @@ public class RemoveItemAction extends NodeAction {
 	    Project project = (Project)n.getValue("Project"); // NOI18N
 	    Folder folder = (Folder)n.getValue("Folder"); // NOI18N
 	    Item item = (Item)n.getValue("Item"); // NOI18N
+            
+            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+            MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+            if (!makeConfigurationDescriptor.okToChange()) {
+                return;
+            }
+            
 	    folder.removeItemAction(item);
 	    if (IpeUtils.isPathAbsolute(item.getPath()))
 		((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();

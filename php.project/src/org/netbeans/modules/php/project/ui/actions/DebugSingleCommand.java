@@ -81,7 +81,7 @@ public class DebugSingleCommand extends DebugCommand {
             final FileObject startFile = fileForContext(context);
             final URL[] url = new URL[1];
             try {
-                url[0] = getURLForDebug(context);
+                url[0] = getURLForDebug(context, true);
             } catch (MalformedURLException ex) {
                 //TODO improve error handling
                 Exceptions.printStackTrace(ex);
