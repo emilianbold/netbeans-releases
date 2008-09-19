@@ -222,11 +222,20 @@ public class SemiAttribute extends DefaultVisitor {
 
     @Override
     public void visit(FormalParameter node) {
-        if (node.getParameterName() instanceof Variable) {
-            String name = extractVariableName((Variable) node.getParameterName());
-
+        Variable var = null;
+        if (node.getParameterName() instanceof Reference) {
+            Reference ref = (Reference)node.getParameterName();
+            Expression parameterName = ref.getExpression();
+            if (parameterName instanceof Variable) {
+                var = (Variable)parameterName;
+            }
+        } else if (node.getParameterName() instanceof Variable) {
+            var = (Variable) node.getParameterName();
+        }
+        if (var != null) {
+            String name = extractVariableName(var);
             if (name != null) {
-                scopes.peek().enterWrite(name, Kind.VARIABLE, node);
+                scopes.peek().enterWrite(name, Kind.VARIABLE, var);
             }
         }
 
@@ -820,6 +829,10 @@ public class SemiAttribute extends DefaultVisitor {
             this.writes = new LinkedList<Union2<ASTNode, IndexedElement>>();
             this.writesTypes = new LinkedList<AttributedType>();
             this.writes.add(n);
+            if (n.hasFirst() && n.first() == null) {
+                System.out.println("");
+            }
+
             this.writesTypes.add(type);
             this.name = name;
             this.k = k;
@@ -851,6 +864,9 @@ public class SemiAttribute extends DefaultVisitor {
         }
 
         void addWrite(Union2<ASTNode, IndexedElement> node, AttributedType type) {
+            if (node.hasFirst() && node.first() == null) {
+                System.out.println("");
+            }
             writes.add(node);
             writesTypes.add(type);
         }

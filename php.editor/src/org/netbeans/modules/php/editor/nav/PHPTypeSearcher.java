@@ -73,7 +73,9 @@ public class PHPTypeSearcher implements IndexSearcher {
     public Set<? extends Descriptor> getSymbols(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
         PHPIndex index = PHPIndex.get(gsfIndex);
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
-
+        //CAMEL CASES,wild cards doesn't work - just accept textForQuery as incase sensitive string
+        textForQuery = textForQuery.toLowerCase();
+        kind = NameKind.CASE_INSENSITIVE_PREFIX;
         if (index != null) {
             addClasses(index, textForQuery, kind, scope, helper, result);
             addInterfaces(index, textForQuery, kind, scope, helper, result);
@@ -89,7 +91,9 @@ public class PHPTypeSearcher implements IndexSearcher {
     public Set<? extends Descriptor> getTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
         PHPIndex index = PHPIndex.get(gsfIndex);
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
-
+        //CAMEL CASES,wild cards doesn't work - just accept textForQuery as incase sensitive string        
+        textForQuery = textForQuery.toLowerCase();
+        kind = NameKind.CASE_INSENSITIVE_PREFIX;
         if (index != null) {
             addClasses(index, textForQuery, kind, scope, helper, result);
             addInterfaces(index, textForQuery, kind, scope, helper, result);
