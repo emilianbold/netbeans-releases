@@ -27,11 +27,14 @@
  */
 package org.netbeans.modules.ruby.lexer;
 
-import org.netbeans.modules.ruby.*;
 import javax.swing.JTextArea;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.ruby.RubyKeystrokeHandler;
+import org.netbeans.modules.ruby.RubyTestBase;
+import org.openide.util.Exceptions;
 
 public class RubyLexerTest2 extends RubyTestBase {
 
@@ -40,22 +43,27 @@ public class RubyLexerTest2 extends RubyTestBase {
     }
 
     public void testProblem() throws Exception {
-        BaseDocument doc = getDocument("x.foo_bar.y");
+        final BaseDocument doc = getDocument("x.foo_bar.y");
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
         caret.setDot(6);
         
         RubyKeystrokeHandler bc = new RubyKeystrokeHandler();
         bc.getNextWordOffset(doc, 9, true);
-        
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
 
-        try {
-            doc.remove(6, 3);
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
+        doc.runAtomic(new Runnable() {
+            public void run() {
+                DocumentUtilities.setTypingModification(doc, true);
+
+                try {
+                    doc.remove(6, 3);
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
+                    fail(ble.toString());
+                } finally {
+                    DocumentUtilities.setTypingModification(doc, false);
+                }
+            }
+        });
     }
 }

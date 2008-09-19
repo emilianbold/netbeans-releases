@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.gsf;
 
+import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -67,12 +68,15 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.LanguageManager;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.HintFix;
@@ -126,13 +130,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Handler;
+import javax.swing.JEditorPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentEvent.ElementChange;
 import javax.swing.event.DocumentEvent.EventType;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
+import org.netbeans.junit.MockServices;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.editor.indent.spi.ReformatTask;
+import org.netbeans.modules.gsf.GsfEditorKitFactory.GsfEditorKit;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
@@ -729,59 +744,6 @@ public abstract class GsfTestBase extends NbTestCase {
                 caretPos, range.getStart());
     }
     
-    protected void insertBreak(String original, String expected) throws BadLocationException {
-        KeystrokeHandler bc = getKeystrokeHandler();
-        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
-        
-        int insertOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, insertOffset) + original.substring(insertOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
-
-        BaseDocument doc = getDocument(original);
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(insertOffset);
-        int newOffset = bc.beforeBreak(doc, insertOffset, ta);
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.insertString(caret.getDot(), "\n", null);
-            // Indent the new line
-            //ParserResult result = parse(fo);
-
-            int startPos = caret.getDot()+1;
-            int endPos = startPos+1;
-
-            IndentPrefs preferences = null; // Test should supply default - new IndentPrefs(2, 2);
-            Formatter formatter = getFormatter(preferences);
-            if (formatter != null) {
-                assertNotNull("getFormatter() must be implemented", formatter);
-
-                //ParserResult result = parse(fo);
-                formatter.reindent(doc, startPos, endPos);
-            }
-            int indent = getLineIndent(doc, insertOffset+1);
-
-            //bc.afterBreak(doc, insertOffset, caret);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (newOffset != -1) {
-                caret.setDot(newOffset);
-            } else {
-                caret.setDot(insertOffset+1+indent);
-            }
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
-    }
-
     // Copied from LexUtilities
     public static int getLineIndent(BaseDocument doc, int offset) {
         try {
@@ -804,26 +766,22 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
 
-    protected void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws BadLocationException {
-        KeystrokeHandler bc = getKeystrokeHandler();
-        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
-        
-        int insertOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, insertOffset) + original.substring(insertOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
+    protected void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws Exception {
+        String source = original;
+        String reformatted = expected;
+        Formatter formatter = getFormatter(null);
 
-        BaseDocument doc = getDocument(original);
-        
-        if (codeTemplateMode) {
-            // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
-            String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
-            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);            
-        }
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
 
-        JTextArea ta = new JTextArea(doc);
+        int reformattedPos = reformatted.indexOf('^');
+        assertNotNull(reformattedPos);
+        reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
+
+        JEditorPane ta = getPane(source);
         Caret caret = ta.getCaret();
-        caret.setDot(insertOffset);
+        caret.setDot(sourcePos);
         if (selection != null) {
             int start = original.indexOf(selection);
             assertTrue(start != -1);
@@ -834,105 +792,94 @@ public abstract class GsfTestBase extends NbTestCase {
             assertEquals(selection, ta.getSelectedText());
         }
 
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
 
-        boolean handled = false;
-        try {
-            handled = bc.beforeCharInserted(doc, insertOffset, ta, insertText);
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
+        if (codeTemplateMode) {
+            // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
+            String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N
+            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);
         }
-        if (!handled) {
-            if (ta.getSelectedText() != null && ta.getSelectedText().length() > 0) {
-                insertOffset = ta.getSelectionStart();
-                doc.remove(ta.getSelectionStart(), ta.getSelectionEnd()-ta.getSelectionStart());
-                caret.setDot(insertOffset);
-            }
-            doc.insertString(caret.getDot(), ""+insertText, null);
-            caret.setDot(insertOffset+1);
-            bc.afterCharInserted(doc, insertOffset, ta, insertText);
+
+        if (formatter != null) {
+            configureIndenters(doc, formatter, null, true);
         }
+
+        setupDocumentIndentation(doc, null);
+
+        runKitAction(ta, DefaultEditorKit.defaultKeyTypedAction, ""+insertText);
+
         String formatted = doc.getText(0, doc.getLength());
-        assertEquals(expected, formatted);
-        if (finalCaretPos != -1) {
-            assertEquals(finalCaretPos, caret.getDot());
+        assertEquals(reformatted, formatted);
+
+        if (reformattedPos != -1) {
+            assertEquals(reformattedPos, caret.getDot());
         }
     }
 
-    protected void deleteChar(String original, String expected) throws BadLocationException {
-        KeystrokeHandler bc = getKeystrokeHandler();
-        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
+    protected void deleteChar(String original, String expected) throws Exception {
+        String source = original;
+        String reformatted = expected;
+        Formatter formatter = getFormatter(null);
 
-        int afterRemoveOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
 
-        BaseDocument doc = getDocument(original);
+        int reformattedPos = reformatted.indexOf('^');
+        assertNotNull(reformattedPos);
+        reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
 
-        JTextArea ta = new JTextArea(doc);
+        JEditorPane ta = getPane(source);
         Caret caret = ta.getCaret();
-        caret.setDot(afterRemoveOffset);
-        int dot = afterRemoveOffset;
-        char ch = doc.getChars(dot-1, 1)[0];
+        caret.setDot(sourcePos);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
 
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
+        if (formatter != null) {
+            configureIndenters(doc, formatter, null, true);
+        }
 
-        try {
-            doc.remove(dot - 1, 1);
-            caret.setDot(dot-1);
-            boolean handled = bc.charBackspaced(doc, dot-1, ta, ch);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
+        setupDocumentIndentation(doc, null);
+
+        runKitAction(ta, DefaultEditorKit.deletePrevCharAction, "\n");
+
+        String formatted = doc.getText(0, doc.getLength());
+        assertEquals(reformatted, formatted);
+        if (reformattedPos != -1) {
+            assertEquals(reformattedPos, caret.getDot());
         }
     }
     
-    protected void deleteWord(String original, String expected) throws BadLocationException {
-        KeystrokeHandler bc = getKeystrokeHandler();
-        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
+    protected void deleteWord(String original, String expected) throws Exception {
+        String source = original;
+        String reformatted = expected;
+        Formatter formatter = getFormatter(null);
 
-        int afterRemoveOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
 
-        BaseDocument doc = getDocument(original);
+        int reformattedPos = reformatted.indexOf('^');
+        assertNotNull(reformattedPos);
+        reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
 
-        JTextArea ta = new JTextArea(doc);
+        JEditorPane ta = getPane(source);
         Caret caret = ta.getCaret();
-        caret.setDot(afterRemoveOffset);
-        int dot = afterRemoveOffset;
-        //REMOVE char ch = doc.getChars(dot-1, 1)[0];
-
-        int begin = bc.getNextWordOffset(doc, dot, true);
-        if (begin == -1) {
-            begin = Utilities.getPreviousWord(ta, dot);
+        caret.setDot(sourcePos);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
+        if (formatter != null) {
+            configureIndenters(doc, formatter, null, true);
         }
-        
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
 
-        try {
-            doc.remove(begin, dot-begin);
-            caret.setDot(begin);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
+        setupDocumentIndentation(doc, null);
+
+        runKitAction(ta, BaseKit.removePreviousWordAction, "\n");
+
+        String formatted = doc.getText(0, doc.getLength());
+        assertEquals(reformatted, formatted);
+        if (reformattedPos != -1) {
+            assertEquals(reformattedPos, caret.getDot());
         }
+
     }
     
     protected FileObject getTestFileObject() {
@@ -1759,9 +1706,71 @@ public abstract class GsfTestBase extends NbTestCase {
             return hanging;
         }
     }
-    
+
+    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
+            final CompilationInfo compilationInfo, boolean indentOnly) throws BadLocationException {
+        ReformatTask.Factory reformatFactory = new ReformatTask.Factory() {
+            public ReformatTask createTask(Context context) {
+                final Context ctx = context;
+                return new ReformatTask() {
+                    public void reformat() throws BadLocationException {
+                        if (formatter != null) {
+                            formatter.reformat(ctx, compilationInfo);
+                        }
+                    }
+
+                    public ExtraLock reformatLock() {
+                        return null;
+                    }
+                };
+            }
+        };
+        IndentTask.Factory indentFactory = new IndentTask.Factory() {
+            public IndentTask createTask(Context context) {
+                final Context ctx = context;
+                return new IndentTask() {
+                    public void reindent() throws BadLocationException {
+                        if (formatter != null) {
+                            formatter.reindent(ctx);
+                        }
+                    }
+
+                    public ExtraLock indentLock() {
+                        return null;
+                    }
+                };
+            }
+
+        };
+
+        String mimeType = getPreferredMimeType();
+        MockServices.setServices(MockMimeLookup.class);
+        if (indentOnly) {
+            MockMimeLookup.setInstances(MimePath.parse(mimeType), indentFactory);
+        } else {
+            MockMimeLookup.setInstances(MimePath.parse(mimeType), reformatFactory, indentFactory);
+        }
+    }
+
+    protected void format(final BaseDocument document, final Formatter formatter,
+            final CompilationInfo compilationInfo, int startPos, int endPos, boolean indentOnly) throws BadLocationException {
+        //assertTrue(SwingUtilities.isEventDispatchThread());
+        configureIndenters(document, formatter, compilationInfo, indentOnly);
+
+//        formatter.reformat(doc, startPos, endPos, getInfoForText(source, "unittestdata"));
+        final org.netbeans.editor.Formatter f = document.getFormatter();
+        try {
+            f.reformatLock();
+            int reformattedLen = f.reformat(document, 
+                    Math.min(document.getLength(), startPos),
+                    Math.min(document.getLength(), endPos));
+        } finally {
+            f.reformatUnlock();
+        }
+    }
+
     public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
-        Formatter formatter = getFormatter(preferences);
+        final Formatter formatter = getFormatter(preferences);
         assertNotNull("getFormatter must be implemented", formatter);
 
         String BEGIN = "%<%"; // NOI18N
@@ -1771,7 +1780,7 @@ public abstract class GsfTestBase extends NbTestCase {
         } else {
             startPos = 0;
         }
-        
+
         String END = "%>%"; // NOI18N
         int endPos = source.indexOf(END);
         if (endPos != -1) {
@@ -1783,13 +1792,15 @@ public abstract class GsfTestBase extends NbTestCase {
         if (endPos == -1) {
             endPos = doc.getLength();
         }
-        
-        formatter.reformat(doc, startPos, endPos, getInfoForText(source, "unittestdata"));
 
+        setupDocumentIndentation(doc, preferences);
+        final CompilationInfo compilationInfo = getInfoForText(source, "unittestdata");
+        format(doc, formatter, compilationInfo, startPos, endPos, false);
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(reformatted, formatted);
     }
-    
+
+
     protected void reformatFileContents(String file, IndentPrefs preferences) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
@@ -1799,48 +1810,119 @@ public abstract class GsfTestBase extends NbTestCase {
         
         Formatter formatter = getFormatter(preferences);
         assertNotNull("getFormatter must be implemented", formatter);
+        setupDocumentIndentation(doc, preferences);
 
-        formatter.reformat(doc, 0, doc.getLength(), getInfo(fo));
+        format(doc, formatter, getInfo(fo), 0, doc.getLength(), false);
         String after = doc.getText(0, doc.getLength());
         
         assertDescriptionMatches(file, after, false, ".formatted");
     }
-    
-    public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
-        Formatter formatter = getFormatter(preferences);
-        assertNotNull("getFormatter must be implemented", formatter);
 
+
+    protected JEditorPane getPane(String text) throws Exception {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            fail("You must run this test from the event dispatch thread! To do that, add @Override protected boolean runInEQ() { return true } from your testcase!");
+        }
+        String BEGIN = "$start$"; // NOI18N
+        String END = "$end$"; // NOI18N
+        int sourceStartPos = text.indexOf(BEGIN);
+        int caretPos = -1;
+        int sourceEndPos = -1;
+        if (sourceStartPos != -1) {
+            text = text.substring(0, sourceStartPos) + text.substring(sourceStartPos+BEGIN.length());
+            sourceEndPos = text.indexOf(END);
+            assert sourceEndPos != -1;
+            text = text.substring(0, sourceEndPos) + text.substring(sourceEndPos+END.length());
+        } else {
+            caretPos = text.indexOf('^');
+            if (caretPos != -1) {
+                text = text.substring(0, caretPos) + text.substring(caretPos+1);
+            }
+        }
+
+        JEditorPane pane = new JEditorPane();
+        pane.setContentType(getPreferredMimeType());
+        org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
+        if (!language.useCustomEditorKit()) {
+            GsfEditorKitFactory factory = new GsfEditorKitFactory(language);
+            pane.setEditorKit(factory.kit());
+    }
+        pane.setText(text);
+
+        BaseDocument bdoc = (BaseDocument)pane.getDocument();
+
+        bdoc.putProperty(org.netbeans.api.lexer.Language.class, getPreferredLanguage().getLexerLanguage());
+        bdoc.putProperty("mimeType", getPreferredMimeType());
+
+        //bdoc.insertString(0, text, null);
+        if (sourceStartPos != -1) {
+            assert sourceEndPos != -1;
+            pane.setSelectionStart(sourceStartPos);
+            pane.setSelectionEnd(sourceEndPos);
+        } else {
+            //assert caretPos != -1;
+            //pane.getCaret().setDot(caretPos);
+        }
+        pane.getCaret().setSelectionVisible(true);
+
+        return pane;
+    }
+
+    protected void runKitAction(JEditorPane jt, String actionName, String cmd) {
+        GsfEditorKit kit = (GsfEditorKit)jt.getEditorKit();
+        Action a = kit.getActionByName(actionName);
+        assertNotNull(a);
+        a.actionPerformed(new ActionEvent(jt, 0, cmd));
+    }
+    
+    protected void setupDocumentIndentation(BaseDocument doc, IndentPrefs preferences) {
+        // Enforce indentprefs
+        if (preferences != null) {
+            assertEquals("Hanging indentation not yet supported; must be exposed through options", preferences.getIndentation(), preferences.getHangingIndentation());
+            Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+            prefs.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, preferences.getIndentation());
+        } else {
+            int preferred = 4;
+            if (getPreferredLanguage().hasFormatter()) {
+                preferred = getPreferredLanguage().getFormatter().indentSize();
+            }
+            Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+            prefs.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, preferred);
+        }
+    }
+
+    public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');     
         assertNotNull(sourcePos);
         source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
+        Formatter formatter = getFormatter(null);
 
         int reformattedPos = reformatted.indexOf('^');        
         assertNotNull(reformattedPos);
         reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
         
-        BaseDocument doc = getDocument(source);
-
-        JTextArea ta = new JTextArea(doc);
+        JEditorPane ta = getPane(source);
         Caret caret = ta.getCaret();
         caret.setDot(sourcePos);
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.insertString(caret.getDot(), "\n", null);
-        
-            int startPos = caret.getDot()+1;
-            int endPos = startPos;
-
-            //ParserResult result = parse(fo);
-            formatter.reindent(doc, startPos, endPos);
-
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(reformatted, formatted);
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
+        BaseDocument doc = (BaseDocument) ta.getDocument();
+        if (formatter != null) {
+            configureIndenters(doc, formatter, null, true);
         }
+
+        setupDocumentIndentation(doc, preferences);
+
+        runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
+
+        String formatted = doc.getText(0, doc.getLength());
+        assertEquals(reformatted, formatted);
+
+        if (reformattedPos != -1) {
+            assertEquals(reformattedPos, caret.getDot());
+        }
+    }
+
+    protected void insertBreak(String original, String expected) throws Exception {
+        insertNewline(original, expected, null);
     }
 
     ////////////////////////////////////////////////////////////////////////////

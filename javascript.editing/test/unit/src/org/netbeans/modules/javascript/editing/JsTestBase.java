@@ -64,6 +64,12 @@ public abstract class JsTestBase extends GsfTestBase {
     }
 
     @Override
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
+    }
+
+    @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
         return new JsLanguage();
     }

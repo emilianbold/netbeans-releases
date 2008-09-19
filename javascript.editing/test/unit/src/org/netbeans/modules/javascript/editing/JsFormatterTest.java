@@ -59,7 +59,7 @@ public class JsFormatterTest extends JsTestBase {
     //    addAllRubyFiles(root, files);
     //    reformatAll(files);
     //}
-    
+
     private void addAllRubyFiles(FileObject file, List<FileObject> files) {
         if (file.isFolder()) {
             for (FileObject c : file.getChildren()) {
@@ -69,7 +69,7 @@ public class JsFormatterTest extends JsTestBase {
             files.add(file);
         }
     }
-    
+
     public void testFormat1() throws Exception {
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/prototype.js",new IndentPrefs(2,2));
@@ -86,7 +86,7 @@ public class JsFormatterTest extends JsTestBase {
     public void testFormat4() throws Exception {
         reformatFileContents("testfiles/orig-dojo.js.uncompressed.js",new IndentPrefs(2,2));
     }
-    
+
     public void testFormatE4x() throws Exception {
         reformatFileContents("testfiles/e4x.js", new IndentPrefs(4,4));
     }
@@ -174,7 +174,7 @@ public class JsFormatterTest extends JsTestBase {
                 "}", null
                 );
     }
-    
+
     public void testBraceFreeBlock() throws Exception {
         // it's good to start lines with space, it discovers some potential problems
         format(
@@ -247,7 +247,7 @@ public class JsFormatterTest extends JsTestBase {
                 );
         // What about thesed: do? with?
     }
-    
+
     public void testFor() throws Exception {
         format(
                 "for (var property in source) {\n" +
@@ -260,7 +260,7 @@ public class JsFormatterTest extends JsTestBase {
                 "foo();", null
                 );
     }
-    
+
     public void testFor2() throws Exception {
         format(
                 "for (var i = 0; i < length; i++)\n" +
@@ -271,7 +271,7 @@ public class JsFormatterTest extends JsTestBase {
                 "bar();\n", null
                 );
     }
-    
+
     public void testLineContinuationAsgn() throws Exception {
         format("x =\n1",
                "x =\n    1", null);
@@ -454,12 +454,11 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testIndent2() throws Exception {
         insertNewline("x = ^", "x = \n    ^", null);
+        insertNewline("x = ^ ", "x = \n    ^", null);
 
         // No separate setting for hanging indent yet - using same as indent
         //insertNewline("x = ^", "x = \n    ^", new IndentPrefs(2,4));
         insertNewline("x = ^", "x = \n  ^", new IndentPrefs(2,2));
-
-        insertNewline("x = ^ ", "x = \n^    ", null);
     }
 
     public void testIndent3() throws Exception {
