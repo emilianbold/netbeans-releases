@@ -42,10 +42,9 @@
 package org.netbeans.modules.db.explorer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
@@ -70,9 +69,9 @@ public class ConnectionList {
 
     private static ConnectionList DEFAULT;
 
-    private Lookup.Result result = getLookupResult();
+    private final List<ConnectionListener> listeners = new CopyOnWriteArrayList<ConnectionListener>();
 
-    private List/*<ConnectionListener>*/ listeners = new ArrayList(1);
+    private Lookup.Result result = getLookupResult();
 
     public static synchronized ConnectionList getDefault() {
         if (DEFAULT == null) {
@@ -97,8 +96,8 @@ public class ConnectionList {
     }
 
     public DatabaseConnection[] getConnections() {
-        Collection dbconns = result.allInstances();
-        return (DatabaseConnection[])dbconns.toArray(new DatabaseConnection[dbconns.size()]);
+        Collection<DatabaseConnection> dbconns = result.allInstances();
+        return dbconns.toArray(new DatabaseConnection[dbconns.size()]);
     }
 
     public DatabaseConnection getConnection(DatabaseConnection impl) {
@@ -141,31 +140,20 @@ public class ConnectionList {
     }
 
     public void addConnectionListener(ConnectionListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
 
     public void removeConnectionListener(ConnectionListener listener) {
-        synchronized (listeners) {
-            listeners.remove(listener);
-        }
+        listeners.remove(listener);
     }
 
     private void fireListeners() {
-        List listenersCopy;
-
-        synchronized (listeners) {
-            listenersCopy = new ArrayList(listeners);
-        }
-
-        for (Iterator i = listenersCopy.iterator(); i.hasNext();) {
-            ConnectionListener l = (ConnectionListener)i.next();
-            l.connectionsChanged();
+        for (ConnectionListener listener : listeners) {
+            listener.connectionsChanged();
         }
     }
 
-    private synchronized Lookup.Result getLookupResult() {
+    private synchronized Lookup.Result<DatabaseConnection> getLookupResult() {
         return Lookups.forPath(DatabaseConnectionConvertor.CONNECTIONS_PATH).lookupResult(DatabaseConnection.class);
     }
 }
