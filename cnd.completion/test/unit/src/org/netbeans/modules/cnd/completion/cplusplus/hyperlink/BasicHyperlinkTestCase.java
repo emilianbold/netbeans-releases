@@ -51,6 +51,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ146392() throws Exception {
+        // IZ#146392: regression: some declaration statements are not rendered any more
+        performTest("iz146392.cc", 4, 25, "iz146392.cc", 4, 22);
+        performTest("iz146392.cc", 6, 15, "iz146392.cc", 4, 22);
+    }
+
     public void testIZ139600() throws Exception {
         performTest("main.c", 35, 15, "main.c", 35, 5); // funPtr in int (*funPtr)();
     }
@@ -345,6 +351,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("labels.cc", 31, 12, "labels.cc", 33, 9);
         performTest("labels.cc", 38, 12, "labels.cc", 40, 9);
         performTest("labels.cc", 45, 12, "labels.cc", 47, 9);
+        performTest("labels.cc", 57, 19, "labels.cc", 54, 13);
     }
 
     public void testStaticConstInNamespace() throws Exception {
@@ -430,6 +437,64 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144363.cc", 17, 48, "IZ144363.cc", 17, 13);
         performTest("IZ144363.cc", 18, 15, "IZ144363.cc", 17, 13);
         performTest("IZ144363.cc", 20, 43, "IZ144363.cc", 9, 5);
+    }
+
+    public void testIZ145286() throws Exception {
+        // IZ#145286 : const variable declared in "if" condition is not resolved
+        performTest("IZ145286.cc", 3, 27, "IZ145286.cc", 3, 13);
+        performTest("IZ145286.cc", 4, 14, "IZ145286.cc", 3, 13);
+        performTest("IZ145286.cc", 6, 31, "IZ145286.cc", 6, 16);
+        performTest("IZ145286.cc", 7, 15, "IZ145286.cc", 6, 16);
+        performTest("IZ145286.cc", 9, 29, "IZ145286.cc", 9, 17);
+        performTest("IZ145286.cc", 10, 22, "IZ145286.cc", 9, 17);
+    }
+
+    public void testNamesakes() throws Exception {
+        // IZ#145553 Class in the same namespace should have priority over a global one
+        // global
+        performTest("iz_145553_namesakes.cc", 14, 26, "iz_145553_namesakes.cc", 1, 1);
+        performTest("iz_145553_namesakes.cc", 15, 8, "iz_145553_namesakes.cc", 1, 1);
+        performTest("iz_145553_namesakes.cc", 18, 18, "iz_145553_namesakes.cc", 11, 5);
+        performTest("iz_145553_namesakes.cc", 19, 12, "iz_145553_namesakes.cc", 1, 1);
+        performTest("iz_145553_namesakes.cc", 19, 19, "iz_145553_namesakes.cc", 3, 5);
+        performTest("iz_145553_namesakes.cc", 20, 20, "iz_145553_namesakes.cc", 4, 9);
+        performTest("iz_145553_namesakes.cc", 22, 22, "iz_145553_namesakes.cc", 14, 1);
+        // namespace
+        performTest("iz_145553_namesakes.cc", 36, 24, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 41, 31, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 42, 10, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 45, 20, "iz_145553_namesakes.cc", 38, 9);
+        performTest("iz_145553_namesakes.cc", 46, 16, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 47, 23, "iz_145553_namesakes.cc", 31, 13);
+        performTest("iz_145553_namesakes.cc", 49, 25, "iz_145553_namesakes.cc", 41, 5);
+    }
+
+    public void testIZ145071() throws Exception {
+        // IZ#145071 : forward declarations marked as error
+        performTest("IZ145071.cc", 2, 20, "IZ145071.cc", 2, 1);
+    }
+
+    public void testIZ136731() throws Exception {
+        // IZ#136731 : No hyper link on local extern function
+        performTest("IZ136731_local_extern_function.cc", 4, 18, "IZ136731_local_extern_function.cc", 3, 5);
+        performTest("IZ136731_local_extern_function.cc", 3, 40, "IZ136731_local_extern_function.cc", 3, 32);
+    }
+
+    public void testIZ146464() throws Exception {
+        // IZ#146464 : IDE can't find 'wchar_t' identifier in C projects
+        performTest("IZ146464.c", 1, 16, "IZ146464.c", 1, 1); // NOI18N
+        performTest("IZ146464.c", 2, 5, "IZ146464.c", 1, 1); // NOI18N
+        performTest("IZ146464.c", 2, 23, "IZ146464.c", 1, 1); // NOI18N
+    }
+
+    public void testIZ147627() throws Exception {
+        // IZ#147627 : IDE highlights code with 'i' in 'for' as wrong
+        performTest("IZ147627.cc", 6, 18, "IZ147627.cc", 6, 14); // NOI18N
+        performTest("IZ147627.cc", 7, 23, "IZ147627.cc", 6, 14); // NOI18N
+        performTest("IZ147627.cc", 7, 28, "IZ147627.cc", 6, 14); // NOI18N
+        performTest("IZ147627.cc", 8, 18, "IZ147627.cc", 8, 14); // NOI18N
+        performTest("IZ147627.cc", 9, 23, "IZ147627.cc", 8, 14); // NOI18N
+        performTest("IZ147627.cc", 9, 28, "IZ147627.cc", 8, 14); // NOI18N
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

@@ -42,7 +42,9 @@
 package org.netbeans.modules.project.ant;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -170,7 +172,27 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
             if (!"project".equals(projectEl.getLocalName()) || !PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
                 return null;
             }
-            ProjectXMLCatalogReader.validate(projectEl);
+            try {
+                ProjectXMLCatalogReader.validate(projectEl);
+            } catch (SAXException x) {
+                Element corrected = ProjectXMLCatalogReader.autocorrect(projectEl, x);
+                if (corrected != null) {
+                    projectXml.replaceChild(corrected, projectEl);
+                    projectEl = corrected;
+                    // Try to correct on disk if possible.
+                    // (If not, any changes from the IDE will write out a corrected file anyway.)
+                    if (projectDiskFile.canWrite()) {
+                        OutputStream os = new FileOutputStream(projectDiskFile);
+                        try {
+                            XMLUtil.write(projectXml, os, "UTF-8");
+                        } finally {
+                            os.close();
+                        }
+                    }
+                } else {
+                    throw x;
+                }
+            }
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(projectDiskFile + ": " + e.toString()).initCause(e);
             String msg = e.getMessage().

@@ -36,6 +36,13 @@ rtl
 <body>
 --%>
 
+<%-- meta should not be offered --%>
+<%--CC
+<head><meta></|
+</head>
+<head><meta></head>
+--%>
+
 <html>
     <head><title>HTML Code Completion Page</title></head>
     <body>

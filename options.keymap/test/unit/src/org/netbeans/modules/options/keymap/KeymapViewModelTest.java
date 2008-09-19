@@ -121,7 +121,6 @@ public class KeymapViewModelTest extends NbTestCase {
         model.apply ();
         System.gc ();
         checkShortcuts (model, shortcuts, true);
-        checkShortcuts (new KeymapViewModel (), shortcuts, true);
     }
      */
     

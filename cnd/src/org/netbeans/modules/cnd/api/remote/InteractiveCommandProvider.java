@@ -36,12 +36,12 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.api.remote;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,7 +50,7 @@ import java.util.Map;
  * @author gordonp
  */
 public interface InteractiveCommandProvider {
-   
+
     /**
      * Run a remote commane via cnd.remote's RemoteInteractiveCommandSupport.
      * 
@@ -60,10 +60,17 @@ public interface InteractiveCommandProvider {
      * @return true if the command started, otherwise false
      */
     public boolean run(String hkey, String cmd, Map<String, String> env);
-    
+
+    public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env);
+
     public InputStream getInputStream() throws IOException;
-    
+
     public OutputStream getOutputStream() throws IOException;
-    
+
     public void disconnect();
+
+    public int waitFor();
+
+    public int getExitStatus();
+
 }

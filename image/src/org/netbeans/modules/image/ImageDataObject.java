@@ -62,6 +62,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -106,6 +107,10 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
             return getPrintSupport();        
         else
             return null;
+    }
+
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
     /** Gets image open support. */

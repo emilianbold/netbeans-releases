@@ -83,7 +83,7 @@ public class TemplateUtils {
 	return sb.toString();
     }
     
-    public static final String TYPENAME_STRING = "class";
+    public static final String TYPENAME_STRING = "class"; //NOI18N
     
     public static void addSpecializationSuffix(AST firstChild, StringBuilder sb, List<CsmTemplateParameter> parameters) {
         int depth = 0;
@@ -191,6 +191,12 @@ public class TemplateUtils {
                     // now create parameter
                     parameterStart = child;
                     AST varDecl = child.getFirstChild();
+                    if (varDecl != null && varDecl.getType() == CPPTokenTypes.LITERAL_enum) {
+                        varDecl = varDecl.getNextSibling();
+                        if(varDecl == null || varDecl.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                            break;                                    
+                        }                                
+                    }
                     // check for existense of CSM_VARIABLE_DECLARATION branch
                     if (varDecl != null && varDecl.getNextSibling() != null &&
                             varDecl.getNextSibling().getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {

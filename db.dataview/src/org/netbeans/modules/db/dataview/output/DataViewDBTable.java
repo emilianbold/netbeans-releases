@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import org.netbeans.modules.db.dataview.meta.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,6 +48,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.db.dataview.meta.DBColumn;
+import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**

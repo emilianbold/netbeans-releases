@@ -50,6 +50,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
+import org.openide.awt.Toolbar;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
@@ -86,35 +87,6 @@ public class PreviewMultiViewElement extends CloneableEditor
     }
 
     private void initialize() {
-//        removeAll();
-//        setLayout(new BorderLayout());
-//        // Add listener to status of java source, to detect changes and need to regenerate wsdl
-//        final MultiViewSupport mvSupport = dataObject.getCookie(MultiViewSupport.class);
-//        this.serviceModel = ServiceModel.getServiceModel(mvSupport.getImplementationBean());
-//
-//        if (mvSupport != null && mvSupport.getService() != null) {
-//            serviceModel.addServiceChangeListener(new ServiceChangeListener() {
-//
-//                public void propertyChanged(String propertyName, String oldValue, String newValue) {
-//                    try {
-//                        mvSupport.regenerateWSDL();
-//                    } catch (IllegalArgumentException ex) {
-//                        Exceptions.printStackTrace(ex);
-//                    } catch (IOException ex) {
-//                        Exceptions.printStackTrace(ex);
-//                    }
-//                }
-//
-//                public void operationAdded(MethodModel method) {
-//                }
-//
-//                public void operationRemoved(MethodModel method) {
-//                }
-//
-//                public void operationChanged(MethodModel oldMethod, MethodModel newMethod) {
-//                }
-//            });
-//        }
 
         if (des != null) {
 
@@ -143,7 +115,8 @@ public class PreviewMultiViewElement extends CloneableEditor
                 return toolbar;
             }
         }
-        return null;
+        Toolbar tb = new Toolbar();
+        return tb;
     }
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {

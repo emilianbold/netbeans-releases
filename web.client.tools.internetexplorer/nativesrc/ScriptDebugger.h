@@ -43,6 +43,7 @@
 #include "NetBeansExtension.h"
 #include "Breakpoint.h"
 #include "DbgpConnection.h"
+#include "DebugDocument.h"
 #include <map>
 
 using namespace std;
@@ -50,6 +51,7 @@ using namespace std;
 class DbgpConnection;
 class BreakpointManager;
 class Breakpoint;
+class DebugDocument;
 
 struct StackFrame {
     tstring fileName;
@@ -224,6 +226,9 @@ public:
     void run() {
         resume(BREAKRESUMEACTION_CONTINUE);
     }
+    void stop() {
+        resume(BREAKRESUMEACTION_ABORT);
+    }
     void stepInto() {
         resume(BREAKRESUMEACTION_STEP_INTO);
     }
@@ -274,7 +279,7 @@ private:
     //CComPtr<IConnectionPoint> m_spDebugAppNodeEventsConnectionPoint;
     DWORD m_dwDebugAppNodeEventsCookie;
     BreakpointManager *m_pBreakpointMgr;
-    map<tstring, DWORD> debugDocumentsMap;
+    map<tstring, DebugDocument *> debugDocumentsMap;
     BOOL isDocumentReady(IDebugDocument *pDebugDocument);
     DbgpConnection *m_pDbgpConnection;
     void getTopStackFrame(IRemoteDebugApplicationThread *pDebugAppThread, StackFrame *pStackFrame);
@@ -299,5 +304,7 @@ private:
     Breakpoint *m_pCurrentBreakpoint;
     unsigned int featureSet;
     static BOOL alreadyStoppedOnFirstLine;
+    DWORD registerForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, CComObject<DebugDocument> *pDebugDoc);
+    void unregisterForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, DWORD cookie);
 };
 

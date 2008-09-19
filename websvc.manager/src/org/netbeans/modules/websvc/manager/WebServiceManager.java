@@ -51,16 +51,16 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.websvc.manager.codegen.Wsdl2Java;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModel;
+import org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModelProvider;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
+
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -124,36 +124,14 @@ public final class WebServiceManager {
 
             assert wsData.getWsdlFile() != null;
 
-            File localWsdlFile = new File(wsData.getWsdlFile());
-            URL wsdlUrl = localWsdlFile.toURI().toURL();
-
-            WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
-            if (wsData.getPackageName() != null && wsData.getPackageName().trim().length() > 0) {
-                wsdlModeler.setPackageName(wsData.getPackageName());
-            }
-            WsdlModel model = wsdlModeler.getAndWaitForWsdlModel();
-
+            WsdlModel wsdlModel = getWsdlModel(wsData);
             boolean dataInModel = listModel.webServiceExists(wsData);
 
-            if (model == null) {
+            if (wsdlModel == null) {
                 wsData.setResolved(false);
                 removeWebService(wsData, true, false);
-
-                Throwable exc = wsdlModeler.getCreationException();
-                String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
-                if (exc != null) {
-                    String cause = exc.getLocalizedMessage();
-                    String excString = exc.getClass().getName() + " - " + cause;
-                    message += "\n\n" + excString; // NOI18N
-
-                    Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
-                } else {
-                    exc = new IllegalStateException(message);
-                    Exceptions.printStackTrace(exc);
-                }
-
                 return;
-            } else if (model.getServices().isEmpty()) {
+            } else if (wsdlModel.getServices().isEmpty()) {
                 // If there are no services in the WSDL, warn the user
                 removeWebService(wsData);
                 String message = NbBundle.getMessage(WebServiceManager.class, "WS_NO_METHODS_ERROR");
@@ -163,7 +141,7 @@ public final class WebServiceManager {
             } else if (dataInModel) {
                 // for adding of services already in the model, only add a single service
                 boolean assigned = false;
-                for (WsdlService service : model.getServices()) {
+                for (WSService service : wsdlModel.getServices()) {
                     if (service.getName().equals(wsData.getName())) {
                         assigned = true;
                         wsData.setWsdlService(service);
@@ -172,7 +150,7 @@ public final class WebServiceManager {
                 }
 
                 if (!assigned) {
-                    WsdlService defaultService = model.getServices().get(0);
+                    WSService defaultService = wsdlModel.getServices().get(0);
                     wsData.setWsdlService(defaultService);
                     wsData.setName(defaultService.getName());
                     wsData.setResolved(true);
@@ -192,7 +170,7 @@ public final class WebServiceManager {
             } else {
                 // Create WebServiceData for each service and add to the model
                 boolean first = true;
-                for (WsdlService service : model.getServices()) {
+                for (WSService service : wsdlModel.getServices()) {
                     WebServiceData newData;
                     if (first) {
                         first = false;
@@ -228,7 +206,50 @@ public final class WebServiceManager {
         }
     }
 
-    public void refreshWebService(WebServiceData wsData) throws IOException {
+    public WsdlModel getWsdlModel(WebServiceData wsData) throws IOException {
+        File localWsdlFile = new File(wsData.getWsdlFile());
+        URL wsdlUrl = localWsdlFile.toURI().toURL();
+
+        WsdlModelProvider wsdlModelProvider = null;
+        Collection<? extends WsdlModelProvider> providers = Lookup.getDefault().lookupAll(WsdlModelProvider.class);
+        if (providers != null) {
+            for (WsdlModelProvider provider : providers) {
+                if (provider.canAccept(wsdlUrl)) {
+                    wsdlModelProvider = provider;
+                    break;
+                }
+            }
+        }
+        WsdlModel wsdlModel = null;
+        if (wsdlModelProvider != null) {
+            String packageName = wsdlModelProvider.getEffectivePackageName();
+            wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName);
+        }
+       
+        if (wsdlModel == null) {
+            wsData.setResolved(false);
+            removeWebService(wsData, true, false);
+
+            Throwable exc = wsdlModelProvider.getCreationException();//wsdlModeler.getCreationException();
+            String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
+            if (exc != null) {
+                String cause = exc.getLocalizedMessage();
+                String excString = exc.getClass().getName() + " - " + cause;
+                message += "\n\n" + excString; // NOI18N
+
+                Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
+            } else {
+                exc = new IllegalStateException(message);
+                Exceptions.printStackTrace(exc);
+            }
+        }
+        
+        return wsdlModel;
+    }
+    
+    public
+
+     void refreshWebService(WebServiceData wsData) throws IOException {
         removeWebService(wsData, false, true);
         wsData.setWsdlFile(null);
         wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);
@@ -433,7 +454,7 @@ public final class WebServiceManager {
             compileAttempted = true;
 
             Collection<? extends WebServiceManagerExt> extensions = Lookup.getDefault().lookupAll(WebServiceManagerExt.class);
-            WsdlService svc = wsData.getWsdlService();
+            WSService svc = wsData.getWsdlService();
 
             // compile the WSDL and create the proxy jars
             Wsdl2Java wsdl2Java = new Wsdl2Java(wsData);
@@ -505,22 +526,21 @@ public final class WebServiceManager {
             }
         }
     }
-    
-    
+
     private synchronized void incrementMutatorCount() {
         mutatorCount++;
-        //System.out.println("incrementMutatorCount() mutatorCount = " + mutatorCount);
+    //System.out.println("incrementMutatorCount() mutatorCount = " + mutatorCount);
     }
 
     private synchronized void save() {
-        if (--mutatorCount <= 0) {     
+        if (--mutatorCount <= 0) {
             if (WebServiceListModel.getInstance().isDirty()) {
                 //System.out.println("saving ws model");
                 new WebServicePersistenceManager().save();
                 WebServiceListModel.getInstance().setDirty(false);
             }
         }
-        //System.out.println("save() mutatorCount = " + mutatorCount);
+    //System.out.println("save() mutatorCount = " + mutatorCount);
     }
 
     private static void saveDescriptor(WebServiceData data) {
@@ -528,13 +548,13 @@ public final class WebServiceManager {
         try {
             WsdlServiceProxyDescriptor desc = data.getJaxWsDescriptor();
             if (desc instanceof WebServiceDescriptor) {
-                mgr.saveDescriptor((WebServiceDescriptor)desc);
+                mgr.saveDescriptor((WebServiceDescriptor) desc);
             }
             desc = data.getJaxRpcDescriptor();
             if (desc instanceof WebServiceDescriptor) {
-                mgr.saveDescriptor((WebServiceDescriptor)desc);
+                mgr.saveDescriptor((WebServiceDescriptor) desc);
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
         }
     }
 }

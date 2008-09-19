@@ -59,10 +59,10 @@ public class CompilerSetNodeProp extends Node.Property {
     public CompilerSetNodeProp(CompilerSet2Configuration configuration, boolean canWrite, String txt1, String txt2, String txt3) {
         super(Integer.class);
         this.configuration = configuration;
-	this.canWrite = canWrite;
-	this.txt1 = txt1;
-	this.txt2 = txt2;
-	this.txt3 = txt3;
+        this.canWrite = canWrite;
+        this.txt1 = txt1;
+        this.txt2 = txt2;
+        this.txt3 = txt3;
         oldname = configuration.getOption();
         configuration.setCompilerSetNodeProp(this);
     }
@@ -73,18 +73,18 @@ public class CompilerSetNodeProp extends Node.Property {
 
     @Override
     public String getName() {
-	return txt2;
+        return txt2;
     }
 
     @Override
     public String getShortDescription() {
-	return txt3;
+        return txt3;
     }
     
     @Override
     public String getHtmlDisplayName() {
         if (configuration.getCompilerSetName().getModified())
-            return "<b>" + getDisplayName(); // NOI18N
+            return configuration.isDevHostOnline() ? "<b>" + getDisplayName() : getDisplayName(); // NOI18N
         else
             return null;
     }
@@ -126,7 +126,7 @@ public class CompilerSetNodeProp extends Node.Property {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new CompilerSetEditor();
+        return new CompilerSetEditor();
     }
 
     private class CompilerSetEditor extends PropertyEditorSupport {
@@ -154,7 +154,9 @@ public class CompilerSetNodeProp extends Node.Property {
 //            if (configuration.getCompilerSetManager().getCompilerSet(getOldname()) == null) {
 //                list.add(getOldname());
 //            }
-            list.addAll(configuration.getCompilerSetManager().getCompilerSetNames());
+            if (configuration.isDevHostOnline()) {
+                list.addAll(configuration.getCompilerSetManager().getCompilerSetNames());
+            }
             return (String[]) list.toArray(new String[list.size()]);
         }
         

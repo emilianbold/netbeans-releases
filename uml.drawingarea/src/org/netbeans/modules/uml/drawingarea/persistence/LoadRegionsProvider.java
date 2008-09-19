@@ -93,15 +93,16 @@ class LoadRegionsProvider implements ActionProvider {
                 for(IPresentationElement subPETmp:subEl.getPresentationElements())
                 {
                     Widget tmp=scene.findWidget(subPETmp);
-                    for(Widget par=tmp.getParentWidget();par!=null;par=par.getParentWidget())
-                    {
-                        if(par==stateWidget)
+                    if(tmp!=null)//may be on another diagram
+                        for(Widget par=tmp.getParentWidget();par!=null;par=par.getParentWidget())
                         {
-                            subW=tmp;
-                            subPE=subPETmp;
-                            break;
+                            if(par==stateWidget)
+                            {
+                                subW=tmp;
+                                subPE=subPETmp;
+                                break;
+                            }
                         }
-                    }
                     if(subW!=null)break;
                 }
                 if(subW!=null)

@@ -128,6 +128,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             public void run(CompilationController info) throws Exception {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 final Element el = tph.resolveElement(info);
+                if (el == null) {
+                    throw new NullPointerException(String.format("#145291: Cannot resolve handle: %s\n%s", tph, info.getClasspathInfo())); // NOI18N
+                }
                 if (el.getKind().isField()) {
                     //get field references from index
                     set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));

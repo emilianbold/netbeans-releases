@@ -46,6 +46,7 @@ USERDIR="--userdir /tmp/${USER}/cnd-userdir"
 PARSERRORS="-J-Dparser.report.errors=true"
 DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y"
 PRG=$0
+NB_COPY="/tmp/${USER}/nb-copy"
 
 while [ -h "$PRG" ]; do
     ls=`ls -ld "$PRG"`
@@ -65,6 +66,10 @@ do
                 echo "Redirecting cache to $1"
                 PARAMS="${PARAMS} -J-Dcnd.repository.cache.path="$1""
                 ;;
+        --nopersist)
+                echo "Setting persistence OFF"
+                PARAMS="${PARAMS} -J-Dcnd.modelimpl.persistent=false"
+                ;;
         --nb)
 		shift
                 echo "Using NB from $1"
@@ -77,6 +82,18 @@ do
 	--nocon|--noconsole)
 		CONSOLE=""
 		;;
+	--nocopy|--nc)
+		NB_COPY=""
+		;;
+        --cp|--copy)
+		shift
+                NB_COPY=$1
+		if [ -r ${NB_COPY} ]; then
+		    echo "The content of ${NB_COPY} will be deleted"
+		    echo "Press ENTER to proceed or ^C to abort"
+		    read t
+		fi
+                ;;
 	--nodebug|-nodebug)
 		echo "Debug mode OFF"
 		DEBUG=""
@@ -113,6 +130,11 @@ do
 	--hardrefs|--hard)
                 echo "using in-memory (hard refs) repository"
 		PARAMS="${PARAMS} -J-Dcnd.repository.hardrefs=true"
+		;;
+	--threads)
+                shift
+                echo "using $1 parser threads"
+                PARAMS="${PARAMS} -J-Dcnd.modelimpl.parser.threads=$1"
 		;;
 	*)
 		PARAMS="${PARAMS} $1"
@@ -153,8 +175,22 @@ DEFS="${DEFS} -J-Dsun.java2d.pmoffscreen=false"
 DEFS="${DEFS} -J-Dtest.xref.action=true"
 DEFS="${DEFS} -J-Dcnd.classview.sys-includes=true"
 DEFS="${DEFS} -J-Dcnd.callgraph.showgraph=true"
+DEFS="${DEFS} -J-Dcnd.trace.includes=true"
+DEFS="${DEFS} -J-Dcnd.standalone.trace=true"
 ##DEFS="${DEFS} -J-Dcnd.parser.queue.trace=true"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.parser.threads=2"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.no.reparse.include=true"
+
+
+if [ -z "${NB_COPY}" ]; then
+    echo "Using original NB location: ${NBDIST}"
+else
+    echo "Copying NB from ${NBDIST} to ${NB_COPY}..."
+    mkdir -p ${NB_COPY} > /dev/null
+    rm -rf ${NB_COPY}/* > /dev/null
+    cp -r ${NBDIST}/* ${NB_COPY}
+    echo "Launching NB from ${NB_COPY}"
+    NBDIST="${NB_COPY}"
+fi
 
 ${NBDIST}/bin/netbeans -J-ea -J-server ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}

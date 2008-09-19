@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.security.Permission;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import junit.framework.Assert;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -198,7 +200,15 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             return false;
         }
         if (file.endsWith(".hg")) {
-            return false;
+            try {
+                Class<?> ref = Class.forName("org.netbeans.modules.versioning.util.Utils", true, Thread.currentThread().getContextClassLoader());
+                Field f = ref.getDeclaredField("unversionedFolders");
+                f.setAccessible(true);
+                f.set(null, new File[]{new File(ud).getParentFile()});
+                return false;
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         }
         
         if (file.startsWith(ud)) {
@@ -220,6 +230,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             return;
         }
         if (cmd.equals("hg")) {
+            return;
+        }
+        if (cmd.endsWith("/hg")) {
             return;
         }
 

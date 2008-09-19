@@ -98,6 +98,22 @@
                 </sign>
                 <authenticator xref="amazons3_templates"/>
             </signed-url>
+            <signed-url sig-id="Authorization" id="copyObject">
+                <sign id="authorization">
+                    <params>
+                        <param name="Date" type="date" required="true"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                        <param name="Content-Type" type="string" required="true"/>
+                        <param name="x-amz-copy-source" type="string" required="true"/>
+                        <param name="x-amz-metadata-directive" type="string"/>
+                        <param name="x-amz-copy-source-if-match" type="string"/>
+                        <param name="x-amz-copy-source-if-none-match" type="string"/>
+                        <param name="x-amz-copy-source-if-unmodified-since" type="string"/>
+                        <param name="x-amz-copy-source-if-modified-since" type="string"/>
+                    </params>
+                </sign>
+                <authenticator xref="amazons3_templates"/>
+            </signed-url>
             <signed-url sig-id="Authorization" id="getLocation">
                 <sign id="authorization">
                     <params>

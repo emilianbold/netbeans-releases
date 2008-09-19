@@ -136,10 +136,20 @@ class ClearcaseOptionsPanel extends javax.swing.JPanel {
         buttonGroup1.add(rbHijack);
         org.openide.awt.Mnemonics.setLocalizedText(rbHijack, NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.rbHijack.text")); // NOI18N
         rbHijack.setToolTipText(org.openide.util.NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.rbHijack.toolTipText")); // NOI18N
+        rbHijack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbHijackActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(rbUnreserved);
         org.openide.awt.Mnemonics.setLocalizedText(rbUnreserved, org.openide.util.NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.rbUnreserved.text")); // NOI18N
         rbUnreserved.setToolTipText(org.openide.util.NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.rbUnreserved.toolTipText")); // NOI18N
+        rbUnreserved.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbUnreservedActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(rbReserved);
         org.openide.awt.Mnemonics.setLocalizedText(rbReserved, org.openide.util.NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.rbReserved.text")); // NOI18N
@@ -152,6 +162,7 @@ class ClearcaseOptionsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbFallback, org.openide.util.NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.cbFallback.text")); // NOI18N
         cbFallback.setToolTipText(org.openide.util.NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.cbFallback.toolTipText")); // NOI18N
+        cbFallback.setEnabled(false);
         cbFallback.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbFallbackActionPerformed(evt);
@@ -191,9 +202,11 @@ class ClearcaseOptionsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbHijackAfterUnreserved, NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.cbHijackAfterUnreserved.text")); // NOI18N
         cbHijackAfterUnreserved.setToolTipText(org.openide.util.NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.cbHijackAfterUnreserved.toolTipText")); // NOI18N
+        cbHijackAfterUnreserved.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(cbHijackAfterReserved, NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.cbHijackAfterReserved.text")); // NOI18N
         cbHijackAfterReserved.setToolTipText(org.openide.util.NbBundle.getMessage(ClearcaseOptionsPanel.class, "ClearcaseOptionsPanel.cbHijackAfterReserved.toolTipText")); // NOI18N
+        cbHijackAfterReserved.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -223,7 +236,7 @@ class ClearcaseOptionsPanel extends javax.swing.JPanel {
                         .add(3, 3, 3)
                         .add(jLabel4)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(taLabelFormat, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                        .add(taLabelFormat, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(bAddVariable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 109, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
@@ -234,15 +247,15 @@ class ClearcaseOptionsPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(jLabel3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE))
+                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(jLabel5)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))))
+                        .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE))))
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -320,11 +333,11 @@ class ClearcaseOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_bBrowseActionPerformed
     
     private void rbDisabledActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbDisabledActionPerformed
-    // TODO add your handling code here:
+        setCheckBoxes();
     }//GEN-LAST:event_rbDisabledActionPerformed
     
     private void rbReservedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbReservedActionPerformed
-    // TODO add your handling code here:
+        setCheckBoxes();
     }//GEN-LAST:event_rbReservedActionPerformed
     
     private void cbFallbackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFallbackActionPerformed
@@ -400,8 +413,22 @@ class ClearcaseOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_cbCheckinViewPrivateActionPerformed
 
 private void rbPromptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbPromptActionPerformed
-// TODO add your handling code here:
+    setCheckBoxes();
 }//GEN-LAST:event_rbPromptActionPerformed
+
+private void rbUnreservedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbUnreservedActionPerformed
+    setCheckBoxes();
+}//GEN-LAST:event_rbUnreservedActionPerformed
+
+private void rbHijackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbHijackActionPerformed
+    setCheckBoxes();
+}//GEN-LAST:event_rbHijackActionPerformed
+
+    private void setCheckBoxes() {
+        cbHijackAfterReserved.setEnabled(rbReserved.isSelected());
+        cbFallback.setEnabled(rbReserved.isSelected());
+        cbHijackAfterUnreserved.setEnabled(rbUnreserved.isSelected());
+    }
 
 private class LabelVariable {
         private String description;

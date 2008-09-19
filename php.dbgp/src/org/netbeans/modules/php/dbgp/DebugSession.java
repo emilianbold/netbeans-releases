@@ -54,7 +54,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.php.dbgp.breakpoints.BreakpointModel;
 import org.netbeans.modules.php.dbgp.models.AbstractIDEBridge;
+import org.netbeans.modules.php.dbgp.models.CallStackModel;
+import org.netbeans.modules.php.dbgp.models.ThreadsModel;
+import org.netbeans.modules.php.dbgp.models.VariablesModel;
+import org.netbeans.modules.php.dbgp.models.WatchesModel;
 import org.netbeans.modules.php.dbgp.packets.DbgpCommand;
 import org.netbeans.modules.php.dbgp.packets.DbgpMessage;
 import org.netbeans.modules.php.dbgp.packets.DbgpResponse;
@@ -100,14 +105,32 @@ public class DebugSession implements Runnable {
         } catch (IOException e) {
             log(e);
         } finally {
-            getBridge().setSuspended(false);
-            getBridge().hideAnnotations();
+            IDESessionBridge bridge = getBridge();
+            if (bridge != null) {
+                bridge.setSuspended(false);
+                bridge.hideAnnotations();
+                BreakpointModel breakpointModel = bridge.getBreakpointModel();
+                if (breakpointModel != null) {
+                    breakpointModel.setCurrentStack(null, this);
+                }
+                CallStackModel callStackModel = bridge.getCallStackModel();
+                if (callStackModel != null) {
+                    callStackModel.clearModel();
+                }
+                ThreadsModel threadsModel = bridge.getThreadsModel();
+                if (threadsModel != null) {
+                    threadsModel.update();
+                }
+                VariablesModel variablesModel = bridge.getVariablesModel();
+                if (variablesModel != null) {
+                    variablesModel.clearModel();
+                }
+                WatchesModel watchesModel = bridge.getWatchesModel();
+                if (watchesModel != null) {
+                    watchesModel.clearModel();
+                }
+            }
             StartActionProviderImpl.getInstance().removeSession(this);
-            getBridge().getBreakpointModel().setCurrentStack(null, this);
-            getBridge().getCallStackModel().clearModel();
-            getBridge().getThreadsModel().update();
-            getBridge().getVariablesModel().clearModel();
-            getBridge().getWatchesModel().clearModel();
         }
     }
 

@@ -44,7 +44,7 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
@@ -146,10 +146,17 @@ public abstract class IndexedElement extends PHPElement {
 
     @Override
     public Set<Modifier> getModifiers() {
+        Set<Modifier> retval = new HashSet<Modifier>();
         if (isStatic()) {
-            return AstElement.STATIC;
+            retval.add(Modifier.STATIC);
+        } else if (isPublic()) {
+            retval.add(Modifier.PUBLIC);
+        }  else if (isProtected()) {
+            retval.add(Modifier.PROTECTED);
+        } else if (isPrivate()) {
+            retval.add(Modifier.PRIVATE);
         }
-        return Collections.emptySet();
+        return retval;
     }
 
     public String getFilenameUrl() {
@@ -249,9 +256,13 @@ public abstract class IndexedElement extends PHPElement {
         
         return value;
     }
-    
+
     public boolean isPublic() {
         return (flags & BodyDeclaration.Modifier.PUBLIC) != 0;
+    }
+
+    public boolean isProtected() {
+        return (flags & BodyDeclaration.Modifier.PROTECTED) != 0;
     }
 
     public boolean isPrivate() {
@@ -260,6 +271,14 @@ public abstract class IndexedElement extends PHPElement {
     
     public boolean isStatic() {
         return (flags & BodyDeclaration.Modifier.STATIC) != 0;
+    }
+
+    public boolean isFinal() {
+        return (flags & BodyDeclaration.Modifier.FINAL) != 0;
+    }
+
+    public boolean isAbstract() {
+        return (flags & BodyDeclaration.Modifier.ABSTRACT) != 0;
     }
 
     @Override

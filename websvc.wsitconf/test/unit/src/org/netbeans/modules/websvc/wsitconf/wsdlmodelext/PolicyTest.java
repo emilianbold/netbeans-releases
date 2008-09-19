@@ -156,7 +156,7 @@ public class PolicyTest extends TestCase {
             PolicyModelHelper.cleanPolicies(b);
         }
     }
-    
+
     public String getTestResourcePath() {
         return "../wsdlmodelext/resources/policy.xml";
     }

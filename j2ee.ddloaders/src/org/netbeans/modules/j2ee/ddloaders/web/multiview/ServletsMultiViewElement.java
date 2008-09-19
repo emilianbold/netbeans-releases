@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.*;
 import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
@@ -117,7 +118,8 @@ public class ServletsMultiViewElement extends ToolBarMultiViewElement implements
             String name = evt.getPropertyName();
             if ( name.indexOf("Servlet")>0 ) { //NOI18
                 // repaint view if the wiew is active and something is changed with servlets
-                if (SERVLET_MV_ID.equals(dObj.getSelectedPerspective().preferredID())) {
+                MultiViewPerspective selected = dObj.getSelectedPerspective();
+                if (selected != null && SERVLET_MV_ID.equals(selected.preferredID())) {
                     repaintingTask.schedule(100);
                 } else {
                     needInit=true;

@@ -1,5 +1,5 @@
 Code completion result for source line:
 $arg->|parentInterfaceFunction();
 (QueryType=COMPLETION, NameKind=PREFIX)
-METHOD     childInterfaceFunction()                   ChildInterface
-METHOD     parentInterfaceFunction()                  ParentInterface
+METHOD     childInterfaceFunction()        [PUBLIC]   ChildInterface
+METHOD     parentInterfaceFunction()       [PUBLIC]   ParentInterface

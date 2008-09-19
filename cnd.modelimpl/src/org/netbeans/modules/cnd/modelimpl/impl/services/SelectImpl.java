@@ -263,6 +263,10 @@ public class SelectImpl extends CsmSelect {
             return new OffsetFilterImpl(startOffset, endOffset);
         }
 
+        public CsmFilter createOffsetFilter(int innerOffset) {
+            return new InnerOffsetFilterImpl(innerOffset);
+        }
+
         public CsmFilter createCompoundFilter(final CsmFilter first, final CsmFilter second) {
             return new CompoundFilterImpl(first, second);
         }
@@ -351,6 +355,31 @@ public class SelectImpl extends CsmSelect {
             @Override
             public String toString() {
                 return "start offset=" + startOffset + "; endOffset=" + endOffset; // NOI18N
+            }
+        }
+
+        private static class InnerOffsetFilterImpl implements Filter {
+            private final int innerOffset;
+
+            public InnerOffsetFilterImpl(int innerOffset) {
+                this.innerOffset = innerOffset;
+            }
+
+            public boolean accept(CsmUID uid) {
+                int start = UIDUtilities.getStartOffset(uid);
+                int end = UIDUtilities.getEndOffset(uid);
+                if (start < 0) {
+                    return true;
+                }
+                if (start <= innerOffset && innerOffset <= end) {
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public String toString() {
+                return "inner offset=" + innerOffset; // NOI18N
             }
         }
 

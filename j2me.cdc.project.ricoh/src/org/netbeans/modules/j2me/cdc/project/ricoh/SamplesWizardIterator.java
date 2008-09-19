@@ -82,6 +82,7 @@ import org.netbeans.modules.j2me.cdc.project.ui.wizards.PanelConfigureProject;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanel;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
+import org.netbeans.modules.mobility.project.ui.wizard.NewProjectIterator;
 import org.netbeans.modules.mobility.project.ui.wizard.PlatformInstallPanel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -327,6 +328,12 @@ public class SamplesWizardIterator implements WizardDescriptor.InstantiatingIter
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+                /*
+                 * Fix for #147260 - Wrong title in Ricoh samples wizard
+                 */
+                jc.putClientProperty( "NewProjectWizard_Title",
+                        NbBundle.getMessage(NewProjectIterator.class, 
+                        "TXT_SampleProject"));                                   // NOI18N
             }
         }
         this.wiz.putProperty("additionalProperties", new Properties());

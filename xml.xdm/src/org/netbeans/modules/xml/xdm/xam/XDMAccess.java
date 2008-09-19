@@ -414,6 +414,8 @@ public class XDMAccess extends DocumentModelAccess {
     
     public List<org.w3c.dom.Element> getPathFromRoot(org.w3c.dom.Document root, org.w3c.dom.Element node) {
         List<Node> pathToRoot = new PathFromRootVisitor().findPath(root, node);
+        if(pathToRoot == null)
+            return null;
         List<org.w3c.dom.Element> pathFromRoot = new ArrayList<org.w3c.dom.Element>();
         for (Node n : pathToRoot) {
             if (! (n instanceof Element)) {

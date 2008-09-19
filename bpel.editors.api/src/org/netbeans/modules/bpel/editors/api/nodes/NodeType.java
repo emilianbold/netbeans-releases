@@ -120,7 +120,7 @@ public enum NodeType {
     FROM,
     TO,
     //
-    SYSTEM_FAULTS_FOLDER,
+    STANDARD_FAULTS_FOLDER,
     WSDL_FILES_FOLDER,
     BPEL_FAULTS_FOLDER,
     FAULT,

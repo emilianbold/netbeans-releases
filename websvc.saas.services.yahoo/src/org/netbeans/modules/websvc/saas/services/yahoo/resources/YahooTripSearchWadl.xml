@@ -173,7 +173,7 @@
                     </param>
                 </request>
                 <response>
-                    <representation mediaType="application/xml" element="yt:ResultSet"/>
+                    <representation mediaType="application/xml" element="yt:Result"/>
                 </response>
             </method>
         </resource>

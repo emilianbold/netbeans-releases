@@ -42,19 +42,19 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
 
 /**
  * A class that tracks states of the preprocessor conditionals within file
  * @author Vladimir Kvashin
  */
 public class FilePreprocessorConditionState
-        implements APTParseFileWalker.EvalCallback, Comparable {
-
-    private static final boolean TRACE = Boolean.getBoolean("cnd.pp.condition.state.trace");
+        implements APTParseFileWalker.EvalCallback {
 
     /** a SORTED array of offsets for which conditionals were evaluated to true */
     private int[] offsets;
@@ -63,15 +63,24 @@ public class FilePreprocessorConditionState
     private int size;
 
     /** for debugging purposes */
-    private CharSequence fileName;
+    private transient CharSequence fileName;
 
     private static final int MIN_SIZE = 16;
 
-    public FilePreprocessorConditionState(FileImpl file) {
+    //private boolean isCpp;
+
+    public FilePreprocessorConditionState(FileImpl file/*, APTPreprocHandler preprocHandler*/) {
         offsets = new int[MIN_SIZE];
         fileName = file.getAbsolutePath();
+        //this.isCpp = preprocHandler.getMacroMap().isDefined("__cplusplus");
     }
 
+    public FilePreprocessorConditionState(FilePreprocessorConditionState state2copy) {
+        offsets = new int[state2copy.size];
+        System.arraycopy(state2copy.offsets, 0, offsets, 0, offsets.length);
+        this.fileName = state2copy.fileName;
+    }
+    
     public FilePreprocessorConditionState(DataInput input) throws IOException {
         size = input.readInt();
         if (size > 0) {
@@ -82,7 +91,7 @@ public class FilePreprocessorConditionState
         } else {
             offsets = new int[MIN_SIZE];
         }
-        fileName = FileNameCache.getManager().getString(PersistentUtils.readUTF(input));
+        fileName = null;
     }
 
     public void write(DataOutput output) throws IOException {
@@ -92,7 +101,6 @@ public class FilePreprocessorConditionState
                 output.writeInt(offsets[i]);
             }
         }
-        PersistentUtils.writeUTF(fileName, output);
     }
 
     public void clear() {
@@ -104,26 +112,43 @@ public class FilePreprocessorConditionState
      * adds offset of active branch to offsets array
      */
     public void onEval(APT apt, boolean result) {
+        boolean proceed = false;
+        int offset = -1;
         if (result) {
-            int offset = apt.getOffset();
-            if (size == 0) {
-                offsets[0] = offset;
-                size = 1;
-            } else {
-                int last = size-1;
-                if (offsets[last] < offset) {
-                    insert(last+1, offset);
-                } else {
-                    for (int i = last-1; i > 0; i--) {
-                        if (offset > offsets[i]) {
-                            insert(i+1, offset);
-                            return;
-                        }
-                    }
-                    insert(0, offset);
-                }
+            proceed = true;
+            offset = apt.getOffset();
+        } else {
+            APT  sibling = apt.getNextSibling();
+            if (sibling != null && sibling.getType() == APT.Type.ELSE) {
+                proceed = true;
+                offset = sibling.getOffset();
             }
         }
+        if (proceed) {
+            assert offset >= 0;
+            addOffset(offset);
+        }
+    }
+
+    private boolean addOffset(int offset) {
+        if (size == 0) {
+            offsets[0] = offset;
+            size = 1;
+        } else {
+            int last = size - 1;
+            if (offsets[last] < offset) {
+                insert(last + 1, offset);
+            } else {
+                for (int i = last - 1; i > 0; i--) {
+                    if (offset > offsets[i]) {
+                        insert(i + 1, offset);
+                        return true;
+                    }
+                }
+                insert(0, offset);
+            }
+        }
+        return false;
     }
 
     private void insert(int index, int value) {
@@ -145,40 +170,97 @@ public class FilePreprocessorConditionState
         size++;
     }
 
-    public int compareTo(Object o) {
-        int result = compareToImpl(o);
-        if (TRACE) {
-            traceComparison(o, result);
+    public final boolean isBetter(FilePreprocessorConditionState other) {
+        int result = compareToImpl(other);
+        if (TraceFlags.TRACE_PC_STATE) {
+            traceComparison(other, result);
         }
-        return result;
+        return result > 0;
+    }
+    
+    public final boolean isEqual(FilePreprocessorConditionState other) {
+        if (this == other) {
+            return true;
+        }
+        // we assume that the array is ordered
+        if (this.size == other.size) {
+            for (int i = 0; i < size; i++) {
+                if (this.offsets[i] != other.offsets[i]) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    private void traceComparison(Object o, int result) {
-        if (o != null) {
-            if (o instanceof FilePreprocessorConditionState) {
-                CharSequence otherFileName = ((FilePreprocessorConditionState) o).fileName;
-                if (!fileName.equals(otherFileName)) {
-                    System.err.printf("ERROR: Attempt to compare different files: %s and %s\n", fileName, otherFileName);
-                    return;
-                }
-            } else {
-                System.err.printf("ERROR: %s is not instanceof %s\n", o.getClass().getName(), getClass().getName());
-                return;
+    public final boolean isSubset(Collection<FilePreprocessorConditionState> others) {
+        SortedSet<Integer> sorted = new TreeSet<Integer>();
+        for (FilePreprocessorConditionState state : others) {
+            if (state == null) {
+                return false;
+            }
+            for (int i = 0; i < state.size; i++) {
+                sorted.add(state.offsets[i]);
             }
         }
-
-        System.err.printf("compareTo (%s): %s %s %s \n", fileName, toStringBrief(this),
-                (result < 0) ? "<" : ((result > 0) ? ">" : "="), // NOI18N
-                toStringBrief((FilePreprocessorConditionState) o)); //NOI18N
+        int[] arr = new int[sorted.size()];
+        int pos = 0;
+        for (int offset : sorted) {
+            arr[pos++] = offset;
+        }
+        return isSubset(arr, arr.length);
     }
 
-    private int compareToImpl(Object o) {
-        if (o == this) {
+    public final boolean isSubset(FilePreprocessorConditionState other) {
+        return (other == null) ? false : isSubset(other.offsets, other.size);
+    }
+
+    public final boolean isSubset(int[] otherOffsets, int otherSize) {
+        // we assume that the array is ordered
+        if (this.size <= otherSize) {
+            int thisPos = 0;
+            int otherPos = 0;
+            outer:
+            while (thisPos < size && otherPos < otherSize) {
+                // on each iteration we assume
+                // that all on the left of the current position
+                // this is a subset of other
+                if (this.offsets[thisPos] == otherOffsets[otherPos]) {
+                    thisPos++;
+                    otherPos++;
+                    continue;
+                } else if (this.offsets[thisPos] < otherOffsets[otherPos]) {
+                    return false;
+                } else { // this.offsets[thisPos] > other.offsets[thisPos]
+                    while (++otherPos < otherSize) {
+                        if (this.offsets[thisPos] == otherOffsets[otherPos]) {
+                            thisPos++;
+                            otherPos++;
+                            continue outer;
+                        }
+                    }
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void traceComparison(FilePreprocessorConditionState other, int result) {
+        System.err.printf("compareTo (%s): %s %s %s \n", fileName, toStringBrief(this),
+                (result < 0) ? "<" : ((result > 0) ? ">" : "="), // NOI18N
+                toStringBrief(other)); //NOI18N
+    }
+
+    private int compareToImpl(FilePreprocessorConditionState other) {
+        if (other == this) {
             return 0;
-        } else if (o == null) {
+        } else if (other == null) {
             return (size > 0) ? 1 : 0; // null and empty are the same
-        } else if (o instanceof FilePreprocessorConditionState) {
-            FilePreprocessorConditionState other = (FilePreprocessorConditionState) o;
+        } else {
             if (this.size != other.size) {
                 // longer is the array, more branches were active
                 return this.size - other.size;
@@ -192,27 +274,25 @@ public class FilePreprocessorConditionState
                 }
                 return 0;
             }
-        } else {
-            return 1;
         }
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(); // "FilePreprocessorConditionState "
-        if (fileName != null) {
-            sb.append(fileName);
-        }
-        sb.append(toStringBrief(this));
-        sb.append(" size=" + size); //NOI18N
-        return sb.toString();
+//        StringBuilder sb = new StringBuilder(); // "FilePreprocessorConditionState "
+//        sb.append(fileName);
+//        sb.append(' ');
+//        sb.append(toStringBrief(this));
+//        sb.append(" size=" + size); //NOI18N
+//        return sb.toString();
+        return toStringBrief(this);
     }
 
     private static String toStringBrief(FilePreprocessorConditionState state) {
         if (state == null) {
             return "null"; // NOI18N
         }
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(/*state.isCpp ? "c++ " : "c   "*/);
         sb.append("["); // NOI18N
         for (int i = 0; i < state.size; i++) {
             if (i > 0) {

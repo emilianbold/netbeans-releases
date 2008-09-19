@@ -79,7 +79,7 @@ public class CsmOffsetUtilities {
                     CsmType type = (CsmType)obj;
                     // we do not accept type if offset is after '*', '&' or '[]'
                     return !type.isPointer() && !type.isReference() && (type.getArrayDepth() == 0);
-                } else if (CsmKindUtilities.isScope(obj)) {
+                } else if (endsWithBrace(offs)) {
                     // if we right after closed "}" it means we are out of scope object
                     return false;
                 }
@@ -89,7 +89,18 @@ public class CsmOffsetUtilities {
             return false;
         }
     }
-    
+
+    private static boolean endsWithBrace(CsmOffsetable obj) {
+        if (CsmKindUtilities.isScope(obj)) {
+            int endOffset = obj.getEndOffset();
+            CharSequence lastChar = obj.getContainingFile().getText(endOffset - 1, endOffset);
+            if (0 < lastChar.length() && lastChar.charAt(0) == '}') { //NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean isBeforeObject(CsmObject obj, int offset) {
         if (!CsmKindUtilities.isOffsetable(obj)) {
             return false;
@@ -117,7 +128,13 @@ public class CsmOffsetUtilities {
     // list is ordered by offsettable elements
     public static <T extends CsmObject> T findObject(Collection<T> list, CsmContext context, int offset) {
         assert (list != null) : "expect not null list";
-        for (Iterator<T> it = list.iterator(); it.hasNext();) {
+        return findObject(list.iterator(), context, offset);
+    }
+
+    // list is ordered by offsettable elements
+    public static <T extends CsmObject> T findObject(Iterator<T> it, CsmContext context, int offset) {
+        assert (it != null) : "expect not null list";
+        while (it.hasNext()) {
             T obj = it.next();
             assert (obj != null) : "can't be null declaration";
             if (CsmOffsetUtilities.isInObject((CsmObject)obj, offset)) {

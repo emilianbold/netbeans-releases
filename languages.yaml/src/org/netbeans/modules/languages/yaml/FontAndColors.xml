@@ -47,9 +47,9 @@ made subject to such option by the copyright holder.
     <fontcolor default="keyword" name="mod-method">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="ruby-delimiter" foreColor="black" bgColor="ffD8EED2" default="default">
+    <fontcolor name="ruby-delimiter" foreColor="black" bgColor="ffe3f2e1" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="ruby" bgColor="ffD8EED2" default="default"/>
-    <fontcolor name="RUBYCOMMENT" bgColor="ffD8EED2" default="comment"/>
+    <fontcolor name="ruby" bgColor="ffe3f2e1" default="default"/>
+    <fontcolor name="RUBYCOMMENT" bgColor="ffe3f2e1" default="comment"/>
 </fontscolors>

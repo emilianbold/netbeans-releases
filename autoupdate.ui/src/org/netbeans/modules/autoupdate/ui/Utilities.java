@@ -53,7 +53,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -64,9 +63,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -252,15 +248,6 @@ public class Utilities {
         }
     }
     
-    public static List<UpdateElement> getRequiredElements(UpdateUnit unit, UpdateElement el, OperationContainer<OperationSupport> container) {
-        List<UpdateElement> reqs = Collections.emptyList();
-        if (container.canBeAdded(unit, el)) {
-            OperationInfo<OperationSupport> info = container.add (unit,el);
-            reqs = new LinkedList<UpdateElement> (info.getRequiredElements());
-        }
-        return reqs;
-    }        
-        
     public static String getDownloadSizeAsString (int size) {
         int gbSize = size / (1024 * 1024 * 1024);
         if (gbSize > 0) {

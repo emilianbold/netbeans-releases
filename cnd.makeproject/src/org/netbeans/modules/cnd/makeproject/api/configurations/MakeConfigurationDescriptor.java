@@ -60,8 +60,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
@@ -73,6 +72,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
@@ -104,23 +104,21 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private boolean modified = false;
     private Folder externalFileItems = null;
     private Folder rootFolder = null;
-    private HashMap projectItems = null;
+    private HashMap<String,Item> projectItems = null;
     private List<String> sourceRoots = null;
     private Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private NativeProject nativeProject = null;
     public static String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
-    private String sourceEncoding = null;
 
     public MakeConfigurationDescriptor(String baseDir) {
         super();
         this.baseDir = baseDir;
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
-        projectItems = new HashMap();
+        projectItems = new HashMap<String,Item>();
         sourceRoots = new ArrayList<String>();
         setModified(true);
         ToolsPanel.addCompilerSetModifiedListener(this);
-        sourceEncoding = FileEncodingQuery.getDefaultEncoding().name();
     }
 
     /*
@@ -252,11 +250,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.baseDir = baseDir;
     }
 
-    public HashMap getProjectItemsMap() {
+    public HashMap<String,Item> getProjectItemsMap() {
         return projectItems;
     }
 
-    public void setProjectItemsMap(HashMap projectItems) {
+    public void setProjectItemsMap(HashMap<String,Item> projectItems) {
         this.projectItems = projectItems;
     }
 
@@ -312,15 +310,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     // Project Files
     public Item[] getProjectItems() {
-        Collection collection = projectItems.values();
-        return (Item[]) collection.toArray(new Item[collection.size()]);
+        Collection<Item> collection = projectItems.values();
+        return collection.toArray(new Item[collection.size()]);
     }
 
     public Item findItemByFile(File file) {
-        Collection coll = projectItems.values();
-        Iterator it = coll.iterator();
+        Collection<Item> coll = projectItems.values();
+        Iterator<Item> it = coll.iterator();
         while (it.hasNext()) {
-            Item item = (Item) it.next();
+            Item item = it.next();
             File itemFile = item.getCanonicalFile();
             if (itemFile == file || itemFile.getPath().equals(file.getPath())) {
                 return item;
@@ -332,7 +330,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public Item findProjectItemByPath(String path) {
         // Try first as-is
         path = FilePathAdaptor.normalize(path);
-        Item item = (Item) projectItems.get(path);
+        Item item = projectItems.get(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
@@ -342,7 +340,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
             }
             newPath = FilePathAdaptor.normalize(newPath);
-            item = (Item) projectItems.get(newPath);
+            item = projectItems.get(newPath);
         }
         return item;
     }
@@ -358,7 +356,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             } else {
                 newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
             }
-            item = (Item) projectItems.get(FilePathAdaptor.normalize(newPath));
+            item = projectItems.get(FilePathAdaptor.normalize(newPath));
         }
         return item;
     }
@@ -410,7 +408,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceRootsRaw());
-        setSourceEncoding(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceEncoding());
     }
 
     public void assign(ConfigurationDescriptor clonedConfigurationDescriptor) {
@@ -433,7 +430,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRootsRaw());
-        setSourceEncoding(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceEncoding());
     }
 
     public ConfigurationDescriptor cloneProjectDescriptor() {
@@ -445,7 +441,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
         clone.setSourceRoots(getSourceRootsRaw());
-        clone.setSourceEncoding(getSourceEncoding());
         return clone;
     }
 
@@ -486,14 +481,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         RequestProcessor.Task task = RequestProcessor.getDefault().post(saveRunnable);
         task.waitFinished();
         return saveRunnable.ret;
-    }
-
-    public String getSourceEncoding() {
-        return sourceEncoding;
-    }
-
-    public void setSourceEncoding(String sourceEncoding) {
-        this.sourceEncoding = sourceEncoding;
     }
 
     /**
@@ -594,7 +581,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             Element data = helper.getPrimaryConfigurationData(true);
             Document doc = data.getOwnerDocument();
 
-            // Remove old node
+            // Remove old project dependency node
             NodeList nodeList = data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS);
             if (nodeList != null && nodeList.getLength() > 0) {
                 for (int i = 0; i < nodeList.getLength(); i++) {
@@ -602,7 +589,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     data.removeChild(node);
                 }
             }
-            // Create new node
+            // Create new project dependency node
             Element element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.MAKE_DEP_PROJECTS);
             Set<String> subprojectLocations = getSubprojectLocations();
             for (String loc : subprojectLocations) {
@@ -613,6 +600,21 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
             data.appendChild(element);
             helper.putPrimaryConfigurationData(data, true);
+            // Create source encoding node
+            nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
+            if (nodeList != null && nodeList.getLength() > 0) {
+                // Node already there
+                Node node = nodeList.item(0);
+                node.setTextContent(((MakeProject)getProject()).getSourceEncoding());
+            }
+            else {
+                // Create node
+                Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ENCODING_TAG); // NOI18N
+                nativeProjectType.appendChild(doc.createTextNode(((MakeProject)getProject()).getSourceEncoding()));
+                data.appendChild(nativeProjectType);
+            }
+            helper.putPrimaryConfigurationData(data, true);
+            
             ProjectManager.getDefault().saveProject(project);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -970,6 +972,20 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 }
             }
         }
+    }
+    
+    public boolean okToChange() {
+        int previousVersion = getVersion();
+        int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
+        if (previousVersion < currentVersion) {                                           
+            String txt = getString("UPGRADE_TXT");
+            NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
+            if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                return false;
+            }
+            setVersion(currentVersion);
+        }
+        return true;
     }
 
     /** Look up i18n strings here */

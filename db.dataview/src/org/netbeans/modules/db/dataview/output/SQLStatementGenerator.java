@@ -151,13 +151,18 @@ class SQLStatementGenerator {
     String generateCreateStatement(DBTable table) throws DBException, Exception{
 
         Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
+        if(conn == null) {
+            String msg = NbBundle.getMessage(SQLStatementGenerator.class,"MSG_connection_failure", dataView.getDatabaseConnection());
+            throw new DBException(msg);
+        }
+
         DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
         boolean isdb2 = dbMeta.getDBType() == DBMetaDataFactory.DB2? true : false;
         Map<Integer, String> typeInfo = dbMeta.buildDBSpecificDatatypeMap();
 
         StringBuffer sql = new StringBuffer();
         List<DBColumn> columns = table.getColumnList();
-        sql.append("CREATE TABLE ").append(table.getQualifiedName()).append("(");
+        sql.append("CREATE TABLE ").append(table.getQualifiedName()).append(" (");
         int count = 0;
         for (DBColumn col : columns) {
             if (count++ > 0) {
@@ -242,23 +247,27 @@ class SQLStatementGenerator {
 
     private void generateWhereCondition(StringBuilder result, StringBuilder raw, List<Integer> types, List<Object> values, int rowNum, TableModel model) {
         DBPrimaryKey key = tblMeta.geTable(0).getPrimaryKey();
+        boolean keySelected = false;
         boolean and = false;
 
         if (key != null) {
             for (String keyName : key.getColumnNames()) {
-                and = addSeparator(and, result, raw, " AND "); // NOI18N
                 for (int i = 0; i < model.getColumnCount(); i++) {
                     String columnName = tblMeta.getColumnName(i);
                     if (columnName.equals(keyName)) {
                         Object val = model.getValueAt(rowNum, i);
                         if (val != null) {
+                            keySelected = true;
+                            and = addSeparator(and, result, raw, " AND "); // NOI18N
                             generateNameValue(i, result, raw, val, values, types);
                             break;
                         }
                     }
                 }
             }
-        } else {
+        }
+
+        if(key == null || !keySelected) {
             for (int i = 0; i < model.getColumnCount(); i++) {
                 Object val = model.getValueAt(rowNum, i);
                 and = addSeparator(and, result, raw, " AND "); // NOI18N

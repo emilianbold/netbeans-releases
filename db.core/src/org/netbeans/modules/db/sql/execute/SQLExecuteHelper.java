@@ -136,26 +136,23 @@ public final class SQLExecuteHelper {
     }
     
     private static List<StatementInfo> getStatements(String script, int startOffset, int endOffset) {
-        List<StatementInfo> allStatements = split(script);
-        if (startOffset == 0 && endOffset == script.length()) {
-            return allStatements;
-        }
-        List<StatementInfo> statements = new ArrayList<StatementInfo>();
-        for (Iterator i = allStatements.iterator(); i.hasNext();) {
-            StatementInfo stmt = (StatementInfo)i.next();
-            if (startOffset == endOffset) {
-                // only find the statement at offset startOffset
+        if ((startOffset == 0 && endOffset == script.length()) || (startOffset == endOffset)) {
+            // Either the whole script, or the statement at offset startOffset.
+            List<StatementInfo> allStatements = split(script);
+            if (startOffset == 0 && endOffset == script.length()) {
+                return allStatements;
+            }
+            // Just the statement at offset startOffset.
+            for (StatementInfo stmt : allStatements) {
                 if (stmt.getRawStartOffset() <= startOffset && stmt.getRawEndOffset() >= endOffset) {
-                    statements.add(stmt);
-                }
-            } else {
-                // find the statements between startOffset and endOffset
-                if (stmt.getStartOffset() >= startOffset && stmt.getEndOffset() <= endOffset) {
-                    statements.add(stmt);
+                    return Collections.singletonList(stmt);
                 }
             }
+            return Collections.emptyList();
+        } else {
+            // Just execute the selected subscript.
+            return split(script.substring(startOffset, endOffset));
         }
-        return Collections.unmodifiableList(statements);
     }
         
     public static List<StatementInfo> split(String script) {

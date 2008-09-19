@@ -112,6 +112,47 @@ public interface InplaceEditorProvider<C extends JComponent> {
     }
 
     /**
+     * This is an interface that extends EditorController for ability to query for invocation type.
+     * @since 2.16
+     */
+    interface TypedEditorController extends EditorController {
+
+        /**
+         * Returns a type of editor invocation
+         * @return invocation type
+         * @since 2.16
+         */
+        EditorInvocationType getEditorInvocationType ();
+
+    }
+
+    /**
+     * Represents a type of in-place editor action invocation.
+     * @since 2.16
+     */
+    enum EditorInvocationType {
+
+        /**
+         * Invoked by mouse.
+         * @since 2.16
+         */
+        MOUSE,
+
+        /**
+         * Invoked by keyboard.
+         * @since 2.16
+         */
+        KEY,
+
+        /**
+         * Invoked by <code>ActionFactory.getInplaceEditorController (inplaceEditorAction).openEditor(widget)</code> method.
+         * @since 2.16
+         */
+        CODE,
+
+    }
+
+    /**
      * Called to notify about opening an in-place editor.
      * @param controller the editor controller
      * @param widget the widget where the editor is opened

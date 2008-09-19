@@ -59,6 +59,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import javax.accessibility.AccessibleRole;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -91,6 +92,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget.SwitchableViewManger;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerNode;
 import org.netbeans.modules.uml.drawingarea.widgets.NameFontHandler;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.Exceptions;
@@ -148,6 +150,7 @@ public abstract class UMLNodeWidget extends Widget
     public static final String  GRANDPARENTLOCATION = "GRANDPARENTLOCATION"; // needed for combined fragments
     public static final String SIZE = "SIZE";
     public static final String WIDGET_INDEX = "WIDGET_INDEX";
+    public static final String COLLAPSED = "COLLAPSED";
 
     
     public UMLNodeWidget(Scene scene)
@@ -186,7 +189,8 @@ public abstract class UMLNodeWidget extends Widget
         if(childLayer.getFont()!=null)setFont(childLayer.getFont());//notify/set to handle possible changes, it's not possible to override or easy add handler to chld layer, so pass to main node layer
         
         addToLookup(new ObjectSelectable());
-        
+
+        setAccessibleContext(new UMLNodeWidgetAccessibleContext(this));
     }
     
     public ResizeStrategyProvider getResizeStrategyProvider()
@@ -437,6 +441,20 @@ public abstract class UMLNodeWidget extends Widget
         }
         HashMap map = nodeWriter.getProperties();
         map.put(WIDGET_INDEX, index);
+        
+        //save the "collapsed" state of compartments
+        Collection<? extends CollapsibleWidgetManager> mgrList = getLookup().lookupAll(CollapsibleWidgetManager.class);
+        CollapsibleWidgetManager[] collapWidetMgrs = new CollapsibleWidgetManager[mgrList.size()];
+        mgrList.toArray(collapWidetMgrs); 
+        for (CollapsibleWidgetManager mgr : collapWidetMgrs)
+        {
+            if (mgr.isCompartmentCollapsed())
+            {
+                String name = mgr.getCollapsibleCompartmentName();
+                map.put(name, COLLAPSED);
+            }            
+        }
+        
         nodeWriter.setProperties(map);
         
         nodeWriter.beginGraphNodeWithModelBridge();
@@ -600,6 +618,26 @@ public abstract class UMLNodeWidget extends Widget
                 }
             }
         }
+        //now process collapsed compartments
+        if (props.containsValue(COLLAPSED)) 
+        {
+            Collection<? extends CollapsibleWidgetManager> mgrList = this.getLookup().lookupAll(CollapsibleWidgetManager.class);
+            for (Enumeration<String> e = props.keys(); e.hasMoreElements();) 
+            {
+                String key = e.nextElement();
+                if (props.get(key).equalsIgnoreCase(COLLAPSED)) 
+                {                    
+                    for (CollapsibleWidgetManager mgr : mgrList)
+                    {
+                        if (mgr != null && (mgr.getCollapsibleCompartmentName().equalsIgnoreCase(key)))
+                        {
+                            mgr.collapseWidget(key);
+                            break;
+                        }
+                    }
+                }
+            }
+        }        
     }
     
     private Color parseColor(String color)
@@ -780,6 +818,29 @@ public abstract class UMLNodeWidget extends Widget
         ((UMLNodeWidget) target).setNodeForeground(getNodeForeground());
         ((UMLNodeWidget) target).setNodeFont(getNodeFont());
         
+        
+        Collection<? extends CollapsibleWidgetManager> mgrList = getLookup().lookupAll(CollapsibleWidgetManager.class);
+        CollapsibleWidgetManager[] originalMgrs = new CollapsibleWidgetManager[mgrList.size()];
+        mgrList.toArray(originalMgrs); 
+        
+        mgrList = target.getLookup().lookupAll(CollapsibleWidgetManager.class);
+        CollapsibleWidgetManager[] clonedMgrs = new CollapsibleWidgetManager[mgrList.size()];
+        mgrList.toArray(clonedMgrs); 
+        
+        for (CollapsibleWidgetManager mgr : originalMgrs)
+        {
+            String name = mgr.getCollapsibleCompartmentName();
+            for (CollapsibleWidgetManager cloned : clonedMgrs)
+            {
+                if (name.equals(cloned.getCollapsibleCompartmentName()))
+                {
+                    if (mgr.isCompartmentCollapsed())
+                        cloned.collapseWidget(UMLNodeWidget.COLLAPSE_ALL);
+                    break;
+                }
+            }
+        }
+        
         if (setBounds)
         {
             Insets insets = getBorder().getInsets();
@@ -920,15 +981,28 @@ public abstract class UMLNodeWidget extends Widget
     
     public void remove()
     {
+        //Before we remove, we need see if this widget is contained in a container widget
+        UMLNodeWidget parent = PersistenceUtil.getParentUMLNodeWidget(this);
+
         // remove all node object that are associated with child widget 
-        for (Object o : Util.getAllNodeChildren(this))
+        for (Object o : Util.getAllNodeChildren(this)) 
         {
-            if (scene.isNode(o))
+            if (scene.isNode(o)) 
+            {
                 scene.removeNodeWithEdges(o);
+            }
+        }
+        //notify the container
+        if (parent != null && parent instanceof ContainerNode) {
+            parent.notifyElementDeleted();
         }
     }
     
-   
+    protected void notifyElementDeleted()
+    {
+        //Interested subclasses need to implement the logic
+    }
+    
     protected String getResourcePath()
     {
         return getWidgetID() + "." + DEFAULT;
@@ -1134,4 +1208,24 @@ public abstract class UMLNodeWidget extends Widget
         }
         return null;
     }
+
+    ///////////// 
+    // Accessible
+    /////////////
+
+
+    public class UMLNodeWidgetAccessibleContext extends UMLWidgetAccessibleContext
+    {
+        public UMLNodeWidgetAccessibleContext(Widget w) 
+        {
+            super(w);
+        }
+
+        public AccessibleRole getAccessibleRole () {
+            return AccessibleRole.PANEL;
+        }
+        
+    }
+
+
 }

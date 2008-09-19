@@ -47,6 +47,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -92,7 +93,7 @@ import org.openide.util.TaskListener;
  *
  * @author Tim Boudreau
  */
-public class HintsUI implements MouseListener, KeyListener, PropertyChangeListener, AWTEventListener  {
+public class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener  {
     
     private static HintsUI INSTANCE;
     private static final String POPUP_NAME = "hintsPopup"; // NOI18N
@@ -185,6 +186,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
             listPopup.hide();
             if (hintListComponent != null) {
                 hintListComponent.getView().removeMouseListener(this);
+                hintListComponent.getView().removeMouseMotionListener(this);
             }
             if (errorTooltip != null) {
                 errorTooltip.removeMouseListener(this);
@@ -235,6 +237,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
                     new ScrollCompletionPane(comp, hints, null, null, maxSize);
 
             hintListComponent.getView().addMouseListener (this);
+            hintListComponent.getView().addMouseMotionListener(this);
             hintListComponent.setName(POPUP_NAME);
             
             assert listPopup == null;
@@ -317,6 +320,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
             }
 
             hintListComponent.getView().addMouseListener (this);
+            hintListComponent.getView().addMouseMotionListener(this);
             hintListComponent.setName(POPUP_NAME);
             assert listPopup == null;
             listPopup = getPopupFactory().getPopup(
@@ -384,6 +388,14 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     }
 
     public void mouseReleased(java.awt.event.MouseEvent e) {
+    }
+
+    public void mouseDragged(MouseEvent e) {
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        ListCompletionView view = hintListComponent.getView();
+        view.setSelectedIndex(view.locationToIndex(e.getPoint()));
     }
     
     public boolean isActive() {
@@ -687,5 +699,5 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
         
         return input;
     }
-    
+
 }

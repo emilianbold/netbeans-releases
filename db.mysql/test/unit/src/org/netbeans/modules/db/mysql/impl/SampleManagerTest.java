@@ -119,6 +119,39 @@ public class SampleManagerTest extends TestBase {
         assertTrue(samples.contains(BAD_SAMPLE_NAME));
         assertFalse(samples.contains("foo"));
     }
+
+    @Test
+    public void testAddSampleProvider() throws Exception {
+        final String sampleName = "testAddSample";
+        assertFalse(SampleManager.isSample(sampleName));
+        assertFalse(SampleManager.getSampleNames().contains(sampleName));
+
+        SampleProvider testProvider = new SampleProvider() {
+
+            public void create(String sampleName, DatabaseConnection conn) throws DatabaseException {
+                return;
+            }
+
+            public boolean supportsSample(String name) {
+                if (name.equals(sampleName)) {
+                    return true;
+                }
+                return false;
+            }
+
+            public List<String> getSampleNames() {
+                List<String> samples = new ArrayList<String>();
+                samples.add(sampleName);
+                return samples;
+            }
+        };
+
+        addSampleProvider("testProvider", testProvider);
+
+        assertTrue(SampleManager.getSampleNames().contains(sampleName));
+        assertTrue(SampleManager.isSample(sampleName));
+    }
+
     private void setUpProviders() throws Exception {
         createProviderFiles(getSampleProviderFolder());
         providers = SampleProviderHelper.getProviders();
@@ -126,15 +159,17 @@ public class SampleManagerTest extends TestBase {
     }
 
     private void createProviderFiles(FileObject folder) throws Exception {
-       FileObject fo = FileUtil.createData(folder, "TestSampleProvider.instance");
-       fo.setAttribute("instanceCreate", new TestSampleProvider());
-       fo.setAttribute("instanceOf", SampleProvider.class.getName());
-
-       fo = FileUtil.createData(folder, "TestSampleProvider2.instance");
-       fo.setAttribute("instanceCreate", new TestSampleProvider2());
-       fo.setAttribute("instanceOf", SampleProvider.class.getName());
+        addSampleProvider("TestSampleProvider", new TestSampleProvider());
+        addSampleProvider("TestSampleProvider2", new TestSampleProvider2());
     }
 
+    private void addSampleProvider(String providerName, SampleProvider provider) throws Exception {
+       FileObject folder = getSampleProviderFolder();
+       FileObject fo = FileUtil.createData(folder, providerName + ".instance");
+       fo.setAttribute("instanceCreate", provider);
+       fo.setAttribute("instanceOf", SampleProvider.class.getName());
+
+    }
     private FileObject getSampleProviderFolder() throws Exception {
                FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
        return FileUtil.createFolder(root, SampleProvider.SAMPLE_PROVIDER_PATH);

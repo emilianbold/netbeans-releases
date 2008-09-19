@@ -77,4 +77,10 @@ public interface SQDDiagramEngineExtension {
      */
     
     public void layout(boolean save);
+    
+    /**
+     * set mode not to use trackbar in next action (do not add car)
+     * need to be called and reset after each action to avoid possible bad states.
+     */
+    public void doNotUseTrackbar();
 }

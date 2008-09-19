@@ -92,11 +92,15 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
                 this.serviceName = serviceNames[0];
             }
         }
+        if (registerNode != null) {
+            setValue("wsdl-url",registerNode.getValue("wsdl-url")); //NOI18N
+        }
         
         WebServicesRegistryView registryView = (WebServicesRegistryView) Lookup.getDefault().lookup(WebServicesRegistryView.class);
         registryView.addPropertyChangeListener(this);
     }
     
+    @Override
     public void destroy() throws java.io.IOException {
         super.destroy();
         
@@ -121,14 +125,17 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
         registryView.removePropertyChangeListener(this);
     }
     
+    @Override
     public String getName() {
         return (registerNode != null) ? registerNode.getName() : super.getName();
     }
     
+    @Override
     public String getDisplayName() {
         return (registerNode != null) ? registerNode.getDisplayName() : super.getDisplayName();
     }
     
+    @Override
     public String getShortDescription() {
         // !PW FIXME what should the short description of this node really be?
         // If the service is registered, it's a formatted string with the attributes
@@ -147,6 +154,7 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
         return null;
     }
     
+    @Override
     public Node.PropertySet[] getPropertySets() {
         // !PW FIXME should do minimal property set for WSDL node (not the WSDL properties though.)
         // should also massage properties retrieved from registry, as some of them may
@@ -181,6 +189,7 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
         }
     }
     
+    @Override
     public Image getIcon(int type) {
         // !PW FIXME me need static source for Web Service Icon
         Image wsdlIcon = super.getIcon(type);
@@ -189,6 +198,7 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
         return registerNode != null ? registerNode.getIcon(type) : wsdlIcon;
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         // !PW FIXME me need static source for Web Service Opened Icon
         Image wsdlOpenedIcon = super.getOpenedIcon(type);
@@ -197,6 +207,7 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
         return registerNode != null ? registerNode.getOpenedIcon(type) : wsdlOpenedIcon;
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         FileObject fo = dobj.getPrimaryFile();
         WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(fo);
@@ -228,6 +239,7 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
         };
     }
     
+    @Override
     public Node.Cookie getCookie(Class type) {
         if (type == ConfigureHandlerCookie.class) {
             FileObject fo = dobj.getPrimaryFile();
@@ -261,6 +273,7 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
                 // change these comparisons also.
                 if(serviceName.equalsIgnoreCase(addedServiceNode.getName())) {
                     registerNode = addedServiceNode;
+                    setValue("wsdl-url",registerNode.getValue("wsdl-url")); //NOI18N
                     setChildren(new FilterNode.Children(registerNode));
                     fireIconChange();
                 }

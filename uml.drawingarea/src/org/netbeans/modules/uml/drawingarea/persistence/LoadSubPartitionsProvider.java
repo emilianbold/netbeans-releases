@@ -90,20 +90,21 @@ public class LoadSubPartitionsProvider implements ActionProvider{
                 for(IPresentationElement subPE:subEl.getPresentationElements())
                 {
                     Widget tmp=scene.findWidget(subPE);
-                    for(Widget par=tmp.getParentWidget();par!=null;par=par.getParentWidget())
-                    {
-                        if(par==partition)
+                    if(tmp!=null)//may be on another diagram
+                        for(Widget par=tmp.getParentWidget();par!=null;par=par.getParentWidget())
                         {
-                            subW=tmp;
-                            break;
+                            if(par==partition)
+                            {
+                                subW=tmp;
+                                break;
+                            }
                         }
-                    }
                     if(subW!=null)break;
                 }
                 if(subW!=null)
                 {
                     Dimension size=subW.getBounds().getSize();
-                    if(orientation==orientation.HORIZONTAL)
+                    if(orientation==orientation.VERTICAL)
                     {
                         totalInitialWidth+=size.height;
                         int bottom=Integer.parseInt(offsets.get(i));
@@ -114,7 +115,7 @@ public class LoadSubPartitionsProvider implements ActionProvider{
                         }
                         size.height=up-bottom;
                     }
-                    else///vertical
+                    else///
                     {
                         totalInitialWidth+=size.width;
                         int bottom=Integer.parseInt(offsets.get(i));

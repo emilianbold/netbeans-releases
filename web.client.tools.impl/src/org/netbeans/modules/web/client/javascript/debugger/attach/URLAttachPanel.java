@@ -45,26 +45,35 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.attach;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
 import java.util.prefs.Preferences;
+import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.client.javascript.debugger.api.NbJSFileObjectLocation;
+import org.netbeans.modules.web.client.tools.api.JSLocation;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.NbJSLocation;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.client.tools.impl.DebugConstants;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -75,6 +84,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
     private static Preferences preferences = NbPreferences.forModule(URLAttachPanel.class);
     private static final String DEBUG_URL = "debugURL";
     private static final String BROWSER = "browser";
+    private static final Object[] MAPPERS = { new FileToFileUriMapper(), new FileUriToFileMapper() };
     
     private final boolean ieBrowserSupported;
     private final boolean ffBrowserSupported;
@@ -139,6 +149,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
         firefoxRadioButton = new javax.swing.JRadioButton();
         internetExplorerRadioButton = new javax.swing.JRadioButton();
         messageTextField = new javax.swing.JTextField();
+        browseButton = new javax.swing.JButton();
 
         debugURLLabel.setLabelFor(debugURLTextField);
         org.openide.awt.Mnemonics.setLocalizedText(debugURLLabel, org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.debugURLLabel.text")); // NOI18N
@@ -155,6 +166,13 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
         messageTextField.setEditable(false);
         messageTextField.setBorder(null);
 
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.browseButton.text")); // NOI18N
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -162,14 +180,17 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                    .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(debugURLLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(internetExplorerRadioButton)
                             .add(firefoxRadioButton)
-                            .add(debugURLTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(debugURLTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(browseButton)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -178,6 +199,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(debugURLLabel)
+                    .add(browseButton)
                     .add(debugURLTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(firefoxRadioButton)
@@ -191,7 +213,42 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
         debugURLTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.debugURLTextField.AccessibleContext.accessibleName")); // NOI18N
         debugURLTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.debugURLTextField.AccessibleContext.accessibleDescription")); // NOI18N
         firefoxRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.firefoxRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.jButton1.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+    JFileChooser chooser = new JFileChooser();
+    FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    
+    String currentFilePath = null;
+    try {
+        String text = debugURLTextField.getText().trim();
+        if (text.length() > 0) {
+            URI uri = new URI(text);
+            File f = new File(uri);
+            currentFilePath = f.getAbsoluteFile().getAbsolutePath();
+        }
+    } catch (IllegalArgumentException ex) {
+        currentFilePath = null;
+    } catch (URISyntaxException ex) {
+        currentFilePath = null;
+    }
+    
+    
+    File fileName = currentFilePath == null ? null : new File(currentFilePath);
+    if (fileName != null) {
+        chooser.setSelectedFile(fileName);
+    }
+    
+    int result = chooser.showOpenDialog(this);
+    File f = chooser.getSelectedFile();
+    if (result == JFileChooser.APPROVE_OPTION && f != null) {
+        if (f != null) {
+            debugURLTextField.setText(f.toURI().toASCIIString());
+        }
+    }
+}//GEN-LAST:event_browseButtonActionPerformed
 
     @Override
     public boolean isValid() {
@@ -225,7 +282,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
                             return false;
                         }
                     } else {
-                        WebClientToolsSessionStarterService.startSession(uri, htmlBrowserFactory, Lookup.EMPTY);
+                        WebClientToolsSessionStarterService.startSession(uri, htmlBrowserFactory, Lookups.fixed(MAPPERS));
                     }
                 } catch (WebClientToolsSessionException ex) {
                     StatusDisplayer.getDefault().setStatusText(ex.getMessage());
@@ -243,6 +300,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseButton;
     private javax.swing.ButtonGroup browserButtonGroup;
     private javax.swing.JLabel debugURLLabel;
     private javax.swing.JTextField debugURLTextField;
@@ -251,14 +309,65 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
     private javax.swing.JTextField messageTextField;
     // End of variables declaration//GEN-END:variables
 
-    private static HtmlBrowser.Factory getHtmlBrowserFactory() {
-        Collection<? extends Factory> htmlBrowserFactories = Lookup.getDefault().lookupAll(HtmlBrowser.Factory.class);
-        for (HtmlBrowser.Factory factory : htmlBrowserFactories) {
-            // Hardcode Firfox
-            if (factory.getClass().getName().equals("org.netbeans.modules.extbrowser.FirefoxBrowser")) { // NOI18N
-                return factory;
+    private static final class FileUriToFileMapper implements JSToNbJSLocationMapper {
+        
+        public NbJSLocation getNbJSLocation(JSLocation jsLocation, Lookup lookup) {
+            if (jsLocation instanceof JSURILocation) {
+                JSURILocation jsURILocation = (JSURILocation) jsLocation;
+                URI uri = jsURILocation.getURI();
+                try {
+                    File f = new File(uri);
+                    if (f.exists() && f.isFile()) {
+                        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+                        if (hasSupportedMIMEType(fo)) {
+                            return new NbJSFileObjectLocation(fo, jsURILocation.getLineNumber(), jsURILocation.getColumnNumber());
+                        }
+                    }
+                } catch (IllegalArgumentException ex) {
+                    return null;
+                }
+                
+            }
+            return null;
+        }
+        
+    }
+    
+    private static final class FileToFileUriMapper implements NbJSToJSLocationMapper {
+
+        public JSLocation getJSLocation(NbJSLocation nbJSLocation, Lookup lookup) {
+            if (nbJSLocation instanceof NbJSFileObjectLocation) {
+                NbJSFileObjectLocation nbJSFileObjectLocation = (NbJSFileObjectLocation) nbJSLocation;
+                FileObject fo = nbJSFileObjectLocation.getFileObject();
+                if (hasSupportedMIMEType(fo)) {
+                    File file = FileUtil.toFile(fo);
+                    if (file != null) {
+                        URI uri = file.toURI();
+                        return new JSURILocation(uri, nbJSFileObjectLocation.getLineNumber(), nbJSFileObjectLocation.getColumnNumber());
+                    }
+                }
+            }
+            return null;
+        }
+        
+    }
+    
+    private static final String[] SUPPORTED_MIME_TYPES = {
+        "text/html",       // NOI18N
+        "text/javascript"  // NOI18N
+    };
+     
+    private static boolean hasSupportedMIMEType(FileObject fo) {
+        if (fo == null) {
+            return false;
+        }
+        String mime = fo.getMIMEType();
+        for (String supportedType : SUPPORTED_MIME_TYPES) {
+            if (supportedType.equals(mime)) {
+                return true;
             }
         }
-        return htmlBrowserFactories.iterator().next();
+
+        return false;
     }
 }

@@ -396,7 +396,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         parent.mkdirs();                
         try {         
             File oldFile = VersionsCache.getInstance().getFileRevision(event.getFile(), Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()));
-            file.delete();
+            for (int i = 1; i < 7; i++) {
+                if (file.delete()) break;
+                try { Thread.sleep(i * 34); } catch (InterruptedException e) { }
+            }
             FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");                
         } catch (IOException e) {
             Subversion.LOG.log(Level.SEVERE, null, e);
@@ -460,8 +463,17 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision.Event) {
             RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-            FileObject fo = FileUtil.toFileObject(drev.getFile());
-            org.netbeans.modules.versioning.util.Utils.openFile(fo, drev.getLogInfoHeader().getLog().getRevision().toString());
+            File originFile = drev.getFile();
+            String rev = drev.getLogInfoHeader().getLog().getRevision().toString();
+            File file = null;
+            try {
+                file = VersionsCache.getInstance().getFileRevision(originFile, rev);
+            } catch (IOException e) {
+                Subversion.LOG.log(Level.SEVERE, null, e);
+                return;
+            }
+            FileObject fo = FileUtil.toFileObject(file);
+            org.netbeans.modules.versioning.util.Utils.openFile(fo, rev);
         }
     }
     private void diffPrevious(int idx) {
@@ -502,6 +514,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         private Style noindentStyle;
         private Style hiliteStyle;
         
+        private Color selectionBackground;
+        private Color selectionForeground;
+        
         private JTextPane textPane = new JTextPane();
         private JPanel    actionsPane = new JPanel();
         
@@ -512,8 +527,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         private HyperlinkLabel  revertLink;
 
         public SummaryCellRenderer() {
+            selectionBackground = new JList().getSelectionBackground();
+            selectionForeground = new JList().getSelectionForeground();
+            
             selectedStyle = textPane.addStyle("selected", null); // NOI18N
-            StyleConstants.setForeground(selectedStyle, UIManager.getColor("List.selectionForeground")); // NOI18N
+            StyleConstants.setForeground(selectedStyle, selectionForeground); // NOI18N
+            StyleConstants.setBackground(selectedStyle, selectionBackground); // NOI18N
             normalStyle = textPane.addStyle("normal", null); // NOI18N
             StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); // NOI18N
             filenameStyle = textPane.addStyle("filename", normalStyle); // NOI18N
@@ -569,8 +588,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             Color foregroundColor;
             
             if (isSelected) {
-                foregroundColor = UIManager.getColor("List.selectionForeground"); // NOI18N
-                backgroundColor = UIManager.getColor("List.selectionBackground"); // NOI18N
+                foregroundColor = selectionForeground;
+                backgroundColor = selectionBackground;
                 style = selectedStyle;
             } else {
                 foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
@@ -626,8 +645,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             Color foregroundColor;
             
             if (isSelected) {
-                foregroundColor = UIManager.getColor("List.selectionForeground"); // NOI18N
-                backgroundColor = UIManager.getColor("List.selectionBackground"); // NOI18N
+                foregroundColor = selectionForeground;
+                backgroundColor = selectionBackground;
                 style = selectedStyle;
             } else {
                 foregroundColor = UIManager.getColor("List.foreground"); // NOI18N

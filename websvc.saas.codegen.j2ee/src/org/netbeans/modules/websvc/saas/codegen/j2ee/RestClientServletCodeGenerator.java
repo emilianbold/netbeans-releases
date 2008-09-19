@@ -126,8 +126,8 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
         methodBody += indent2 + REST_RESPONSE + " "+resultVarName+" = " + getBean().getSaasServiceName() +
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += Util.createPrintStatement(
-                getBean().getOutputWrapperPackageName(),
-                getBean().getOutputWrapperName(),
+                getBean().getOutputWrapperPackageNames(),
+                getBean().getOutputWrapperNames(),
                 getDropFileType(),
                 getBean().getHttpMethod(),
                 getBean().canGenerateJAXBUnmarshaller(), resultVarName, indent2);
@@ -151,7 +151,9 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
     protected List<ParameterInfo> getServiceMethodParameters() {
         if (getBean().getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
                 getBean().getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC) {
-            return Util.getServiceMethodParametersForWeb(getBean());
+            List<ParameterInfo> params = Util.getServiceMethodParametersForWeb(getBean());
+            Util.getRestClientPutPostParameters(getBean(), params);
+            return params;
         } else {
             return super.getServiceMethodParameters();
         }

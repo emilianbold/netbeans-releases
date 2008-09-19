@@ -56,6 +56,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+
 import org.netbeans.modules.mobility.svgcore.view.svg.SVGImagePanel;
 import org.netbeans.modules.mobility.svgcore.view.svg.SVGStatusBar;
 import org.openide.util.Lookup;
@@ -262,6 +264,15 @@ public final class ScreenManager {
     }
     
     public void refresh() {
+        /*
+         * Fix for #145736 - [65cat] NullPointerException at 
+         * org.netbeans.modules.mobility.svgcore.composer.ScreenManager.refresh
+         * 
+         * getPerseusController() is synchronized now so it is safe to call it 
+         */
+        if ( m_sceneMgr.getPerseusController() == null ){
+            return;
+        }
         SVGSVGElement svg        = m_sceneMgr.getPerseusController().getSVGRootElement();                
         SVGRect   viewBoxRect    = svg.getRectTrait(SVGConstants.SVG_VIEW_BOX_ATTRIBUTE);
         SVGPoint  translatePoint = svg.getCurrentTranslate();

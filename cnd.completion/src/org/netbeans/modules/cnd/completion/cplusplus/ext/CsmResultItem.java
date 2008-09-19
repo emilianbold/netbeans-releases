@@ -746,33 +746,63 @@ public abstract class CsmResultItem
         protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
             return new CsmPaintComponent.GlobalFunctionPaintComponent();
         }
+
+        // Checks is it function call or usage of function as a pointer
+        // IZ 145380 : In code completion is missing command endl (without any parenthesis)
+        @Override
+        protected boolean isFunctionAsPointer(JTextComponent c, String funName) {
+            if ((funName.startsWith("endl") || // NOI18N
+                    funName.startsWith("ends") || // NOI18N
+                    funName.startsWith("flush") || // NOI18N
+                    funName.startsWith("getline") || // NOI18N
+                    funName.startsWith("ws")) && // NOI18N
+                    isAfterShiftOperator(c)) {
+                return true;
+            }
+            return false;
+        }
+
+        private boolean isAfterShiftOperator(JTextComponent c) {
+            TokenSequence<CppTokenId> ts;
+            ts = CndLexerUtilities.getCppTokenSequence(c, 0);
+            ts.moveStart();
+            if (!ts.moveNext()) {
+                return false;
+            }
+            boolean result = false;
+            while (ts.offset() < substituteOffset) {
+                if (ts.token().id().equals(CppTokenId.LTLT) ||
+                        ts.token().id().equals(CppTokenId.GTGT)) {
+                    result = true;
+                } else if (!ts.token().id().equals(CppTokenId.IDENTIFIER) &&
+                        !ts.token().id().equals(CppTokenId.SCOPE) &&
+                        !ts.token().id().equals(CppTokenId.BLOCK_COMMENT) &&
+                        !ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT) &&
+                        !ts.token().id().equals(CppTokenId.NEW_LINE) &&
+                        !ts.token().id().equals(CppTokenId.LINE_COMMENT) &&
+                        !ts.token().id().equals(CppTokenId.WHITESPACE)) {
+                    result = false;
+                }
+                if (!ts.moveNext()) {
+                    return false;
+                }
+            }
+            return result;
+        }
     }
-    
+
     public static class MethodResultItem extends ConstructorResultItem {
         
         private static CsmPaintComponent.MethodPaintComponent mtdComponent = null;
         private static CsmPaintComponent.MethodPaintComponent globFunComponent = null;
         private String typeName;
         private Color typeColor;
-        private String mtdName;
         
         
         public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration){
             super(mtd, substituteExp, priotity, isDeclaration);
             typeName = CsmResultItem.getTypeName(mtd.getReturnType());
-            mtdName = mtd.getName().toString();
             typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
-        }
-        
-        @Override
-        public String getName(){
-            return mtdName;
-        }
-        
-        
-        @Override
-        public String getItemText() {
-            return getName();
         }
         
         public String getTypeName() {
@@ -836,13 +866,18 @@ public abstract class CsmResultItem
         private static CsmPaintComponent.ConstructorPaintComponent ctrComponent = null;
         private int activeParameterIndex = -1;
         private int varArgIndex = -1;
-        
+        private final String mtdName;
         public ConstructorResultItem(CsmFunction ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
             super(ctr, priority);
             this.ctr = ctr;
             this.substituteExp = substituteExp;
             this.isDeclaration = isDeclaration;
             this.modifiers = convertCsmModifiers(ctr);
+            if (CsmKindUtilities.isTemplate(ctr)) {
+                mtdName = ((CsmTemplate)ctr).getDisplayName().toString();
+            } else {
+                mtdName = ctr.getName().toString();
+            }
             int i = 0;
             for (Object prm : ctr.getParameters() ) {
                 if (prm == null){
@@ -895,7 +930,7 @@ public abstract class CsmResultItem
         
         public String getName(){
             // TODO review the output
-            return ctr.getName().toString();
+            return mtdName;
         }
         
         public List getParams(){
@@ -1018,7 +1053,10 @@ public abstract class CsmResultItem
                                 Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
                                 addClosingParen = prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
                             }
-
+                            
+                            if (addParams) {
+                                addParams = !isFunctionAsPointer(c, text);
+                            }
                             if (addParams) {
                                 String paramsText = null;
                                 try {
@@ -1116,6 +1154,11 @@ public abstract class CsmResultItem
             return res[0];
         }
         
+        // Checks is it function call or usage of function as a pointer
+        protected boolean isFunctionAsPointer(JTextComponent c, String funName) {
+            return false;
+        }
+      
         public String getItemText() {
             // TODO review the output
             return ctr.getName().toString();
@@ -1350,7 +1393,7 @@ public abstract class CsmResultItem
         
         @Override
         protected String getReplaceText(){
-            String text = getItemText();
+            String text = cls.getName().toString();
             if (classDisplayOffset > 0
                     && classDisplayOffset < text.length()
                     ) { // Only the last name for inner classes
