@@ -364,14 +364,12 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             final Set<String> optValues = getOptionalValues();
             jPanelOptional.setVisible(false);
             jPanelOptional.removeAll();
-            for (final JCheckBox cb : removeDuplicateOptProfiles(optProfiles) ) {
+            for (final JCheckBox cb : removeDuplicateOptProfiles(optProfiles, profNames) ) {
                 final String APIname = cb.getActionCommand();
                 final boolean selected = (reset ? defaultOpts : optValues).contains(APIname);
-                if (profNames.contains(APIname)) {
-                    jPanelOptional.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-                    cb.setEnabled(!useDefault);
-                    cb.setSelected(selected);
-                }
+                jPanelOptional.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+                cb.setEnabled(!useDefault);
+                cb.setSelected(selected);
             }
             jPanelOptional.add(new JPanel(), new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0));
             jPanelOptional.setVisible(true);
@@ -386,14 +384,20 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
      * Fix for IZ#142571 - Misleading optional packages in project properties
      */
     private  java.util.List<JCheckBox> removeDuplicateOptProfiles(
-            Map<String,J2MEPlatform.J2MEProfile> profiles )
+            Map<String,J2MEPlatform.J2MEProfile> profiles , Set<String> profileNames)
     {
 
-        java.util.List<JCheckBox> result = new ArrayList<JCheckBox>( optional );
+        java.util.List<JCheckBox> result = new ArrayList<JCheckBox>( optional.size());
+        for ( JCheckBox checkBox : optional ){
+            if (profileNames.contains( checkBox.getActionCommand())) {
+                result.add( checkBox );
+            }
+        }
+
         Map<String,JCheckBox> checkBoxes = new HashMap<String, JCheckBox>();
         Map<String,JCheckBox> name2checkBoxes = new HashMap<String, JCheckBox>();
         Set<String> duplicateNames =  new HashSet<String>();
-        for ( JCheckBox option: optional){
+        for ( JCheckBox option: result){
             checkBoxes.put( option.getActionCommand(), option);
             if( name2checkBoxes.containsKey( option.getText() )){
                 duplicateNames.add( option.getText());
