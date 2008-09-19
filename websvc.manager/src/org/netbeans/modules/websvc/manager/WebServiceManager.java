@@ -223,7 +223,9 @@ public final class WebServiceManager {
         WsdlModel wsdlModel = null;
         if (wsdlModelProvider != null) {
             String packageName = wsdlModelProvider.getEffectivePackageName();
-            wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName);
+            File catalogFile = new File(wsData.getCatalog());
+            URL catalogUrl = catalogFile.toURI().toURL();
+            wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName, catalogUrl);
         }
        
         if (wsdlModel == null) {
