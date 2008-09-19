@@ -214,7 +214,10 @@ public class WsdlModeler {
             if (catalog != null) {
                 CatalogManager manager = new CatalogManager(null);
                 manager.setCatalogFiles(catalog.toExternalForm());
-                options.entityResolver = entityResolver = new CatalogResolver(manager);
+                manager.setUseStaticCatalog(false);
+                manager.setVerbosity(4);
+                entityResolver = new CatalogResolver(manager);
+                options.entityResolver = entityResolver;
             }
 
             options.parseBindings(new IdeErrorReceiver(errorHandler));

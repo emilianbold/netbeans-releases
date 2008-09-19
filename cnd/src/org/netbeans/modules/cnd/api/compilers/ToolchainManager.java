@@ -286,7 +286,7 @@ public final class ToolchainManager {
             pattern = d.getCommandFolderPathPattern();
             if (pattern != null && pattern.length() > 0 ) {
                 Pattern p = Pattern.compile(pattern);
-                for (String dir : Path.getPath()) {
+                for (String dir : Path.getPathWithDefaultCompilerLocations()) {
                     if (p.matcher(dir).find()) {
                         base = dir;
                         break;
