@@ -68,6 +68,7 @@ public class ScriptingMeasureActionsTest {
                 .addTest(EditorMenuPopup.class)
                 .addTest(CloseScriptingFiles.class)
                 .addTest(TypingInScriptingEditor.class)
+                .addTest(ScriptingCodeCompletionInEditor.class)
 
                 // Saving modified document
                 .addTest(SaveModifiedScriptingFiles.class)
