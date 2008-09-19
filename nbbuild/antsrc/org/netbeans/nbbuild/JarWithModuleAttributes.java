@@ -269,9 +269,16 @@ public class JarWithModuleAttributes extends Jar {
                                 sb.append(one.substring(0, equals));
                             }
                         } else {
-                            double version = Double.parseDouble(one.substring(great + 1));
+                            String version = one.substring(great + 1).trim();
+                            int dot = version.indexOf('.');
+                            int nextMajor;
+                            if (dot == -1) {
+                                nextMajor = Integer.parseInt(version) + 1;
+                            } else {
+                                nextMajor = Integer.parseInt(version.substring(0, dot)) + 1;
+                            }
                             sb.append(one.substring(0, great).trim()).append(";version=\"[").append(version).
-                               append(", ").append((int)(Math.floor(version) + 1)).
+                               append(", ").append(nextMajor).
                                append(")\"");
                         }
                     }

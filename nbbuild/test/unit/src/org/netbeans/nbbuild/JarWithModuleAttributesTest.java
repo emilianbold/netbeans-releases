@@ -223,7 +223,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
 "OpenIDE-Module-Specification-Version: 1.9\n" +
 "OpenIDE-Module-Layer: org/netbeans/modules/sendopts/layer.xml\n" +
 "OpenIDE-Module-Module-Dependencies:" +
-"  com.othercom.anothermodule > 2.1,\n" +
+"  com.othercom.anothermodule > 2.1.3,\n" +
 "  org.netbeans.modules.applet/1 > 1.0\n\n\n"
         );
         File jar = new File(getWorkDir(), "x.jar");
@@ -257,7 +257,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         assertEquals("org.netbeans.api.sendopts", value);
 
         String req = file.getManifest().getMainAttributes().getValue("Require-Bundle");
-        if (req.indexOf("com.othercom.anothermodule;version=\"[2.1, 3)\"") == -1) {
+        if (req.indexOf("com.othercom.anothermodule;version=\"[2.1.3, 3)\"") == -1) {
             fail("Wrong dependency on com.othercom.anothermodule:\n" + req);
         }
 
