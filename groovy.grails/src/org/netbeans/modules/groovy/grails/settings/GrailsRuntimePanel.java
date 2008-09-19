@@ -158,15 +158,15 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
 
     public void store() {
         String location = grailsHomeLocation.getText();
-        
+        if ("".equals(location.trim())) { // NOI18N
+            return;
+        }
         if (!checkForGrailsExecutable(new File(location))) {
             displayGrailsHomeWarning();
             return;
-        }
-        else {
+        } else {
             settings.setGrailsBase(location);
         }
-        
     }
 
     public boolean valid() {

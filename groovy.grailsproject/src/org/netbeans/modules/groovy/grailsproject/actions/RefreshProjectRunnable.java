@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.groovy.grailsproject.actions;
 
+import java.io.File;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -54,7 +57,14 @@ public class RefreshProjectRunnable implements Runnable {
     }
     
     public void run() {
-        project.getProjectDirectory().refresh();
+        FileObject fo = project.getProjectDirectory();
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            FileUtil.refreshFor(file);
+        } else {
+            // just defensive fallback
+            fo.refresh();
+        }
     }
 
 }

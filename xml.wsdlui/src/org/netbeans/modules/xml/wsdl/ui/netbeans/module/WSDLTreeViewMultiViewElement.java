@@ -220,6 +220,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         if (mToolbar != null) mToolbar.removeAll();
         mToolbar = null;
         removeAll();
+        ExplorerUtils.activateActions(manager, false);
         manager = null;
         multiViewObserver = null;
         setActivatedNodes(new Node[0]);
@@ -238,7 +239,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     public ExplorerManager getExplorerManager() {
         return manager;
     }
-
+    
     @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
@@ -302,8 +303,10 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     
     @Override
     public void componentDeactivated() {
-        ExplorerUtils.activateActions(manager, false);
         super.componentDeactivated();
+        if (manager != null) {
+            ExplorerUtils.activateActions(manager, false);
+        }
         WSDLMultiViewFactory.updateGroupVisibility(WSDLTreeViewMultiViewDesc.PREFERRED_ID);
     }
     

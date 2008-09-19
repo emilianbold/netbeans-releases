@@ -84,7 +84,7 @@ public class BindingOperationFaultNode extends WSDLExtensibilityElementNode<Bind
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindingfault.png");
     
     public BindingOperationFaultNode(BindingFault wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<BindingFault>(wsdlConstruct), wsdlConstruct, new BindingOperationFaultNewTypesFactory());
+        super(wsdlConstruct, new BindingOperationFaultNewTypesFactory());
     }
     
     @Override

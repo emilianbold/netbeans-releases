@@ -87,6 +87,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     public static final String DATABASE = "db"; //NOI18N
     public static final String URL = "url"; //NOI18N
     public static final String PREFIX = "prefix"; //NOI18N
+    public static final String DATABASE_CONNECTION = "database_connection"; //NOI18N
     public static final String CONNECTION = "connection"; //NOI18N
     public static final String CODE = "code"; //NOI18N
     public static final String NODE = "node"; //NOI18N
@@ -123,7 +124,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     // Sychronized on this
     private boolean connected = false;
-        
+
     // Thread-safe, no synchronization
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -547,15 +548,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     public DatabaseConnection getDatabaseConnection()
     {
-        DatabaseConnection con = new DatabaseConnection(getDriver(), getDatabase(), getUser(), getPassword());
-        if(get(REMEMBER_PWD)!=null) {
-            con.setRememberPassword(((Boolean)get(REMEMBER_PWD)).booleanValue());
-        }
-        else
-            con.setRememberPassword(Boolean.FALSE.booleanValue());
-        con.setSchema(getSchema());
-        con.setDriverName((String)get("drivername"));
-        return con;
+        return (DatabaseConnection) get(DATABASE_CONNECTION);
     }
 
     public DatabaseDriver getDatabaseDriver()
@@ -563,8 +556,9 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         return (DatabaseDriver)get(DBDRIVER);
     }
 
-    public void setDatabaseConnection(DBConnection cinfo)
+    public void setDatabaseConnection(DatabaseConnection cinfo)
     {
+        put(DATABASE_CONNECTION, cinfo);
         String pwd = cinfo.getPassword();
         put(DRIVER, cinfo.getDriver());
         put(DATABASE, cinfo.getDatabase());

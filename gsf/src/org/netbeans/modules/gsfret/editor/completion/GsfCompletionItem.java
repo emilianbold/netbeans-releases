@@ -328,9 +328,13 @@ public abstract class GsfCompletionItem implements CompletionItem {
                                 // Can't update
                             }
 
-                            ctm.createTemporary(template).insert(c);
+                            // SHOULD be run here:
+                            //ctm.createTemporary(template).insert(c);
+                            // (see issue 147494) but running code template inserts
+                            // under a document writelock is risky (see issue 147657)
                         }
                     });
+                    ctm.createTemporary(template).insert(c);
                 
                     // TODO - set the actual method to be used here so I don't have to 
                     // work quite as hard...

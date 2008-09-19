@@ -62,7 +62,6 @@ import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.css.gsf.CSSParserResult;
-import org.netbeans.modules.css.gsf.EditorAwareSourceTaskSupport;
 import org.netbeans.modules.css.parser.ASCII_CharStream;
 import org.netbeans.modules.css.parser.CSSParser;
 import org.netbeans.modules.css.parser.CSSParserConstants;
@@ -162,30 +161,6 @@ public final class CssModel {
         DataObject od = NbEditorUtilities.getDataObject(doc);
         final FileObject fo = od.getPrimaryFile();
 
-        //listen on the css parser
-        EditorAwareSourceTaskSupport.Listener parseListener = new EditorAwareSourceTaskSupport.Listener() {
-
-            public void parsed(CompilationInfo info) {
-                //ignore if not our document
-                //this is uglyyyyyyyyyyyy!!!!!!!!!! fix the whole support please once you have some time!
-                if (info.getDocument() != CssModel.this.doc) {
-                    return;
-                }
-
-                ParserResult presult = info.getEmbeddedResults("text/x-css").iterator().next(); //NOI18N
-                SimpleNode root = ((CSSParserResult) presult).root();
-
-
-                if (containsErrors(presult)) {
-                    support.firePropertyChange(MODEL_INVALID, rules, null);
-                    return;
-                }
-
-                updateModel(root);
-            }
-        };
-        EditorAwareSourceTaskSupport.instance().addListener(parseListener);
-
         //ensure the model is built
         RequestProcessor.getDefault().post(new Runnable() {
 
@@ -218,6 +193,30 @@ public final class CssModel {
             }
         });
 
+    }
+    
+    //called by CssEditorAwareSourceTask
+    void parsed(CompilationInfo info) {
+        //ignore if not our document
+        //this is uglyyyyyyyyyyyy!!!!!!!!!! fix the whole support please once you have some time!
+        if (info.getDocument() != CssModel.this.doc) {
+            return;
+        }
+
+        Collection<? extends ParserResult> results = info.getEmbeddedResults("text/x-css"); //NOI18N
+        if(results == null || results.isEmpty()) {
+            return ;
+        }
+        
+        ParserResult presult = results.iterator().next();
+        SimpleNode root = ((CSSParserResult) presult).root();
+
+        if (containsErrors(presult)) {
+            support.firePropertyChange(MODEL_INVALID, rules, null);
+            return;
+        }
+
+        updateModel(root);
     }
 
     private boolean containsErrors(ParserResult result) {

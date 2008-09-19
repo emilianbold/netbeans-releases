@@ -54,6 +54,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 
+import org.openide.util.Lookup;
 import org.xml.sax.InputSource;
 
 public class JnlpDataObject extends MultiDataObject {
@@ -71,6 +72,11 @@ public class JnlpDataObject extends MultiDataObject {
     
     protected Node createNodeDelegate() {
         return new JnlpDataNode(this);
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
 }

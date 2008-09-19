@@ -288,6 +288,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         configureEncoding(projectProperties, privateProperties);
         configureTags(projectProperties, privateProperties);
         configureIncludePath(projectProperties, privateProperties);
+        // #146882
+        configureUrl(projectProperties, privateProperties);
 
         if (getRunAsType() != null) {
             // run configuration panel shown
@@ -354,18 +356,26 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         projectProperties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
     }
 
+    private void configureUrl(EditableProperties projectProperties, EditableProperties privateProperties) {
+        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
+        if (url == null) {
+            // #146882
+            url = RunConfigurationPanel.getUrlForSources(wizardType, descriptor);
+        }
+
+        privateProperties.put(PhpProjectProperties.URL, url);
+    }
+
     private void configureRunConfiguration(EditableProperties projectProperties, EditableProperties privateProperties) {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
         privateProperties.put(PhpProjectProperties.RUN_AS, runAs.name());
         switch (runAs) {
             case LOCAL:
-                configureRunAsLocalWeb(projectProperties, privateProperties);
+            case SCRIPT:
+                // nothing to store
                 break;
             case REMOTE:
                 configureRunAsRemoteWeb(projectProperties, privateProperties);
-                break;
-            case SCRIPT:
-                // nothing to store
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + runAs;
@@ -377,19 +387,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
     }
 
-    private void configureRunAsLocalWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
-        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
-
-        privateProperties.put(PhpProjectProperties.URL, url);
-    }
-
     private void configureRunAsRemoteWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
-        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
         RemoteConfiguration remoteConfiguration = (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION);
         String remoteDirectory = (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY);
         PhpProjectProperties.UploadFiles uploadFiles = (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD);
 
-        privateProperties.put(PhpProjectProperties.URL, url);
         privateProperties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
         privateProperties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
         privateProperties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());

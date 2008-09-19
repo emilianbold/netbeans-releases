@@ -115,4 +115,7 @@ public class SemanticAnalyzerTest extends PHPTestBase {
         checkSemantic("testfiles/issue145694.php");
     }
 
+    public void testIssue144195() throws Exception {
+        checkSemantic("testfiles/issue144195.php");
+    }
 }

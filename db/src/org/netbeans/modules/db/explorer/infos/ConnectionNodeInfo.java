@@ -71,7 +71,7 @@ import org.openide.util.Exceptions;
 //import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
 
 
-public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOperations {
+public class ConnectionNodeInfo extends DatabaseNodeInfo {
     
     static final long serialVersionUID =-8322295510950137669L;
     
@@ -317,8 +317,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
 
 
     }
-    
-    
 
     private void connect(String dbsys) throws DatabaseException {
         String drvurl = getDriver();
@@ -349,13 +347,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             dbe.initCause(e);
             throw dbe;
         }
-    }
-
-    /*
-     * Connects this connection node to the database.
-     */
-    public void connect() throws DatabaseException {
-        connect((String)null);
     }
 
     /*

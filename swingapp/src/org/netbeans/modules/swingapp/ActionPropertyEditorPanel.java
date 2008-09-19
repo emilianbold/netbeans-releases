@@ -873,7 +873,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         if(cp.getSelectedFile() != null && cp.isConfirmed()) {
             selectedSourceFile = cp.getSelectedFile();
             String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
-            if(AppFrameworkSupport.getFileForClass(sourceFile, selectedClass) == null) {
+            if ((selectedClass == null) || (AppFrameworkSupport.getFileForClass(sourceFile, selectedClass) == null)) {
                 //            classLabel.setText(""); // NOI18N
                 classField.setText(""); // NOI18N
             } else {

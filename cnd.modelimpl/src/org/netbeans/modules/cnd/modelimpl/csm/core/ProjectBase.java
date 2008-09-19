@@ -1182,7 +1182,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         StringBuilder sb = new StringBuilder();
         for (FileContainer.StatePair pair : statesToKeep) {
             if (sb.length() > 0) {
-                sb.append(", ");
+                sb.append(", "); //NOI18N
             }
             sb.append(pair.pcState);
         }
@@ -1191,8 +1191,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         APTPreprocHandler preprocHandler = file.getProjectImpl(true).createEmptyPreprocHandler(file.getBuffer().getFile());
         preprocHandler.setState(newState);
         
-        System.err.printf("scheduling %s (1) %s %s %s %s keeping [%s]\n",
-                (clean ? "reparse" : "  parse"), file.getAbsolutePath(),
+        System.err.printf("scheduling %s (1) %s %s %s %s keeping [%s]\n", //NOI18N
+                (clean ? "reparse" : "  parse"), file.getAbsolutePath(), //NOI18N
                 TraceUtils.getPreprocStateString(preprocHandler.getState()),
                 TraceUtils.getMacroString(preprocHandler, TraceFlags.logMacros), 
                 pcState, sb);
@@ -1206,8 +1206,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         break;
                     }
                 }
-                System.err.printf("scheduling %s (2) %s valid %b context %b %s\n",
-                        "  parse", file.getAbsolutePath(),
+                System.err.printf("scheduling %s (2) %s valid %b context %b %s\n", //NOI18N
+                        "  parse", file.getAbsolutePath(), //NOI18N
                         state.isValid(), state.isCompileContext(), currPcState);
             }
         }
@@ -1281,6 +1281,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                 }
                 if (keep) {
+                    if (!pair.state.isCleaned()){
+                        pair = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(pair.state), null);
+                    }
                     statesToKeep.add(pair);
                 } else {
                     result = ComparisonResult.BETTER;
@@ -1340,11 +1343,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (old.pcState == null) {
                 isSuperset = false;
                 // not yet filled - somebody is filling it right now => we don't know what it will be => keep it
+                if (!old.state.isCleaned()){
+                    old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), null);
+                }
                 statesToKeep.add(old);
             } else {
                 possibleSuperSet.add(old.pcState);
                 if (!old.pcState.isSubset(pcState)) {
                     isSuperset = false;
+                    if (!old.state.isCleaned()){
+                        old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), null);
+                    }
                     statesToKeep.add(old);
                 }
             }

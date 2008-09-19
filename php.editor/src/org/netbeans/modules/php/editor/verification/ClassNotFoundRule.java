@@ -79,7 +79,7 @@ public class ClassNotFoundRule extends PHPRule {
         if (expression instanceof Identifier) {
             String className = ((Identifier) expression).getName();
             
-            for (IndexedClass indexedClass : context.index.getClassInheritanceLine(null, className)) {
+            for (IndexedClass indexedClass : context.index.getClassAncestors(null, className)) {
                 return;
             }
             

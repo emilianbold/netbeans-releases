@@ -585,6 +585,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         private Style noindentStyle;
         private Style hiliteStyle;
         
+        private Color selectionBackground;
+        private Color selectionForeground;
+        
         private JTextPane textPane = new JTextPane();
         private JPanel    actionsPane = new JPanel();
         private final JPanel    tagsPanel;
@@ -604,8 +607,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         private final JLabel    commaLabel;
 
         public SummaryCellRenderer() {
+            selectionBackground = new JList().getSelectionBackground();
+            selectionForeground = new JList().getSelectionForeground();
+            
             selectedStyle = textPane.addStyle("selected", null); // NOI18N
-            StyleConstants.setForeground(selectedStyle, UIManager.getColor("List.selectionForeground")); // NOI18N
+            StyleConstants.setForeground(selectedStyle, selectionForeground); // NOI18N
+            StyleConstants.setBackground(selectedStyle, selectionBackground); // NOI18N
             normalStyle = textPane.addStyle("normal", null); // NOI18N
             StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); // NOI18N
             branchStyle = textPane.addStyle("normal", null); // NOI18N
@@ -679,8 +686,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
             Style style;
             if (isSelected) {
-                textPane.setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
-                actionsPane.setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
+                textPane.setBackground(selectionBackground);
+                actionsPane.setBackground(selectionBackground);
                 style = selectedStyle;
             } else {
                 Color c = UIManager.getColor("List.background"); // NOI18N
@@ -713,8 +720,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             Color foregroundColor;
             
             if (isSelected) {
-                foregroundColor = UIManager.getColor("List.selectionForeground"); // NOI18N
-                backgroundColor = UIManager.getColor("List.selectionBackground"); // NOI18N
+                foregroundColor = selectionForeground;
+                backgroundColor = selectionBackground;
                 style = selectedStyle;
             } else {
                 foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
