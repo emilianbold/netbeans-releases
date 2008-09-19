@@ -726,6 +726,46 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         }
     }
     
+    public void testDoNotSkipWhenNotBalanced147683a() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "System.err.println((true|);"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "System.err.println((true)|);"
+        );
+    }
+
+    public void testSkipWhenBalanced46517() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "if (a(|) )"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "if (a()| )"
+        );
+    }
+
+    public void testDoNotSkipWhenNotBalanced147683b() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "if (a(|) ; )"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "if (a()|) ; )"
+        );
+    }
+
+    public void testDoNotSkipWhenNotBalanced147683c() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "if (a(|) \n )"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "if (a()|) \n )"
+        );
+    }
+
     private static final class Context {
         
         private JEditorPane pane;
