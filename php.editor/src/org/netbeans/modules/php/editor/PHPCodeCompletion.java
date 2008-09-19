@@ -802,7 +802,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     Collection<IndexedConstant> classConstants = request.index.getAllClassConstants(
                             request.result, typeName, request.prefix, nameKind);
                     for (IndexedConstant constant : classConstants) {
-                        proposals.add(new PHPCompletionItem.VariableItem(constant, request));
+                        proposals.add(new PHPCompletionItem.ClassConstantItem(constant, request));
                     }
                 }
             }

@@ -434,7 +434,7 @@ public class PHPIndex {
             int offset = sig.integer(1);
 
             IndexedConstant prop = new IndexedConstant(propName, typeName,
-                    this, signaturesMap.get(signature), offset, offset, null);
+                    this, signaturesMap.get(signature), offset, 0, null);
 
             properties.add(prop);
 
@@ -584,7 +584,7 @@ public class PHPIndex {
     }
     public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, NameKind kind) {
         return getTopLevelVariables(context, name, kind, ALL_SCOPE);
-    }    
+    }
     public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
@@ -632,7 +632,7 @@ public class PHPIndex {
                 }
                 for (String sign : signatures) {
                     IdentifierSignature idSign = IdentifierSignature.createDeclaration(Signature.get(sign));
-                    if ((!idSign.isClassMember() && !idSign.isIfaceMember()) ||                            
+                    if ((!idSign.isClassMember() && !idSign.isIfaceMember()) ||
                             idSign.getTypeName() == null) {
                         continue;
                     }
