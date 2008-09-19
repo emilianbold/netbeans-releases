@@ -184,6 +184,11 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue145206.php",
                 "echo TestIssue145206 :: createStatic()->create() ->create() -> c^", false);
     }
+    
+    public void test146187() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue146187.php",
+                "echo $tst->^", false);
+    }
 
     /* TEMPORARILY DISABLED
     public void test136744_1() throws Exception {
@@ -358,6 +363,15 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void testInsideClass_8() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass.php", "InsideClass::^", false);
+    }
+    public void testInsideClass_9() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass3.php", "func^", false);
+    }
+    public void testInsideClass_10() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass3.php", "privat^", false);
+    }
+    public void testInsideClass_11() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass3.php", "cons^", false);
     }
     public void testInsideClassAdv() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass2.php", "$this->^", false);

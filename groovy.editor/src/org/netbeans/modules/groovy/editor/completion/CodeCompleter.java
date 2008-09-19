@@ -100,6 +100,7 @@ import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -111,6 +112,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.elements.IndexedMethod;
@@ -139,8 +141,6 @@ public class CodeCompleter implements CodeCompletionHandler {
     List<String> dfltImports = new ArrayList<String>();
 
     public CodeCompleter() {
-        LOG.setLevel(Level.OFF);
-
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
         List<URL> docfolder = platform.getJavadocFolders();
@@ -313,8 +313,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         
 
         if (active != null) {
-            if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0) ||
-                active.id().primaryCategory().equals("separator")) {
+            if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0)
+                    /*|| active.id().primaryCategory().equals("separator")*/) {
                 LOG.log(Level.FINEST, "ts.movePrevious() - 1");
                 ts.movePrevious();
             } else if (active.id() == GroovyTokenId.NLS ) {
@@ -1381,19 +1381,20 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     boolean checkBehindDot(final CompletionRequest request) {
-
         boolean behindDot = false;
 
         if (request == null || request.ctx == null || request.ctx.before1 == null) {
             behindDot = false;
         } else {
-            if (request.ctx.before1.text().equals(".")) {
+            if (CharSequenceUtilities.textEquals(request.ctx.before1.text(), ".") // NOI18N
+                    || (request.ctx.before1.text().toString().equals(request.prefix)
+                        && request.ctx.before2 != null
+                        && CharSequenceUtilities.textEquals(request.ctx.before2.text(), "."))) { // NOI18N
                 behindDot = true;
             }
         }
 
         return behindDot;
-
     }
 
     PackageCompletionRequest getPackageRequest(final CompletionRequest request) {
@@ -1527,7 +1528,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         assert pathInfo != null : "Can not get ClasspathInfo";
 
-        if (request.ctx.before1 != null && request.ctx.before1.text().equals("*") && request.behindImport) {
+        if (request.ctx.before1 != null
+                && CharSequenceUtilities.textEquals(request.ctx.before1.text(), "*")
+                && request.behindImport) {
             return false;
         }
 
@@ -2039,27 +2042,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             printASTNodeInformation("Declaring-class, current is:", current);
 
-            if (current instanceof VariableExpression) {
-                LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
-                declClass = ((VariableExpression) current).getType();
-                break;
-            } else if (current instanceof ExpressionStatement) {
-                LOG.log(Level.FINEST, "* ExpressionStatement"); // NOI18N
-                Expression expr = ((ExpressionStatement) current).getExpression();
-                declClass = expr.getType();
-                break;
-            } else if (current instanceof PropertyExpression) {
-                LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
-                declClass = ((PropertyExpression) current).getObjectExpression().getType();
-                break;
-            } else if (current instanceof ConstructorCallExpression) {
-                LOG.log(Level.FINEST, "* ConstructorCallExpression"); // NOI18N
-                declClass = ((ConstructorCallExpression) current).getType();
-                break;
-            } else if (current instanceof MethodCallExpression) {
-                LOG.log(Level.FINEST, "* MethodCallExpression"); // NOI18N
-                // TODO unfortunately object expression is always of type java.lang.Object
-                declClass = ((MethodCallExpression) current).getObjectExpression().getType();
+            declClass = getDeclaringClass(current);
+            if (declClass != null) {
                 break;
             }
         }
@@ -2068,6 +2052,32 @@ public class CodeCompleter implements CodeCompletionHandler {
         return declClass;
     }
    
+    private ClassNode getDeclaringClass(ASTNode current) {
+        printASTNodeInformation("Declaring-class, current is:", current);
+
+        if (current instanceof VariableExpression) {
+            LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
+            return ((VariableExpression) current).getType();
+        } else if (current instanceof ExpressionStatement) {
+            LOG.log(Level.FINEST, "* ExpressionStatement"); // NOI18N
+            return ((ExpressionStatement) current).getExpression().getType();
+        } else if (current instanceof PropertyExpression) {
+            LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
+            return ((PropertyExpression) current).getObjectExpression().getType();
+        } else if (current instanceof ConstructorCallExpression) {
+            LOG.log(Level.FINEST, "* ConstructorCallExpression"); // NOI18N
+            return ((ConstructorCallExpression) current).getType();
+        } else if (current instanceof MethodCallExpression) {
+            LOG.log(Level.FINEST, "* MethodCallExpression"); // NOI18N
+            // TODO unfortunately object expression is always of type java.lang.Object
+            return ((MethodCallExpression) current).getObjectExpression().getType();
+        } else if (current instanceof IfStatement) {
+            LOG.log(Level.FINEST, "* IfStatement"); // NOI18N
+            return getDeclaringClass(((IfStatement) current).getBooleanExpression().getExpression());
+        }
+        return null;
+    }
+    
     /**
      * Test for potential collection-type at the requesting position.
      * This could be RangeExpression, ListExpression or MapExpression
@@ -2509,7 +2519,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         if (clz != null) {
             MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
-
+            
             if (metaClz != null) {
 
                 List<MethodItem> result = new ArrayList<MethodItem>();

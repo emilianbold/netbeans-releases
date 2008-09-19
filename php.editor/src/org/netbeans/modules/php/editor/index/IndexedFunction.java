@@ -145,9 +145,6 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     @Override
     public Set<Modifier> getModifiers() {
-        
-        
-        
         return super.getModifiers();
     }
 

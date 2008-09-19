@@ -86,6 +86,8 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     // @GuardedBy("nodeMap")
     private HashMap<Node, RegisteredNodeInfo> nodeMap = new HashMap<Node, RegisteredNodeInfo>();
 
+    final private Map<DatabaseConnection, ConnectionNodeInfo> conn2Info = new HashMap<DatabaseConnection, ConnectionNodeInfo>();
+
     private static Logger LOGGER = 
             Logger.getLogger(RootNodeInfo.class.getName());
     
@@ -150,8 +152,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         return option;
     }
 
-
-
     public void initChildren(Vector children) throws DatabaseException {
         try {
             children.addAll(getRegisteredNodeInfos());
@@ -161,6 +161,22 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
                 DatabaseConnection cinfo = cinfos[i];
                 ConnectionNodeInfo ninfo = createConnectionNodeInfo(cinfo);
                 children.add(ninfo);
+            }
+            synchronized (conn2Info) {
+                for (Iterator<Entry<DatabaseConnection, ConnectionNodeInfo>> i = conn2Info.entrySet().iterator(); i.hasNext();) {
+                    Entry<DatabaseConnection, ConnectionNodeInfo> entry = i.next();
+                    DatabaseConnection key = entry.getKey();
+                    boolean found = false;
+                    for (DatabaseConnection dbconn : cinfos) {
+                        if (key.equals(dbconn)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        i.remove();
+                    }
+                }
             }
             
             Repository r = Repository.getDefault();
@@ -260,17 +276,24 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     }
 
     private ConnectionNodeInfo createConnectionNodeInfo(DatabaseConnection dbconn) throws DatabaseException {
-        ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
-        ninfo.setUser(dbconn.getUser());
-        ninfo.setDatabase(dbconn.getDatabase());
-        ninfo.setSchema(dbconn.getSchema());
-        ninfo.setName(dbconn.getName());
-        ninfo.setDatabaseConnection(dbconn); 
-        if (DatabaseConnection.test(dbconn.getConnection(), dbconn.getName())) {
-            ninfo.connect(dbconn);
+        System.out.println("For " + dbconn);
+        synchronized (conn2Info) {
+            ConnectionNodeInfo ninfo = conn2Info.get(dbconn);
+            if (ninfo != null) {
+                return ninfo;
+            }
+            ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
+            ninfo.setUser(dbconn.getUser());
+            ninfo.setDatabase(dbconn.getDatabase());
+            ninfo.setSchema(dbconn.getSchema());
+            ninfo.setName(dbconn.getName());
+            ninfo.setDatabaseConnection(dbconn);
+            if (DatabaseConnection.test(dbconn.getConnection(), dbconn.getName())) {
+                ninfo.connect(dbconn);
+            }
+            conn2Info.put(dbconn, ninfo);
+            return ninfo;
         }
-
-        return ninfo;
     }
         
     public void addConnection(DBConnection con) throws DatabaseException {

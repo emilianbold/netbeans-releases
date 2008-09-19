@@ -982,7 +982,8 @@ public class MakeActionProvider implements ActionProvider {
             CompilerFlavor flavor = null;
             if (csconf.getFlavor() != null) {
                 flavor = CompilerFlavor.toFlavor(csconf.getFlavor(), conf.getPlatformInfo().getPlatform());
-            } else {
+            }
+            if (flavor == null) {
                 flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
             }
             cs = CompilerSet.getCustomCompilerSet("", flavor, csconf.getOldName());

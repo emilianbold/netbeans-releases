@@ -43,24 +43,18 @@ package org.netbeans.modules.uml.drawingarea.palette.context;
 import java.util.List;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.drawingarea.palette.context.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.Iterator;
-import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
-import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
-import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.openide.util.Lookup;
 
 /**
@@ -335,7 +329,9 @@ public class SwingPaletteManager implements ContextPaletteManager
                 JComponent view = getScene().getView();
 
                 int expandedWidth = palette.getExpandedWidth();
-                if(view.getWidth() < xPos + expandedWidth)
+                Rectangle viewableRec = view.getVisibleRect();
+                int rightViewBounds = viewableRec.x + viewableRec.width;
+                if(rightViewBounds < (xPos + expandedWidth))
                 {
                     xPos = viewLocation.x - SPACE_FROM_WIDGET - collapsedDim.width;
                     palette.setDirection(PaletteDirection.LEFT);
