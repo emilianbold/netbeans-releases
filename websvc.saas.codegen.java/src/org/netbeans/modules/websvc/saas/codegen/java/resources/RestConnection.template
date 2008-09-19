@@ -32,11 +32,17 @@ import java.util.logging.Logger;
  */
 public class ${name} {
 
+    static {
+        //set the identification of the client
+        System.setProperty("http.agent", System.getProperty("user.name") + " (from NetBeans IDE)");
+    }
+
     private HttpURLConnection conn;
     private String date;
 
+    /** Creates a new instance of ${name} */
     public ${name}(String baseUrl) {
-        this(baseUrl, null);
+        this(baseUrl, null, null);
     }
 
     /** Creates a new instance of ${name} */
@@ -81,59 +87,48 @@ public class ${name} {
 
     public RestResponse get(String[][] headers) throws IOException {
         conn.setRequestMethod("GET");
+        return connect(headers, null);
+    }
 
+    public RestResponse head() throws IOException {
+        return get(null);
+    }
+
+    public RestResponse head(String[][] headers) throws IOException {
+        conn.setRequestMethod("HEAD");
         return connect(headers, null);
     }
 
     public RestResponse put(String[][] headers) throws IOException {
         return put(headers, (InputStream) null);
     }
-    
-    public RestResponse put(String data) throws IOException {
-        return put(null, data);
-    }
 
-    public RestResponse put(InputStream data) throws IOException {
-        return put(null, data);
-    }
-    
     public RestResponse put(String[][] headers, String data) throws IOException {
+        InputStream is = null;
+        if(data != null)
+            is = new ByteArrayInputStream(data.getBytes("UTF-8"));
+        return put(headers, is);
+    }
+
+    public RestResponse put(String[][] headers, InputStream is) throws IOException {
         conn.setRequestMethod("PUT");
-
-        return connect(headers, new ByteArrayInputStream(data.getBytes("UTF-8")));
-    }
-
-    public RestResponse put(String[][] headers, InputStream data) throws IOException {
-        conn.setRequestMethod("PUT");
-
-        return connect(headers, data);
+        return connect(headers, is);
     }
     
-    public RestResponse post(String data) throws IOException {
-        return post(null, data);
+    public RestResponse post(String[][] headers) throws IOException {
+        return post(headers, (InputStream) null);
     }
-    
-    public RestResponse post(InputStream data) throws IOException {
-        return post(null, data);
-    }
-    
+
     public RestResponse post(String[][] headers, String data) throws IOException {
-        conn.setRequestMethod("POST");
-
-        return connect(headers, new ByteArrayInputStream(data.getBytes("UTF-8")));
+        InputStream is = null;
+        if(data != null)
+            is = new ByteArrayInputStream(data.getBytes("UTF-8"));
+        return post(headers, is);
     }
     
-    public RestResponse post(String[][] headers, InputStream data) throws IOException {
+    public RestResponse post(String[][] headers, InputStream is) throws IOException {
         conn.setRequestMethod("POST");
-
-        return connect(headers, data);
-    }
-
-    /**
-     * Used by post method whose contents are like form input
-     */
-    public RestResponse post(String[][] params) throws IOException {
-        return post(null, params);
+        return connect(headers, is);
     }
 
     /**
@@ -146,13 +141,8 @@ public class ${name} {
         return connect(headers, new ByteArrayInputStream(data.getBytes("UTF-8")));
     }
 
-    public RestResponse delete() throws IOException {
-        return delete(null);
-    }
-
     public RestResponse delete(String[][] headers) throws IOException {
         conn.setRequestMethod("DELETE");
-
         return connect(headers, null);
     }
 
@@ -206,7 +196,7 @@ public class ${name} {
                 StringBuffer buf = new StringBuffer();
                 while ((line = rd.readLine()) != null) {
                     buf.append(line);
-                    System.out.print(line);
+                    buf.append('\n');
                 }
                 errMsg = buf.toString();
             } finally {

@@ -93,12 +93,7 @@ public class NbBasePanel extends DestinationPanel {
         setProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY,
                 DEFAULT_JDK_LOCATION_LABEL_TEXT);
         setProperty(BROWSE_BUTTON_TEXT_PROPERTY,
-                DEFAULT_BROWSE_BUTTON_TEXT);
-        
-        setProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
-                DEFAULT_MINIMUM_JDK_VERSION);
-        setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
-                DEFAULT_MAXIMUM_JDK_VERSION);
+                DEFAULT_BROWSE_BUTTON_TEXT);        
     }
     
     @Override
@@ -192,6 +187,12 @@ public class NbBasePanel extends DestinationPanel {
         
         jdkLocationPanel.initialize();
         
+        //reinitialize labels which are different for cases of jdk and jre allowance
+        setProperty(DESCRIPTION_PROPERTY, 
+                jreAllowed ? DEFAULT_DESCRIPTION_JAVA : DEFAULT_DESCRIPTION);
+        setProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY, 
+                jreAllowed ? DEFAULT_JAVA_LOCATION_LABEL_TEXT : DEFAULT_JDK_LOCATION_LABEL_TEXT);
+                
         //This makes it possible to perform silent installation with emptry state files 
         //that means that JDK_LOCATION_PROPERTY property is explicitely set to the first location
         //that fits the requirements
@@ -267,7 +268,7 @@ public class NbBasePanel extends DestinationPanel {
                 statusLabel.setText(StringUtils.format(
                         jdkLocationPanel.getProperty(JdkLocationPanel.ERROR_NOTHING_FOUND_PROPERTY),
                         minVersion.toJdkStyle(),
-                        minVersion.toJdkStyle()));
+                        maxVersion.toJdkStyle()));
             } else {
                 statusLabel.clearText();
                 statusLabel.setVisible(false);
@@ -435,6 +436,9 @@ public class NbBasePanel extends DestinationPanel {
     public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.description"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION_JAVA =
+            ResourceUtils.getString(NbBasePanel.class,
+            "NBP.description.java"); // NOI18N
     
     public static final String DEFAULT_DESTINATION_LABEL_TEXT =
             ResourceUtils.getString(NbBasePanel.class,
@@ -446,14 +450,10 @@ public class NbBasePanel extends DestinationPanel {
     public static final String DEFAULT_JDK_LOCATION_LABEL_TEXT =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.jdk.location.label.text"); // NOI18N
+    public static final String DEFAULT_JAVA_LOCATION_LABEL_TEXT =
+            ResourceUtils.getString(NbBasePanel.class,
+            "NBP.java.location.label.text"); // NOI18N
     public static final String DEFAULT_BROWSE_BUTTON_TEXT =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.browse.button.text"); // NOI18N
-    
-    public static final String DEFAULT_MINIMUM_JDK_VERSION =
-            ResourceUtils.getString(NbBasePanel.class,
-            "NBP.minimum.jdk.version"); // NOI18N
-    public static final String DEFAULT_MAXIMUM_JDK_VERSION =
-            ResourceUtils.getString(NbBasePanel.class,
-            "NBP.maximum.jdk.version"); // NOI18N
 }

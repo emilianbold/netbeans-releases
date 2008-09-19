@@ -55,6 +55,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.derby.DerbyOptions;
+import org.netbeans.modules.derby.RegisterDerby;
 import org.netbeans.modules.derby.Util;
 import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.openide.DialogDescriptor;
@@ -362,7 +363,7 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private static class RegisterSampleDatabase {
 
         private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
-        private static final String JDBC_URL = "jdbc:derby://localhost:1527/travel [travel on TRAVEL]";  // NOI18N
+        private static final String CONN_NAME = "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/sample [app on APP]";  // NOI18N
         private boolean registered;
 
         RegisterSampleDatabase() {
@@ -391,7 +392,7 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                 public void run() {
                     try {
                         JDBCDriver[] drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
-                        if ((drvsArray.length > 0) && (ConnectionManager.getDefault().getConnection(JDBC_URL) == null)) {
+                        if ((drvsArray.length > 0) && (ConnectionManager.getDefault().getConnection(CONN_NAME) == null)) {
                             DerbyDatabases.createSampleDatabase();
                         }
                     } catch (IOException ioe) {

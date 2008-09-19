@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 
+import java.util.List;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
 import org.openide.awt.HtmlBrowser;
@@ -55,6 +56,7 @@ import org.openide.awt.HtmlBrowser;
 public interface JSDebugger {
     String PROPERTY_SOURCES = "sources";
     String PROPERTY_WINDOWS = "windows";
+    String PROPERTY_RELOADSOURCES = "reloadsources";
 
     void addPropertyChangeListener(PropertyChangeListener l);
     void removePropertyChangeListener(PropertyChangeListener l);
@@ -70,7 +72,7 @@ public interface JSDebugger {
     JSDebuggerState getDebuggerState();
 
     void setBooleanFeature(Feature.Name featureName, boolean featureValue);
-    String setBreakpoint(JSBreakpoint breakpoint);    
+    List<String> setBreakpoint(JSBreakpoint breakpoint);    
     boolean removeBreakpoint(String id);
     boolean updateBreakpoint(String id, Boolean enabled, int line, int hitValue, HIT_COUNT_FILTERING_STYLE hitCondition, String condition);
 

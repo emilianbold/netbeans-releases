@@ -79,10 +79,12 @@ public final class SelectAllAction extends NodeAction
             {
                 continue;
             }
+            widget.revalidate();
             selected.add(o);
         }
         scene.clearLockedSelected();
         scene.userSelectionSuggested(selected, false);
+        scene.validate();
     }
 
     protected boolean enable(Node[] activatedNodes)
@@ -98,5 +100,11 @@ public final class SelectAllAction extends NodeAction
     public HelpCtx getHelpCtx()
     {
         return null;
+    }
+
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
     }
 }

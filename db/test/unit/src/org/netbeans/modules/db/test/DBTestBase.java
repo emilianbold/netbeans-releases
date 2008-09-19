@@ -28,6 +28,7 @@
 package org.netbeans.modules.db.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Connection;
@@ -36,13 +37,19 @@ import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
+import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
+import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 
 /**
  * This class is a useful base test class that provides initial setup
@@ -74,7 +81,7 @@ public abstract class DBTestBase extends TestBase {
     private static final String PASSWORD_PROPERTY = "db.password";
     private static final String DBDIR_PROPERTY = "db.dir";
     private static final String DBNAME_PROPERTY = "db.name";
-    private static final String SCHEMA_NAME = "dbtests";
+    private static final String SCHEMA_NAME = "DBTESTS";
 
     private static String quoteString = null;
     
@@ -85,8 +92,8 @@ public abstract class DBTestBase extends TestBase {
     public static final int MC_RULE = 2; // mixed case remains mixed case
     public static final int QUOTE_RETAINS_CASE = 3; // quoted idents retain case
 
-    private static final String TEST_TABLE = "test";
-    private static final String TEST_TABLE_ID = "id";
+    private static final String TEST_TABLE = "TEST";
+    private static final String TEST_TABLE_ID = "ID";
 
     private static int    unquotedCaseRule = RULE_UNDEFINED;
     private static int    quotedCaseRule = RULE_UNDEFINED;
@@ -112,9 +119,7 @@ public abstract class DBTestBase extends TestBase {
     }
 
     protected final void createTestTable() throws Exception {
-        createSchema();
         dbProvider.createTestTable(getConnection(), getSchema(), TEST_TABLE, TEST_TABLE_ID);
-
     }
 
     protected static final String getTestTableName() {
@@ -145,6 +150,34 @@ public abstract class DBTestBase extends TestBase {
         JDBCDriverManager.getDefault().addDriver(jdbcDriver);
 
         return jdbcDriver;
+    }
+
+    protected TableNodeInfo getTableNodeInfo(String tablename) throws Exception {
+        ConnectionNodeInfo cinfo = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNodeInfo(
+                getDatabaseConnection(true).getName());
+
+        assertNotNull(cinfo);
+
+        Vector children = cinfo.getChildren();
+        // DatabaseNodeInfo.printChildren("connection children", children);
+        
+        for (Object child : children) {
+            if (child instanceof TableListNodeInfo) {
+                TableListNodeInfo tableList = (TableListNodeInfo)child;
+
+                Vector<TableNodeInfo> tables = tableList.getChildren();
+
+                // DatabaseNodeInfo.printChildren("tables", tables);
+
+                for (TableNodeInfo table : tables) {
+                    if (tablename.toLowerCase().equals(table.getDisplayName().toLowerCase())) {
+                        return table;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     protected void disconnect() throws Exception {
@@ -182,7 +215,6 @@ public abstract class DBTestBase extends TestBase {
     }
 
     protected String getSchema() throws Exception {
-        // return fixIdentifier(SCHEMA_NAME);
         return SCHEMA_NAME;
     }
 
@@ -234,15 +266,63 @@ public abstract class DBTestBase extends TestBase {
     }
     
     protected final void createSchema() throws Exception {
+        if (schemaExists(getSchema())) {
+            dropSchema();
+        }
+        
         dbProvider.createSchema(getConnection(), getSchema());
 
         setSchema();
     }
     
     protected final void dropSchema() throws Exception {
-        dbProvider.dropSchema(getConnection(), getSchema());
+        if (! schemaExists(getSchema())) {
+            return;
+        }
+
+        if (isDerby()) {
+            // Trying to remove the schema is very difficult, as it has to
+            // be completely empty. Easier just to blow away the database directory.
+            // Next time we connect a new db will be automatically created
+            shutdownDerby();
+            if (! dblocation.equals(this.getWorkDirPath())) {
+                clearWorkDir();
+            } else {
+                deleteSubFiles(new File(dblocation));
+            }
+        } else {
+            dbProvider.dropSchema(getConnection(), getSchema());
+        }
     }
-    
+
+    protected static void deleteSubFiles(File file) throws IOException {
+        if (file.isDirectory() && file.exists()) {
+            File files[] = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteFile(files[i]);
+            }
+        } else {
+            // probably do nothing - file is not a directory
+        }
+    }
+
+    private static void deleteFile(File file) throws IOException {
+        if (file.isDirectory()) {
+            // file is a directory - delete sub files first
+            File files[] = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteFile(files[i]);
+            }
+
+        }
+        // file is a File :-)
+        boolean result = file.delete();
+        if (result == false ) {
+            // a problem has appeared
+            throw new IOException("Cannot delete file, file = "+file.getPath());
+        }
+    }
+
     protected final boolean schemaExists(String schemaName) throws Exception {
         return dbProvider.schemaExists(getConnection(), schemaName);
     }
@@ -480,21 +560,32 @@ public abstract class DBTestBase extends TestBase {
         return numrows;
     }
 
+    protected final void shutdownDerby() throws Exception {
+        assertTrue(isDerby());
+
+        String url = dbUrl + ";shutdown=true";
+        url = url.replace(";create=true", "");
+
+        DatabaseConnection conn = DatabaseConnection.create(getJDBCDriver(),
+                url, getSchema(), getUsername(), getPassword(), false);
+
+        ConnectionManager.getDefault().addConnection(conn);
+
+        // This forces the shutdown
+        try {
+            ConnectionManager.getDefault().connect(conn);
+        } catch (DatabaseException dbe) {
+            // expected, this always happens when you shut it down
+        }
+
+        ConnectionManager.getDefault().removeConnection(conn);
+    }
+
     @Override
     protected void tearDown() throws Exception {
         getConnection();
         dropSchema();
         removeConnection();
-        if (isDerby()) {
-            shutdownDerby();
-            clearWorkDir();
-        }
-    }
-
-    private void connect(DatabaseConnection dbconn) throws Exception {
-        ConnectionManager.getDefault().connect(dbconn);
-        assertTrue(dbconn.getJDBCConnection() != null);
-        assertFalse(dbconn.getJDBCConnection().isClosed());
     }
 
     private void initQuoteString() throws Exception {
@@ -515,13 +606,13 @@ public abstract class DBTestBase extends TestBase {
         }
         
         driverClassName = System.getProperty(DRIVER_PROPERTY, "org.apache.derby.jdbc.EmbeddedDriver");
-        dbname = System.getProperty(DBNAME_PROPERTY, "dbtests");        
+        dbname = System.getProperty(DBNAME_PROPERTY, "DBTESTS");
         dbUrl = System.getProperty(URL_PROPERTY, "jdbc:derby:" + dblocation + dbname + ";create=true");
         if (isMySQL() && ! (dbUrl.endsWith("/"))) {
             fail("The MySQL url needs to be of the form 'jdbc:mysql://<host>:<port>/'.  Please do not specify a database in the URL");
         }
-        username = System.getProperty(USERNAME_PROPERTY, "dbtests");
-        password = System.getProperty(PASSWORD_PROPERTY, "dbtests");        
+        username = System.getProperty(USERNAME_PROPERTY, "DBTESTS");
+        password = System.getProperty(PASSWORD_PROPERTY, "DBTESTS");
         driverJar = System.getProperty(DRIVER_JARPATH_PROPERTY, "nball:///db/external/derby-10.2.2.0.jar");
 
         driverJar = convertPath(driverJar);
@@ -581,20 +672,6 @@ public abstract class DBTestBase extends TestBase {
         }
     }
     
-    private void shutdownDerby() throws Exception {
-        if (! driverClassName.equals("org.apache.derby.jdbc.ClientDriver")) {
-            return;
-        }
-
-        String oldUrl = dbUrl;
-        dbUrl = dbUrl + ";shutdown=true";
-
-        disconnect();
-        getConnection();
-
-        dbUrl = oldUrl;
-    }
-
     private void getCaseRules() throws Exception {
         DatabaseMetaData md;
         

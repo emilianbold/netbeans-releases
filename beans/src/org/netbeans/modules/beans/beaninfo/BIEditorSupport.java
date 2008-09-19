@@ -74,6 +74,7 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction.BeanInfoWorker;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
@@ -97,6 +98,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -593,6 +597,8 @@ final class BIEditorSupport extends DataEditorSupport
                 biPanel = new BiPanel();
                 add(biPanel, BorderLayout.CENTER);
                 isInitialized = true;
+            } else {
+                biPanel.setContext(new BiNode.Wait());
             }
             
             FileObject biFile = dataObject.getPrimaryFile();
@@ -601,9 +607,14 @@ final class BIEditorSupport extends DataEditorSupport
             FileObject javaFile = biFile.getParent().getFileObject(name, biFile.getExt());
             BIEditorSupport editor = findEditor(dataObject);
             if (javaFile != null) {
-                editor.worker = new GenerateBeanInfoAction.BeanInfoWorker(javaFile, biPanel);
-                editor.worker.analyzePatterns();
-                editor.worker.updateUI();
+                final BeanInfoWorker beanInfoWorker = new GenerateBeanInfoAction.BeanInfoWorker(javaFile, biPanel);
+                editor.worker = beanInfoWorker;
+                beanInfoWorker.analyzePatterns().addTaskListener(new TaskListener() {
+
+                    public void taskFinished(Task task) {
+                        beanInfoWorker.updateUI();
+                    }
+                });
             } else {
                 // notify missing source file
                 biPanel.setContext(BiNode.createNoSourceNode(biFile));

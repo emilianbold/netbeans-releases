@@ -82,47 +82,49 @@ public class SQLCompletionQueryTest extends NbTestCase {
         // Find a way to add the tests automatically (java.util.zip?).
 
         suite.addTest(new SQLCompletionQueryTest("selectAll"));
-        suite.addTest(new SQLCompletionQueryTest("selectNoSchemas"));
-        suite.addTest(new SQLCompletionQueryTest("selectSyntheticSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectAllWhenSyntheticSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectSimple"));
-        suite.addTest(new SQLCompletionQueryTest("selectSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectSchemaTable"));
-        suite.addTest(new SQLCompletionQueryTest("selectTableInDefaultSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectTableInNonDefaultSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectColumn"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualTable"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualColumn"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualColumnWhenTableInDefaultSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualColumnWhenTableInNonDefaultSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualColumnWhenTableInSyntheticSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectDoubleQualColumn"));
+        suite.addTest(new SQLCompletionQueryTest("selectTripleQualColumn"));
 
-        suite.addTest(new SQLCompletionQueryTest("selectEmptyFromClause"));
         suite.addTest(new SQLCompletionQueryTest("selectAllFrom"));
+        suite.addTest(new SQLCompletionQueryTest("selectAllWhenFromClauseEmpty"));
+        suite.addTest(new SQLCompletionQueryTest("selectAllFromTableInSyntheticSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectSimpleFrom"));
-        suite.addTest(new SQLCompletionQueryTest("selectFromQualTableInDefaultSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectFromUnqualTableInDefaultSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectFromSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectFromSchemaTableNotInFromClause"));
-        suite.addTest(new SQLCompletionQueryTest("selectFromQuoted"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualTableFromNonDefaultSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualTableFromTableInSyntheticSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromTableInNonDefaultSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromQualTableInDefaultSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromTableNotInFromClause"));
+        suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromUnqualTableInDefaultSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectDoubleQualColumnFromQualTableInNonDefaultSchema"));
 
-        suite.addTest(new SQLCompletionQueryTest("selectQuotedSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectQuotedColumn"));
         suite.addTest(new SQLCompletionQueryTest("selectQuote"));
+        suite.addTest(new SQLCompletionQueryTest("selectAllFromQuoted"));
+        suite.addTest(new SQLCompletionQueryTest("selectQuotedQualTable"));
+        suite.addTest(new SQLCompletionQueryTest("selectQuotedQualColumn"));
 
         suite.addTest(new SQLCompletionQueryTest("fromAll"));
         suite.addTest(new SQLCompletionQueryTest("fromSimple"));
-        suite.addTest(new SQLCompletionQueryTest("fromSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectFromJoinCondition"));
-        suite.addTest(new SQLCompletionQueryTest("selectFromJoinConditionAlias"));
+        suite.addTest(new SQLCompletionQueryTest("fromQualTable"));
+        suite.addTest(new SQLCompletionQueryTest("fromJoinCondition"));
+        suite.addTest(new SQLCompletionQueryTest("fromJoinConditionAlias"));
 
         suite.addTest(new SQLCompletionQueryTest("whereAll"));
         suite.addTest(new SQLCompletionQueryTest("whereSimple"));
-        suite.addTest(new SQLCompletionQueryTest("whereSchema"));
-        suite.addTest(new SQLCompletionQueryTest("whereSchemaTable"));
+        suite.addTest(new SQLCompletionQueryTest("whereQualTable"));
+
         suite.addTest(new SQLCompletionQueryTest("groupBySimple"));
         suite.addTest(new SQLCompletionQueryTest("orderBySimple"));
 
         suite.addTest(new SQLCompletionQueryTest("selectSubquery"));
 
         suite.addTest(new SQLCompletionQueryTest("script"));
-
-        // Does not work yet.
-        // suite.addTest(new SQLCompletionQueryTest("selectFromTableInNonDefaultSchema", true));
 
         return suite;
     }

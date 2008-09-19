@@ -55,8 +55,8 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.TypeSearcher;
-import org.netbeans.modules.gsf.api.TypeSearcher.GsfTypeDescriptor;
+import org.netbeans.modules.gsf.api.IndexSearcher;
+import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class RubyTypeSearcher implements TypeSearcher {
+public class RubyTypeSearcher implements IndexSearcher {
     public RubyTypeSearcher() {
     }
     
@@ -116,10 +116,10 @@ public class RubyTypeSearcher implements TypeSearcher {
         return kind;
     }
     
-    public Set<? extends GsfTypeDescriptor> getDeclaredTypes(Index gsfIndex,
-                                                        String textForQuery,
-                                                        NameKind kind,
-                                                        EnumSet<SearchScope> scope, Helper helper) {
+    public Set<? extends Descriptor> getTypes(Index gsfIndex,
+                                            String textForQuery,
+                                            NameKind kind,
+                                            EnumSet<SearchScope> scope, Helper helper) {
         // In addition to just computing the declared types here, we perform some additional
         // "second guessing" of the query. In particular, we want to allow double colons
         // to be part of the query names (to specify full module names), but since colon is
@@ -215,8 +215,42 @@ public class RubyTypeSearcher implements TypeSearcher {
         
         return result;
     }
+
+    public Set<? extends Descriptor> getSymbols(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
+        if (textForQuery.indexOf("::") != -1 || textForQuery.indexOf("#") != -1) {
+            return getTypes(gsfIndex, textForQuery, kind, scope, helper);
+        }
+
+        RubyIndex index = RubyIndex.get(gsfIndex);
+        if (index == null) {
+            return Collections.emptySet();
+        }
+
+        kind = adjustKind(kind, textForQuery);
+
+        if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
+            textForQuery = textForQuery.toLowerCase();
+        }
+
+        if (textForQuery.length() > 0) {
+            Set<RubyTypeDescriptor> result = new HashSet<RubyTypeDescriptor>();
+            Set<IndexedClass> classes = index.getClasses(textForQuery, kind, true, false, false, scope, null);
+
+            Set<IndexedMethod> methods = index.getMethods(textForQuery, null, kind, scope);
+            for (IndexedClass cls : classes) {
+                result.add(new RubyTypeDescriptor(cls, helper));
+            }
+            for (IndexedMethod mtd : methods) {
+                result.add(new RubyTypeDescriptor(mtd, helper));
+            }
+            
+            return result;
+        }
+
+        return null;
+    }
     
-    private class RubyTypeDescriptor extends GsfTypeDescriptor {
+    private class RubyTypeDescriptor extends Descriptor {
         private final IndexedElement element;
         private String projectName;
         private Icon projectIcon;
@@ -265,6 +299,8 @@ public class RubyTypeSearcher implements TypeSearcher {
                             isLibrary = true;
                         }
                     } else {
+                        // TODO - check to see if we're a library - and if so include the language icon
+                        
                         ProjectInformation pi = ProjectUtils.getInformation(p);
                         projectName = pi.getDisplayName();
                         projectIcon = pi.getIcon();
@@ -326,7 +362,6 @@ public class RubyTypeSearcher implements TypeSearcher {
                 fqn = null;
             }
             if (fqn != null || require != null) {
-                sb.append(" (");
                 if (fqn != null) {
                     sb.append(fqn);
                 }
@@ -338,7 +373,6 @@ public class RubyTypeSearcher implements TypeSearcher {
                     sb.append(require);
                     sb.append(".rb");
                 }
-                sb.append(")");
                 return sb.toString();
             } else {
                 return null;
@@ -360,10 +394,5 @@ public class RubyTypeSearcher implements TypeSearcher {
         public String getOuterName() {
             return null;
         }
-
-    }
-
-    public String getMimetype() {
-        return RubyMimeResolver.RUBY_MIME_TYPE;
     }
 }

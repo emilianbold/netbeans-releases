@@ -45,6 +45,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -55,6 +57,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
@@ -67,12 +70,12 @@ import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -81,6 +84,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 
@@ -116,7 +120,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         pcs = new PropertyChangeSupport (this);
         //this.session = (Session) contextProvider.lookupFirst 
         //    (null, Session.class);
+        JPDADebugger debugger = (JPDADebugger) contextProvider.lookupFirst(null, JPDADebugger.class);
         Map properties = contextProvider.lookupFirst(null, Map.class);
+
+        Set<FileObject> srcRootsToListenForArtifactsUpdates = null;
         
         // 2) get default allSourceRoots of source roots used for stepping
         if (properties != null) {
@@ -143,6 +150,22 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     originalSourcePath,
                     globalCP
             );
+            String listeningCP = (String) properties.get("listeningCP");
+            if (listeningCP != null) {
+                for (String cp : listeningCP.split(File.pathSeparator)) {
+                    logger.log(Level.FINE, "Listening cp = '" + cp + "'");
+                    File f = new File(cp);
+                    f = FileUtil.normalizeFile(f);
+                    URL entry = FileUtil.urlForArchiveOrDir(f);
+
+                    if (entry != null) {
+                        srcRootsToListenForArtifactsUpdates = new HashSet<FileObject>();
+                        for (FileObject src : SourceForBinaryQuery.findSourceRoots(entry).getRoots()) {
+                            srcRootsToListenForArtifactsUpdates.add(src);
+                        }
+                    }
+                }
+            }
         } else {
             pathRegistryListener = new PathRegistryListener();
             GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(
@@ -199,6 +222,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     (new FileObject [allSourceRoots.size()])
             );
             projectSourceRoots = getSourceRoots(originalSourcePath);
+
+            srcRootsToListenForArtifactsUpdates = new HashSet(allSourceRoots);
             
             JavaPlatform[] platforms = JavaPlatformManager.getDefault ().
                 getInstalledPlatforms ();
@@ -222,7 +247,27 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         if (verbose) 
             System.out.println (
                 "SPPI: init smartSteppingSourcePath " + smartSteppingSourcePath
-            );    
+            );
+
+        if (srcRootsToListenForArtifactsUpdates != null) {
+            final Set<ArtifactsUpdatedImpl> artifactsListeners = new HashSet<ArtifactsUpdatedImpl>();
+            for (FileObject src : srcRootsToListenForArtifactsUpdates) {
+                try {
+                    artifactsListeners.add(addArtifactsUpdateListenerFor(debugger, src));
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (JPDADebugger.STATE_DISCONNECTED == ((Integer) evt.getNewValue()).intValue()) {
+                        for (ArtifactsUpdatedImpl al : artifactsListeners) {
+                            BuildArtifactMapper.removeArtifactsUpdatedListener(al.getURL(), al);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -241,10 +286,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             fo = GlobalPathRegistry.getDefault().findResource(relativePath);
         } else {
             synchronized (this) {
-                if (!global) {
-                    fo = smartSteppingSourcePath.findResource(relativePath);
-                                                                    if (verbose) System.out.println ("SPPI:   fo " + fo);
-                } else {
+                fo = smartSteppingSourcePath.findResource(relativePath);
+                                                                if (verbose) System.out.println ("SPPI:   fo " + fo);
+                if (fo == null && global) {
                     fo = originalSourcePath.findResource(relativePath);
                                                                     if (verbose) System.out.println ("SPPI:   fo " + fo);
                 }
@@ -379,7 +423,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         }
         return null; // not found
     }
-    
+
     private String[] getSourceRoots(ClassPath classPath) {
         FileObject[] sourceRoots = classPath.getRoots();
         List<String> roots = new ArrayList<String>(sourceRoots.length);
@@ -408,6 +452,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      */
     public synchronized String[] getSourceRoots () {
         return getSourceRoots(smartSteppingSourcePath);
+    }
+
+    synchronized Set<FileObject> getSourceRootsFO() {
+        return new HashSet(Arrays.asList(smartSteppingSourcePath.getRoots()));
     }
     
     /**
@@ -599,6 +647,80 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         return fo;
     }
     
+    private ArtifactsUpdatedImpl addArtifactsUpdateListenerFor(JPDADebugger debugger, FileObject src) throws FileStateInvalidException {
+        URL url = src.getURL();
+        ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl(debugger, url, src);
+        BuildArtifactMapper.addArtifactsUpdatedListener(url, l);
+        return l;
+    }
+
+    private static boolean CAN_FIX_CLASSES_AUTOMATICALLY = Boolean.getBoolean("debugger.apply-code-changes.on-save"); // NOI18N
+
+    private static class ArtifactsUpdatedImpl implements ArtifactsUpdated {
+
+        private Reference<JPDADebugger> debuggerRef;
+        private final URL url;
+        private FileObject src;
+
+        public ArtifactsUpdatedImpl(JPDADebugger debugger, URL url, FileObject src) {
+            this.debuggerRef = new WeakReference<JPDADebugger>(debugger);
+            this.url = url;
+            this.src = src;
+        }
+
+        public URL getURL() {
+            return url;
+        }
+
+        public void artifactsUpdated(Iterable<File> artifacts) {
+            String error = null;
+            final JPDADebugger debugger = debuggerRef.get();
+            if (debugger == null) {
+                error = NbBundle.getMessage(SourcePathProviderImpl.class, "MSG_NoJPDADebugger");
+            } else if (!debugger.canFixClasses()) {
+                error = NbBundle.getMessage(SourcePathProviderImpl.class, "MSG_CanNotFix");
+            } else if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                error = NbBundle.getMessage(SourcePathProviderImpl.class, "MSG_NoDebug");
+            }
+
+            if (error == null) {
+                if (!CAN_FIX_CLASSES_AUTOMATICALLY) {
+                    for (File f : artifacts) {
+                        FileObject fo = FileUtil.toFileObject(f);
+                        if (fo != null) {
+                            String className = fileToClassName(fo);
+                            FixActionProvider.ClassesToReload.getInstance().addClassToReload(
+                                    debugger, src, className, fo);
+                        }
+                    }
+                    return ;
+                }
+                Map<String, FileObject> classes = new HashMap();
+                for (File f : artifacts) {
+                    FileObject fo = FileUtil.toFileObject(f);
+                    if (fo != null) {
+                        String className = fileToClassName(fo);
+                        classes.put(className, fo);
+                    }
+                }
+                FixActionProvider.reloadClasses(debugger, classes);
+            } else {
+                BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
+            }
+
+            if (error != null && CAN_FIX_CLASSES_AUTOMATICALLY) {
+                FixActionProvider.notifyError(error);
+            }
+        }
+
+        private static String fileToClassName (FileObject fo) {
+            // remove ".class" from and use dots for for separator
+            ClassPath cp = ClassPath.getClassPath (fo, ClassPath.EXECUTE);
+    //        FileObject root = cp.findOwnerRoot (fo);
+            return cp.getResourceName (fo, '.', false);
+        }
+    }
+
     private class PathRegistryListener implements GlobalPathRegistryListener, PropertyChangeListener {
         
         public void pathsAdded(GlobalPathRegistryEvent event) {

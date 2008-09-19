@@ -40,6 +40,8 @@
  */
 package org.netbeans.test.profiler;
 
+import java.awt.Container;
+import javax.swing.JCheckBox;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
@@ -53,6 +55,7 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OptionsViewAction;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -64,6 +67,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.ide.WatchProjects;
 
@@ -233,6 +237,25 @@ public class ProfilerValidation extends JellyTestCase {
         //wait project appear in projects view
         //wait 30 second
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
+        
+        //disable the compile on save:
+        ProjectsTabOperator.invoke().getProjectRootNode(anagramGamePrName).properties();
+        // "Project Properties"
+        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Customizer_Title");
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+        // select "Compile" category
+        String buildCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "Projects/org-netbeans-modules-java-j2seproject/Customizer/BuildCategory");
+        String compileCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Build");
+        new Node(new Node(new JTreeOperator(propertiesDialogOper), buildCategoryTitle), compileCategoryTitle).select();
+        // actually disable the quick run:
+        String compileOnSaveLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "CustomizerCompile.CompileOnSave");
+        JCheckBox cb = JCheckBoxOperator.waitJCheckBox((Container) propertiesDialogOper.getSource(), compileOnSaveLabel, true, true);
+        if (cb.isSelected()) {
+            cb.doClick();
+        }
+        // confirm properties dialog
+        propertiesDialogOper.ok();
+        
         ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(anagramGamePrName);
         //wait classpath scanning finished
         WatchProjects.waitScanFinished();
@@ -261,6 +284,7 @@ public class ProfilerValidation extends JellyTestCase {
                                         "LBL_TakeSnapshotAction"), null);
         new Waiter(new Waitable() {
             public Object actionProduced(Object takeSnapshotAction) {
+		MainWindowOperator.getDefault().toFront();
                 return ((Action)takeSnapshotAction).isEnabled() ? Boolean.TRUE : null;
             }
             public String getDescription() {

@@ -56,6 +56,7 @@ import java.io.*;
 import java.util.*;
 import java.text.ParseException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.subversion.SubversionVCS;
@@ -973,4 +974,10 @@ public class SvnUtils {
         }
         return ret.toArray(new ISVNLogMessage[ret.size()]);
     }
-}
+
+    private static Logger TY9_LOG = null;
+    public static void logT9Y(String msg) {
+        if(TY9_LOG == null) TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.t9y");
+        TY9_LOG.log(Level.FINEST, msg);
+    }
+ }

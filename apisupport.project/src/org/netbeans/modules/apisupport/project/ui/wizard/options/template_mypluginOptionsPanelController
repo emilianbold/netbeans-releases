@@ -12,7 +12,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-final class ${OptionsPanelController_CLASS_NAME} extends OptionsPanelController {
+public final class ${OptionsPanelController_CLASS_NAME} extends OptionsPanelController {
 
     private ${Panel_CLASS_NAME} panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);

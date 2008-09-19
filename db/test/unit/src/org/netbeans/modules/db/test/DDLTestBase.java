@@ -40,10 +40,7 @@
 package org.netbeans.modules.db.test;
 
 import java.sql.Types;
-import java.util.Vector;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.lib.ddl.impl.AddColumn;
 import org.netbeans.lib.ddl.impl.CreateIndex;
 import org.netbeans.lib.ddl.impl.CreateTable;
@@ -52,92 +49,59 @@ import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.lib.ddl.impl.TableColumn;
-import org.netbeans.lib.ddl.DatabaseSpecification;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
-import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
+import org.netbeans.lib.ddl.util.CommandBuffer;
 
 /**
  *
  * @author David
  */
 public class DDLTestBase extends DBTestBase {
+    private static SpecificationFactory specfactory;
+    private Specification spec;
+    private DriverSpecification drvspec;
+
     private static Logger LOGGER = Logger.getLogger(DDLTestBase.class.getName());
-
-    protected static SpecificationFactory specfactory;
-    protected Specification spec;
-    protected DriverSpecification drvSpec;
-
-    static {
-        try {
-            specfactory = new SpecificationFactory();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, null, e);
-            throw new RuntimeException(e);
-        }
-    }
-
 
     public DDLTestBase(String name) {
         super(name);
     }
 
-    protected final DatabaseSpecification getSpecification() throws Exception {
-        DatabaseConnection dbconn = getDatabaseConnection(true);
-        
-        ConnectionNodeInfo cinfo = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNodeInfo(dbconn.getName());
-        
-        return cinfo.getSpecification();        
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        if (specfactory == null) {
+            specfactory = new SpecificationFactory();
+        }
+        spec = (Specification)specfactory.createSpecification(getConnection());
+
+        // All this is copied from ConnectionNodeInfo.java
+        drvspec = specfactory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
+        if (spec.getMetaData().getDriverName().trim().equals("jConnect (TM) for JDBC (TM)")) //NOI18N
+            //hack for Sybase ASE - I don't guess why spec.getMetaData doesn't work
+            drvspec.setMetaData(getConnection().getMetaData());
+        else
+            drvspec.setMetaData(spec.getMetaData());
+        drvspec.setCatalog(getConnection().getCatalog());
+        drvspec.setSchema(getSchema());
+    }
+
+    protected final Specification getSpecification() throws Exception {
+        return spec;
     }
     
     protected final DriverSpecification getDriverSpecification() throws Exception {
-        DatabaseConnection dbconn = getDatabaseConnection(true);
-        
-        ConnectionNodeInfo cinfo = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNodeInfo(dbconn.getName());
-        
-        return cinfo.getDriverSpecification();
+        return drvspec;
     }
-    
-    protected final TableNodeInfo getTableNodeInfo(String tablename) throws Exception {
-        DatabaseConnection dbconn = getDatabaseConnection(true);
         
-        ConnectionNodeInfo cinfo = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNodeInfo(dbconn.getName());
-
-        TableListNodeInfo tableList = null;
-        for (DatabaseNodeInfo child : cinfo.getChildren()) {
-            if (child instanceof TableListNodeInfo) {
-                tableList = (TableListNodeInfo)child;
-            }
-        }
-
-        assertNotNull(tableList);
-
-        for (Object child : tableList.getChildren()) {
-            if (child instanceof TableNodeInfo) {
-                TableNodeInfo tinfo = (TableNodeInfo)child;
-                if (tinfo.getDisplayName().equals(tablename)) {
-                    return tinfo;
-                }
-            }
-        }
-
-        return null;
-    }
-
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        spec = (Specification)getSpecification();
-        drvSpec = getDriverSpecification();
-    }
-    
     protected void createBasicTable(String tablename, String pkeyName)
             throws Exception {
         dropTable(tablename);
-        CreateTable cmd = spec.createCommandCreateTable(tablename);
+        CommandBuffer cbuff = new CommandBuffer();
+
+        // Uncomment this if you want to see what the SQL looks like
+        // cbuff.setDebugMode(true);
+
+        CreateTable cmd = getSpecification().createCommandCreateTable(tablename);
         cmd.setObjectOwner(getSchema());
 
         // primary key
@@ -145,11 +109,12 @@ public class DDLTestBase extends DBTestBase {
         col.setColumnType(Types.INTEGER);
         col.setNullAllowed(false);
 
-        cmd.execute();
+        cbuff.add(cmd);
+        cbuff.execute();
     }
 
     protected void createView(String viewName, String query) throws Exception {
-        CreateView cmd = spec.createCommandCreateView(viewName);
+        CreateView cmd = getSpecification().createCommandCreateView(viewName);
         cmd.setQuery(query);
         cmd.setObjectOwner(getSchema());
         cmd.execute();
@@ -162,7 +127,7 @@ public class DDLTestBase extends DBTestBase {
         // Need to get identifier into correct case because we are
         // still quoting referred-to identifiers.
         tablename = fixIdentifier(tablename);
-        CreateIndex xcmd = spec.createCommandCreateIndex(tablename);
+        CreateIndex xcmd = getSpecification().createCommandCreateIndex(tablename);
         xcmd.setIndexName(indexname);
 
         // *not* unique
@@ -182,7 +147,7 @@ public class DDLTestBase extends DBTestBase {
         // Need to get identifier into correct case because we are
         // still quoting referred-to identifiers.
         tablename = fixIdentifier(tablename);
-        AddColumn cmd = spec.createCommandAddColumn(tablename);
+        AddColumn cmd = getSpecification().createCommandAddColumn(tablename);
         cmd.setObjectOwner(getSchema());
         TableColumn col = (TableColumn)cmd.createColumn(colname);
         col.setColumnType(type);

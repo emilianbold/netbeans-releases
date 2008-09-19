@@ -123,6 +123,11 @@ public class FindSourceTargetAction extends NodeAction
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
 
     private class FindSourceAction extends AbstractAction
     {
@@ -139,8 +144,9 @@ public class FindSourceTargetAction extends NodeAction
                 Object obj = objectScene.findObject(widget);
                 HashSet<Object> set = new HashSet<Object>();
                 set.add(obj);
-                objectScene.setSelectedObjects(set);
+                objectScene.userSelectionSuggested(set, false);
                 Util.centerWidget(widget);
+                objectScene.validate();
             }
         }
         

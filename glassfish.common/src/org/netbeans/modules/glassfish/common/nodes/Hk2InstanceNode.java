@@ -148,7 +148,6 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
 
     @Override
     public Action[] getActions(boolean context) {
-        // !PW Commented actions are place holders for when those features are available.
         return new Action[] {
             SystemAction.get(StartServerAction.class),
             SystemAction.get(DebugAction.class),
@@ -178,10 +177,6 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
     //        return new Customizer(dataSup, new Hk2J2eePlatformFactory().getJ2eePlatformImpl(getDeploymentManager()));
         return new javax.swing.JPanel();
     }
-
-//    public Hk2DeploymentManager getDeploymentManager() {
-//        return ((Hk2DeploymentManager) lookup.lookup(Hk2DeploymentManager.class));
-//    }
 
     @Override
     public Image getIcon(int type) {
@@ -277,9 +272,10 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         
         Map<String, String> ip = getInstanceProperties();
         String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-        String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
+        String adminPort = !"false".equals(System.getProperty("glassfish.useadminport")) ?
+            ip.get(GlassfishModule.ADMINPORT_ATTR) : ip.get(GlassfishModule.HTTPPORT_ATTR);
         if(host != null && host.length() > 0) {
-            result = "http://" + host + ":" + httpPort;
+            result = "http://" + host + ":" + adminPort;
         }
         
         return result;

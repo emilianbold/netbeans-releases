@@ -269,7 +269,7 @@ made subject to such option by the copyright holder.
             </file>
             <!-- Miscellaneous help menu items (URLs) now installed by utilities module. -->
             <file name="org-netbeans-core-actions-AboutAction.instance">
-                <attr name="position" intvalue="1300"/>
+                <attr name="position" intvalue="1500"/>
             </file>
         </folder>
 

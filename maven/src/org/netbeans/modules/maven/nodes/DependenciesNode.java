@@ -40,20 +40,31 @@
 package org.netbeans.modules.maven.nodes;
 
 import java.awt.Image;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import javax.swing.JMenuItem;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.embedder.MavenEmbedder;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -67,10 +78,13 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -81,17 +95,19 @@ public class DependenciesNode extends AbstractNode {
     static final int TYPE_COMPILE = 0;
     static final int TYPE_TEST = 1;
     static final int TYPE_RUNTIME = 2;
+    private static final String SHOW_NONCLASSPATH_DEPENDENCIES = "show.nonclasspath.dependencies"; //NOI18N
+    public static final String PREF_DEPENDENCIES_UI = "org/netbeans/modules/maven/dependencies/ui"; //NOI18N
     
     private NbMavenProjectImpl project;
     
-    DependenciesNode(NbMavenProjectImpl mavproject, int type) {
-        super(new DependenciesChildren(mavproject, type), Lookups.fixed(mavproject));
+    DependenciesNode(DependenciesChildren childs, NbMavenProjectImpl mavproject, int type) {
+        super(childs, Lookups.fixed(mavproject));
         setName("Dependencies" + type); //NOI18N
         switch (type) {
-            case TYPE_COMPILE : setDisplayName(org.openide.util.NbBundle.getMessage(DependenciesNode.class, "LBL_Libraries")); break;
-            case TYPE_TEST : setDisplayName(org.openide.util.NbBundle.getMessage(DependenciesNode.class, "LBL_Test_Libraries")); break;
-            case TYPE_RUNTIME : setDisplayName(org.openide.util.NbBundle.getMessage(DependenciesNode.class, "LBL_Runtime_Libraries")); break;
-            default : setDisplayName(org.openide.util.NbBundle.getMessage(DependenciesNode.class, "LBL_Libraries")); break;
+            case TYPE_COMPILE : setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_Libraries")); break;
+            case TYPE_TEST : setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_Test_Libraries")); break;
+            case TYPE_RUNTIME : setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_Runtime_Libraries")); break;
+            default : setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_Libraries")); break;
         }
         project = mavproject;
         setIconBaseWithExtension("org/netbeans/modules/maven/defaultFolder.gif"); //NOI18N
@@ -122,30 +138,55 @@ public class DependenciesNode extends AbstractNode {
         toRet.add(new DownloadJavadocSrcAction(true));
         toRet.add(new DownloadJavadocSrcAction(false));
         MavenProjectNode.loadLayerActions("Projects/org-netbeans-modules-maven/DependenciesActions", toRet); //NOI18N
+        toRet.add(null);
+        toRet.add(new ShowClasspathDepsAction());
         return toRet.toArray(new Action[toRet.size()]);
     }
     
-    private static class DependenciesChildren extends Children.Keys<Artifact> implements PropertyChangeListener {
+    static class DependenciesChildren extends Children.Keys<DependencyWrapper> implements PropertyChangeListener, PreferenceChangeListener {
         private NbMavenProjectImpl project;
         private int type;
+        boolean showNonCP = false;
+
+        int nonCPcount = 0;
+
         public DependenciesChildren(NbMavenProjectImpl proj, int type) {
             super();
             project = proj;
             this.type = type;
+            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
+            prefs.addPreferenceChangeListener(this);
         }
         
-        protected Node[] createNodes(Artifact art) {
+        public void showNonCP() {
+            showNonCP = true;
+            regenerateKeys();
+            refresh();
+            refreshKey(NULL);
+        }
+        
+        protected Node[] createNodes(DependencyWrapper wr) {
+            if (wr == NULL) {
+                return new Node[] {new NonCPNode(nonCPcount, this)};
+            }
             Lookup look = Lookups.fixed(new Object[] {
-                art,
+                wr.getArtifact(),
+                wr.getDependency(),
                 project
             });
             return new Node[] { new DependencyNode(look, true) };
         }
+
+        Node getParentNode() {
+            return getNode();
+        }
         
         public void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                //was refreshed by the NodeList already..
                 regenerateKeys();
                 refresh();
+                refreshKey(NULL);
             }
         }
         
@@ -153,7 +194,6 @@ public class DependenciesNode extends AbstractNode {
         protected void addNotify() {
             super.addNotify();
             NbMavenProject.addPropertyChangeListener(project, this);
-            regenerateKeys();
         }
         
         @Override
@@ -163,21 +203,125 @@ public class DependenciesNode extends AbstractNode {
             super.removeNotify();
         }
         
-        private void regenerateKeys() {
+        int regenerateKeys() {
             TreeSet lst = new TreeSet(new DependenciesComparator());
+            MavenProject mp = project.getOriginalMavenProject();
             if (type == TYPE_COMPILE) {
-                lst.addAll(project.getOriginalMavenProject().getCompileArtifacts());
+                lst.addAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
             }
             if (type == TYPE_TEST) {
-                lst.addAll(project.getOriginalMavenProject().getTestArtifacts());
-                lst.removeAll(project.getOriginalMavenProject().getCompileArtifacts());
+                lst.addAll(create(mp.getTestDependencies(), mp.getArtifacts()));
+                int cnt = nonCPcount;
+                nonCPcount = 0;
+                lst.removeAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
+                lst.removeAll(create(mp.getRuntimeDependencies(), mp.getArtifacts()));
+                nonCPcount = cnt - nonCPcount;
+                if (nonCPcount == 0) {
+                    lst.remove(NULL);
+                } else {
+                    lst.add(NULL);
+                }
             }
             if (type == TYPE_RUNTIME) {
-                lst.addAll(project.getOriginalMavenProject().getRuntimeArtifacts());
-                lst.removeAll(project.getOriginalMavenProject().getCompileArtifacts());
+                lst.addAll(create(mp.getRuntimeDependencies(), mp.getArtifacts()));
+                int cnt = nonCPcount;
+                nonCPcount = 0;
+                lst.removeAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
+                nonCPcount = cnt - nonCPcount;
+                if (nonCPcount == 0) {
+                    lst.remove(NULL);
+                } else {
+                    lst.add(NULL);
+                }
             }
             setKeys(lst);
+            return lst.size();
         }
+        
+        private Set<DependencyWrapper> create(Collection<Dependency> deps, Collection<Artifact> arts) {
+            boolean nonCP = showNonClasspath() || showNonCP;
+            int nonCPCount = 0;
+            TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
+            for (Dependency d : deps) {
+                boolean added = false;
+                for (Artifact a : arts) {
+                    if (a.getGroupId().equals(d.getGroupId()) &&
+                            a.getArtifactId().equals(d.getArtifactId())) {
+                        if (nonCP || a.getArtifactHandler().isAddedToClasspath()) {
+                            lst.add(new DependencyWrapper(a, d));
+                        } else {
+                            nonCPCount = nonCPCount + 1;
+                        }
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added) {
+                    System.out.println("not found artifact for " + d);
+                }
+            }
+            if (nonCPCount > 0) {
+                lst.add(NULL);
+            }
+            this.nonCPcount = nonCPCount;
+            return lst;
+        }
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (SHOW_NONCLASSPATH_DEPENDENCIES.equals(evt.getKey())) {
+                regenerateKeys();
+            }
+        }
+    }
+    
+    private static final DependencyWrapper NULL = new DependencyWrapper(null, null);
+    
+    private static class DependencyWrapper {
+
+        private Artifact artifact;
+        private Dependency dependency;
+
+        public DependencyWrapper(Artifact artifact, Dependency dependency) {
+            this.artifact = artifact;
+            this.dependency = dependency;
+        }
+
+        public Artifact getArtifact() {
+            return artifact;
+        }
+
+        public Dependency getDependency() {
+            return dependency;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (this == NULL && obj == NULL) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final DependencyWrapper other = (DependencyWrapper) obj;
+            if (this.artifact != other.artifact && (this.artifact == null || !this.artifact.equals(other.artifact))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            if (this == NULL) {
+                return hash;
+            }
+            hash = 23 * hash + (this.artifact != null ? this.artifact.hashCode() : 0);
+            return hash;
+        }
+        
     }
     
     private class AddDependencyAction extends AbstractAction {
@@ -252,7 +396,7 @@ public class DependenciesNode extends AbstractNode {
     public static class ResolveDepsAction extends AbstractAction {
         private Project project;
         public ResolveDepsAction(Project prj) {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependenciesNode.class, "LBL_Download"));
+            putValue(Action.NAME, NbBundle.getMessage(DependenciesNode.class, "LBL_Download"));
             project = prj;
         }
         
@@ -265,23 +409,105 @@ public class DependenciesNode extends AbstractNode {
             });
         }
     }  
-    private static class DependenciesComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            Artifact art1 = (Artifact)o1;
-            Artifact art2 = (Artifact)o2;
-            boolean transitive1 = art1.getDependencyTrail().size() > 2;
-            boolean transitive2 = art2.getDependencyTrail().size() > 2;
+    
+    private static boolean showNonClasspath() {
+        Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
+        boolean b = prefs.getBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, false); //NOI18N
+        return b;
+    }
+    
+    private static class ShowClasspathDepsAction extends AbstractAction implements Presenter.Popup {
+
+        public ShowClasspathDepsAction() {
+//            String s = showNonClasspath() ?
+//                NbBundle.getMessage(DependenciesNode.class, "LBL_HideNonClasspath") :
+            String s = NbBundle.getMessage(DependenciesNode.class, "LBL_ShowNonClasspath");
+            putValue(Action.NAME, s);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            boolean b = showNonClasspath();
+            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
+            prefs.putBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, !b); //NOI18N
+            try {
+                prefs.flush();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        public JMenuItem getPopupPresenter() {
+            JCheckBoxMenuItem mi = new JCheckBoxMenuItem(this);
+            mi.setSelected(showNonClasspath());
+            return mi;
+        }
+        
+    }
+    
+    private static class DependenciesComparator implements Comparator<DependencyWrapper> {
+
+        public int compare(DependencyWrapper art1, DependencyWrapper art2) {
+            if (art1 == NULL && art2 == NULL) {
+                return 0;
+            }
+            if (art1 == NULL) {
+                return -1;
+            }
+            if (art2 == NULL) {
+                return 1;
+            }
+            boolean transitive1 = art1.getArtifact().getDependencyTrail().size() > 2;
+            boolean transitive2 = art2.getArtifact().getDependencyTrail().size() > 2;
             if (transitive1 && !transitive2) {
                 return 1;
             }
             if (!transitive1 && transitive2)  {
                 return -1;
             }
-            return art1.getArtifactId().compareTo(art2.getArtifactId());
+            return art1.getArtifact().getArtifactId().compareTo(art2.getArtifact().getArtifactId());
         }
         
     }
     
+    private static class NonCPNode extends AbstractNode {
+        private DependenciesChildren parent;
+        
+        NonCPNode(int count, DependenciesChildren parent) {
+            super(Children.LEAF);
+            this.parent = parent;
+            if (count == 1) {
+                setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_NonCPCount1"));
+            } else {
+                setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_NonCPCount2", count));
+            }
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return new ExpandAction(parent);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                new ExpandAction(parent)
+            };
+        }
+    }
+
+    private static class ExpandAction extends AbstractAction {
+        private DependenciesChildren parent;
+
+        public ExpandAction(DependenciesChildren parent) {
+            this.parent = parent;
+            putValue(Action.NAME, NbBundle.getMessage(DependenciesNode.class, "LBL_Expand"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            parent.showNonCP();
+        }
+
+    }
     
     private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
     private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N

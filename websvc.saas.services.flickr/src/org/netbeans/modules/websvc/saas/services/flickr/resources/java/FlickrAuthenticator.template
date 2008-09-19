@@ -103,7 +103,7 @@ public class ${name} {
                 authToken = rsp.getAuth().getToken();
                 authUser = rsp.getAuth().getUser().getNsid();
             } catch (Exception ex) {
-                throw new IOException("Failed to get authentication token: " + response.getDataAsString(), ex);
+                throw new IOException("Failed to get authentication token: " + response.getDataAsString() +", cause: "+ ex.getMessage());
             }
         }
     }

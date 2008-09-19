@@ -55,12 +55,13 @@ import java.util.EnumSet;
 /**
  * @author David Kaspar
  */
-public final class InplaceEditorAction<C extends JComponent> extends WidgetAction.LockedAdapter implements InplaceEditorProvider.EditorController {
+public final class InplaceEditorAction<C extends JComponent> extends WidgetAction.LockedAdapter implements InplaceEditorProvider.TypedEditorController {
 
     private InplaceEditorProvider<C> provider;
     private C editor = null;
     private Widget widget = null;
     private Rectangle rectangle = null;
+    private InplaceEditorProvider.EditorInvocationType invocationType;
 
     public InplaceEditorAction(InplaceEditorProvider<C> provider) {
         this.provider = provider;
@@ -70,15 +71,17 @@ public final class InplaceEditorAction<C extends JComponent> extends WidgetActio
         return editor != null;
     }
 
+    @Override
     public State mouseClicked(Widget widget, WidgetMouseEvent event) {
         if (event.getButton() == MouseEvent.BUTTON1 && event.getClickCount() == 2) {
-            if (openEditor(widget)) {
+            if (openEditor(widget, InplaceEditorProvider.EditorInvocationType.MOUSE)) {
                 return State.createLocked(widget, this);
             }
         }
         return State.REJECTED;
     }
 
+    @Override
     public State mousePressed(Widget widget, WidgetMouseEvent event) {
 //        if (editor != null)
 //            closeEditor (true);
@@ -94,6 +97,7 @@ public final class InplaceEditorAction<C extends JComponent> extends WidgetActio
         return State.REJECTED;
     }
 
+    @Override
     public State mouseReleased(Widget widget, WidgetAction.WidgetMouseEvent event) {
 //        if (editor != null)
 //            closeEditor (true);
@@ -109,9 +113,10 @@ public final class InplaceEditorAction<C extends JComponent> extends WidgetActio
         return State.REJECTED;
     }
 
+    @Override
     public State keyPressed(Widget widget, WidgetKeyEvent event) {
         if (event.getKeyChar() == KeyEvent.VK_ENTER) {
-            if (openEditor(widget)) {
+            if (openEditor(widget, InplaceEditorProvider.EditorInvocationType.KEY)) {
                 return State.createLocked(widget, this);
             }
         }
@@ -123,6 +128,10 @@ public final class InplaceEditorAction<C extends JComponent> extends WidgetActio
     }
 
     public final boolean openEditor(Widget widget) {
+        return openEditor (widget, InplaceEditorProvider.EditorInvocationType.CODE);
+    }
+
+    private boolean openEditor (Widget widget, InplaceEditorProvider.EditorInvocationType invocationType) {
         if (editor != null) {
             return false;
         }
@@ -131,8 +140,10 @@ public final class InplaceEditorAction<C extends JComponent> extends WidgetActio
         if (component == null) {
             return false;
         }
+        this.invocationType = invocationType;
         editor = provider.createEditorComponent(this, widget);
         if (editor == null) {
+            this.invocationType = null;
             return false;
         }
         this.widget = widget;
@@ -204,7 +215,7 @@ public final class InplaceEditorAction<C extends JComponent> extends WidgetActio
         editor = null;
         widget = null;
         rectangle = null;
-
+        invocationType = null;
     }
 
     public void notifyEditorComponentBoundsChanged() {
@@ -268,4 +279,9 @@ public final class InplaceEditorAction<C extends JComponent> extends WidgetActio
         editor.setBounds(rectangle);
         editor.repaint();
     }
+
+    public InplaceEditorProvider.EditorInvocationType getEditorInvocationType () {
+        return invocationType;
+    }
+
 }

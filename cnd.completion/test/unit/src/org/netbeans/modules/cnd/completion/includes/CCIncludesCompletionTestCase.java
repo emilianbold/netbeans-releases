@@ -63,4 +63,14 @@ public class CCIncludesCompletionTestCase extends IncludesCompletionBaseTestCase
     public void testSmthSys() throws Exception {
         performTest("file.cc", 1, 1, "#include <inc>", -1);
     }    
+        
+    // IZ 119931 : Class name is suggested in include directive
+    public void testPrefix1() throws Exception {
+        performTest("file.cc", 1, 1, "#include incl");
+    }    
+
+    // IZ 119931 : Class name is suggested in include directive
+    public void testPrefix2() throws Exception {
+        performTest("file.cc", 1, 1, "#include us");
+    }    
 }

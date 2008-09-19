@@ -60,7 +60,7 @@ public class NamedEntityOptions {
     private final Preferences preferences = NbPreferences.forModule(NamedEntityOptions.class);
 
     public boolean isEnabled(NamedEntity e) {
-        return preferences.getBoolean(e.getName(), true);
+        return preferences.getBoolean(e.getName(), e.isEnabledByDefault());
     }
     
     public void setEnabled(NamedEntity e, boolean value) {

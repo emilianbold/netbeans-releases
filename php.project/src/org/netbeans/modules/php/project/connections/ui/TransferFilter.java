@@ -51,11 +51,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -72,13 +72,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.connections.RemoteSettings;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -119,16 +116,16 @@ public final class TransferFilter extends javax.swing.JPanel {
     });
         
     //folders are not filtered although not showed to user
-    public static Set<TransferFile> showUploadDialog(Set<TransferFile> transferFiles, PhpProject project) {
-        return showTransferDialog(transferFiles, project, TransferFileTableModel.Type.UPLOAD);
+    public static Set<TransferFile> showUploadDialog(Set<TransferFile> transferFiles, long timestamp) {
+        return showTransferDialog(transferFiles, TransferFileTableModel.Type.UPLOAD, timestamp);
     }
 
     //folders are not filtered although not showed to user
     public static Set<TransferFile> showDownloadDialog(Set<TransferFile> transferFiles) {
-        return showTransferDialog(transferFiles, null, TransferFileTableModel.Type.DOWNLOAD);
+        return showTransferDialog(transferFiles, TransferFileTableModel.Type.DOWNLOAD, -1);
     }
 
-    private static Set<TransferFile> showTransferDialog(Set<TransferFile> transferFiles, PhpProject project, TransferFileDownloadModel.Type type) {
+    private static Set<TransferFile> showTransferDialog(Set<TransferFile> transferFiles, TransferFileDownloadModel.Type type, long timestamp) {
         TransferFileTableModel model = null;
         String title = null;
         switch (type) {
@@ -137,49 +134,45 @@ public final class TransferFilter extends javax.swing.JPanel {
                 title = NbBundle.getMessage(TransferFilter.class, "Download_Title");
                 break;
             case UPLOAD:
-                assert project != null : "project must be provided for uploading files";
-                model = new TransferFileUploadModel(wrapTransferFiles(transferFiles, project));
+                model = new TransferFileUploadModel(wrapTransferFiles(transferFiles, timestamp));
                 title = NbBundle.getMessage(TransferFilter.class, "Upload_Title");
                 break;
             default:
                 assert false;
         }
         TransferFilter panel = new TransferFilter(new TransferFilterTable(model));
-        JButton close = new JButton();
-        close.setDefaultCapable(false);
-        Mnemonics.setLocalizedText(close, NbBundle.getMessage(TransferFilter.class, "LBL_Ok"));//NOI18N
-        DialogDescriptor descriptior = new DialogDescriptor(panel, title);
-        descriptior.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
-        descriptior.setOptions(new Object[]{close, DialogDescriptor.CANCEL_OPTION});
-        Object closeOption = DialogDisplayer.getDefault().notify(descriptior);
-        boolean continueTransfer = !DialogDescriptor.CANCEL_OPTION.equals(closeOption);        
-        return (continueTransfer) ? unwrapFileUnits(model.getFilteredUnits()) : new HashSet<TransferFile>();
+        JButton okButton = new JButton();
+        Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(TransferFilter.class, "LBL_Ok"));
+        DialogDescriptor descriptor = new DialogDescriptor(
+                panel,
+                title,
+                true,
+                new Object[] {okButton, DialogDescriptor.CANCEL_OPTION},
+                okButton,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        if (DialogDisplayer.getDefault().notify(descriptor) == okButton) {
+            return unwrapFileUnits(model.getFilteredUnits());
+        }
+        return Collections.<TransferFile>emptySet();
     }
 
-    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> file, TransferFileTableModel model) {
+    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer, TransferFileTableModel model) {
         List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
-        for (TransferFile transferFile : file) {
+        for (TransferFile transferFile : toTransfer) {
             retval.add(new TransferFileUnit(transferFile, model.isMarkedAsDefault()));
         }
         return retval;
     }
 
-    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> file, PhpProject project) {
+    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer,  long timestamp) {
         List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
-        long lastUpload = RemoteSettings.getLastUpload(project);
-        boolean selected = true;
-        for (TransferFile transferFile : file) {
-            if (lastUpload != -1) {
+        boolean selected = timestamp == -1;
+        for (TransferFile transferFile : toTransfer) {
+            if (timestamp != -1) {
                 // we have some timestamp
-                if (transferFile.isFile()) {
-                    // minor optimization + bugfix (relative path of sources directory is TransferFile.CWD)
-                    FileObject fo = project.getSourcesDirectory().getFileObject(transferFile.getRelativePath());
-                    assert fo != null : "fileobject must exist for relative path " + transferFile.getRelativePath();
-                    long lastModified = TimeUnit.SECONDS.convert(fo.lastModified().getTime(), TimeUnit.MILLISECONDS);
-                    selected = lastModified > lastUpload;
-                } else {
-                    selected = true;
-                }
+                selected = transferFile.isFile() && transferFile.getTimestamp() > timestamp;
             }
             retval.add(new TransferFileUnit(transferFile, selected));
         }
@@ -409,6 +402,28 @@ public final class TransferFilter extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = table;
         lWarning = new javax.swing.JLabel();
+
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return tfSearch;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return tfSearch;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return tfSearch;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                return tfSearch;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                return tfSearch;//end getComponentBefore
+
+            }}
+        );
 
         org.openide.awt.Mnemonics.setLocalizedText(lSelectionInfo, org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lSelectionInfo.text")); // NOI18N
 

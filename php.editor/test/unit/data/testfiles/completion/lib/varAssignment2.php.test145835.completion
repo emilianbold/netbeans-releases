@@ -1,0 +1,4 @@
+Code completion result for source line:
+$cVarAdvancedTest->|
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     uff()                           [PUBLIC]   VarAdvancedTest

@@ -83,6 +83,11 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 
 /**
  *
@@ -181,49 +186,10 @@ class GroovyParser implements Parser {
         // See if it looks modified
         // Insert an end statement? Insert a } marker?
         String doc = context.source;
-        int docLength = doc.length(); // since doc will not be modified, we can safely optimize here.
-        
-        if (offset > docLength) {
+        if (offset > doc.length()) {
             return false;
         }
 
-        if (sanitizing == Sanitize.BLOCK_START) {
-            try {
-                int start = GroovyUtils.getRowFirstNonWhite(doc, offset);
-                if (start != -1 && 
-                        start+2 < docLength &&
-                        doc.regionMatches(start, "if", 0, 2)) {
-                    // TODO - check lexer
-                    char c = 0;
-                    if (start+2 < docLength) {
-                        c = doc.charAt(start+2);
-                    }
-                    if (!Character.isLetter(c)) {
-                        int removeStart = start;
-                        int removeEnd = removeStart+2;
-                        StringBuilder sb = new StringBuilder(docLength);
-                        sb.append(doc.substring(0, removeStart));
-                        for (int i = removeStart; i < removeEnd; i++) {
-                            sb.append(' ');
-                        }
-                        if (removeEnd < docLength) {
-                            sb.append(doc.substring(removeEnd, docLength));
-                        }
-                        assert sb.length() == docLength;
-                        context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
-                        context.sanitizedSource = sb.toString();
-                        context.sanitizedContents = doc.substring(removeStart, removeEnd);
-                        return true;
-                    }
-                }
-                
-                return false;
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-                return false;
-            }
-        }
-        
         try {
             // Sometimes the offset shows up on the next line
             if (GroovyUtils.isRowEmpty(doc, offset) || GroovyUtils.isRowWhite(doc, offset)) {
@@ -235,21 +201,58 @@ class GroovyParser implements Parser {
 
             if (!(GroovyUtils.isRowEmpty(doc, offset) || GroovyUtils.isRowWhite(doc, offset))) {
                 if ((sanitizing == Sanitize.EDITED_LINE) || (sanitizing == Sanitize.ERROR_LINE)) {
+
+                    if (sanitizing == Sanitize.ERROR_LINE) {
+                        // groovy-only, this is not done in Ruby or JavaScript sanitization
+                        // look backwards if there is unfinished line with trailing dot and remove that dot
+                        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(context.document, offset);
+                        if (ts != null) {
+                            Token<? extends GroovyTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                            if (token.id() == GroovyTokenId.DOT) {
+                                int removeStart = ts.offset();
+                                int removeEnd = removeStart + 1;
+                                StringBuilder sb = new StringBuilder(doc.length());
+                                sb.append(doc.substring(0, removeStart));
+                                sb.append(' ');
+                                if (removeEnd < doc.length()) {
+                                    sb.append(doc.substring(removeEnd, doc.length()));
+                                }
+                                assert sb.length() == doc.length();
+                                context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
+                                context.sanitizedSource = sb.toString();
+                                context.sanitizedContents = doc.substring(removeStart, removeEnd);
+                                return true;
+                            }
+                        }
+                    }
+
                     // See if I should try to remove the current line, since it has text on it.
                     int lineEnd = GroovyUtils.getRowLastNonWhite(doc, offset);
 
-                    if (lineEnd != -1 && offset < (docLength - 1)) {
-                        StringBuilder sb = new StringBuilder(docLength);
+                    if (lineEnd != -1) {
+                        lineEnd++; // lineEnd is exclusive, not inclusive
+                        StringBuilder sb = new StringBuilder(doc.length());
                         int lineStart = GroovyUtils.getRowStart(doc, offset);
-                        int rest = lineStart + 2;
+                        if (lineEnd >= lineStart+2) {
+                            sb.append(doc.substring(0, lineStart));
+                            sb.append("//");
+                            int rest = lineStart + 2;
+                            if (rest < doc.length()) {
+                                sb.append(doc.substring(rest, doc.length()));
+                            }
+                        } else {
+                            // A line with just one character - can't replace with a comment
+                            // Just replace the char with a space
+                            sb.append(doc.substring(0, lineStart));
+                            sb.append(" ");
+                            int rest = lineStart + 1;
+                            if (rest < doc.length()) {
+                                sb.append(doc.substring(rest, doc.length()));
+                            }
 
-                        sb.append(doc.substring(0, lineStart));
-                        sb.append("//");
-
-                        if (rest < docLength) {
-                            sb.append(doc.substring(rest, docLength));
                         }
-                        assert sb.length() == docLength;
+
+                        assert sb.length() == doc.length();
 
                         context.sanitizedRange = new OffsetRange(lineStart, lineEnd);
                         context.sanitizedSource = sb.toString();
@@ -262,22 +265,14 @@ class GroovyParser implements Parser {
                     // See if I should try to remove the current line, since it has text on it.
                     int lineStart = GroovyUtils.getRowStart(doc, offset);
                     int lineEnd = offset-1;
-                    
-                    /* if the "offset" variable provided above was wrong for
-                     * various reasons, one might end up with lineStart > lineEnd
-                     */
-                    
-                    if (lineStart > lineEnd)
-                        return false;
-                    
-                    while (lineEnd >= lineStart && lineEnd < docLength) {
+                    while (lineEnd >= lineStart && lineEnd < doc.length()) {
                         if (!Character.isWhitespace(doc.charAt(lineEnd))) {
                             break;
                         }
                         lineEnd--;
                     }
                     if (lineEnd > lineStart) {
-                        StringBuilder sb = new StringBuilder(docLength);
+                        StringBuilder sb = new StringBuilder(doc.length());
                         String line = doc.substring(lineStart, lineEnd + 1);
                         int removeChars = 0;
                         int removeEnd = lineEnd+1;
@@ -286,26 +281,8 @@ class GroovyParser implements Parser {
                             removeChars = 1;
                         } else if (line.endsWith(",")) { // NOI18N                            removeChars = 1;
                             removeChars = 1;
-                        } else if (line.endsWith(",:")) { // NOI18N
-                            removeChars = 2;
-                        } else if (line.endsWith(", :")) { // NOI18N
-                            removeChars = 3;
                         } else if (line.endsWith(", ")) { // NOI18N
                             removeChars = 2;
-                        } else if (line.endsWith("=> :")) { // NOI18N
-                            removeChars = 4;
-                        } else if (line.endsWith("=>:")) { // NOI18N
-                            removeChars = 3;
-                        } else if (line.endsWith("=>")) { // NOI18N
-                            removeChars = 2;
-                        } else if (line.endsWith("::")) { // NOI18N
-                            removeChars = 2;
-                        } else if (line.endsWith(":")) { // NOI18N
-                            removeChars = 1;
-                        } else if (line.endsWith("@@")) { // NOI18N
-                            removeChars = 2;
-                        } else if (line.endsWith("@")) { // NOI18N
-                            removeChars = 1;
                         } else if (line.endsWith(",)")) { // NOI18N
                             // Handle lone comma in parameter list - e.g.
                             // type "foo(a," -> you end up with "foo(a,|)" which doesn't parse - but
@@ -318,7 +295,7 @@ class GroovyParser implements Parser {
                             removeChars = 1;
                             removeEnd -= 2;
                         }
-                        
+
                         if (removeChars == 0) {
                             return false;
                         }
@@ -331,10 +308,10 @@ class GroovyParser implements Parser {
                             sb.append(' ');
                         }
 
-                        if (removeEnd < docLength) {
-                            sb.append(doc.substring(removeEnd, docLength));
+                        if (removeEnd < doc.length()) {
+                            sb.append(doc.substring(removeEnd, doc.length()));
                         }
-                        assert sb.length() == docLength;
+                        assert sb.length() == doc.length();
 
                         context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
                         context.sanitizedSource = sb.toString();
@@ -381,14 +358,6 @@ class GroovyParser implements Parser {
         case ERROR_DOT:
 
             // We've tried removing dots - now try removing the whole line at the error position
-            if (context.caretOffset != -1) {
-                return parseBuffer(context, Sanitize.BLOCK_START);
-            }
-            
-        // Fall through to try the next trick
-        case BLOCK_START:
-            
-            // We've tried removing dots - now try removing the whole line at the error position
             if (context.errorOffset != -1) {
                 return parseBuffer(context, Sanitize.ERROR_LINE);
             }
@@ -409,7 +378,7 @@ class GroovyParser implements Parser {
         // Fall through to try the next trick
         case EDITED_LINE:
             return parseBuffer(context, Sanitize.MISSING_END);
-            
+
         // Fall through for default handling
         case MISSING_END:
         default:
@@ -419,7 +388,7 @@ class GroovyParser implements Parser {
     }
 
     @SuppressWarnings("unchecked")
-    public GroovyParserResult parseBuffer(final Context context, final Sanitize sanitizing) {
+    GroovyParserResult parseBuffer(final Context context, final Sanitize sanitizing) {
         boolean sanitizedSource = false;
         String source = context.source;
         if (!((sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER))) {
@@ -553,7 +522,7 @@ class GroovyParser implements Parser {
 
         CompileUnit compileUnit = compilationUnit.getAST();
         List<ModuleNode> modules = compileUnit.getModules();
-        
+
         // there are more modules if class references another class,
         // there is one module per class
         ModuleNode module = null;
@@ -692,10 +661,6 @@ class GroovyParser implements Parser {
         /** Try to remove the trailing . or :: at the error position, or the prior
          * line, or the caret line */
         ERROR_DOT, 
-        /** Try to remove the initial "if" or "unless" on the block
-         * in case it's not terminated
-         */
-        BLOCK_START,
         /** Try to cut out the error line */
         ERROR_LINE, 
         /** Try to cut out the current edited line, if known */
@@ -734,7 +699,7 @@ class GroovyParser implements Parser {
             return sanitizedRange;
         }
 
-        public Sanitize getSanitized() {
+        Sanitize getSanitized() {
             return sanitized;
         }
         

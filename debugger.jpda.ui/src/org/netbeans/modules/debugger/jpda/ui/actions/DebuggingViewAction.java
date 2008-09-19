@@ -65,10 +65,7 @@ public class DebuggingViewAction extends AbstractAction {
             Action.NAME, 
             NbBundle.getMessage (DebuggingViewAction.class, "CTL_DebuggingViewAction")
         );
-        putValue (
-            Action.SMALL_ICON, 
-            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/debugging.png")) // NOI18N
-        );
+        putValue("iconbase", "org/netbeans/modules/debugger/jpda/resources/debugging.png"); // NOI18N
     }
 
     public void actionPerformed (ActionEvent evt) {

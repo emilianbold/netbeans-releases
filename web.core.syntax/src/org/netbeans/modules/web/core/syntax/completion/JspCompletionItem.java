@@ -287,7 +287,7 @@ public class JspCompletionItem implements CompletionItem {
                 int caretOffset = component.getSelectionEnd();
                 if (caretOffset > substitutionOffset) {
                     String currentText = component.getDocument().getText(substitutionOffset, caretOffset - substitutionOffset);
-                    if (!getInsertPrefix().toString().startsWith(currentText)) {
+                    if (!getSubstituteText().toString().startsWith(currentText)) {
                         return false;
                     }
                 }

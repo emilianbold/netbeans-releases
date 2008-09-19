@@ -123,7 +123,7 @@ import org.w3c.dom.Text;
  *
  * @author vince kraemer
  */
-public final class EarProject implements Project, AntProjectListener, ProjectPropertyProvider {
+public final class EarProject implements Project, AntProjectListener {
     
     private static final Icon EAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif")); // NOI18N
     public static final String ARTIFACT_TYPE_EAR = "ear";
@@ -318,8 +318,8 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
         j2eePlatformListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
-                    ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                        public Object run() {
+                    ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                        public Void run() {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             if (!ProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {         
@@ -526,13 +526,8 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
             
             // #134642 - use Ant task from copylibs library
-            if (helper.isSharableProject() && refHelper.getProjectLibraryManager().getLibrary("CopyLibs") == null) { // NOI18N
-                try {
-                    refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            ClassPathSupport.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
+            
             //update lib references in project properties
             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ProjectProperties.removeObsoleteLibraryLocations(ep);
@@ -658,10 +653,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
     
     public String getJ2eePlatformVersion() {
         return  helper.getStandardPropertyEvaluator().getProperty(EarProjectProperties.J2EE_PLATFORM);
-    }
-    
-    public EarProjectProperties getProjectProperties() {
-        return new EarProjectProperties(this, updateHelper, eval, refHelper);
     }
     
     public GeneratedFilesHelper getGeneratedFilesHelper() {

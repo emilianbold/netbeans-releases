@@ -47,6 +47,7 @@ import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.diagrams.nodes.JoinForkWidget;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 
 /**
  *
@@ -91,9 +92,7 @@ public class RotateForkAction extends WidgetAction.LockedAdapter
     {
         State retVal = State.REJECTED;
         
-        if((event.isControlDown() == true) && 
-                ((event.getKeyChar() == KeyEvent.VK_ENTER) ||
-                 (event.getKeyChar() == '\r')))
+        if(Util.isPaletteExecute(event) == true)
         {
             if (widget != null && widget instanceof JoinForkWidget)
             {

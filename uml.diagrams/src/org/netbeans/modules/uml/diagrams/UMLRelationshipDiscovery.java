@@ -288,18 +288,33 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
         Collection < IPresentationElement > nodes = scene.getNodes();
         for (IPresentationElement pe : nodes)
         {
-            if (pe.getFirstSubject().equals(from))
+            // If the subject is equal to NULL that means someone has removed
+            // the subject from the presentation element, but did not remove
+            // the node from the diagram.
+            IElement subject = pe.getFirstSubject();
+            if(subject != null)
             {
-                sourceElement = pe;
-                break;
+                if (pe.getFirstSubject().equals(from))
+                {
+                    sourceElement = pe;
+                    break;
+                }
             }
         }
         for (IPresentationElement pe : nodes)
         {
-            if (pe.getFirstSubject().equals(to))
+            IElement subject = pe.getFirstSubject();
+            
+            // If the subject is equal to NULL that means someone has removed
+            // the subject from the presentation element, but did not remove
+            // the node from the diagram.
+            if(subject != null)
             {
-                targetElement = pe;
-                break;
+                if (pe.getFirstSubject().equals(to))
+                {
+                    targetElement = pe;
+                    break;
+                }
             }
         }
         IPresentationElement edge = createConnection(connection, 
@@ -693,10 +708,6 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
         {
             scene.setEdgeSource(edge, source);
             scene.setEdgeTarget(edge, target);
-            if(w instanceof AbstractUMLConnectionWidget)
-            {
-                ((AbstractUMLConnectionWidget)w).initialize(edge);
-            }
 
             Lookup lookup = w.getLookup();
             if (lookup != null)

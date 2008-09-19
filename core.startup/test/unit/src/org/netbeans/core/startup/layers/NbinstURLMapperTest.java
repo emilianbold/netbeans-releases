@@ -123,6 +123,9 @@ public class NbinstURLMapperTest extends NbTestCase {
         url = new URL ("nbinst://foo-module/modules/test.txt");
         fo = URLMapper.findFileObject (url);
         assertNull ("The nbinst URL was resolved.",fo);
+        FileObject folder = FileUtil.toFileObject(testFile.getParentFile());
+        assertTrue(folder.isFolder());
+        assertEquals("#146173: support for folder URLs", folder, URLMapper.findFileObject(new URL("nbinst://test-module/modules/")));
     }
 
     public void testURLConnection() throws MalformedURLException, IOException {
@@ -153,6 +156,9 @@ public class NbinstURLMapperTest extends NbTestCase {
 
         public File locate(String relativePath, String codeNameBase, boolean localized) {
             assert relativePath != null;
+            if (relativePath.endsWith("/")) {
+                throw new IllegalArgumentException("path " + relativePath + " ends with slash");
+            }
             if (root == null) {
                 return null;
             }

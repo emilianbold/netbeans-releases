@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.diagrams.edges;
 
+import org.netbeans.modules.uml.drawingarea.ConnectionAnchor;
 import java.awt.BasicStroke;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -66,7 +67,8 @@ import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 public class AssociationClassConnector extends AssociationConnector
 {
     
-
+    private ConnectToAssociationClass bridge = null;
+    
     public AssociationClassConnector(Scene scene)
     {
         super(scene);
@@ -74,20 +76,15 @@ public class AssociationClassConnector extends AssociationConnector
     }
 
     @Override
-    public void initialize(IPresentationElement element)
-    {
-        super.initialize(element);
-    }
-
-    @Override
     public void remove()
     {
         super.remove();
         
-        ConnectToAssociationClass bridge = getBridge();
-        if(bridge != null)
+        ConnectToAssociationClass connectTo = getBridge();
+        if(connectTo != null)
         {
-            Widget target = bridge.getTargetAnchor().getRelatedWidget();
+            Widget target = connectTo.getTargetAnchor().getRelatedWidget();
+            connectTo.removeFromParent();
             if (target instanceof UMLNodeWidget)
             {
                 UMLNodeWidget node = (UMLNodeWidget) target;
@@ -146,24 +143,28 @@ public class AssociationClassConnector extends AssociationConnector
             connectTo.setTargetAnchor(AnchorFactory.createRectangularAnchor(nodeWidget));
 
             ((AssociationClassWidget)nodeWidget).setBridgeConnection(connectTo);
-            addChild(connectTo);
+            getScene().addChild(connectTo);
+            bridge = connectTo;
+            //addChild(connectTo);
         }
     }
 
     private ConnectToAssociationClass getBridge()
     {
-        ConnectToAssociationClass retVal = null;
+//        ConnectToAssociationClass retVal = null;
+//        
+//        for(Widget child : getChildren())
+//        {
+//            if(child instanceof ConnectToAssociationClass)
+//            {
+//                retVal = (ConnectToAssociationClass)child;
+//                break;
+//            }
+//        }
+//        
+//        return retVal;
         
-        for(Widget child : getChildren())
-        {
-            if(child instanceof ConnectToAssociationClass)
-            {
-                retVal = (ConnectToAssociationClass)child;
-                break;
-            }
-        }
-        
-        return retVal;
+        return bridge;
     }
     private IPresentationElement createPresentationElement()
     {

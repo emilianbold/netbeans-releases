@@ -62,6 +62,7 @@ import org.netbeans.modules.web.client.tools.common.dbgp.Eval.*;
 import org.netbeans.modules.web.client.tools.common.dbgp.Property.*;
 import org.netbeans.modules.web.client.tools.common.dbgp.Source.*;
 import org.netbeans.modules.web.client.tools.common.dbgp.Stack.*;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -139,8 +140,14 @@ public class DebuggerProxy {
     public boolean stopDebugging() {
         boolean successfullyStopped = false;
         if(messageHandlerThread != null) {
-            sendCommand(commandFactory.stopCommand());
             stop.set(true);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    sendCommand(commandFactory.stopCommand());
+                }
+            });
+            
+            sendStopMessage(statusTextUser);
             successfullyStopped = true;
         }
         return successfullyStopped;
@@ -226,9 +233,9 @@ public class DebuggerProxy {
         return response != null ? response.getBreakpoints() : null;
     }
 
-    public byte[] getSource(String uri) {
+    public byte[] getSource(String uri, boolean stripBeginCharacter) {
         SourceResponse response = (SourceResponse) sendCommand(getCommandFactory().sourceCommand(uri));
-        return (response != null && response.isSusccess()) ? response.getSourceCode() : null;
+        return (response != null && response.isSusccess()) ? response.getSourceCode(stripBeginCharacter) : null;
     }
 
     public Message getSuspensionPoint() {
@@ -279,16 +286,16 @@ public class DebuggerProxy {
 
     public synchronized ResponseMessage sendCommand(Command command) {
         if(sessionSocket == null) {
-            try {
-                throw new IllegalStateException();
-            } catch (Exception ex) {
-                Log.getLogger().log(Level.INFO, "Cannot send command after session is closed", ex);  //NOI18N
-            }
+            Log.getLogger().log(Level.FINE, "Cannot send command after session is closed: " + command.getCommandName());
             
+            return null;
+        } else if (stop.get() && !(command instanceof Continue.StopCommand)) {
+            Log.getLogger().log(Level.INFO, "Ignored command after session is closed: " + command.getCommandName());
             return null;
         }
         try {
             messageSentThread = Thread.currentThread();
+            
             command.send(sessionSocket.getOutputStream());
             if (command.wantAcknowledgment()) {
                 Message message = responseQueue.poll(20, TimeUnit.SECONDS);

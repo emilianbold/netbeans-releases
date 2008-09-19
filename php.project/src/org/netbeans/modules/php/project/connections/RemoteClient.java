@@ -81,6 +81,8 @@ public class RemoteClient implements Cancellable {
     private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
     private static final String[] IGNORED_REMOTE_DIRS = new String[] {".", ".."}; // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
+    private static final String TMP_NEW_SUFFIX = ".new~"; // NOI18N
+    private static final String TMP_OLD_SUFFIX = ".old~"; // NOI18N
 
     // store not provided passwords in memory only
     private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
@@ -334,34 +336,86 @@ public class RemoteClient implements Cancellable {
             }
 
             String fileName = file.getName();
+            String tmpFileName = fileName + TMP_NEW_SUFFIX;
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Uploading file " + fileName + " => " + ftpClient.printWorkingDirectory() + TransferFile.SEPARATOR + fileName);
+                LOGGER.fine("Uploading file " + fileName + " => " + ftpClient.printWorkingDirectory() + TransferFile.SEPARATOR + tmpFileName);
             }
             // XXX lock the file?
             InputStream is = new FileInputStream(new File(baseLocalDir, file.getRelativePath(true)));
+            boolean success = false;
             try {
-                boolean success = false;
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
-                    if (ftpClient.storeFile(fileName, is)) {
+                    if (ftpClient.storeFile(tmpFileName, is)) {
                         success = true;
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("The %d. attempt to upload '%s' was successful", i, file.getRelativePath()));
+                            LOGGER.fine(String.format("The %d. attempt to upload '%s' was successful", i, file.getRelativePath() + TMP_NEW_SUFFIX));
                         }
                         break;
                     } else if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("The %d. attempt to upload '%s' was NOT successful", i, file.getRelativePath()));
+                        LOGGER.fine(String.format("The %d. attempt to upload '%s' was NOT successful", i, file.getRelativePath() + TMP_NEW_SUFFIX));
+                    }
+                }
+            } finally {
+                is.close();
+                if (success) {
+                    success = moveRemoteFile(fileName, tmpFileName);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("File %s renamed to %s: %s", tmpFileName, fileName, success));
                     }
                 }
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
                     transferFailed(transferInfo, file, getFailureMessage(fileName, true));
-                    ftpClient.deleteFile(fileName);
+                    boolean deleted = ftpClient.deleteFile(tmpFileName);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRelativePath() + TMP_NEW_SUFFIX, deleted));
+                    }
                 }
-            } finally {
-                is.close();
             }
         }
+    }
+
+    private boolean moveRemoteFile(String fileName, String tmpFileName) throws IOException {
+        String oldPath = fileName + TMP_OLD_SUFFIX;
+        boolean moved = ftpClient.rename(tmpFileName, fileName);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpFileName, fileName, moved));
+        }
+        if (moved) {
+            return true;
+        }
+        // possible cleanup
+        ftpClient.deleteFile(oldPath);
+
+        // try to move the old file, move the new file, delete the old file
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Renaming in chain: (1) <file> -> <file>.old~ ; (2) <file>.new~ -> <file> ; (3) rm <file>.old~");
+        }
+        moved = ftpClient.rename(fileName, oldPath);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("(1) File %s renamed to %s: %s", fileName, oldPath, moved));
+        }
+        if (!moved) {
+            return false;
+        }
+        moved = ftpClient.rename(tmpFileName, fileName);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("(2) File %s renamed to %s: %s", tmpFileName, fileName, moved));
+        }
+        if (!moved) {
+            // try to restore the original file
+            boolean restored = ftpClient.rename(oldPath, fileName);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("(-) File %s restored to original %s: %s", oldPath, fileName, restored));
+            }
+        } else {
+            boolean deleted = ftpClient.deleteFile(oldPath);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("(3) File %s deleted: %s", oldPath, deleted));
+            }
+        }
+        return moved;
     }
 
     public Set<TransferFile> prepareDownload(FileObject baseLocalDirectory, FileObject... filesToDownload) throws RemoteException {
@@ -464,6 +518,9 @@ public class RemoteClient implements Cancellable {
                 }
             }
         } finally {
+            // refresh filesystem
+            FileUtil.refreshFor(baseLocalDir);
+
             transferInfo.setRuntime(System.currentTimeMillis() - start);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(transferInfo.toString());
@@ -509,11 +566,15 @@ public class RemoteClient implements Cancellable {
             } else if (parent.isFile()) {
                 transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_DirFileCollision", file));
                 return;
+            } else if (!localFile.canWrite()) {
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FileNotWritable", localFile));
+                return;
             }
             assert parent.isDirectory() : "Parent file of " + localFile + " must be a directory";
 
+            File tmpLocalFile = new File(localFile.getAbsolutePath() + TMP_NEW_SUFFIX);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Downloading " + file.getRelativePath() + " => " + localFile.getAbsolutePath());
+                LOGGER.fine("Downloading " + file.getRelativePath() + " => " + tmpLocalFile.getAbsolutePath());
             }
 
             if (!cdBaseRemoteDirectory(file.getParentRelativePath(), false)) {
@@ -523,9 +584,9 @@ public class RemoteClient implements Cancellable {
             }
 
             // XXX lock the file?
-            OutputStream os = new FileOutputStream(localFile);
+            OutputStream os = new FileOutputStream(tmpLocalFile);
+            boolean success = false;
             try {
-                boolean success = false;
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
                     if (ftpClient.retrieveFile(file.getName(), os)) {
                         success = true;
@@ -537,17 +598,85 @@ public class RemoteClient implements Cancellable {
                         LOGGER.fine(String.format("The %d. attempt to download '%s' was NOT successful", i, file.getRelativePath()));
                     }
                 }
+            } finally {
+                os.close();
+                if (success) {
+                    // move the file
+                    success = moveLocalFile(localFile, tmpLocalFile);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("File %s renamed to %s: %s", tmpLocalFile, localFile, success));
+                    }
+                }
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
                     transferFailed(transferInfo, file, getFailureMessage(file.getName(), false));
-                    localFile.delete();
+                    boolean deleted = tmpLocalFile.delete();
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: %s", tmpLocalFile, deleted));
+                    }
                 }
-            } finally {
-                os.close();
             }
         } else {
             transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpUnknownFileType", file.getRelativePath()));
+        }
+    }
+
+    private boolean moveLocalFile(final File localFile, final File tmpLocalFile) {
+        final boolean[] moved = new boolean[1];
+        FileUtil.runAtomicAction(new Runnable() {
+            public void run() {
+                File oldPath = new File(localFile.getAbsolutePath() + TMP_OLD_SUFFIX);
+                String tmpLocalFileName = tmpLocalFile.getName();
+                String localFileName = localFile.getName();
+                String oldPathName = oldPath.getName();
+                moved[0] = tmpLocalFile.renameTo(localFile);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
+                }
+                if (moved[0]) {
+                    return;
+                }
+                // possible cleanup
+                deleteLocalFile(oldPath, ""); // NOI18N
+
+                // try to move the old file, move the new file, delete the old file
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Renaming in chain: (1) <file> -> <file>.old~ ; (2) <file>.new~ -> <file> ; (3) rm <file>.old~");
+                }
+                moved[0] = localFile.renameTo(oldPath);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("(1) File %s renamed to %s: %s", localFileName, oldPathName, moved[0]));
+                }
+                if (!moved[0]) {
+                    return;
+                }
+                moved[0] = tmpLocalFile.renameTo(localFile);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("(2) File %s renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
+                }
+                if (!moved[0]) {
+                    // try to restore the original file
+                    boolean restored = oldPath.renameTo(localFile);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("(-) File %s restored to original %s: %s", oldPathName, localFileName, restored));
+                    }
+                    return;
+                }
+                deleteLocalFile(oldPath, "(3) "); // NOI18N
+            }
+        });
+        assert moved[0] || !moved[0];
+        return moved[0];
+    }
+
+    private void deleteLocalFile(File file, String logMsgPrefix) {
+        if (!file.exists()) {
+            return;
+        }
+        boolean deleted = file.delete();
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: %s", file.getName(), deleted));
         }
     }
 

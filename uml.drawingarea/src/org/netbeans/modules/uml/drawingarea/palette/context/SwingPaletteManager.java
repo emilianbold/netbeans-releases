@@ -48,17 +48,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.Iterator;
-import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
-import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.openide.util.Lookup;
 
 /**
@@ -145,14 +141,11 @@ public class SwingPaletteManager implements ContextPaletteManager
         if((selectedObjects.size() == 1) || 
            ((selectedObjects.size() > 1) && (forceShow == true)))
         {
-            Widget selectedWidget = getScene().findWidget(selectedObjects.get(0));
+            Widget selectedWidget = getFirstNode(scene, selectedObjects);
+            
             cancelledWidget=selectedWidget;
             
-            if(selectedWidget instanceof UMLEdgeWidget)
-            {
-                //do nothing
-            }
-            else if(selectedWidget != null)
+            if(selectedWidget != null)
             {
                 showPaletteFor(selectedWidget);
 
@@ -246,12 +239,7 @@ public class SwingPaletteManager implements ContextPaletteManager
         // Need to make sure that the attached Widget is visible.
         if(paletteWidget != null)
         {
-            ContextPaletteModel model = paletteWidget.getModel();
-            if(model != null)
-            {
-                Widget context = model.getContext();
-                context.getScene().getView();
-            }
+            
         }
     }
 
@@ -266,6 +254,19 @@ public class SwingPaletteManager implements ContextPaletteManager
             ContextPaletteModel model = lookup.lookup(ContextPaletteModel.class);
             if(model != null)
             {
+                // For some reason when you use tab key, and the new widget is 
+                // off the screen the palette is not being removed off the screen
+                // correctly, therefore the current paletteWidget gets orphaned.
+                //
+                // I think that this is because the selectionChanged method is
+                // being called twice (however the selectionChanged method also
+                // calls cancelPalettte so it should be removed).  So, instead 
+                // requiring others to manage the events, the palette manager
+                // should make sure that things are cleaned up correctly.
+                if(paletteWidget != null)
+                {
+                    paletteWidget.getParent().remove(paletteWidget);
+                }
 
                 paletteWidget = new ContextPalette(model);            
                 paletteWidget.revalidate();
@@ -328,7 +329,9 @@ public class SwingPaletteManager implements ContextPaletteManager
                 JComponent view = getScene().getView();
 
                 int expandedWidth = palette.getExpandedWidth();
-                if(view.getWidth() < xPos + expandedWidth)
+                Rectangle viewableRec = view.getVisibleRect();
+                int rightViewBounds = viewableRec.x + viewableRec.width;
+                if(rightViewBounds < (xPos + expandedWidth))
                 {
                     xPos = viewLocation.x - SPACE_FROM_WIDGET - collapsedDim.width;
                     palette.setDirection(PaletteDirection.LEFT);
@@ -417,6 +420,22 @@ public class SwingPaletteManager implements ContextPaletteManager
     public void setScene(ObjectScene scene)
     {
         this.scene = scene;
+    }
+
+    private Widget getFirstNode(DesignerScene scene, List selectedObjects)
+    {
+        Widget retVal = null;
+        
+        for(Object curObject : selectedObjects)
+        {
+            if(scene.isNode(curObject) == true)
+            {
+                retVal = scene.findWidget(curObject);
+                break;
+            }
+        }
+                
+        return retVal;
     }
 
     public class FollowCursorAction extends WidgetAction.Adapter

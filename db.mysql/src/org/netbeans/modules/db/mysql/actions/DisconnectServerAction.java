@@ -85,8 +85,6 @@ public class DisconnectServerAction extends CookieAction {
     protected void performAction(Node[] activatedNodes) {
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
 
-        // Run this on a separate thread so that we don't hang up the AWT 
-        // thread if the database server is not responding
         server.disconnect();
     }
     

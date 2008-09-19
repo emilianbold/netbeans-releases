@@ -234,7 +234,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         }        
     }
 
-    private class MacroReference extends OffsetableBase implements CsmReference {
+    private static class MacroReference extends OffsetableBase implements CsmReference {
 
         private CsmObject ref;
         private final String macroName;
@@ -278,7 +278,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
         private CsmFile getTargetFile() {
             CsmFile current = UIDCsmConverter.UIDtoFile(mi.targetFile);
-            if (mi.includePath != null) {
+            if (current != null && mi.includePath != null) {
                 ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(mi.includePath);
                 if (targetPrj != null) {
                     current = targetPrj.getFile(new File(mi.includePath));

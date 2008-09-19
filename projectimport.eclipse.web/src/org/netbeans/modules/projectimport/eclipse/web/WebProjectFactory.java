@@ -47,7 +47,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -219,11 +218,6 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         ProjectFactorySupport.setupSourceExcludes(helper, model, importProblems);
 
         setupCompilerProperties(helper, model);
-        
-        // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
-        if (!nbProjectDir.equals(model.getEclipseProjectFolder())) {
-            FileOwnerQuery.markExternalOwner(model.getEclipseProjectFolder().toURI(), nbProject, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-        }
         
         // update project classpath
         ProjectFactorySupport.updateProjectClassPath(helper, nbProject.getReferenceHelper(), model, importProblems);

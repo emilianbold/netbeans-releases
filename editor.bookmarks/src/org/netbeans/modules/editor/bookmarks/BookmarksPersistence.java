@@ -125,8 +125,12 @@ public class BookmarksPersistence {
             int[] lines = urlToBookmarks.get (url);
             if (lines != null)
                 for (int lineNumber : lines) {
-                    int offset = NbDocument.findLineOffset ((StyledDocument) document, lineNumber);
-                    bookmarkList.addBookmark (offset);
+                    try {
+                        int offset = NbDocument.findLineOffset ((StyledDocument) document, lineNumber);
+                        bookmarkList.addBookmark (offset);
+                    } catch (IndexOutOfBoundsException ex) {
+                        // line does not exists now (some external changes)
+                    }
                 }
         } catch (FileStateInvalidException e) {
             // Ignore this file (could be deleted etc.)
@@ -273,6 +277,10 @@ public class BookmarksPersistence {
                 "editor-bookmarks"
             );
             for (URL url : urlToBookmarks.keySet ()) {
+                if (urlToBookmarks.get(url).length == 0) {
+                    continue;
+                }
+                
                 Element fileElement = document.createElementNS (
                     EDITOR_BOOKMARKS_NAMESPACE_URI, 
                     "file"

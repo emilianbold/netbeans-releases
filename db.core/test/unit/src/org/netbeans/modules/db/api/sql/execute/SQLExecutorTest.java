@@ -104,11 +104,11 @@ public class SQLExecutorTest extends DBTestBase {
     }
 
     public void testExecute() throws Exception {
-        SQLExecutionInfo info = SQLExecutor.execute(dbconn, "SELECT * FROM TEST;");
+        SQLExecutionInfo info = SQLExecutor.execute(dbconn, "SELECT * FROM " + getTestTableName() + ";");
         checkExecution(info);
         assertTrue(info.getStatementInfos().size() == 1);
 
-        info = SQLExecutor.execute(dbconn, "SELECT * FROM TEST; SELECT id FROM TEST;");
+        info = SQLExecutor.execute(dbconn, "SELECT * FROM " + getTestTableName() + "; SELECT " + getTestTableIdName() + " FROM " + getTestTableName() + ";");
         checkExecution(info);
         assertTrue(info.getStatementInfos().size() == 2);
     }
@@ -118,27 +118,7 @@ public class SQLExecutorTest extends DBTestBase {
 
         assertTrue(info.hasExceptions());
     }
-        
-    public void testDelimiter() throws Exception {
-        String sql = "SELECT * FROM TEST;\n--Here is a comment\nDELIMITER ??\n SELECT * FROM TEST??\n " +
-                "--Another comment\n DELIMITER ;\nSELECT * FROM TEST;";
-        SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
-        checkExecution(info);
-
-        info = SQLExecutor.execute(dbconn,
-                "DELIMITER ??\nSELECT * FROM TEST?? DELIMITER ;\nSELECT * FROM TEST;");
-        checkExecution(info);
-
-        info = SQLExecutor.execute(dbconn,
-                "/** a block comment */\nDELIMITER ??\nSELECT * FROM TEST??");
-        checkExecution(info);
-
-        info = SQLExecutor.execute(dbconn,
-                "DELIMITER ??\nSELECT * FROM TEST;");
-
-        assertTrue(info.hasExceptions());
-    }
-    
+            
     private void checkExecution(SQLExecutionInfo info) throws Exception {
         assertNotNull(info);
 
@@ -215,6 +195,48 @@ public class SQLExecutorTest extends DBTestBase {
             "END";
 
         checkExecution(SQLExecutor.execute(dbconn, sql));
+    }
+
+    public void testExecuteLogger() throws Exception {
+        String tablename = getTestTableName();
+        String sql = "INSERT INTO " + tablename + " values(1); " +
+                "INSERT INTO " + tablename + " values(2); " +
+                "INSERT INTO FOO values('this should fail'); " +
+                "SELECT * FROM " + tablename + ";";
+
+        TestLogger logger = new TestLogger();
+
+        SQLExecutor.execute(dbconn, sql, logger);
+        assertEquals(4, logger.statementCount);
+        assertEquals(1, logger.errorCount);
+        assertEquals(3, logger.errorStatement);
+        assertTrue(logger.gotFinish);
+        assertFalse(logger.gotCancel);
+    }
+
+    private static class TestLogger implements SQLExecuteLogger {
+        public int statementCount = 0;
+        public int errorCount = 0;
+        public int errorStatement = 0;
+        public boolean gotFinish = false;
+        public boolean gotCancel = false;
+
+        public void log(StatementExecutionInfo info) {
+            statementCount++;
+            if (info.hasExceptions()) {
+                errorCount++;
+                errorStatement = statementCount;
+            }
+        }
+
+        public void finish(long executionTime) {
+            gotFinish = true;
+        }
+
+        // I'm not sure how to trigger a cancel...
+        public void cancel() {
+            gotCancel = true;
+        }
     }
     
 

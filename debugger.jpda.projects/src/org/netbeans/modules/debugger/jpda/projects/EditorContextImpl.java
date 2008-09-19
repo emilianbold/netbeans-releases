@@ -69,6 +69,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -418,6 +419,17 @@ public class EditorContextImpl extends EditorContext {
     }
 
     /**
+     * Returns name of class recently selected in editor or empty string.
+     *
+     * @return name of class recently selected in editor or empty string
+     */
+    public String getMostRecentClassName () {
+        String clazz = getMostRecentElement(ElementKind.CLASS);
+        if (clazz == null) return "";
+        else return clazz;
+    }
+
+    /**
      * Returns URL of source currently selected in editor or empty string.
      *
      * @return URL of source currently selected in editor or empty string
@@ -435,6 +447,17 @@ public class EditorContextImpl extends EditorContext {
         String currentMethod = getCurrentElement(ElementKind.METHOD);
         if (currentMethod == null) return "";
         else return currentMethod;
+    }
+
+    /**
+     * Returns name of method recently selected in editor or empty string.
+     *
+     * @return name of method recently selected in editor or empty string
+     */
+    public String getMostRecentMethodName () {
+        String method = getMostRecentElement(ElementKind.METHOD);
+        if (method == null) return "";
+        else return method;
     }
 
     /**
@@ -462,6 +485,26 @@ public class EditorContextImpl extends EditorContext {
         }
     }
 
+    public String getMostRecentMethodSignature () {
+        final Element[] elementPtr = new Element[] { null };
+        try {
+            getMostRecentElement(ElementKind.METHOD, elementPtr);
+        } catch (final java.awt.IllegalComponentStateException icse) {
+            throw new java.awt.IllegalComponentStateException() {
+                @Override
+                public String getMessage() {
+                    icse.getMessage();
+                    return createSignature((ExecutableElement) elementPtr[0]);
+                }
+            };
+        }
+        if (elementPtr[0] != null) {
+            return createSignature((ExecutableElement) elementPtr[0]);
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Returns name of field currently selected in editor or <code>null</code>.
      *
@@ -473,6 +516,18 @@ public class EditorContextImpl extends EditorContext {
         else return currentField;
         //return getSelectedIdentifier ();
     }
+
+    /**
+     * Returns name of field recently selected in editor or <code>null</code>.
+     *
+     * @return name of field recently selected in editor or <code>null</code>
+     */
+    public String getMostRecentFieldName () {
+        String field = getMostRecentElement(ElementKind.FIELD);
+        if (field == null) return "";
+        else return field;
+    }
+
 
     /**
      * Returns identifier currently selected in editor or <code>null</code>.
@@ -986,8 +1041,17 @@ public class EditorContextImpl extends EditorContext {
                                 "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
                     }
-                    Scope scope = ci.getTreeUtilities().scopeFor(offset);
-                    TypeElement te = scope.getEnclosingClass();
+                    TreePath p = ci.getTreeUtilities().pathFor(offset);
+                    while  (p != null && p.getLeaf().getKind() != Kind.CLASS) {
+                        p = p.getParentPath();
+                    }
+                    TypeElement te;
+                    if (p != null) {
+                        te = (TypeElement) ci.getTrees().getElement(p);
+                    } else {
+                        Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                        te = scope.getEnclosingClass();
+                    }
                     if (te != null) {
                         result[0] = ElementUtilities.getBinaryName(te);
                     } else {
@@ -1535,13 +1599,32 @@ public class EditorContextImpl extends EditorContext {
         return getCurrentElement(kind, null);
     }
     
+    private String getMostRecentElement(ElementKind kind) {
+        return getMostRecentElement(kind, null);
+    }
+
     /** throws IllegalComponentStateException when can not return the data in AWT. */
     private String getCurrentElement(final ElementKind kind, final Element[] elementPtr)
             throws java.awt.IllegalComponentStateException {
-        FileObject fo = contextDispatcher.getCurrentFile();
-        if (fo == null) return null;
-        JEditorPane ep = contextDispatcher.getCurrentEditor();
-        
+        return getCurrentElement(contextDispatcher.getCurrentFile(),
+                                 contextDispatcher.getCurrentEditor(),
+                                 kind, elementPtr);
+    }
+
+    /** throws IllegalComponentStateException when can not return the data in AWT. */
+    private String getMostRecentElement(final ElementKind kind, final Element[] elementPtr)
+            throws java.awt.IllegalComponentStateException {
+        return getCurrentElement(contextDispatcher.getMostRecentFile(),
+                                 contextDispatcher.getMostRecentEditor(),
+                                 kind, elementPtr);
+    }
+
+    /** throws IllegalComponentStateException when can not return the data in AWT. */
+    private String getCurrentElement(FileObject fo, JEditorPane ep,
+                                     final ElementKind kind, final Element[] elementPtr)
+            throws java.awt.IllegalComponentStateException {
+
+        if (fo == null) return null;        
         JavaSource js = JavaSource.forFileObject(fo);
         if (js == null) return null;
         final int currentOffset;

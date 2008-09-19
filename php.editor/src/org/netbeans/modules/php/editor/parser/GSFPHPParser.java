@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -50,9 +49,10 @@ import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
 import org.netbeans.modules.gsf.api.*;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
-import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 
 
 /**
@@ -64,7 +64,10 @@ public class GSFPHPParser implements Parser {
     private PositionManager positionManager = null;
     
     private static final Logger LOGGER = Logger.getLogger(GSFPHPParser.class.getName());
-    
+
+    private boolean shortTags = true;
+    private boolean aspTags = false;
+
     public void parseFiles(Job request) {
         LOGGER.fine("parseFiles " + request.toString());
         ParseListener listener = request.listener;
@@ -74,6 +77,9 @@ public class GSFPHPParser implements Parser {
             ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
             request.listener.started(beginEvent);
             ParserResult result = null;
+            Properties languageProperties = PhpLanguageOptions.getProperties(file.getFileObject());
+            shortTags = languageProperties.areShortTagsEnabled();
+            aspTags = languageProperties.areAspTagsEnabled();
             try {
                 CharSequence buffer = reader.read(file);
                 String source = asString(buffer);
@@ -108,6 +114,9 @@ public class GSFPHPParser implements Parser {
                 assert context.sanitizedSource != null;
                 sanitizedSource = true;
                 source = context.sanitizedSource;
+//                System.out.println("------- " + sanitizing.name() + "-------------------");
+//                System.out.println(source);
+//                System.out.println("------------------------------------------------------");
             } else {
                 // Try next trick
                 return sanitize(context, sanitizing, errorHandler);
@@ -116,7 +125,7 @@ public class GSFPHPParser implements Parser {
 
         PHPParseResult result;
         // calling the php ast parser itself
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), false);
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags,  aspTags);
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
 
         if (!sanitizedSource) {
@@ -127,17 +136,43 @@ public class GSFPHPParser implements Parser {
         }
 
         java_cup.runtime.Symbol rootSymbol = parser.parse();
+        if (scanner.getCurlyBalance() != 0 && !sanitizedSource) {
+            sanitizeSource(context, Sanitize.MISSING_CURLY, null);
+            if (context.sanitizedSource != null) {
+                context.source = context.getSanitizedSource();
+//                System.out.println("---------- Curly  -------------");
+//                System.out.println(context.sanitizedSource);
+//                System.out.println("-----------------------");
+                source = context.source;
+                scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
+                parser = new ASTPHP5Parser(scanner);
+                rootSymbol = parser.parse();
+            }
+        }
         if (rootSymbol != null) {
             Program program = null;
             if (rootSymbol.value instanceof Program) {
                 program = (Program)rootSymbol.value; // call the parser itself
                 List<Statement> statements = program.getStatements();
                 //do we need sanitization?
-                boolean ok = false;
+                boolean ok = true;
                 for (Statement statement : statements) {
-                    if (!(statement instanceof ASTError) && !(statement instanceof EmptyStatement)) {
-                        ok = true;
-                        break;
+                    if (statement instanceof ASTError) {
+                        // if there is an errot, try to sanitize only if there 
+                        // is a class or function inside the error
+                        String errorCode = "<?" + source.substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
+                        ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), shortTags, aspTags);
+                        Symbol token = fcScanner.next_token();
+                        while (token.sym != ASTPHP5Symbols.EOF) {
+                            if (token.sym == ASTPHP5Symbols.T_CLASS || token.sym == ASTPHP5Symbols.T_FUNCTION) {
+                                ok = false;
+                                break;
+                            }
+                            token = fcScanner.next_token();
+                        }
+                        if (!ok) {
+                            break;
+                        }
                     }
                 }
                 if (ok) {
@@ -149,13 +184,7 @@ public class GSFPHPParser implements Parser {
             }
             else {
                 LOGGER.fine ("The parser value is not a Program: " + rootSymbol.value);
-                if (scanner.getCurlyBalance() != 0) {
-                    // try to fix missing {
-                    result = sanitize(context, Sanitize.SYNTAX_ERROR_PREVIOUS_LINE, errorHandler);
-                }
-                else {
-                    result = sanitize(context, sanitizing, errorHandler);
-                }
+                result = sanitize(context, sanitizing, errorHandler);
             }
             if (!sanitizedSource) {
                 errorHandler.displaySyntaxErrors(program);
@@ -184,7 +213,10 @@ public class GSFPHPParser implements Parser {
 
                 int end = error.getCurrentToken().right;
                 int start = error.getCurrentToken().left;
-
+                String replace = source.substring(start, end);
+                if ("}".equals(replace)) {
+                    return false;
+                }
                 context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end-start) + source.substring(end);
                 context.sanitizedRange = new OffsetRange(start, end);
                 return true;
@@ -198,7 +230,8 @@ public class GSFPHPParser implements Parser {
 
                 int end = error.getPreviousToken().right;
                 int start = error.getPreviousToken().left;
-
+                if (source.substring(start, end).equals("}"))
+                    return false;
                 context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end-start) + source.substring(end);
                 context.sanitizedRange = new OffsetRange(start, end);
                 return true;
@@ -213,109 +246,181 @@ public class GSFPHPParser implements Parser {
                 int end = Utils.getRowEnd(source, error.getPreviousToken().right);
                 int start = Utils.getRowStart(source, error.getPreviousToken().left);
 
+                StringBuffer sb = new StringBuffer(end - start);
+                for (int index = start; index < end; index++) {
+                    if (source.charAt(index) == ' ' || source.charAt(index) == '}'
+                            || source.charAt(index) == '\n' || source.charAt(index) == '\r'){
+                        sb.append(source.charAt(index));
+                    }
+                    else {
+                        sb.append(' ');
+                    }
+                }
+
+                context.sanitizedSource = source.substring(0, start) + sb.toString() + source.substring(end);
+                context.sanitizedRange = new OffsetRange(start, end);
+                return true;
+            }
+        }
+        if (sanitizing == Sanitize.EDITED_LINE) {
+            if (context.caretOffset > -1) {
+                String source = context.getSource();
+                int start = context.caretOffset - 1;
+                int end = context.caretOffset;
+                // fix until new line or }
+                char c = source.charAt(start);
+                while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') {
+                    c = source.charAt(--start);
+                }
+                start++;
+                if (end < source.length()) {
+                    c = source.charAt(end);
+                    while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') {
+                        c = source.charAt(++end);
+                    }
+                }
                 context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end-start) + source.substring(end);
                 context.sanitizedRange = new OffsetRange(start, end);
                 return true;
             }
         }
-        if (sanitizing == Sanitize.MISSING_END) {
-            String source = context.getSource();
-            ASTPHP5Scanner scanner = new ASTPHP5Scanner(new ByteArrayInputStream(source.getBytes()));
-            //keep index of last ?>
-            Symbol lastPHPToken = null;
-            Symbol token = null;
+        if (sanitizing == Sanitize.MISSING_CURLY) {
+            sanitizeCurly (context);
+        }
+        return false;
+    }
 
-            try {
-                token = scanner.next_token();
-                int bracketCounter = 0;
-                int bracketClassCounter = 0;
-                boolean inClass = false;
-                while (token.sym != ASTPHP5Symbols.EOF) {
-                    switch (token.sym) {
-                        case ASTPHP5Symbols.T_CLASS:
-                            if (!inClass) {
-                                inClass = true;
-                            }
-                            else {
-                                // handle situatin class declaration in class
-                                if (bracketClassCounter == 1) {
-                                    int index = token.left - 1;
-                                    while (index > 0 && (source.charAt(index) == '\n'
-                                            || source.charAt(index) == '\r' || source.charAt(index) == '}')) {
-                                        index--;
-                                    }
-                                    if (source.charAt(index) == ' ') {
-                                        context.sanitizedSource = source.substring(0, index-1) + '}' + source.substring(index);
-                                        context.sanitizedRange = new OffsetRange(index-1, index);
-                                        return true;
-                                    }
+    protected boolean sanitizeCurly (Context context) {
+        String source = context.getSource();
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
+        //keep index of last ?>
+        Symbol lastPHPToken = null;
+        Symbol token = null;
+
+        int bracketCounter = 0;
+        int bracketClassCounter = 0;
+
+        try {
+            token = scanner.next_token();
+            boolean inClass = false;
+            int lastOpenInClass = -1;
+            while (token.sym != ASTPHP5Symbols.EOF) {
+                switch (token.sym) {
+                    case ASTPHP5Symbols.T_CLASS:
+                        if (!inClass) {
+                            inClass = true;
+                        }
+                        else {
+                            char c;
+                            int index = token.left;
+                            // missing only the only one }
+                            int max = bracketClassCounter;
+                            for (int i = 0; i < max; i++) {
+                                index--;
+                                c = source.charAt(index);
+                                while (index > lastOpenInClass &&  c != '}'
+                                        && c != '\n' && c != '\r' && c != '\t' && c != ' ') {
+                                    index--;
+                                    c = source.charAt(index);
+                                }
+                                if (c != '}' && c !='{') {
+                                    source = source.substring(0, index) + '}' + source.substring(index+1);
+                                    bracketClassCounter--;
                                 }
                             }
-                            break;
-                        case ASTPHP5Symbols.T_CURLY_OPEN:
-                        case ASTPHP5Symbols.T_CURLY_OPEN_WITH_DOLAR:
-                            if (inClass) {
-                                bracketClassCounter++;
-                            }
-                            else {
-                                bracketCounter++;
-                            }
-                            break;
-                        case ASTPHP5Symbols.T_CURLY_CLOSE:
-                            if (inClass) {
-                                bracketClassCounter--;
-                                if (bracketClassCounter == 0) {
-                                    inClass = false;
+
+                            if (bracketClassCounter > 0) {
+                                // try to add } at the beginig of line
+                                index--;
+                                c = source.charAt(index);
+                                while (index > 0 &&  c != '}'
+                                        && c != '\n' && c != '\r' ) {
+                                    index--;
+                                    c = source.charAt(index);
+                                }
+                                if (c == '}') {
+                                    c = source.charAt(--index);
+                                }
+                                while (index < source.length() && bracketClassCounter > 0
+                                        && (c == '\n' || c == '\r' || c == '\t' || c == ' ')) {
+                                    source = source.substring(0, index) + '}' + source.substring(index+1);
+                                    bracketClassCounter--;
+                                    c = source.charAt(--index);
                                 }
                             }
-                            else {
-                                bracketCounter--;
+                            context.sanitizedSource = source;
+                        }
+                        break;
+                    case ASTPHP5Symbols.T_CURLY_OPEN:
+                    case ASTPHP5Symbols.T_CURLY_OPEN_WITH_DOLAR:
+                        if (inClass) {
+                            bracketClassCounter++;
+                            lastOpenInClass = token.left;
+                        }
+                        else {
+                            bracketCounter++;
+                        }
+                        break;
+                    case ASTPHP5Symbols.T_CURLY_CLOSE:
+                        if (inClass) {
+                            bracketClassCounter--;
+                            if (bracketClassCounter == 0) {
+                                inClass = false;
                             }
-                            break;
-                    }
-                    if (token.sym != ASTPHP5Symbols.T_INLINE_HTML) {
-                        lastPHPToken = token;
-                    }
-                    token = scanner.next_token();
+                        }
+                        else {
+                            bracketCounter--;
+                        }
+                        break;
                 }
-            } catch (IOException exception) {
-                LOGGER.log(Level.INFO, "Exception during calculating missing }", exception);
+                if (token.sym != ASTPHP5Symbols.T_INLINE_HTML) {
+                    lastPHPToken = token;
+                }
+                token = scanner.next_token();
             }
-            int count = scanner.getCurlyBalance();
-            if (count > 0){
-                if(lastPHPToken != null) {
-                    String lastTokenText = source.substring(lastPHPToken.left, lastPHPToken.right).trim();
-                    if ("?>".equals(lastTokenText)) {   //NOI18N
-                        context.sanitizedSource = source.substring(0, lastPHPToken.left) + Utils.getRepeatingChars('}', count) + source.substring(lastPHPToken.left);
-                        context.sanitizedRange = new OffsetRange(lastPHPToken.left, lastPHPToken.left + count);
-                        return true;
-                    }
-                    if (token.sym == ASTPHP5Symbols.EOF) {
-                        context.sanitizedSource = source.substring(0, token.left) + Utils.getRepeatingChars('}', count) + source.substring(token.left);
-                        context.sanitizedRange = new OffsetRange(token.left, token.left + count);
-                        return true;
-                    }
+        } catch (IOException exception) {
+            LOGGER.log(Level.INFO, "Exception during calculating missing }", exception);
+        }
+        int count = bracketCounter + bracketClassCounter;
+        if (count > 0){
+            if(lastPHPToken != null) {
+                String lastTokenText = source.substring(lastPHPToken.left, lastPHPToken.right).trim();
+                if ("?>".equals(lastTokenText)) {   //NOI18N
+                    context.sanitizedSource = source.substring(0, lastPHPToken.left) + Utils.getRepeatingChars('}', count) + source.substring(lastPHPToken.left);
+                    context.sanitizedRange = new OffsetRange(lastPHPToken.left, lastPHPToken.left + count);
+                    return true;
+                }
+                if (token.sym == ASTPHP5Symbols.EOF) {
+                    context.sanitizedSource = source.substring(0, token.left) + Utils.getRepeatingChars('}', count) + source.substring(token.left);
+                    context.sanitizedRange = new OffsetRange(token.left, token.left + count);
+                    return true;
                 }
             }
         }
         return false;
     }
 
-    private PHPParseResult sanitize(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception{
-        
+    private PHPParseResult sanitize(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception {
         switch(sanitizing) {
             case NONE:
+            case MISSING_CURLY:
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_CURRENT, errorHandler);
             case SYNTAX_ERROR_CURRENT:
                 // one more time
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_PREVIOUS, errorHandler);
             case SYNTAX_ERROR_PREVIOUS:
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_PREVIOUS_LINE, errorHandler);
-            case SYNTAX_ERROR_PREVIOUS_LINE:
-                return parseBuffer(context, Sanitize.MISSING_END, errorHandler);
+           case SYNTAX_ERROR_PREVIOUS_LINE:
+                return parseBuffer(context, Sanitize.EDITED_LINE, errorHandler);
             default:
                 int end = context.getSource().length();
-                Program emptyProgram = new Program(0, end, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                // add the ast error, some features can recognized that there is something wrong.
+                // for example folding.
+                ASTError error = new ASTError(0, end);
+                List<Statement> statements = new ArrayList<Statement>();
+                statements.add(error);
+                Program emptyProgram = new Program(0, end, statements, Collections.EMPTY_LIST);
+
                 return new PHPParseResult(this, context.getFile(), emptyProgram);
         }
         
@@ -362,7 +467,7 @@ public class GSFPHPParser implements Parser {
         /** Try to cut out the current edited line, if known */
         EDITED_LINE,
         /** Attempt to fix missing } */
-        MISSING_END,
+        MISSING_CURLY,
     }
     
     /** Parsing context */

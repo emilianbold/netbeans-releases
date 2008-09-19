@@ -17,7 +17,7 @@ puts x,
   y+1
 
 puts x,
-  (myvar = 1+y
-  myvar)
+  (new_name = 1+y
+  new_name)
 
 

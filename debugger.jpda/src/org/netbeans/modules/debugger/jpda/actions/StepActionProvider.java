@@ -77,6 +77,7 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -232,6 +233,14 @@ implements Executor {
         mb.setThreadFilters(getDebuggerImpl(), new JPDAThread[] { jtr });
         lastMethodExitBreakpointListener = new MethodExitBreakpointListener(mb);
         mb.addJPDABreakpointListener(lastMethodExitBreakpointListener);
+        // TODO: mb.setSession(debugger);
+        try {
+            java.lang.reflect.Method setSessionMethod = JPDABreakpoint.class.getDeclaredMethod("setSession", JPDADebugger.class);
+            setSessionMethod.setAccessible(true);
+            setSessionMethod.invoke(mb, debugger);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
         DebuggerManager.getDebuggerManager().addBreakpoint(mb);
     }
     
@@ -354,6 +363,10 @@ implements Executor {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
         }
+        setLastOperation(tr, getDebuggerImpl(), returnValue);
+    }
+
+    public static void setLastOperation(ThreadReference tr, JPDADebuggerImpl debugger, Variable returnValue) {
         Location loc;
         try {
             loc = tr.frame(0).location();
@@ -363,9 +376,9 @@ implements Executor {
         }
         Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
         String language = currentSession == null ? null : currentSession.getCurrentLanguage();
-        SourcePath sourcePath = getDebuggerImpl().getEngineContext();
+        SourcePath sourcePath = debugger.getEngineContext();
         String url = sourcePath.getURL(loc, language);
-        ExpressionPool exprPool = getDebuggerImpl().getExpressionPool();
+        ExpressionPool exprPool = debugger.getExpressionPool();
         ExpressionPool.Expression expr = exprPool.getExpressionAt(loc, url);
         if (expr == null) {
             return ;
@@ -387,7 +400,7 @@ implements Executor {
             return ;
         }
         lastOperation.setReturnValue(returnValue);
-        JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl().getThread(tr);
+        JPDAThreadImpl jtr = (JPDAThreadImpl) debugger.getThread(tr);
         jtr.addLastOperation(lastOperation);
         jtr.setCurrentOperation(lastOperation);
     }

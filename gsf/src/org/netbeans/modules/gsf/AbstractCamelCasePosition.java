@@ -76,7 +76,7 @@ public abstract class AbstractCamelCasePosition extends BaseAction {
         }
     }
 
-    public final void actionPerformed(ActionEvent evt, JTextComponent target) {
+    public final void actionPerformed(ActionEvent evt, final JTextComponent target) {
         if (target != null) {
             if (originalAction != null && !isUsingCamelCase()) {
                 if (originalAction instanceof BaseAction) {
@@ -85,21 +85,23 @@ public abstract class AbstractCamelCasePosition extends BaseAction {
                     originalAction.actionPerformed(evt);
                 }
             } else {
-                BaseDocument bdoc = org.netbeans.editor.Utilities.getDocument(target);
+                final BaseDocument bdoc = org.netbeans.editor.Utilities.getDocument(target);
                 if (bdoc != null) {
-                    bdoc.atomicLock();
-                    DocumentUtilities.setTypingModification(bdoc, true);
-                    try {
-                        int offset = newOffset(target);
-                        if (offset != -1) {
-                            moveToNewOffset(target, offset);
+                    bdoc.runAtomic(new Runnable() {
+                        public void run() {
+                            DocumentUtilities.setTypingModification(bdoc, true);
+                            try {
+                                int offset = newOffset(target);
+                                if (offset != -1) {
+                                    moveToNewOffset(target, offset);
+                                }
+                            } catch (BadLocationException ble) {
+                                target.getToolkit().beep();
+                            } finally {
+                                DocumentUtilities.setTypingModification(bdoc, false);
+                            }
                         }
-                    } catch (BadLocationException ble) {
-                        target.getToolkit().beep();
-                    } finally {
-                        DocumentUtilities.setTypingModification(bdoc, false);
-                        bdoc.atomicUnlock();
-                    }
+                    });
                 } else {
                     target.getToolkit().beep();
                 }

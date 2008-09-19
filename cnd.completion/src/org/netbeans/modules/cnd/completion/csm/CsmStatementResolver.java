@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
@@ -54,8 +55,11 @@ import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
@@ -192,6 +196,22 @@ public class CsmStatementResolver {
             if (CsmUtilities.DEBUG) print("we have declarator " + decl); //NOI18N
             if (CsmKindUtilities.isClass(decl)) {
                 findInner((CsmClass)decl, offset, context);
+            }
+            if (CsmKindUtilities.isFunction(decl)) {
+                CsmFunction fun = (CsmFunction) decl;
+                
+                // check if offset in parameters
+                Collection<CsmParameter> params = fun.getParameters();
+                CsmParameter param = CsmOffsetUtilities.findObject(params, context, offset);
+                if (param != null) {
+                    context.add(fun);
+                    CsmType type = param.getType();
+                    if (CsmOffsetUtilities.isInObject(type, offset)) {
+                        context.setLastObject(type);
+                    } else {
+                        context.setLastObject(param);
+                    }
+                }
             }
             return true;
         }

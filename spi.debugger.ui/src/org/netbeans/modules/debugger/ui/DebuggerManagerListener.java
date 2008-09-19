@@ -41,6 +41,7 @@
 package org.netbeans.modules.debugger.ui;
 
 import java.awt.Component;
+import java.beans.DesignMode;
 import java.beans.beancontext.BeanContextChildComponentProxy;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -57,6 +58,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
+import org.netbeans.api.debugger.Properties;
 import org.openide.awt.ToolbarPool;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
@@ -71,6 +73,8 @@ import org.openide.windows.WindowManager;
  * @author Jan Jancura
  */
 public class DebuggerManagerListener extends DebuggerManagerAdapter {
+
+    private static final String PROPERTY_CLOSED_TC = "closedTopComponents"; // NOI18N
 
     private List<DebuggerEngine> openedGroups = new LinkedList<DebuggerEngine>();
     private Map<DebuggerEngine, List<? extends Component>> openedComponents = new HashMap<DebuggerEngine, List<? extends Component>>();
@@ -100,16 +104,29 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             Component c;
                             try {
                                 c = cp.getComponent();
-                                if (c == null) throw new NullPointerException("No component from "+cp);
+                                if (c == null) {
+                                    //throw new NullPointerException("No component from "+cp);
+                                    continue;
+                                }
                             } catch (Exception ex) {
                                 Exceptions.printStackTrace(ex);
                                 continue;
                             }
                             cs.add(c);
+                            boolean doOpen = (cp instanceof DesignMode) ? ((DesignMode) cp).isDesignTime() : true;
                             if (c instanceof TopComponent) {
-                                ((TopComponent) c).open();
+                                TopComponent tc = (TopComponent) c;
+                                boolean wasClosed = Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
+                                        getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), false);
+                                boolean wasOpened = !Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
+                                        getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), true);
+                                if (doOpen && !wasClosed || !doOpen && wasOpened) {
+                                    tc.open();
+                                }
                             } else {
-                                c.setVisible(true);
+                                if (doOpen) {
+                                    c.setVisible(true);
+                                }
                             }
                         }
                         setupToolbar();
@@ -191,7 +208,13 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     public void run () {
                         for (Component c : windowsToClose) {
                             if (c instanceof TopComponent) {
-                                ((TopComponent) c).close();
+                                TopComponent tc = (TopComponent) c;
+                                boolean isOpened = tc.isOpened();
+                                Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
+                                        getProperties(PROPERTY_CLOSED_TC).setBoolean(tc.getName(), !isOpened);
+                                if (isOpened) {
+                                    tc.close();
+                                }
                             } else {
                                 c.setVisible(false);
                             }

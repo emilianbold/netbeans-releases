@@ -60,18 +60,24 @@ public class ScriptingMeasureActionsTest {
 
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
+                .addTest(CreatePHPProject.class)
                 .addTest(CreatePHPSampleProject.class)
+                
                 .addTest(CreateScriptingPackFiles.class)
                 .addTest(ScriptingExpandFolder.class)
                 .addTest(EditorMenuPopup.class)
+                .addTest(CloseScriptingFiles.class)
                 .addTest(TypingInScriptingEditor.class)
-                .addTest(OpenRubyProject.class)
+                .addTest(ScriptingCodeCompletionInEditor.class)
 
                 // Saving modified document
                 .addTest(SaveModifiedScriptingFiles.class)
 
                 // Page Up and Down in scripting editor
                 .addTest(PageUpPageDownScriptingEditor.class)
+
+                // Can cause RubyProject to be closed in case of failure
+                .addTest(OpenRubyProject.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;        

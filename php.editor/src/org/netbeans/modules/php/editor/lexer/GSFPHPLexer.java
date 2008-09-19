@@ -43,9 +43,11 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
+import org.openide.filesystems.FileObject;
 
 
 
@@ -54,17 +56,26 @@ import org.netbeans.spi.lexer.TokenFactory;
  * @author Petr Pisl, Marek Fukala
  */
 public class GSFPHPLexer implements Lexer<PHPTokenId> {
-    
+
     private final PHP5ColoringLexer scanner;
     private TokenFactory<PHPTokenId> tokenFactory;    
     
-    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info) {
-        scanner = new PHP5ColoringLexer(info, false);
+    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info, boolean inPHP) {
+        boolean short_tag = true;
+        boolean asp_tag = false;
+
+        FileObject fileObject = (FileObject)info.getAttributeValue(FileObject.class);
+        if (fileObject != null) {
+            PhpLanguageOptions.Properties languageProperties = PhpLanguageOptions.getProperties(fileObject);
+            asp_tag = languageProperties.areAspTagsEnabled();
+            short_tag = languageProperties.areShortTagsEnabled();
+        }
+        scanner = new PHP5ColoringLexer(info, short_tag, asp_tag, inPHP);
         tokenFactory = info.tokenFactory();
     }
     
-    public static synchronized GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info) {
-        return new GSFPHPLexer(info);
+    public static synchronized GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info, boolean inPHP) {
+        return new GSFPHPLexer(info, inPHP);
     }
     
     public Token<PHPTokenId> nextToken() {

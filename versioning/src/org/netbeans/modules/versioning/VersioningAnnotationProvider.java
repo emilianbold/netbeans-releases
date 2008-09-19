@@ -122,6 +122,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             an = vs.getVCSAnnotator();
             if (an == null) return null;
 
+            at = System.currentTimeMillis();
             VCSContext context = Utils.contextForFileObjects(files);
             return an.annotateName(name, context);
         } finally {
@@ -312,23 +313,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             clearMap(filesToRefresh);
             clearMap(parentsToRefresh);            
             
-            Set<FileSystem> filesystems = new HashSet<FileSystem>(1);
-            File[] allRoots = File.listRoots();
-            for (int i = 0; i < allRoots.length; i++) {
-                File root = allRoots[i];
-                FileObject fo = FileUtil.toFileObject(root);
-                if (fo != null) {
-                    try {
-                        filesystems.add(fo.getFileSystem());
-                    } catch (FileStateInvalidException e) {
-                        // ignore invalid filesystems
-                    }
-                }
-            }
-            for (Iterator<FileSystem> i = filesystems.iterator(); i.hasNext();) {
-                FileSystem fileSystem = i.next();
-                fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));                
-            }            
+            FileSystem fileSystem = Utils.getRootFilesystem();
+            fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));
         }
     });    
     
@@ -360,7 +346,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     }        
                     set.clear();
                     if(files.size() > 0) {
-                        fileEvents.add(new FileStatusEvent(fs, files, false, true));
+                        fileEvents.add(new FileStatusEvent(fs, files, true, true));
                     }
                     if(folders.size() > 0) {
                         folderEvents.add(new FileStatusEvent(fs, folders, true,  true));

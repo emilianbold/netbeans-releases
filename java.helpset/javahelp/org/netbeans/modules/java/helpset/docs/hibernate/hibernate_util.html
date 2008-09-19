@@ -18,11 +18,9 @@
         <p>To use Hibernate you need to create a helper class that handles 
         startup and that accesses Hibernate's SessionFactory to obtain a 
         Session object so that you can load and store objects. 
-        The helper class first calls <tt>Configuration()</tt> to load 
-        the <tt>hibernate.properties</tt> file. 
-        The class then calls <tt>configure()</tt> and loads the 
+        The helper class calls <tt>configure()</tt> and loads the 
         <tt>hibernate.cfg.xml</tt> configuration file. 
-        Finally, the helper class builds the SessionFactory to obtain the 
+        The helper class then builds the SessionFactory to obtain the 
         Session object.</p>
 
         <p><b>To create the <tt>HibernateUtil.java</tt> helper class:</b></p>

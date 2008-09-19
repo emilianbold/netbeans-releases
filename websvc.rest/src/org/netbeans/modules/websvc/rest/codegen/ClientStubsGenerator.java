@@ -58,6 +58,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -73,9 +75,12 @@ import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.rest.wizard.Util;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * Code generator for plain REST resource class.
@@ -128,7 +133,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_PORT = "8080";
     public static final String DEFAULT_BASE_URL = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT;
-    public static final String BASE_URL_TOKEN = "___BASE_URL___";
+    public static final String BASE_URL_TOKEN = "__BASE_URL__";
     public static final String FILE_ENCODING_TOKEN = "__FILE_ENCODING__";
     
     private FileObject stubFolder;
@@ -262,6 +267,33 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return url;
     }
     
+    private String findAppContext(Project p) throws IOException {
+        String appContext = null;
+        FileObject sunWebData = p.getProjectDirectory().getFileObject("web/WEB-INF/sun-web.xml");
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(FileUtil.toFile(sunWebData));
+
+            //Context nodes
+            NodeList contextNodes = RestUtils.getNodeList(doc, "//sun-web-app/context-root");
+            if (contextNodes != null && contextNodes.getLength() > 0) {
+                Node contextNode = contextNodes.item(0);
+                if(contextNode.getFirstChild() instanceof Text)
+                    appContext = contextNode.getFirstChild().getNodeValue().trim();
+            }
+        } catch (Exception ex) {//If parseer fails, try directly reading the context
+            appContext = getXmlData(sunWebData, "context-root");
+        }
+        if(appContext != null) {
+            if(appContext.length() > 1 && appContext.startsWith("/"))
+                appContext = appContext.substring(1);
+        } else {
+            appContext = ProjectUtils.getInformation(p).getName();
+        }
+        return appContext;
+    }
+    
     private String findBaseEncoding(Project p) {
         if(p == null)
             return null;
@@ -290,6 +322,27 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return null;
     }
     
+    private String getXmlData(FileObject fo, String name) {
+        if(fo == null)
+            return null;
+        FileLock lock = null;
+        try {
+            lock = fo.lock();
+            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
+            String line;
+            StringBuffer sb = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                if(line.contains("<"+name+">"))
+                    return line.substring(line.indexOf(">")+1, line.indexOf("</"));
+            }
+        } catch(IOException iox) {  
+        } finally {
+            if(lock != null)
+                lock.releaseLock();
+        }
+        return null;
+    }
+
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         if(pHandle != null)
             initProgressReporting(pHandle, false);
@@ -309,8 +362,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 path = servletMap.getUrlPattern();
             if(path.endsWith("/*"))
                 path = path.substring(0, path.length()-2);
-            setBaseUrl((url.endsWith("/")?url:url+"/") + getProjectName() + (path.startsWith("/")?path:"/"+path));
-            setProxyUrl((proxyUrl2.endsWith("/")?proxyUrl2:proxyUrl2+"/") + ProjectUtils.getInformation(targetPrj).getName() + PROXY_URL);
+            setBaseUrl((url.endsWith("/")?url:url+"/") + findAppContext(getProject()) + (path.startsWith("/")?path:"/"+path));
+            setProxyUrl((proxyUrl2.endsWith("/")?proxyUrl2:proxyUrl2+"/") + findAppContext(targetPrj) + PROXY_URL);
         } else if(wis != null) {
             this.model = new ClientStubModel().createModel(wis);
             this.model.build();
@@ -808,7 +861,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 containerStubTokens.put("__CONTAINER_PATH_NAME__", containerRepName);
                 containerStubTokens.put("__CONTAINER_ITEM_NAME__", containerItemName);
                 containerStubTokens.put("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
-                containerStubTokens.put("__STUB_METHODS__", "   ,\n"+stubJSToken);
+                containerStubTokens.put("__STUB_METHODS__", stubJSToken.equals("")?stubJSToken:"   ,\n"+stubJSToken);
                 containerStubTokens.put("__PROJECT_NAME__", getProjectName());
                 setTokens(containerStubTokens);
             }
@@ -854,7 +907,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 genericStubTokens.put("__SUB_RESOURCE_PATH_NAME__", "");
                 genericStubTokens.put("__FIELDS_TOSTRING__", createFieldsToStringBody(root, true));
                 genericStubTokens.put("__FIELD_NAMES_TOSTRING__", createFieldNamesBody(root, true));
-                genericStubTokens.put("__STUB_METHODS__", "   ,\n"+stubJSToken);
+                genericStubTokens.put("__STUB_METHODS__", stubJSToken.equals("")?stubJSToken:"   ,\n"+stubJSToken);
                 setTokens(genericStubTokens);
             }
         }
@@ -947,7 +1000,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         private String pluralize(String word) {
             String plural = Util.pluralize(word);
             if(plural.endsWith("ss"))
-                plural = plural.substring(0, plural.length()-2)+"Collection";
+                plural = plural.substring(0, plural.length()-2)+Constants.COLLECTION;
             return plural;
         }
         
