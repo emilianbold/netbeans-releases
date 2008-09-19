@@ -43,12 +43,15 @@ package org.netbeans.modules.editor.java;
 
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
+import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import junit.framework.TestCase;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
@@ -702,7 +705,26 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals(
                 "// test line comment \'|\n"
         );
-    }    
+    }
+
+    public void testDisable147641() throws Exception {
+        boolean orig = BraceCompletion.completionSettingEnabled();
+        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+
+        try {
+            prefs.putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
+
+            Context ctx = new Context(new JavaKit(),
+                    "while |"
+            );
+            ctx.typeChar('(');
+            ctx.assertDocumentTextEquals(
+                    "while (|"
+            );
+        } finally {
+            prefs.putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, orig);
+        }
+    }
     
     private static final class Context {
         

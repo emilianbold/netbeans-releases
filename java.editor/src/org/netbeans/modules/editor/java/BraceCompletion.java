@@ -81,6 +81,10 @@ class BraceCompletion {
      * @throws BadLocationException if caretOffset is not correct
      */
     static void charInserted(BaseDocument doc, int caretOffset, Caret caret, char ch) throws BadLocationException {
+        if (!completionSettingEnabled()) {
+          return;
+        }
+
         if (ch == ')' || ch == ']' || ch == '(' || ch == '[' || ch == ';') {
             TokenSequence<JavaTokenId> javaTS = javaTokenSequence(doc, caretOffset, false);
             if (javaTS != null) {
@@ -712,7 +716,7 @@ class BraceCompletion {
     /** 
      * Returns true if bracket completion is enabled in options.
      */
-    private static boolean completionSettingEnabled() {
+    static boolean completionSettingEnabled() {
         Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
         return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
     }
