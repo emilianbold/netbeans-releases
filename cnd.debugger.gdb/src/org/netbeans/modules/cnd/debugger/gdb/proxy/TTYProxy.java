@@ -40,69 +40,189 @@
 package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
+import org.openide.windows.InputOutput;
 
 /**
- *
+ * Creates two fifos for the process input and output and forward them to the specified io tab
  * @author eu155513
  */
 public class TTYProxy {
-    private final File file;
-    private FileReader reader = null;
-    private FileWriter writer = null;
+    private final File inFile;
+    private final File outFile;
+    private final InputOutput io;
+    private final OutputReaderThread ort;
+    private final InputReaderThread irt;
 
-    public TTYProxy(String hkey) {
-        // TODO: need to support remote
-        file = new File("/tmp/gdbFifo");
-        ProcessBuilder pb = new ProcessBuilder("/usr/bin/mkfifo", file.getAbsolutePath()); // NOI18N
+    public TTYProxy(String hkey, InputOutput io) {
+        inFile = createNewFifo();
+        outFile = createNewFifo();
+        outFile.deleteOnExit();
+        inFile.deleteOnExit();
+        this.io = io;
+        ort = new OutputReaderThread(io.getOut());
+        ort.start();
+        irt = new InputReaderThread(io.getIn());
+        irt.start();
+    }
+
+    private static File createNewFifo() {
         try {
-            pb.start();
-        } catch (IOException ex) {
-        }
-        file.deleteOnExit();
-    }
-
-    public String getFilename() {
-        return file.getAbsolutePath();
-    }
-
-    public Reader getReader() {
-        if (reader == null) {
+            // TODO : implement more correct way of generating unique filename
+            File file = File.createTempFile("gdbFifo", null); // NOI18N
+            file.delete();
+            ProcessBuilder pb = new ProcessBuilder("mkfifo", file.getAbsolutePath()); // NOI18N
             try {
-                reader = new FileReader(file);
+                Process p = pb.start();
+                // We need to wait for the end of this command, otherwise file may not be initialized
+                p.waitFor();
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
+            return file;
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
         }
-        return reader;
+        return null;
     }
 
-    public Writer getWriter() {
-        if (writer == null) {
-            try {
-                writer = new FileWriter(file);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return writer;
+    public String getInFilename() {
+        return inFile.getAbsolutePath();
+    }
+
+    public String getOutFilename() {
+        return outFile.getAbsolutePath();
+    }
+
+    public void stop() {
+        ort.cancel();
+        irt.cancel();
     }
 
     @Override
     protected void finalize() throws Throwable {
-        if (reader != null) {
-            reader.close();
+        stop();
+        inFile.delete();
+        outFile.delete();
+    }
+
+    private final class OutputReaderThread  extends Thread {
+
+        /** This is all output, not just stderr */
+        private Writer output;
+        private boolean cancel = false;
+
+        public OutputReaderThread(Writer output) {
+            this.output = output;
+            setName("TTY OutputReaderThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
         }
-        if (writer != null) {
-            writer.close();
+
+        /**
+         *  Reader proc to read the combined stdout and stderr from the build process.
+         *  The output comes in on a single descriptor because the build process is started
+         *  via a script which diverts stdout to stderr. This is because older versions of
+         *  Java don't have a good way of interleaving stdout and stderr while keeping the
+         *  exact order of the output.
+         */
+        @Override
+        public void run() {
+            InputStream is = null;
+            try {
+                is = new FileInputStream(outFile);
+                int read;
+
+                for (;;) {
+                    int available = is.available();
+                    if (available == 0) {
+                        if (cancel) {
+                            return;
+                        }
+                        try {
+                            sleep(500);
+                        } catch(InterruptedException e) {
+                        }
+                        continue;
+                    } else {
+                        while (available-- > 0) {
+                            read = is.read();
+                            if (read == 10) {
+                                output.write("\n"); // NOI18N
+                            } else {
+                                output.write((char) read);
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            } finally {
+                try {
+                    output.flush();
+                    is.close();
+                } catch (IOException e) {
+                }
+            }
         }
-        if (file.exists()) {
-            file.delete();
+
+        public void cancel() {
+            cancel = true;
+        }
+    }
+
+    /** Helper class to read the input from the build */
+    private final class InputReaderThread extends Thread {
+
+        /** This is all output, not just stderr */
+        private Reader in;
+        private boolean cancel = false;
+
+        public InputReaderThread(Reader in) {
+            this.in = in;
+            setName("TTY inputReaderThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
+        }
+
+        /**
+         *  Reader proc to read input from Output2's input textfield and send it
+         *  to the running process.
+         */
+        @Override
+        public void run() {
+            int ch;
+
+            OutputStream pout = null;
+
+            try {
+                pout = new FileOutputStream(inFile);
+
+                while ((ch = in.read()) != -1) {
+                    if (cancel) {
+                        return;
+                    }
+                    pout.write((char) ch);
+                    pout.flush();
+                }
+            } catch (IOException e) {
+            } finally {
+                // Handle EOF and other exits
+                try {
+                    pout.flush();
+                    pout.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        
+        public void cancel() {
+            cancel = true;
         }
     }
 }

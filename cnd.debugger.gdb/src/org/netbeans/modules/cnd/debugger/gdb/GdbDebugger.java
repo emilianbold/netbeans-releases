@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.TTYProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
@@ -406,7 +407,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
                 gdb.data_list_register_names("");
                 try {
-                    gdb.exec_run(pae.getProfile().getArgsFlat());
+                    TTYProxy ttyProxy = gdb.getProxyEngine().getTtyProxy();
+                    String outRedir = ttyProxy == null ? "" : " >" + ttyProxy.getOutFilename(); // NOI18N
+                    gdb.exec_run(pae.getProfile().getArgsFlat() + outRedir);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
                     ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
@@ -1236,6 +1239,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     /** Handle gdb responses starting with '@' */
     public void targetStreamOutput(String msg) {
        log.finest("GD.targetStreamOutput: " + msg);  // NOI18N
+    }
+
+    public InputOutput getIotab() {
+        return iotab;
     }
 
     /**

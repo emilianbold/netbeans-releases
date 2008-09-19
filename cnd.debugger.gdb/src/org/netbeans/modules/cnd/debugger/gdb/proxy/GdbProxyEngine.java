@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Lookup;
 
 /**
  * Class GdbProxyEngine implements the communication with gdb (low level)
@@ -90,6 +89,8 @@ public class GdbProxyEngine {
     private final boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
     private final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
+
+    private TTYProxy ttyProxy = null;
     
     /**
      * Create a gdb process
@@ -110,11 +111,11 @@ public class GdbProxyEngine {
                 debuggerCommand.add("-tty"); // NOI18N
                 debuggerCommand.add(tty);
             }
-        } /*else {
-            TTYProxy ttyProxy = new TTYProxy(null);
+        } else if (termpath == null) {
+            ttyProxy = new TTYProxy(null, debugger.getIotab());
             debuggerCommand.add("-tty"); // NOI18N
-            debuggerCommand.add(ttyProxy.getFilename());
-        }*/
+            debuggerCommand.add(ttyProxy.getInFilename());
+        }
         this.debugger = debugger;
         this.gdbProxy = gdbProxy;
         active = true;
@@ -262,6 +263,13 @@ public class GdbProxyEngine {
         if (gdbReader != null) {
             gdbReader.cancel();
         }
+        if (ttyProxy != null) {
+            ttyProxy.stop();
+        }
+    }
+
+    public TTYProxy getTtyProxy() {
+        return ttyProxy;
     }
     
     private int nextToken() {
