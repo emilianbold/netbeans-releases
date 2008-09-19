@@ -83,7 +83,7 @@ public class TemplateUtils {
 	return sb.toString();
     }
     
-    public static final String TYPENAME_STRING = "class";
+    public static final String TYPENAME_STRING = "class"; //NOI18N
     
     public static void addSpecializationSuffix(AST firstChild, StringBuilder sb, List<CsmTemplateParameter> parameters) {
         int depth = 0;

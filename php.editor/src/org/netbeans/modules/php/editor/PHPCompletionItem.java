@@ -438,6 +438,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    static class ClassConstantItem extends VariableItem {
+        ClassConstantItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CONSTANT;
+        }
+    }
+
+
     static class SpecialFunctionItem extends KeywordItem{
         public SpecialFunctionItem(String fncName, CompletionRequest request) {
             super(fncName, request);

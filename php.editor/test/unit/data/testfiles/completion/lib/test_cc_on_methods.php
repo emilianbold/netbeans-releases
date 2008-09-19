@@ -1,13 +1,13 @@
 <?php
 
-  class ParentClass{
+  class TestCCOnMethodsParentClass{
       /**
-       * @return ParentClass
+       * @return TestCCOnMethodsParentClass
        */
       function parentInstance(){}
   }
 
-  class TestCCOnMethods extends ParentClass {
+  class TestCCOnMethods extends TestCCOnMethodsParentClass {
 
   /**
    * @return TestCCOnMethods

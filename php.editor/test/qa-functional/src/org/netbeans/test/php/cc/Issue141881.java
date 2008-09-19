@@ -114,18 +114,15 @@ public class Issue141881 extends cc
 
     // Check constructor
     String sCode = "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n$aa ->";
-    for( int i = 0; i < sCode.length( ); i++ )
-    {
-      // Press Ctrl+Space
-      eoPHP.typeKey( sCode.charAt( i ) );
-      Sleep( 200 );
-    }
+    TypeCode( eoPHP, sCode );
 
     // Check code completion list
 
     String[] asIdeals = { "xx" };
 
     CompletionJListOperator jCompl = GetCompletion( );
+    if( null == jCompl )
+      fail( "Unale to find completion list in any form." );
     List list = jCompl.getCompletionItems( );
     // Magic CC number for complete list
     if( asIdeals.length != list.size( ) )

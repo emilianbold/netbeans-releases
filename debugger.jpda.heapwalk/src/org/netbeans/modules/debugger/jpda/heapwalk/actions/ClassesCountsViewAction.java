@@ -73,8 +73,8 @@ public class ClassesCountsViewAction extends AbstractAction {
             )
         );
         putValue (
-            Action.SMALL_ICON, 
-            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/debugger/resources/classesView/Classes.png")) // NOI18N
+            "iconbase",
+            "org/netbeans/modules/debugger/resources/classesView/Classes.png" // NOI18N
         );
     }
 

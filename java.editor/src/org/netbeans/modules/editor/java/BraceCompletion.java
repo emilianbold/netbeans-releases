@@ -216,7 +216,7 @@ class BraceCompletion {
         if (ch == '(' || ch == '[') {
             switch (ts.token().id()) {
                 case RPAREN:
-                    if (tokenBalance(doc, JavaTokenId.LBRACKET) != 0) {
+                    if (tokenBalance(doc, JavaTokenId.LPAREN) != 0) {
                         doc.remove(caretOffset, 1);
                     }
                     break;

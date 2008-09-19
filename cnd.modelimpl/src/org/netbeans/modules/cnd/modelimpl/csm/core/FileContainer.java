@@ -805,9 +805,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                     StringBuilder sb = new StringBuilder("Mixed preprocessor states: " + canonical); // NOI18N
                     for (StatePair pair : getStates()) {
                         if (pair.state == null) {
-                            sb.append(String.format(" (null, %s)", pair.pcState));
+                            sb.append(String.format(" (null, %s)", pair.pcState)); //NOI18N
                         } else {
-                            sb.append(String.format(" (valid: %b, context: %b, %s) ",
+                            sb.append(String.format(" (valid: %b, context: %b, %s) ", //NOI18N
                                     pair.state.isValid(), pair.state.isCompileContext(), pair.pcState));
                         }
                     }
@@ -876,10 +876,10 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(fileNew);
-            sb.append("states:\n");
+            sb.append("states:\n"); //NOI18N
             for (StatePair pair : getStates()) {
                 sb.append(pair);
-                sb.append('\n');
+                sb.append('\n'); //NOI18N
             }
             return sb.toString();
         }

@@ -45,7 +45,6 @@ package org.netbeans.performance.j2se.actions;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionFilter;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.editor.java.JavaKit;
 //import org.netbeans.modules.editor.options.BaseOptions;
 //import org.netbeans.modules.java.editor.options.JavaOptions;
 

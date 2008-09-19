@@ -336,28 +336,28 @@ BOOL ScriptDebugger::getStackFrameDescriptor(int stackDepth, DebugStackFrameDesc
 }
 
 TCHAR *ScriptDebugger::getSourceText(tstring fileURI, int beginLine, int endLine) {
+    TCHAR *buffer = NULL;
     map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
     if(iter != debugDocumentsMap.end()) {
         DebugDocument *pDebugDoc = iter->second;
         DWORD cookie = pDebugDoc->getCookie();
         CComPtr<IDebugDocument> spDebugDocument;
         Utils::getInterfaceFromGlobal(cookie, IID_IDebugDocument, (void **)&spDebugDocument);
-        if(spDebugDocument != NULL && isDocumentReady(spDebugDocument)) {
+        if(spDebugDocument != NULL) {
             CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
             ULONG lines, numChars;
             spDebugDocText->GetSize(&lines, &numChars);
             SOURCE_TEXT_ATTR *attrs = new SOURCE_TEXT_ATTR[numChars+1];
-            TCHAR *buffer = new TCHAR[numChars+1];
+            buffer = new TCHAR[numChars+1];
             ULONG actualSize = 0;
             HRESULT hr = spDebugDocText->GetText(0, buffer, attrs, &actualSize, numChars);
             if(hr == S_OK && actualSize > 0) {
                 buffer[actualSize] = 0;
                 delete[] attrs;
-                return buffer;
             }
         }
     }
-    return NULL;
+    return buffer;
 }
 
 Property *ScriptDebugger::eval(tstring expression, int stackDepth) {
@@ -682,7 +682,6 @@ STDMETHODIMP ScriptDebugger::onRemoveChild(IDebugApplicationNode __RPC_FAR *prdd
                 Utils::revokeInterfaceFromGlobal(pDebugDoc->getCookie());
                 CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
                 unregisterForDebugDocTextEvents(spDebugDocText, pDebugDoc->getEventCookie());
-                pDebugDoc->Release();
                 debugDocumentsMap.erase(iter);
             }
         }

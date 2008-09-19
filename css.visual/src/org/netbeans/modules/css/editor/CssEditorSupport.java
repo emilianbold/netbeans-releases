@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.css.editor;
 
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -106,6 +107,12 @@ public class CssEditorSupport {
     private PropertyChangeListener CSS_STYLE_DATA_LISTENER = new PropertyChangeListener() {
 
         public void propertyChange(final PropertyChangeEvent evt) {
+            //detach myself from the source so next UI changes are not propagated to the 
+            //document until the parser finishes. Then new listener will be added
+            if(selected != null) {
+                selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
+            }
+            
             final NbEditorDocument doc = (NbEditorDocument) document;
             if (doc != null) {
                 doc.runAtomic(new Runnable() {

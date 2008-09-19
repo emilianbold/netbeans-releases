@@ -114,14 +114,9 @@ public class Issue141866 extends cc
 
     String sCode = "class a ext";
     String sIdeal = "class a extends";
-    for( int i = 0; i < sCode.length( ); i++ )
-    {
-      // Press Ctrl+Space
-      eoPHP.typeKey( sCode.charAt( i ) );
-      Sleep( 1000 );
-    }
+    TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
+    WaitCompletionScanning( );
 
     // Get code
     String sText = eoPHP.getText( eoPHP.getLineNumber( ) );
