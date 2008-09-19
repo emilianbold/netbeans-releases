@@ -42,10 +42,6 @@
 
 package org.netbeans.performance.languages.actions;
 
-import java.awt.Component;
-import java.awt.Container;
-import javax.swing.JEditorPane;
-import javax.swing.text.Document;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
@@ -54,7 +50,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 
@@ -63,9 +59,8 @@ import org.netbeans.performance.languages.ScriptingUtilities;
  *
  * @author mkhramov@netbeans.org
  */
-public class OpenScriptingFiles extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class CloseScriptingFiles extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
-    private static final Object EDITOR_REFS = new Object();
     
     /** Node to be opened/edited */
     public static Node fileToBeOpened ;
@@ -81,12 +76,14 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
     
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");    
     protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
+
+    protected EditorOperator editor;
     
-    public OpenScriptingFiles(String testName) {
+    public CloseScriptingFiles(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;        
     }
-    public OpenScriptingFiles(String testName, String performanceDataName) {
+    public CloseScriptingFiles(String testName, String performanceDataName) {
         super(testName, performanceDataName);        
         expectedTime = WINDOW_OPEN;        
     }
@@ -97,10 +94,8 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
         EditorOperator.closeDiscardAll();        
 
         closeAllModal();
-        
-        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
-        
     }
+
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
             projectsTab = ScriptingUtilities.invokePTO();
@@ -114,16 +109,13 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
         String path = nodePath+"|"+fileName;    
         fileToBeOpened = new Node(getProjectNode(testProject),path);
         log("========== Open file path ="+fileToBeOpened.getPath());        
-    }
 
-    @Override
-    public ComponentOperator open() {
         JPopupMenuOperator popup =  fileToBeOpened.callPopup();
         if (popup == null) {
             throw new Error("Cannot get context menu for node ["+ fileToBeOpened.getPath() + "] in project [" + testProject + "]");
         }
         log("------------------------- after popup invocation ------------");
-        
+
         try {
             popup.pushMenu(menuItem);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
@@ -131,32 +123,13 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
             throw new Error("Cannot push menu item ["+menuItem+"] of node [" + fileToBeOpened.getPath() + "] in project [" + testProject + "]");
         }
         log("------------------------- after open ------------");
-        return new EditorOperator(this.fileName);
+        editor = new EditorOperator(this.fileName);
     }
-    
-    private void hookEditorDocument(Component comp) {
-        if (comp instanceof Container) {
-            Container cont = (Container)comp;
-            for (Component c: cont.getComponents()) {
-                hookEditorDocument(c);
-            }
-            if ("org.openide.text.QuietEditorPane".equals(comp.getClass().getName())) {
-                JEditorPane pane = (JEditorPane)comp;
-                Document doc = pane.getDocument();
-                if (doc != null)
-                    reportReference("Editor document from test "+getName(), doc, EDITOR_REFS);
-            }
-        }
-    }
-    
+
     @Override
-    public void close(){
-        if (testedComponentOperator != null) {
-            hookEditorDocument(testedComponentOperator.getSource());
-            ((EditorOperator)testedComponentOperator).closeDiscard();
-        } else {
-            throw new Error("no component to close");
-        }
+    public ComponentOperator open() {
+        editor.close();
+        return null;
     }
     
     @Override
@@ -166,101 +139,19 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
         repaintManager().resetRegionFilters();
     }
     
-    public void testOpening20kbRubyFile() {
-        testProject = Projects.RUBY_PROJECT;
-        setRubyEditorCaretFilteringOn();
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = OPEN;
-        fileName = "ruby20kb.rb";
-        nodePath = "Source Files";        
-        doMeasurement();        
-    }
-    protected void setRubyEditorCaretFilteringOn() {
-        //setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);        
-    }
-    public void testOpening20kbRHTMLFile() {
-        testProject = Projects.RAILS_PROJECT;
-        setRHTMLEditorCaretFilteringOn();
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = OPEN;
-        fileName = "rhtml20kb.rhtml";
-        nodePath = "Views";        
-        doMeasurement();          
-    }
-    protected void setRHTMLEditorCaretFilteringOn() {
-        //setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);        
-    }
-    
-    public void testOpening20kbJSFile() {
-        testProject = Projects.SCRIPTING_PROJECT;
-        setRubyEditorCaretFilteringOn();
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = OPEN;
-        fileName = "javascript20kb.js";
-        nodePath = "Web Pages";        
-        doMeasurement();          
-    }
-
-    public void testOpening20kbPHPFile() {
+    public void testClose20kbPHPFile() {
         testProject = Projects.PHP_PROJECT;
-        setRubyEditorCaretFilteringOn();
         WAIT_AFTER_OPEN = 1500;
         menuItem = OPEN;
         fileName = "php20kb.php";
         nodePath = "Source Files";
+        MY_START_EVENT = ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE;
         doMeasurement();
-    }
-
-    protected void setJSEditorCaretFilteringOn() {
-        //setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);        
-    }    
-    /*
-    public void testOpening20kbJSONFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
-        doMeasurement();          
-    }    
-    public void testOpening20kbCSSFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
-        doMeasurement();          
-    }
-    public void testOpening20kbYMLFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
-        doMeasurement();          
-    }
-    public void testOpening20kbBATFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
-        doMeasurement();          
-    }    
-    public void testOpening20kbDIFFFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
-        doMeasurement();          
-    }
-    public void testOpening20kbManifestFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
-        doMeasurement();          
-    }
-    public void testOpening20kbShFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
-        doMeasurement();          
-    }
-    */
-    /** Tests if created and later dclosed projects can be GCed from memory.
-     */
-    public void testGC() throws Exception {
-        Thread.sleep(60*1000);
-        runTestGC(EDITOR_REFS);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(OpenScriptingFiles.class)
+            NbModuleSuite.createConfiguration(CloseScriptingFiles.class)
             .enableModules(".*")
             .clusters(".*")
             .reuseUserDir(true)
