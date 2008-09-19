@@ -164,8 +164,8 @@ public class WSITModelSupport {
         try {
             String wsdlUrl = service.getWsdlUrl();
             if (wsdlUrl == null) { // WS from Java
-                if (implClass == null) {
-                    logger.log(Level.INFO, "Implementation class is null");
+                if ((implClass == null) || (!implClass.isValid() || implClass.isVirtual())) {
+                    logger.log(Level.INFO, "Implementation class is null or not valid, or just virtual: " + implClass + ", service: " + service);
                     return null;
                 }
                 JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(implClass);
