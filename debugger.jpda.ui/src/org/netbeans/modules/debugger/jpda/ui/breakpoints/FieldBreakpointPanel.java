@@ -75,13 +75,13 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
     private static FieldBreakpoint creteBreakpoint () {
         String className;
         try {
-            className = EditorContextBridge.getContext().getCurrentClassName();
+            className = EditorContextBridge.getMostRecentClassName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             className = "";
         }
         String fieldName;
         try {
-            fieldName = EditorContextBridge.getContext().getCurrentFieldName();
+            fieldName = EditorContextBridge.getMostRecentFieldName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             fieldName = "";
         }

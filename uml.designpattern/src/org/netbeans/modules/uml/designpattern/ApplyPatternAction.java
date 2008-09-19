@@ -186,4 +186,12 @@ public class ApplyPatternAction extends CookieAction
         }          
     }
 
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
+
+
+
 }

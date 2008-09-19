@@ -24,4 +24,16 @@ class FooController < ApplicationController
     redirect_to :whatever => "whatever"
   end
 
+  private
+  def i_am_private
+  end
+
+  protected
+  def i_am_protected
+  end
+
+#  public
+#  def i_am_public
+#  end
+
 end

@@ -607,7 +607,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
             }
         }
-        assertNoErrors("No warnings relating to folder ordering", h.errors());
+        assertNoErrors("No warnings relating to folder ordering; cf: http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt", h.errors());
         for (List<String> multiPath : editorMultiFolders) {
             List<FileSystem> layers = new ArrayList<FileSystem>(3);
             for (final String path : multiPath) {
@@ -622,7 +622,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
             }
             loadChildren(new MultiFileSystem(layers.toArray(new FileSystem[layers.size()])).getRoot());
-            assertNoErrors("No warnings relating to folder ordering in " + multiPath, h.errors());
+            assertNoErrors("No warnings relating to folder ordering in " + multiPath + "; cf: http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt", h.errors());
         }
     }
     private static void loadChildren(FileObject folder) {

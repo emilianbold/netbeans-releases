@@ -222,5 +222,13 @@ public class FilterAction extends CookieAction
         
         return userClickedYes;
     }
+
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
+
+
     
 }

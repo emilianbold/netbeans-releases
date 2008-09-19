@@ -74,6 +74,9 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     // ui logging
     static final String UI_LOGGER_NAME = "org.netbeans.ui.maven.project"; //NOI18N
     static final Logger UI_LOGGER = Logger.getLogger(UI_LOGGER_NAME);
+
+    static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.maven"; //NOI18N
+    static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME);
     
     ProjectOpenedHookImpl(NbMavenProjectImpl proj) {
         project = proj;
@@ -115,6 +118,13 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         record.setParameters(new Object[] {project.getProjectWatcher().getPackagingType()});
         record.setResourceBundle(NbBundle.getBundle(ProjectOpenedHookImpl.class));
         UI_LOGGER.log(record);
+
+        //USG logging.. log what was the packaging type for the opened project..
+        record = new LogRecord(Level.INFO, "USG_PROJECT_OPEN_MAVEN"); //NOI18N
+        record.setLoggerName(USG_LOGGER_NAME); //NOI18N
+        record.setParameters(new Object[] {project.getProjectWatcher().getPackagingType()});
+        USG_LOGGER.log(record);
+
     }
     
     protected void projectClosed() {

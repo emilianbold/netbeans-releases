@@ -65,6 +65,7 @@ import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.Comment;
+import org.netbeans.modules.xml.tools.generator.SelectFileDialog;
 import org.netbeans.modules.xml.tools.generator.XMLGenerateCookie;
 
 public class GenerateDOMScannerSupport implements XMLGenerateCookie {

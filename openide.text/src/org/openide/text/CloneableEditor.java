@@ -104,6 +104,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         updateName();
         _setCloseOperation();
+        setMinimumSize(new Dimension(10, 10));
     }
     @SuppressWarnings("deprecation")
     private void _setCloseOperation() {

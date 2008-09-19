@@ -54,6 +54,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.visual.widget.BirdViewController;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -83,8 +84,9 @@ public class DependencyGraphTopComponent extends TopComponent {
         initComponents();
         project = proj;
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
-        setName("DependencyGraph" + info.getName());
-        setDisplayName("Dependencies - " + info.getDisplayName());
+        setName("DependencyGraph" + info.getName()); //NOI18N
+        setDisplayName(NbBundle.getMessage(DependencyGraphTopComponent.class, 
+                "TIT_DepGraphTC", info.getDisplayName()));
         timer.setDelay(1000);
         timer.setRepeats(false);
         txtFind.getDocument().addDocumentListener(new DocumentListener() {
@@ -104,7 +106,7 @@ public class DependencyGraphTopComponent extends TopComponent {
     
     private void checkFindValue() {
         String val = txtFind.getText().trim();
-        if ("".equals(val)) {
+        if ("".equals(val)) { //NOI18N
             scene.clearFind();
         } else {
             scene.findNodeByText(val);
@@ -121,7 +123,7 @@ public class DependencyGraphTopComponent extends TopComponent {
         super.componentOpened();
         pane.setWheelScrollingEnabled(true);
         add(pane, BorderLayout.CENTER);
-        JLabel lbl = new JLabel("Loading...");
+        JLabel lbl = new JLabel(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"));
         lbl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
         lbl.setAlignmentY(JLabel.CENTER_ALIGNMENT);
         pane.setViewportView(lbl);
@@ -186,7 +188,7 @@ public class DependencyGraphTopComponent extends TopComponent {
         });
         jPanel1.add(btnSmaller);
 
-        btnBirdEye.setText("BirdEye");
+        org.openide.awt.Mnemonics.setLocalizedText(btnBirdEye, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.btnBirdEye.text")); // NOI18N
         btnBirdEye.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBirdEyeActionPerformed(evt);
@@ -194,7 +196,7 @@ public class DependencyGraphTopComponent extends TopComponent {
         });
         jPanel1.add(btnBirdEye);
 
-        lblFind.setText("Find:");
+        org.openide.awt.Mnemonics.setLocalizedText(lblFind, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.lblFind.text")); // NOI18N
         jPanel1.add(lblFind);
 
         txtFind.setMinimumSize(new java.awt.Dimension(100, 19));

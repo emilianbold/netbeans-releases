@@ -69,9 +69,11 @@ import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
 public final class FileReferencesContext {
     private CsmFile csmFile;
     private int lastOffset;
+    private boolean isClened = false;
     private Map<String,List<CsmUID<CsmVariable>>> fileLocalVars;
     private List<Offsets> fileObjectOffsets;
     private List<Offsets> fileDeclarationsOffsets;
+    private Map<String,CsmUID<CsmMacro>> projectMacros;
     
     FileReferencesContext(CsmScope csmScope){
         if (CsmKindUtilities.isFile(csmScope)) {
@@ -83,33 +85,37 @@ public final class FileReferencesContext {
     }
 
     public void clean(){
+        isClened = true;
+        _clean();
+    }
+
+    private void _clean(){
         if (fileLocalVars != null) {
             fileLocalVars = null;
+            fileDeclarationsOffsets = null;
+            fileObjectOffsets = null;
+            projectMacros = null;
         }
+    }
+    
+    public boolean isCleaned(){
+        return isClened;
     }
 
     public void advance(int offset){
         if (csmFile == null) {
             return;
         }
-        if (lastOffset > offset) {
-            lastOffset = 0;
-            clean();
-        }
-        if (fileLocalVars == null) {
-            // no increment for fileLocalVars
-            fileLocalVars = new HashMap<String,List<CsmUID<CsmVariable>>>();
-            fillFileLocalIncludeVariables();
-            // no increment for fileOffsets
-            fileDeclarationsOffsets = new ArrayList<Offsets>();
-            fileObjectOffsets = new ArrayList<Offsets>();
-            fillFileOffsets();
-        }
+        lastOffset = offset;
     }
 
     public List<CsmVariable> getFileLocalIncludeVariables(String name){
-        if (fileLocalVars == null) {
+        if (isCleaned()){
             return null;
+        }
+        if (fileLocalVars == null) {
+            fileLocalVars = new HashMap<String,List<CsmUID<CsmVariable>>>();
+            fillFileLocalIncludeVariables();
         }
         List<CsmUID<CsmVariable>> vars = fileLocalVars.get(name);
         if (vars == null || vars.isEmpty()){
@@ -126,44 +132,64 @@ public final class FileReferencesContext {
     }
     
     public CsmObject findInnerFileDeclaration(int offset){
-        if (fileDeclarationsOffsets == null) {
+        if (isCleaned()){
             return null;
         }
-        int res = Collections.binarySearch(fileDeclarationsOffsets, new Offsets(offset));
-        if (res >=0) {
-            return (CsmObject) fileDeclarationsOffsets.get(res).object.getObject();
+        if (fileDeclarationsOffsets == null) {
+            fileDeclarationsOffsets = new ArrayList<Offsets>();
+            fileObjectOffsets = new ArrayList<Offsets>();
+            fillFileOffsets();
+        }
+        Offsets key = new Offsets(offset);
+        int res = Collections.binarySearch(fileDeclarationsOffsets, key);
+        if (res >= 0) {
+            if (res < fileDeclarationsOffsets.size()-1) {
+                Offsets next = fileDeclarationsOffsets.get(res+1);
+                if (next.compareTo(key) == 0) {
+                    return next.object;
+                }
+            }
+            return fileDeclarationsOffsets.get(res).object;
         }
         return null;
     }
 
     public CsmObject findInnerFileObject(int offset){
-        if (fileObjectOffsets == null) {
+        if (isCleaned()){
             return null;
         }
-        int res = Collections.binarySearch(fileObjectOffsets, new Offsets(offset));
+        if (fileDeclarationsOffsets == null) {
+            fileDeclarationsOffsets = new ArrayList<Offsets>();
+            fileObjectOffsets = new ArrayList<Offsets>();
+            fillFileOffsets();
+        }
+        Offsets key = new Offsets(offset);
+        int res = Collections.binarySearch(fileObjectOffsets, key);
         if (res >=0) {
-            return (CsmObject) fileObjectOffsets.get(res).object.getObject();
+            if (res < fileObjectOffsets.size()-1) {
+                Offsets next = fileObjectOffsets.get(res+1);
+                if (next.compareTo(key) == 0) {
+                    return next.object;
+                }
+            }
+            return fileObjectOffsets.get(res).object;
         }
         return null;
     }
 
-    private int binarySearch(Offsets key) {
-	int low = 0;
-	int high = fileObjectOffsets.size()-1;
-
-	while (low <= high) {
-	    int mid = (low + high) >> 1;
-	    Offsets midVal = fileObjectOffsets.get(mid);
-	    int cmp = midVal.compareTo(key);
-
-	    if (cmp < 0)
-		low = mid + 1;
-	    else if (cmp > 0)
-		high = mid - 1;
-	    else
-		return mid; // key found
-	}
-	return -(low + 1);  // key not found
+    public CsmMacro findIncludedMacro(String name){
+        if (isCleaned()){
+            return null;
+        }
+        if (projectMacros == null) {
+            projectMacros = new HashMap<String,CsmUID<CsmMacro>>();
+            fillProjectMacros();
+        }
+        CsmUID<CsmMacro> uid = projectMacros.get(name);
+        if (uid != null) {
+            return uid.getObject();
+        }
+        return null;
     }
 
     private void fillFileLocalIncludeVariables() {
@@ -203,31 +229,6 @@ public final class FileReferencesContext {
         }
     }
 
-//    private void fillEnumerators(){
-//        List<CsmEnumerator> res = new ArrayList<CsmEnumerator>();
-//        for (CsmOffsetableDeclaration decl : csmFile.getDeclarations()) {
-//            if (CsmKindUtilities.isEnum(decl)) {
-//                CsmEnum en = (CsmEnum)decl;
-//                if (en.getName().length()==0){
-//                    res.addAll(en.getEnumerators());
-//                }
-//            } else if (CsmKindUtilities.isNamespaceDefinition(decl) && decl.getName().length()==0){
-//                CsmNamespaceDefinition ns = (CsmNamespaceDefinition)decl;
-//                CsmFilter filter = CsmContextUtilities.createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM},
-//                        null, false, true, true);
-//                for(Iterator i = CsmSelect.getDefault().getDeclarations(ns, filter); i.hasNext();){
-//                    CsmDeclaration nsDecl = (CsmDeclaration) i.next();
-//                    if (CsmKindUtilities.isEnum(nsDecl)) {
-//                        CsmEnum en = (CsmEnum)nsDecl;
-//                        if (en.getName().length()==0){
-//                            res.addAll(en.getEnumerators());
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     private void fillFileOffsets(){
         for(CsmOffsetableDeclaration declaration : csmFile.getDeclarations()){
             fileDeclarationsOffsets.add(new Offsets(declaration));
@@ -244,21 +245,21 @@ public final class FileReferencesContext {
     private static class Offsets implements Comparable<Offsets> {
         private int startOffset;
         private int endOffset;
-        private CsmUID object;
+        private CsmObject object;
         Offsets(CsmOffsetableDeclaration declaration){
             startOffset = declaration.getStartOffset();
             endOffset = declaration.getEndOffset();
-            object = declaration.getUID();
+            object = declaration;
         }
         Offsets(CsmMacro macros){
             startOffset = macros.getStartOffset();
             endOffset = macros.getEndOffset();
-            object = macros.getUID();
+            object = macros;
         }
         Offsets(CsmInclude include){
             startOffset = include.getStartOffset();
             endOffset = include.getEndOffset();
-            object = include.getUID();
+            object = include;
         }
         Offsets(int offset){
             startOffset = offset;
@@ -276,6 +277,35 @@ public final class FileReferencesContext {
                 }
             }
             return startOffset - o.startOffset;
+        }
+    }
+
+    private void fillProjectMacros() {
+        gatherIncludeMacros(csmFile, new HashSet<CsmFile>());
+    }
+    
+    private void gatherIncludeMacros(CsmFile file, Set<CsmFile> visitedFiles) {
+        if( visitedFiles.contains(file) ) {
+            return;
+        }
+        visitedFiles.add(file);
+        for (Iterator<CsmInclude> iter = file.getIncludes().iterator(); iter.hasNext();) {
+            CsmInclude inc = iter.next();
+            CsmFile incFile = inc.getIncludeFile();
+            if( incFile != null ) {
+                getFileLocalMacros(incFile);
+                gatherIncludeMacros(incFile, visitedFiles);
+            }
+        }
+    }
+
+    private void getFileLocalMacros(CsmFile file){
+        for (CsmMacro macro : file.getMacros()) {
+            String name = macro.getName().toString();
+            CsmUID<CsmMacro> uid = projectMacros.get(name);
+            if (uid == null) {
+                projectMacros.put(name, macro.getUID());
+            }
         }
     }
 }

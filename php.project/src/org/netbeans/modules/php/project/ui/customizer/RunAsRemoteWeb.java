@@ -70,6 +70,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.Uploa
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -77,13 +78,14 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -55933465454591271L;
+    private static final long serialVersionUID = -5593346955414591271L;
     private static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
             new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
     private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
             new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration"));
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
+    private final PhpProjectProperties properties;
     private final PhpProject project;
     private final JLabel[] labels;
     private final JTextField[] textFields;
@@ -91,15 +93,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private final String displayName;
     final Category category;
 
-    public RunAsRemoteWeb(PhpProject project, ConfigManager manager, Category category) {
-        this(project, manager, category, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
-    }
-
-    public RunAsRemoteWeb(PhpProject project, ConfigManager manager, Category category, String displayName) {
+    public RunAsRemoteWeb(PhpProjectProperties properties, ConfigManager manager, Category category) {
         super(manager);
-        this.project = project;
-        this.displayName = displayName;
+        this.properties = properties;
         this.category = category;
+        project = properties.getProject();
+        displayName = NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb");
 
         initComponents();
 
@@ -228,7 +227,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(ProjectPropertiesSupport.getWebRootDirectory(project)), indexFile, args);
+        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);
         if (err != null) {
             validateCategory(err);
             return;
@@ -256,6 +255,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private void validateCategory(String error) {
         category.setErrorMessage(error);
         category.setValid(error == null);
+    }
+
+    private FileObject getWebRoot() {
+        return ProjectPropertiesSupport.getSourceSubdirectory(project, properties.getWebRoot());
     }
 
     private void populateRemoteConnectionComboBox() {
@@ -521,7 +524,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
     private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseSourceFile(project, indexFileTextField);
+        Utils.browseFolderFile(getWebRoot(), indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

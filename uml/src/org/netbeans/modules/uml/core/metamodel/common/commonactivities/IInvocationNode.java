@@ -69,4 +69,6 @@ public interface IInvocationNode extends IActivityNode
     public void setIsSynchronous(boolean sync);
     public IConstraint createCondition(String condition);
     public String getRangeAsString();
+    public String getPreconditionsAsString();
+    public String getPostConditionsAsString();
 }

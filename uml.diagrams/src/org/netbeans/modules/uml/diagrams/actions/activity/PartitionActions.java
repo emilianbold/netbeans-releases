@@ -49,7 +49,6 @@ import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.diagrams.actions.DeleteCompartmentWidgetAction;
 import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.activity.ActivityPartitionWidget;
@@ -94,19 +93,20 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
     public JMenuItem getPopupPresenter()
     {
         JMenu popupMenu = new JMenu(getName());
-        if ((activityPartitionWidget.getSubPartitionCount() < 2))
+        if ((activityPartitionWidget.getCompartmentWidgets().size() < 2))
         {
             popupMenu.add(new AddColumnAction(loc("CTL_AddPartitionColumn")));
             popupMenu.add(new AddRowAction(loc("CTL_AddPartitionRow")));
         } else
         {
-            popupMenu.add(activityPartitionWidget.isHorizontalLayout() ? new AddColumnAction(loc("CTL_AddPartitionColumn")) : new AddRowAction(loc("CTL_AddPartitionRow")));
+            popupMenu.add(activityPartitionWidget.getOrientation() == Orientation.HORIZONTAL ? 
+                new AddColumnAction(loc("CTL_AddPartitionColumn")) : new AddRowAction(loc("CTL_AddPartitionRow")));
         }
         for (CompartmentWidget w : activityPartitionWidget.getCompartmentWidgets())
         {
             if (w.isSelected())
             {
-                String name = activityPartitionWidget.isHorizontalLayout()? 
+                String name = activityPartitionWidget.getOrientation() == Orientation.HORIZONTAL? 
                     loc("CTL_DeletePartitionColumn") : loc("CTL_DeletePartitionRow");
                 popupMenu.add(new DeleteCompartmentWidgetAction(w, name));
                 break;
@@ -153,26 +153,14 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
 
         public void actionPerformed(ActionEvent e)
         {
-            int count = 1;
+            // create child Parttion and add it to parent Partition
+            TypedFactoryRetriever<IActivityPartition> ret = new TypedFactoryRetriever<IActivityPartition>();
+            IActivityPartition subPartition = ret.createType("ActivityPartition");
+
+            activityPartitionWidget.getElement().addSubPartition(subPartition);
             updateOrientation();
-            ETList<IActivityPartition> subPartitions = activityPartitionWidget.getParentPartition().getSubPartitions();
-            if (subPartitions == null || subPartitions.size() == 0)
-            {
-                count = 2;
-                activityPartitionWidget.removeSubPartitionWidgets();
-            }
-            while (count-- > 0)
-            {
-                // create child Parttion and add it to parent Partition
-                TypedFactoryRetriever<IActivityPartition> ret = new TypedFactoryRetriever<IActivityPartition>();
-                IActivityPartition subPartition = ret.createType("ActivityPartition");
-                if (subPartition != null)
-                {
-                    activityPartitionWidget.getParentPartition().addSubPartition(subPartition);
-                    // add sub parttion widget to main widget.
-                    activityPartitionWidget.addCompartment(subPartition);
-                }
-            }
+            // add sub parttion widget to main widget.
+            activityPartitionWidget.addCompartment(subPartition);
         }
     }
 

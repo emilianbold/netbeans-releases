@@ -47,10 +47,12 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.uml.core.metamodel.basic.basicactions.IProcedure;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.reporting.ReportTask;
 import org.openide.util.NbBundle;
 
 /**
@@ -106,6 +108,86 @@ public class StateData extends ElementDataObject
         isOrthogonal, isComposite};
     }
     
+    protected String[] getProcedurePropertyNames()
+    {
+        return new String[] {
+            Property_Alias,
+            Property_Visibility,
+            Property_Documentation,          
+            Property_Transient,
+            Property_Abstract,
+            Property_Leaf,
+            Property_Reentrant,
+        };
+    }
+    
+    private Object[] getProcedurePropertyValues(IProcedure procedure)
+    {
+        Boolean isTransient = new Boolean(procedure.getIsTransient());
+        Boolean isAbstract = new Boolean(procedure.getIsAbstract());
+        Boolean isLeaf = new Boolean(procedure.getIsLeaf());
+        Boolean isReentrant = new Boolean(procedure.getIsReentrant());
+        
+        return new Object[] {procedure.getAlias(),
+        getVisibility(getElement()), procedure.getDocumentation(), isTransient, 
+                      isAbstract, isLeaf, isReentrant};
+    }
+    
+    public String getProcedure(String header, IProcedure procedure)
+    {
+        if (procedure == null)
+            return "";
+        String[] properties = getProcedurePropertyNames();
+        Object[] values = getProcedurePropertyValues(procedure);
+        StringBuilder buff = new StringBuilder();
+        
+        buff.append("<!-- =========== PROCEDURE PROPERTY SUMMARY =========== -->\r\n"); // NOI18N
+        buff.append(header + "\n");
+        buff.append(getSummaryHeader("property_summary", // NOI18N
+                    NbBundle.getMessage(ElementDataObject.class, "Properties"))); // NOI18N
+       
+        for (int i=0; i<properties.length; i++)
+        {
+            String property = properties[i];
+            Object value = values[i];
+            buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
+            buff.append("<TD WIDTH=\"15%\"><B>" + property + "</B></TD>\r\n"); // NOI18N
+            if (value instanceof Boolean)
+            {
+                if (((Boolean)value).booleanValue() == true)
+                {
+                    buff.append("<TD><IMG src=\"" + // NOI18N
+                            ReportTask.getPathToReportRoot(getElement()) +
+                            "images/checked.png" + "\" border=n></TD>\r\n"); // NOI18N
+                }
+                else
+                    buff.append("<TD><IMG src=\"" + // NOI18N
+                            ReportTask.getPathToReportRoot(getElement()) +
+                            "images/unchecked.png" + "\" border=n></TD>\r\n"); // NOI18N
+                
+            }
+            else if (value instanceof IElement && displayLink((IElement)value))
+            {
+                buff.append("<TD><B><A HREF=\"" + getLinkTo((IElement)value) + "\">" + // NOI18N
+                        value.toString() + "</A></B></TD>\r\n"); // NOI18N
+            }
+            else if (value!=null)
+            {
+                String v = value.toString();
+                if (v.equals("")) // NOI18N
+                    v = "&nbsp;"; // NOI18N
+                buff.append("<TD>" + v + "</TD>\r\n"); // NOI18N
+            }
+            else
+                buff.append("<TD>&nbsp;</TD>\r\n"); // NOI18N
+            
+            buff.append("</TR>\r\n"); // NOI18N
+        }
+        buff.append("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
+        
+        return buff.toString();
+    }
+    
     
     public boolean toReport(File file)
     {
@@ -134,6 +216,8 @@ public class StateData extends ElementDataObject
             
             out.write(getDependencies());
             
+            out.append(getEnclosingDiagrams());
+            
             out.write(getDocumentation());
             
             // property summary
@@ -148,6 +232,43 @@ public class StateData extends ElementDataObject
             // constraint summary
             out.write(getConstraintsSummary());
             
+            if (getElement().getIsSubmachineState())
+            {
+                // events
+                out.write(getSummaryHeader("events_summary", 
+                            NbBundle.getMessage(StateData.class, "Events_Summary")));
+                // entry 
+                out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
+                        out.write("<TD WIDTH=\"15%\"><B>" + NbBundle.getMessage(StateData.class, "Entry") + "</B></TD>\r\n");
+                if (getElement().getEntry() != null)        
+                    out.write("<TD><A HREF=\"#entry\">" + getElement().getEntry().getNameWithAlias() + "</A>\r\n</TD>\r\n");
+                else
+                    out.write("<TD>&nbsp;</TD>\r\n");
+                out.write("</TD>\r\n</TR>\r\n");
+
+                // do         
+                out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
+                        out.write("<TD WIDTH=\"15%\"><B>" + NbBundle.getMessage(StateData.class, "Do_Activity") + "</B></TD>\r\n");
+                if (getElement().getDoActivity() != null)        
+                    out.write("<TD><A HREF=\"#do\">" + getElement().getDoActivity().getNameWithAlias() + "\r\n</TD>\r\n");
+                else
+                    out.write("<TD>&nbsp;</TD>\r\n");        
+                out.write("</TD>\r\n</TR>\r\n");
+
+
+                // exit     
+                out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
+                        out.write("<TD WIDTH=\"15%\"><B>" + NbBundle.getMessage(StateData.class, "Exit") + "</B></TD>\r\n");
+                if (getElement().getExit() != null)        
+                    out.write("<TD><A HREF=\"#exit\">" + getElement().getExit().getNameWithAlias() + "\r\n</TD>\r\n");
+                else
+                    out.write("<TD>&nbsp;</TD>\r\n");        
+                out.write("</TD>\r\n</TR>\r\n");          
+
+                out.write("</TABLE>\r\n&nbsp;\r\n");
+            }
+            
+            
             if (incomings!=null && incomings.size()>0)
             {
                 out.write("<!-- =========== INCOMING TRANSITION SUMMARY =========== -->\r\n\r\n");
@@ -157,16 +278,25 @@ public class StateData extends ElementDataObject
                 for (int i=0; i<incomings.size(); i++)
                 {
                     ITransition transition = (ITransition)incomings.get(i);
-                    if(transition.getSource()==null)
-                        continue;
+                    
                     out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-                    out.write("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(transition.getSource()) +
+                    if(transition.getIsInternal())
+                    {
+                         out.write("<TD WIDTH=\"15%\"><B>" + transition.getName() +
+                                 "&nbsp;</B>(" + NbBundle.getMessage(StateData.class, "internal") + ")</TD>\r\n");
+                         out.write("<TD>" + getBriefDocumentation(transition.getDocumentation()) + "</TD>\r\n");
+                    }
+                    else if (transition.getSource()==null)
+                        continue;
+                    else
+                    {
+                        out.write("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(transition.getSource()) +
                             "\" title=\"" + transition.getSource().getExpandedElementType() +
                             " in " + transition.getSource().getName() + "\">" +
                             transition.getSource().getName() + "</A></B></TD>\r\n");
                     
-                    out.write("<TD>" + getBriefDocumentation(transition.getSource().getDocumentation()) 
-                        + "</TD>\r\n");
+                        out.write("<TD>" + getBriefDocumentation(transition.getSource().getDocumentation()) + "</TD>\r\n");
+                    }
                     
                     out.write("</TD>\r\n</TR>\r\n");
                 }
@@ -175,27 +305,55 @@ public class StateData extends ElementDataObject
             
             if (outgoings!=null && outgoings.size()>0)
             {
-                out.write("<!-- =========== INCOMING TRANSITION SUMMARY =========== -->\r\n\r\n");
+                out.write("<!-- =========== OUTGOING TRANSITION SUMMARY =========== -->\r\n\r\n");
                 out.write(getSummaryHeader("outgoing_transition_summary",
                         NbBundle.getMessage(StateData.class, "Outgoing_Transition_Summary")));
                 
                 for (int i=0; i<outgoings.size(); i++)
                 {
                     ITransition transition = (ITransition)outgoings.get(i);
-                    if(transition.getTarget()==null)
-                        continue;
                     out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-                    out.write("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(transition.getTarget()) +
+                    if(transition.getIsInternal())
+                    {
+                         out.write("<TD WIDTH=\"15%\"><B>" + transition.getName() +
+                                 "</B></TD>\r\n");
+                         out.write("<TD>" + getBriefDocumentation(transition.getDocumentation()) + "</TD>\r\n");
+                    }
+                    else if (transition.getSource()==null)
+                        continue;
+                    else
+                    {                   
+                        out.write("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(transition.getTarget()) +
                             "\" title=\"" + transition.getTarget().getExpandedElementType() +
                             " in " + transition.getTarget().getName() + "\">" +
                             transition.getTarget().getName() + "</A></B></TD>\r\n");
                     
-                    out.write("<TD>" + getBriefDocumentation(transition.getTarget()
-                        .getDocumentation()) + "</TD>\r\n");
+                        out.write("<TD>" + getBriefDocumentation(transition.getTarget().getDocumentation()) + "</TD>\r\n");
+                    }
                     
                     out.write("</TD>\r\n</TR>\r\n");
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n");
+            }
+            
+            
+            if (getElement().getEntry() != null)
+            {
+                out.write("<BR>\r\n");
+                out.write(getProcedure("<A NAME=\"entry\" /><B>" + NbBundle.getMessage(StateData.class, "Entry")  
+                        + ": </B>" + getElement().getEntry().getNameWithAlias(), getElement().getEntry()));
+            }
+            if (getElement().getDoActivity() != null)
+            {
+                out.write("<BR>\r\n");
+                out.write(getProcedure("<A NAME=\"do\" /><B>" + NbBundle.getMessage(StateData.class, "Do_Activity")  
+                        + ": </B>" + getElement().getDoActivity().getNameWithAlias(), getElement().getDoActivity()));
+            }
+            if (getElement().getExit() != null)
+            {
+                out.write("<BR>\r\n");
+                out.write(getProcedure("<A NAME=\"exit\" /><B>" + NbBundle.getMessage(StateData.class, "Exit")  
+                        + ": </B>" + getElement().getExit().getNameWithAlias(), getElement().getExit()));
             }
             
             out.write("<HR>\r\n");

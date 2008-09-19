@@ -261,7 +261,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
 
         if (Templates.getTargetFolder(wiz) == null) {
             HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
-            FileObject location = provider != null ? provider.getLocation() : null;
+            FileObject location = provider != null ? provider.getSourceLocation() : null;
             if (location != null) {
                 Templates.setTargetFolder(wiz, location);
             }
@@ -361,6 +361,8 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             DataObject confDataObject = DataObject.find(helper.getConfigurationFile());
             HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
             SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
+            HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+            
             FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName(), false);
             if (pkg != null && pkg.isFolder()) {
                 // bugfix: 137052
@@ -375,7 +377,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
                         if (fo.getNameExt() != null && fo.getMIMEType().equals("text/x-java")) { // NOI18N
 
                             int mappingIndex = sf.addMapping(true);
-                            String javaFileName = HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project));
+                            String javaFileName = HibernateUtil.getRelativeSourcePath(fo, hibernateEnv.getSourceLocation());
                             String fileName = javaFileName.replaceAll("/", ".").substring(0, javaFileName.indexOf(".java", 0)); // NOI18N
 
                             sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, classAttr, fileName);
@@ -390,7 +392,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
                         FileObject fo = enumeration.nextElement();
                         if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
                             int mappingIndex = sf.addMapping(true);
-                            sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project)));
+                            sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, HibernateUtil.getRelativeSourcePath(fo, hibernateEnv.getSourceLocation()));
                             hco.modelUpdatedFromUI();
                             hco.save();
                         }

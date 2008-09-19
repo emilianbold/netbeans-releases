@@ -1,12 +1,12 @@
 class Hello
   def world(x)
-    y, z = extract
+    y, z = new_name
     y,z = y+1,z+1
     puts x,y,z
   end
   
   # TODO Comment
-  def extract
+  def new_name
     y = 10
     z = 20
     return y, z

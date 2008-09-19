@@ -82,6 +82,7 @@ public class XMLSyntaxParserTest extends TestCase {
         suite.addTest(new XMLSyntaxParserTest("testParsePI"));
         suite.addTest(new XMLSyntaxParserTest("testParseValidTag"));
         suite.addTest(new XMLSyntaxParserTest("testParseTestXML"));
+        suite.addTest(new XMLSyntaxParserTest("testMultiRootXML"));
         suite.addTest(new XMLSyntaxParserTest("testParseWSDL"));
         suite.addTest(new XMLSyntaxParserTest("testParsePerformace"));
         return suite;
@@ -252,6 +253,17 @@ public class XMLSyntaxParserTest extends TestCase {
         }
     }    
 
+    public void testMultiRootXML() throws Exception {
+        BaseDocument basedoc = getDocument("nodes/multiRoot.xml");
+        XMLSyntaxParser parser = new XMLSyntaxParser();
+        try {
+            Document doc = parser.parse(basedoc);
+            assertTrue("Should not come here", false);
+        } catch(Exception ex) {
+            assertTrue(ex.getMessage(), true);
+        }
+    }
+    
     public void testParsePerformace() throws Exception {
         long start = System.currentTimeMillis();
         BaseDocument basedoc = getDocument("nodes/fields.xsd");
@@ -263,5 +275,5 @@ public class XMLSyntaxParserTest extends TestCase {
         //FlushVisitor fv = new FlushVisitor();
         //String docBuf = fv.flushModel(doc);
         //assertEquals("The document should be unaltered",basedoc.getText(0,basedoc.getLength()),docBuf);
-    }
+    }    
 }

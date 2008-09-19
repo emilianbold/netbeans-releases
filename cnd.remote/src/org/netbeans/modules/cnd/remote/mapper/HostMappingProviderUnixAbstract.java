@@ -85,8 +85,8 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
         return mappings;
     }
 
-    private static final String NET = "/net/";
-    private static final Pattern pattern = Pattern.compile("\t+| +");
+    private static final String NET = "/net/"; // NOI18N
+    private static final Pattern pattern = Pattern.compile("\t+| +"); // NOI18N
 
     /**
      * This method parses lines like
@@ -117,7 +117,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
         if (runner.run("uname -a")) { //NOI18N
             String result = runner.getOutput();
             if (result != null) {
-                String[] values = result.split(" +");
+                String[] values = result.split(" +"); // NOI18N
                 if (values.length > 1) {
                     hostName = values[1];
                     //TODO: validation?

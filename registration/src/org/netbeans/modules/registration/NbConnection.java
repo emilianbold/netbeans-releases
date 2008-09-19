@@ -102,22 +102,12 @@ class NbConnection {
     }
     
     static void init () {
-        //As we need this code for NB 5.5 we cannot use new Winsys API method
-        //WindowManager.invokeWhenUIReady(Runnable). Here we use old way how to
-        //perform something after opening of main window
         if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
-            SwingUtilities.invokeLater(new Runnable() {
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
                 public void run() {
-                    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-                    mainWindow.addComponentListener(new ComponentAdapter() {
-                        @Override
-                        public void componentShown(ComponentEvent evt) {
-                            mainWindow.removeComponentListener(this);
-                            RP.post(new Runnable() {
-                                public void run() {
-                                    checkStatus();
-                                }
-                            });
+                    RP.post(new Runnable() {
+                        public void run() {
+                            checkStatus();
                         }
                     });
                 }

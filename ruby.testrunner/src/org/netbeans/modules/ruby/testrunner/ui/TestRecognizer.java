@@ -38,12 +38,12 @@
  */
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,26 +55,23 @@ public final class TestRecognizer extends OutputRecognizer {
     
     private final Manager manager;
     private TestSession session;
-    private final FileLocator fileLocator;
-    private final SessionType sessionType;
     private final List<TestRecognizerHandler> handlers;
+    private final boolean printSummary;
 
     public TestRecognizer(Manager manager, 
-            FileLocator fileLocator, 
             List<TestRecognizerHandler> handlers, 
-            SessionType sessionType) {
+            TestSession session, boolean printSummary) {
         
         this.manager = manager;
-        this.fileLocator = fileLocator;
         this.handlers = handlers;
-        this.sessionType = sessionType;
-        this.session = new TestSession(fileLocator, sessionType);
+        this.session = session;
+        this.printSummary = printSummary;
     }
 
     public synchronized void refreshSession() {
         // workaround for making re-run work correctly, need to rethink
         // when migrating to the new Execution API
-        this.session = new TestSession(fileLocator, sessionType);
+        this.session = new TestSession(session.getName(), session.getFileLocator(), session.getSessionType());
     }
     
     @Override
@@ -122,4 +119,27 @@ public final class TestRecognizer extends OutputRecognizer {
         }
         manager.sessionFinished(session);
     }
+
+    @Override
+    public synchronized String[] beforeFinish() {
+        if (!printSummary) {
+            return new String[0];
+        }
+        List<String> output = new ArrayList<String>(2);
+        output.add("");
+        output.add(NbBundle.getMessage(TestRecognizer.class,
+                "MSG_TestSessionFinished", new Double(session.getSessionResult().getElapsedTime() / 1000d)));
+        output.add(NbBundle.getMessage(TestRecognizer.class,
+                "MSG_TestSessionFinishedSummary",
+                session.getSessionResult().getTotal(),
+                session.getSessionResult().getFailed(),
+                session.getSessionResult().getErrors()));
+
+        for (String line : output) {
+            manager.displayOutput(session, line, false);
+        }
+
+        return output.toArray(new String[output.size()]);
+    }
+
 }
