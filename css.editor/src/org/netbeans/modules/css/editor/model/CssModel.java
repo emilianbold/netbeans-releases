@@ -203,9 +203,13 @@ public final class CssModel {
             return;
         }
 
-        ParserResult presult = info.getEmbeddedResults("text/x-css").iterator().next(); //NOI18N
+        Collection<? extends ParserResult> results = info.getEmbeddedResults("text/x-css"); //NOI18N
+        if(results == null || results.isEmpty()) {
+            return ;
+        }
+        
+        ParserResult presult = results.iterator().next();
         SimpleNode root = ((CSSParserResult) presult).root();
-
 
         if (containsErrors(presult)) {
             support.firePropertyChange(MODEL_INVALID, rules, null);
