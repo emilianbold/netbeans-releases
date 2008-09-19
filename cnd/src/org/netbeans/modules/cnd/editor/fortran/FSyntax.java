@@ -41,10 +41,11 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
+import javax.swing.text.Document;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
 
-import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 
 /**
  * Syntax analyzes for Fortran source files.
@@ -91,11 +92,14 @@ public class FSyntax extends Syntax {
     /**points to the last newline character
      */
     protected int lastNL = 0;
+
+    private Document doc;
     
     /** constructor
      */
-    public FSyntax() {
+    public FSyntax(Document doc) {
         tokenContextPath = FTokenContext.contextPath;
+        this.doc = doc;
     }
     
     /** This function returns true if the colun number
@@ -193,7 +197,7 @@ public class FSyntax extends Syntax {
                             break;
                         case 'C':
                         case 'c':
-                            if( (lastNL == offset-1 || offset == 0) && !CppSettings.getDefault().isFreeFormatFortran() ) {
+                            if( (lastNL == offset-1 || offset == 0) && !FortranCodeStyle.get(doc).isFreeFormatFortran() ) {
                                 state = IN_LINE_COMMENT;
                             } else {
                                 state = IN_IDENTIFIER;
