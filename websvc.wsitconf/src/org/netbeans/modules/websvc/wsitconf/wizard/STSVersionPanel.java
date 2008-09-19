@@ -41,15 +41,54 @@
 
 package org.netbeans.modules.websvc.wsitconf.wizard;
 
-public class WizardProperties {
-    public static final String WEB_SERVICE_TYPE = "webServiceType"; // NOI18N
-    public static final String WSDL_FILE_PATH = "wsdlFilePath"; //NOI18N
-    
-    public static final String WSDL_MODEL = "wsdlModel"; //NOI18N
-    public static final String WSDL_MODELER = "wsdlModeler"; //NOI18N
-    public static final String WSDL_SERVICE = "wsdlService"; //NOI18N
-    public static final String WSDL_PORT = "wsdlPort"; //NOI18N
-    public static final String WSDL_SERVICE_HANDLER = "wsdlServiceHandler"; //NOI18N
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
 
-    public static final String VERSION = "cfgVersion"; //NOI18N
+/**
+ * FinishableProxyWizardPanel.java - used decorator pattern to enable to finish 
+ * the original wizard panel, that is not finishable
+ * 
+ *
+ * @author mkuchtiak
+ */
+public class STSVersionPanel implements WizardDescriptor.Panel {
+    
+    private WizardDescriptor wizard;
+    private Project project;
+
+    private STSVersionPanelUI ui = null;
+    
+    /** Creates a new instance of ProxyWizardPanel */
+    public STSVersionPanel(WizardDescriptor wiz) {
+        wizard = wiz;
+        this.project = Templates.getProject(wizard);
+        ui = new STSVersionPanelUI(project);
+    }
+
+    public void addChangeListener(javax.swing.event.ChangeListener l) {
+    }
+
+    public void removeChangeListener(javax.swing.event.ChangeListener l) {
+    }
+
+    public void storeSettings(Object settings) {
+        wizard.putProperty(WizardProperties.VERSION, ui.getVersion());
+    }
+
+    public void readSettings(Object settings) {}
+
+    public boolean isValid() {
+        return true;
+    }
+
+    public java.awt.Component getComponent() {
+        ui.setVisible(true);
+        return ui;
+    }
+
+    public org.openide.util.HelpCtx getHelp() {
+        return wizard.getHelpCtx();
+    }
+    
 }
