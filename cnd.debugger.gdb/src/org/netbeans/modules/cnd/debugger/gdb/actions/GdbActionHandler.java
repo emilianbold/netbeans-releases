@@ -77,6 +77,7 @@ public class GdbActionHandler implements CustomProjectActionHandler {
                     });
                 }
             } else {
+                executionFinished(-1);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(GdbActionHandler.class, "Err_NoGdbFound"))); // NOI18N
 
