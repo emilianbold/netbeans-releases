@@ -91,6 +91,8 @@ public class JavacTask extends Javac {
                     }
                 }
             }
+
+            super.execute();
         }
     }
 
