@@ -123,6 +123,11 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
         return new ItemNode();
     }
 
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+
     /**
      * Returns the complib associated with this palette item (normal case) or
      * null if one cannot be found. For example, it is possible for someone to
