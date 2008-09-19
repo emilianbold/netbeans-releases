@@ -399,6 +399,16 @@
                         suspendNextLine = false;
                         suspend("suspend");
                     }
+                    
+                    if (currentUrl) {
+                        var url = currentUrl;
+                        if (features.ignoreQueryStrings == true) {
+                            var urlWithoutQuery = getURLWithoutQuery(url);
+                            if (urlWithoutQuery != url && breakpoints[urlWithoutQuery]) {
+                                copyBreakpoints(url, urlWithoutQuery);
+                            }
+                        }
+                    }
                 }
             },
 
