@@ -203,6 +203,10 @@ public class PHPDOCCodeCompletion {
             return getName();
         }
 
+        public int getSortPrioOverride() {
+            return 0;
+        }
+
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.appendText(getName());
             return formatter.getText();
@@ -230,14 +234,6 @@ public class PHPDOCCodeCompletion {
 
         public String getCustomInsertTemplate() {
             return CUSTOM_TEMPLATES.get(tag);
-        }
-
-        public List<String> getInsertParams() {
-            return null;
-        }
-
-        public String[] getParamListDelimiters() {
-            return null;
         }
     }
 }
