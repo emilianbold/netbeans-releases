@@ -43,13 +43,13 @@ import java.net.URL;
 
 /**
  *
- * @author Roderico Cruz
+ * @author rico
  */
 public interface WsdlModelProvider {
 
-    <T extends WsdlModel>  T getWsdlModel(URL url, String packageName) ;
+    <T extends WsdlModel>  T getWsdlModel(URL wsdlurl, String packageName, URL catalog) ;
 
-    boolean canAccept(URL url);
+    boolean canAccept(URL wsdlurl);
 
     Throwable getCreationException();
 

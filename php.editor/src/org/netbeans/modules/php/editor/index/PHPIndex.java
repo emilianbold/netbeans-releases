@@ -409,7 +409,7 @@ public class PHPIndex {
                 ancestors.add(clazz);
                 String parent = clazz.getSuperClass();
 
-                if (parent != null) {
+                if (parent != null && parent.trim().length() > 0) {
                     assumedParents.add(parent);
                 }
             }
