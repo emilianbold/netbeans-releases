@@ -130,12 +130,11 @@ class IntroduceFix implements PreviewableFix {
             return;
         }
 
-        Position commentPosition = null;
-        
-        commentPosition = edits.apply(commentOffset);
+        Position  commentPosition = edits.createPosition(commentOffset);
+        edits.apply();
 
         // Warp to the inserted method and show the comment
-        if (commentPosition != null) {
+        if (commentPosition != null && commentPosition.getOffset() != -1) {
             JTextComponent target = NbUtilities.getPaneFor(info.getFileObject());
             if (target != null) {
                 int offset = commentPosition.getOffset();
@@ -328,7 +327,7 @@ class IntroduceFix implements PreviewableFix {
         }
         
         EditList edits = new EditList(doc);
-        edits.setFormatter(new RubyFormatter(), false);
+        edits.setFormatAll(false);
 
         edits.replace(lexStart, lexEnd-lexStart, name, true, 1);
         edits.replace(begin, 0, sb.toString(), true, 2);
@@ -386,7 +385,7 @@ class IntroduceFix implements PreviewableFix {
 
         StringBuilder sb = new StringBuilder();
         EditList edits = new EditList(doc);
-        edits.setFormatter(new RubyFormatter(), false);
+        edits.setFormatAll(false);
         boolean isAbove = prevEnd < astRange.getStart();
         sb.append("\n");
         if (!isAbove) {

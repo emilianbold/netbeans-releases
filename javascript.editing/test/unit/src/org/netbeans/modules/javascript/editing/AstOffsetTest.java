@@ -261,6 +261,15 @@ public class AstOffsetTest extends JsTestBase {
         checkOffsets("testfiles/rename2.js");
     }
 
+    public void testFunctionExpressions() throws Exception {
+        checkOffsets("testfiles/functions.js");
+    }
+
+//    public void testDestructuringAssignment() throws Exception {
+//        // http://developer.mozilla.org/en/docs/New_in_JavaScript_1.7#Destructuring_assignment
+//        checkOffsets("testfiles/destructuring_assignment.js");
+//    }
+
     public void testIncremental1() throws Exception {
         checkIncremental("testfiles/dragdrop.js",
                 1.7d, // Expect it to be at least twice as fast as non-incremental

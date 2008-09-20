@@ -46,12 +46,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.jruby.nb.ast.Node;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.options.CodeStyle;
@@ -79,6 +81,12 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
     }
 
     @Override
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -94,7 +102,15 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
     protected String getPreferredMimeType() {
         return RubyInstallation.RUBY_MIME_TYPE;
     }
-    
+
+    @Override
+    protected void setupDocumentIndentation(BaseDocument doc, IndentPrefs preferences) {
+        // Ensure that I pick up the code style settings
+        super.setupDocumentIndentation(doc, preferences);
+        int size = preferences != null ? preferences.getIndentation() : 2;
+        CodeStylePreferences.get(doc).getPreferences().putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, size);
+    }
+
     @Override
     protected void initializeClassPaths() {
         System.setProperty("netbeans.user", getWorkDirPath());

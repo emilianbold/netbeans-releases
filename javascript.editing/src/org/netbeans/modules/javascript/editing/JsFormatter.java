@@ -56,6 +56,8 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.javascript.editing.JsPretty.Diff;
@@ -82,7 +84,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private int embeddededIndent = 0;
     private int indentSize;
     private int continuationIndentSize;
-    
+
     /**
      * <p>
      * Stack describing indentation of blocks defined by '{', '[' and blocks
@@ -108,9 +110,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return true;
     }
 
-    public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
-        Preferences prefs = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE)).lookup(Preferences.class);
-        indentSize = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+    public void reformat(Context context, CompilationInfo info) {
+        indentSize = IndentUtils.indentLevelSize(context.document());
         continuationIndentSize = indentSize; // No separate setting for this yet!
         
         JsParseResult jsParseResult = null;
@@ -118,12 +119,15 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             jsParseResult = AstUtilities.getParseResult(info);
         }
         
+        Document document = context.document();
         if (jsParseResult == null || jsParseResult.getRootNode() == null || !(JsUtils.isJsOrJsonDocument(document))) {
-            reindent(document, startOffset, endOffset, null, false);
+            reindent(context, null, false);
             return;
         }
-        
         final BaseDocument doc = (BaseDocument) document;
+        
+        int startOffset = context.startOffset();
+        int endOffset = context.endOffset();
         
         final JsPretty jsPretty = new JsPretty(info, doc, startOffset, endOffset, indentSize, continuationIndentSize);
         jsPretty.format();
@@ -142,12 +146,11 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         });
     }
     
-    public void reindent(Document document, int startOffset, int endOffset) {
-        Preferences prefs = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE)).lookup(Preferences.class);
-        indentSize = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+    public void reindent(Context context) {
+        indentSize = IndentUtils.indentLevelSize(context.document());
         continuationIndentSize = indentSize; // No separate setting for this yet!
 
-        reindent(document, startOffset, endOffset, null, true);
+        reindent(context, null, true);
     }
     
     public int indentSize() {
@@ -563,7 +566,11 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info, final boolean indentOnly) {
+    private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {
+        Document document = context.document();
+        int startOffset = context.startOffset();
+        int endOffset = context.endOffset();
+
         embeddedJavaScript = !JsUtils.isJsOrJsonDocument(document);
         
         try {
@@ -617,7 +624,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     try {
                         // Iterate in reverse order such that offsets are not affected by our edits
                         assert indents.size() == offsets.size();
-                        org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
                         for (int i = indents.size() - 1; i >= 0; i--) {
                             int indent = indents.get(i);
                             int lineBegin = offsets.get(i);
@@ -656,7 +662,9 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                             int currentIndent = LexUtilities.getLineIndent(doc, lineBegin);
 
                             if (currentIndent != indent) {
-                                editorFormatter.changeRowIndent(doc, lineBegin, indent);
+                                //org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
+                                //editorFormatter.changeRowIndent(doc, lineBegin, indent);
+                                context.modifyIndent(lineBegin, indent);
                             }
                         }
                     } catch (BadLocationException ble) {

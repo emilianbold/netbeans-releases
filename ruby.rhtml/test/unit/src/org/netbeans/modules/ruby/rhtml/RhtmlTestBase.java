@@ -56,6 +56,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.ruby.RubyLanguage;
 
 /**
  *
@@ -83,8 +84,16 @@ public abstract class RhtmlTestBase extends RubyTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        TestLanguageProvider.register(RhtmlTokenId.language());
-        TestLanguageProvider.register(HTMLTokenId.language());
+        try {
+            TestLanguageProvider.register(RhtmlTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Already registered?
+        }
+        try {
+            TestLanguageProvider.register(HTMLTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Already registered?
+        }
         
         rhtmlReformatFactory = new RhtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse(RubyInstallation.RHTML_MIME_TYPE), rhtmlReformatFactory);
@@ -198,5 +207,25 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         Action a = kit.getActionByName(actionName);
         assertNotNull(a);
         a.actionPerformed(new ActionEvent(pane, 0, cmd));
+    }
+
+    // Ensure Ruby is registered too
+    @Override
+    protected void initializeRegistry() {
+        super.initializeRegistry();
+        LanguageRegistry registry = LanguageRegistry.getInstance();
+        if (!LanguageRegistry.getInstance().isSupported(getPreferredMimeType())) {
+            List<Action> actions = Collections.emptyList();
+            RubyLanguage l = new RubyLanguage();
+            org.netbeans.modules.gsf.Language dl = new org.netbeans.modules.gsf.Language("unknown", "text/x-ruby", actions,
+                    l, l.getParser(), l.getCompletionHandler(),
+                    l.getInstantRenamer(), l.getDeclarationFinder(),
+                    l.getFormatter(), l.getKeystrokeHandler(),
+                    l.getIndexer(), l.getStructureScanner(), null,
+                    l.isUsingCustomEditorKit());
+            List<org.netbeans.modules.gsf.Language> languages = new ArrayList<org.netbeans.modules.gsf.Language>();
+            languages.add(dl);
+            registry.addLanguages(languages);
+        }
     }
 }
