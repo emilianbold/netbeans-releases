@@ -62,6 +62,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
@@ -262,20 +263,23 @@ public class PHPIndexer implements Indexer {
             for (SingleFieldDeclaration field : fieldsDeclaration.getFields()) {
                 if (field.getName().getName() instanceof Identifier) {
                     Identifier identifier = (Identifier) field.getName().getName();
-                    StringBuilder fieldSignature = new StringBuilder();
-                    fieldSignature.append(identifier.getName() + ";"); //NOI18N
-                    fieldSignature.append(field.getStartOffset() + ";"); //NOI18N
-                    fieldSignature.append(fieldsDeclaration.getModifier() + ";"); //NOI18N
                     String type = getFieldTypeFromPHPDoc(field);
-
-                    if (type != null){
-                        fieldSignature.append(type);
-                    }
-
-                    fieldSignature.append(";"); //NOI18N
-                    document.addPair(FIELD_FIELD, fieldSignature.toString(), false);
+                    String signature = createFieldsDeclarationRecord(identifier.getName(), type, fieldsDeclaration.getModifier(), field.getStartOffset());
+                    document.addPair(FIELD_FIELD, signature, false);
                 }
             }
+        }
+
+        private String createFieldsDeclarationRecord(String name, String type, int modifier, int offset) {
+            StringBuilder fieldSignature = new StringBuilder();
+            fieldSignature.append(name + ";"); //NOI18N
+            fieldSignature.append(offset + ";"); //NOI18N
+            fieldSignature.append(modifier + ";"); //NOI18N
+            if (type != null){
+                fieldSignature.append(type);
+            }
+            fieldSignature.append(";"); //NOI18N
+            return fieldSignature.toString();
         }
 
         private class IndexerVisitor extends DefaultTreePathVisitor{
@@ -436,7 +440,11 @@ public class PHPIndexer implements Indexer {
                         document.addPair(FIELD_CLASS_CONST, signature.toString(), false);
                     }
                 }
-
+            }
+            List<String[]> properties = getPropertiesFromPHPDoc(classDeclaration);
+            for (String[] strings : properties) {
+                String signature = createFieldsDeclarationRecord(strings[1], strings[0], BodyDeclaration.Modifier.PUBLIC, classDeclaration.getStartOffset());
+                document.addPair(FIELD_FIELD, signature, false);
             }
         }
 
@@ -629,6 +637,33 @@ public class PHPIndexer implements Indexer {
             }
 
             return null;
+        }
+
+        /**
+         *
+         * @param node
+         * @return List of String[], where String[0] is type and String[1] is the name
+         */
+        private List<String[]> getPropertiesFromPHPDoc(ClassDeclaration node) {
+            Comment comment = Utils.getCommentForNode(root, node);
+            List<String[]> properties = new ArrayList<String[]>();
+
+            if (comment instanceof PHPDocBlock) {
+                PHPDocBlock phpDoc = (PHPDocBlock) comment;
+                for (PHPDocTag tag : phpDoc.getTags()) {
+                    if (tag.getValue() != null
+                            && (tag.getKind() == PHPDocTag.Type.PROPERTY
+                            || tag.getKind() == PHPDocTag.Type.PROPERTY_READ
+                            || tag.getKind() == PHPDocTag.Type.PROPERTY_WRITE)) {
+
+                        String[] tokens = tag.getValue().split("[ ]+"); //NOI18N
+                        if (tokens.length > 1) {
+                            properties.add(new String[]{tokens[0].trim(), tokens[1].trim()});
+                        }
+                    }
+                }
+            }
+            return properties;
         }
     }
 
