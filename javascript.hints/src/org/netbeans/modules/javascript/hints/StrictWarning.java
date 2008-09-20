@@ -460,8 +460,9 @@ public class StrictWarning extends JsErrorRule {
         public void implement() throws Exception {
             EditList edits = getEditList();
 
-            Position pos = edits.apply(varOffset);
-            if (pos != null) {
+            Position pos = edits.createPosition(varOffset);
+            edits.apply();
+            if (pos != null && pos.getOffset() != -1) {
                 JTextComponent target = NbUtilities.getPaneFor(context.compilationInfo.getFileObject());
                 if (target != null) {
                     int start = pos.getOffset();
