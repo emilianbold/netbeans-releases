@@ -155,6 +155,7 @@ public class PHPIndex {
                     //TODO: handle search kind
                     int offset = sig.integer(2);
                     String superClass = sig.string(3);
+                    superClass = superClass.length() == 0 ? null : superClass;
                     IndexedClass clazz = new IndexedClass(className, null, this, map.getPersistentUrl(), superClass, offset, 0);
                     //clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     classes.add(clazz);
@@ -218,7 +219,9 @@ public class PHPIndex {
                     func.setOptionalArgs(optionalArgs);
                     //func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     functions.add(func);
-                    func.setReturnType(sig.string(5));
+                    String retType = sig.string(5);
+                    retType = retType.length() == 0 ? null : retType;
+                    func.setReturnType(retType);
                 }
             }
         }
@@ -248,7 +251,8 @@ public class PHPIndex {
                     String typeName = sig.string(2);
                     typeName = typeName.length() == 0 ? null : typeName;
                     int offset = sig.integer(3);
-                    IndexedVariable var = new IndexedVariable(constName, null, this, map.getPersistentUrl(), offset, 0, typeName);
+                    IndexedVariable var = new IndexedVariable(constName, null, this,
+                            map.getPersistentUrl(), offset, 0, typeName);
                     //var.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     vars.add(var);
                 }
@@ -409,7 +413,7 @@ public class PHPIndex {
                 ancestors.add(clazz);
                 String parent = clazz.getSuperClass();
 
-                if (parent != null && parent.trim().length() > 0) {
+                if (parent != null) {
                     assumedParents.add(parent);
                 }
             }
@@ -467,7 +471,9 @@ public class PHPIndex {
 
                 int optionalArgs[] = extractOptionalArgs(sig.string(3));
                 func.setOptionalArgs(optionalArgs);
-                func.setReturnType(sig.string(4));
+                String retType = sig.string(4);
+                retType = retType.length() == 0 ? null : retType;
+                func.setReturnType(retType);
                 methods.add(func);
             }
 
