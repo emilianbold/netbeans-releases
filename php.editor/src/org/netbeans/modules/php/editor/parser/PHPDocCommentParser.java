@@ -140,9 +140,12 @@ public class PHPDocCommentParser {
         if (line.length() > 0 && line.charAt(0) == '@') {
             String[] tokens = line.split("[ ]+");
             if (tokens.length > 0) {
-                String tag = tokens[0];
+                String tag = tokens[0].substring(1).toUpperCase();
+                if (tag.indexOf('-') > -1) {
+                    tag = tag.replace('-', '_');
+                }
                 try {
-                    type = PHPDocTag.Type.valueOf(tag.substring(1).toUpperCase());
+                    type = PHPDocTag.Type.valueOf(tag);
                 }
                 catch (IllegalArgumentException iae) {
                     // we are not able to thread such tag

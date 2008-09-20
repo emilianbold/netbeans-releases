@@ -170,4 +170,23 @@ public class PHPDocCommentParserTest extends TestCase {
         PHPDocBlock block = parser.parse(100, 150, comment);
         assertNotNull(block);
     }
+
+    public void testProperty() throws Exception {
+        String comment = " * PHP Template.\n" +
+                " * @property string name\n" +
+                " * @property-read int ahoj\n" +
+                " * @property-write int death";
+        PHPDocCommentParser parser = new PHPDocCommentParser();
+        PHPDocBlock block = parser.parse(100, 150, comment);
+        assertNotNull(block);
+        assertEquals("PHP Template.", block.getDescription());
+        List<PHPDocTag> tags = block.getTags();
+        assertEquals("Nunber of tags", 3, tags.size());
+        assertEquals(PHPDocTag.Type.PROPERTY, tags.get(0).getKind());
+        assertEquals("string name", tags.get(0).getValue());
+        assertEquals(PHPDocTag.Type.PROPERTY_READ, tags.get(1).getKind());
+        assertEquals("int ahoj", tags.get(1).getValue());
+        assertEquals(PHPDocTag.Type.PROPERTY_WRITE, tags.get(2).getKind());
+        assertEquals("int death", tags.get(2).getValue());
+    }
 }
