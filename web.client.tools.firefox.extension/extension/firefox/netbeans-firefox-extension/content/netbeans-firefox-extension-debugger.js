@@ -272,7 +272,7 @@
         NetBeans.Utils.CI("jsdIDebuggerService"));
 
         firebugDebuggerService = NetBeans.Utils.CC(NetBeans.Constants.FirebugCID).getService().wrappedJSObject;
-
+        
         const socketListener = {
             onDBGPCommand: function(command) {
                 handleCommand(command);
@@ -280,6 +280,15 @@
             onDBGPClose: function() {
                 if (window && window.NetBeans) {
                   window.NetBeans.Debugger.shutdown();
+                } else {
+                    if (firebugDebuggerService) {
+                        fbsUnregisterDebugger(firebugDebugger);
+                    }
+
+                    if (socket) {
+                        socket.close();
+                        socket = null;
+                    }
                 }
             }
         };
@@ -287,7 +296,17 @@
         // create DBGP socket
         socket = NetBeans.SocketUtils.createSocket("127.0.0.1", port, socketListener);
 
-        fbsRegisterDebugger(firebugDebugger);
+        try {
+            var prefs =
+                NetBeans.Utils.CCSV("@mozilla.org/preferences-service;1",
+                Components.interfaces.nsIPrefBranch2);
+            
+            prefs.setBoolPref("extensions.firebug-service.trackThrowCatch", true);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Could not set trackThrowCatch")
+            NetBeans.Logger.logException(exc);
+        }
+        firebugDebuggerService.trackThrowCatch = true;
 
         initialize(this);
         sendInitMessage();
@@ -308,7 +327,7 @@
                 if ( !topWindow ) {
                     topWindow = win;
                     browser = NetBeans.Utils.getBrowserByWindow(win);
-                    wrapBrowserDestroy();
+                    wrapBrowserDestroy(browser);
                     currentUrl = uri.prePath+uri.path;
                     return true;
                 } else if ( topWindow == win && browser == NetBeans.Utils.getBrowserByWindow(win) ) {
@@ -380,14 +399,26 @@
                         suspendNextLine = false;
                         suspend("suspend");
                     }
+                    
+                    if (currentUrl) {
+                        var url = currentUrl;
+                        if (features.ignoreQueryStrings == true) {
+                            var urlWithoutQuery = getURLWithoutQuery(url);
+                            if (urlWithoutQuery != url && breakpoints[urlWithoutQuery]) {
+                                copyBreakpoints(url, urlWithoutQuery);
+                            }
+                        }
+                    }
                 }
             },
 
             // #5 Show Current Context - we didn't need this.'
-            showContext: function(browser, context) {
+            showContext: function(currentBrowser, context) {
                 if (this.terminated) {
                     return;
                 }
+
+                wrapBrowserDestroy(currentBrowser);
             },
 
             // #6 Watch Window ( attachToWindow )
@@ -490,8 +521,12 @@
         );
 
         // Make sure we our shutdown when the browser is destroyed.
-        function wrapBrowserDestroy()
+        function wrapBrowserDestroy(browser)
         {
+            if (browser._destroy) {
+                return;
+            }
+
             browser._destroy = browser.destroy;
             browser.destroy = function() {
                 netBeansDebugger.shutdown();
@@ -502,6 +537,8 @@
             }
         }
 
+        fbsRegisterDebugger(firebugDebugger);
+
         Firebug.registerExtension(NetBeansDebuggerExtension);
 
         netBeansDebugger.netbeansDebuggerExtension = NetBeansDebuggerExtension;
@@ -510,7 +547,6 @@
         Firebug.Debugger.isHostEnabled = function(context) {
             return topWindow && context.window == topWindow;
         }
-
     }
 
 
@@ -573,7 +609,7 @@
     this.shutdown = function()
     {
         this.shutdownInProgress = true;
-        
+
         if ( !jsDebuggerService ) {
             return;
         }
@@ -1126,7 +1162,7 @@
             for( var i = 0; i < list.length; ++i ) {
                 if ( list[i].lineNo == line ) {
                     if ( list.length > 1 ) {
-                        list.slice(i,1);
+                        list.splice(i,1);
                     } else {
                         delete breakpoints[href];
                     }
