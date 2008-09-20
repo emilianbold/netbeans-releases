@@ -667,12 +667,14 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         }
 
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        String jvmArgs = project.evaluator().getProperty(RailsProjectProperties.JVM_ARGS);
         
         ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
         desc.initialArgs(rubyOptions);
+        desc.jvmArguments(jvmArgs);
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RailsFileLocator(context, project));
