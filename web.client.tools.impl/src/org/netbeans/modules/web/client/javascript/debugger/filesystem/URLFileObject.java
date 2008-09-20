@@ -264,10 +264,6 @@ public class URLFileObject extends FileObject {
                         InputStream is = null;
                         try {
                             is = content.getInputStream();
-                            int available = (is != null) ? is.available() : 0;
-                            if (available <= 0) {
-                                is = null;
-                            }
                         } catch (IOException ex) {
                             is = null;
                         }
