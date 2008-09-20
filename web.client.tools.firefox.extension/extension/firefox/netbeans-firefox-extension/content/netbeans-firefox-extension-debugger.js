@@ -1162,7 +1162,7 @@
             for( var i = 0; i < list.length; ++i ) {
                 if ( list[i].lineNo == line ) {
                     if ( list.length > 1 ) {
-                        list.slice(i,1);
+                        list.splice(i,1);
                     } else {
                         delete breakpoints[href];
                     }
