@@ -121,8 +121,8 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
                 info.getPlatformVersion(),
                 info.getGemVersion(),
                 serverURI,
-                null, // XXX database seems to not be configurable, so this attribute does not make sense here?
-                null); // XXX rails version - the same as above 'database' attribute?
+                "", // XXX database seems to not be configurable, so this attribute does not make sense here?
+                ""); // XXX rails version - the same as above 'database' attribute?
     }
     
     RubyInstance getServer() {
