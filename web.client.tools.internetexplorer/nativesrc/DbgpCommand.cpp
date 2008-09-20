@@ -454,11 +454,11 @@ DbgpResponse *SourceCommand::process(DbgpConnection *pDbgpConnection, map<char, 
     TCHAR *buffer = pScriptDebugger->getSourceText(fileURI, beginLine, endLine);
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(SOURCE, argsMap.find('i')->second);
     int success = 0;
-    if(buffer == NULL) {
+    if(buffer == NULL || buffer[0] == 0) {
         //Get the source using WinInet APIs
         USES_CONVERSION;
         HINTERNET hSession = InternetOpen(L"Source Reader", PRE_CONFIG_INTERNET_ACCESS, L"", 
-                                            NULL, INTERNET_INVALID_PORT_NUMBER|INTERNET_FLAG_FROM_CACHE);
+                                            NULL, INTERNET_INVALID_PORT_NUMBER);
         if (hSession != NULL) {
             HINTERNET hUrlFile = InternetOpenUrl(hSession, fileURI.c_str(), NULL, 0, 0, 0);
             DWORD bufSize;
