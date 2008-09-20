@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
@@ -116,22 +117,30 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    public void reindent(Document document, int startOffset, int endOffset) {
+    public void reindent(Context context) {
+        Document document = context.document();
+        int startOffset = context.startOffset();
+        int endOffset = context.endOffset();
+
         if (codeStyle != null) {
             // Make sure we're not reindenting HTML content
-            reindent(document, startOffset, endOffset, null, true);
+            reindent(context, document, startOffset, endOffset, null, true);
         } else {
             RubyFormatter f = new RubyFormatter(CodeStyle.get(document), -1);
-            f.reindent(document, startOffset, endOffset);
+            f.reindent(context, document, startOffset, endOffset, null, true);
         }
     }
 
-    public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
+    public void reformat(Context context, CompilationInfo info) {
+        Document document = context.document();
+        int startOffset = context.startOffset();
+        int endOffset = context.endOffset();
+
         if (codeStyle != null) {
-            reindent(document, startOffset, endOffset, info, false);
+            reindent(context, document, startOffset, endOffset, info, false);
         } else {
             RubyFormatter f = new RubyFormatter(CodeStyle.get(document), -1);
-            f.reindent(document, startOffset, endOffset, info, false);
+            f.reindent(context, document, startOffset, endOffset, info, false);
         }
     }
     
@@ -485,7 +494,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info,
+    public void reindent(final Context context, Document document, int startOffset, int endOffset, CompilationInfo info,
         final boolean indentOnly) {
 
         isEmbeddedDoc = RubyUtils.isRhtmlDocument(document) || RubyUtils.isYamlDocument(document);
@@ -500,11 +509,6 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     return;
                 }
             }
-
-// XXX: no longer neccessary
-//            //if (!isEmbeddedDoc) {
-//                syncOptions(doc, codeStyle);
-//            //}
 
             if (endOffset > doc.getLength()) {
                 endOffset = doc.getLength();
@@ -549,7 +553,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     try {
                         // Iterate in reverse order such that offsets are not affected by our edits
                         assert indents.size() == offsets.size();
-                        org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
+                        org.netbeans.editor.Formatter editorFormatter = null;
                         for (int i = indents.size() - 1; i >= 0; i--) {
                             int indent = indents.get(i);
                             int lineBegin = offsets.get(i);
@@ -585,7 +589,15 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
                             int currentIndent = LexUtilities.getLineIndent(doc, lineBegin);
 
                             if (currentIndent != indent) {
-                                editorFormatter.changeRowIndent(doc, lineBegin, indent);
+                                if (context != null) {
+                                    assert lineBegin == Utilities.getRowStart(doc, lineBegin);
+                                    context.modifyIndent(lineBegin, indent);
+                                } else {
+                                    if (editorFormatter == null) {
+                                         editorFormatter = doc.getFormatter();
+                                    }
+                                    editorFormatter.changeRowIndent(doc, lineBegin, indent);
+                                }
                             }
                         }
 

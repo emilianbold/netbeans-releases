@@ -58,6 +58,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -618,18 +619,7 @@ public class LexUtilities {
 
     public static int getLineIndent(BaseDocument doc, int offset) {
         try {
-            int start = Utilities.getRowStart(doc, offset);
-            int end;
-
-            if (Utilities.isRowWhite(doc, start)) {
-                end = Utilities.getRowEnd(doc, offset);
-            } else {
-                end = Utilities.getRowFirstNonWhite(doc, start);
-            }
-
-            int indent = Utilities.getVisualColumn(doc, end);
-
-            return indent;
+            return IndentUtils.lineIndent(doc, Utilities.getRowStart(doc, offset));
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
 

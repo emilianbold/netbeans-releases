@@ -60,6 +60,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.javascript.editing.NbUtilities;
 import org.openide.filesystems.FileUtil;
@@ -724,18 +725,7 @@ public class LexUtilities {
 
     public static int getLineIndent(BaseDocument doc, int offset) {
         try {
-            int start = Utilities.getRowStart(doc, offset);
-            int end;
-
-            if (Utilities.isRowWhite(doc, start)) {
-                end = Utilities.getRowEnd(doc, offset);
-            } else {
-                end = Utilities.getRowFirstNonWhite(doc, start);
-            }
-
-            int indent = Utilities.getVisualColumn(doc, end);
-
-            return indent;
+            return IndentUtils.lineIndent(doc, Utilities.getRowStart(doc, offset));
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
 
