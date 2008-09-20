@@ -351,7 +351,7 @@ TCHAR *ScriptDebugger::getSourceText(tstring fileURI, int beginLine, int endLine
             buffer = new TCHAR[numChars+1];
             ULONG actualSize = 0;
             HRESULT hr = spDebugDocText->GetText(0, buffer, attrs, &actualSize, numChars);
-            if(hr == S_OK && actualSize > 0) {
+            if(hr == S_OK && actualSize >= 0) {
                 buffer[actualSize] = 0;
                 delete[] attrs;
             }
@@ -745,7 +745,10 @@ BOOL ScriptDebugger::setBreakpoint(IDebugDocument *pDebugDocument, Breakpoint *p
 }
 
 BOOL ScriptDebugger::setBreakpoint(Breakpoint *pBreakpoint, BOOL remove) {
-    tstring fileURI = pBreakpoint->getFileURI();
+    return setBreakpoint(pBreakpoint, pBreakpoint->getFileURI(), remove);
+}
+
+BOOL ScriptDebugger::setBreakpoint(Breakpoint *pBreakpoint, tstring fileURI, BOOL remove) {
     map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
     if(iter != debugDocumentsMap.end()) {
         DebugDocument *pDebugDoc = iter->second;

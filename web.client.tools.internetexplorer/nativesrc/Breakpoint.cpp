@@ -107,6 +107,12 @@ Breakpoint *BreakpointManager::createBreakpoint(tstring fileURI, int lineNo) {
 }
 
 Breakpoint *BreakpointManager::findMatchingBreakpoint(tstring fileURI, int lineNo) {
+    size_t queryPos = fileURI.find(_T("?"));
+    if (queryPos != string::npos) {
+        if(m_pScriptDebugger->isFeatureSet(IGNORE_QUERY_STRINGS)) {
+            fileURI = fileURI.substr(0, queryPos);
+        }
+    }
     map<tstring, list<Breakpoint *> *>::iterator iter = fileToBreakpointsMap.find(fileURI);
     if(iter != fileToBreakpointsMap.end()) {
         list<Breakpoint *> *pList = iter->second;
@@ -143,12 +149,19 @@ void BreakpointManager::removeAllBreakpoints() {
 }
 
 void BreakpointManager::processBreakpoints(tstring fileURI) {
+    tstring origFileURI = fileURI;
+    size_t queryPos = origFileURI.find(_T("?"));
+    if (queryPos != string::npos) {
+        if(m_pScriptDebugger->isFeatureSet(IGNORE_QUERY_STRINGS)) {
+            fileURI = origFileURI.substr(0, queryPos);
+        }
+    }
     map<tstring, list<Breakpoint *> *>::iterator iter = fileToBreakpointsMap.find(fileURI);
     if(iter != fileToBreakpointsMap.end()) {
         list<Breakpoint *> *pList = iter->second;
         list<Breakpoint *>::iterator bpIter = pList->begin();
         while(bpIter != pList->end()) {
-            m_pScriptDebugger->setBreakpoint(*bpIter);
+            m_pScriptDebugger->setBreakpoint(*bpIter, origFileURI);
             ++bpIter;
         }
     }

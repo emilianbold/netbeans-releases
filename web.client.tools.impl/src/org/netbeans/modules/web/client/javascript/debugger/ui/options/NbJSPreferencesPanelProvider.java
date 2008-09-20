@@ -107,9 +107,12 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
         });
     }
 
+    @Override
     public void load() {
         updateUIFromPreferences(preferences);
     }
+
+    @Override
     public void store() {
         updatePreferencesFromUI(preferences);
     }
@@ -121,6 +124,7 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
         suspendOnErrorsCheckBox.setSelected(preferences.getSuspendOnErrors());
         suspendOnExceptionsCheckBox.setSelected(preferences.getSuspendOnExceptions());
         suspendOnFirstLineCheckBox.setSelected(preferences.getSuspendOnFirstLine());
+        ignoreQueryStringsCheckBox.setSelected(preferences.getIgnoreQueryStrings());
         
         Preferences prefs = NbPreferences.forModule(FirefoxBrowserUtils.class);
         String defaultProfile = prefs.get(FirefoxBrowserUtils.PROFILE_PREF, "");
@@ -137,6 +141,8 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
         preferences.setSuspendOnErrors(suspendOnErrorsCheckBox.isSelected());
         preferences.setSuspendOnExceptions(suspendOnExceptionsCheckBox.isSelected());
         preferences.setSuspendOnFirstLine(suspendOnFirstLineCheckBox.isSelected());
+
+        preferences.setIgnoreQueryStrings(ignoreQueryStringsCheckBox.isSelected());
         
         Preferences prefs = NbPreferences.forModule(FirefoxBrowserUtils.class);
         String defaultProfile = prefs.get(FirefoxBrowserUtils.PROFILE_PREF, "");
@@ -215,6 +221,7 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
         ffProfileTextField = new javax.swing.JTextField();
         ffProfileBrowseButton = new javax.swing.JButton();
         errorLabel = new javax.swing.JLabel();
+        ignoreQueryStringsCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(showFunctionsCheckBox, org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "NbJSPreferencesPanelProvider.showFunctionsCheckBox.text")); // NOI18N
         showFunctionsCheckBox.setMaximumSize(new java.awt.Dimension(122, 22));
@@ -244,6 +251,8 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
 
         errorLabel.setText(org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "NbJSPreferencesPanelProvider.errorLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(ignoreQueryStringsCheckBox, org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "NbJSPreferencesPanelProvider.ignoreQueryStringsCheckBox.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -255,14 +264,15 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
                         .add(jLabel1)
                         .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(suspendOnExceptionsCheckBox)
                             .add(suspendOnFirstLineCheckBox)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(suspendOnDebuggerKeywordCheckBox)
-                                    .add(suspendOnErrorsCheckBox))
+                                    .add(suspendOnErrorsCheckBox)
+                                    .add(suspendOnExceptionsCheckBox))
                                 .add(18, 18, 18)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(ignoreQueryStringsCheckBox)
                                     .add(showConstantsCheckBox)
                                     .add(showFunctionsCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
                     .add(layout.createSequentialGroup()
@@ -280,26 +290,31 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(suspendOnDebuggerKeywordCheckBox)
-                    .add(showConstantsCheckBox))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(suspendOnErrorsCheckBox)
-                    .add(showFunctionsCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(suspendOnExceptionsCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(suspendOnFirstLineCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel1)
+                            .add(suspendOnDebuggerKeywordCheckBox))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(suspendOnErrorsCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(suspendOnExceptionsCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(suspendOnFirstLineCheckBox))
+                    .add(layout.createSequentialGroup()
+                        .add(showConstantsCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(showFunctionsCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(ignoreQueryStringsCheckBox)))
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(ffProfileLabel)
                     .add(ffProfileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(ffProfileBrowseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(errorLabel)
-                .addContainerGap(85, Short.MAX_VALUE))
+                .addContainerGap(76, Short.MAX_VALUE))
         );
 
         showFunctionsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "A11Y_CKBX_ShowFunctions")); // NOI18N
@@ -316,6 +331,7 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
         suspendOnDebuggerKeywordCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "A11Y_CKBX_ShowOnDebuggerKeyword")); // NOI18N
         ffProfileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "NbJSPreferencesPanelProvider.ffProfileTextField.AccessibleContext.accessibleDescription")); // NOI18N
         ffProfileBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "NbJSPreferencesPanelProvider.ffProfileBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        ignoreQueryStringsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "NbJSPreferencesPanelProvider.ignoreQueryStringsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void ffProfileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ffProfileBrowseButtonActionPerformed
@@ -344,6 +360,7 @@ private void ffProfileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt
     private javax.swing.JButton ffProfileBrowseButton;
     private javax.swing.JLabel ffProfileLabel;
     private javax.swing.JTextField ffProfileTextField;
+    private javax.swing.JCheckBox ignoreQueryStringsCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JCheckBox showConstantsCheckBox;
     private javax.swing.JCheckBox showFunctionsCheckBox;
