@@ -312,7 +312,7 @@ public class PHPIndexer implements Indexer {
                 documents.add(classDocument);
                 indexClass((ClassDeclaration) node, classDocument);
                 List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
-                IdentifierSignature.add(node, idSignatures);
+                IdentifierSignature.add(node, Utils.getPropertyTags(root, node), idSignatures);
                 for (IdentifierSignature idSign : idSignatures) {
                     identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true);
                 }
@@ -442,17 +442,9 @@ public class PHPIndexer implements Indexer {
                     }
                 }
             }
-
-            Comment comment = Utils.getCommentForNode(root, classDeclaration);
-            if (comment != null && (comment instanceof PHPDocBlock)) {
-                PHPDocBlock phpDoc = (PHPDocBlock) comment;
-                for (PHPDocTag tag : phpDoc.getTags()) {
-                    if (tag instanceof PHPDocPropertyTag) {
-                        PHPDocPropertyTag propertyTag = (PHPDocPropertyTag)tag;
-                        String signature = createFieldsDeclarationRecord(propertyTag.getFieldName(), propertyTag.getFieldType(), BodyDeclaration.Modifier.PUBLIC, propertyTag.getStartOffset());
-                        document.addPair(FIELD_FIELD, signature, false);
-                    }
-                }
+            for (PHPDocPropertyTag tag : Utils.getPropertyTags(root, classDeclaration)) {
+                String signature = createFieldsDeclarationRecord(tag.getFieldName(), tag.getFieldType(), BodyDeclaration.Modifier.PUBLIC, tag.getStartOffset());
+                document.addPair(FIELD_FIELD, signature, false);
             }
         }
 

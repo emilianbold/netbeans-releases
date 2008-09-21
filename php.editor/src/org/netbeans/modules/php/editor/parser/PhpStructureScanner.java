@@ -177,15 +177,8 @@ public class PhpStructureScanner implements StructureScanner {
                 children = new ArrayList<StructureItem>();
                 className = cldec.getName().getName();
                 super.visit(cldec);
-                Comment comment = Utils.getCommentForNode(program, cldec);
-                if (comment != null && (comment instanceof PHPDocBlock)) {
-                    PHPDocBlock phpDoc = (PHPDocBlock) comment;
-                    for (PHPDocTag tag : phpDoc.getTags()) {
-                        if (tag instanceof PHPDocPropertyTag) {
-                            PHPDocPropertyTag propertyTag = (PHPDocPropertyTag)tag;
-                            children.add(new PHPFieldFromPropertyTagItem(new FieldsFromTagProperty(info, propertyTag), "0"));
-                        }
-                    }
+                for (PHPDocPropertyTag tag : Utils.getPropertyTags(program, cldec)) {
+                    children.add(new PHPFieldFromPropertyTagItem(new FieldsFromTagProperty(info, tag), "0"));
                 }
                 PHPStructureItem item = new PHPClassStructureItem(new GSFPHPElementHandle.ClassDeclarationHandle(info, cldec), children); //NOI18N
                 items.add(item);

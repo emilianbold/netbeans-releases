@@ -47,8 +47,12 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -121,7 +125,7 @@ public class Utils {
         return (new NodeLocator()).locate(node, offset);
 
     }
-    
+
     public static ASTNode[] getNodeHierarchyAtOffset(ASTNode node, int offset) {
         if (node.getStartOffset() > offset || node.getEndOffset() < offset) {
             return null;
@@ -129,7 +133,7 @@ public class Utils {
 
         return (new NodeHierarchyFinder()).find(node, offset);
     }
-    
+
     /**
      * Return an ASTNode of given type at the given offset. It doesn't count comments. 
      * 
@@ -142,7 +146,7 @@ public class Utils {
         if (node.getStartOffset() > offset || node.getEndOffset() < offset) {
             return null;
         }
-        
+
         return (new SpecificClassNodeLocator(terminus)).locate(node, offset);
     }
 
@@ -166,7 +170,7 @@ public class Utils {
             }
         }
     }
-    
+
     private static class NodeHierarchyFinder extends DefaultTreePathVisitor {
 
         private ASTNode[] hierarchy;
@@ -188,8 +192,9 @@ public class Utils {
             }
         }
     }
-    
-    private static class SpecificClassNodeLocator extends NodeLocator{
+
+    private static class SpecificClassNodeLocator extends NodeLocator {
+
         private Class<? extends ASTNode> terminus;
 
         public SpecificClassNodeLocator(Class<? extends ASTNode> terminus) {
@@ -198,7 +203,7 @@ public class Utils {
 
         @Override
         public void scan(ASTNode node) {
-            if (terminus.isInstance(node)){
+            if (terminus.isInstance(node)) {
                 if (node.getStartOffset() <= offset && offset <= node.getEndOffset()) {
                     this.node = node;
                 }
@@ -235,12 +240,26 @@ public class Utils {
             }
         }
     }
-    
+
     public static String resolveVariableName(Variable variable) {
         String name = null;
         if (variable.getName() instanceof Identifier) {
             name = ((Identifier) variable.getName()).getName();
         }
         return name;
+    }
+
+    public static List<PHPDocPropertyTag> getPropertyTags(Program root, ClassDeclaration node) {
+        List<PHPDocPropertyTag> tags = new ArrayList<PHPDocPropertyTag>();
+        Comment comment = Utils.getCommentForNode(root, node);
+        if (comment != null && (comment instanceof PHPDocBlock)) {
+            PHPDocBlock phpDoc = (PHPDocBlock) comment;
+            for (PHPDocTag tag : phpDoc.getTags()) {
+                if (tag instanceof PHPDocPropertyTag) {
+                    tags.add((PHPDocPropertyTag) tag);
+                }
+            }
+        }
+        return tags;
     }
 }
