@@ -137,7 +137,7 @@ public class PHPDocCommentParser {
                 || type == PHPDocTag.Type.PROPERTY_WRITE) {
             String[] tokens = description.split("[ ]+"); //NOI18N
             if (tokens.length > 1) {
-                return new PHPDocPropertyTag(start, end, type, tokens[1], tokens[0], description);
+                return new PHPDocPropertyTag(start, end, type, tokens[1].trim(), tokens[0].trim(), description);
             }
         }
         return new PHPDocTag(start, end, type, description);
