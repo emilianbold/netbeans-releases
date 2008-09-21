@@ -42,7 +42,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  *
  * @author Petr Pisl
  */
-public class PHPDocTag {
+public class PHPDocTag extends ASTNode {
 
     public enum Type {
         ABSTRACT, ACCESS, AUTHOR,
@@ -66,7 +66,8 @@ public class PHPDocTag {
     final private Type type;
     final private String value;
     
-    public PHPDocTag(PHPDocTag.Type kind, String value) {
+    public PHPDocTag(int start, int end, PHPDocTag.Type kind, String value) {
+        super(start, end);
         this.type = kind;
         this.value = value;
     }
@@ -77,5 +78,10 @@ public class PHPDocTag {
 
     public String getValue() {
         return value;
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }

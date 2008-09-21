@@ -219,7 +219,9 @@ public interface Visitor {
 
 	public void visit(ParenthesisExpression parenthesisExpression);
         
-        public void visit(PHPDocBlock phpDocBlock);
+    public void visit(PHPDocBlock phpDocBlock);
+
+    public void visit(PHPDocTag phpDocTag);
 
 	//public void endVisit(ParenthesisExpression parenthesisExpression);
 	

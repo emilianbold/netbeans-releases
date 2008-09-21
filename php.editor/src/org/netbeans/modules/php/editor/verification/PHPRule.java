@@ -93,6 +93,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.PostfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.PrefixExpression;
@@ -298,6 +299,9 @@ abstract class PHPRule implements AstRule, UserConfigurableRule, Visitor {
     }
 
     public void visit(PHPDocBlock phpDocBlock) {
+    }
+
+    public void visit(PHPDocTag phpDocTag) {
     }
 
     public void visit(PostfixExpression postfixExpression) {

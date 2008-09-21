@@ -77,6 +77,8 @@ public class PHPDocCommentParser {
         String line = "";               // one line of the blog
         String description = "";        // temporary holder for description of block description or tag        
         PHPDocTag.Type lastTag = null;
+        int lastStartIndex = 0;
+        int lastEndIndex = comment.length();
 
         while (matcher.find()) {
             line = comment.substring(index, matcher.start()).trim();
@@ -88,14 +90,16 @@ public class PHPDocCommentParser {
                 if (lastTag == null) { // is it the first tag in the block
                     blockDescription = description.trim();  // save the block description
                 } else { // create last recognized tag
-                    PHPDocTag tag = new PHPDocTag(lastTag, description.trim());
+                    PHPDocTag tag = new PHPDocTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim());
                     tags.add(tag);
                 }
                 lastTag = tagType;  // remember the recognized tag
+                lastStartIndex = index;
                 description = "";
                 line = line.substring(tagType.name().length() + 1).trim(); // and the first line of description of the tag
             }
             index = matcher.end();
+            lastEndIndex = matcher.start();
             description = description + line + "\n";
         }
         // last line
@@ -109,22 +113,22 @@ public class PHPDocCommentParser {
             if (lastTag == null) {
                 blockDescription = description.trim();  
             } else {
-                PHPDocTag tag = new PHPDocTag(lastTag, description.trim());
+                PHPDocTag tag = new PHPDocTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim());
                 tags.add(tag);
             }
             line = line.substring(tagType.name().length() + 1).trim();
-            PHPDocTag tag = new PHPDocTag(tagType, line);
+            PHPDocTag tag = new PHPDocTag(startOffset + 3 + index, startOffset + 3 + comment.length(), tagType, line);
             tags.add(tag);
         } else {
             if (lastTag == null) {  // thre is not defined a tag before the last line
                 blockDescription = description + line;
             } else {
                 description = description + line;
-                PHPDocTag tag = new PHPDocTag(lastTag, description);
+                PHPDocTag tag = new PHPDocTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description);
                 tags.add(tag);
             }
         }
-        return new PHPDocBlock(startOffset, endOffset, blockDescription, tags);
+        return new PHPDocBlock(startOffset + 3, endOffset, blockDescription, tags);
     }
 
     private String removeStarAndTrim(String text) {
