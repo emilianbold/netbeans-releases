@@ -57,6 +57,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
@@ -241,8 +242,11 @@ public class IdentifierSignature {
         String name = sign.string(0);
         return new IdentifierSignature(name);
     }
-    public static void add(ClassDeclaration declaration, List<IdentifierSignature> results) {
-        add(declaration.getBody().getStatements(), CodeUtils.extractClassName(declaration), true, results);
+
+    public static void add(ClassDeclaration declaration, List<PHPDocPropertyTag> propertyTags, List<IdentifierSignature> results) {
+        String className = CodeUtils.extractClassName(declaration);
+        add(declaration.getBody().getStatements(), className, true, results);
+        add(propertyTags, className, true, results);
     }
 
     public static void add(InterfaceDeclaration declaration, List<IdentifierSignature> results) {
@@ -287,7 +291,17 @@ public class IdentifierSignature {
         if (is != null) {
             results.add(is);
         }
+    }
 
+    private static void add(List<PHPDocPropertyTag> tags, String typename, Boolean clsMember, List<IdentifierSignature> results) {
+        int mask = IdentifierSignature.DECLARATION;
+        mask |= IdentifierSignature.MODIFIER_PUBLIC;
+        if (clsMember) {
+            mask |= IdentifierSignature.CLS_MEMBER;
+        }
+        for (PHPDocPropertyTag tag : tags) {
+            results.add(new IdentifierSignature(tag.getFieldName(), typename, mask));
+        }
     }
 
     private static void add(ClassConstantDeclaration declaration, String typename, Boolean clsMember, List<IdentifierSignature> results) {

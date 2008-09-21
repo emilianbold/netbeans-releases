@@ -151,6 +151,8 @@ EMPTYLINE=({LINESTART}{TABS_AND_SPACES}{NEWLINE})
     "@package"       {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PACKAGE;}
     "@param"         {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PARAM;}
     "@property"      {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PROPERTY;}
+    "@property-read"  {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PROPERTY_READ;}
+    "@property-write" {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE;}
     "@return"        {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_RETURN;}
     "@see"           {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_SEE;}
     "@since"         {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_SINCE;}
