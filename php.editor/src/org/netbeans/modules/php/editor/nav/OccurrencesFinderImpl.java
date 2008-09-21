@@ -253,11 +253,8 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
 
             @Override
             public void visit(InterfaceDeclaration node) {
-                Identifier superClass = node.getName();
                 if (el == a.getElement(node)) {
                     usages.add(node.getName());
-                } else if (superClass != null && el.getName().equals(superClass.getName())) {
-                    usages.add(superClass);
                 } else {
                     List<Identifier> interfaes = node.getInterfaes();
                     for (Identifier identifier : interfaes) {

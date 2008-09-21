@@ -218,13 +218,13 @@ public class NavUtils {
                     }
                 }
             } else if (leaf instanceof InterfaceDeclaration) {
-                InterfaceDeclaration cDeclaration = (InterfaceDeclaration) leaf;
+                InterfaceDeclaration iDeclaration = (InterfaceDeclaration) leaf;
                 //class declaration
-                if (cDeclaration.getName() == previous) {
+                if (iDeclaration.getName() == previous) {
                     return a.getElement(leaf);
                 }
 
-                List<Identifier> interfaes = cDeclaration.getInterfaes();
+                List<Identifier> interfaes = iDeclaration.getInterfaes();
                 for (Identifier identifier : interfaes) {
                     if (identifier == previous) {
                         AttributedElement e = a.getElement(previous);
