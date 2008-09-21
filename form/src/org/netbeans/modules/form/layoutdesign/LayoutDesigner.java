@@ -3220,7 +3220,7 @@ public class LayoutDesigner implements LayoutConstants {
             }
         }
 
-        if (group.getGroupAlignment() == CENTER || group.getGroupAlignment() == BASELINE) {
+        if (group.getGroupAlignment() == BASELINE) {
             return -1;
         }
         int nonEmptyCount = LayoutInterval.getCount(group, LayoutRegion.ALL_POINTS, true);
