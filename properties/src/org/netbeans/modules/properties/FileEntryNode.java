@@ -54,8 +54,6 @@ import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -81,10 +79,9 @@ public class FileEntryNode extends AbstractNode {
      * @param ch children container for the node
      */
     public FileEntryNode (PresentableFileEntry entry, Children ch) {
-        super (ch, new ProxyLookup(entry.getCookieSet().getLookup(),
-                                   Lookups.singleton(entry.getFile())));
+        super(ch);
         this.entry = entry;
-        
+
         PropL propListener = new PropL ();
         entry.addPropertyChangeListener(
                 WeakListeners.propertyChange(propListener, entry));
@@ -97,6 +94,18 @@ public class FileEntryNode extends AbstractNode {
         return NbBundle.getMessage(FileEntryNode.class, s);
     }
 
+    /**
+     * Get a cookie. Delegated to {@link PresentableFileEntry#getCookie}. is
+     * @return the cookie or <code>null</code>
+     */
+    public <T extends Node.Cookie> T getCookie(Class<T> cl) {
+        T c = entry.getCookie(cl);
+        if (c != null) {
+            return c;
+        } else {
+            return super.getCookie (cl);
+        }
+    }
 
     /** Gets the represented entry.
      * @return the entry
