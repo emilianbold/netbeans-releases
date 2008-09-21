@@ -65,6 +65,7 @@ public class ScriptingMeasureActionsTest {
                 
                 .addTest(CreateScriptingPackFiles.class)
                 .addTest(ScriptingExpandFolder.class)
+                .addTest(PHPNavigatorTest.class)
                 .addTest(EditorMenuPopup.class)
                 .addTest(CloseScriptingFiles.class)
                 .addTest(TypingInScriptingEditor.class)

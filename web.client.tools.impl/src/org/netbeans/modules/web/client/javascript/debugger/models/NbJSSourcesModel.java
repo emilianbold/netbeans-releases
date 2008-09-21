@@ -115,7 +115,7 @@ public class NbJSSourcesModel implements TreeModel, NodeModel, TableModel,
         listeners = new CopyOnWriteArrayList<ModelListener>();
 
         if (debugger.isIgnoringQueryStrings()) {
-            sources = filterEquivalentSources(sources);
+            this.sources = filterEquivalentSources(debugger.getSources());
         } else {
             sources = debugger.getSources();
         }
@@ -124,11 +124,11 @@ public class NbJSSourcesModel implements TreeModel, NodeModel, TableModel,
         GO_TO_CLIENT_SOURCE_ACTION = NbJSEditorUtil.createDebuggerGoToClientSourceAction(debugger);
     }
 
-    private void setSources(JSSource[] sources) {
+    private void setSources(JSSource[] newSources) {
         if (debugger.isIgnoringQueryStrings()) {
-            sources = filterEquivalentSources(sources);
+            newSources = filterEquivalentSources(newSources);
         }
-        this.sources = sources;
+        this.sources = newSources;
         fireTreeChanges();
     }
 
