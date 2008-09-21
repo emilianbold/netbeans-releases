@@ -1303,12 +1303,24 @@ exists or setup the property manually. For example like this:
             
             <target name="connect-debugger" if="do.debug.server" unless="is.debugged">
                 <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
-                    <classpath>
-                        <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}:${{ws.debug.classpaths}}"/>
-                    </classpath>
-                    <sourcepath>
-                        <path path="${{web.docbase.dir}}:${{ws.web.docbase.dirs}}"/>
-                    </sourcepath>
+                    <xsl:choose>
+                        <xsl:when test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service|/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
+                            <classpath>
+                                <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}:${{ws.debug.classpaths}}"/>
+                            </classpath>
+                            <sourcepath>
+                                <path path="${{web.docbase.dir}}:${{ws.web.docbase.dirs}}"/>
+                            </sourcepath>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <classpath>
+                                <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}"/>
+                            </classpath>
+                            <sourcepath>
+                                <path path="${{web.docbase.dir}}"/>
+                            </sourcepath>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                         <bootclasspath>
                             <path path="${{platform.bootcp}}"/>
@@ -1657,7 +1669,7 @@ exists or setup the property manually. For example like this:
                 <delete dir="${{build.generated.dir}}"/>
                 <delete dir="${{build.web.dir}}"/>
                 -->
-            </target>
+            </target>                      
             
             <target name="check-clean">
                 <xsl:attribute name="depends">do-clean</xsl:attribute>
@@ -1676,13 +1688,20 @@ exists or setup the property manually. For example like this:
                 -->
             </target>
             
+            <target name="undeploy-clean">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                
+                <nbundeploy failOnError="false" startServer="false"/>
+            </target>
+            
             <target name="-post-clean">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
             <target name="clean">
-                <xsl:attribute name="depends">init,deps-clean,do-clean,check-clean,-post-clean</xsl:attribute>
+                <xsl:attribute name="depends">init,undeploy-clean,deps-clean,do-clean,check-clean,-post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
             

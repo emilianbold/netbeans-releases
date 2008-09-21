@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.indent.PHPBracketCompleter.LineBalance;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -176,9 +177,9 @@ public class LexUtilities {
 //    }
 //    
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
+    public static TokenSequence<PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-        TokenSequence<?extends PHPTokenId> ts = th == null ? null : th.tokenSequence(PHPTokenId.language());
+        TokenSequence<PHPTokenId> ts = th == null ? null : th.tokenSequence(PHPTokenId.language());
 
         if (ts == null) {
             // Possibly an embedding scenario such as an RHTML file
@@ -572,7 +573,7 @@ public class LexUtilities {
     }
 
     /** Compute the balance of begin/end tokens on the line */
-    public static int getLineBalance(BaseDocument doc, int offset, TokenId up, TokenId down) {
+    public static int getLineBalance(BaseDocument doc, int offset, TokenId up, TokenId down, LineBalance lineBalance) {
         try {
             int begin = Utilities.getRowStart(doc, offset);
             int end = Utilities.getRowEnd(doc, offset);
@@ -588,20 +589,25 @@ public class LexUtilities {
                 return 0;
             }
 
-            int balance = 0;
+            int upCount = 0;
+            int downCount = 0;
 
             do {
                 Token<?extends PHPTokenId> token = ts.token();
                 TokenId id = token.id();
 
                 if (id == up) {
-                    balance++;
+                    upCount++;
                 } else if (id == down) {
-                    balance--;
+                    if (lineBalance.equals(LineBalance.UP_FIRST)) {
+                        if (upCount > 0) {downCount++;}
+                    } else {
+                        downCount++;
+                    }
                 }
             } while (ts.moveNext() && (ts.offset() <= end));
 
-            return balance;
+            return (upCount-downCount);
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
 

@@ -83,7 +83,7 @@ public class FFormatter extends ExtFormatter {
     @Override
     public int reformat(BaseDocument doc, int startOffset, int endOffset)
     throws BadLocationException {
-        return 0;
+        return super.reformat(doc, startOffset, endOffset);
     }
 
     
@@ -117,10 +117,14 @@ public class FFormatter extends ExtFormatter {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, "else")) { // NOI18N
                     ret = new int[]{fnw, fnw + 4};
+                } else if (checkCase(doc, fnw, "endsubroutine")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 13};
+                } else if (checkCase(doc, fnw, "end subroutine")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 14};
                 }
             } catch (BadLocationException e) {
             }
-        }else if ("o".equals(typedText) || "O".equals(typedText)) { // NOI18N
+        } else if ("o".equals(typedText) || "O".equals(typedText)) { // NOI18N
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, "enddo")) { // NOI18N
@@ -130,13 +134,23 @@ public class FFormatter extends ExtFormatter {
                 }
             } catch (BadLocationException e) {
             }
-        }else if ("f".equals(typedText) || "F".equals(typedText)) { // NOI18N
+        } else if ("f".equals(typedText) || "F".equals(typedText)) { // NOI18N
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, "endif")) { // NOI18N
                     ret = new int[]{fnw, fnw + 5};
                 } else if (checkCase(doc, fnw, "end if")) { // NOI18N
                     ret = new int[]{fnw, fnw + 6};
+                }
+            } catch (BadLocationException e) {
+            }
+        } else if ("m".equals(typedText) || "M".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "endprogram")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 10};
+                } else if (checkCase(doc, fnw, "end program")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 11};
                 }
             } catch (BadLocationException e) {
             }
@@ -177,9 +191,36 @@ public class FFormatter extends ExtFormatter {
             try {
                 FFormatSupport ffs = (FFormatSupport) createFormatSupport(fw);
                 FormatTokenPosition pos = ffs.getFormatStartPosition();
-                if (ffs.getFreeFormat() && ffs.isIndentOnly()) {  // create indentation only
-                    ffs.indentLine(pos);
-                }
+                //if (ffs.getFreeFormat()) {
+                    if (ffs.isIndentOnly()) {  // create indentation only
+                        ffs.indentLine(pos);
+                    } else { // regular formatting
+                        while (pos != null) {
+                            // Indent the current line
+                            ffs.indentLine(pos);
+                            // Format the line by additional rules
+                            //formatLine(ccfs, pos);
+                            // Goto next line
+                            FormatTokenPosition pos2 = ffs.findLineEnd(pos);
+                            if (pos2 == null || pos2.getToken() == null) {
+                                break;
+                            } // the last line was processed
+                            pos = ffs.getNextPosition(pos2, javax.swing.text.Position.Bias.Forward);
+                            if (pos == pos2) {
+                                break;
+                            } // in case there is no next position
+                            if (pos == null || pos.getToken() == null) {
+                                break;
+                            } // there is nothing after the end of line
+                            FormatTokenPosition fnw = ffs.findLineFirstNonWhitespace(pos);
+                            if (fnw != null) {
+                                pos = fnw;
+                            } else { // no non-whitespace char on the line
+                                pos = ffs.findLineStart(pos);
+                            }
+                        }
+                    }
+                //}
             } catch (IllegalStateException e) {
             }
         }

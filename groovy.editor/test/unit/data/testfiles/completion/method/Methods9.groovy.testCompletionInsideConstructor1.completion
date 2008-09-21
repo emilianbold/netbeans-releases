@@ -1,0 +1,9 @@
+Code completion result for source line:
+new File("/").equals(new Date().a|)
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     addShutdownHook(Closure)                   void
+METHOD     after(Date)                                boolean
+METHOD     any()                                      boolean
+METHOD     any(Closure)                               boolean
+METHOD     asType(Class)                              Object

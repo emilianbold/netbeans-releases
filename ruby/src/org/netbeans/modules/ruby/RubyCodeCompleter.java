@@ -95,6 +95,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
+import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.netbeans.modules.ruby.RubyParser.Sanitize;
 import org.netbeans.modules.ruby.elements.AstElement;
@@ -1041,7 +1042,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         
         Set<IndexedVariable> globals = index.getGlobals(prefix, kind);
         for (IndexedVariable global : globals) {
-            PlainItem item = new PlainItem(global, anchor, request);
+            RubyCompletionItem item = new RubyCompletionItem(global, anchor, request);
             item.setSmart(true);
 
             if (showSymbols) {
@@ -2250,6 +2251,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             if ((prefix.length() == 0) || (first == '$') || showSymbols) {
                 if (prefix.startsWith("$") || showSymbols) {
                     completeGlobals(proposals, request, showSymbols);
+                    // Dollar variables too
+                    completeKeywords(proposals, request, showSymbols);
                     if (!showSymbols) {
                         return completionResult;
                     }
@@ -2380,7 +2383,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 if (!overlapsLine(node, astLineBegin, astLineEnd)) {
                     AstElement co = new AstNameElement(info, node, variable,
                             ElementKind.VARIABLE);
-                    PlainItem item = new PlainItem(co, anchor, request);
+                    RubyCompletionItem item = new RubyCompletionItem(co, anchor, request);
                     item.setSmart(true);
 
                     if (showSymbols) {
@@ -2426,7 +2429,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
                 AstElement co = new AstNameElement(info, node, variable,
                         ElementKind.VARIABLE);
-                PlainItem item = new PlainItem(co, anchor, request);
+                RubyCompletionItem item = new RubyCompletionItem(co, anchor, request);
                 item.setSmart(true);
 
                 if (showSymbols) {
@@ -2460,7 +2463,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 AstElement co = new AstNameElement(info, node, variable,
                         ElementKind.VARIABLE);
 
-                PlainItem item = new PlainItem(co, anchor, request);
+                RubyCompletionItem item = new RubyCompletionItem(co, anchor, request);
                 item.setSmart(true);
 
                 if (showSymbols) {
@@ -3013,7 +3016,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 element = com;
             }
 
-            node = AstUtilities.getForeignNode(com, null);
+            node = AstUtilities.getForeignNode(com, (Node[])null);
 
             if (node == null) {
                 return null;
@@ -3451,7 +3454,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return ParameterInfo.NONE;
         }
         int index = paramIndexHolder[0];
-        int anchorOffset = anchorOffsetHolder[0];
+        int astAnchorOffset = anchorOffsetHolder[0];
+        int anchorOffset = LexUtilities.getLexerOffset(info, astAnchorOffset);
 
 
         // TODO: Make sure the caret offset is inside the arguments portion
@@ -3490,12 +3494,10 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         private FileObject fileObject;
     }
 
-    private abstract class RubyCompletionItem implements CompletionProposal {
+    private class RubyCompletionItem extends DefaultCompletionProposal {
         protected CompletionRequest request;
         protected Element element;
-        protected int anchorOffset;
         protected boolean symbol;
-        protected boolean smart;
 
         private RubyCompletionItem(Element element, int anchorOffset, CompletionRequest request) {
             this.element = element;
@@ -3503,10 +3505,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             this.request = request;
         }
 
-        public int getAnchorOffset() {
-            return anchorOffset;
-        }
-
+        @Override
         public String getName() {
             return element.getName();
         }
@@ -3515,6 +3514,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             this.symbol = symbol;
         }
 
+        @Override
         public String getInsertPrefix() {
             if (symbol) {
                 return ":" + getName();
@@ -3523,14 +3523,11 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             }
         }
 
-        public String getSortText() {
-            return getName();
-        }
-
         public ElementHandle getElement() {
             return element;
         }
 
+        @Override
         public ElementKind getKind() {
             return element.getKind();
         }
@@ -3539,15 +3536,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return null;
         }
 
-        public String getLhsHtml(HtmlFormatter formatter) {
-            ElementKind kind = getKind();
-            formatter.name(kind, true);
-            formatter.appendText(getName());
-            formatter.name(kind, false);
-
-            return formatter.getText();
-        }
-
+        @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             if (element.getKind() == ElementKind.GLOBAL && (element instanceof IndexedVariable)) {
                 IndexedVariable idx = (IndexedVariable)element;
@@ -3562,6 +3551,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return null;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return element.getModifiers();
         }
@@ -3574,24 +3564,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return cls + "(" + getKind() + "): " + getName();
         }
 
-        void setSmart(boolean smart) {
-            this.smart = smart;
-        }
-
-        public boolean isSmart() {
-            return smart;
-        }
-
-        public List<String> getInsertParams() {
-            return null;
-        }
-        
+        @Override
         public String[] getParamListDelimiters() {
             return new String[] { "(", ")" }; // NOI18N
-        }
-
-        public String getCustomInsertTemplate() {
-            return null;
         }
     }
 
@@ -3664,14 +3639,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
-        public List<String> getInsertParams() {
-            return method.getParameters();
-        }
-
-        @Override
         public String getCustomInsertTemplate() {
             final String insertPrefix = getInsertPrefix();
-            List<String> params = getInsertParams();
+            List<String> params = method.getParameters();
             
             String startDelimiter;
             String endDelimiter;
@@ -3987,12 +3957,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             }
 
             return formatter.getText();
-        }
-    }
-
-    private class PlainItem extends RubyCompletionItem {
-        PlainItem(Element element, int anchorOffset, CompletionRequest request) {
-            super(element, anchorOffset, request);
         }
     }
 

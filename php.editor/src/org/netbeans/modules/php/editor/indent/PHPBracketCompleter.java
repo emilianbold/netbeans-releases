@@ -598,7 +598,11 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
 
         return false;
     }
-    
+    public static enum LineBalance {
+        PLAIN,
+        UP_FIRST// } keyword {
+    };
+
     /**
      * Determine if an "end" or "}" is missing following the caret offset.
      * The logic used is to check the text on the current line for block initiators
@@ -643,7 +647,8 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
 
         int beginEndBalance = LexUtilities.getBeginEndLineBalance(doc, offset, true);
         int braceBalance =
-            LexUtilities.getLineBalance(doc, offset, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE);
+            LexUtilities.getLineBalance(doc, offset, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
+            LineBalance.UP_FIRST);
 
         if ((beginEndBalance == 1) || (braceBalance == 1)) {
             // There is one more opening token on the line than a corresponding
@@ -686,7 +691,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
                         }
                     } else if (insertRBrace &&
                             (LexUtilities.getLineBalance(doc, next, PHPTokenId.PHP_CURLY_OPEN,
-                                PHPTokenId.PHP_CURLY_CLOSE) < 0)) {
+                                PHPTokenId.PHP_CURLY_CLOSE, LineBalance.PLAIN) < 0)) {
                         insertRBrace = false;
                     }
                 }

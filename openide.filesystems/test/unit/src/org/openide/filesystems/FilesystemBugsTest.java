@@ -43,6 +43,7 @@ package org.openide.filesystems;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import org.netbeans.junit.NbTestCase;
 
@@ -61,15 +62,16 @@ public class FilesystemBugsTest extends NbTestCase {
         super(name);
     }
 
-    // should be fixed http://www.netbeans.org/issues/show_bug.cgi?id=138784
     /**
      * Let's have a file hierarchy A/B/C. If you decide to delete the folder A then listeners registered to
      * file objects B and C do not have any notion these file objects were deleted. IMO it is incorrect
      * behavior.
      * It also hurts the org.netbeans.core.xml.FileEntityResolver.update implementation.
      */
-    public void XXXtestNotifyOfSubFoldersAfterDelete23929() throws Exception {
+    public void testNotifyOfSubFoldersAfterDelete23929() throws Exception {
         counter = 0;
+        // store references to FileObject to prevent garbage collection
+        ArrayList<FileObject> garbageCollectorDefense = new ArrayList<FileObject>();
         if (canGenWriteFolder()) {
             // create tree an register listener
             //
@@ -77,23 +79,25 @@ public class FilesystemBugsTest extends NbTestCase {
             log(folder.toString());
             folder = getSubFolder(folder, FOLDER1);
             FileObject tmpFolder = folder;
-            //System.out.println(folder);
+            garbageCollectorDefense.add(tmpFolder);
             for (int i = 0; i < 10; i++) {
                 FileObject subFolder = getSubFolder(tmpFolder, FOLDER1 + i);
+                garbageCollectorDefense.add(subFolder);
                 subFolder.addFileChangeListener(new TestFileChangeListener());
                 for (int j = 0; j < 10; j++) {
                     FileObject fo = getFileObject(tmpFolder, FO1 + j);
+                    garbageCollectorDefense.add(fo);
                     fo.addFileChangeListener(new TestFileChangeListener());
                 }
                 tmpFolder = subFolder;
             }
-            // delete tree and check counts of calls (must be 209)
-            //
+            // delete tree and check counts of calls (must be 209 - event fired
+            // from FileObject itself and its parent)
             try {
                 folder.delete();
                 assertTrue("test failed, deleted  " + counter + " != 209", counter == 209);
             } catch (Exception e) {
-                assertTrue("cannot delete folder", false);
+                fail("Cannot delete folder " + folder);
             }
         } else {
             log("[OK]  cannot get write folder on " + getFSType());

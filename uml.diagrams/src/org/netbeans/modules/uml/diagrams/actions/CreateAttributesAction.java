@@ -49,9 +49,13 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
+import org.netbeans.modules.uml.diagrams.nodes.ICommonFeature;
 import org.netbeans.modules.uml.diagrams.nodes.UMLClassWidget;
 import org.netbeans.modules.uml.drawingarea.actions.SceneCookieAction;
+import org.netbeans.modules.uml.drawingarea.util.Util;
+import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -65,10 +69,10 @@ public final class CreateAttributesAction extends SceneCookieAction
         IClassifier classifier = activatedNodes[0].getLookup().lookup(IClassifier.class);
         IPresentationElement pe = activatedNodes[0].getLookup().lookup(IPresentationElement.class);
         ObjectScene scene=activatedNodes[0].getLookup().lookup(ObjectScene.class);
-        if(classifier == null)
+        if(classifier == null)  // activated node is not classifier
         {
             IAttribute attr = activatedNodes[0].getLookup().lookup(IAttribute.class);
-            if(attr != null)
+            if(attr != null)      // activated node is attribute node
             {
                 classifier = attr.getFeaturingClassifier();
                 if((classifier == null) && (attr.getAssociationEnd() != null))
@@ -77,32 +81,36 @@ public final class CreateAttributesAction extends SceneCookieAction
                     IAttribute qualifier = end.createQualifier3();
                     end.addQualifier(qualifier);
                 }
+            } else   
+            {
+                // Fix  iz#145341
+                IOperation op = activatedNodes[0].getLookup().lookup(IOperation.class);
+                if (op != null)    // activated node is operation node
+                {
+                    classifier = op.getFeaturingClassifier();
+                }
             }
-        }
+       }
         
-        if(classifier != null)
+        if (classifier != null)
         {
             IAttribute attr = classifier.createAttribute3();
             classifier.addAttribute(attr);
-            //
-            Widget nW=scene.findWidget(pe);
-            UMLClassWidget cW=null;
-            if(nW instanceof UMLClassWidget)
+            Widget nW = scene.findWidget(pe);
+            SwitchableWidget cW = null;
+            
+            if (nW instanceof SwitchableWidget)
             {
-                cW=(UMLClassWidget) nW;
-            }
-            else if(nW instanceof FeatureWidget)
+                cW = (SwitchableWidget) nW;
+            } else if (nW instanceof FeatureWidget)
             {
-                for(Widget par=nW.getParentWidget();par!=null;par=par.getParentWidget())
-                {
-                    if(par instanceof UMLClassWidget)
-                    {
-                        cW=               (UMLClassWidget) par;
-                        break;
-                    }
-                }
+                cW = (SwitchableWidget) Util.getParentWidgetByClass(nW, SwitchableWidget.class);
             }
-            if(cW!=null)cW.selectAttributeAfterCreation(attr);
+            
+            if (cW != null && cW instanceof ICommonFeature)
+            {
+                ((ICommonFeature)cW).setSelectedAttribute(attr);
+            }
         }
     }
 
@@ -118,7 +126,8 @@ public final class CreateAttributesAction extends SceneCookieAction
 
     protected Class[] cookieClasses()
     {
-        return new Class[]{IClass.class, IInterface.class, IEnumeration.class, IAttribute.class};
+        // Added IOperation.class to Fix iz#145341
+        return new Class[]{IClass.class, IInterface.class, IEnumeration.class, IAttribute.class, IOperation.class};
     }
 
     @Override

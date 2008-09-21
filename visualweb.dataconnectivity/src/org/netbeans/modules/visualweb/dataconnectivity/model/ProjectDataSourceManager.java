@@ -185,7 +185,7 @@ public class ProjectDataSourceManager  {
         return ret;
     }
     
-    public RequestedJdbcResource getDataSourceWithName(String name) throws NamingException {
+    public RequestedJdbcResource getDataSourceWithName(String name) {
         String projectDsName = "";
         if ((project != null) && (dataSourceService != null)) {
             // First Search the project data sources
@@ -230,11 +230,6 @@ public class ProjectDataSourceManager  {
                     return requestedJdbcResource;
                 }
             }
-        }
-        
-        // data source name not found, most likely the data source had been renamed
-        if (!projectDsName.equals(name)) {
-            throw new NamingException(NbBundle.getMessage(SqlCommandCustomizer.class, "NAME_NOT_FOUND") + " " + name); //NOI18N    
         }
         
         return null;

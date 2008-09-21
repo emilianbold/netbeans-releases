@@ -51,6 +51,7 @@ import antlr.collections.AST;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -223,12 +224,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         return _const;
     }
 
-    public String getCanonicalText() {
+    public CharSequence getCanonicalText() {
         CharSequence text = getClassifierText();
         if (isInstantiationOrSpecialization()) {
             text = text.toString() + getInstantiationCanonicalText();
         }
-	return decorateText(text, this, true, null).toString();
+	return decorateText(text, this, true, null);
     }
     
     private CharSequence getInstantiationCanonicalText() {
@@ -377,7 +378,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
-        if (classifier != null && (!(classifier instanceof CsmValidable) || (((CsmValidable)classifier).isValid()))) {
+        if (CsmBaseUtilities.isValid(classifier)) {
             // skip
         } else {
             _setClassifier(null);
@@ -420,7 +421,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 result = (CsmClassifier) o;
             }
             if (result == null) {
-                specializationQname[last] = qname[last].toString() + "<>";
+                specializationQname[last] = qname[last].toString() + "<>"; //NOI18N
                 o = resolver.resolve(specializationQname, Resolver.CLASSIFIER);
                 if( CsmKindUtilities.isClassifier(o) ) {
                     result = (CsmClassifier) o;

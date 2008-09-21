@@ -100,8 +100,6 @@ public class InfoPanel extends javax.swing.JPanel {
     private TapPanel tapPanel;
     private Item[] items;
 
-    private RequestProcessor requestProcessor = new RequestProcessor("Debugging View Info Panel"); // NOI18N
-
     private JButton arrowButton;
     private JPopupMenu arrowMenu;
     private Map<JPDAThread, JMenuItem> threadToMenuItem = new HashMap<JPDAThread, JMenuItem>();
@@ -843,22 +841,18 @@ public class InfoPanel extends javax.swing.JPanel {
                 outerPanel.setPreferredSize(new Dimension(0, height));
                 animationRunning = true;
                 isTop = top;
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if (isTop && lastTop != null) {
-                            lastTop.setTop(false);
-                        }
-                        topGapPanel.setVisible(!isTop);
-                        if (animationRunning) {
-                            scrollPane.setVisible(true);
-                            separator.setVisible(true);
-                            tapPanel.revalidate();
-                        }
-                        if (isTop) {
-                            tapPanel.setBackground(backgroundColor);
-                        }
-                    }
-                });
+                if (isTop && lastTop != null) {
+                    lastTop.setTop(false);
+                }
+                topGapPanel.setVisible(!isTop);
+                if (animationRunning) {
+                    scrollPane.setVisible(true);
+                    separator.setVisible(true);
+                    tapPanel.revalidate();
+                }
+                if (isTop) {
+                    tapPanel.setBackground(backgroundColor);
+                }
                 int delta = 1;
                 int currHeight = 1;
                 Timer animationTimer = new Timer(20, null);
@@ -910,7 +904,7 @@ public class InfoPanel extends javax.swing.JPanel {
             }
         }
 
-        private void setTop(boolean isTop) {
+        private synchronized void setTop(boolean isTop) {
             this.isTop = isTop;
             if (isTop) {
                 topGapPanel.setVisible(false);

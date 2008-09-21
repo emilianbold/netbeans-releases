@@ -79,7 +79,7 @@ public class GroovyCustomizerPanel extends javax.swing.JPanel {
 
         jScrollPane1.setBorder(null);
 
-        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
+        jTextArea1.setBackground(getBackground());
         jTextArea1.setColumns(20);
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);

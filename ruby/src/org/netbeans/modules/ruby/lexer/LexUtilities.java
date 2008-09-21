@@ -58,6 +58,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -618,18 +619,7 @@ public class LexUtilities {
 
     public static int getLineIndent(BaseDocument doc, int offset) {
         try {
-            int start = Utilities.getRowStart(doc, offset);
-            int end;
-
-            if (Utilities.isRowWhite(doc, start)) {
-                end = Utilities.getRowEnd(doc, offset);
-            } else {
-                end = Utilities.getRowFirstNonWhite(doc, start);
-            }
-
-            int indent = Utilities.getVisualColumn(doc, end);
-
-            return indent;
+            return IndentUtils.lineIndent(doc, Utilities.getRowStart(doc, offset));
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
 
@@ -745,7 +735,9 @@ public class LexUtilities {
         if (ts.offset() == caretOffset) {
             // We're looking at the offset to the RIGHT of the caret
             // and here I care about what's on the left
-            ts.movePrevious();
+            if (!ts.movePrevious()) {
+                return null;
+            }
         }
 
         Token<?extends RubyTokenId> token = ts.token();
@@ -777,7 +769,9 @@ public class LexUtilities {
                     (id == RubyTokenId.QUOTED_STRING_LITERAL) || (id == RubyTokenId.EMBEDDED_RUBY)) {
                 string = token.text().toString();
                 segments++;
-                ts.movePrevious();
+                if (!ts.movePrevious()) {
+                    return null;
+                }
                 token = ts.token();
                 id = token.id();
             }
@@ -833,7 +827,9 @@ public class LexUtilities {
         if (ts.offset() == caretOffset) {
             // We're looking at the offset to the RIGHT of the caret
             // and here I care about what's on the left
-            ts.movePrevious();
+            if (!ts.movePrevious()) {
+                return -1;
+            }
         }
 
         Token<?extends RubyTokenId> token = ts.token();
@@ -844,7 +840,9 @@ public class LexUtilities {
             // Skip over embedded Ruby segments and literal strings until you find the beginning
             while ((id == RubyTokenId.ERROR) || (id == RubyTokenId.STRING_LITERAL) ||
                     (id == RubyTokenId.QUOTED_STRING_LITERAL) || (id == RubyTokenId.EMBEDDED_RUBY)) {
-                ts.movePrevious();
+                if (!ts.movePrevious()) {
+                    return -1;
+                }
                 token = ts.token();
                 id = token.id();
             }
@@ -916,7 +914,9 @@ public class LexUtilities {
         if (ts.offset() == caretOffset) {
             // We're looking at the offset to the RIGHT of the caret
             // and here I care about what's on the left
-            ts.movePrevious();
+            if (!ts.movePrevious()) {
+                return -1;
+            }
         }
 
         Token<?extends RubyTokenId> token = ts.token();
@@ -943,7 +943,9 @@ public class LexUtilities {
             while ((id == RubyTokenId.ERROR) || (id == RubyTokenId.STRING_LITERAL) ||
                     (id == RubyTokenId.QUOTED_STRING_LITERAL) ||
                     (id == RubyTokenId.REGEXP_LITERAL) || (id == RubyTokenId.EMBEDDED_RUBY)) {
-                ts.movePrevious();
+                if (!ts.movePrevious()) {
+                    return -1;
+                }
                 token = ts.token();
                 id = token.id();
             }

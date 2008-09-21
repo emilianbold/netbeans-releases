@@ -345,36 +345,37 @@ public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
         relationshipD.discoverCommonRelations(new ArrayList<IElement>(group.getNodeContents()));
     }
     
-    @Override
-    public void save(NodeWriter nodeWriter)
-    {
-        setNodeWriterValues(nodeWriter, this);
-        nodeWriter.beginGraphNodeWithModelBridge();
-        nodeWriter.beginContained();
-        //write contained
-        saveChildren(this, nodeWriter);
-        nodeWriter.endContained();
-        nodeWriter.endGraphNode();
-    }
-
-    @Override
-    public void saveChildren(Widget widget, NodeWriter nodeWriter)
-    {
-        if (widget == null || nodeWriter == null)
-        {
-            return;
-        }
-        List<Widget> widList = widget.getChildren();
-        for (Widget child : widList)
-        {
-            if ((child instanceof DiagramNodeWriter) && !(child instanceof Widget.Dependency))
-            { // we write dependencies in another section
-
-                ((DiagramNodeWriter) child).save(nodeWriter);
-            } else
-            {
-                saveChildren(child, nodeWriter);
-            }
-        }
-    }
+//    Since ActivityGroupWidget is now extending from ContainerNode, we don't have to worry about persistence
+//    @Override
+//    public void save(NodeWriter nodeWriter)
+//    {
+//        setNodeWriterValues(nodeWriter, this);
+//        nodeWriter.beginGraphNodeWithModelBridge();
+//        nodeWriter.beginContained();
+//        //write contained
+//        saveChildren(this, nodeWriter);
+//        nodeWriter.endContained();
+//        nodeWriter.endGraphNode();
+//    }
+//
+//    @Override
+//    public void saveChildren(Widget widget, NodeWriter nodeWriter)
+//    {
+//        if (widget == null || nodeWriter == null)
+//        {
+//            return;
+//        }
+//        List<Widget> widList = widget.getChildren();
+//        for (Widget child : widList)
+//        {
+//            if ((child instanceof DiagramNodeWriter) && !(child instanceof Widget.Dependency))
+//            { // we write dependencies in another section
+//
+//                ((DiagramNodeWriter) child).save(nodeWriter);
+//            } else
+//            {
+//                saveChildren(child, nodeWriter);
+//            }
+//        }
+//    }
 }

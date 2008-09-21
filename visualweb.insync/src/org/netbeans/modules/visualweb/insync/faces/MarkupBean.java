@@ -55,6 +55,7 @@ import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
 import com.sun.rave.designtime.markup.MarkupPosition;
+import java.beans.BeanDescriptor;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.Property;
 
@@ -119,7 +120,12 @@ public abstract class MarkupBean extends Bean {
      * @return true iff a bean defined by beanInfo is capable of having children.
      */
     private static boolean isParentCapableBean(BeanInfo beanInfo) {
-        Object ico = beanInfo.getBeanDescriptor().getValue("isContainer");
+        // XXX #139640 BeanDescriptor can be null (according to javadoc).
+        BeanDescriptor beanDescriptor = beanInfo.getBeanDescriptor();
+        if (beanDescriptor == null) {
+            return false;
+        }
+        Object ico = beanDescriptor.getValue("isContainer");
         return !(ico instanceof Boolean) || ((Boolean)ico).booleanValue();
     }
 

@@ -230,6 +230,7 @@ public class Utils {
             Method getOwnerMethod = foqClz.getMethod("getOwner", FileObject.class); // NOI18N
             Object project = (Lookup.Provider)getOwnerMethod.invoke(foqClz, projectFile);
             Method getProjDirMethod = projectClz.getMethod("getProjectDirectory");
+            if (project == null) return null;
             return (FileObject)getProjDirMethod.invoke(project);
         } catch (IllegalAccessException ex) {
             logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N

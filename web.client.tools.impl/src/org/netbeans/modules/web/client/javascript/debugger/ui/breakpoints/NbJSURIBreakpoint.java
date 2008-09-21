@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints;
 
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
@@ -61,6 +62,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 
 public final class NbJSURIBreakpoint extends NbJSBreakpoint {
+    private WeakReference<Line> ownerLineRef;
 
     /**
      * Netbeans Javascript Breakpoint
@@ -131,13 +133,23 @@ public final class NbJSURIBreakpoint extends NbJSBreakpoint {
         return getFileObject(engine);
     }
     
+    public void setOwnerLine(Line line) {
+        this.ownerLineRef = new WeakReference<Line>(line);
+    }
+    
+    public Line getOwnerLine() {
+        return ownerLineRef != null ? ownerLineRef.get() : null;
+    }
+    
     public FileObject getFileObject(DebuggerEngine engine) {
         assert engine != null;
 
         FileObject fo = null;
         NbJSDebugger jsDebugger = engine.lookupFirst(null, NbJSDebugger.class);
         if (jsDebugger != null) {
-            fo = jsDebugger.getURLFileObjectForSource(createJSSource());
+            if (!jsDebugger.isIgnoringQueryStrings() || getLocation().getURI().getQuery() == null) {
+                fo = jsDebugger.getURLFileObjectForSource(createJSSource());
+            }
         }
         return fo;
     }
@@ -186,6 +198,7 @@ public final class NbJSURIBreakpoint extends NbJSBreakpoint {
         firePropertyChange(Line.PROP_LINE_NUMBER, orLocation, newLocation);
     }
 
+    // XXX this method is never called
     public void setLine(Line line) {
         if( line == null ){
             throw new NullPointerException("Can not set line to null.  Try setLine(uri,lineNum) instead");

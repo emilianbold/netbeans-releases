@@ -297,6 +297,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         ItemConfiguration copy = new ItemConfiguration(makeConfiguration, getItem());
         // safe using
         copy.assign(this);
+        copy.setConfiguration(makeConfiguration);
         return copy;
     }
     

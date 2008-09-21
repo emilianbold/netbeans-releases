@@ -51,7 +51,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
-import junit.framework.TestSuite;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -59,7 +58,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.hints.TestUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -152,6 +150,10 @@ public class IntroduceHintTest extends NbTestCase {
     
     public void testCorrectSelection13() throws Exception {
         performSimpleSelectionVerificationTest("package test; public class Test {public void test() {new |Object|();}}", false);
+    }
+
+    public void test121420() throws Exception {
+        performFixTest("package test; import java.util.ArrayList; public class Test {public void test() { |new ArrayList<String>()|; }}", "package test; import java.util.ArrayList; public class Test {public void test() {ArrayList<String> arrayList = new ArrayList<String>(); }}", new DialogDisplayerImpl(null, false, false, true), 1, 0);
     }
 
     public void test142424() throws Exception {
@@ -360,6 +362,15 @@ public class IntroduceHintTest extends NbTestCase {
                        "package test; public class Test { static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
                        new DialogDisplayerImpl(null, true, false, true, EnumSet.noneOf(Modifier.class)),
                        1, 0);
+    }
+
+    public void testConstantFix130938() throws Exception {
+        performFixTest("package test;import java.util.logging.Level;import java.util.logging.Logger;public class Test {public void foo() { Logger.getLogger(Test.class.getName()).log(Level.FINEST, \"foo\");}}",
+                       140 - 25,
+                       178 - 25,
+                       "package test;import java.util.logging.Level;import java.util.logging.Logger;public class Test { static final Logger LOGGER = Logger.getLogger(Test.class.getName()); public void foo() { LOGGER.log(Level.FINEST, \"foo\");}}",
+                       new DialogDisplayerImpl(null, true, true, true, EnumSet.noneOf(Modifier.class)),
+                       4, 1);
     }
     
     public void testIntroduceFieldFix1() throws Exception {
@@ -739,6 +750,13 @@ public class IntroduceHintTest extends NbTestCase {
                        "package test; public class Test {public static int test(int y) { y = name(y); return y;} private static int name(int y) { y += 5; return y; } }",
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
+
+    /** Return statement inside anonymous class should not be considered */
+    public void testIntroduceMethodFix132434() throws Exception {
+        performFixTest("package test;import java.awt.event.MouseAdapter;import java.awt.event.MouseEvent;import javax.swing.JPanel;public class Test {public static void main(String[] args) {JPanel p = new JPanel();|p.addMouseListener(new MouseAdapter() {public void mousePressed(MouseEvent e) {if (e.getX() > 100) {return;} else {System.out.println(e.getX());}}});|}}",
+                       "package test;import java.awt.event.MouseAdapter;import java.awt.event.MouseEvent;import javax.swing.JPanel;public class Test {public static void main(String[] args) {JPanel p = new JPanel(); foo(p);} private static void foo(JPanel p) { p.addMouseListener(new MouseAdapter() { public void mousePressed(MouseEvent e) { if (e.getX() > 100) { return; } else { System.out.println(e.getX()); } } }); } }", 
+                       new DialogDisplayerImpl3("foo", EnumSet.of(Modifier.PRIVATE), true));
+    }
     
     public void testIntroduceMethod109663a() throws Exception {
         performErrorMessageTest("package test; public class Test {public static void test(int y) {while (y < 10) {if (y == 0) break; else y++; int u = y;}}}",
@@ -1112,7 +1130,16 @@ public class IntroduceHintTest extends NbTestCase {
         public DialogDisplayerImpl(String name, Boolean replaceAll, Boolean declareFinal, boolean ok) {
             this(name, replaceAll, declareFinal, ok, EnumSet.of(Modifier.PRIVATE));
         }
-        
+
+        /**
+         * Uses introduce dialog
+         *
+         * @param name name of newly created name/constant
+         * @param replaceAll replace all occurences?
+         * @param declareFinal should be declared as final?
+         * @param ok confirm the dialog?
+         * @param modifiers list of modifiers
+         */
         public DialogDisplayerImpl(String name, Boolean replaceAll, Boolean declareFinal, boolean ok, Set<Modifier> modifiers) {
             this.name = name;
             this.replaceAll = replaceAll;

@@ -65,3 +65,15 @@ struct Foo,
 struct Boo
 >::Type ClassList;
 
+// IZ 144225 : IDE highlights enum in template as wrong code
+enum level_type {
+    ONE, TWO
+};
+
+template<class T, enum level_type L>
+inline bool compr(T t, enum level_type l)
+{
+    return t >= (int)l;
+}
+
+

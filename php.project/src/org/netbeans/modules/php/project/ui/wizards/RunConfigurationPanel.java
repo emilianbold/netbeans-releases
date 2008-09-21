@@ -161,6 +161,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             };
             PhpOptions phpOptions = PhpOptions.getInstance();
             phpOptions.addPropertyChangeListener(WeakListeners.propertyChange(phpInterpreterListener, phpOptions));
+
+            addListeners();
         }
         return runConfigurationPanelVisual;
     }
@@ -173,9 +175,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         getComponent();
         descriptor = settings;
 
-        // we don't want to get events now
-        removeListeners();
-
         //  must be done every time because user can go back, select another sources and return back
         switch (wizardType) {
             case EXISTING:
@@ -187,10 +186,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsLocalWeb.setCopyFiles(getCopyFiles());
 
         runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
-
-        // register back to receive events
-        addListeners();
-        stateChanged(null);
     }
 
     public void storeSettings(WizardDescriptor settings) {
@@ -337,12 +332,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsScript.addRunAsScriptListener(this);
     }
 
-    private void removeListeners() {
-        runAsLocalWeb.removeRunAsLocalWebListener(this);
-        runAsRemoteWeb.removeRunAsRemoteWebListener(this);
-        runAsScript.removeRunAsScriptListener(this);
-    }
-
     private PhpProjectProperties.RunAsType getRunAsType() {
         String activeConfig = configProvider.getActiveConfig();
         String runAs = configManager.configurationFor(activeConfig).getValue(RUN_AS);
@@ -479,8 +468,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         if (!defaultLocalUrl.equals(currentUrl)) {
             return;
         }
-        LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
-        assert sources != null;
         String url = null;
         if (runAsLocalWeb.isCopyFiles()) {
             LocalServer ls = runAsLocalWeb.getLocalServer();
@@ -495,27 +482,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             String urlPrefix = ls.getUrl() != null ? ls.getUrl() : "http://localhost/"; // NOI18N
             url = urlPrefix + urlSuffix;
         } else {
-            // /var/www or similar => check source folder name and url
-            String srcRoot = sources.getSrcRoot();
-            switch (wizardType) {
-                case NEW:
-                    // we can check doucment roots only for new wizard; for existing sources we don't have any source roots
-                    @SuppressWarnings("unchecked")
-                    List<DocumentRoot> srcRoots = (List<DocumentRoot>) descriptor.getProperty(ConfigureProjectPanel.ROOTS);
-                    assert srcRoots != null;
-                    for (DocumentRoot root : srcRoots) {
-                        String urlSuffix = getUrlSuffix(root.getDocumentRoot(), srcRoot);
-                        if (urlSuffix != null) {
-                            url = root.getUrl() + urlSuffix;
-                            break;
-                        }
-                    }
-                    break;
-            }
-            if (url == null) {
-                // not found => get the name of the sources
-                url = "http://localhost/" + new File(srcRoot).getName(); // NOI18N
-            }
+            url = getUrlForSources(wizardType, descriptor);
         }
         // we have to do it here because we need correct url BEFORE the following comparison [!defaultLocalUrl.equals(url)]
         if (url != null && !url.endsWith("/")) { // NOI18N
@@ -527,7 +494,38 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
-    private String getUrlSuffix(String documentRoot, String srcRoot) {
+    static String getUrlForSources(NewPhpProjectWizardIterator.WizardType wizardType, WizardDescriptor descriptor) {
+        // /var/www or similar => check source folder name and url
+        String url = null;
+        LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
+        assert sources != null;
+        String srcRoot = sources.getSrcRoot();
+        switch (wizardType) {
+            case NEW:
+                // we can check doucment roots only for new wizard; for existing sources we don't have any source roots
+                @SuppressWarnings("unchecked")
+                List<DocumentRoot> srcRoots = (List<DocumentRoot>) descriptor.getProperty(ConfigureProjectPanel.ROOTS);
+                assert srcRoots != null;
+                for (DocumentRoot root : srcRoots) {
+                    String urlSuffix = getUrlSuffix(root.getDocumentRoot(), srcRoot);
+                    if (urlSuffix != null) {
+                        url = root.getUrl() + urlSuffix;
+                        break;
+                    }
+                }
+                break;
+        }
+        if (url == null) {
+            // not found => get the name of the sources
+            url = "http://localhost/" + new File(srcRoot).getName(); // NOI18N
+        }
+        if (!url.endsWith("/")) { // NOI18N
+            url += "/"; // NOI18N
+        }
+        return url;
+    }
+
+    private static String getUrlSuffix(String documentRoot, String srcRoot) {
         if (!documentRoot.endsWith(File.separator)) {
             documentRoot += File.separator;
         }

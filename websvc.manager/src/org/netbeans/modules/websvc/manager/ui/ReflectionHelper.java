@@ -38,11 +38,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.manager.ui;
 
 //import com.sun.tools.ws.processor.model.java.JavaMethod;
 //import com.sun.tools.ws.processor.model.java.JavaParameter;
+import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -58,6 +59,7 @@ import java.net.URL;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
 import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
@@ -69,59 +71,59 @@ import org.netbeans.modules.websvc.saas.util.TypeUtil;
  * @author  David Botterill
  */
 public class ReflectionHelper {
-    
+
     public static TypeNodeData createTypeData(String typeName, Object value) {
         return createTypeData(typeName, null, value);
     }
-    
+
     public static TypeNodeData createTypeData(String typeName, String paramName) {
         return createTypeData(typeName, paramName, null);
     }
-    
+
     public static TypeNodeData createTypeData(String typeName, String paramName, Object value) {
         int separator = separateGenericType(typeName);
-        
+
         String typeClass = typeName.substring(0, separator);
         String genericType = null;
         if (separator != typeName.length()) {
-            genericType = typeName.substring(separator+1, typeName.length()-1);
+            genericType = typeName.substring(separator + 1, typeName.length() - 1);
         }
-        
+
         TypeNodeData result = new TypeNodeData(typeClass, genericType, paramName, value);
         if (isArray(typeClass)) {
             result.setGenericType(typeClass.substring(0, typeClass.indexOf("[]"))); // NOI18N
         }
-        
+
         return result;
     }
-    
+
     private static int separateGenericType(String typeName) {
         int length = typeName.length();
-        
-        if (length < 2 || typeName.charAt(length-1) != '>') { // NOI18N
+
+        if (length < 2 || typeName.charAt(length - 1) != '>') { // NOI18N
             return length;
-        }else {
+        } else {
             int depth = 1;
             for (int i = length - 2; i >= 0; i--) {
                 if (typeName.charAt(i) == '>') {
                     depth += 1;
-                }else if (typeName.charAt(i) == '<') {
+                } else if (typeName.charAt(i) == '<') {
                     depth -= 1;
                 }
-                
+
                 if (depth == 0) {
                     return i;
                 }
             }
-            
+
             return length;
         }
     }
-    
+
     public static boolean isArray(String className) {
         return className != null && className.indexOf("[]") >= 0; // NOI18N
     }
-    
+
     public static boolean isComplexType(String className, ClassLoader runtimeClassLoader) {
         try {
             Class type = Class.forName(className, true, runtimeClassLoader);
@@ -129,53 +131,53 @@ public class ReflectionHelper {
 
             Annotation xmlAnnotation = type.getAnnotation(xmlType);
             boolean isEnumeration = isEnumeration(className, runtimeClassLoader);
-            
+
             return xmlAnnotation != null && !isEnumeration;
         } catch (ClassNotFoundException cnfe) {
             return false;
         }
     }
-    
+
     public static boolean isCollection(String className, ClassLoader runtimeClassLoader) {
         try {
             Class cls = Class.forName(className, true, runtimeClassLoader);
             return Collection.class.isAssignableFrom(cls);
-        }catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             return false;
         }
     }
-    
+
     public static boolean isHolder(String className) {
         return "javax.xml.ws.Holder".equals(className); // NOI18N
     }
-    
+
     public static boolean isJAXBElement(String className) {
         return "javax.xml.bind.JAXBElement".equals(className); // NOI18N
     }
-    
+
     public static boolean isEnumeration(String className, ClassLoader loader) {
         try {
             Class cls = Class.forName(className, true, loader);
             Class enumClass = Class.forName(Enum.class.getName(), true, loader);
-            
+
             return enumClass.isAssignableFrom(cls);
-        }catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             return false;
         }
     }
-    
+
     public static boolean isSimpleType(String className, ClassLoader loader) {
         try {
             if (isPrimitiveClass(className)) {
                 return true;
             }
-            
+
             // Make sure the class is valid
             Class.forName(className, true, loader);
-            
-            return !isCollection(className, loader) && !isHolder(className) && 
-                    !isComplexType(className, loader) && !isEnumeration(className, loader) &&!isJAXBElement(className);
-        }catch (ClassNotFoundException cnfe) {
+
+            return !isCollection(className, loader) && !isHolder(className) &&
+                    !isComplexType(className, loader) && !isEnumeration(className, loader) && !isJAXBElement(className);
+        } catch (ClassNotFoundException cnfe) {
             return false;
         }
     }
@@ -186,16 +188,16 @@ public class ReflectionHelper {
             Class componentClass = null;
             if (isPrimitiveClass(componentType)) {
                 componentClass = getPrimitiveClass(componentType);
-            }else {
+            } else {
                 componentClass = Class.forName(componentType, true, loader);
             }
-            
+
             return Array.newInstance(componentClass, length);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
         }
     }
-    
+
     public static Object makeJAXBElement(String valueType, String localPart, Object value, ClassLoader loader)
             throws WebServiceReflectionException {
         ClassLoader savedLoader = Thread.currentThread().getContextClassLoader();
@@ -203,125 +205,127 @@ public class ReflectionHelper {
             if (valueType == null || loader == null) {
                 return null;
             }
-            
+
             Thread.currentThread().setContextClassLoader(loader);
             Class declaredClass = null;
-            
+
             if (isPrimitiveClass(valueType)) {
                 declaredClass = getPrimitiveClass(valueType);
-            }else {
+            } else {
                 declaredClass = Class.forName(valueType, true, loader);
             }
-            
+
             Class qNameClass = Class.forName(QName.class.getName(), true, loader);
             Class jaxBClass = Class.forName(JAXBElement.class.getName(), true, loader);
-            
-            Constructor qNameConstr = qNameClass.getConstructor(new Class[] { String.class } );
+
+            Constructor qNameConstr = qNameClass.getConstructor(new Class[]{String.class});
             Object qName = qNameConstr.newInstance(localPart);
-            
-            Constructor jaxBConstr = jaxBClass.getConstructor(new Class[] { qNameClass, Class.class, Object.class });
+
+            Constructor jaxBConstr = jaxBClass.getConstructor(new Class[]{qNameClass, Class.class, Object.class});
             return jaxBConstr.newInstance(qName, declaredClass, value);
-        }catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             throw new WebServiceReflectionException("ClassNotFoundException", cnfe);
-        }catch (InstantiationException ie) {
+        } catch (InstantiationException ie) {
             throw new WebServiceReflectionException("InstantiationException", ie);
-        }catch (IllegalAccessException iae) {
+        } catch (IllegalAccessException iae) {
             throw new WebServiceReflectionException("IllegalAccessException", iae);
-        }catch (InvocationTargetException ite) {
+        } catch (InvocationTargetException ite) {
             throw new WebServiceReflectionException("InvocationTargetException", ite);
-        }catch (NoSuchMethodException nsme) {
+        } catch (NoSuchMethodException nsme) {
             throw new WebServiceReflectionException("NoSuchMethodException", nsme);
-        }finally {
-            if (savedLoader != null)
-                Thread.currentThread().setContextClassLoader(savedLoader);
-        }        
-    }
-    
-    public static Object makeEnumeration(String enumeration, ClassLoader loader)
-            throws WebServiceReflectionException {
-        try {
-            List<String> enumerationValues = getEnumerationValues(enumeration, loader);
-            Class enumClass = Class.forName(enumeration, true, loader);
-            
-            return Enum.valueOf(enumClass, enumerationValues.get(0));
-        }catch (Exception ex) {
-            throw new WebServiceReflectionException(ex.getClass().getName(), ex);
-        }
-    }
-    
-    public static Object getEnumeration(String enumeration, String name, ClassLoader loader) 
-            throws WebServiceReflectionException {
-        try {
-            Class enumClass = Class.forName(enumeration, true, loader);
-            return Enum.valueOf(enumClass, name);
-        }catch (Exception ex) {
-            throw new WebServiceReflectionException(ex.getClass().getName(), ex);
-        }
-    }
-    
-    public static Object makeHolder(ClassLoader loader) throws WebServiceReflectionException {
-        return makeComplexType("javax.xml.ws.Holder", loader); // NOI18N
-    }
-    
-    public static Object makeCollection(String className, ClassLoader loader) 
-            throws WebServiceReflectionException {
-        
-        ClassLoader savedLoader = null;
-        try {
-            if (!isCollection(className, loader)) {
-                return null;
-            }else {
-                Class cls = Class.forName(className, true, loader);
-                if (cls.isInterface()) {
-                    return new ArrayList();
-                }else {
-                    savedLoader = Thread.currentThread().getContextClassLoader();
-                    Thread.currentThread().setContextClassLoader(loader);
-                    
-                    Object result = cls.newInstance();
-                    return result;
-                }
-            }
-        }catch (Exception ex) {
-            throw new WebServiceReflectionException(ex.getClass().getName(), ex);
-        }finally {
+        } finally {
             if (savedLoader != null) {
                 Thread.currentThread().setContextClassLoader(savedLoader);
             }
         }
     }
-    
-    public static Object makeComplexType(String typeName, ClassLoader loader) 
-    throws WebServiceReflectionException {
+
+    public static Object makeEnumeration(String enumeration, ClassLoader loader)
+            throws WebServiceReflectionException {
+        try {
+            List<String> enumerationValues = getEnumerationValues(enumeration, loader);
+            Class enumClass = Class.forName(enumeration, true, loader);
+
+            return Enum.valueOf(enumClass, enumerationValues.get(0));
+        } catch (Exception ex) {
+            throw new WebServiceReflectionException(ex.getClass().getName(), ex);
+        }
+    }
+
+    public static Object getEnumeration(String enumeration, String name, ClassLoader loader)
+            throws WebServiceReflectionException {
+        try {
+            Class enumClass = Class.forName(enumeration, true, loader);
+            return Enum.valueOf(enumClass, name);
+        } catch (Exception ex) {
+            throw new WebServiceReflectionException(ex.getClass().getName(), ex);
+        }
+    }
+
+    public static Object makeHolder(ClassLoader loader) throws WebServiceReflectionException {
+        return makeComplexType("javax.xml.ws.Holder", loader); // NOI18N
+    }
+
+    public static Object makeCollection(String className, ClassLoader loader)
+            throws WebServiceReflectionException {
+
+        ClassLoader savedLoader = null;
+        try {
+            if (!isCollection(className, loader)) {
+                return null;
+            } else {
+                Class cls = Class.forName(className, true, loader);
+                if (cls.isInterface()) {
+                    return new ArrayList();
+                } else {
+                    savedLoader = Thread.currentThread().getContextClassLoader();
+                    Thread.currentThread().setContextClassLoader(loader);
+
+                    Object result = cls.newInstance();
+                    return result;
+                }
+            }
+        } catch (Exception ex) {
+            throw new WebServiceReflectionException(ex.getClass().getName(), ex);
+        } finally {
+            if (savedLoader != null) {
+                Thread.currentThread().setContextClassLoader(savedLoader);
+            }
+        }
+    }
+
+    public static Object makeComplexType(String typeName, ClassLoader loader)
+            throws WebServiceReflectionException {
         ClassLoader savedLoader = Thread.currentThread().getContextClassLoader();
         try {
             if (typeName == null || loader == null) {
                 return null;
             }
-            
+
             Thread.currentThread().setContextClassLoader(loader);
             Class typeClass = Class.forName(typeName, true, loader);
             Object result = typeClass.newInstance();
-            
+
             return result;
-        }catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             throw new WebServiceReflectionException("ClassNotFoundException", cnfe);
-        }catch (InstantiationException ie) {
+        } catch (InstantiationException ie) {
             throw new WebServiceReflectionException("InstantiationException", ie);
-        }catch (IllegalAccessException iae) {
+        } catch (IllegalAccessException iae) {
             throw new WebServiceReflectionException("IllegalAccessException", iae);
-        }finally {
-            if (savedLoader != null)
+        } finally {
+            if (savedLoader != null) {
                 Thread.currentThread().setContextClassLoader(savedLoader);
+            }
         }
     }
-    
-    public static List<String> getEnumerationValues(String enumeration, ClassLoader loader) 
+
+    public static List<String> getEnumerationValues(String enumeration, ClassLoader loader)
             throws WebServiceReflectionException {
         try {
             List<String> enumerations = new ArrayList<String>();
             Class enumerClass = Class.forName(enumeration, true, loader);
-            
+
             Field[] fields = enumerClass.getDeclaredFields();
             for (int i = 0; i < fields.length; i++) {
                 Field nextField = fields[i];
@@ -329,13 +333,13 @@ public class ReflectionHelper {
                     enumerations.add(nextField.getName());
                 }
             }
-            
+
             return enumerations;
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
         }
     }
-    
+
     public static List<String> getPropertyNames(String complexType, ClassLoader loader)
             throws WebServiceReflectionException {
         ClassLoader savedLoader = null;
@@ -343,50 +347,51 @@ public class ReflectionHelper {
             List<String> properties = new ArrayList<String>();
             savedLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(loader);
-            
+
             Class nextClass = Class.forName(complexType, true, loader);
             Class xmlTypeClass = Class.forName(XmlType.class.getName(), true, loader);
-            
-            for ( ; nextClass != null; nextClass = nextClass.getSuperclass()) {
+
+            for (; nextClass != null; nextClass = nextClass.getSuperclass()) {
                 Annotation annotation = nextClass.getAnnotation(xmlTypeClass);
                 if (annotation == null) {
                     break;
                 }
-                
+
                 try {
                     Method m = annotation.getClass().getMethod("propOrder", new Class[0]); // NOI18N
-                    String[] props = (String[])m.invoke(annotation, null);
-                    
+                    String[] props = (String[]) m.invoke(annotation, null);
+
                     for (int i = 0; props != null && i < props.length; i++) {
-                        if (props[i] != null && props[i].length() > 0)
+                        if (props[i] != null && props[i].length() > 0) {
                             properties.add(props[i]);
+                        }
                     }
-                }catch (Exception ex) {
+                } catch (Exception ex) {
                 }
             }
-            
+
             return properties;
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
-        }finally {
+        } finally {
             if (savedLoader != null) {
                 Thread.currentThread().setContextClassLoader(savedLoader);
             }
         }
     }
 
-    public static String getPropertyType(String type, String propName, ClassLoader loader) 
-        throws WebServiceReflectionException {
+    public static String getPropertyType(String type, String propName, ClassLoader loader)
+            throws WebServiceReflectionException {
         ClassLoader savedLoader = null;
         try {
             Class typeClass = Class.forName(type, true, loader);
-            
+
             char[] name = propName.toCharArray();
             String propCaps = null;
-            
+
             Method method = null;
-            
-            for (int i = 0; i < propName.length() && method == null; i++ ) {
+
+            for (int i = 0; i < propName.length() && method == null; i++) {
                 name[i] = Character.toUpperCase(name[i]);
                 propCaps = new String(name);
                 try {
@@ -402,65 +407,65 @@ public class ReflectionHelper {
             if (method == null) {
                 throw new NoSuchMethodException("Method not found for property " + propName + " in class " + type);
             }
-            
+
             return TypeUtil.typeToString(method.getGenericReturnType());
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
-        }finally {
+        } finally {
             if (savedLoader != null) {
                 Thread.currentThread().setContextClassLoader(savedLoader);
-            }            
+            }
         }
     }
-    
+
     public static Object getHolderValue(Object holder) throws WebServiceReflectionException {
         try {
             Field valueField = holder.getClass().getField("value"); // NO18N
             return valueField.get(holder);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
         }
     }
-    
+
     public static void setHolderValue(Object holder, Object value) throws WebServiceReflectionException {
         try {
             Field valueField = holder.getClass().getField("value"); // NO18N
             valueField.set(holder, value);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
         }
     }
-    
+
     public static Object getJAXBElementValue(Object jaxBElement) throws WebServiceReflectionException {
         try {
             Method m = jaxBElement.getClass().getMethod("getValue", new Class[0]); // NOI18N
             return m.invoke(jaxBElement);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
         }
     }
-    
+
     public static String getQNameLocalPart(Object jaxBElement) throws WebServiceReflectionException {
         try {
             Method getName = jaxBElement.getClass().getMethod("getName", new Class[0]); // NOI18N
             Object qName = getName.invoke(jaxBElement);
-            
+
             Method getLocalPart = qName.getClass().getMethod("getLocalPart", new Class[0]); // NOI18N
-            return (String)getLocalPart.invoke(qName);
-        }catch (Exception ex) {
-            throw new WebServiceReflectionException(ex.getClass().getName(), ex);
-        }        
-    }
-    
-    public static void setJAXBElementValue(Object jaxBElement, Object value) throws WebServiceReflectionException {
-        try {
-            Method m = jaxBElement.getClass().getMethod("setValue", new Class[] { Object.class });
-            m.invoke(jaxBElement, value);
-        }catch (Exception ex) {
+            return (String) getLocalPart.invoke(qName);
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
         }
     }
-    
+
+    public static void setJAXBElementValue(Object jaxBElement, Object value) throws WebServiceReflectionException {
+        try {
+            Method m = jaxBElement.getClass().getMethod("setValue", new Class[]{Object.class});
+            m.invoke(jaxBElement, value);
+        } catch (Exception ex) {
+            throw new WebServiceReflectionException(ex.getClass().getName(), ex);
+        }
+    }
+
     public static boolean isPropertySettable(String className, String propName, ClassLoader classLoader)
             throws WebServiceReflectionException {
         ClassLoader savedLoader = null;
@@ -470,81 +475,81 @@ public class ReflectionHelper {
             String capitalProp = new String(name);
 
             String writeMethod = "set" + capitalProp; // NOI18N
-            
+
             savedLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(classLoader);
-            
+
             Class structClass = Class.forName(className, true, classLoader);
             Method[] methods = structClass.getMethods();
             for (int i = 0; i < methods.length; i++) {
                 Method curMethod = methods[i];
-                
+
                 if (curMethod.getName().equals(writeMethod) && curMethod.getParameterTypes().length == 1) {
                     return true;
                 }
             }
-            
+
             return false;
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
-        }finally {
+        } finally {
             if (savedLoader != null) {
                 Thread.currentThread().setContextClassLoader(savedLoader);
             }
         }
     }
-    
-    public static void setPropertyValue(Object objValue, String propName, 
+
+    public static void setPropertyValue(Object objValue, String propName,
             String propType, Object propValue, ClassLoader classLoader) throws WebServiceReflectionException {
         ClassLoader savedLoader = null;
         try {
             Class typeClass = objValue.getClass();
-            
+
             Class propClass = null;
             savedLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(classLoader);
-            
+
             try {
                 if (isPrimitiveClass(propType)) {
                     propClass = referenceClass2PrimitiveClass(propValue.getClass());
-                }else {
+                } else {
                     propClass = Class.forName(propType, true, classLoader);
                 }
-                
-                Class[] params = new Class[] { propClass };
-                
+
+                Class[] params = new Class[]{propClass};
+
                 char[] name = propName.toCharArray();
                 String methodName = null;
                 Method method = null;
-                
+
                 for (int i = 0; i < propName.length() && method == null; i++) {
                     name[i] = Character.toUpperCase(name[i]);
                     methodName = "set" + new String(name); // NOI18N
-                    
+
                     try {
                         method = typeClass.getMethod(methodName, params);
-                    }catch (NoSuchMethodException nsme) {
+                    } catch (NoSuchMethodException nsme) {
                         continue;
                     }
                 }
-                
+
                 if (method == null) {
                     throw new NoSuchMethodException("Method setter for property " + propName + " not found in class " + typeClass);
                 }
-                
-                Object[] args = new Object[] { propValue };
+
+                Object[] args = new Object[]{propValue};
                 method.invoke(objValue, args);
-            }catch (ClassNotFoundException cnfe) {
+            } catch (ClassNotFoundException cnfe) {
                 throw new WebServiceReflectionException("ClassNotFoundException", cnfe);
-            }catch (NoSuchMethodException nsme) {
+            } catch (NoSuchMethodException nsme) {
                 throw new WebServiceReflectionException("NoSuchMethodException", nsme);
-            }catch (IllegalAccessException iae) {
+            } catch (IllegalAccessException iae) {
                 throw new WebServiceReflectionException("IllegalAccessException", iae);
-            }catch (InvocationTargetException ite) {
+            } catch (InvocationTargetException ite) {
                 throw new WebServiceReflectionException("InvocationTargetException", ite);
             }
-            
-        }finally {
+
+        } finally {
             if (savedLoader != null) {
                 Thread.currentThread().setContextClassLoader(savedLoader);
             }
@@ -557,13 +562,13 @@ public class ReflectionHelper {
         try {
             Class typeClass = obj.getClass();
             Method method = null;
-            
+
             savedLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(classLoader);
-            
+
             char[] name = propertyName.toCharArray();
             String propCaps = null;
-            for (int i = 0; i < propertyName.length() && method == null; i++ ) {
+            for (int i = 0; i < propertyName.length() && method == null; i++) {
                 name[i] = Character.toUpperCase(name[i]);
                 propCaps = new String(name);
                 try {
@@ -576,51 +581,53 @@ public class ReflectionHelper {
                     }
                 }
             }
-            
+
             try {
                 if (method == null) {
                     throw new NoSuchMethodException("Method not found for property " + propertyName + " in class " + typeClass);
                 }
-                
-                return method.invoke(obj,new Object[0]);
-            }catch (Exception ex) {
+
+                return method.invoke(obj, new Object[0]);
+            } catch (Exception ex) {
                 throw new WebServiceReflectionException(ex.getClass().getName(), ex);
             }
-        }finally {
+        } finally {
             if (savedLoader != null) {
                 Thread.currentThread().setContextClassLoader(savedLoader);
             }
         }
     }
-    
+
     public static Object getArrayValue(Object array, int index) throws WebServiceReflectionException {
         try {
             return Array.get(array, index);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
         }
     }
-    
+
     public static int getArrayLength(Object array) throws WebServiceReflectionException {
         try {
             return Array.getLength(array);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
         }
-    }    
-    
+    }
+
     public static Object callMethodWithParams(
             String inClassName, LinkedList inParamList, JavaMethod inMethod,
             URLClassLoader urlClassLoader, WsdlData wsData, WSPort port) throws WebServiceReflectionException {
 
         Class clazz = null;
         Class serviceClass = null;
-        if(null == urlClassLoader) return null;
-        
+        if (null == urlClassLoader) {
+            return null;
+        }
+
         /**
          * We need to save off the current classLoader and set the context to the one passed in for
          * executing the method.
-         */        
+         */
         ClassLoader savedLoader = Thread.currentThread().getContextClassLoader();
         try {
             /**
@@ -642,8 +649,18 @@ public class ReflectionHelper {
              */
             Object classInstance = null;
             try {
-                
-                URL wsdlUrl = wsData.getJaxWsDescriptor().getWsdlUrl();
+
+                File wsdlFile = new File(wsData.getWsdlFile());
+                if (wsdlFile != null) {
+                    wsdlFile = wsdlFile.getCanonicalFile();
+                }
+                boolean isRPCEncoded = wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURI());
+                URL wsdlUrl = null;
+                if (isRPCEncoded) {
+                    wsdlUrl = wsData.getJaxRpcDescriptor().getWsdlUrl();
+                } else {
+                    wsdlUrl = wsData.getJaxWsDescriptor().getWsdlUrl();
+                }
                 String urlPath = wsdlUrl.getPath();
                 int start;
                 if (wsdlUrl.getProtocol().toLowerCase().startsWith("file")) {
@@ -656,19 +673,34 @@ public class ReflectionHelper {
                 start = (start < 0 || start >= urlPath.length() - 1) ? 0 : start + 1;
 
                 String wsdlFileName = urlPath.substring(start);
-                String namespace = wsData.getJaxWsDescriptor().getModel().getNamespaceURI();
-                String qname = wsData.getJaxWsDescriptor().getName();
+                String namespace = null;
+                if (isRPCEncoded) {
+                    namespace = wsData.getJaxRpcDescriptor().getModel().getNamespaceURI();
+                } else {
+                    namespace = wsData.getJaxWsDescriptor().getModel().getNamespaceURI();
+                }
+                String qname = null;
+                if (isRPCEncoded) {
+                    qname = wsData.getJaxRpcDescriptor().getName();
+                } else {
+                    qname = wsData.getJaxWsDescriptor().getName();
+                }
 
                 URL jarWsdlUrl = serviceClass.getResource(wsdlFileName);
                 QName name = new QName(namespace, qname);
 
-                Constructor constructor = serviceClass.getConstructor(java.net.URL.class, javax.xml.namespace.QName.class);
-                
-                Object serviceObject = constructor.newInstance(jarWsdlUrl, name);
+                Constructor constructor = null;
+                Object serviceObject = null;
+                if (isRPCEncoded) {
+                    serviceObject = serviceClass.newInstance();
+                } else {
+                    constructor = serviceClass.getConstructor(java.net.URL.class, javax.xml.namespace.QName.class);
+                    serviceObject = constructor.newInstance(jarWsdlUrl, name);
+                }
 
                 String portGetter = port.getPortGetter();
                 Method getPort = serviceObject.getClass().getMethod(portGetter);
-                
+
                 classInstance = getPort.invoke(serviceObject);
                 clazz = classInstance.getClass();
             } catch (InstantiationException ia) {
@@ -679,6 +711,8 @@ public class ReflectionHelper {
                 throw new WebServiceReflectionException("NoSuchMethodException", nsme);
             } catch (InvocationTargetException ite) {
                 throw new WebServiceReflectionException("InvocationTargetException", ite);
+            } catch (IOException ioe) {
+                throw new WebServiceReflectionException("IOException", ioe);
             }
 
 
@@ -706,10 +740,10 @@ public class ReflectionHelper {
                         classToAdd = referenceClass2PrimitiveClass(paramValues[ii].getClass());
                     } else if (actualParameter.getType().getFormalName().equals("java.util.Calendar") && !actualParameter.isHolder()) {
                         classToAdd = java.util.Calendar.class;
-                    }else if (paramValues[ii] == null) {
+                    } else if (paramValues[ii] == null) {
                         try {
                             classToAdd = Class.forName(actualParameter.getType().getFormalName(), true, urlClassLoader);
-                        }catch (Exception ex) {
+                        } catch (Exception ex) {
                             throw new WebServiceReflectionException("Exception", ex);
                         }
                     } else {
@@ -744,68 +778,75 @@ public class ReflectionHelper {
             }
 
             return returnObject;
-        }finally {
+        } finally {
             // Reset the classloader
             Thread.currentThread().setContextClassLoader(savedLoader);
         }
-        
+
     }
 
     public static boolean isPrimitiveClass(String inType) {
-        if(inType.equalsIgnoreCase("int")) {
+        if (inType.equalsIgnoreCase("int")) {
             return true;
-        } else if(inType.equalsIgnoreCase("byte")) {
+        } else if (inType.equalsIgnoreCase("byte")) {
             return true;
-        } else if(inType.equalsIgnoreCase("boolean")) {
+        } else if (inType.equalsIgnoreCase("boolean")) {
             return true;
-        } else if(inType.equalsIgnoreCase("float")) {
+        } else if (inType.equalsIgnoreCase("float")) {
             return true;
-        } else if(inType.equalsIgnoreCase("double")) {
+        } else if (inType.equalsIgnoreCase("double")) {
             return true;
-        } else if(inType.equalsIgnoreCase("long")) {
+        } else if (inType.equalsIgnoreCase("long")) {
             return true;
-        } else if(inType.equalsIgnoreCase("short")) {
+        } else if (inType.equalsIgnoreCase("short")) {
             return true;
-        } else return false;
+        } else {
+            return false;
+        }
     }
-    
+
     public static Class getPrimitiveClass(String inType) {
-        if(inType.equalsIgnoreCase("int")) {
+        if (inType.equalsIgnoreCase("int")) {
             return int.class;
-        } else if(inType.equalsIgnoreCase("byte")) {
+        } else if (inType.equalsIgnoreCase("byte")) {
             return byte.class;
-        } else if(inType.equalsIgnoreCase("boolean")) {
+        } else if (inType.equalsIgnoreCase("boolean")) {
             return boolean.class;
-        } else if(inType.equalsIgnoreCase("float")) {
+        } else if (inType.equalsIgnoreCase("float")) {
             return float.class;
-        } else if(inType.equalsIgnoreCase("double")) {
+        } else if (inType.equalsIgnoreCase("double")) {
             return double.class;
-        } else if(inType.equalsIgnoreCase("long")) {
+        } else if (inType.equalsIgnoreCase("long")) {
             return long.class;
-        } else if(inType.equalsIgnoreCase("short")) {
+        } else if (inType.equalsIgnoreCase("short")) {
             return short.class;
-        } else return null;
+        } else {
+            return null;
+        }
     }
-    
+
     public static Class referenceClass2PrimitiveClass(Class inClass) {
-        if(null == inClass) return inClass;
-        if(inClass.getName().equalsIgnoreCase("java.lang.Boolean")) {
+        if (null == inClass) {
+            return inClass;
+        }
+        if (inClass.getName().equalsIgnoreCase("java.lang.Boolean")) {
             return boolean.class;
-        } else if(inClass.getName().equalsIgnoreCase("java.lang.Byte")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Byte")) {
             return byte.class;
-        } else if(inClass.getName().equalsIgnoreCase("java.lang.Double")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Double")) {
             return double.class;
-        } else if(inClass.getName().equalsIgnoreCase("java.lang.Float")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Float")) {
             return float.class;
-        } else if(inClass.getName().equalsIgnoreCase("java.lang.Integer")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Integer")) {
             return int.class;
-        } else if(inClass.getName().equalsIgnoreCase("java.lang.Long")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Long")) {
             return long.class;
-        } else if(inClass.getName().equalsIgnoreCase("java.lang.Short")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Short")) {
             return short.class;
-        } else if(inClass.getName().equalsIgnoreCase("java.lang.Character")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Character")) {
             return char.class;
-        } else return inClass;
+        } else {
+            return inClass;
+        }
     }
-    
 }

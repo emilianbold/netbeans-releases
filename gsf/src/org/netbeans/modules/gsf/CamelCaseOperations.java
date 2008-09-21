@@ -118,25 +118,27 @@ import org.openide.ErrorManager;
         replaceText(textComponent, offset, 1, String.valueOf(c));
     }
 
-    static void replaceText(JTextComponent textComponent, int offset, int length, String text) {
+    static void replaceText(JTextComponent textComponent, final int offset, final int length, final String text) {
         if (!textComponent.isEditable()) {
             return;
         }
-        Document document = textComponent.getDocument();
+        final Document document = textComponent.getDocument();
+        Runnable r = new Runnable() {
+            public void run() {
+                try {
+                    if (length > 0) {
+                        document.remove(offset, length);
+                    }
+                    document.insertString(offset, text, null);
+                } catch (BadLocationException ble) {
+                    ErrorManager.getDefault().notify(ble);
+                }
+            }
+        };
         if (document instanceof BaseDocument) {
-            ((BaseDocument)document).atomicLock();
-        }
-        try {
-            if (length > 0) {
-                document.remove(offset, length);
-            }
-            document.insertString(offset, text, null);
-        } catch (BadLocationException ble) {
-            ErrorManager.getDefault().notify(ble);
-        } finally {
-            if (document instanceof BaseDocument) {
-                ((BaseDocument)document).atomicUnlock();
-            }
+            ((BaseDocument)document).runAtomic(r);
+        } else {
+            r.run();
         }
     }
 }

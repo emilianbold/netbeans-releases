@@ -206,20 +206,6 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(MercurialOptionsPanelController.class, "ACSD_BrowseFolder"), oldFile);   // NOI18N
         fileChooser.setDialogTitle(NbBundle.getMessage(MercurialOptionsPanelController.class, "Browse_title"));                                            // NOI18N
         fileChooser.setMultiSelectionEnabled(false);
-        FileFilter[] old = fileChooser.getChoosableFileFilters();
-        for (int i = 0; i < old.length; i++) {
-            FileFilter fileFilter = old[i];
-            fileChooser.removeChoosableFileFilter(fileFilter);
-        }
-        fileChooser.addChoosableFileFilter(new FileFilter() {
-            public boolean accept(File f) {
-                return f.isDirectory();
-            }
-            public String getDescription() {
-                return NbBundle.getMessage(MercurialOptionsPanelController.class, "MercurialExec");// NOI18N
-            }
-        });
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(panel, NbBundle.getMessage(MercurialOptionsPanelController.class, "OK_Button"));                                            // NOI18N
         File f = fileChooser.getSelectedFile();
         if (f != null) {

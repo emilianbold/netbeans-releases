@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.index;
 
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 
 /**
  *
@@ -50,13 +51,16 @@ public class IndexedClass extends IndexedElement {
 
     public IndexedClass(String name, String in, PHPIndex index, String fileUrl,
             String superClass, int offset,  int flags){
-        super(name, in, index, fileUrl, offset, flags, ElementKind.GLOBAL);
+        super(name, in, index, fileUrl, offset, flags, ElementKind.CLASS);
+        // empty string causes a serious performance problem
+        if (superClass != null && superClass.length() == 0){
+            throw new IllegalArgumentException("superClass cannot be empty string!");
+        }
         this.superClass = superClass;
     }
-    
+
+    @CheckForNull
     public String getSuperClass(){
         return superClass;
     }
-
-    
 }

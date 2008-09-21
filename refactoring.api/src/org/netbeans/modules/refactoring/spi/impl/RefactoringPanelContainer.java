@@ -53,6 +53,7 @@ import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JPopupMenu;
@@ -86,6 +87,7 @@ public class RefactoringPanelContainer extends TopComponent {
         setToolTipText(name);
         setFocusable(true);
         setLayout(new java.awt.BorderLayout());
+        setMinimumSize(new Dimension(1,1));
         getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(RefactoringPanelContainer.class, "ACSD_usagesPanel")
         );

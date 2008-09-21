@@ -1,5 +1,3 @@
 Code completion result for source line:
 function __cons|truct() {
 (QueryType=COMPLETION, NameKind=PREFIX)
-------------------------------------
-KEYWORD    __construct()                              null

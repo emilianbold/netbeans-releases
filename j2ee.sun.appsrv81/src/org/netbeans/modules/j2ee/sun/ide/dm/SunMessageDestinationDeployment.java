@@ -49,7 +49,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
-import org.netbeans.modules.j2ee.sun.share.serverresources.SunMessageDestination;
+import org.netbeans.modules.j2ee.sun.api.restricted.SunMessageDestination;
 
 /**
  *

@@ -627,6 +627,7 @@ public final class BuildImplTest extends NbTestCase {
         output.remove("jar:");
         assertFalse("subproject's jar should not be executed", output.contains("jar:"));
         fo = aph1.getProjectDirectory();
+        fo.refresh();
         assertNotNull("build folder must exist", fo.getFileObject("build"));
         assertNotNull("dist folder must exist", fo.getFileObject("dist"));
         fo = aph2.getProjectDirectory();
@@ -639,9 +640,11 @@ public final class BuildImplTest extends NbTestCase {
         output.remove("jar:");
         assertTrue("subproject's jar target was not executed", output.contains("jar:"));
         fo = aph1.getProjectDirectory();
+        fo.refresh();
         assertNotNull("build folder must exist", fo.getFileObject("build"));
         assertNotNull("dist folder must exist", fo.getFileObject("dist"));
         fo = aph2.getProjectDirectory();
+        fo.refresh();
         assertNotNull("build folder must exist", fo.getFileObject("build"));
         assertNotNull("dist folder must exist", fo.getFileObject("dist"));
 

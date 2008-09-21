@@ -28,5 +28,5 @@ token #26 PHP_ENCAPSED_AND_WHITESPACE \n
 token #27 PHP_CONSTANT_ENCAPSED_STRING "
 token #28 PHP_SEMICOLON ;
 token #29 WHITESPACE \n\n
-token #30 PHP_CLOSETAG ?>\n
-token #31 T_INLINE_HTML --EXPECT--\nThis is a nowdoc test.\nNOTREALLYEND;\nAnother line\nNOTENDEITHER;\nENDOFNOWDOCWILLBESOON\nNow let's finish it\n
+token #30 PHP_CLOSETAG ?>
+token #31 T_INLINE_HTML \n--EXPECT--\nThis is a nowdoc test.\nNOTREALLYEND;\nAnother line\nNOTENDEITHER;\nENDOFNOWDOCWILLBESOON\nNow let's finish it\n

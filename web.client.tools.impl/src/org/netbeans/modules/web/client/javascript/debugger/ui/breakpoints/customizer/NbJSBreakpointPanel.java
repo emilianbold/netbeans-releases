@@ -404,7 +404,9 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
             DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
             if ( engine != null ){
                 NbJSDebugger debugger = (NbJSDebugger)engine.lookupFirst(null, NbJSDebugger.class);
-                fileObject = debugger.getFileObjectForSource(JSFactory.createJSSource(uri));
+                if(debugger != null) {
+                    fileObject = debugger.getFileObjectForSource(JSFactory.createJSSource(uri));
+                }
             }
         }
         

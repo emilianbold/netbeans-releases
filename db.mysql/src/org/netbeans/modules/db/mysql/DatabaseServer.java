@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.db.mysql;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.mysql.impl.MySQLOptions;
 import org.openide.nodes.Node.Cookie;
 
 /**
@@ -50,7 +53,6 @@ import org.openide.nodes.Node.Cookie;
  * @author David
  */
 public interface DatabaseServer extends Cookie {
-
     /**
      * Connect to the server.  If we already have a connection, close
      * it and open a new one.  NOTE this is synchronous and can not be
@@ -59,7 +61,7 @@ public interface DatabaseServer extends Cookie {
     public void reconnect() throws DatabaseException;
 
     /**
-     * Reconnect to the MySQL server asynchronously, can be called on the
+     * Reconnect to the MySQL server asynchronously,    can be called on the
      * AWT thread.  If an error occurs, the error is quietly logged but no
      * dialog is displayed.
      */
@@ -178,6 +180,16 @@ public interface DatabaseServer extends Cookie {
 
     public boolean isConnected();
 
+    /**
+     * See if the server is running.  This method does network I/O and
+     * can not be called on the AWT event thread.
+     *
+     * @return true if it is running, false otherwise
+     *
+     * @throws IllegalStateException if this method is called on the AWT event thread
+     */
+    public boolean isRunning();
+
     public boolean isSavePassword();
 
     /**
@@ -211,6 +223,19 @@ public interface DatabaseServer extends Cookie {
     public void addChangeListener(ChangeListener listener);
 
     public void removeChangeListener(ChangeListener listener);
+
+    public void addPropertyChangeListener(PropertyChangeListener listener);
+
+    public void removePropertyChangeListener(PropertyChangeListener listener);
+
+    /**
+     * Determine if the given property change requires a reconnect to
+     * the server.
+     *
+     * @param evt The property change event representing the server property change
+     * @return true if a reconnect is needed, false otherwise
+     */
+    public boolean propertyChangeNeedsReconnect(PropertyChangeEvent evt);
 
     /**
      * Launch the admin tool.  If the specified admin path is a URL,
@@ -251,4 +276,11 @@ public interface DatabaseServer extends Cookie {
      * against the cached list of database so may not be completely accurate.
      */
     boolean databaseExists(String dbname) throws DatabaseException;
+
+    /**
+     * Throws a DatabaseException if the database connection is invalid.
+     * This may result in a communication with the database server
+     * and can be slow, particularly with remote servers, so use with caution.
+     */
+    void validateConnection() throws DatabaseException;
 }

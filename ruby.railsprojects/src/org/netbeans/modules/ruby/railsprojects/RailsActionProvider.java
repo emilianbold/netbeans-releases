@@ -75,6 +75,7 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
@@ -625,17 +626,13 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
-        String options = project.evaluator().getProperty(RailsProjectProperties.RUBY_OPTIONS);
-
-        if (options != null && options.trim().length() == 0) {
-            options = null;
-        }
+        String rubyOptions = SharedRubyProjectProperties.getRubyOptions(project);
 
         String includePath = RubyProjectUtil.getLoadPath(project);
-        if (options != null) {
-            options = includePath + " " + options; // NOI18N
+        if (rubyOptions != null) {
+            rubyOptions = includePath + " " + rubyOptions; // NOI18N
         } else {
-            options = includePath;
+            rubyOptions = includePath;
         }
 
         FileObject[] srcPath = project.getSourceRoots().getRoots();
@@ -670,12 +667,14 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         }
 
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        String jvmArgs = project.evaluator().getProperty(RailsProjectProperties.JVM_ARGS);
         
         ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
-        desc.initialArgs(options);
+        desc.initialArgs(rubyOptions);
+        desc.jvmArguments(jvmArgs);
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RailsFileLocator(context, project));

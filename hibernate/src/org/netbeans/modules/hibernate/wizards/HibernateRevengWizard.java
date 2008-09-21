@@ -67,19 +67,17 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
-import org.xml.sax.EntityResolver;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.JDBCMetaDataConfiguration;
 import org.hibernate.cfg.reveng.DefaultReverseEngineeringStrategy;
 import org.hibernate.cfg.reveng.OverrideRepository;
 import org.hibernate.cfg.reveng.ReverseEngineeringSettings;
+import org.hibernate.cfg.reveng.ReverseEngineeringStrategy;
 import org.hibernate.tool.hbm2x.HibernateMappingExporter;
 import org.hibernate.tool.hbm2x.POJOExporter;
-import org.hibernate.util.XMLHelper;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
-import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
@@ -97,6 +95,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
     private Project project;
     private WizardDescriptor wizardDescriptor;
     private HibernateRevengWizardHelper helper;
+    private HibernateRevengNameLocationWizardDescriptor nameLocationDescriptor;
     private HibernateRevengDbTablesWizardDescriptor dbTablesDescriptor;
     private HibernateRevengCodeGenWizardDescriptor codeGenDescriptor;
     private WizardDescriptor.Panel[] panels;
@@ -107,8 +106,6 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
     private final String MATCH_NAME = "match-name"; // NOI18N
     private final String resourceAttr = "resource"; // NOI18N
     private final String classAttr = "class"; // NOI18N
-    private XMLHelper xmlHelper;
-    private EntityResolver entityResolver;
     private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
 
     public static HibernateRevengWizard create() {
@@ -130,9 +127,10 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
                         };
 
             } else {
-                Project p = Templates.getProject(wizardDescriptor);
-                SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-                WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+                Project prj = Templates.getProject(wizardDescriptor);
+                
+                SourceGroup[] groups = ProjectUtils.getSources(prj).getSourceGroups(Sources.TYPE_GENERIC);
+                WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(prj, groups, nameLocationDescriptor);
 
                 panels = new WizardDescriptor.Panel[]{
                             targetChooser,
@@ -258,12 +256,13 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
 
         wiz.putProperty(PROP_HELPER, helper);
         String wizardTitle = NbBundle.getMessage(HibernateRevengWizard.class, "Templates/Hibernate/HibernateReveng"); // NOI18N   
+        nameLocationDescriptor = new HibernateRevengNameLocationWizardDescriptor(project, wizardTitle);
         dbTablesDescriptor = new HibernateRevengDbTablesWizardDescriptor(project, wizardTitle);
         codeGenDescriptor = new HibernateRevengCodeGenWizardDescriptor(project, wizardTitle);
 
         if (Templates.getTargetFolder(wiz) == null) {
             HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
-            FileObject location = provider != null ? provider.getLocation() : null;
+            FileObject location = provider != null ? provider.getSourceLocation() : null;
             if (location != null) {
                 Templates.setTargetFolder(wiz, location);
             }
@@ -305,8 +304,9 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             // Setup classloader.
             logger.info("Setting up classloader");
             HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
-            CustomClassLoader ccl = new CustomClassLoader(env.getProjectClassPath(revengFile).toArray(new URL[]{}),
-                    getClass().getClassLoader());
+            ClassLoader ccl = env.getProjectClassLoader(
+                    env.getProjectClassPath(revengFile).toArray(new URL[]{})
+                    );
             oldClassLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(ccl);
 
@@ -314,15 +314,24 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             try {
 
                 cfg = new JDBCMetaDataConfiguration();
+                
+                DefaultReverseEngineeringStrategy defaultStrategy = new DefaultReverseEngineeringStrategy();
+                ReverseEngineeringStrategy revStrategy = defaultStrategy;
                 OverrideRepository or = new OverrideRepository();
                 Configuration c = cfg.configure(confFile);
                 or.addFile(FileUtil.toFile(revengFile));
-                DefaultReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
-                settings = new ReverseEngineeringSettings(strategy);
+                revStrategy = or.getReverseEngineeringStrategy(revStrategy);
+
+                settings = new ReverseEngineeringSettings(revStrategy);
                 settings.setDefaultPackageName(helper.getPackageName());
-                strategy.setSettings(settings);
-                cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(strategy));
+
+                defaultStrategy.setSettings(settings);
+                revStrategy.setSettings(settings);
+
+                cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
+                
                 cfg.readFromJDBC();
+                cfg.buildMappings();
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
@@ -339,7 +348,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-
+            
             // Generating Mappings
             try {
                 if (helper.getHbmGen()) {
@@ -350,7 +359,6 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
@@ -362,6 +370,8 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             DataObject confDataObject = DataObject.find(helper.getConfigurationFile());
             HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
             SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
+            HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+            
             FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName(), false);
             if (pkg != null && pkg.isFolder()) {
                 // bugfix: 137052
@@ -376,7 +386,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
                         if (fo.getNameExt() != null && fo.getMIMEType().equals("text/x-java")) { // NOI18N
 
                             int mappingIndex = sf.addMapping(true);
-                            String javaFileName = HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project));
+                            String javaFileName = HibernateUtil.getRelativeSourcePath(fo, hibernateEnv.getSourceLocation());
                             String fileName = javaFileName.replaceAll("/", ".").substring(0, javaFileName.indexOf(".java", 0)); // NOI18N
 
                             sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, classAttr, fileName);
@@ -391,7 +401,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
                         FileObject fo = enumeration.nextElement();
                         if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
                             int mappingIndex = sf.addMapping(true);
-                            sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project)));
+                            sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, HibernateUtil.getRelativeSourcePath(fo, hibernateEnv.getSourceLocation()));
                             hco.modelUpdatedFromUI();
                             hco.save();
                         }

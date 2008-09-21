@@ -138,6 +138,7 @@ public class PaletteItemDataObject extends MultiDataObject {
     PaletteItemDataObject(FileObject fo, MultiFileLoader loader)
     throws DataObjectExistsException {
         super(fo, loader);
+        getCookieSet().add(new PaletteItemInfoImpl(this));
     }
 
     boolean isFileRead() {
@@ -160,14 +161,10 @@ public class PaletteItemDataObject extends MultiDataObject {
     public Node createNodeDelegate() {
         return new ItemNode();
     }
-    
+
     @Override
-    public <T extends Node.Cookie> T getCookie(Class<T> cookieClass) {
-        
-        if (PaletteItemInfoCookie.class.isAssignableFrom(cookieClass)){
-            return cookieClass.cast(new PaletteItemInfoImpl( this ));
-        }                
-        return cookieClass.cast(super.getCookie(cookieClass));
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
     // -------
@@ -665,6 +662,8 @@ public class PaletteItemDataObject extends MultiDataObject {
         }
         
         public String getClassName() {
+            // XXX should ensure that the field is set (e.g., by making sure
+            // loadFile() has already been called)!
             return pido.componentClassName;
         }
 

@@ -71,7 +71,7 @@ import org.openide.util.Exceptions;
 //import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
 
 
-public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOperations {
+public class ConnectionNodeInfo extends DatabaseNodeInfo {
     
     static final long serialVersionUID =-8322295510950137669L;
     
@@ -85,6 +85,13 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
                 if ( propertyName.equals(DatabaseNodeInfo.DATABASE) ||
                      propertyName.equals(DatabaseNodeInfo.SCHEMA) ||
                      propertyName.equals(DatabaseNodeInfo.USER) ) {
+                    
+                    try {
+                        resetChildren();
+                    } catch (DatabaseException dbe) {
+                        Exceptions.printStackTrace(dbe);
+                    }
+                    
                     setDisplayName(getDatabaseConnection().getName());
                 }
                 else if (propertyName.equals(DatabaseNodeInfo.CONNECTION)) {
@@ -186,7 +193,9 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     private void update(Connection conn) throws DatabaseException {
         if ( conn == null ) {
             // Not connected, so no children
-            setChildren(new Vector());
+            // I don't believe this is necessary.  refreshChildren()
+            // should already be taking care of this
+            //setChildren(new Vector());
         } else {
             setProperties();
         }
@@ -310,13 +319,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         } catch (Exception ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-
-        // Create subnodes
-
-
     }
-    
-    
 
     private void connect(String dbsys) throws DatabaseException {
         String drvurl = getDriver();
@@ -347,13 +350,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             dbe.initCause(e);
             throw dbe;
         }
-    }
-
-    /*
-     * Connects this connection node to the database.
-     */
-    public void connect() throws DatabaseException {
-        connect((String)null);
     }
 
     /*
@@ -443,7 +439,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
                 
                 message = MessageFormat.format(bundle().getString("EXC_ConnectionError"), exc.getMessage()); // NOI18N
             }
-            
+
             // XXX hack for Derby
             DerbyConectionEventListener.getDefault().afterDisconnect(getDatabaseConnection(), connection);
             

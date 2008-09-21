@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.api.model.syntaxerr;
 import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
@@ -69,6 +70,8 @@ public abstract class CsmErrorProvider implements NamedEntity {
 
         /** Determines whether the caller wants to cancel the processing of the request */
         boolean isCancelled();
+
+        Document getDocument();
     }
 
     /** Response for adding errors for a particular file */
@@ -92,6 +95,10 @@ public abstract class CsmErrorProvider implements NamedEntity {
         return NamedEntityOptions.instance().isEnabled(this) && !request.isCancelled();
     }
 
+    public boolean isEnabledByDefault() {
+        return true;
+    }
+    
     protected abstract void doGetErrors(Request request, Response response);
 
     public static boolean disableAsLibraryHeaderFile(CsmFile file) {
@@ -104,8 +111,8 @@ public abstract class CsmErrorProvider implements NamedEntity {
     // Implementation part
     //
 
-    private static final boolean ENABLE = getBoolean("cnd.csm.errors", true);
-    private static final boolean ASYNC = getBoolean("cnd.csm.errors.async", true);
+    private static final boolean ENABLE = getBoolean("cnd.csm.errors", true); //NOI18N
+    private static final boolean ASYNC = getBoolean("cnd.csm.errors.async", true); //NOI18N
 
     private static abstract class BaseMerger extends CsmErrorProvider {
 
@@ -131,7 +138,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
         }
 
         public String getName() {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
         }
    }
 

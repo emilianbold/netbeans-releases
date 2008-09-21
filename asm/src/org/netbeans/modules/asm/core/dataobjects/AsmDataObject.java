@@ -55,6 +55,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 
 public class AsmDataObject extends MultiDataObject {
         
@@ -99,7 +100,12 @@ public class AsmDataObject extends MultiDataObject {
     @Override
     protected Node createNodeDelegate() {
         return new AsmDataNode(this);
-    }   
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 
 }
 

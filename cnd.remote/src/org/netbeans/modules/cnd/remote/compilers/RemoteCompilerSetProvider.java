@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
 import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
@@ -58,7 +59,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     private CompilerSetScriptManager manager;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private String hkey;
-    
+
     public void init(String hkey) {
         this.hkey = hkey;
         manager = new CompilerSetScriptManager();
@@ -69,8 +70,8 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     public int getPlatform() {
         String platform = manager.getPlatform();
         if (platform == null || platform.length() == 0) {
-            log.warning("RCSP.getPlatform: Got null response on platform");
-            platform = "";
+            log.warning("RCSP.getPlatform: Got null response on platform"); //NOI18N
+            platform = ""; //NOI18N
         }
         if (platform.startsWith("Windows")) { // NOI18N
             return PlatformTypes.PLATFORM_WINDOWS;
@@ -96,4 +97,13 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     public RequestProcessor.Task loadCompilerSetData(List<CompilerSet> sets) {
         return SystemIncludesUtils.load(hkey, sets);
     }
+
+    public String[] getCompilerSetData(String hkey, String path) {
+        RemoteCommandSupport rcs = new RemoteCommandSupport(hkey, CompilerSetScriptManager.SCRIPT + " " + path); //NOI18N
+        if (rcs.run() == 0) {
+            return rcs.getOutput().split("\n"); // NOI18N
+        }
+        return null;
+    }
+
 }

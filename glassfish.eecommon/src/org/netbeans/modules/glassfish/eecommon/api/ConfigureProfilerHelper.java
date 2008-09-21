@@ -82,7 +82,7 @@ public class ConfigureProfilerHelper {
             String line;
             FileReader fr = new FileReader(asEnvScriptFile);
             br = new BufferedReader(fr);
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder(Math.min(asEnvScriptFilePath.length(), 60000));
             
             String asJavaString = (isUnix() ? ASENV_INSERTION_POINT_NOWIN_STRING : ASENV_INSERTION_POINT_WIN_STRING);
             

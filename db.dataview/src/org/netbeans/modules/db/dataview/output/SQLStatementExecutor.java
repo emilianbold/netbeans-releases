@@ -93,7 +93,9 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
 
                 conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
                 if (conn == null) {
-                    this.ex = new DBException(NbBundle.getMessage(SQLStatementExecutor.class,"MSG_connection_failure"));
+                    String msg = NbBundle.getMessage(SQLStatementExecutor.class,"MSG_connection_failure", dataView.getDatabaseConnection());
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
+                    DialogDisplayer.getDefault().notify(nd);
                     return;
                 }
                 lastCommitState = setAutocommit(conn, false);
@@ -151,12 +153,14 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
 
     private boolean setAutocommit(Connection conn, boolean newState) {
         try {
-            boolean lastState = conn.getAutoCommit();
-            conn.setAutoCommit(newState);
-            return lastState;
-        } catch (SQLException e) {
-            return newState;
+            if (conn != null) {
+                boolean lastState = conn.getAutoCommit();
+                conn.setAutoCommit(newState);
+                return lastState;
+            }
+        } catch (SQLException e) {            
         }
+        return newState;
     }
 
     private void resetAutocommitState(Connection conn, boolean lastState) {
@@ -164,14 +168,13 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             try {
                 conn.setAutoCommit(lastState);
             } catch (SQLException e) {
-                Exceptions.printStackTrace(ex);
             }
         }
     }
 
     private boolean commit(Connection conn) {
         try {
-            if (!conn.getAutoCommit()) {
+            if (conn != null && !conn.getAutoCommit()) {
                 conn.commit();
             }
         } catch (SQLException e) {
@@ -185,7 +188,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
 
     private void rollback(Connection conn) {
         try {
-            if (!conn.getAutoCommit()) {
+            if (conn != null && !conn.getAutoCommit()) {
                 conn.rollback();
             }
         } catch (SQLException e) {

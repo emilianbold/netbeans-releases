@@ -89,7 +89,7 @@ public class TaskManagerImpl extends TaskManager {
     
     private static TaskManagerImpl theInstance;
     
-    private Set<PushTaskScanner> workingScanners = new HashSet<PushTaskScanner>(10);
+    private final Set<PushTaskScanner> workingScanners = new HashSet<PushTaskScanner>(10);
     private boolean fileScannerWorking = false;
     private boolean workingStatus = false;
     
@@ -161,7 +161,11 @@ public class TaskManagerImpl extends TaskManager {
                     listenToFileSystemChanges( scope, true );
 
                     startWorker();
-                    worker.scan( scope.iterator(), filter );
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            worker.scan( scope.iterator(), filter );
+                        }
+                    });
                 }
             }
         }
@@ -485,7 +489,18 @@ public class TaskManagerImpl extends TaskManager {
      */
     void waitFinished() {
         synchronized( workingScanners ) {
-            try         {
+            if( !isWorking() )
+                return;
+            _waitFinished();
+        }
+    }
+    
+    /**
+     * For unit testing only
+     */
+    void _waitFinished() {
+        synchronized( workingScanners ) {
+            try {
                 workingScanners.wait();
             }
             catch( InterruptedException e ) {
@@ -493,7 +508,7 @@ public class TaskManagerImpl extends TaskManager {
             }
         }
     }
-    
+
     class FileScannerProgress {
         public void started() {
             synchronized( workingScanners ) {

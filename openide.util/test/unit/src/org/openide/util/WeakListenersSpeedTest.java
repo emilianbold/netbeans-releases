@@ -41,15 +41,12 @@
 
 package org.openide.util;
 
-import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Vector;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
+@RandomlyFails // NB-Core-Build #1279
 public class WeakListenersSpeedTest extends NbTestCase
 implements java.lang.reflect.InvocationHandler {
     private static java.util.HashMap times = new java.util.HashMap ();
@@ -59,10 +56,6 @@ implements java.lang.reflect.InvocationHandler {
 
     public WeakListenersSpeedTest (java.lang.String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite(WeakListenersSpeedTest.class));
     }
     
     protected void setUp () throws Exception {

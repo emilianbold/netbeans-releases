@@ -43,10 +43,12 @@ package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 
 import java.io.IOException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -110,6 +112,17 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         if (getRailsEnvironment() != null) {
             privateProperties.setProperty(RAILS_ENV, getRailsEnvironment());
         }
+        Info info = getPlatform().getInfo();
+        String serverURI = server == null
+                ? evaluator.getProperty(RAILS_SERVERTYPE)
+                : server.getServerUri();
+        Util.logUsage(RailsProjectProperties.class, "USG_PROJECT_CONFIG_RAILS", // NOI18N
+                info.getKind(),
+                info.getPlatformVersion(),
+                info.getGemVersion(),
+                serverURI,
+                "", // XXX database seems to not be configurable, so this attribute does not make sense here?
+                ""); // XXX rails version - the same as above 'database' attribute?
     }
     
     RubyInstance getServer() {

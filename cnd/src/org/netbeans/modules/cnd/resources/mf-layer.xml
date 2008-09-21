@@ -79,8 +79,23 @@ made subject to such option by the copyright holder.
 <!--                <file name="sh" url="shell/ShellExample"/> -->
             </folder>
         </folder>
+
+        <folder name="Editor">
+            <folder name="Formatting">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="x-fortran">
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.fortran.options.FmtTabsIndents.getController"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
     </folder>
-    
+
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-cnd-error.xml" url="error-annotation.xml"/>
@@ -345,8 +360,11 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1500"/>
                 <attr name="extends" stringvalue="SunStudio"/>
             </file>
-            <file name="SunStudio_13.xml" url="toolchain/SunStudio_13.xml">
+            <file name="SunStudioExpress.xml" url="toolchain/SunStudioExpress.xml">
                 <attr name="position" intvalue="1600"/>
+            </file>
+            <file name="SunStudio_13.xml" url="toolchain/SunStudio_13.xml">
+                <attr name="position" intvalue="1700"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
             </file>
             <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
@@ -663,14 +681,6 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>                
                 <folder name="Actions">
-                    <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="400"/>
-                    </file>
                     <file name="CutAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
                         <attr name="position" intvalue="500"/>
@@ -699,6 +709,14 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1100"/>
                     </file>
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="1150"/>
+                    </file>
+                    <file name="Separator4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1175"/>
+                    </file>
                     <file name="ToolsAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
                         <attr name="position" intvalue="1200"/>
@@ -717,10 +735,6 @@ made subject to such option by the copyright holder.
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
                         <attr name="position" intvalue="400"/>
-                    </file>
-                    <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
-                        <attr name="position" intvalue="500"/>
                     </file>
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -762,6 +776,14 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1500"/>
                     </file>
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="1550"/>
+                    </file>
+                    <file name="Separator5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1575"/>
+                    </file>
                     <file name="ToolsAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
                         <attr name="position" intvalue="1600"/>
@@ -784,10 +806,6 @@ made subject to such option by the copyright holder.
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
                         <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
-                        <attr name="position" intvalue="500"/>
                     </file>
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -845,6 +863,14 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="1950"/>
+                    </file>
+                    <file name="Separator6.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1975"/>
+                    </file>
                     <file name="ToolsAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
                         <attr name="position" intvalue="2000"/>
@@ -871,10 +897,6 @@ made subject to such option by the copyright holder.
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="500"/>
-                    </file>
-                    <file name="ShellRunAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.ShellRunAction"/>
-                        <attr name="position" intvalue="600"/>
                     </file>
                     <file name="FileSystemAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
@@ -919,6 +941,14 @@ made subject to such option by the copyright holder.
                     <file name="Separator5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="ShellRunAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.ShellRunAction"/>
+                        <attr name="position" intvalue="1750"/>
+                    </file>
+                    <file name="Separator6.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1775"/>
                     </file>
                     <file name="ToolsAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>

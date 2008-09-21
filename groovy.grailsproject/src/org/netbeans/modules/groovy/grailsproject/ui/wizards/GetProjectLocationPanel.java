@@ -28,12 +28,28 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
     private GetProjectLocationStep parentStep;
 
     boolean valid(WizardDescriptor settings) {
-        if(projectNameTextField.getText().length() > 0
-                && (new File(projectLocationTextField.getText()).isDirectory())) {
-            return true;
+        if (projectNameTextField.getText().trim().length() == 0) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetProjectLocationPanel.EmptyProjectName"));
+            return false;
         }
 
-        return false;
+        if(!new File(projectLocationTextField.getText().trim()).isDirectory()) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetProjectLocationPanel.LocationNotDirectory"));
+            return false;
+        }
+
+        if (new File(projectFolderTextField.getText().trim()).exists()) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetProjectLocationPanel.FileAlreadyExists"));
+            return false;
+        }
+
+        return true;
     }
     
     void read (WizardDescriptor d) {
@@ -57,7 +73,7 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         }
         
         projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        projectFolderTextField.setText( projectLocation.getAbsolutePath() + File.separatorChar + projectNameTextField.getText() );        
+        projectFolderTextField.setText( projectLocation.getAbsolutePath() + File.separatorChar + projectNameTextField.getText().trim() );
         projectNameTextField.setText(newPrjName);
     }
     
@@ -68,8 +84,7 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
     void store( WizardDescriptor d ) {
         // d.putProperty( "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty( "projectFolder", new File(projectFolderTextField.getText().trim()) ); // NOI18N
-        d.putProperty( "projectName", projectNameTextField.getText() ); // NOI18N
-        parentStep.fireChangeEvent();
+        d.putProperty( "projectName", projectNameTextField.getText().trim() ); // NOI18N
     }
     
     
@@ -201,7 +216,7 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setDialogTitle(NbBundle.getMessage(GetProjectLocationPanel.class,"GetProjectLocationPanel.FileChooserTitle"));
             chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
-            String path = projectLocationTextField.getText();
+            String path = projectLocationTextField.getText().trim();
             if (path.length() > 0) {
                 File f = new File (path);
                 if (f.exists ()) {
@@ -248,8 +263,8 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
             // Change in the project name
         
-            String projectName = projectNameTextField.getText();
-            String projectFolder = projectLocationTextField.getText(); 
+            String projectName = projectNameTextField.getText().trim();
+            String projectFolder = projectLocationTextField.getText().trim();
              
             getProjectFolderTextField().setText( new File(projectFolder, projectName).getAbsolutePath() );
             

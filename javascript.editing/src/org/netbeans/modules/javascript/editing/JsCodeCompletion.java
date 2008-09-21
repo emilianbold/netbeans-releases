@@ -412,9 +412,19 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         doc.readLock(); // Read-lock due to Token hierarchy use
         try {
             Node root = parseResult != null ? parseResult.getRootNode() : null;
-            final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+            int astOffset = AstUtilities.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
-                return CodeCompletionResult.NONE;
+                try {
+                    if (lexOffset < doc.getLength() && lexOffset > 0 && "\"\"".equals(doc.getText(lexOffset - 1, 2))) {
+                        // Completion in HTML in something like an empty attribute
+                        astOffset = 0;
+                    } else {
+                        return CodeCompletionResult.NONE;
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return CodeCompletionResult.NONE;
+                }
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
             final FileObject fileObject = info.getFileObject();
@@ -2063,8 +2073,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return ParameterInfo.NONE;
         }
         int index = paramIndexHolder[0];
-        int anchorOffset = anchorOffsetHolder[0];
-
+        int astAnchorOffset = anchorOffsetHolder[0];
+        int anchorOffset = LexUtilities.getLexerOffset(info, astAnchorOffset);
 
         // TODO: Make sure the caret offset is inside the arguments portion
         // (parameter hints shouldn't work on the method call name itself
@@ -2578,16 +2588,12 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return indexedElement != null ? indexedElement.isSmart() : true;
         }
 
-        public List<String> getInsertParams() {
-            return null;
-        }
-        
-        public String[] getParamListDelimiters() {
-            return new String[] { "(", ")" }; // NOI18N
-        }
-
         public String getCustomInsertTemplate() {
             return null;
+        }
+
+        public int getSortPrioOverride() {
+            return 0;
         }
     }
 
@@ -2671,14 +2677,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public List<String> getInsertParams() {
-            return function.getParameters();
-        }
-
-        @Override
         public String getCustomInsertTemplate() {
             final String insertPrefix = getInsertPrefix();
-            List<String> params = getInsertParams();
+            List<String> params = function.getParameters();
             String startDelimiter = "(";
             String endDelimiter = ")";
             int paramCount = params.size();
@@ -2938,11 +2939,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return true;
         }
 
-        @Override
-        public List<String> getInsertParams() {
-            return null;
-        }
-        
         @Override
         public String getCustomInsertTemplate() {
             return null;

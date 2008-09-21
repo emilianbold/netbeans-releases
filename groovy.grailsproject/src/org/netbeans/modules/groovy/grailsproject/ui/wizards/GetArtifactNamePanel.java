@@ -15,7 +15,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 
 /**
@@ -33,11 +35,20 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         
     boolean valid(WizardDescriptor settings) {
         
-            if(classNameTextField.getText().length() > 0)
-                return true;
-            
+        if (!Utilities.isJavaIdentifier(classNameTextField.getText().trim())) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetArtifactNamePanel.NotValidIdentifier"));
             return false;
         }
+        if (new File(createdFileTextField.getText().trim()).exists()) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetArtifactNamePanel.FileAlreadyExists"));
+            return false;
+        }
+        return true;
+    }
     
     void read (WizardDescriptor d) {
 
@@ -48,12 +59,8 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     }
 
     void store( WizardDescriptor d ) {
-        
-        d.putProperty( "projectFolder", projectTextField.getText() ); // NOI18N
-        parentStep.fireChangeEvent();
-        }
-    
-    
+        d.putProperty("projectFolder", projectTextField.getText().trim()); // NOI18N
+    }
     
     /** Creates new form NewGrailsProjectPanel */
     public GetArtifactNamePanel(GetArtifactNameStep parentStep, SourceCategory cat) {
@@ -64,6 +71,8 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
 
         String subDirName = "<unknown>";
         String dirPrefix  = "";
+        String className = "";
+        FileObject preselectedFolder = parentStep.project.getProjectDirectory().getFileObject(cat.getRelativePath());
         
         switch(cat){
             case GRAILSAPP_DOMAIN:
@@ -71,6 +80,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewDomain"));
                 subDirName = "domain";
                 dirPrefix = "grails-app" + File.separatorChar;
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;
             case GRAILSAPP_CONTROLLERS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_CONTROLLERS")); // NOI18N
@@ -78,6 +88,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 subDirName = "controllers";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Controller";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;
             case GRAILSAPP_SERVICES:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SERVICES")); // NOI18N
@@ -85,12 +96,14 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 subDirName = "services";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Service";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break; 
             case GRAILSAPP_VIEWS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_VIEWS")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewView"));
                 subDirName = "views";
                 dirPrefix = "grails-app" + File.separatorChar;
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;    
             case GRAILSAPP_TAGLIB:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
@@ -98,6 +111,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 subDirName = "taglib";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "TagLib";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;    
             case TEST_INTEGRATION:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_INTEGRATION")); // NOI18N
@@ -105,18 +119,21 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 subDirName = "integration";
                 dirPrefix = "test" + File.separatorChar;
                 suffix = "Tests";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;
             case TEST_UNIT:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_UNIT")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewUnitTest"));
                 subDirName = "unit";
                 dirPrefix = "test" + File.separatorChar;
-                suffix = "UnitTests";
+                suffix = "Tests";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;
             case SCRIPTS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SCRIPTS")); // NOI18N
                 setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewScript"));
                 subDirName = "scripts";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;    
             }
         
@@ -134,6 +151,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         // register event listeners to auto-update some fields.
 
         classNameTextField.getDocument().addDocumentListener( this );
+        classNameTextField.setText(className);
         
     }
     
@@ -254,7 +272,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 
         if ( doc == classNameTextField.getDocument() ) {
             
-            String artifactName = classNameTextField.getText();
+            String artifactName = classNameTextField.getText().trim();
             // there can be package name as part of the artifact name,
             // we don't have package chooser in this wizard
             if (artifactName.indexOf('.') != -1) {
@@ -272,16 +290,26 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     }
 
     public String getArtifactName(){
-        return classNameTextField.getText();
-        }
-
-    public void setArtifactName(String text){
-        classNameTextField.setText(text);
-        parentStep.fireChangeEvent();
+        return classNameTextField.getText().trim();
     }
 
     public String getFileName() {
         return fileName;
     }
-    
+
+    private static String uniqueName(final String baseName, String suffix, FileObject preselectedFolder) {
+        String activeName = baseName;
+        if (preselectedFolder != null) {
+            int index = 0;
+            while (true) {
+                FileObject _tmp = preselectedFolder.getFileObject(activeName + suffix, "groovy");    //NOI18N
+                if (_tmp == null) {
+                    break;
+                }
+                activeName = baseName + ++index;
+            }
+        }
+        return activeName;
+    }
+
 }
