@@ -40,10 +40,10 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 
 /**
@@ -90,7 +90,7 @@ public class PHPDocCommentParser {
                 if (lastTag == null) { // is it the first tag in the block
                     blockDescription = description.trim();  // save the block description
                 } else { // create last recognized tag
-                    PHPDocTag tag = new PHPDocTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim());
+                    PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim());
                     tags.add(tag);
                 }
                 lastTag = tagType;  // remember the recognized tag
@@ -113,24 +113,36 @@ public class PHPDocCommentParser {
             if (lastTag == null) {
                 blockDescription = description.trim();  
             } else {
-                PHPDocTag tag = new PHPDocTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim());
+                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim());
                 tags.add(tag);
             }
             line = line.substring(tagType.name().length() + 1).trim();
-            PHPDocTag tag = new PHPDocTag(startOffset + 3 + index, startOffset + 3 + comment.length(), tagType, line);
+            PHPDocTag tag = createTag(startOffset + 3 + index, startOffset + 3 + comment.length(), tagType, line);
             tags.add(tag);
         } else {
             if (lastTag == null) {  // thre is not defined a tag before the last line
                 blockDescription = description + line;
             } else {
                 description = description + line;
-                PHPDocTag tag = new PHPDocTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description);
+                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description);
                 tags.add(tag);
             }
         }
         return new PHPDocBlock(startOffset + 3, endOffset, blockDescription, tags);
     }
 
+    private PHPDocTag createTag(int start, int end, PHPDocTag.Type type, String description) {
+        if (type == PHPDocTag.Type.PROPERTY
+                || type == PHPDocTag.Type.PROPERTY_READ
+                || type == PHPDocTag.Type.PROPERTY_WRITE) {
+            String[] tokens = description.split("[ ]+"); //NOI18N
+            if (tokens.length > 1) {
+                return new PHPDocPropertyTag(start, end, type, tokens[1], tokens[0], description);
+            }
+        }
+        return new PHPDocTag(start, end, type, description);
+    }
+    
     private String removeStarAndTrim(String text) {
         text = text.trim();
         if (text.length() > 0 && text.charAt(0) == '*') {

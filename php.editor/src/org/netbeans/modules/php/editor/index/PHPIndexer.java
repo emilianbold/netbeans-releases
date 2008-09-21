@@ -77,6 +77,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -446,15 +447,10 @@ public class PHPIndexer implements Indexer {
             if (comment != null && (comment instanceof PHPDocBlock)) {
                 PHPDocBlock phpDoc = (PHPDocBlock) comment;
                 for (PHPDocTag tag : phpDoc.getTags()) {
-                    if (tag.getValue() != null
-                            && (tag.getKind() == PHPDocTag.Type.PROPERTY
-                            || tag.getKind() == PHPDocTag.Type.PROPERTY_READ
-                            || tag.getKind() == PHPDocTag.Type.PROPERTY_WRITE)) {
-                        String[] tokens = tag.getValue().split("[ ]+"); //NOI18N
-                        if (tokens.length > 1) {
-                            String signature = createFieldsDeclarationRecord(tokens[1].trim(), tokens[0].toLowerCase(), BodyDeclaration.Modifier.PUBLIC, tag.getStartOffset());
-                            document.addPair(FIELD_FIELD, signature, false);
-                        }
+                    if (tag instanceof PHPDocPropertyTag) {
+                        PHPDocPropertyTag propertyTag = (PHPDocPropertyTag)tag;
+                        String signature = createFieldsDeclarationRecord(propertyTag.getFieldName(), propertyTag.getFieldType(), BodyDeclaration.Modifier.PUBLIC, propertyTag.getStartOffset());
+                        document.addPair(FIELD_FIELD, signature, false);
                     }
                 }
             }

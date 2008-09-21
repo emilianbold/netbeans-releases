@@ -651,4 +651,8 @@ public class PrintASTVisitor implements Visitor {
     public void visit(PHPDocTag phpDocTag) {
 
     }
+
+    public void visit(PHPDocPropertyTag phpDocTag) {
+
+    }
 }

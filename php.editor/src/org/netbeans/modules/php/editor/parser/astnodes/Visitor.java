@@ -223,6 +223,8 @@ public interface Visitor {
 
     public void visit(PHPDocTag phpDocTag);
 
+    public void visit(PHPDocPropertyTag phpDocPropertyTag);
+
 	//public void endVisit(ParenthesisExpression parenthesisExpression);
 	
 	public void visit(PostfixExpression postfixExpression);
