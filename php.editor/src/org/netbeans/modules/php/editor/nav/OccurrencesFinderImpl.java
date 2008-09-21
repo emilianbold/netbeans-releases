@@ -61,6 +61,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
@@ -249,7 +250,27 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                 }
                 super.visit(node);
             }
-                       
+
+            @Override
+            public void visit(InterfaceDeclaration node) {
+                Identifier superClass = node.getName();
+                if (el == a.getElement(node)) {
+                    usages.add(node.getName());
+                } else if (superClass != null && el.getName().equals(superClass.getName())) {
+                    usages.add(superClass);
+                } else {
+                    List<Identifier> interfaes = node.getInterfaes();
+                    for (Identifier identifier : interfaes) {
+                        if (el == a.getElement(identifier) || el.getName().equals(identifier.getName())) {
+                            usages.add(identifier);
+                            break;
+                        }
+                    }
+                }
+                super.visit(node);
+            }
+
+
 
             @Override
             public void visit(ClassDeclaration node) {
@@ -258,6 +279,14 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                     usages.add(node.getName());
                 } else if (superClass != null && el.getName().equals(superClass.getName())) {
                     usages.add(superClass);
+                } else {
+                    List<Identifier> interfaes = node.getInterfaes();
+                    for (Identifier identifier : interfaes) {
+                        if (el == a.getElement(identifier)) {
+                            usages.add(identifier);
+                            break;
+                        }
+                    }
                 }
                 clsName = CodeUtils.extractClassName(node);
                 superClsName = CodeUtils.extractSuperClassName(node);

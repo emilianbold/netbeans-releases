@@ -39,13 +39,12 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import junit.framework.TestCase;
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 
@@ -58,6 +57,119 @@ public class OccurrencesFinderImplTest extends TestBase {
     public OccurrencesFinderImplTest(String testName) {
         super(testName);
     }            
+
+    private String preaperTestFile(String filePath) throws IOException {
+        String retval = TestUtilities.copyFileToString(new File(getDataDir(), filePath));
+        return retval;
+    }
+
+    private String prepareTestFile(String filePath, String... texts) throws IOException {
+        String retval = preaperTestFile(filePath);
+        assert texts != null && texts.length%2 == 0;
+        for (int i = 0; i+1 < texts.length; i++) {
+            String originalText = texts[i];
+            String replacement = texts[++i];
+            retval = retval.replace(originalText, replacement);
+        }
+        return retval;
+    }
+
+    public void testGotoTypeClsIface() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "class clsDeclaration implements ifaceDeclaration {}",
+                "class ^clsDecla|ration^ implements ifaceDeclaration {}",
+                "class clsDeclaration3 extends clsDeclaration {}",
+                "class clsDeclaration3 extends ^clsDeclaration^ {}"
+                );
+        performTestOccurrences(gotoTypeTest, true);
+    }
+    public void testGotoTypeClsIface2() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "class clsDeclaration implements ifaceDeclaration {}",
+                "class ^clsDeclaration^ implements ifaceDeclaration {}",
+                "class clsDeclaration3 extends clsDeclaration {}",
+                "class clsDeclaration3 extends ^clsDec|laration^ {}"
+                );
+        performTestOccurrences(gotoTypeTest, true);
+    }
+    public void testGotoTypeClsIface3() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "interface ifaceDeclaration {}",
+                "interface ^ifaceDec|laration^ {}",
+                "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "interface ifaceDeclaration2 extends ^ifaceDeclaration^  {}",
+                "class clsDeclaration implements ifaceDeclaration {}",
+                "class clsDeclaration implements ^ifaceDeclaration^ {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
+                "class clsDeclaration2 implements ^ifaceDeclaration^, ifaceDeclaration2 {}"
+                );
+        performTestOccurrences(gotoTypeTest, true);
+    }
+    public void testGotoTypeClsIface4() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "interface ifaceDeclaration {}",
+                "interface ^ifaceDeclaration^ {}",
+                "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "interface ifaceDeclaration2 extends ^ifaceDecl|aration^  {}",
+                "class clsDeclaration implements ifaceDeclaration {}",
+                "class clsDeclaration implements ^ifaceDeclaration^ {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
+                "class clsDeclaration2 implements ^ifaceDeclaration^, ifaceDeclaration2 {}"
+                );
+        performTestOccurrences(gotoTypeTest, true);
+    }
+    public void testGotoTypeClsIface5() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "interface ifaceDeclaration {}",
+                "interface ^ifaceDeclaration^ {}",
+                "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "interface ifaceDeclaration2 extends ^ifaceDeclaration^  {}",
+                "class clsDeclaration implements ifaceDeclaration {}",
+                "class clsDeclaration implements ^ifaceDeclara|tion^ {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
+                "class clsDeclaration2 implements ^ifaceDeclaration^, ifaceDeclaration2 {}"
+                );
+        performTestOccurrences(gotoTypeTest, true);
+    }
+    public void testGotoTypeClsIface6() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "interface ifaceDeclaration {}",
+                "interface ^ifaceDeclaration^ {}",
+                "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "interface ifaceDeclaration2 extends ^ifaceDeclaration^  {}",
+                "class clsDeclaration implements ifaceDeclaration {}",
+                "class clsDeclaration implements ^ifaceDeclaration^ {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
+                "class clsDeclaration2 implements ^ifaceDecla|ration^, ifaceDeclaration2 {}"
+                );
+        performTestOccurrences(gotoTypeTest, true);
+    }
+    public void testGotoTypeClsIface7() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "interface ^ifaceDecl|aration2^ extends ifaceDeclaration  {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ^ifaceDeclaration2^ {}"
+                );
+        performTestOccurrences(gotoTypeTest, true);
+    }
+    public void testGotoTypeClsIface8() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "interface ^ifaceDeclaration2^ extends ifaceDeclaration  {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ^ifaceDecl|aration2^ {}"
+                );
+        performTestOccurrences(gotoTypeTest, true);
+    }
 
     public void testOccurrences1() throws Exception {
         performTestOccurrences("<?php\n$^name^ = \"test\";\n echo \"$^na|me^\";\n?>", true);

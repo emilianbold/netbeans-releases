@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,6 +83,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -339,6 +341,33 @@ public class SemiAttribute extends DefaultVisitor {
     }
 
     @Override
+    public void visit(InterfaceDeclaration node) {
+        String name = node.getName().getName();
+        ClassElement ce = (ClassElement) global.enterWrite(name, Kind.IFACE, node);
+
+        node2Element.put(node, ce);
+        List<Identifier> interfaes = node.getInterfaes();
+        for (Identifier identifier : interfaes) {
+            ClassElement iface = (ClassElement) lookup(identifier.getName(), Kind.IFACE);
+            ce.ifaces.add(iface);
+            node2Element.put(identifier, iface);
+        }
+
+
+        scopes.push(ce.enclosedElements);
+
+        if (node.getBody() != null) {
+            performEnterPass(ce.enclosedElements, node.getBody().getStatements());
+        }
+
+        super.visit(node);
+
+        scopes.pop();
+    }
+
+
+
+    @Override
     public void visit(ClassDeclaration node) {
         String name = node.getName().getName();
         ClassElement ce = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
@@ -347,6 +376,12 @@ public class SemiAttribute extends DefaultVisitor {
 
         if (node.getSuperClass() != null) {
             ce.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
+        }
+        List<Identifier> interfaes = node.getInterfaes();
+        for (Identifier identifier : interfaes) {
+            ClassElement iface = (ClassElement) lookup(identifier.getName(), Kind.IFACE);
+            ce.ifaces.add(iface);
+            node2Element.put(identifier, iface);
         }
 
         scopes.push(ce.enclosedElements);
@@ -884,7 +919,7 @@ public class SemiAttribute extends DefaultVisitor {
 
         public enum Kind {
 
-            VARIABLE, FUNC, CLASS, CONST;
+            VARIABLE, FUNC, CLASS, CONST, IFACE;
         }
     }
 
@@ -1021,6 +1056,7 @@ public class SemiAttribute extends DefaultVisitor {
 
         private final DefinitionScope enclosedElements;
         private ClassElement superClass;
+        private Set<ClassElement> ifaces = new HashSet<ClassElement>();
         private boolean initialized;
 
         public ClassElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
@@ -1225,7 +1261,7 @@ public class SemiAttribute extends DefaultVisitor {
             AttributedElement el = name2El.get(name);
 
             if (el == null) {
-                if (k == Kind.CLASS) {
+                if (k == Kind.CLASS || k == Kind.IFACE) {
                     el = new ClassElement(node, name, k);
                 } else {
                     if (classScope && !Arrays.asList(new String[]{"this"}).contains(name)) {
