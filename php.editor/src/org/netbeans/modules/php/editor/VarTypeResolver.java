@@ -72,6 +72,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -152,7 +153,17 @@ public final class VarTypeResolver {
                             String typeName = parameterType.getName();
                             String paramName = null;
                             Expression parameterName = param.getParameterName();
-                            if (parameterName instanceof Variable) {
+                            Variable var = null;
+                            if (parameterName instanceof Reference) {
+                                Reference ref = (Reference) parameterName;
+                                parameterName = ref.getExpression();
+                                if (parameterName instanceof Variable) {
+                                    var = (Variable) parameterName;
+                                }
+                            } else if (parameterName instanceof Variable) {
+                                var = (Variable) parameterName;
+                            }
+                            if (var != null) {
                                 paramName = CodeUtils.extractVariableName((Variable) parameterName);
                             }
                             if (paramName != null && typeName != null && typeName.length() > 0) {
