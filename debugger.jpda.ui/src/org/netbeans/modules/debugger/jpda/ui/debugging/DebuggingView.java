@@ -321,12 +321,14 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }
         if (threadsListener == null) {
             threadsListener = ThreadsListener.getDefault();
-            if (threadsListener != null) {
-                threadsListener.setDebuggingView(this);
-            }
         }
         if (engine != null) {
             final JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
+            if (deb != null) {
+                if (threadsListener != null) {
+                    threadsListener.setDebuggingView(this);
+                }
+            }
             synchronized (this) {
                 if (previousDebugger != null) {
                     previousDebugger.removePropertyChangeListener(this);
