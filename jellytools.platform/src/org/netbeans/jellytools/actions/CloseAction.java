@@ -38,54 +38,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.jellytools.actions;
 
-package org.netbeans.performance.languages;
+import org.netbeans.jellytools.Bundle;
 
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.languages.actions.*;
+/** Used to call "Close" popup menu item
+ * @see Action
+ * @author mrkam@netbeans.org */
+public class CloseAction extends Action {
 
+    private static final String closePopup = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_CLOSE");
 
-/**
- *
- * @author mkhramov@netbeans.org, mrkam@netbeans.org
- */
-public class ScriptingMeasureActionsTest {
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
-
-        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
-        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureActionsTest");
-
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
-                .addTest(CreatePHPProject.class)
-                .addTest(CreatePHPSampleProject.class)
-                
-                .addTest(SavingPHPProjectProperties.class)
-                .addTest(CreateScriptingPackFiles.class)
-                .addTest(ScriptingExpandFolder.class)
-                .addTest(PHPNavigatorTest.class)
-                .addTest(GoToSourceTest.class)
-                .addTest(NavigateGoToSourceTest.class)
-                .addTest(EditorMenuPopup.class)
-                .addTest(FormatFileTest.class)
-                .addTest(CloseProjectTest.class)
-                .addTest(CloseScriptingFiles.class)
-                .addTest(TypingInScriptingEditor.class)
-                .addTest(ScriptingCodeCompletionInEditor.class)
-
-                // Saving modified document
-                .addTest(SaveModifiedScriptingFiles.class)
-
-                // Page Up and Down in scripting editor
-                .addTest(PageUpPageDownScriptingEditor.class)
-
-                // Can cause RubyProject to be closed in case of failure
-                .addTest(OpenRubyProject.class)
-                .enableModules(".*").clusters(".*").reuseUserDir(true)));
-
-        return suite;        
+    /** creates new CloseAction instance */
+    public CloseAction() {
+        super(null, closePopup);
     }
 }

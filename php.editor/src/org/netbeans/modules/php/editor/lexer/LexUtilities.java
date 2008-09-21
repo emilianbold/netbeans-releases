@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.indent.PHPBracketCompleter.LineBalance;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -572,7 +573,7 @@ public class LexUtilities {
     }
 
     /** Compute the balance of begin/end tokens on the line */
-    public static int getLineBalance(BaseDocument doc, int offset, TokenId up, TokenId down) {
+    public static int getLineBalance(BaseDocument doc, int offset, TokenId up, TokenId down, LineBalance lineBalance) {
         try {
             int begin = Utilities.getRowStart(doc, offset);
             int end = Utilities.getRowEnd(doc, offset);
@@ -597,8 +598,12 @@ public class LexUtilities {
 
                 if (id == up) {
                     upCount++;
-                } else if (id == down && upCount > 0) {
-                    downCount++;
+                } else if (id == down) {
+                    if (lineBalance.equals(LineBalance.UP_FIRST)) {
+                        if (upCount > 0) {downCount++;}
+                    } else {
+                        downCount++;
+                    }
                 }
             } while (ts.moveNext() && (ts.offset() <= end));
 

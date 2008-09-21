@@ -211,6 +211,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         fromIndex = index.getFunctions(null, el.getName(), NameKind.PREFIX);
                     }
                     break;
+                case IFACE:
+                    fromIndex = index.getInterfaces(null, el.getName(), NameKind.PREFIX);
+                    break;
                 case CLASS:
                     fromIndex = index.getClasses(null, el.getName(), NameKind.PREFIX);
                     break;

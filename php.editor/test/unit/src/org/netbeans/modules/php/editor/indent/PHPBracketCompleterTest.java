@@ -172,6 +172,10 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertChar("clas^", 's', "class^");
     }
 
+    public void testInsertBreakAfterClass2() throws Exception {
+        insertBreak("class Foo {^\n    \n}", "class Foo {\n    ^\n    \n}");
+    }
+
     public void testInsertBreakAfterClass() throws Exception {
         insertBreak("class Foo {^", "class Foo {\n    ^\n}");
     }

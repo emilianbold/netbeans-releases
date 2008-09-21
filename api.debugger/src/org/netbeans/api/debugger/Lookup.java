@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -69,8 +69,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.openide.ErrorManager;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.LookupEvent;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -326,8 +326,9 @@ abstract class Lookup implements ContextProvider {
                 if (service.endsWith("()")) {
                     int lastdot = service.lastIndexOf('.');
                     if (lastdot < 0) {
-                        ErrorManager.getDefault().log("Bad service - dot before method name is missing: " +
-                                "'" + service + "'.");
+                        Exceptions.printStackTrace(
+                                new IllegalStateException("Bad service - dot before method name is missing: " +
+                                "'" + service + "'."));
                         return null;
                     }
                     method = service.substring(lastdot + 1, service.length() - 2).trim();
@@ -381,35 +382,30 @@ abstract class Lookup implements ContextProvider {
                         " created");
                 return o;
             } catch (ClassNotFoundException e) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(
+                Exceptions.printStackTrace(
+                        Exceptions.attachMessage(
                             e,
-                            "The service "+service+" is not found.")
-                        );
+                            "The service "+service+" not found."));
             } catch (InstantiationException e) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(
-                            e,
-                            "The service "+service+" can not be instantiated.")
-                        );
+                Exceptions.printStackTrace(
+                        Exceptions.attachMessage(
+                        e,
+                        "The service "+service+" can not be instantiated."));
             } catch (IllegalAccessException e) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(
-                            e,
-                            "The service "+service+" can not be accessed.")
-                        );
+                Exceptions.printStackTrace(
+                        Exceptions.attachMessage(
+                        e,
+                        "The service "+service+" can not be accessed."));
             } catch (InvocationTargetException ex) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(
-                            ex,
-                            "The service "+service+" can not be created.")
-                        );
+                Exceptions.printStackTrace(
+                        Exceptions.attachMessage(
+                        ex,
+                        "The service "+service+" can not be created."));
             } catch (ExceptionInInitializerError ex) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(
-                            ex,
-                            "The service "+service+" can not be initialized.")
-                        );
+                Exceptions.printStackTrace(
+                        Exceptions.attachMessage(
+                        ex,
+                        "The service "+service+" can not be initialized."));
             }
             return null;
         }
@@ -615,10 +611,33 @@ abstract class Lookup implements ContextProvider {
                             Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
                         }
                         listenOn(instance.getClass().getClassLoader());
-                    } else {
+                    } else if (checkClassName(className)) {
                         add(new LazyInstance<T>(service, className), className);
                     }
                 }
+            }
+
+            private boolean checkClassName(String service) {
+                String method = null;
+                if (service.endsWith("()")) {
+                    int lastdot = service.lastIndexOf('.');
+                    if (lastdot < 0) {
+                        Exceptions.printStackTrace(
+                                new IllegalStateException("Bad service - dot before method name is missing: " +
+                                "'" + service + "'."));
+                        return false;
+                    }
+                    method = service.substring(lastdot + 1, service.length() - 2).trim();
+                    service = service.substring(0, lastdot);
+                }
+                ClassLoader cl = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+                URL resource = cl.getResource(service.replace('.', '/')+".class");
+                if (resource == null) {
+                    Exceptions.printStackTrace(
+                            new IllegalStateException("The service "+service+" not found."));
+                    return false;
+                }
+                return true;
             }
             
             private synchronized void refreshContent() {
