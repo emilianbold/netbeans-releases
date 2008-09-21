@@ -54,6 +54,8 @@ public class PrintASTVisitor implements Visitor {
     private final static String TAB = "    ";
     private int indent;
 
+
+
     
     private class XMLPrintNode {
         
@@ -644,5 +646,13 @@ public class PrintASTVisitor implements Visitor {
     public void visit(PHPDocBlock phpDocBlock) {
         addIndentation();
         buffer.append("### Not supported yet phpDocBlock.\n");
+    }
+
+    public void visit(PHPDocTag phpDocTag) {
+
+    }
+
+    public void visit(PHPDocPropertyTag phpDocTag) {
+
     }
 }
