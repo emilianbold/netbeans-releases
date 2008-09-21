@@ -139,6 +139,20 @@ public class DeclarationFinderImplTest extends TestBase {
                 );
         performTestSimpleFindDeclaration(-1, gotoTypeTest);
     }
+    public void testGotoTypeClsIface6() throws Exception {
+        String gotoTest = prepareTestFile(
+                "testfiles/gotoType2.php",
+                "interface ifaceDeclaration4 {}",
+                "^interface ifaceDeclaration4 {}"
+                );
+        String gotoTest2 = prepareTestFile(
+                "testfiles/gotoType.php",
+                "class clsDeclaration4 extends clsDeclaration3 implements ifaceDeclaration4 {}",
+                "class clsDeclaration4 extends clsDeclaration3 implements ifaceDecla|ration4 {}"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTest2, gotoTest);
+    }
+
 
     /*TODO: in these animalTests is actually bug but not important I guess. Sometimes jumps:
      * 1/public static ^$count = 0, $animal;
