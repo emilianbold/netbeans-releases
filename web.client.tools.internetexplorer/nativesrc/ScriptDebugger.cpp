@@ -745,7 +745,22 @@ BOOL ScriptDebugger::setBreakpoint(IDebugDocument *pDebugDocument, Breakpoint *p
 }
 
 BOOL ScriptDebugger::setBreakpoint(Breakpoint *pBreakpoint, BOOL remove) {
-    return setBreakpoint(pBreakpoint, pBreakpoint->getFileURI(), remove);
+    BOOL result = false;
+    tstring fileURI = pBreakpoint->getFileURI();
+    map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
+    if (iter == debugDocumentsMap.end()) {
+        if(isFeatureSet(IGNORE_QUERY_STRINGS)) {
+            for (iter = debugDocumentsMap.begin(); iter != debugDocumentsMap.end();++iter) {
+                size_t pos = iter->first.find(fileURI);
+                if (pos != std::string::npos) {
+                    result = setBreakpoint(pBreakpoint, iter->first, remove);
+                }
+            }
+        }
+        return result;
+    }else {
+        return setBreakpoint(pBreakpoint, fileURI, remove);
+    }
 }
 
 BOOL ScriptDebugger::setBreakpoint(Breakpoint *pBreakpoint, tstring fileURI, BOOL remove) {

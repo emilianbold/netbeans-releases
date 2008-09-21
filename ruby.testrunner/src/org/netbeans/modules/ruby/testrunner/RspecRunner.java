@@ -167,6 +167,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
+        desc.setRerun(false); //disabled for now, see #147482
         TestSession session = new TestSession(name,
                 locator,
                 debug ? SessionType.DEBUG : SessionType.TEST);

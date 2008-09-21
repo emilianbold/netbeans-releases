@@ -157,18 +157,7 @@ public class JellyTestCase extends NbTestCase {
             try {
                 failNotify(th);
             } catch (Exception e3) {}
-            // screen capture is performed when test fails and in dependency on system property
-            if (captureScreen) {
-                try {
-                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screen.png", PNGEncoder.COLOR_MODE);
-                } catch (Exception e1) {}
-            }
-            // XML dump is performed when test fails and in dependency on system property
-            if (dumpScreen) {
-                try {
-                    Dumper.dumpAll(getWorkDir().getAbsolutePath()+File.separator+"screen.xml");
-                } catch (Exception e2) {}
-            }
+            captureScreen();
             // closes all modal dialogs in dependency on systems property
             if (closeAllModal) try {
                 closeAllModal();
@@ -184,7 +173,48 @@ public class JellyTestCase extends NbTestCase {
             Toolkit.getDefaultToolkit().removeAWTEventListener(distributingHierarchyListener);
         }
     }
-    
+
+    /**
+     * Ensures that screen capture is done before the tearDown() is called
+     * @throws java.lang.Throwable
+     */
+    @Override
+    protected void runTest() throws Throwable {
+        try {
+            super.runTest();
+        } catch (ThreadDeath td) {
+            // ThreadDead must be re-throwed immediately
+            throw td;
+        } catch (Throwable th) {
+            captureScreen();
+            throw th;
+        }
+    }
+
+    private boolean isScreenCaptured = false;
+
+    private void captureScreen() {
+        if (!isScreenCaptured) {
+            // screen capture is performed when test fails and in dependency on system property
+            if (captureScreen) {
+                try {
+                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + File.separator + "screen.png", PNGEncoder.COLOR_MODE);
+                } catch (Exception ex) {
+                    ex.printStackTrace(getLog());
+                }
+            }
+            // XML dump is performed when test fails and in dependency on system property
+            if (dumpScreen) {
+                try {
+                    Dumper.dumpAll(getWorkDir().getAbsolutePath() + File.separator + "screen.xml");
+                } catch (Exception ex) {
+                    ex.printStackTrace(getLog());
+                }
+            }
+            isScreenCaptured = true;
+        }
+    }
+
     /** Method called in case of fail or error just after screen shot and XML dumps. <br>
      * Override this method when you need to be notified about test failures or errors 
      * but avoid any exception to be throwed from this method.<br>
