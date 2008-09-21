@@ -1,0 +1,11 @@
+|-Shape [153, 278] : ESCAPED{Shape}
+|--draw [260, 276] : ESCAPED{draw}ESCAPED{(}ESCAPED{)}
+|-Point [352, 532] : ESCAPED{Point}<font color="#999999">:ESCAPED{Shape}</font>
+|--$z [388, 398] : ESCAPED{$z}
+|--draw [448, 530] : ESCAPED{draw}ESCAPED{(}ESCAPED{)}
+|--$x [313, 328] : $x
+|--$y [332, 347] : $y
+|-Circle [591, 755] : ESCAPED{Circle}<font color="#999999">:ESCAPED{Shape}</font>
+|--draw [627, 753] : ESCAPED{draw}ESCAPED{(}ESCAPED{)}
+|--$point [541, 562] : $point
+|--$radius [566, 586] : $radius
