@@ -62,6 +62,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
@@ -591,7 +592,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
         }
 
         if (target.getSelectionStart() != -1) {
-            if (NbUtilities.isCodeTemplateEditing(doc)) {
+            if (GsfUtilities.isCodeTemplateEditing(doc)) {
                 int start = target.getSelectionStart();
                 int end = target.getSelectionEnd();
                 if (start < end) {
@@ -848,7 +849,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
                     ts.move(dotPos);
 
                     if (ts.moveNext() && (ts.offset() < dotPos)) {
-                        LexUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
+                        GsfUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
                     }
                 }
             }
@@ -1149,7 +1150,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
                     int beginOffset = begin.getStart();
                     int indent = LexUtilities.getLineIndent(doc, beginOffset);
                     previousAdjustmentIndent = LexUtilities.getLineIndent(doc, offset);
-                    LexUtilities.setLineIndentation(doc, offset, indent);
+                    GsfUtilities.setLineIndentation(doc, offset, indent);
                     previousAdjustmentOffset = caret.getDot();
                 }
             }
