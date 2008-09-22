@@ -44,132 +44,72 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
+import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
 /**
  * Creates two fifos for the process input and output and forward them to the specified io tab
  * @author eu155513
  */
-public class InputProxy {
-    private final File file;
-    //private final InputOutput io;
-    //private final OutputReaderThread ort;
-    private final InputReaderThread irt;
+public abstract class InputProxy {
+    private static final String FILENAME_PREFIX = "gdbFifo"; // NOI18N
+    private static final String FILENAME_EXTENSION = ".fifo"; // NOI18N
 
-    public InputProxy(String hkey, InputOutput io) {
-        file = createNewFifo();
-        file.deleteOnExit();
-        //this.io = io;
-        irt = new InputReaderThread(io.getIn());
+    private InputWriterThread irt = null;
+    private final Reader ioReader;
+    
+    public static InputProxy create(String hkey, InputOutput io) {
+        InputProxy res;
+        if (hkey == null || CompilerSetManager.LOCALHOST.equals(hkey)) {
+            res = new LocalInputProxy(io.getIn());
+        } else {
+            res = new RemoteInputProxy(hkey, io.getIn());
+        }
+        res.start();
+        return res;
+    }
+
+    private InputProxy(Reader ioReader) {
+        this.ioReader = ioReader;
+    }
+
+    private void start() {
+        irt = new InputWriterThread(ioReader);
         irt.start();
     }
 
-    private static File createNewFifo() {
-        try {
-            // TODO : implement more correct way of generating unique filename
-            File file = File.createTempFile("gdbFifo", null); // NOI18N
-            file.delete();
-            ProcessBuilder pb = new ProcessBuilder("mkfifo", file.getAbsolutePath()); // NOI18N
-            try {
-                Process p = pb.start();
-                // We need to wait for the end of this command, otherwise file may not be initialized
-                p.waitFor();
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return file;
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-        return null;
-    }
-
-    public String getFilename() {
-        return file.getAbsolutePath();
-    }
-
     public void stop() {
-        irt.cancel();
+        if (irt != null) {
+            irt.cancel();
+            try {
+                ioReader.close();
+            } catch (IOException ex) {
+                // do nothing
+            }
+        }
     }
 
     @Override
     protected void finalize() throws Throwable {
         stop();
-        file.delete();
     }
 
-    /*private final class OutputReaderThread  extends Thread {
-
-        /** This is all output, not just stderr */
-        /*private Writer output;
-        private boolean cancel = false;
-
-        public OutputReaderThread(Writer output) {
-            this.output = output;
-            setName("TTY OutputReaderThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
-        }
-
-        /**
-         *  Reader proc to read the combined stdout and stderr from the build process.
-         *  The output comes in on a single descriptor because the build process is started
-         *  via a script which diverts stdout to stderr. This is because older versions of
-         *  Java don't have a good way of interleaving stdout and stderr while keeping the
-         *  exact order of the output.
-         */
-        /*@Override
-        public void run() {
-            InputStream is = null;
-            try {
-                is = new FileInputStream(outFile);
-                int read;
-
-                for (;;) {
-                    int available = is.available();
-                    if (available == 0) {
-                        if (cancel) {
-                            return;
-                        }
-                        try {
-                            sleep(500);
-                        } catch(InterruptedException e) {
-                        }
-                        continue;
-                    } else {
-                        while (available-- > 0) {
-                            read = is.read();
-                            if (read == 10) {
-                                output.write("\n"); // NOI18N
-                            } else {
-                                output.write((char) read);
-                            }
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            } finally {
-                try {
-                    output.flush();
-                    is.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-
-        public void cancel() {
-            cancel = true;
-        }
-    }*/
+    public abstract String getFilename();
+    protected abstract OutputStream createStream() throws IOException;
 
     /** Helper class to read the input from the build */
-    private final class InputReaderThread extends Thread {
+    private class InputWriterThread extends Thread {
 
         /** This is all output, not just stderr */
-        private Reader in;
+        private final Reader in;
         private boolean cancel = false;
 
-        public InputReaderThread(Reader in) {
+        public InputWriterThread(Reader in) {
             this.in = in;
             setName("TTY inputReaderThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
         }
@@ -185,7 +125,7 @@ public class InputProxy {
             OutputStream pout = null;
 
             try {
-                pout = new FileOutputStream(file);
+                pout = createStream();
 
                 while ((ch = in.read()) != -1) {
                     if (cancel) {
@@ -208,6 +148,101 @@ public class InputProxy {
         
         public void cancel() {
             cancel = true;
+        }
+    }
+
+    private static class LocalInputProxy extends InputProxy {
+        private final File file;
+
+        public LocalInputProxy(Reader ioReader) {
+            super(ioReader);
+            this.file = createNewFifo();
+            this.file.deleteOnExit();
+        }
+
+        private static File createNewFifo() {
+            try {
+                // TODO : implement more correct way of generating unique filename
+                File file = File.createTempFile(FILENAME_PREFIX, FILENAME_EXTENSION); // NOI18N
+                file.delete();
+                ProcessBuilder pb = new ProcessBuilder("mkfifo", file.getAbsolutePath()); // NOI18N
+                try {
+                    Process p = pb.start();
+                    // We need to wait for the end of this command, otherwise file may not be initialized
+                    p.waitFor();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return file;
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+            return null;
+        }
+
+        @Override
+        protected OutputStream createStream() throws IOException {
+            return new FileOutputStream(file);
+        }
+
+        @Override
+        public String getFilename() {
+            return file.getAbsolutePath();
+        }
+
+        @Override
+        public void stop() {
+            super.stop();
+            file.delete();
+        }
+    }
+
+    private static class RemoteInputProxy extends InputProxy {
+        private final String filename;
+        private final String hkey;
+        private InteractiveCommandProvider provider = null;
+
+        public RemoteInputProxy(String hkey, Reader ioReader) {
+            super(ioReader);
+            this.hkey = hkey;
+            this.filename = createNewFifo(hkey);
+        }
+
+        @Override
+        public String getFilename() {
+            return filename;
+        }
+
+        @Override
+        protected OutputStream createStream() throws IOException {
+            provider = InteractiveCommandProviderFactory.create(hkey);
+            if (provider != null && provider.run(hkey, "cat > " + filename, null)) { // NOI18N
+                return provider.getOutputStream();
+            }
+            return null;
+        }
+
+        private static String createNewFifo(String hkey) {
+            // TODO: need to create unique file!!!
+            String name = "/tmp/" + FILENAME_PREFIX; // NOI18N
+            CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
+            if (cp != null) {
+                cp.run(hkey, "mkfifo " + name, null); // NOI18N
+            }
+            return name;
+        }
+
+        @Override
+        public void stop() {
+            super.stop();
+            if (provider != null) {
+                provider.disconnect();
+            }
+            // delete the file
+            CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
+            if (cp != null) {
+                cp.run(hkey, "rm " + filename, null); // NOI18N
+            }
         }
     }
 }
