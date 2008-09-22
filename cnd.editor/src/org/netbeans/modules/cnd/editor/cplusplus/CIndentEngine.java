@@ -48,7 +48,13 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 /** C indentation engine that delegates to java formatter */
 public class CIndentEngine extends BaseIndentEngine {
     
-   public CIndentEngine() {
+    private static final CIndentEngine instance = new CIndentEngine();
+    
+    public static final CIndentEngine getIndentEngine(){
+        return instance;
+    }
+
+    public CIndentEngine() {
         setAcceptedMimeTypes(new String[] { MIMENames.C_MIME_TYPE });
     }
     
