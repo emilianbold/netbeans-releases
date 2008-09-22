@@ -80,7 +80,9 @@ public class OccurrencesFinderImplTest extends TestBase {
                 "class clsDeclaration implements ifaceDeclaration {}",
                 "class ^clsDecla|ration^ implements ifaceDeclaration {}",
                 "class clsDeclaration3 extends clsDeclaration {}",
-                "class clsDeclaration3 extends ^clsDeclaration^ {}"
+                "class clsDeclaration3 extends ^clsDeclaration^ {}",
+                "clsDeclaration  $clsDeclarationVar,",
+                "^clsDeclaration^  $clsDeclarationVar,"
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
@@ -90,7 +92,9 @@ public class OccurrencesFinderImplTest extends TestBase {
                 "class clsDeclaration implements ifaceDeclaration {}",
                 "class ^clsDeclaration^ implements ifaceDeclaration {}",
                 "class clsDeclaration3 extends clsDeclaration {}",
-                "class clsDeclaration3 extends ^clsDec|laration^ {}"
+                "class clsDeclaration3 extends ^clsDec|laration^ {}",
+                "clsDeclaration  $clsDeclarationVar,",
+                "^clsDeclaration^  $clsDeclarationVar,"                
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
@@ -104,7 +108,9 @@ public class OccurrencesFinderImplTest extends TestBase {
                 "class clsDeclaration implements ifaceDeclaration {}",
                 "class clsDeclaration implements ^ifaceDeclaration^ {}",
                 "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
-                "class clsDeclaration2 implements ^ifaceDeclaration^, ifaceDeclaration2 {}"
+                "class clsDeclaration2 implements ^ifaceDeclaration^, ifaceDeclaration2 {}",
+                "ifaceDeclaration $ifaceDeclarationVar,",
+                "^ifaceDeclaration^ $ifaceDeclarationVar,"
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
@@ -118,7 +124,9 @@ public class OccurrencesFinderImplTest extends TestBase {
                 "class clsDeclaration implements ifaceDeclaration {}",
                 "class clsDeclaration implements ^ifaceDeclaration^ {}",
                 "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
-                "class clsDeclaration2 implements ^ifaceDeclaration^, ifaceDeclaration2 {}"
+                "class clsDeclaration2 implements ^ifaceDeclaration^, ifaceDeclaration2 {}",
+                "ifaceDeclaration $ifaceDeclarationVar,",
+                "^ifaceDeclaration^ $ifaceDeclarationVar,"                
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
@@ -132,7 +140,9 @@ public class OccurrencesFinderImplTest extends TestBase {
                 "class clsDeclaration implements ifaceDeclaration {}",
                 "class clsDeclaration implements ^ifaceDeclara|tion^ {}",
                 "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
-                "class clsDeclaration2 implements ^ifaceDeclaration^, ifaceDeclaration2 {}"
+                "class clsDeclaration2 implements ^ifaceDeclaration^, ifaceDeclaration2 {}",
+                "ifaceDeclaration $ifaceDeclarationVar,",
+                "^ifaceDeclaration^ $ifaceDeclarationVar,"                                
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
@@ -146,7 +156,9 @@ public class OccurrencesFinderImplTest extends TestBase {
                 "class clsDeclaration implements ifaceDeclaration {}",
                 "class clsDeclaration implements ^ifaceDeclaration^ {}",
                 "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
-                "class clsDeclaration2 implements ^ifaceDecla|ration^, ifaceDeclaration2 {}"
+                "class clsDeclaration2 implements ^ifaceDecla|ration^, ifaceDeclaration2 {}",
+                "ifaceDeclaration $ifaceDeclarationVar,",
+                "^ifaceDeclaration^ $ifaceDeclarationVar,"                                
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
@@ -156,7 +168,9 @@ public class OccurrencesFinderImplTest extends TestBase {
                 "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
                 "interface ^ifaceDecl|aration2^ extends ifaceDeclaration  {}",
                 "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
-                "class clsDeclaration2 implements ifaceDeclaration, ^ifaceDeclaration2^ {}"
+                "class clsDeclaration2 implements ifaceDeclaration, ^ifaceDeclaration2^ {}",
+                "ifaceDeclaration2 $ifaceDeclaration2Var,",
+                "^ifaceDeclaration2^ $ifaceDeclaration2Var,"
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
@@ -166,7 +180,9 @@ public class OccurrencesFinderImplTest extends TestBase {
                 "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
                 "interface ^ifaceDeclaration2^ extends ifaceDeclaration  {}",
                 "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
-                "class clsDeclaration2 implements ifaceDeclaration, ^ifaceDecl|aration2^ {}"
+                "class clsDeclaration2 implements ifaceDeclaration, ^ifaceDecl|aration2^ {}",
+                "ifaceDeclaration2 $ifaceDeclaration2Var,",
+                "^ifaceDeclaration2^ $ifaceDeclaration2Var,"                
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
