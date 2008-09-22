@@ -45,8 +45,12 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javax.swing.AbstractButton;
@@ -109,7 +113,13 @@ public final class AcceptLicense {
         yesButton.setPreferredSize(new Dimension(maxWidth, maxHeight));
         noButton.setPreferredSize(new Dimension(maxWidth, maxHeight));
         
-        d = new JDialog((Frame) null,bundle.getString("MSG_LicenseDlgTitle"),true);
+        //d = new JDialog((Frame) null,bundle.getString("MSG_LicenseDlgTitle"),true);
+        d = createDialog();
+        if (d != null) {
+            d.setTitle(bundle.getString("MSG_LicenseDlgTitle"));
+        } else {
+            d = new JDialog((Frame) null,bundle.getString("MSG_LicenseDlgTitle"),true);
+        }
         
         d.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_LicenseDlg"));
         d.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_LicenseDlg"));
@@ -134,6 +144,58 @@ public final class AcceptLicense {
         } else {
             throw new org.openide.util.UserCancelException();
         }
+    }
+
+    /** On JDK 1.6 it creates dialog without owner and modality type APPLICATION_MODAL.
+     * It returns null on JDK 1.5.
+     *
+     * @return dialog instance
+     */
+    private static JDialog createDialog () {
+        ResourceBundle bundle = NbBundle.getBundle(AcceptLicense.class);
+        Class clazz = null;
+        try {
+            clazz = Class.forName("java.awt.Dialog$ModalityType");
+        } catch (ClassNotFoundException ex) {
+            return null;
+        }
+        Method methodValues = null;
+        Object modalityType = null;
+        try {
+            methodValues = clazz.getMethod("valueOf", new Class [] {String.class});
+            modalityType = methodValues.invoke(null, new Object [] {"APPLICATION_MODAL"});
+        } catch (NoSuchMethodException ex) {
+            return null;
+        } catch (IllegalAccessException ex) {
+            return null;
+        } catch (InvocationTargetException ex) {
+            return null;
+        }
+        Constructor c = null;
+        try {
+            c = JDialog.class.getConstructor(new Class [] {Window.class, String.class, modalityType.getClass()});
+        } catch (NoSuchMethodException ex) {
+            return null;
+        }
+        Object d = null;
+        try {
+            d = c.newInstance(new Object [] {(Window) null, bundle.getString("MSG_LicenseDlgTitle"), modalityType});
+        } catch (InstantiationException ex) {
+            return null;
+        } catch (IllegalAccessException ex) {
+            return null;
+        } catch (InvocationTargetException ex) {
+            return null;
+        }
+
+        JDialog dlg = null;
+        if (d instanceof JDialog) {
+            dlg = (JDialog) d;
+        } else {
+            //dlg = new JDialog((Window) null,"Test Modal Dialog",Dialog.ModalityType.APPLICATION_MODAL);
+            dlg = new JDialog((Frame) null, bundle.getString("MSG_LicenseDlgTitle"), true);
+        }
+        return dlg;
     }
     
     /**
