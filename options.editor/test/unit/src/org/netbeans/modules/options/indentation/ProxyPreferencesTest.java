@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.options.indentation;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.junit.NbTestCase;
@@ -57,7 +61,7 @@ public class ProxyPreferencesTest extends NbTestCase {
         Preferences orig = Preferences.userRoot().node(getName());
         orig.put("key-1", "value-1");
 
-        Preferences test = ProxyPreferences.get(orig);
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
         assertEquals("Wrong value", "value-1", test.get("key-1", null));
     }
     
@@ -65,7 +69,7 @@ public class ProxyPreferencesTest extends NbTestCase {
         Preferences orig = Preferences.userRoot().node(getName());
         assertNull("Original contains value", orig.get("key-1", null));
 
-        Preferences test = ProxyPreferences.get(orig);
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
         test.put("key-1", "xyz");
         assertEquals("Wrong value", "xyz", test.get("key-1", null));
     }
@@ -74,7 +78,7 @@ public class ProxyPreferencesTest extends NbTestCase {
         Preferences orig = Preferences.userRoot().node(getName());
         assertNull("Original contains value", orig.get("key-1", null));
 
-        Preferences test = ProxyPreferences.get(orig);
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
         assertNull("Test should not contains pair", orig.get("key-1", null));
 
         test.put("key-1", "xyz");
@@ -88,7 +92,7 @@ public class ProxyPreferencesTest extends NbTestCase {
         Preferences orig = Preferences.userRoot().node(getName());
         assertNull("Original contains value", orig.get("key-1", null));
 
-        Preferences test = ProxyPreferences.get(orig);
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
         assertNull("Test should not contains pair", orig.get("key-1", null));
 
         test.put("key-1", "xyz");
@@ -115,7 +119,7 @@ public class ProxyPreferencesTest extends NbTestCase {
         checkContains(orig, origTree, "Orig");
         checkNotContains(orig, newTree, "Orig");
         
-        Preferences test = ProxyPreferences.get(orig);
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
         checkEquals("Test should be the same as Orig", orig, test);
         
         write(test, newTree);
@@ -144,7 +148,7 @@ public class ProxyPreferencesTest extends NbTestCase {
         checkContains(orig, origTree, "Orig");
         checkNotContains(orig, newTree, "Orig");
         
-        Preferences test = ProxyPreferences.get(orig);
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
         checkEquals("Test should be the same as Orig", orig, test);
         
         write(test, newTree);
@@ -160,7 +164,7 @@ public class ProxyPreferencesTest extends NbTestCase {
         assertNull("Original contains value", orig.get("key-1", null));
         assertEquals("Original doesn't contain value", "value-2", orig.get("key-2", null));
 
-        Preferences test = ProxyPreferences.get(orig);
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
         test.put("key-1", "xyz");
         assertEquals("Wrong value", "xyz", test.get("key-1", null));
         
@@ -174,7 +178,127 @@ public class ProxyPreferencesTest extends NbTestCase {
         assertNull("Test flushed removed key-1", orig.get("key-1", null));
         assertNull("Test.flush did not remove removed key-2", orig.get("key-2", null));
     }
-    
+
+    public void testRemoveNode() throws BackingStoreException {
+        Preferences orig = Preferences.userRoot().node(getName());
+        Preferences origChild = orig.node("child");
+
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
+        assertTrue("Test child shoculd exist", test.nodeExists("child"));
+        Preferences testChild = test.node("child");
+
+        testChild.removeNode();
+        assertFalse("Removed test child should not exist", testChild.nodeExists(""));
+        assertFalse("Removed test child should not exist in parent", test.nodeExists("child"));
+
+        test.flush();
+        assertFalse("Test.flush did not remove orig child", origChild.nodeExists(""));
+        assertFalse("Test.flush did not remove orig child from parent", orig.nodeExists("child"));
+    }
+
+    public void testRemoveNodeCreateItAgain() throws BackingStoreException {
+        Preferences orig = Preferences.userRoot().node(getName());
+
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
+        Preferences testChild = test.node("child");
+
+        testChild.removeNode();
+        assertFalse("Removed test child should not exist", testChild.nodeExists(""));
+        assertFalse("Removed test child should not exist in parent", test.nodeExists("child"));
+
+        Preferences testChild2 = test.node("child");
+        assertTrue("Recreated test child should exist", testChild2.nodeExists(""));
+        assertTrue("Recreated test child should exist in parent", test.nodeExists("child"));
+        assertNotSame("Recreated child must not be the same as the removed one", testChild2, testChild);
+        assertEquals("Wrong childrenNames list", Arrays.asList(new String [] { "child" }), Arrays.asList(test.childrenNames()));
+
+        try {
+            testChild.get("key", null);
+            fail("Removed test node should not be accessible");
+        } catch (Exception e) {
+        }
+
+        try {
+            testChild2.get("key", null);
+        } catch (Exception e) {
+            fail("Recreated test node should be accessible");
+        }
+
+    }
+
+    public void testRemoveHierarchy() throws BackingStoreException {
+        String [] origTree = new String [] {
+            "R.CodeStyle.project.expand-tabs=true",
+            "R.CodeStyle.project.indent-shift-width=6",
+            "R.CodeStyle.project.spaces-per-tab=6",
+            "R.CodeStyle.project.tab-size=7",
+            "R.CodeStyle.project.text-limit-width=88",
+            "R.CodeStyle.usedProfile=project",
+            "R.text.x-ruby.CodeStyle.project.indent-shift-width=2",
+            "R.text.x-ruby.CodeStyle.project.spaces-per-tab=2",
+            "R.text.x-ruby.CodeStyle.project.tab-size=2",
+        };
+        String [] newTree = new String [] {
+            "R.CodeStyle.project.expand-tabs=true",
+            "R.CodeStyle.project.indent-shift-width=3",
+            "R.CodeStyle.project.spaces-per-tab=3",
+            "R.CodeStyle.project.tab-size=5",
+            "R.CodeStyle.project.text-limit-width=77",
+            "R.CodeStyle.usedProfile=project",
+            "R.text.x-ruby.CodeStyle.project.indent-shift-width=2",
+            "R.text.x-ruby.CodeStyle.project.spaces-per-tab=2",
+            "R.text.x-ruby.CodeStyle.project.tab-size=2",
+        };
+
+        Preferences orig = Preferences.userRoot().node(getName());
+        write(orig, origTree);
+
+        checkContains(orig, origTree, "Orig");
+
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
+        checkEquals("Test should be the same as Orig", orig, test);
+
+        Preferences testRoot = test.node("R");
+        removeAllKidsAndKeys(testRoot);
+        
+        write(test, newTree);
+        checkContains(test, newTree, "Test");
+
+        test.flush();
+        checkEquals("Test didn't flush to Orig", test, orig);
+    }
+
+    public void testTreeGCed() throws BackingStoreException {
+        String [] newTree = new String [] {
+            "R.CodeStyle.project.expand-tabs=true",
+            "R.CodeStyle.project.indent-shift-width=3",
+            "R.CodeStyle.project.spaces-per-tab=3",
+            "R.CodeStyle.project.tab-size=5",
+            "R.CodeStyle.project.text-limit-width=77",
+            "R.CodeStyle.usedProfile=project",
+            "R.text.x-ruby.CodeStyle.project.indent-shift-width=2",
+            "R.text.x-ruby.CodeStyle.project.spaces-per-tab=2",
+            "R.text.x-ruby.CodeStyle.project.tab-size=2",
+        };
+
+        Preferences orig = Preferences.userRoot().node(getName());
+
+        Object treeToken = new Object();
+        Preferences test = ProxyPreferences.getProxyPreferences(treeToken, orig);
+        write(test, newTree);
+        checkContains(test, newTree, "Test");
+
+        Reference<Object> treeTokenRef = new WeakReference<Object>(treeToken);
+        Reference<Preferences> testRef = new WeakReference<Preferences>(test);
+        treeToken = null;
+        test = null;
+        assertGC("Tree token was not GCed", treeTokenRef, Collections.singleton(this));
+        // touch the WeakHashMap to expungeStaleEntries
+        ProxyPreferences.Tree.trees.size();
+        assertGC("Test preferences were not GCed", testRef, Collections.singleton(this));
+        
+    }
+
     // -----------------------------------------------------------------------
     // private implementation
     // -----------------------------------------------------------------------
@@ -287,4 +411,14 @@ public class ProxyPreferencesTest extends NbTestCase {
             checkEquals(msg, expectedChild, testChild);
         }
     }
+
+    private void removeAllKidsAndKeys(Preferences prefs) throws BackingStoreException {
+        for(String kid : prefs.childrenNames()) {
+            prefs.node(kid).removeNode();
+        }
+        for(String key : prefs.keys()) {
+            prefs.remove(key);
+        }
+    }
+
 }
