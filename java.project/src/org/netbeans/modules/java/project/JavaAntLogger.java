@@ -231,6 +231,9 @@ public final class JavaAntLogger extends AntLogger {
                 FileObject source = GlobalPathRegistry.getDefault().findResource(resource);
                 if (source != null) {
                     hyperlink(line, session, event, source, messageLevel, sessionLevel, data, lineNumber);
+                } else if (messageLevel <= sessionLevel && !event.isConsumed() && "java".equals(event.getTaskName())) {
+                    event.consume();
+                    session.println(line, event.getLogLevel() <= AntEvent.LOG_WARN, null);
                 }
             }
         } else {
