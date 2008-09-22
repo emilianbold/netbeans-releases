@@ -67,6 +67,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.InstallSupport;
@@ -633,9 +634,25 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             SwingUtilities.invokeLater (showBalloon);
         }
         flasher.addMouseListener (new MouseAdapter () {
+            RequestProcessor.Task t = null;
+            private RequestProcessor RP = new RequestProcessor ("balloon-manager"); // NOI18N
+
             @Override
-            public void mouseEntered (MouseEvent e) {
-                showBalloon.run ();
+            public void mouseEntered(MouseEvent e) {
+                t = RP.post (new Runnable () {
+                    public void run () {
+                        showBalloon.run ();
+                    }
+                }, ToolTipManager.sharedInstance ().getInitialDelay ());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if( null != t ) {
+                    t.cancel ();
+                    t = null;
+                    BalloonManager.dismissSlowly (ToolTipManager.sharedInstance ().getDismissDelay ());
+                }
             }
         });
     }
