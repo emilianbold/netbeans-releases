@@ -101,9 +101,8 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     @Override
     public void initializeNode(IPresentationElement element)
     {
-        switchTo(DEFAULT, element);
-        setIsInitialized(true);
         super.initializeNode(element);
+        switchTo(getDefaultViewName(), element);
     }
 
     
@@ -113,15 +112,17 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     
     public void switchTo(String view)
     {
-        if(getScene() instanceof ObjectScene)
-        {
-            ObjectScene scene = (ObjectScene)getScene();
-            Object data = scene.findObject(this);
-            if(data instanceof IPresentationElement)
-            {
-                switchTo(view, (IPresentationElement)data);
-            }
-        }
+        switchTo(view, getObject());
+//        if(getScene() instanceof ObjectScene)
+//        {
+////            ObjectScene scene = (ObjectScene)getScene();
+//            switchTo(view, getObject());
+////            Object data = scene.findObject(this);
+////            if(data instanceof IPresentationElement)
+////            {
+////                switchTo(view, (IPresentationElement)data);
+////            }
+//        }
     }
     
     public void switchTo(String view, IPresentationElement element)
@@ -298,6 +299,31 @@ public abstract class SwitchableWidget extends UMLNodeWidget
             }
         }
     }
+    
+    
+    protected String getDefaultViewName()
+    {
+        FileSystem system = Repository.getDefault().getDefaultFileSystem();
+        
+        if (system != null)
+        {
+            FileObject fo = system.findResource("UML/Nodes/" + getMetaType() + "/Views");
+            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+            if (df != null)
+            {
+                DataObject[] views = df.getChildren();
+                for (DataObject view: views)
+                {
+                    if (this.getObject().getFirstSubject().getAppliedStereotypesList().equals(view.getPrimaryFile().getAttribute("stereotypes")))
+                    {
+                        return (String)view.getPrimaryFile().getAttribute("id");
+                    }
+                }
+            }   
+        }
+        return DEFAULT;
+    }
+    
 
     @Override
     public void save(NodeWriter nodeWriter) {
