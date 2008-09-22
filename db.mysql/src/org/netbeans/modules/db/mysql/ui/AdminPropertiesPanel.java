@@ -28,6 +28,8 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
     DialogDescriptor descriptor;
     private Color nbErrorForeground;
 
+    // the most recent directory where a new path was chosen
+    static private String recentDirectory = null;
     
     private DocumentListener docListener = new DocumentListener() {
         
@@ -146,13 +148,18 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         String path = txtField.getText().trim();
         if (path != null && path.length() > 0) {
             chooser.setSelectedFile(new File(path));
+        } else if (recentDirectory != null) {
+            chooser.setCurrentDirectory(new File(recentDirectory));
         }
+        
         
         if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
         }
         
-        txtField.setText(chooser.getSelectedFile().getAbsolutePath());
+        File selectedFile = chooser.getSelectedFile();
+        recentDirectory = selectedFile.getParentFile().getAbsolutePath();
+        txtField.setText(selectedFile.getAbsolutePath());
     }
 
     /** This method is called from within the constructor to

@@ -113,7 +113,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         insertChar("x = \"^)\"", ')', "x = \")^)\"");
         insertChar("x = '^'", '"', "x = '\"^'");
     }
-    
+
     public void testSingleQuotes1() throws Exception {
         insertChar("x = ^", '\'', "x = '^'");
     }
@@ -139,12 +139,12 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         insertChar("System.out.prinlnt(\"pavel^\n", '"',
                 "System.out.prinlnt(\"pavel\"^\n");
     }
-    
+
     public void testInsertBrokenQuote3() throws Exception {
         insertChar("System.out.prinlnt(\"^\n", '"',
                 "System.out.prinlnt(\"\"^\n");
     }
-    
+
     public void testInsertBrokenQuote4() throws Exception {
         insertChar("System.out.prinlnt(\"pavel^", '"',
                 "System.out.prinlnt(\"pavel\"^");
@@ -166,6 +166,12 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         insertChar("x = \"\\^\"", '"', "x = \"\\\"^\"");
     }
 
+
+    public void testInsertBrace4() throws Exception {
+        insertBreak("function test(){\n    if(true &&\n        true){^\n    }\n}",
+                "function test(){\n    if(true &&\n        true){\n        ^\n    }\n}");
+    }
+
     public void testInsertBrace1() throws Exception {
         insertBreak("foobar({^});", "foobar({\n    ^\n});");
     }
@@ -177,11 +183,11 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testInsertBrace3() throws Exception {
         insertBreak("x = {^}", "x = {\n    ^\n}");
     }
-    
+
     public void testInsertEnd1() throws Exception {
         insertBreak("x^", "x\n^");
     }
-    
+
     public void testInsertBlockComment() throws Exception {
         insertBreak("/**^", "/**\n * ^\n */");
     }
@@ -197,12 +203,12 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testInsertBlockComment4() throws Exception {
         insertBreak("/*^\nfunction foo() {}", "/*\n * ^\n */\nfunction foo() {}");
     }
-    
+
     public void testInsertBlockComment5() throws Exception {
         insertBreak("^/*\n*/\n", "\n^/*\n*/\n");
     }
 
-// These tests no longer apply -- I'm doing the string-literal insertion differently now    
+// These tests no longer apply -- I'm doing the string-literal insertion differently now
 //    public void testSplitStrings() throws Exception {
 //        insertBreak("  x = 'te^st'", "  x = 'te' +\n  '^st'");
 //    }
@@ -210,11 +216,11 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
 //    public void testSplitStrings2() throws Exception {
 //        insertBreak("  x = 'test^'", "  x = 'test' +\n  '^'");
 //    }
-//    
+//
 //    public void testSplitStrings3() throws Exception {
 //        insertBreak("  x = \"te^st\"", "  x = \"te\" +\n  \"^st\"");
 //    }
-//    
+//
 //    public void testSplitRegexps1() throws Exception {
 //        insertBreak("  x = /te^st/", "  x = /te/ +\n  /^st/");
 //    }
@@ -235,16 +241,16 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testSplitStrings2() throws Exception {
         insertBreak("  x = 'test^'", "  x = 'test\\n\\\n^'");
     }
-    
+
     public void testSplitStrings3() throws Exception {
         insertBreak("  x = \"te^st\"", "  x = \"te\\n\\\n^st\"");
     }
-    
+
     public void testSplitRegexps1() throws Exception {
         insertBreak("  x = /te^st/", "  x = /te\\n\\\n^st/");
     }
 
-    
+
     public void testSplitRegexps1b() throws Exception {
         insertBreak("  x = /^test/", "  x = /\\\n^test/");
     }
@@ -256,7 +262,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testInsertEnd2() throws Exception {
         insertBreak("function foo() {^", "function foo() {\n    ^\n}");
     }
-    
+
     public void testInsertEnd3() throws Exception {
         insertBreak("function foo() {^\n}", "function foo() {\n    ^\n}");
     }
@@ -265,7 +271,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     //public void testInsertEnd5() throws Exception {
     //    insertBreak("if (a_condition) ^thing() {", "if (a_condition) \n  ^thing()\n}");
     //}
-    
+
     public void testInsertIf1() throws Exception {
         insertBreak("    if (true) {^", "    if (true) {\n        ^\n    }");
     }
@@ -329,7 +335,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testRegexp3() throws Exception {
         insertChar("x = /^/", 'a', "x = /a^/");
     }
-    
+
     public void testRegexp4() throws Exception {
         insertChar("x = /\\^/", '/', "x = /\\/^/");
     }
@@ -355,11 +361,11 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testRegexp9() throws Exception {
         insertChar("x = /^/\n", 'a', "x = /a^/\n");
     }
-    
+
     public void testRegexp10() throws Exception {
         insertChar("x = /\\^/\n", '/', "x = /\\/^/\n");
     }
-    
+
     public void testRegexp11() throws Exception {
         insertChar("/foo^", '/',
                 "/foo/^");
@@ -391,11 +397,11 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testFindMatching1() throws Exception {
         match("if (true) ^{\n^}");
     }
-    
+
     public void testFindMatching2() throws Exception {
         match("x=^(true^)\ny=5");
     }
-    
+
     public void testFindMatching3() throws Exception {
         match("x=^(true || (false)^)\ny=5");
     }
@@ -411,11 +417,11 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testBackspace2() throws Exception {
         deleteChar("x^y", "^y");
     }
-    
+
     public void testBackspace3() throws Exception {
         deleteChar("xy^z", "x^z");
     }
-    
+
     public void testBackspace4() throws Exception {
         deleteChar("xy^z", "x^z");
     }
@@ -423,11 +429,11 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testBackspace5() throws Exception {
         deleteChar("x=\"^\"", "x=^");
     }
-    
+
     public void testBackspace6() throws Exception {
         deleteChar("x='^'", "x=^");
     }
-    
+
     public void testBackspace7() throws Exception {
         deleteChar("x=(^)", "x=^");
     }
@@ -440,11 +446,11 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         // See bug 111534
         deleteChar("x={^}", "x=^");
     }
-    
+
     public void testBackspace9() throws Exception {
         deleteChar("x=/^/", "x=^");
     }
-    
+
 
     public void testContComment() throws Exception {
         if (JsKeystrokeHandler.CONTINUE_COMMENTS) {
@@ -453,7 +459,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
             insertBreak("// ^", "// \n^");
         }
     }
-    
+
     public void testContComment2() throws Exception {
         // No auto-# on new lines
         if (JsKeystrokeHandler.CONTINUE_COMMENTS) {
@@ -462,7 +468,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
             insertBreak("   //  ^", "   //  \n   ^");
         }
     }
-    
+
     public void testContComment3() throws Exception {
         // No auto-# on new lines
         if (JsKeystrokeHandler.CONTINUE_COMMENTS) {
@@ -484,20 +490,20 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
             insertBreak("      // ^", "      // \n      ^");
         }
     }
-    
+
     public void testContComment6() throws Exception {
         insertBreak("   // foo^bar", "   // foo\n   // ^bar");
     }
-    
+
     public void testContComment7() throws Exception {
         insertBreak("   // foo^\n   // bar", "   // foo\n   // ^\n   // bar");
     }
-    
+
     public void testContComment8() throws Exception {
         insertBreak("   // foo^bar", "   // foo\n   // ^bar");
     }
 
-    
+
     public void testContComment9() throws Exception {
         insertBreak("^// foobar", "\n^// foobar");
     }
@@ -516,7 +522,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     //public void testContComment12() throws Exception {
     //    insertBreak("  code\n^// foobar", "  code\n\n  ^// foobar");
     //}
-    
+
     // This test no longer passes, related to AST formatter.
     //public void testContComment14() throws Exception {
     //    insertBreak("function foo() {\n    code\n^// foobar\n}\n", "function foo() {\n    code\n\n    ^// foobar\n}\n");
@@ -533,7 +539,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testContComment17() throws Exception {
         insertBreak("function foo() {\n  // cmnt1\n^  // cmnt2\n}\n", "function foo() {\n  // cmnt1\n  // ^\n  // cmnt2\n}\n");
     }
-    
+
     public void testNoContComment() throws Exception {
         // No auto-// on new lines
         insertBreak("foo // ^", "foo // \n^");
@@ -543,12 +549,12 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         deleteChar("// ^", "^");
         deleteChar("\n// ^", "\n^");
     }
-    
+
     public void testDeleteContComment2() throws Exception {
         deleteChar("// ^  ", "^  ");
         deleteChar("\n// ^  ", "\n^  ");
     }
-    
+
     public void testNoDeleteContComment() throws Exception {
         deleteChar("//  ^", "// ^");
         deleteChar("//^", "^");
@@ -558,7 +564,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testNoInsertPercentElsewhere() throws Exception {
         insertChar("x = ^", '#', "x = #^");
     }
-    
+
     public void testReplaceSelection1() throws Exception {
         insertChar("x = foo^", 'y', "x = y^", "foo");
     }
@@ -590,7 +596,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testReplaceSelectionNotInTemplateMode1() throws Exception {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
     }
-    
+
     public void testdeleteWord() throws Exception {
         deleteWord("foo_bar_baz^", "foo_bar_^");
     }
@@ -613,7 +619,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testdeleteWord3() throws Exception {
         deleteWord("FooBarBaz^", "FooBar^");
     }
-    
+
     public void testDeleteWord4_110998() throws Exception {
         deleteWord("Blah::Set^Foo", "Blah::^Foo");
     }
@@ -632,7 +638,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         String after = "  ^\n";
         deleteWord(before, after);
     }
-    
+
     public void testBackwardsDeletion() throws Exception {
         String s = "Foo::Bar = whatever('hello')  \n  nextline";
         JsKeystrokeHandler bc = new JsKeystrokeHandler();
@@ -648,11 +654,11 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
             if (begin == -1) {
                 begin = Utilities.getPreviousWord(ta, dot);
             }
-            
+
             assert begin != -1 && begin < i;
         }
     }
-    
+
     public void testLogicalRange1() throws Exception {
         String code = "if (true) {\n  fo^o\n}";
         String next = "if (true) {\n  %<%fo^o%>%\n}";
@@ -673,7 +679,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
-    
+
     public void testLogicalRange3() throws Exception {
         String code = "function foo() {\nif (true) {\n  %<%fo^o%>%\n}\n}";
         String next = "function foo() {\nif (true) %<%{\n  fo^o\n}%>%\n}";
@@ -697,7 +703,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
-    
+
     public void testLogicalRange3d() throws Exception {
         String code = "function foo() %<%{\nif (true) {\n  fo^o\n}\n%>%}";
         // Weird AST offset error - doesn't include the correct endpoint, just
@@ -706,7 +712,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
-    
+
     public void testLogicalRangeComment1() throws Exception {
         String code = "foo\n  // Foo Bar\n  // Foo^y Baary\n  // Bye\nfunction foo() {\n}\n";
         String next = "foo\n  // Foo Bar\n  %<%// Foo^y Baary%>%\n  // Bye\nfunction foo() {\n}\n";
@@ -727,7 +733,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
-    
+
     public void testLogicalRangeComment3() throws Exception {
         String code = "foo\n  // Foo Bar\n\n  %<%// Foo^y Baary%>%\n  // Bye\nfunction foo() {\n}\n";
         String next = "foo\n  // Foo Bar\n\n  %<%// Foo^y Baary\n  // Bye%>%\nfunction foo() {\n}\n";
@@ -740,7 +746,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
-    
+
     public void testLogicalRangeStrings1() throws Exception {
         String code = "x = 'foo b^ar baz', y = \"whatever\"";
         String next = "x = %<%'foo b^ar baz'%>%, y = \"whatever\"";
