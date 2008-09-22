@@ -91,6 +91,8 @@ public class GenerateDocumentHandlerAction extends XMLGenerateAction implements 
         }
         FileObject fo = dobj.getPrimaryFile();
         Project project = FileOwnerQuery.getOwner(fo);
+        if(project == null)
+            return false;
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] srcGrps = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (srcGrps == null || srcGrps.length == 0) {
