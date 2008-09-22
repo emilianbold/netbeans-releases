@@ -77,6 +77,7 @@ import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -101,13 +102,13 @@ import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Token;
@@ -1957,36 +1958,6 @@ public class CodeCompleter implements CodeCompletionHandler {
         return result;
 
     }
-    
-
-    List<javax.lang.model.element.Element> getMethodsForType(Elements elements, JavaSource javaSource, final String typeName) {
-        LOG.log(Level.FINEST, "getMethodsForType(), Type :  {0}", typeName);
-
-        if (elements != null) {
-            List<javax.lang.model.element.Element> methodlist = new ArrayList<javax.lang.model.element.Element>();
-
-            javax.lang.model.element.TypeElement te = elements.getTypeElement(typeName);
-
-            if (te != null) {
-                List<? extends javax.lang.model.element.Element> enclosed = te.getEnclosedElements();
-
-                // get all methods available on this type
-
-
-                for (Element encl : enclosed) {
-                    if (encl.getKind() == ElementKind.METHOD) {
-                        LOG.log(Level.FINEST, "Found this method on type :  {0}", encl.getSimpleName());
-                        methodlist.add(encl);
-                    }
-                }
-            }
-
-            return methodlist;
-        }
-
-        return null;
-    }
-
 
     boolean isPackageAlreadyProposed(Set<String> pkgSet, String prefix) {
         for (String singlePackage : pkgSet) {
@@ -2057,6 +2028,9 @@ public class CodeCompleter implements CodeCompletionHandler {
             return null;
         }
 
+        // FIXME
+        request.beforeDotPath = realPath;
+
         ASTNode closest = realPath.leaf();
 
         LOG.log(Level.FINEST, "getDeclaringClass() ----------------------------------------");
@@ -2090,79 +2064,52 @@ public class CodeCompleter implements CodeCompletionHandler {
     private ClassNode getBeforeDotDeclaringClass(ASTNode current) {
         printASTNodeInformation("Declaring-class, current is:", current);
 
+        Expression expression = null;
         if (current instanceof VariableExpression) {
             LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
-            return ((VariableExpression) current).getType();
+            expression = (VariableExpression) current;
         } else if (current instanceof ExpressionStatement) {
             LOG.log(Level.FINEST, "* ExpressionStatement"); // NOI18N
-            return ((ExpressionStatement) current).getExpression().getType();
+            expression = ((ExpressionStatement) current).getExpression();
         } else if (current instanceof PropertyExpression) {
             LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
-            return ((PropertyExpression) current).getObjectExpression().getType();
+            // FIXME we should differ between accessed property and
+            // unfinished completion
+            expression = ((PropertyExpression) current).getObjectExpression();
         } else if (current instanceof ConstructorCallExpression) {
             LOG.log(Level.FINEST, "* ConstructorCallExpression"); // NOI18N
-            return ((ConstructorCallExpression) current).getType();
+            expression = (ConstructorCallExpression) current;
         } else if (current instanceof MethodCallExpression) {
             LOG.log(Level.FINEST, "* MethodCallExpression"); // NOI18N
             // TODO unfortunately object expression is always of type java.lang.Object
-            return ((MethodCallExpression) current).getObjectExpression().getType();
+            // FIXME we should differ between called method and
+            // unfinished completion
+            expression = ((MethodCallExpression) current).getObjectExpression();
         } else if (current instanceof ConstantExpression) {
             LOG.log(Level.FINEST, "* ConstantExpression"); // NOI18N
-            return ((ConstantExpression) current).getType();
+            expression = (ConstantExpression) current;
+        } else if (current instanceof MapExpression) {
+            LOG.log(Level.FINEST, "* MapExpression"); // NOI18N
+            expression = (MapExpression) current;
+        } else if (current instanceof ListExpression) {
+            LOG.log(Level.FINEST, "* ListExpression"); // NOI18N
+            expression = (ListExpression) current;
+        } else if (current instanceof RangeExpression) {
+            LOG.log(Level.FINEST, "* RangeExpression"); // NOI18N
+            expression = (RangeExpression) current;
         }
-        return null;
-    }
 
-    /**
-     * Test for potential collection-type at the requesting position.
-     * This could be RangeExpression, ListExpression or MapExpression
-     * 
-     * @param request
-     * @return
-     */
-    // FIXME afaik this should operate on the same path as getBeforeDotDeclaringClass
-    // otherwise for example inside of for(new Date().^;;) we get the ClosureListExpression
-    // instead of Date
-    private Expression getPossibleCollection(CompletionRequest request) {
-        assert request.behindDot;
-
-        if (request.path == null) {
-            LOG.log(Level.FINEST, "path == null"); // NOI18N
+        if (expression != null) {
+            // testCollection3 fails without this
+            if (expression instanceof RangeExpression
+                    && "java.lang.Object".equals(expression.getType().getName())) {
+                expression.setType(
+                        new ClassNode("groovy.lang.Range", ClassNode.ACC_PUBLIC | ClassNode.ACC_INTERFACE, null));
+            }
+            return expression.getType();
+        } else {
             return null;
         }
-
-        for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
-            ASTNode current = it.next();
-
-            // printASTNodeInformation("Collection-search, current is:", current);
-
-            if (current instanceof RangeExpression) {
-                return (RangeExpression) current;
-            } else if (current instanceof ListExpression) {
-                return (ListExpression) current;
-            } else if (current instanceof MapExpression) {
-                return (MapExpression) current;
-            } else if (current instanceof VariableExpression) {
-                if (request.path.leafParent() instanceof MapExpression) {
-                    return (MapExpression) request.path.leafParent();
-                }
-            } else if (current instanceof PropertyExpression) {
-                // in this case i have to get the children
-                List<ASTNode> list = AstUtilities.children(current);
-                for (ASTNode child : list) {
-                    if (child instanceof RangeExpression) {
-                        return (RangeExpression) child;
-                    } else if (child instanceof ListExpression) {
-                        return (ListExpression) child;
-                    } else if (child instanceof MapExpression) {
-                        return (MapExpression) child;
-                    }
-                }
-            }
-
-        }
-
-        return null;
     }
 
     /**
@@ -2279,7 +2226,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
 
         // 1.) Test if this is a Constructor-call?
-
+        // FIXME move this to separate method completeConstructors()
         if (request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
             LOG.log(Level.FINEST, "This looks like a constructor ...");
             // look for all imported types starting with prefix, which have public constructors
@@ -2349,36 +2296,6 @@ public class CodeCompleter implements CodeCompletionHandler {
             return !proposals.isEmpty();
         }
 
-        // 2.1 Behind a dot and sitting on a Map, List or Range?
-
-        if (request.behindDot) {
-            Expression collection = getPossibleCollection(request);
-
-            if (collection != null) {
-                boolean stuffAdded = false;
-                LOG.log(Level.FINEST, "This looks like a collection."); // NOI18N
-
-                if (collection instanceof ListExpression) {
-                    LOG.log(Level.FINEST, "ListExpression"); // NOI18N
-                    populateProposalWithMethodsFromClass(proposals, request, "java.util.List", true);
-                    stuffAdded = true;
-
-                } else if (collection instanceof RangeExpression) {
-                    LOG.log(Level.FINEST, "RangeExpression"); // NOI18N
-                    populateProposalWithMethodsFromClass(proposals, request, "groovy.lang.Range", true);
-                    stuffAdded = true;
-
-                } else if (collection instanceof MapExpression) {
-                    LOG.log(Level.FINEST, "MapExpression"); // NOI18N
-                    populateProposalWithMethodsFromClass(proposals, request, "java.util.Map", true);
-                    stuffAdded = true;
-
-                }
-
-                return stuffAdded;
-            }
-        }
-
         // 2.2  static/instance method on class or object
 
         if (!request.behindDot) {
@@ -2420,7 +2337,6 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         // all methods of class given at that position.
         // If we are dealing with Interface we have to get them using javac means, see # 142372
-        
         if (declaringClass.isInterface()) {
             populateProposalWithMethodsFromClass(proposals, request, declaringClass.getName(), true);
         } else {
@@ -2477,11 +2393,11 @@ public class CodeCompleter implements CodeCompletionHandler {
      */
     private class MethodCompletionHelper implements Task<CompilationController> {
 
-        CountDownLatch cnt;
-        JavaSource javaSource;
-        String className;
-        CompletionRequest request;
-        List<CompletionProposal> proposals;
+        private final CountDownLatch cnt;
+        private final JavaSource javaSource;
+        private final String className;
+        private final CompletionRequest request;
+        private final List<CompletionProposal> proposals;
         
         public MethodCompletionHelper(CountDownLatch cnt, JavaSource javaSource, String className, CompletionRequest request, List<CompletionProposal> proposals) {
             this.cnt = cnt;
@@ -2492,17 +2408,30 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
         public void run(CompilationController info) throws Exception {
-            
-            List<javax.lang.model.element.Element> methodlist = getMethodsForType(info.getElements(), javaSource, className);
 
-            for (Element element : methodlist) {
+            Elements elements = info.getElements();
+            if (elements != null) {
+                // FIXME private static field
+                ElementAcceptor acceptor = new ElementAcceptor() {
 
-                String simpleName = element.getSimpleName().toString();
-                String parameterString = getParameterListForMethod((ExecutableElement) element);
-                String returnType = ((ExecutableElement) element).getReturnType().getClass().toString();
+                    public boolean accept(Element e, TypeMirror type) {
+                        return e.getKind() == ElementKind.METHOD;
+                    }
+                };
 
-                if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
-                    proposals.add(new JavaMethodItem(simpleName, parameterString, returnType, anchor, request));
+                TypeElement te = elements.getTypeElement(className);
+                if (te != null) {
+                    for (Element element : info.getElementUtilities().getMembers(te.asType(), acceptor)) {
+
+                        String simpleName = element.getSimpleName().toString();
+                        String parameterString = getParameterListForMethod((ExecutableElement) element);
+                        // FIXME this should be more accurate
+                        String returnType = ((ExecutableElement) element).getReturnType().toString();
+
+                        if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+                            proposals.add(new JavaMethodItem(simpleName, parameterString, returnType, anchor, request));
+                        }
+                    }
                 }
             }
             
@@ -3143,6 +3072,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         boolean behindImport;
         CompletionContext ctx;
         AstPath path;
+        AstPath beforeDotPath;
         ClassNode declaringClass;
     }
 
