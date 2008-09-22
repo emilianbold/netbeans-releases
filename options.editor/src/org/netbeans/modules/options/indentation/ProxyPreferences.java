@@ -73,8 +73,8 @@ import org.openide.util.WeakListeners;
  */
 public final class ProxyPreferences extends Preferences implements PreferenceChangeListener, NodeChangeListener {
 
-    public static ProxyPreferences get(Preferences delegate) {
-        return Tree.get(delegate).get(null, delegate.name(), delegate); //NOI18N
+    public static ProxyPreferences getProxyPreferences(Object token, Preferences delegate) {
+        return Tree.getTree(token, delegate).get(null, delegate.name(), delegate); //NOI18N
     }
 
     @Override
@@ -366,7 +366,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
         synchronized (tree.treeLock()) {
             ProxyPreferences pp = parent;
             if (pp != null) {
-                if (pp.parent() == null) {
+                if (pp.parent == null) {
                     // pp is the root, we don't want two consecutive slashes in the path
                     return "/" + name(); //NOI18N
                 } else {
@@ -405,6 +405,8 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Flushing " + absolutePath());
             }
+
+            checkRemoved();
             for(ProxyPreferences pp : children.values()) {
                 pp.flush();
             }
@@ -423,6 +425,13 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
             delegate.removeNodeChangeListener(weakNodeListener);
             delegate.removePreferenceChangeListener(weakPrefListener);
             try {
+                // remove all removed children
+                for(String childName : removedChildren) {
+                    if (delegate.nodeExists(childName)) {
+                        delegate.node(childName).removeNode();
+                    }
+                }
+
                 // write all valid key-value pairs
                 for(String key : data.keySet()) {
                     if (!removedKeys.contains(key)) {
@@ -729,6 +738,11 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
 
             ProxyPreferences child = children.get(childName);
             if (child == null) {
+                if (removedChildren.contains(childName) && !create) {
+                    // this child has been removed
+                    return null;
+                }
+                
                 Preferences childDelegate = null;
                 try {
                     if (delegate != null && delegate.nodeExists(childName)) {
@@ -739,8 +753,9 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
                 }
 
                 if (childDelegate != null || create) {
-                    child = Tree.get(this).get(this, childName, childDelegate);
+                    child = tree.get(this, childName, childDelegate);
                     children.put(childName, child);
+                    removedChildren.remove(childName);
 
                     // fire event if we really created the new child node
                     if (childDelegate == null) {
@@ -753,6 +768,8 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
                     // childDelegate == null && !create
                     return null;
                 }
+            } else {
+                assert !child.removed;
             }
 
             return pathFromChild != null ? child.node(pathFromChild, create, events) : child;
@@ -775,7 +792,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
         assert children.get(child.name()) == child;
 
         child.nodeRemoved();
-        children.remove(child);
+        children.remove(child.name());
         removedChildren.add(child.name());
     }
     
@@ -788,7 +805,8 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
         removedKeys.clear();
         children.clear();
         removedChildren.clear();
-
+        tree.removeNode(this);
+        
         removed = true;
     }
     
@@ -908,39 +926,38 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
         }
     }
 
-    private static final class Tree {
+    /* test */ static final class Tree {
 
-        public static Tree get(Preferences prefs) {
+        public static Tree getTree(Object token, Preferences prefs) {
             synchronized (trees) {
-                Preferences root = prefs.node("/"); //NOI18N
-                Reference<? extends Tree> ref = trees.get(root);
-                Tree tree = ref == null ? null : ref.get();
-                if (tree == null) {
-                    tree = new Tree(root);
-                    trees.put(root, new WeakReference<Tree>(tree));
+                // find all trees for the token
+                Map<Preferences, Tree> forest = trees.get(token);
+                if (forest == null) {
+                    forest = new HashMap<Preferences, Tree>();
+                    trees.put(token, forest);
                 }
+
+                // find the tree for the prefs' root
+                Preferences root = prefs.node("/"); //NOI18N
+                Tree tree = forest.get(root);
+                if (tree == null) {
+                    tree = new Tree(token, root);
+                    forest.put(root, tree);
+                }
+
                 return tree;
             }
         }
 
-        public static Tree get(ProxyPreferences prefs) {
-            Preferences delegate = prefs.delegate;
-            while (delegate == null) {
-                prefs = prefs.parent;
-                delegate = prefs.delegate;
-            }
-
-            assert delegate != null;
-            return get(delegate);
-        }
-
-        private static final Map<Preferences, Reference<? extends Tree>> trees = new WeakHashMap<Preferences, Reference<? extends Tree>>();
+        /* test */ static final Map<Object, Map<Preferences, Tree>> trees = new WeakHashMap<Object, Map<Preferences, Tree>>();
 
         private final Preferences root;
+        private final Reference<?> tokenRef;
         private final Map<String, ProxyPreferences> nodes = new HashMap<String, ProxyPreferences>();
         
-        private Tree(Preferences root) {
+        private Tree(Object token, Preferences root) {
             this.root = root;
+            this.tokenRef = new WeakReference<Object>(token);
         }
 
         public Object treeLock() {
@@ -979,14 +996,25 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
                 if (parent != null) {
                     parent.addChild(node);
                 }
+            } else {
+                assert !node.removed;
             }
 
             return node;
         }
 
+        public void removeNode(ProxyPreferences node) {
+            String path = node.absolutePath();
+            assert nodes.containsKey(path);
+            ProxyPreferences pp = nodes.remove(path);
+        }
+
         public void destroy() {
             synchronized (trees) {
-                trees.remove(root);
+                Object token = tokenRef.get();
+                if (token != null) {
+                    trees.remove(token);
+                } // else the token has been GCed and therefore is not even in the trees map
             }
         }
     } // End of Tree class
