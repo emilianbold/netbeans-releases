@@ -418,112 +418,6 @@ public class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    /** Find the token that begins a block terminated by "end". This is a token
-     * in the END_PAIRS array. Walk backwards and find the corresponding token.
-     * It does not use indentation for clues since this could be wrong and be
-     * precisely the reason why the user is using pair matching to see what's wrong.
-     */
-    public static OffsetRange findBegin(BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
-        int balance = 0;
-
-        while (ts.movePrevious()) {
-            Token<?extends JsTokenId> token = ts.token();
-            TokenId id = token.id();
-
-            if (isBeginToken(id, doc, ts)) {
-                // No matching dot for "do" used in conditionals etc.)) {
-                if (balance == 0) {
-                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
-                }
-
-                balance--;
-            } else if (isEndToken(id, doc, ts)) {
-                balance++;
-            }
-        }
-
-        return OffsetRange.NONE;
-    }
-
-    public static OffsetRange findEnd(BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
-        int balance = 0;
-
-        while (ts.moveNext()) {
-            Token<?extends JsTokenId> token = ts.token();
-            TokenId id = token.id();
-
-            if (isBeginToken(id, doc, ts)) {
-                balance--;
-            } else if (isEndToken(id, doc, ts)) {
-                if (balance == 0) {
-                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
-                }
-
-                balance++;
-            }
-        }
-
-        return OffsetRange.NONE;
-    }
-    
-//    /** Determine whether "do" is an indent-token (e.g. matches an end) or if
-//     * it's simply a separator in while,until,for expressions)
-//     */
-//    public static boolean isEndmatchingDo(BaseDocument doc, int offset) {
-//        // In the following case, do is dominant:
-//        //     expression.do 
-//        //        whatever
-//        //     end
-//        //
-//        // However, not here:
-//        //     while true do
-//        //        whatever
-//        //     end
-//        //
-//        // In the second case, the end matches the while, but in the first case
-//        // the end matches the do
-//        
-//        // Look at the first token of the current line
-//        try {
-//            int first = Utilities.getRowFirstNonWhite(doc, offset);
-//            if (first != -1) {
-//                Token<? extends JsTokenId> token = getToken(doc, first);
-//                if (token != null) {
-//                    TokenId id = token.id();
-//                    if (id == JsTokenId.WHILE || id == JsTokenId.UNTIL || id == JsTokenId.FOR) {
-//                        return false;
-//                    }
-//                }
-//            }
-//        } catch (BadLocationException ble) {
-//            Exceptions.printStackTrace(ble);
-//        }
-//        
-//        return true;
-//    }
-
-    /**
-     * Return true iff the given token is a token that should be matched
-     * with a corresponding "end" token, such as "begin", "def", "module",
-     * etc.
-     */
-    public static boolean isBeginToken(TokenId id, BaseDocument doc, int offset) {
-//        if (id == JsTokenId.DO) {
-//            return isEndmatchingDo(doc, offset);
-//        }
-        return END_PAIRS.contains(id);
-    }
-
-    /**
-     * Return true iff the given token is a token that should be matched
-     * with a corresponding "end" token, such as "begin", "def", "module",
-     * etc.
-     */
-    public static boolean isEndToken(TokenId id, BaseDocument doc, int offset) {
-//        return (id == JsTokenId.END);
-        return false;
-    }
-
     private static OffsetRange findMultilineRange(TokenSequence<? extends JsTokenId> ts) {
         int startOffset = ts.offset();
         JsTokenId id = ts.token().id();
@@ -581,71 +475,11 @@ public class LexUtilities {
     }
     
     /**
-     * Return true iff the given token is a token that should be matched
-     * with a corresponding "end" token, such as "begin", "def", "module",
-     * etc.
-     */
-    public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
-//        if (id == JsTokenId.IF) {
-//        }
-//        return END_PAIRS.contains(id);
-        return false;
-    }
-
-    public static boolean isEndToken(TokenId id, BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
-//        return (id == JsTokenId.END);
-        return false;
-    }
-    
-    /**
      * Return true iff the given token is a token that indents its content,
      * such as the various begin tokens as well as "else", "when", etc.
      */
     public static boolean isIndentToken(TokenId id) {
         return INDENT_WORDS.contains(id);
-    }
-
-    /** Compute the balance of begin/end tokens on the line.
-     * @param doc the document
-     * @param offset The offset somewhere on the line
-     * @param upToOffset If true, only compute the line balance up to the given offset (inclusive),
-     *   and if false compute the balance for the whole line
-     */
-    public static int getBeginEndLineBalance(BaseDocument doc, int offset, boolean upToOffset) {
-        try {
-            int begin = Utilities.getRowStart(doc, offset);
-            int end = upToOffset ? offset : Utilities.getRowEnd(doc, offset);
-
-            TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, begin);
-            if (ts == null) {
-                return 0;
-            }
-
-            ts.move(begin);
-
-            if (!ts.moveNext()) {
-                return 0;
-            }
-
-            int balance = 0;
-
-            do {
-                Token<?extends JsTokenId> token = ts.token();
-                TokenId id = token.id();
-
-                if (isBeginToken(id, doc, ts)) {
-                    balance++;
-                } else if (isEndToken(id, doc, ts)) {
-                    balance--;
-                }
-            } while (ts.moveNext() && (ts.offset() <= end));
-
-            return balance;
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-
-            return 0;
-        }
     }
 
     /** Compute the balance of begin/end tokens on the line */
