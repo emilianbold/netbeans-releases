@@ -79,7 +79,7 @@ public class MissingClientPanel extends javax.swing.JPanel {
             css2.addStyleSheet(css);
             kit.setStyleSheet(css2);
         }
-        textPane.setBackground(new java.awt.Color(0,0,0,0)); // windows and nimbus workaround see issue
+        textPane.setBackground(new java.awt.Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
     }
 
     /** This method is called from within the constructor to
