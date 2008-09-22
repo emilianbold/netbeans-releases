@@ -241,7 +241,7 @@ public abstract class InputProxy {
             // delete the file
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
             if (cp != null) {
-                cp.run(hkey, "rm " + filename, null); // NOI18N
+                cp.run(hkey, "rm -f " + filename, null); // NOI18N
             }
         }
     }
