@@ -96,7 +96,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class);
         conf = addServerTests(Server.GLASSFISH, conf,"testOpenProjects","testRunProject","testSetBreakpoint",
-                "testDebugProject","testDebugReload","testAttachDebugger","testDebugAfterBreakpoint",
+                "testDebugProject","testDebugReload"/*,"testAttachDebugger"*/,"testDebugAfterBreakpoint",
                 "testDebugAndStopServer","testStartAnotherSession","testJavaSession","testStopServer");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
@@ -231,6 +231,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     public void testDebugProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
         new DebugProjectAction().perform(rootNode);
+        Utils.confirmClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
     }
 
@@ -242,7 +243,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
      */
     public void testDebugReload() {
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
-        Utils.confirmClientSideDebuggingMeassage();
         // check breakpoint reached
         // wait status text "Thread main stopped at SampleClass1.java:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N

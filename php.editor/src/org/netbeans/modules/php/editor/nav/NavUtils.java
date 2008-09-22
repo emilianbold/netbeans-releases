@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -154,6 +155,12 @@ public class NavUtils {
                 result = a.getElement(leaf);
                 previous = leaf;
                 continue;
+            } else if (leaf instanceof FormalParameter) {
+                FormalParameter param = (FormalParameter) leaf;
+                Identifier type = param.getParameterType();
+                if (type != null && offset < type.getEndOffset()) {
+                    return a.getElement(type);
+                }
             }
 
             if (leaf instanceof Variable && !(leaf instanceof ArrayAccess)) {

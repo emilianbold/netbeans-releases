@@ -571,14 +571,19 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             }
         }
         
-        private Collection<ColoringAttributes> getMethodColoring(ExecutableElement mdecl) {
+        private Collection<ColoringAttributes> getMethodColoring(ExecutableElement mdecl, boolean nct) {
             Collection<ColoringAttributes> c = new ArrayList<ColoringAttributes>();
             
             addModifiers(mdecl, c);
             
-            if (mdecl.getKind() == ElementKind.CONSTRUCTOR)
+            if (mdecl.getKind() == ElementKind.CONSTRUCTOR) {
                 c.add(ColoringAttributes.CONSTRUCTOR);
-            else
+
+                //#146820:
+                if (nct && mdecl.getEnclosingElement() != null && info.getElements().isDeprecated(mdecl.getEnclosingElement())) {
+                    c.add(ColoringAttributes.DEPRECATED);
+                }
+            } else
                 c.add(ColoringAttributes.METHOD);
             
             return c;
@@ -615,10 +620,10 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
         private static final Set<Kind> LITERALS = EnumSet.of(Kind.BOOLEAN_LITERAL, Kind.CHAR_LITERAL, Kind.DOUBLE_LITERAL, Kind.FLOAT_LITERAL, Kind.INT_LITERAL, Kind.LONG_LITERAL, Kind.STRING_LITERAL);
 
         private void handlePossibleIdentifier(TreePath expr, Collection<UseTypes> type) {
-            handlePossibleIdentifier(expr, type, null, false);
+            handlePossibleIdentifier(expr, type, null, false, false);
         }
         
-        private void handlePossibleIdentifier(TreePath expr, Collection<UseTypes> type, Element decl, boolean providesDecl) {
+        private void handlePossibleIdentifier(TreePath expr, Collection<UseTypes> type, Element decl, boolean providesDecl, boolean nct) {
             
             if (Utilities.isKeyword(expr.getLeaf())) {
                 //ignore keywords:
@@ -649,7 +654,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             }
             
             if (decl != null && decl instanceof ExecutableElement) {
-                c = getMethodColoring((ExecutableElement) decl);
+                c = getMethodColoring((ExecutableElement) decl, nct);
             }
             
             if (decl != null && (decl.getKind().isClass() || decl.getKind().isInterface())) {
@@ -1142,7 +1147,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             }
             
             typeUsed(info.getTrees().getElement(tp), tp);
-	    handlePossibleIdentifier(tp, EnumSet.of(UseTypes.EXECUTE), info.getTrees().getElement(getCurrentPath()), true);
+            handlePossibleIdentifier(tp, EnumSet.of(UseTypes.EXECUTE), info.getTrees().getElement(getCurrentPath()), true, true);
             
             Element clazz = info.getTrees().getElement(tp);
             

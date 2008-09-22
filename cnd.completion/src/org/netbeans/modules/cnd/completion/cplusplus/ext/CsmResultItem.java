@@ -761,7 +761,7 @@ public abstract class CsmResultItem
             }
             return false;
         }
-
+        
         private boolean isAfterShiftOperator(JTextComponent c) {
             TokenSequence<CppTokenId> ts;
             ts = CndLexerUtilities.getCppTokenSequence(c, 0);
@@ -771,17 +771,25 @@ public abstract class CsmResultItem
             }
             boolean result = false;
             while (ts.offset() < substituteOffset) {
-                if (ts.token().id().equals(CppTokenId.LTLT) ||
-                        ts.token().id().equals(CppTokenId.GTGT)) {
-                    result = true;
-                } else if (!ts.token().id().equals(CppTokenId.IDENTIFIER) &&
-                        !ts.token().id().equals(CppTokenId.SCOPE) &&
-                        !ts.token().id().equals(CppTokenId.BLOCK_COMMENT) &&
-                        !ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT) &&
-                        !ts.token().id().equals(CppTokenId.NEW_LINE) &&
-                        !ts.token().id().equals(CppTokenId.LINE_COMMENT) &&
-                        !ts.token().id().equals(CppTokenId.WHITESPACE)) {
-                    result = false;
+                CppTokenId id = ts.token().id();
+                switch (id) {
+                    case LTLT:
+                    case GTGT:
+                        result = true;
+                        break;
+                    default:
+                        switch (id) {
+                            case IDENTIFIER:
+                            case SCOPE:
+                            case BLOCK_COMMENT:
+                            case DOXYGEN_COMMENT:
+                            case NEW_LINE:
+                            case LINE_COMMENT:
+                            case WHITESPACE:
+                                break;
+                            default:
+                                result = false;
+                        }
                 }
                 if (!ts.moveNext()) {
                     return false;

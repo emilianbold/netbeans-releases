@@ -148,7 +148,7 @@ public class APTDriverImpl {
                     if (!withTokens) {
                         TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(path, reader);
                         // build apt from token stream
-                        apt = APTBuilder.buildAPT(path, ts);
+                        apt = APTBuilder.buildAPTLight(path, ts);
                         fullAPT = null;
                         if (apt != null) {
                             if (APTTraceFlags.TEST_APT_SERIALIZATION) {
@@ -160,7 +160,7 @@ public class APTDriverImpl {
                                 }
                             }
                             lightAPT = apt;
-                            _putAPTFile(path, lightAPT, withTokens);
+                            _putAPTFile(path, lightAPT, false);
                         }
                     } else {
                         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, reader);
@@ -176,14 +176,9 @@ public class APTDriverImpl {
                                     System.err.println("error on serialization apt for file " + file.getAbsolutePath()); // NOI18N
                                 }
                             }
-                            _putAPTFile(path, apt, withTokens);
-                            APTFile aptLight = (APTFile) APTBuilder.buildAPTLight(apt);
-                            lightAPT = aptLight;
-                            _putAPTFile(path, aptLight, withTokens);
-                            if (!withTokens) {
-                                // were asked to return apt light
-                                apt = aptLight;
-                            }
+                            _putAPTFile(path, fullAPT, true);
+                            lightAPT = (APTFile) APTBuilder.buildAPTLight(apt);
+                            _putAPTFile(path, lightAPT, false);
                         }
                     }
                 } finally {

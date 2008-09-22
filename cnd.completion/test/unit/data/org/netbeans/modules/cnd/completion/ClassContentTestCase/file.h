@@ -23,6 +23,7 @@ public:
   
 class F {
 public:
+    F();
     int i;
     class {
     public:

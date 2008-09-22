@@ -95,9 +95,9 @@ public final class CompositeFCS extends FontColorSettings {
         StyleConstants.Foreground, Color.black,
         StyleConstants.Background, Color.white,
         StyleConstants.FontFamily, "Monospaced", //NOI18N
-        StyleConstants.FontSize, DEFAULT_FONT_SIZE < 12 ? 12 : DEFAULT_FONT_SIZE
+        StyleConstants.FontSize, DEFAULT_FONT_SIZE < 13 ? 13 : DEFAULT_FONT_SIZE
     );
-  
+
     // Special instance to mark 'no attributes' for a token. This should never
     // be passed outside of this class, use SimpleAttributeSet.EMPTY instead. There
     // might be other code doing 'attribs == SAS.EMPTY'.
