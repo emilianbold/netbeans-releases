@@ -112,22 +112,8 @@ public final class ProjectManager {
         return DEFAULT;
     }
     
-    private static final Executor FS_EXEC = new Executor() {
-        public void execute(final Runnable command) {
-            try {
-                FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
-                    public void run() throws IOException {
-                        command.run();
-                    }
-                });
-            } catch (IOException ex) {
-                throw (IllegalStateException) new IllegalStateException().initCause(ex);
-            }
-        }
-    };
+    private static final Mutex MUTEX = new Mutex();
 
-    private static final Mutex MUTEX = new Mutex(new Mutex.Privileged(), FS_EXEC);
-    
     /**
      * Get a read/write lock to be used for all project metadata accesses.
      * All methods relating to recognizing and loading projects, saving them,

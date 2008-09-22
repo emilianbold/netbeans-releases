@@ -2541,9 +2541,11 @@ org.netbeans.modules.editor.NbEditorUI$SideBarsListener
 org.netbeans.modules.editor.NbEditorUI$SystemActionPerformer
 org.netbeans.modules.editor.NbEditorUtilities
 org.netbeans.modules.editor.NbLocalizer
+org.netbeans.modules.editor.bookmarks.BookmarksPersistence
+org.netbeans.modules.editor.bookmarks.BookmarksPersistence$ProjectsListener
 org.netbeans.modules.editor.bookmarks.DocumentUnmodifiedListener
 org.netbeans.modules.editor.bookmarks.EditorBookmarksModule
-org.netbeans.modules.editor.bookmarks.EditorBookmarksModule$BookmarksSettingsInitializer
+org.netbeans.modules.editor.bookmarks.EditorBookmarksModule$BookmarksInitializer
 org.netbeans.modules.editor.bookmarks.NbBookmarkManager
 org.netbeans.modules.editor.bookmarks.NbBookmarkManager$Factory
 org.netbeans.modules.editor.bookmarks.PersistentBookmarks
@@ -3625,6 +3627,8 @@ org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory
 org.netbeans.modules.refactoring.api.ui.ExplorerContext
 org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory
 org.netbeans.modules.refactoring.impl.ClipboardConvertor
+org.netbeans.modules.refactoring.java.CopyHandler
+org.netbeans.modules.refactoring.java.RefactoringModule
 org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory
 org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider
 org.netbeans.modules.refactoring.java.ui.ChangeParametersAction
