@@ -221,6 +221,9 @@ public class SunASIntegrationPanel extends AttachWizardPanel {
     public void onExit(AttachWizardContext context) {
         SunASAutoIntegrationProvider provider = (SunASAutoIntegrationProvider) getContext().getIntegrationProvider();
         boolean isModified = false;
+        if (provider.getInstallationPath() == null || provider.getDomain() == null || provider.getTargetJavaHome() == null) {
+            return;
+        }
 
         if (!provider.getInstallationPath().equals(this.model.getInstallPath())) {
             isModified = true;

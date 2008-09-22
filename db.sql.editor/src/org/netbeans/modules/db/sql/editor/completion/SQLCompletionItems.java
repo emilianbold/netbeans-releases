@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
@@ -103,11 +105,11 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         });
     }
 
-    public void addAliases(List<String> aliases, String prefix, final boolean quote, final int substitutionOffset) {
-        filterStrings(aliases, null, prefix, new Handler<String>() {
-            public void handle(String alias) {
+    public void addAliases(Map<String, QualIdent> aliases, String prefix, final boolean quote, final int substitutionOffset) {
+        filterMap(aliases, null, prefix, new ParamHandler<String, QualIdent>() {
+            public void handle(String alias, QualIdent tableName) {
                 // Issue 145173: do not quote aliases.
-                items.add(SQLCompletionItem.alias(alias, alias, itemOffset + substitutionOffset));
+                items.add(SQLCompletionItem.alias(alias, tableName, alias, itemOffset + substitutionOffset));
             }
         });
     }
@@ -156,10 +158,11 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         return prefix == null || startsWithIgnoreCase(string, prefix);
     }
 
-    private static void filterStrings(Collection<String> strings, Set<String> restrict, String prefix, Handler<String> handler) {
-        for (String string : strings) {
+    private static <P> void filterMap(Map<String, P> strings, Set<String> restrict, String prefix, ParamHandler<String, P> handler) {
+        for (Entry<String, P> entry : strings.entrySet()) {
+            String string = entry.getKey();
             if ((restrict == null || restrict.contains(string)) && filter(string, prefix)) {
-                handler.handle(string);
+                handler.handle(string, entry.getValue());
             }
         }
     }
@@ -177,5 +180,10 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     private interface Handler<T> {
 
         void handle(T object);
+    }
+
+    private interface ParamHandler<T, P> {
+
+        void handle(T object, P param);
     }
 }

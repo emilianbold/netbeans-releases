@@ -287,7 +287,12 @@ public final class RubyProjectGenerator {
         ep.setProperty(RubyProjectProperties.SOURCE_ENCODING, enc.name());
         ep.setProperty(RubyProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass); // NOI18N
         RubyProjectProperties.storePlatform(ep, platform);
-        helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
+        helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        Util.logUsage(RubyProjectGenerator.class, "USG_PROJECT_CREATE_RUBY", // NOI18N
+                platform.getInfo().getKind(),
+                platform.getInfo().getPlatformVersion(),
+                platform.getInfo().getGemVersion());
+
         return helper;
     }
 

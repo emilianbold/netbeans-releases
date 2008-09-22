@@ -46,14 +46,13 @@ import java.beans.PropertyChangeSupport;
 import java.io.InputStream;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -70,7 +69,10 @@ import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.DbMetaDataListenerSupport;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.util.UIUtils;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 
 public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         implements Node.Cookie, Comparable {
@@ -443,7 +445,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     public DatabaseSpecification getSpecification()
     {
-        DatabaseSpecification spec = (DatabaseSpecification)get(SPECIFICATION);
+        DatabaseSpecification spec = (DatabaseSpecification)getParent(CONNECTION).get(SPECIFICATION);
         if (spec == null) return spec;
         String adaname = getDatabaseAdaptorClassName();
         if (!spec.getMetaDataAdaptorClassName().equals(adaname)) {
@@ -455,7 +457,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     public void setSpecification(DatabaseSpecification spec)
     {
-        put(SPECIFICATION, spec);
+        getParent(CONNECTION).put(SPECIFICATION, spec);
     }
 
     public String getDriver()
@@ -471,7 +473,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     public Connection getConnection()
     {
-        return (Connection)get(CONNECTION);
+        return (Connection)getParent(CONNECTION).get(CONNECTION);
     }
 
     public void setConnection(Connection con) throws DatabaseException
@@ -479,10 +481,10 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         Connection oldval = getConnection();
         if (con != null) {
             if (oldval != null && oldval.equals(con)) return;
-            put(CONNECTION, con);
+            getParent(CONNECTION).put(CONNECTION, con);
             setConnected(true);
         } else {
-            remove(CONNECTION);   
+            getParent(CONNECTION).remove(CONNECTION);
             setConnected(false);
         }
 
@@ -511,6 +513,36 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             ConnectionNodeInfo cinfo = (ConnectionNodeInfo)getParent(CONNECTION);
             return cinfo.isConnected();
         }
+    }
+    /**
+     * Make sure this is a valid connection, and if it's not, try
+     * to reconnect.
+     *
+     * @throws org.netbeans.api.db.explorer.DatabaseException if we're
+     *
+     */
+    public boolean ensureConnected() throws DatabaseException {
+        final org.netbeans.api.db.explorer.DatabaseConnection dbconn = getDatabaseConnection().getDatabaseConnection();
+
+        assert(dbconn != null);
+
+        Connection conn = dbconn.getJDBCConnection(true);
+
+        if (conn == null) {
+            Mutex.EVENT.readAccess(new Action() {
+                public Object run() {
+                    boolean connect = UIUtils.displayYesNoDialog(NbBundle.getMessage(ConnectionNodeInfo.class, "MSG_ConnectionLost"));
+                    if (connect) {
+                        ConnectionManager.getDefault().showConnectionDialog(dbconn);
+                    }
+                    return null;
+                }
+            });
+        }
+
+        conn = dbconn.getJDBCConnection();
+
+        return (conn != null);
     }
 
     public DatabaseConnection getDatabaseConnection()
@@ -875,14 +907,14 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
      *@return Value of property driverSpecification.
      */
     public DriverSpecification getDriverSpecification() {
-        return (DriverSpecification) get(DRIVER_SPECIFICATION);
+        return (DriverSpecification) getParent(CONNECTION).get(DRIVER_SPECIFICATION);
     }
 
     /** Setter for property driverSpecification.
      *@param driverSpecification New value of property driverSpecification.
      */
     public void setDriverSpecification(DriverSpecification driverSpecification) {
-        put(DRIVER_SPECIFICATION, driverSpecification);
+        getParent(CONNECTION).put(DRIVER_SPECIFICATION, driverSpecification);
     }
     
     public void addChangeListener(ChangeListener listener) {

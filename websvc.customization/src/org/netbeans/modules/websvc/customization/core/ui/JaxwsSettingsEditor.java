@@ -39,9 +39,9 @@
 package org.netbeans.modules.websvc.customization.core.ui;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -68,20 +68,25 @@ public class JaxwsSettingsEditor implements WSEditor {
         service = node.getLookup().lookup(Service.class);
         client = node.getLookup().lookup(Client.class);
         WsimportOptions wsimportOptions = null;
-        if(service != null){
+        if (service != null) {
             wsimportOptions = service.getWsImportOptions();
-        }else if (client != null){
+        } else if (client != null) {
             wsimportOptions = client.getWsImportOptions();
         }
-        Map<String, String> options = new HashMap<String, String>();
-        if(wsimportOptions != null){
+        List<WsimportOption> options = new ArrayList<WsimportOption>();
+        List<WsimportOption> jaxbOptions = new ArrayList<WsimportOption>();
+        if (wsimportOptions != null) {
             WsimportOption[] wsoptions = wsimportOptions.getWsimportOptions();
-            for(int i = 0; i < wsoptions.length; i++){
+            for (int i = 0; i < wsoptions.length; i++) {
                 WsimportOption wsimportOption = wsoptions[i];
-                options.put(wsimportOption.getWsimportOptionName(), wsimportOption.getWsimportOptionValue());
+                if (wsimportOption.getJaxbOption() != null && wsimportOption.getJaxbOption()) {
+                    jaxbOptions.add(wsimportOption);
+                } else {
+                    options.add(wsimportOption);
+                }
             }
         }
-        panel = new WsimportOptionsPanel(options);
+        panel = new WsimportOptionsPanel(options, jaxbOptions, wsimportOptions);
 
         return panel;
     }
@@ -91,25 +96,34 @@ public class JaxwsSettingsEditor implements WSEditor {
     }
 
     public void save(Node node, JaxWsModel jaxWsModel) {
-        try {
-            Map<String, String> options = getWsimportOptions();
-            Set<String> keys = options.keySet();
+        try {           
             WsimportOptions wsimportOptions = null;
             if (service != null) {
                 wsimportOptions = service.getWsImportOptions();
+                if (wsimportOptions == null) {
+                    wsimportOptions = service.newWsimportOptions();
+                }
             } else if (client != null) {
                 wsimportOptions = client.getWsImportOptions();
-            }
-            if (wsimportOptions != null) {
-                wsimportOptions.clearWsimportOptions();
-                for (String key : keys) {
-                    WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
-                    wsimportOption.setWsimportOptionName(key);
-                    wsimportOption.setWsimportOptionValue(options.get(key));
-                    wsimportOptions.addWsimportOption(wsimportOption);
+                if (wsimportOptions == null) {
+                    wsimportOptions = client.newWsimportOptions();
                 }
-                jaxWsModel.write();
             }
+
+            wsimportOptions.clearWsimportOptions();
+
+            List<WsimportOption> options = getWsimportOptions();
+            for(WsimportOption option : options){
+                wsimportOptions.addWsimportOption(option);
+            }
+            
+            options = getJaxbOptions();
+            for(WsimportOption option : options){
+                option.setJaxbOption(true);
+                wsimportOptions.addWsimportOption(option);
+            }
+   
+            jaxWsModel.write();
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -122,7 +136,11 @@ public class JaxwsSettingsEditor implements WSEditor {
         return NbBundle.getMessage(JaxwsSettingsEditor.class, "JAXWS_SETTINGS_DESC");
     }
 
-    private Map<String, String> getWsimportOptions() {
+    private List<WsimportOption> getWsimportOptions() {
         return panel.getWsimportOptions();
+    }
+
+    private List<WsimportOption> getJaxbOptions() {
+        return panel.getJaxbOptions();
     }
 }

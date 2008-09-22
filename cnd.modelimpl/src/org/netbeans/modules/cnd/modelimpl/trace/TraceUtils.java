@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import antlr.Token;
 import antlr.collections.AST;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
 /**
@@ -67,5 +68,19 @@ public class TraceUtils {
             return "";
         }
     }
-    
+
+    public static final String getMacroString(APTPreprocHandler preprocHandler, String[] logMacros) {
+        StringBuilder sb = new StringBuilder();
+        if (logMacros != null && logMacros.length > 0) {
+            for (int i = 0; i < logMacros.length; i++) {
+                sb.append(String.format(" #defined(%s)=%b",  //NOI18N
+                        logMacros[i], preprocHandler.getMacroMap().isDefined(logMacros[i])));
+            }
+        }        
+        return sb.toString();
+    }
+
+    public static final String getPreprocStateString(APTPreprocHandler.State preprocState) {
+        return String.format("valid=%b, compile-context=%b", preprocState.isValid(), preprocState.isCompileContext());//NOI18N
+    }   
 }

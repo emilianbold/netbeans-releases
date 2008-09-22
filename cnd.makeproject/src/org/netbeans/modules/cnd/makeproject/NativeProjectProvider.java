@@ -91,20 +91,24 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void runOnCodeModelReadiness(Runnable task) {
-        DevelopmentHostConfiguration host = ((MakeConfiguration)getMakeConfigurationDescriptor().getConfs().getActive()).getDevelopmentHost();
-        CompilerSetManagerEvents.get(host.getName()).runOnCodeModelReadiness(task);
+        if (getMakeConfigurationDescriptor() != null) {
+            DevelopmentHostConfiguration host = ((MakeConfiguration)getMakeConfigurationDescriptor().getConfs().getActive()).getDevelopmentHost();
+            CompilerSetManagerEvents.get(host.getName()).runOnCodeModelReadiness(task);
+        }
     }
-    
+
     private void addMyListeners() {
-        if (getMakeConfigurationDescriptor() != null)
+        if (getMakeConfigurationDescriptor() != null) {
             getMakeConfigurationDescriptor().getConfs().addPropertyChangeListener(this);
+        }
     }
-    
+
     private void removeMyListeners() {
-        if (getMakeConfigurationDescriptor() != null)
+        if (getMakeConfigurationDescriptor() != null) {
             getMakeConfigurationDescriptor().getConfs().removePropertyChangeListener(this);
+        }
     }
-    
+
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
         return (MakeConfigurationDescriptor)projectDescriptorProvider.getConfigurationDescriptor();
     }

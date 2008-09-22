@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.execution;
 
 import java.io.File;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -55,13 +56,21 @@ public class Unbuffer {
 
     private Unbuffer() {
     }
+
+    public static String getPath(String hkey) {
+        if (hkey == null || CompilerSetManager.LOCALHOST.equals(hkey)) {
+            return Unbuffer.getLocalPath();
+        } else {
+            return Unbuffer.getRemotePath(hkey);
+        }
+    }
     
     public static String getLocalPath() {
         String unbufferName = getLibName(PlatformInfo.localhost().getPlatform());
         if (unbufferName == null) {
             return null;
         }
-        File file = InstalledFileLocator.getDefault().locate("bin/" + unbufferName, null, false);
+        File file = InstalledFileLocator.getDefault().locate("bin/" + unbufferName, null, false); // NOI18N
         if (file != null && file.exists()) {
             return fixPath(file.getAbsolutePath());
         } else {
@@ -78,7 +87,7 @@ public class Unbuffer {
         if (path == null) {
             return null;
         }
-        String unbufferName = Unbuffer.getLibName(PlatformInfo.getDefault(host).getPlatform());
+        String unbufferName = getLibName(PlatformInfo.getDefault(host).getPlatform());
         if (unbufferName != null) {
             path += unbufferName;
             // check file existence

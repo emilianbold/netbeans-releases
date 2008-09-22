@@ -91,47 +91,20 @@ public class FacesContainer {
     private UIViewRoot defViewRoot;
     private ClassLoader loader;
 
-    // XXX #6460001.
-    private static final String SYS_PROP_SAX_PARSER_FACTORY = "javax.xml.parsers.SAXParserFactory"; // NOI18N
-    private static final String SYS_PROP_DOM_PARSER_FACTORY = "javax.xml.parsers.DocumentBuilderFactory"; // NO18N
-    private static final String SAX_PARSER_FACTORY = "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"; // NOI18N
-    private static final String DOM_PARSER_FACTORY = "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl"; // NOI18N
-    private static final String NB_STARTUP_SAX_FACTORY = "org.netbeans.core.startup.SAXFactoryImpl"; // NOI18N
-    private static final String NB_STARTUP_DOM_FACTORY = "org.netbeans.core.startup.DOMFactoryImpl"; // NOI18N
-
     /**
      * Constructor for the <em>FacesContainer</em>. Only one such object will exist at any given
      * time for a project. Perform the initialization of the mock runtime container (server) as well
      * as any state variables required
      */
     public FacesContainer(ClassLoader cl, boolean isPortletContainer) {
-        // XXX #6460001 Hack. There could be still the NB startup factories, which would cause problem with our context class loader.
-        String origSaxProperty = System.getProperty(SYS_PROP_SAX_PARSER_FACTORY);
-        String origDomProperty = System.getProperty(SYS_PROP_DOM_PARSER_FACTORY);
-        System.setProperty(SYS_PROP_SAX_PARSER_FACTORY, SAX_PARSER_FACTORY);
-        System.setProperty(SYS_PROP_DOM_PARSER_FACTORY, DOM_PARSER_FACTORY);
+        //Trace.enableTraceCategory("jsfsupport.container");
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            //Trace.enableTraceCategory("jsfsupport.container");
-            ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-            try {
-                Thread.currentThread().setContextClassLoader(cl);
-                this.portletContainer = isPortletContainer;
-                initialize(cl);
-            } finally {
-                Thread.currentThread().setContextClassLoader(oldContextClassLoader);
-            }
+            Thread.currentThread().setContextClassLoader(cl);
+            this.portletContainer = isPortletContainer;
+            initialize(cl);
         } finally {
-            // XXX #6460001. Hack. By this time the startup shouldn't be getting back, otherwise it would cause issues later.
-            if (!NB_STARTUP_SAX_FACTORY.equals(origSaxProperty)) {
-                if (origSaxProperty != null) {
-                    System.setProperty(SYS_PROP_SAX_PARSER_FACTORY, origSaxProperty);
-                }
-            }
-            if (!NB_STARTUP_DOM_FACTORY.equals(origDomProperty)) {
-                if (origDomProperty != null) {
-                    System.setProperty(SYS_PROP_DOM_PARSER_FACTORY, origDomProperty);
-                }
-            }
+            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
     }
 
