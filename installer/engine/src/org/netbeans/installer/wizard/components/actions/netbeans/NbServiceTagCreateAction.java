@@ -152,6 +152,8 @@ public class NbServiceTagCreateAction extends WizardAction {
                 createSTNetBeans(product, true);
             } else if (uid.equals("glassfish")) {
                 createSTGlassFish(product, true);
+            } else if (uid.equals("glassfish-mod")) {
+                createSTGlassFish(product, false);
             } else if (uid.equals("sjsas")) {
                 createSTGlassFish(product, false);
             } else if (uid.equals("jdk")) {
@@ -230,7 +232,9 @@ public class NbServiceTagCreateAction extends WizardAction {
         File location = gfProduct.getInstallationLocation();
         File gfJavaHome = SystemUtils.getCurrentJavaHome();//default
         try {
+            if(gfProduct.getVersion().getMajor() != 3) {
             gfJavaHome = GlassFishUtils.getJavaHome(location);
+            }
         } catch (IOException e) {
             LogManager.log(e);
         }
@@ -270,13 +274,18 @@ public class NbServiceTagCreateAction extends WizardAction {
             ServiceTag gfST = null;
             if (System.getProperty("netbeans.home") != null) {
                 // java.home system variable usually points to private jre with MacOS exception
-                final File javaHome = (!SystemUtils.isMacOS()) ? new File(gfJavaHome, "jre") : gfJavaHome;
+                final File jreHome = new File(gfJavaHome, "jre");
+                final File javaHome = (SystemUtils.isMacOS() || !jreHome.exists()) ? gfJavaHome : jreHome;
+                final String version = gfProduct.getVersion().getMajor() == 3 ? "v3" : "v2";
                 gfST = NbServiceTagSupport.createGfServiceTag(source,
                         javaHome.getAbsolutePath(),
                         JavaUtils.getVersion(gfJavaHome).toJdkStyle(),
-                        location.getAbsolutePath());
+                        location.getAbsolutePath(),
+                        version);
             }
-            File gfReg = new File(location, "lib/registration/servicetag-registry.xml");
+            final String registry = "lib/registration/servicetag-registry.xml";
+            final String relativeLocation = (gfProduct.getVersion().getMajor() == 3 ? "glassfish/" : "") + registry;
+            File gfReg = new File(location, relativeLocation);
 
             if (gfReg.exists()) {
                 Map<String, Object> map = new HashMap<String, Object>();
@@ -299,6 +308,8 @@ public class NbServiceTagCreateAction extends WizardAction {
                             "<platform_arch>" + System.getProperty("os.arch") + "</platform_arch>");
                 }
                 map.put("<source>Sun Java System Application Server Native Packages</source>",
+                        "<source>" + source + "</source>");
+                map.put("<source>GlassFish V3</source>",
                         "<source>" + source + "</source>");
                 // AppServer installation image has this incorrect vendor
                 map.put("Sun Micosystems Inc.",
