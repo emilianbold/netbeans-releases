@@ -718,6 +718,10 @@ public final class OpenProjectList {
         }
         // Noticed in #72006: save them, in case e.g. editor stored bookmarks when receiving PROPERTY_OPEN_PROJECTS.
         for (int i = 0; i < projects.length; i++) {
+            if (projects[i] instanceof LazyProject) {
+                //#147819 we need to ignore lazyProjects when saving, oh well.
+                continue;
+            }
             try {
                 ProjectManager.getDefault().saveProject(projects[i]);
             } catch (IOException e) {
