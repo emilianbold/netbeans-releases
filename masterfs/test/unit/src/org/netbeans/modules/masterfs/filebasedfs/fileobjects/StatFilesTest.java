@@ -58,6 +58,7 @@ import org.openide.filesystems.test.StatFiles;
 /**
  * @author Radek Matous
  */
+@RandomlyFails // at least 5 different test cases, sporadically in NB-Core-Build
 public class StatFilesTest extends NbTestCase {
 
     private StatFiles monitor;
@@ -92,7 +93,6 @@ public class StatFilesTest extends NbTestCase {
         return FileBasedFileSystem.getFileObject(f);
     }
 
-    @RandomlyFails
     public void testToFileObject() throws IOException {
         File workDir = getWorkDir();
         monitor.reset();
@@ -121,7 +121,6 @@ public class StatFilesTest extends NbTestCase {
         assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
     }
 
-    @RandomlyFails
     public void testGetCachedChildren() throws IOException {
         FileObject fobj = getFileObject(testFile);
         FileObject parent = fobj.getParent();
@@ -145,7 +144,6 @@ public class StatFilesTest extends NbTestCase {
 
     /** Testing that queries for siblings in fully expanded folder do not generate
      * new disk touches. */
-    @RandomlyFails // NB-Core-Build #1377
     public void testGetChildrenCaches() throws IOException {
         FileObject fobj = getFileObject(testFile);
         FileObject parent = fobj.getParent();
@@ -188,7 +186,6 @@ public class StatFilesTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails // frequent failures in NB-Core-Build
     public void testGetFileObject2() throws IOException {
         FileObject fobj = getFileObject(testFile);
         FileObject parent = fobj.getParent();

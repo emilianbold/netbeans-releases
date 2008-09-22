@@ -106,6 +106,20 @@ public final class Path {
      * @return e.g. "java.lang.String@82acb368"
      */
     public static String describeObject(Object obj) {
+        if (obj == null) {
+            // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/1393/testReport/org.netbeans.modules.projectapi/AuxiliaryConfigBasedPreferencesProviderTest/testReclaimable/
+            // java.lang.NullPointerException
+            //         at org.netbeans.insane.live.Path.describeObject(Path.java:109)
+            //         at org.netbeans.insane.live.Path.toString(Path.java:119)
+            //         at org.netbeans.insane.live.Path.toString(Path.java:121)
+            //         at java.lang.String.valueOf(String.java:2615)
+            //         at java.lang.StringBuilder.append(StringBuilder.java:116)
+            //         at org.netbeans.junit.NbTestCase.findRefsFromRoot(NbTestCase.java:1354)
+            //         at org.netbeans.junit.NbTestCase.assertGC(NbTestCase.java:1226)
+            //         at org.netbeans.junit.NbTestCase.assertGC(NbTestCase.java:1171)
+            //         at org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProviderTest.testReclaimable(AuxiliaryConfigBasedPreferencesProviderTest.java:256)
+            return "null";
+        }
         return obj.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(obj));
     }
 
