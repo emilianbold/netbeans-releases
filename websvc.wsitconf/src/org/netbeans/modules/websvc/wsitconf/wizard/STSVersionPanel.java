@@ -39,19 +39,56 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.explorer.infos;
+package org.netbeans.modules.websvc.wsitconf.wizard;
 
-import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
 
 /**
-* Interface of driver-related nodes.
-* @author Slavek Psenicka
-*/
-public interface ConnectionOperations
-{
-    public void connect()
-    throws DatabaseException;
+ * FinishableProxyWizardPanel.java - used decorator pattern to enable to finish 
+ * the original wizard panel, that is not finishable
+ * 
+ *
+ * @author mkuchtiak
+ */
+public class STSVersionPanel implements WizardDescriptor.Panel {
+    
+    private WizardDescriptor wizard;
+    private Project project;
 
-    public void disconnect()
-    throws DatabaseException;
+    private STSVersionPanelUI ui = null;
+    
+    /** Creates a new instance of ProxyWizardPanel */
+    public STSVersionPanel(WizardDescriptor wiz) {
+        wizard = wiz;
+        this.project = Templates.getProject(wizard);
+        ui = new STSVersionPanelUI(project);
+    }
+
+    public void addChangeListener(javax.swing.event.ChangeListener l) {
+    }
+
+    public void removeChangeListener(javax.swing.event.ChangeListener l) {
+    }
+
+    public void storeSettings(Object settings) {
+        wizard.putProperty(WizardProperties.VERSION, ui.getVersion());
+    }
+
+    public void readSettings(Object settings) {}
+
+    public boolean isValid() {
+        return true;
+    }
+
+    public java.awt.Component getComponent() {
+        ui.setVisible(true);
+        return ui;
+    }
+
+    public org.openide.util.HelpCtx getHelp() {
+        return wizard.getHelpCtx();
+    }
+    
 }

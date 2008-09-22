@@ -6,3 +6,7 @@ int main(int argc, char** argv) {
      // comment here
     return (0);
 }
+
+F::F() {
+    
+}

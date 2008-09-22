@@ -1502,7 +1502,8 @@ public class DefineCorrelationWizard implements WizardProperties {
             private List<CorrelationMapperTreeNode> getPartNodeChildList(Part part) {
                 SchemaComponent partSchemaComponent = getPartNodeSchemaComponent(part);
                 if (partSchemaComponent != null) {
-                    return getSchemaComponentNodeChildList(partSchemaComponent);                    
+                    return buildTreeNodeList(Arrays.asList(
+                           new SchemaComponent[] {partSchemaComponent}));
                 }
                 return null;
             }
@@ -1511,19 +1512,24 @@ public class DefineCorrelationWizard implements WizardProperties {
                 SchemaComponent parentSchemaComponent) {
                 List<SchemaComponent> childSchemaComponentList = 
                     getSchemaComponentChildList(parentSchemaComponent);
-                if ((childSchemaComponentList == null) ||
-                    (childSchemaComponentList.isEmpty())) return null;
+                return buildTreeNodeList(childSchemaComponentList);
+            }
+
+            private List<CorrelationMapperTreeNode> buildTreeNodeList(
+                List<SchemaComponent> schemaComponentList) {
+                if ((schemaComponentList == null) ||
+                    (schemaComponentList.isEmpty())) return null;
                 
-                List<CorrelationMapperTreeNode> childTreeNodeList = 
+                List<CorrelationMapperTreeNode> treeNodeList = 
                     new ArrayList<CorrelationMapperTreeNode>();
-                for (SchemaComponent childSchemaComponent : childSchemaComponentList) {
-                    String schemaNodeNamePattern = childSchemaComponent instanceof SimpleType ?
+                for (SchemaComponent schemaComponent : schemaComponentList) {
+                    String schemaNodeNamePattern = schemaComponent instanceof SimpleType ?
                         SIMPLE_TYPE_NAME_PATTERN : null;
-                    CorrelationMapperTreeNode childTreeNode = new CorrelationMapperTreeNode(
-                        childSchemaComponent, schemaNodeNamePattern);
-                    childTreeNodeList.add(childTreeNode);
+                    CorrelationMapperTreeNode treeNode = new CorrelationMapperTreeNode(
+                        schemaComponent, schemaNodeNamePattern);
+                    treeNodeList.add(treeNode);
                 }
-                return childTreeNodeList;
+                return treeNodeList;
             }
             
             private List<SchemaComponent> getSchemaComponentChildList(

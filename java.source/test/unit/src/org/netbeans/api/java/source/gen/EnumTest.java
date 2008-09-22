@@ -890,6 +890,56 @@ public class EnumTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
+    public void testConstantRename143435() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A,\n" +
+            "    B,\n" +
+            "    C\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A2,\n" +
+            "    B,\n" +
+            "    C\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        VariableTree vt = (VariableTree) clazz.getMembers().get(1);
+                        VariableTree copy = make.setLabel(vt, "A2");
+                        workingCopy.rewrite(vt, copy);
+                    }
+                }
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

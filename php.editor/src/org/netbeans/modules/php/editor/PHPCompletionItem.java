@@ -105,6 +105,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         return getName();
     }
 
+    public int getSortPrioOverride() {
+        return 0;
+    }
+
     public String getLhsHtml(HtmlFormatter formatter) {
         formatter.appendText(getName());
         return formatter.getText();
@@ -133,15 +137,6 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     public String getCustomInsertTemplate() {
         return null;
-    }
-
-    public List<String> getInsertParams() {
-        return null;
-    }
-
-    public String[] getParamListDelimiters() {
-        return new String[]{"(", ")"}; // NOI18N
-
     }
 
     public String getRhsHtml(HtmlFormatter formatter) {
@@ -438,6 +433,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    static class ClassConstantItem extends VariableItem {
+        ClassConstantItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CONSTANT;
+        }
+    }
+
+
     static class SpecialFunctionItem extends KeywordItem{
         public SpecialFunctionItem(String fncName, CompletionRequest request) {
             super(fncName, request);
@@ -559,7 +566,6 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return getFunction().isResolved();
         }
 
-        @Override
         public List<String> getInsertParams() {
             List<String> insertParams = new LinkedList<String>();
             String parameters[] = getFunction().getParameters().toArray(new String[0]);

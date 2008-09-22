@@ -74,7 +74,7 @@ public abstract class PHPTestBase extends GsfTestBase {
         return PHPLanguage.PHP_MIME_TYPE;
     }
     
-    // Called via reflection from NbUtilities. This is necessary because
+    // Called via reflection from GsfUtilities. This is necessary because
     // during tests, going from a FileObject to a BaseDocument only works
     // if all the correct data loaders are installed and working - and that
     // hasn't been the case; we end up with PlainDocuments instead of BaseDocuments.

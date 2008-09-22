@@ -130,7 +130,8 @@ public class RubyPlatformCustomizer extends JPanel {
     }
 
     private RubyPlatform getSelectedPlatform() {
-        return (RubyPlatform) platformsList.getSelectedValue();
+        Object value = platformsList.getSelectedValue();
+        return value instanceof RubyPlatform ? (RubyPlatform) value : null;
     }
 
     private void refreshPlatformList() {

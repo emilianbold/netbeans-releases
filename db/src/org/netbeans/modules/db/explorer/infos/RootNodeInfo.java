@@ -83,9 +83,10 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     private Collection<DbNodeLoader> nodeLoaders;
     
     // maps nodes to their associated RegisteredNodeInfo instance
-    // @GuardedBy("nodeMap")
-    private HashMap<Node, RegisteredNodeInfo> nodeMap = new HashMap<Node, RegisteredNodeInfo>();
+    // @GuardedBy("node2RegNodeInfo")
+    private final Map<Node, RegisteredNodeInfo> node2RegNodeInfo = new HashMap<Node, RegisteredNodeInfo>();
 
+    // @GuardedBy("conn2Info")
     final private Map<DatabaseConnection, ConnectionNodeInfo> conn2Info = new HashMap<DatabaseConnection, ConnectionNodeInfo>();
 
     private static Logger LOGGER = 
@@ -221,14 +222,14 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     {
         RegisteredNodeInfo info = null;
         
-        synchronized (nodeMap)
+        synchronized (node2RegNodeInfo)
         {
-            info = nodeMap.get(node);
+            info = node2RegNodeInfo.get(node);
         
             if (info == null)
             {
                 info = new RegisteredNodeInfo(this, node);
-                nodeMap.put(node, info);
+                node2RegNodeInfo.put(node, info);
 
                 node.addNodeListener(
                     new NodeAdapter()
@@ -238,9 +239,9 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
                         {
                             Node node = ev.getNode();
 
-                            synchronized (nodeMap)
+                            synchronized (node2RegNodeInfo)
                             {
-                                nodeMap.remove(node);
+                                node2RegNodeInfo.remove(node);
                             }
                         }
                     }
@@ -252,7 +253,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     }
     
     @Override
-    @SuppressWarnings("checked")
     public Vector getActions() {
         Vector<Action> actions = super.getActions();
         
@@ -276,17 +276,12 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     }
 
     private ConnectionNodeInfo createConnectionNodeInfo(DatabaseConnection dbconn) throws DatabaseException {
-        System.out.println("For " + dbconn);
         synchronized (conn2Info) {
             ConnectionNodeInfo ninfo = conn2Info.get(dbconn);
             if (ninfo != null) {
                 return ninfo;
             }
             ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
-            ninfo.setUser(dbconn.getUser());
-            ninfo.setDatabase(dbconn.getDatabase());
-            ninfo.setSchema(dbconn.getSchema());
-            ninfo.setName(dbconn.getName());
             ninfo.setDatabaseConnection(dbconn);
             if (DatabaseConnection.test(dbconn.getConnection(), dbconn.getName())) {
                 ninfo.connect(dbconn);

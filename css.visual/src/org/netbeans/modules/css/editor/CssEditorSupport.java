@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.css.editor;
 
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -106,6 +107,19 @@ public class CssEditorSupport {
     private PropertyChangeListener CSS_STYLE_DATA_LISTENER = new PropertyChangeListener() {
 
         public void propertyChange(final PropertyChangeEvent evt) {
+            //detach myself from the source so next UI changes are not propagated to the 
+            //document until the parser finishes. Then new listener will be added
+            if(selected != null) {
+                selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
+            }
+            
+            //remove caret listener, new one will be added one the written test is parsed
+            if (caretListenerRegistered) {
+                editorPane.removeCaretListener(CARET_LISTENER);
+                d("removed caret listener");
+                caretListenerRegistered = false;
+            }
+            
             final NbEditorDocument doc = (NbEditorDocument) document;
             if (doc != null) {
                 doc.runAtomic(new Runnable() {
@@ -265,6 +279,9 @@ public class CssEditorSupport {
         public void caretUpdate(CaretEvent ce) {
             Object source = ce.getSource();
             if (source instanceof JEditorPane) {
+                if(!caretListenerRegistered) {
+                    return ;
+                }
                 d("caret event; dot=" + ce.getDot());
                 RULE_UPDATE.setPane(((JEditorPane) source));
                 RULE_UPDATE_TASK.schedule(RULE_UPDATE_DELAY);

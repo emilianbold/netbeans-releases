@@ -457,7 +457,12 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             }
             
             // State oriented
-            JSDebuggerState messageDebuggerState = DbgpUtils.getDebuggerState(message);
+            JSDebuggerState messageDebuggerState;
+            try {
+                messageDebuggerState = DbgpUtils.getDebuggerState(message);
+            } catch (Exception ex) {
+                messageDebuggerState = null;
+            }
             if(messageDebuggerState != null) {
                 setDebuggerState(messageDebuggerState);
                 if (messageDebuggerState.getReason().equals(JSDebuggerState.Reason.INIT)) {

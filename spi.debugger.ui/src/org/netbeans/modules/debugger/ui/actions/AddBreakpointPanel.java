@@ -84,7 +84,6 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private ArrayList               types = new ArrayList ();
     /** Currently selected type. */
     private BreakpointType          type;
-    private JComponent              customizer;
 
     private javax.swing.JLabel      jLabel1;
     private javax.swing.JLabel      jLabel2;
@@ -135,7 +134,11 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     }
     
     public Controller getController () {
-        return (Controller) customizer;
+        if (type != null) {
+            return type.getController();
+        } else {
+            return null;
+        }
     }
     
     
@@ -270,7 +273,7 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
         DebuggerManager d = DebuggerManager.getDebuggerManager ();
         BreakpointType old = type;
         type = t;
-        customizer = type.getCustomizer ();
+        JComponent customizer = type.getCustomizer ();
         if (customizer == null) return;
 
         //Set HelpCtx. This method must be called _before_ the customizer

@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -62,6 +63,7 @@ import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -154,6 +156,7 @@ public class PHPIndex {
                     //TODO: handle search kind
                     int offset = sig.integer(2);
                     String superClass = sig.string(3);
+                    superClass = superClass.length() == 0 ? null : superClass;
                     IndexedClass clazz = new IndexedClass(className, null, this, map.getPersistentUrl(), superClass, offset, 0);
                     //clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     classes.add(clazz);
@@ -217,7 +220,9 @@ public class PHPIndex {
                     func.setOptionalArgs(optionalArgs);
                     //func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     functions.add(func);
-                    func.setReturnType(sig.string(5));
+                    String retType = sig.string(5);
+                    retType = retType.length() == 0 ? null : retType;
+                    func.setReturnType(retType);
                 }
             }
         }
@@ -247,7 +252,8 @@ public class PHPIndex {
                     String typeName = sig.string(2);
                     typeName = typeName.length() == 0 ? null : typeName;
                     int offset = sig.integer(3);
-                    IndexedVariable var = new IndexedVariable(constName, null, this, map.getPersistentUrl(), offset, 0, typeName);
+                    IndexedVariable var = new IndexedVariable(constName, null, this,
+                            map.getPersistentUrl(), offset, 0, typeName);
                     //var.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     vars.add(var);
                 }
@@ -325,13 +331,10 @@ public class PHPIndex {
     /** returns constnats of a class. */
     public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String typeName, String name, NameKind kind) {
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, typeName);
-
-        if (inheritanceLine != null){
-            for (IndexedClass clazz : inheritanceLine){
-                //int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                constants.addAll(getClassConstants(context, clazz.getName(), name, kind));
-            }
+       
+        for (String className : getClassAncestors(context, typeName)) {
+            //int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
+            constants.addAll(getClassConstants(context, className, name, kind));
         }
 
         Collection<IndexedInterface> interfaceTree = getInterfaceTree(context, typeName);
@@ -347,76 +350,87 @@ public class PHPIndex {
 
     /** returns all methods of a class or an interface. */
     public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
-        Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
-        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, typeName);
-
-        if (inheritanceLine != null){
-            for (IndexedClass clazz : inheritanceLine){
-                int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                methods.addAll(getMethods(context, clazz.getName(), name, kind, mask));
+        Map<String, IndexedFunction> methods = new TreeMap<String, IndexedFunction>();
+        
+        for (String className : getClassAncestors(context, typeName)) {
+            int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
+            
+            for (IndexedFunction method : getMethods(context, className, name, kind, mask)){
+                String methodName = method.getName();
+                
+                if (!methods.containsKey(methodName) || className.equals(typeName)){
+                    methods.put(methodName, method);
+                }
             }
         }
-
+        
         Collection<IndexedInterface> interfaceTree = getInterfaceTree(context, typeName);
 
         if (interfaceTree != null){
             for (IndexedInterface iface : interfaceTree){
-                methods.addAll(getMethods(context, iface.getName(), name, kind, attrMask));
+                String ifaceName = iface.getName();
+
+                for (IndexedFunction method : getMethods(context, ifaceName, name, kind, attrMask)) {
+                    String methodName = method.getName();
+
+                    if (!methods.containsKey(methodName) || ifaceName.equals(typeName)) {
+                        methods.put(methodName, method);
+                    }
+                }
             }
         }
 
-        return methods;
+        return methods.values();
     }
 
     /** returns all fields of a class or an interface. */
     public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
-        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, typeName);
-
-        if (inheritanceLine != null){
-            for (IndexedClass clazz : inheritanceLine){
-                int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                properties.addAll(getProperties(context, clazz.getName(), name, NameKind.PREFIX, mask)); //NOI18N
-            }
+        
+        for (String className : getClassAncestors(context, typeName)) {
+            int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
+            properties.addAll(getProperties(context, className, name, kind, mask)); //NOI18N
         }
 
         return properties;
     }
 
-    /** return a list of all superclasses of the given class. */
-    public List<IndexedClass>getClassInheritanceLine(PHPParseResult context, String className){
-        List<IndexedClass>classLine = new LinkedList<IndexedClass>();
-        Collection<String> processedClasses = new TreeSet<String>();
+    /** return a list of all superclasses of the given class.
+     *  The head item will be the queried class, otherwise it not safe to rely on the element order
+     */
+    @NonNull
+    public Collection<String>getClassAncestors(PHPParseResult context, String className){
+        return getClassAncestors(context, className, new TreeSet<String>());
+    }
 
-        while (className != null && className.length() > 0){
-            if (processedClasses.contains(className)){
-                break; //TODO: circular reference, warn the user
-            }
+    @NonNull
+    private Collection<String>getClassAncestors(PHPParseResult context, String className, Collection<String> processedClasses){
+        Collection<String> ancestors = new TreeSet<String>();
 
-            processedClasses.add(className);
-
-            Collection<IndexedClass>classes = getClasses(context, className, NameKind.EXACT_NAME);
-
-            if (classes == null || classes.size() == 0){
-                break;
-            }
-
-            //TODO: handle name conflicts
-            IndexedClass clazz = classes.toArray(new IndexedClass[classes.size()])[0];
-            if (context != null && context.getFile() != null) {
-                for (IndexedClass indexedClass : classes) {
-                    if (context.getFile().getFile().equals(indexedClass.getFile().getFile())) {
-                        // prefer the current file if possible
-                        clazz = indexedClass;
-                        break;
-                    }
-                }
-            }
-            classLine.add(clazz);
-            className = clazz.getSuperClass();
+        if (processedClasses.contains(className)) {
+            return Collections.<String>emptyList(); //TODO: circular reference, warn the user
         }
 
-        return classLine;
+        processedClasses.add(className);
+        List<String> assumedParents = new LinkedList<String>();
+        Collection<IndexedClass>classes = getClasses(context, className, NameKind.EXACT_NAME);
+        
+        if (classes != null) {
+            for (IndexedClass clazz : classes) {
+                ancestors.add(clazz.getName());
+                String parent = clazz.getSuperClass();
+
+                if (parent != null) {
+                    assumedParents.add(parent);
+                }
+            }
+        }
+
+        for (String parent : assumedParents){
+            ancestors.addAll(getClassAncestors(context, parent, processedClasses));
+        }
+
+        return ancestors;
     }
 
     /** returns local constnats of a class. */
@@ -431,7 +445,7 @@ public class PHPIndex {
             int offset = sig.integer(1);
 
             IndexedConstant prop = new IndexedConstant(propName, typeName,
-                    this, signaturesMap.get(signature), offset, offset, null);
+                    this, signaturesMap.get(signature), offset, 0, null);
 
             properties.add(prop);
 
@@ -464,7 +478,9 @@ public class PHPIndex {
 
                 int optionalArgs[] = extractOptionalArgs(sig.string(3));
                 func.setOptionalArgs(optionalArgs);
-                func.setReturnType(sig.string(4));
+                String retType = sig.string(4);
+                retType = retType.length() == 0 ? null : retType;
+                func.setReturnType(retType);
                 methods.add(func);
             }
 
@@ -581,7 +597,7 @@ public class PHPIndex {
     }
     public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, NameKind kind) {
         return getTopLevelVariables(context, name, kind, ALL_SCOPE);
-    }    
+    }
     public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, NameKind kind, Set<SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
@@ -629,7 +645,7 @@ public class PHPIndex {
                 }
                 for (String sign : signatures) {
                     IdentifierSignature idSign = IdentifierSignature.createDeclaration(Signature.get(sign));
-                    if ((!idSign.isClassMember() && !idSign.isIfaceMember()) ||                            
+                    if ((!idSign.isClassMember() && !idSign.isIfaceMember()) ||
                             idSign.getTypeName() == null) {
                         continue;
                     }

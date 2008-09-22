@@ -53,10 +53,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
@@ -153,6 +155,12 @@ public class NavUtils {
                 result = a.getElement(leaf);
                 previous = leaf;
                 continue;
+            } else if (leaf instanceof FormalParameter) {
+                FormalParameter param = (FormalParameter) leaf;
+                Identifier type = param.getParameterType();
+                if (type != null && offset < type.getEndOffset()) {
+                    return a.getElement(type);
+                }
             }
 
             if (leaf instanceof Variable && !(leaf instanceof ArrayAccess)) {
@@ -209,8 +217,29 @@ public class NavUtils {
                     return e;
 
                 }
+                List<Identifier> interfaes = cDeclaration.getInterfaes();
+                for (Identifier identifier : interfaes) {
+                    if (identifier == previous) {
+                        AttributedElement e = a.getElement(previous);
+                        return e;
+                    }
+                }
+            } else if (leaf instanceof InterfaceDeclaration) {
+                InterfaceDeclaration iDeclaration = (InterfaceDeclaration) leaf;
+                //class declaration
+                if (iDeclaration.getName() == previous) {
+                    return a.getElement(leaf);
+                }
 
+                List<Identifier> interfaes = iDeclaration.getInterfaes();
+                for (Identifier identifier : interfaes) {
+                    if (identifier == previous) {
+                        AttributedElement e = a.getElement(previous);
+                        return e;
+                    }
+                }
             }
+
 
             if (leaf instanceof FieldAccess) {
                 FieldAccess i = (FieldAccess) leaf;

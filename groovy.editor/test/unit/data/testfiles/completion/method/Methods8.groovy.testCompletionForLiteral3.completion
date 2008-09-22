@@ -1,0 +1,24 @@
+Code completion result for source line:
+"".c|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     center(Number)                             String
+METHOD     center(Number, String)                     String
+METHOD     charAt(int)                                char
+METHOD     codePointAt(int)                           int
+METHOD     codePointBefore(int)                       int
+METHOD     codePointCount(int, int)                   int
+METHOD     collect(Closure)                           List
+METHOD     collect(Collection, Closure)               Collection
+METHOD     compareTo(Object)                          int
+METHOD     compareTo(String)                          int
+METHOD     compareToIgnoreCase(String)                int
+METHOD     concat(String)                             String
+METHOD     contains(CharSequence)                     boolean
+METHOD     contains(String)                           boolean
+METHOD     contentEquals(CharSequence)                boolean
+METHOD     contentEquals(StringBuffer)                boolean
+METHOD     copyValueOf(char[])                        String
+METHOD     copyValueOf(char[], int, int)              String
+METHOD     count(String)                              int
+FIELD      count                                      int

@@ -236,7 +236,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveUp, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizeCompile_Classpath_MoveUp_JButton")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveDown, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizeCompile_Classpath_MoveUp_JButton")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveDown, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizeCompile_Classpath_MoveDown_JButton")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabelErrorMessage, " ");
 
@@ -252,8 +252,8 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
                     .add(layout.createSequentialGroup()
                         .add(sharedLibrariesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
+                        .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, librariesBrowse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -264,7 +264,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonRemove, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonMoveUp, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonMoveDown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)))
-            .add(jLabelErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
+            .add(jLabelErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

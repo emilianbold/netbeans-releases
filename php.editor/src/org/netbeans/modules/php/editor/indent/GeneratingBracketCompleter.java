@@ -47,6 +47,7 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.nav.SemiAttribute;
@@ -59,6 +60,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -66,6 +68,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -170,12 +173,19 @@ public class GeneratingBracketCompleter {
         
         for (FormalParameter p : decl.getFormalParameters()) {
             String name = "";
-            if (p.getParameterName() instanceof Variable) {
-                Variable v = (Variable) p.getParameterName();
-                
-                if (v.getName() instanceof Identifier) {
-                    name = ((Identifier) v.getName()).getName();
+            Expression expr = p.getParameterName();
+            Variable var = null;
+            if (expr instanceof Variable) {
+                var = (Variable) expr;
+            }
+            if (expr instanceof Reference) {
+                Reference ref = (Reference)expr;
+                if (ref.getExpression() instanceof Variable) {
+                    var = (Variable) ref.getExpression();
                 }
+            }
+            if (var != null && var.getName() instanceof Identifier) {
+                name = ((Identifier) var.getName()).getName();
             }
             generateDocEntry(toAdd, "@param", indent, "$" + name, null);
         }
@@ -202,7 +212,7 @@ public class GeneratingBracketCompleter {
     
     private static void generateDocEntry(StringBuilder toAdd, String text, int indent, String name, AttributedType type) {
         toAdd.append("\n");
-        LexUtilities.indent(toAdd, indent);
+        GsfUtilities.indent(toAdd, indent);
 
         toAdd.append(" * ");
         toAdd.append(text);

@@ -54,12 +54,12 @@ import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.NbUtilities;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +73,9 @@ public class PHPTypeSearcher implements IndexSearcher {
     public Set<? extends Descriptor> getSymbols(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
         PHPIndex index = PHPIndex.get(gsfIndex);
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
-
+        //CAMEL CASES,wild cards doesn't work - just accept textForQuery as incase sensitive string
+        textForQuery = textForQuery.toLowerCase();
+        kind = NameKind.CASE_INSENSITIVE_PREFIX;
         if (index != null) {
             addClasses(index, textForQuery, kind, scope, helper, result);
             addInterfaces(index, textForQuery, kind, scope, helper, result);
@@ -89,7 +91,9 @@ public class PHPTypeSearcher implements IndexSearcher {
     public Set<? extends Descriptor> getTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
         PHPIndex index = PHPIndex.get(gsfIndex);
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
-
+        //CAMEL CASES,wild cards doesn't work - just accept textForQuery as incase sensitive string        
+        textForQuery = textForQuery.toLowerCase();
+        kind = NameKind.CASE_INSENSITIVE_PREFIX;
         if (index != null) {
             addClasses(index, textForQuery, kind, scope, helper, result);
             addInterfaces(index, textForQuery, kind, scope, helper, result);
@@ -229,7 +233,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         }
 
         public void open() {
-            NbUtilities.open(element.getFileObject(), element.getOffset(), element.getName());
+            GsfUtilities.open(element.getFileObject(), element.getOffset(), element.getName());
         }
 
         public String getContextName() {

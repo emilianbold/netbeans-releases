@@ -171,8 +171,7 @@ final class LazyProject implements Project, ProjectInformation, SearchInfo, Logi
             OpenProjectList.preferredProject(LazyProject.this);
             return new Action[] { 
                 SystemAction.get(LazyProjectInitializing.class),
-                CommonProjectActions.closeProjectAction(),
-                SystemAction.get(CustomizeAction.class),
+                CommonProjectActions.closeProjectAction()
             };
         }
     } // end of ProjNode

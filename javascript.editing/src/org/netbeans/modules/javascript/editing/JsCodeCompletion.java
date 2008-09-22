@@ -2588,16 +2588,12 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return indexedElement != null ? indexedElement.isSmart() : true;
         }
 
-        public List<String> getInsertParams() {
-            return null;
-        }
-        
-        public String[] getParamListDelimiters() {
-            return new String[] { "(", ")" }; // NOI18N
-        }
-
         public String getCustomInsertTemplate() {
             return null;
+        }
+
+        public int getSortPrioOverride() {
+            return 0;
         }
     }
 
@@ -2681,14 +2677,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public List<String> getInsertParams() {
-            return function.getParameters();
-        }
-
-        @Override
         public String getCustomInsertTemplate() {
             final String insertPrefix = getInsertPrefix();
-            List<String> params = getInsertParams();
+            List<String> params = function.getParameters();
             String startDelimiter = "(";
             String endDelimiter = ")";
             int paramCount = params.size();
@@ -2948,11 +2939,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return true;
         }
 
-        @Override
-        public List<String> getInsertParams() {
-            return null;
-        }
-        
         @Override
         public String getCustomInsertTemplate() {
             return null;

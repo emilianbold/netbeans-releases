@@ -42,9 +42,14 @@ package org.netbeans.modules.web.client.javascript.debugger.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JToolTip;
 
@@ -93,6 +98,8 @@ public class NbJSSourcesModel implements TreeModel, NodeModel, TableModel,
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(NbJSDebugger.PROPERTY_SOURCES)) {
                 setSources((JSSource[]) evt.getNewValue());
+            } else if (evt.getPropertyName().equals(NbJSDebugger.PROPERTY_RELOADSOURCES)) {
+                fireTreeChanges();
             }
         }
     }
@@ -107,16 +114,56 @@ public class NbJSSourcesModel implements TreeModel, NodeModel, TableModel,
 
         listeners = new CopyOnWriteArrayList<ModelListener>();
 
-        sources = debugger.getSources();
+        if (debugger.isIgnoringQueryStrings()) {
+            this.sources = filterEquivalentSources(debugger.getSources());
+        } else {
+            sources = debugger.getSources();
+        }
+        
         GO_TO_ACTION = NbJSEditorUtil.createDebuggerGoToAction(debugger);
         GO_TO_CLIENT_SOURCE_ACTION = NbJSEditorUtil.createDebuggerGoToClientSourceAction(debugger);
     }
 
-    private void setSources(JSSource[] sources) {
-        this.sources = sources;
+    private void setSources(JSSource[] newSources) {
+        if (debugger.isIgnoringQueryStrings()) {
+            newSources = filterEquivalentSources(newSources);
+        }
+        this.sources = newSources;
         fireTreeChanges();
     }
 
+    private JSSource[] filterEquivalentSources(JSSource[] sources) {
+        if (sources == null || sources.length < 2) {
+            return sources;
+        }
+
+        Map<URI, JSSource> uniqueMap = new LinkedHashMap<URI, JSSource>();
+        for (JSSource source : sources) {
+            URI uriWithoutQuery = getURIWithoutQuery(source.getLocation().getURI());
+            if (!uniqueMap.containsKey(uriWithoutQuery)) {
+                uniqueMap.put(uriWithoutQuery, source);
+            }
+        }
+
+        return uniqueMap.values().toArray(new JSSource[0]);
+    }
+
+    private URI getURIWithoutQuery(URI originalURI) {
+            try {
+                URI uriWithoutQuery = new URI(
+                        originalURI.getScheme(),
+                        originalURI.getUserInfo(),
+                        originalURI.getHost(),
+                        originalURI.getPort(),
+                        originalURI.getPath(),
+                        null,
+                        originalURI.getFragment());
+                return uriWithoutQuery;
+            } catch (URISyntaxException ex) {
+                Log.getLogger().log(Level.INFO, "Could not remove query string from URI: " + originalURI.toASCIIString());
+                return originalURI;
+            }
+    }
     // TreeModel ...............................................................
     /**
      * Returns the root node of the tree or null, if the tree is empty.
@@ -387,10 +434,12 @@ public class NbJSSourcesModel implements TreeModel, NodeModel, TableModel,
             JSSource source = (JSSource) node;
             final FileObject fileObjectForSource = debugger.getFileObjectForSource(source);
             if ( fileObjectForSource == null ){
-                Log.getLogger().warning("The File Object for the following source is null:" + source.getLocation().getURI());
+                String uriString = source.getLocation().getURI().toString();
+                Log.getLogger().warning("The File Object for the following source is null:" + uriString);
+                return uriString;
             }
             return (fileObjectForSource instanceof URLFileObject ? 
-                fileObjectForSource.getPath() : FileUtil.getFileDisplayName(fileObjectForSource));
+                ((URLFileObject)fileObjectForSource).getDisplayName() : FileUtil.getFileDisplayName(fileObjectForSource));
         }
         throw new UnknownTypeException(node);
     }

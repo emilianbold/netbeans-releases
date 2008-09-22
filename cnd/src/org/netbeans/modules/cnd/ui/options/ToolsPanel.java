@@ -50,7 +50,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -744,7 +743,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 if (cbCppRequired.isSelected() && !cppValid) {
                     errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedCppCompiler"));
                 }
-                if (cbGdbRequired.isSelected() && !gdbValid) {
+                if (cbGdbRequired.isSelected() && !gdbValid && gdbEnabled) {
                     errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedDebugger"));
                 }
                 if (cbFortranRequired.isSelected() && !fortranValid) {

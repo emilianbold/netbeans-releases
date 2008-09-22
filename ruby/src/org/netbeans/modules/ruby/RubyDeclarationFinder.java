@@ -812,7 +812,13 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             if (begin != -1) {
                 int end = Utilities.getRowEnd(doc, lexOffset);
                 String s = doc.getText(begin, end-begin); // TODO - limit to a narrower region around the caret?
-                String[] targets = new String[] { ":partial => ", ":controller => ", ":action => " }; // NOI18N
+                if (!(s.indexOf(":partial") != -1 || s.indexOf(":controller") != -1 || s.indexOf(":action") != -1)) { // NOI18N
+                    return null;
+                }
+                String[] targets = new String[] { ":partial => ", ":controller => ", ":action => ", // NOI18N
+                                                  ":partial=> ", ":controller=> ", ":action=> ", // NOI18N
+                                                   ":partial =>", ":controller =>", ":action =>", // NOI18N
+                                                   ":partial=>", ":controller=>", ":action=>"}; // NOI18N
                 for (String target : targets) {
                     int index = s.indexOf(target);
                     if (index != -1) {

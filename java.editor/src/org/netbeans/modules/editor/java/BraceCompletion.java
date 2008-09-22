@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,7 +40,9 @@
  */
 package org.netbeans.modules.editor.java;
 
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -81,6 +83,10 @@ class BraceCompletion {
      * @throws BadLocationException if caretOffset is not correct
      */
     static void charInserted(BaseDocument doc, int caretOffset, Caret caret, char ch) throws BadLocationException {
+        if (!completionSettingEnabled()) {
+          return;
+        }
+
         if (ch == ')' || ch == ']' || ch == '(' || ch == '[' || ch == ';') {
             TokenSequence<JavaTokenId> javaTS = javaTokenSequence(doc, caretOffset, false);
             if (javaTS != null) {
@@ -216,7 +222,7 @@ class BraceCompletion {
         if (ch == '(' || ch == '[') {
             switch (ts.token().id()) {
                 case RPAREN:
-                    if (tokenBalance(doc, JavaTokenId.LBRACKET) != 0) {
+                    if (tokenBalance(doc, JavaTokenId.LPAREN) != 0) {
                         doc.remove(caretOffset, 1);
                     }
                     break;
@@ -407,6 +413,8 @@ class BraceCompletion {
         }
     }
 
+    private static Set<JavaTokenId> STOP_TOKENS_FOR_SKIP_CLOSING_BRACKET = EnumSet.of(JavaTokenId.LBRACE, JavaTokenId.RBRACE, JavaTokenId.SEMICOLON);
+    
     /**
      * Check whether the typed bracket should stay in the document
      * or be removed.
@@ -429,8 +437,10 @@ class BraceCompletion {
             JavaTokenId leftBracketId = matching(rightBracketId);
             // Skip all the brackets of the same type that follow the last one
             do {
-                if (javaTS.token().id() != rightBracketId) {
-                    javaTS.movePrevious();
+                if (   STOP_TOKENS_FOR_SKIP_CLOSING_BRACKET.contains(javaTS.token().id())
+                    || (javaTS.token().id() == JavaTokenId.WHITESPACE && javaTS.token().text().toString().contains("\n"))) {
+                    while (javaTS.token().id() != rightBracketId && javaTS.movePrevious())
+                        ;
                     break;
                 }
             } while (javaTS.moveNext());
@@ -485,71 +495,74 @@ class BraceCompletion {
                 }
             }
 
-            if (bracketBalance != 0) { // not found matching bracket
-                // Remove the typed bracket as it's unmatched
-                skipClosingBracket = true;
+            skipClosingBracket = bracketBalance != 0;
 
-            } else { // the bracket is matched
-                // Now check whether the bracket would be matched
-                // when the closing bracket would be removed
-                // i.e. starting from the original lastRBracketIndex token
-                // and search for the same bracket to the right in the text
-                // The search would stop on an extra right brace if found
-                braceBalance = 0;
-                bracketBalance = 1; // simulate one extra left bracket
-                finished = false;
-                // Relocate behind original rbracket and one token to right
-                if (lastRBracketIndex + 2 <= javaTS.tokenCount()) {
-                    javaTS.moveIndex(lastRBracketIndex + 2);
-                } else { // mark as finished
-                    finished = true;
-                }
-                while (!finished && javaTS.movePrevious()) {
-                    JavaTokenId id = javaTS.token().id();
-                    switch (id) {
-                        case LPAREN:
-                        case LBRACKET:
-                            if (id == leftBracketId) {
-                                bracketBalance++;
-                            }
-                            break;
-
-                        case RPAREN:
-                        case RBRACKET:
-                            if (id == rightBracketId) {
-                                bracketBalance--;
-                                if (bracketBalance == 0) {
-                                    if (braceBalance != 0) {
-                                        // Here the bracket is matched but it is located
-                                        // inside an unclosed brace block
-                                        // which is in fact illegal but it's a question
-                                        // of what's best to do in this case.
-                                        // We chose to leave the typed bracket
-                                        // by setting bracketBalance to -1.
-                                        // It can be revised in the future.
-                                        bracketBalance = -1;
-                                    }
-                                    finished = true;
-                                }
-                            }
-                            break;
-
-                        case LBRACE:
-                            braceBalance++;
-                            break;
-
-                        case RBRACE:
-                            braceBalance--;
-                            if (braceBalance < 0) { // stop on extra right brace
-                                finished = true;
-                            }
-                            break;
-                    }
-                }
-                // If bracketBalance == 0 the bracket would be matched
-                // by the bracket that follows the last right bracket.
-                skipClosingBracket = (bracketBalance == 0);
-            }
+            //commented out due to #147683:
+//            if (bracketBalance != 0) { // not found matching bracket
+//                // Remove the typed bracket as it's unmatched
+//                skipClosingBracket = true;
+//
+//            } else { // the bracket is matched
+//                // Now check whether the bracket would be matched
+//                // when the closing bracket would be removed
+//                // i.e. starting from the original lastRBracketIndex token
+//                // and search for the same bracket to the right in the text
+//                // The search would stop on an extra right brace if found
+//                braceBalance = 0;
+//                bracketBalance = 1; // simulate one extra left bracket
+//                finished = false;
+//                // Relocate behind original rbracket and one token to right
+//                if (lastRBracketIndex + 2 <= javaTS.tokenCount()) {
+//                    javaTS.moveIndex(lastRBracketIndex + 2);
+//                } else { // mark as finished
+//                    finished = true;
+//                }
+//                while (!finished && javaTS.movePrevious()) {
+//                    JavaTokenId id = javaTS.token().id();
+//                    switch (id) {
+//                        case LPAREN:
+//                        case LBRACKET:
+//                            if (id == leftBracketId) {
+//                                bracketBalance++;
+//                            }
+//                            break;
+//
+//                        case RPAREN:
+//                        case RBRACKET:
+//                            if (id == rightBracketId) {
+//                                bracketBalance--;
+//                                if (bracketBalance == 0) {
+//                                    if (braceBalance != 0) {
+//                                        // Here the bracket is matched but it is located
+//                                        // inside an unclosed brace block
+//                                        // which is in fact illegal but it's a question
+//                                        // of what's best to do in this case.
+//                                        // We chose to leave the typed bracket
+//                                        // by setting bracketBalance to -1.
+//                                        // It can be revised in the future.
+//                                        bracketBalance = -1;
+//                                    }
+//                                    finished = true;
+//                                }
+//                            }
+//                            break;
+//
+//                        case LBRACE:
+//                            braceBalance++;
+//                            break;
+//
+//                        case RBRACE:
+//                            braceBalance--;
+//                            if (braceBalance < 0) { // stop on extra right brace
+//                                finished = true;
+//                            }
+//                            break;
+//                    }
+//                }
+//                // If bracketBalance == 0 the bracket would be matched
+//                // by the bracket that follows the last right bracket.
+//                skipClosingBracket = (bracketBalance == 0);
+//            }
         }
         return skipClosingBracket;
     }
@@ -712,7 +725,7 @@ class BraceCompletion {
     /** 
      * Returns true if bracket completion is enabled in options.
      */
-    private static boolean completionSettingEnabled() {
+    static boolean completionSettingEnabled() {
         Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
         return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
     }

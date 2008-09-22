@@ -304,7 +304,7 @@ public final class SourceRoots {
         for (FileObject child : folder.getChildren()) {
             if (child.isFolder()) {
                 String name = child.getNameExt();
-                if (!known.contains(name) && VisibilityQuery.getDefault().isVisible(child)) {
+                if (!known.contains(name) && isVisible(child)) {
                     if (result == null) {
                         result = new ArrayList<String>();
                     }
@@ -321,7 +321,22 @@ public final class SourceRoots {
         return result;
     }
 
-    /** Initialize source roots to just match the Rails view.
+    /**
+     * XXX - copy-pasted from o.n.core.ui.options.filetypes.IgnoredFilesPreferences.
+     * Take a look into {@link #isVisible()}.
+     * <p/>
+     * Default ignored files pattern. Pattern \.(cvsignore|svn|DS_Store) is covered by ^\..*$
+     */
+    private static final String DEFAULT_IGNORED_FILES = "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|_svn)$|~$|^\\.(?!htaccess$).*$"; //NOI18N
+
+    private static boolean isVisible(final FileObject child) {
+        // XXX should use VisibilityQuery#isVisible, but can't in this way.
+        // See http://www.netbeans.org/nonav/issues/show_bug.cgi?id=119244
+        return !child.getNameExt().matches(DEFAULT_IGNORED_FILES);
+    }
+
+    /**
+     * Initialize source roots to just match the Rails view.
      * Note that my load path will be way wrong for unit test execution and such - and
      * possibly for require-indexing (for require completion)
      */

@@ -62,19 +62,17 @@ import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 import org.netbeans.modules.groovy.support.api.GroovySources;
+import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
 
 
 /**
  *
  * @author schmidtm
  */
-    abstract class GroovyCompletionItem implements CompletionProposal {
+    abstract class GroovyCompletionItem extends DefaultCompletionProposal {
 
         protected CodeCompleter.CompletionRequest request;
         protected GroovyElement element;
-        protected int anchorOffset;
-        protected boolean symbol;
-        protected boolean smart;
         final Logger LOG = Logger.getLogger(GroovyCompletionItem.class.getName());
         
         static ImageIcon groovyIcon;
@@ -128,28 +126,9 @@ import org.netbeans.modules.groovy.support.api.GroovySources;
             return ret;
         }
         
-        public int getAnchorOffset() {
-            return anchorOffset;
-        }
-
+    @Override
         public String getName() {
             return element.getName();
-        }
-
-        public void setSymbol(boolean symbol) {
-            this.symbol = symbol;
-        }
-
-        public String getInsertPrefix() {
-            if (symbol) {
-                return "." + getName();
-            } else {
-                return getName();
-            }
-        }
-
-        public String getSortText() {
-            return getName();
         }
 
         public ElementHandle getElement() {
@@ -159,27 +138,12 @@ import org.netbeans.modules.groovy.support.api.GroovySources;
             return null;
         }
 
+        @Override
         public ElementKind getKind() {
             return element.getKind();
         }
 
-        public ImageIcon getIcon() {
-            return null;
-        }
-
-        public String getLhsHtml(HtmlFormatter formatter) {
-            ElementKind kind = getKind();
-            formatter.name(kind, true);
-            formatter.appendText(getName());
-            formatter.name(kind, false);
-
-            return formatter.getText();
-        }
-
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
-        }
-
+        @Override
         public Set<Modifier> getModifiers() {
             return element.getModifiers();
         }
@@ -190,26 +154,6 @@ import org.netbeans.modules.groovy.support.api.GroovySources;
             cls = cls.substring(cls.lastIndexOf('.') + 1);
 
             return cls + "(" + getKind() + "): " + getName();
-        }
-
-        void setSmart(boolean smart) {
-            this.smart = smart;
-        }
-
-        public boolean isSmart() {
-            return smart;
-        }
-
-        public List<String> getInsertParams() {
-            return null;
-        }
-
-        public String[] getParamListDelimiters() {
-            return new String[]{"(", ")"}; // NOI18N
-        }
-
-        public String getCustomInsertTemplate() {
-            return null;
         }
     }
 
@@ -613,12 +557,6 @@ import org.netbeans.modules.groovy.support.api.GroovySources;
             return true;
         }
 
-        @Override
-        public String[] getParamListDelimiters() {
-            return new String[]{"(", ")"}; // NOI18N
-        }
-        
-        
         // See IDE help-topic: "Creating and Customizing Ruby Code Templates" or
         // RubyCodeCompleter.MethodItem.getCustomInsertTemplate() for syntax.
         @Override

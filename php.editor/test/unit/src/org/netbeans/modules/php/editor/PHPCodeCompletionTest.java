@@ -184,6 +184,11 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue145206.php",
                 "echo TestIssue145206 :: createStatic()->create() ->create() -> c^", false);
     }
+    
+    public void test146187() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue146187.php",
+                "echo $tst->^", false);
+    }
 
     /* TEMPORARILY DISABLED
     public void test136744_1() throws Exception {
@@ -200,6 +205,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
 
     public void test144830() throws Exception {
         checkCompletion("testfiles/completion/lib/issue144830.php", "$this->^", false);
+    }
+    
+    public void test147883() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147883.php", "echo $a->^", false);
     }
     
     public void test142919() throws Exception {
@@ -464,6 +473,12 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void testVarAssignment_22() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$self1->^", false);
+    }
+    public void testVarAssignment_23() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$aParam4->^", false);
+    }
+    public void testVarAssignment_24() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$cParam5->^", false);
     }
     public void testUnknown() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$unknown->aCreate^", false);

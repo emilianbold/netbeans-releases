@@ -235,7 +235,7 @@ public class CompilerSetManager {
     private void init() {
         if (hkey.equals(LOCALHOST)) {
             platform = computeLocalPlatform();
-            initCompilerSets(Path.getPath());
+            initCompilerSets(Path.getPathWithDefaultCompilerLocations());
             state = STATE_COMPLETE;
         } else {
             log.fine("CSM.init: initializing remote compiler set for: " + hkey);

@@ -70,7 +70,7 @@ public class BufferedURLContent implements URLContent {
     public InputStream getInputStream() throws IOException {
         if (baseContent == null && inputStream == null) {
             return new ByteArrayInputStream(contentBuffer);
-        }else {
+        } else {
             byte[] tempBuffer = new byte[0];
             int totalBytes = 0;
             int currentBytes = 0;
@@ -121,8 +121,11 @@ public class BufferedURLContent implements URLContent {
                 }
 
                 return new ByteArrayInputStream(contentBuffer);
+            } else if (inputStream != null) {
+                    contentBuffer = new byte[0];
+                    inputStream = null;
+                    return new ByteArrayInputStream(contentBuffer);
             } else {
-                inputStream = null;
                 return new ByteArrayInputStream(new byte[0]);
             }
         }

@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.index;
 
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 
 /**
  *
@@ -57,13 +58,23 @@ public class IndexedConstant extends IndexedElement {
             int offset, int flags, String typeName, ElementKind kind){
         super(name, in, index, fileUrl, offset, flags, kind);
         this.typeName = typeName;
+        // empty string causes a serious performance problem
+        if (typeName != null && typeName.length() == 0){
+            throw new IllegalArgumentException("typeName cannot be empty string!");
+        }
     }
 
+    @CheckForNull
     public String getTypeName() {
         return typeName;
     }
 
     public void setTypeName(String typeName) {
+        // empty string causes a serious performance problem
+        if (typeName != null && typeName.length() == 0){
+            throw new IllegalArgumentException("typeName cannot be empty string!");
+        }
+
         this.typeName = typeName;
     }
 }

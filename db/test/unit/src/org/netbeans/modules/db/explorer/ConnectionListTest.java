@@ -28,8 +28,8 @@
 
 package org.netbeans.modules.db.explorer;
 
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
 import org.openide.loaders.DataObject;
@@ -54,20 +54,26 @@ public class ConnectionListTest extends TestBase {
 
         DatabaseConnection dbconn = new DatabaseConnection("org.bar.BarDriver",
                 "bar_driver", "jdbc:bar:localhost", "schema", "user", "password", true);
-        // temporary: should actually call addDriver(), but that doesn't return a DataObject
-        // ConnectionManager.getDefault().addConnection(dbconn);
+        // We are testing ConnectionList.addConnection(), but that doesn't return a DataObject.
         DataObject dbconnDO = DatabaseConnectionConvertor.create(dbconn);
-        ConnectionList.getDefault().refreshCache();
 
-        /* Commenting out until 75204 is fixed
-        Reference dbconnDORef = new WeakReference(dbconnDO);
+        WeakReference<DataObject> dbconnDORef = new WeakReference<DataObject>(dbconnDO);
         dbconnDO = null;
-        assertGC("Should not be able to GC dobj", dbconnDORef);
-         */
+        for (int i = 0; i < 50; i++) {
+            System.gc();
+            if (dbconnDORef.get() == null) {
+                break;
+            }
+        }
 
         assertEquals(1, ConnectionList.getDefault().getConnections().length);
-        /* Commenting out until 75204 is fixed
+
+        // This used to fail as described in issue 75204.
         assertSame(dbconn, ConnectionList.getDefault().getConnections()[0]);
-         */
+
+        Util.clearConnections();
+        WeakReference<DatabaseConnection> dbconnRef = new WeakReference<DatabaseConnection>(dbconn);
+        dbconn = null;
+        assertGC("Should be able to GC dbconn", dbconnRef);
     }
 }

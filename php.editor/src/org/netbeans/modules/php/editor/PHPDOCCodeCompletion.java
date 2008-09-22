@@ -82,8 +82,13 @@ public class PHPDOCCodeCompletion {
     };
     private static final Map<String, String> CUSTOM_TEMPLATES = new TreeMap<String, String>();
     private static String docURLBase;
-    private static Collection<PHPDocCommentTokenId> TYPE_TOKENS = Arrays.asList(PHPDocCommentTokenId.PHPDOC_RETURN,
-            PHPDocCommentTokenId.PHPDOC_VAR, PHPDocCommentTokenId.PHPDOC_PARAM);
+    private static Collection<PHPDocCommentTokenId> TYPE_TOKENS = Arrays.asList(
+            PHPDocCommentTokenId.PHPDOC_RETURN,
+            PHPDocCommentTokenId.PHPDOC_VAR,
+            PHPDocCommentTokenId.PHPDOC_PARAM,
+            PHPDocCommentTokenId.PHPDOC_PROPERTY,
+            PHPDocCommentTokenId.PHPDOC_PROPERTY_READ,
+            PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE);
 
     static {
         File file = InstalledFileLocator.getDefault().locate("docs/phpdocdesc.zip", null, true); //NoI18N
@@ -203,6 +208,10 @@ public class PHPDOCCodeCompletion {
             return getName();
         }
 
+        public int getSortPrioOverride() {
+            return 0;
+        }
+
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.appendText(getName());
             return formatter.getText();
@@ -230,14 +239,6 @@ public class PHPDOCCodeCompletion {
 
         public String getCustomInsertTemplate() {
             return CUSTOM_TEMPLATES.get(tag);
-        }
-
-        public List<String> getInsertParams() {
-            return null;
-        }
-
-        public String[] getParamListDelimiters() {
-            return null;
         }
     }
 }

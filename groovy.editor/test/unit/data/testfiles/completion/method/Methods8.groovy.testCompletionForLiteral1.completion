@@ -1,0 +1,11 @@
+Code completion result for source line:
+1.d|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     decode(String)                             Integer
+METHOD     div(Character)                             Number
+METHOD     div(Number)                                Number
+METHOD     doubleValue()                              double
+METHOD     downto(Number, Closure)                    void
+METHOD     dump()                                     String
+FIELD      digits                                     char[]

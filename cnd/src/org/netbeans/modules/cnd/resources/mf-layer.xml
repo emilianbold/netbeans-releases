@@ -79,8 +79,23 @@ made subject to such option by the copyright holder.
 <!--                <file name="sh" url="shell/ShellExample"/> -->
             </folder>
         </folder>
+
+        <folder name="Editor">
+            <folder name="Formatting">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="x-fortran">
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.fortran.options.FmtTabsIndents.getController"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
     </folder>
-    
+
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-cnd-error.xml" url="error-annotation.xml"/>

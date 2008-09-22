@@ -964,39 +964,59 @@ class LayoutOperations implements LayoutConstants {
         for (int i=0; i < group.getSubIntervalCount(); i++) {
             LayoutInterval li = group.getSubInterval(i);
             if (li.isSequential()) {
-                if (anyGapLeading && (!anyAlignedLeading || sameMinGapLeading)) {
+                if (anyGapLeading) {
                     LayoutInterval gap = li.getSubInterval(0);
                     if (gap.isEmptySpace()) {
-                        if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
-                            && isEndingDefaultGapEffective(li, dimension, LEADING))
-                        {   // default padding to be used as common gap
-                            defaultPaddingLeading = true;
+                        if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
+                            LayoutInterval neighbor = LayoutInterval.getNeighbor(gap, LEADING, false, true, false);
+                            if (neighbor != null && neighbor.isEmptySpace() && neighbor.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
+                                // preferred gap with preferred gap neighbor - would not work
+                                layoutModel.removeInterval(gap);
+                                gap = null;
+                            }
                         }
-                        if (gap.getMaximumSize() >= Short.MAX_VALUE) {
-                            if (li.getAlignment() == LEADING) // need to change alignment as we removed resizing gap
-                                layoutModel.setIntervalAlignment(li, TRAILING);
-                            if (!anyAlignedLeading) // resizability goes out of the group
-                                resizingGapLeading = true;
+                        if (gap != null && (!anyAlignedLeading || sameMinGapLeading)) {
+                            if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
+                                && isEndingDefaultGapEffective(li, dimension, LEADING))
+                            {   // default padding to be used as common gap
+                                defaultPaddingLeading = true;
+                            }
+                            if (gap.getMaximumSize() >= Short.MAX_VALUE) {
+                                if (li.getAlignment() == LEADING) // need to change alignment as we removed resizing gap
+                                    layoutModel.setIntervalAlignment(li, TRAILING);
+                                if (!anyAlignedLeading) // resizability goes out of the group
+                                    resizingGapLeading = true;
+                            }
+                            layoutModel.removeInterval(gap);
                         }
-                        layoutModel.removeInterval(gap);
                     }
                 }
 
-                if (anyGapTrailing && (!anyAlignedTrailing || sameMinGapTrailing)) {
+                if (anyGapTrailing) {
                     LayoutInterval gap = li.getSubInterval(li.getSubIntervalCount() - 1);
                     if (gap.isEmptySpace()) {
-                        if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
-                            && isEndingDefaultGapEffective(li, dimension, TRAILING))
-                        {   // default padding to be used as common gap
-                            defaultPaddingTrailing = true;
+                        if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
+                            LayoutInterval neighbor = LayoutInterval.getNeighbor(gap, TRAILING, false, true, false);
+                            if (neighbor != null && neighbor.isEmptySpace() && neighbor.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
+                                // preferred gap with preferred gap neighbor - would not work
+                                layoutModel.removeInterval(gap);
+                                gap = null;
+                            }
                         }
-                        if (gap.getMaximumSize() >= Short.MAX_VALUE) {
-                            if (li.getAlignment() == TRAILING) // need to change alignment as we removed resizing gap
-                                layoutModel.setIntervalAlignment(li, LEADING);
-                            if (!anyAlignedTrailing) // resizability goes out of the group
-                                resizingGapTrailing = true;
+                        if (gap != null && (!anyAlignedTrailing || sameMinGapTrailing)) {
+                            if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
+                                && isEndingDefaultGapEffective(li, dimension, TRAILING))
+                            {   // default padding to be used as common gap
+                                defaultPaddingTrailing = true;
+                            }
+                            if (gap.getMaximumSize() >= Short.MAX_VALUE) {
+                                if (li.getAlignment() == TRAILING) // need to change alignment as we removed resizing gap
+                                    layoutModel.setIntervalAlignment(li, LEADING);
+                                if (!anyAlignedTrailing) // resizability goes out of the group
+                                    resizingGapTrailing = true;
+                            }
+                            layoutModel.removeInterval(gap);
                         }
-                        layoutModel.removeInterval(gap);
                     }
                 }
 

@@ -755,9 +755,10 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
     
     private static String getJaxWsApiDir() {
-        File file = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
-        if (file!=null) {
-            return file.getParent();
+        File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+        if (jaxwsApi!=null) {
+            File jaxbApi =  InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
+            return jaxwsApi.getParent()+(jaxbApi != null? ":"+jaxbApi.getParent() : ""); //NOI18N
         }
         return null;
     }

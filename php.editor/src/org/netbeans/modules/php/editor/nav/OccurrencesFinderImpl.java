@@ -58,9 +58,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
@@ -106,7 +108,7 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
         if (el == null) {
             return result;
         }
-
+        Identifier id = null;
         Collections.reverse(path);
         for (ASTNode aSTNode : path) {
             if (aSTNode instanceof Identifier) {
@@ -119,11 +121,15 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                         return result;
                     } else if (name.equals("this")) {//NOI18N
                         return result;
+                    } else {
+                        id = identifier;
+                        break;
                     }
                 }
             }
         }
 
+        final Identifier identifier = id;
         final List<ASTNode> usages = new LinkedList<ASTNode>();
         final List<ASTNode> memberDeclaration = new LinkedList<ASTNode>();
         
@@ -249,15 +255,40 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                 }
                 super.visit(node);
             }
-                       
+
+            @Override
+            public void visit(InterfaceDeclaration node) {
+                if (el == a.getElement(node)) {
+                    usages.add(node.getName());
+                } else {
+                    List<Identifier> interfaes = node.getInterfaes();
+                    for (Identifier identifier : interfaes) {
+                        if (el == a.getElement(identifier)) {
+                            usages.add(identifier);
+                            break;
+                        }
+                    }
+                }
+                super.visit(node);
+            }
+
+
 
             @Override
             public void visit(ClassDeclaration node) {
                 Identifier superClass = node.getSuperClass();
                 if (el == a.getElement(node)) {
                     usages.add(node.getName());
-                } else if (superClass != null && el.getName().equals(superClass.getName())) {
+                } else if (el == a.getElement(superClass)) {
                     usages.add(superClass);
+                } else {
+                    List<Identifier> interfaes = node.getInterfaes();
+                    for (Identifier identifier : interfaes) {
+                        if (el == a.getElement(identifier)) {
+                            usages.add(identifier);
+                            break;
+                        }
+                    }
                 }
                 clsName = CodeUtils.extractClassName(node);
                 superClsName = CodeUtils.extractSuperClassName(node);
@@ -269,6 +300,21 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                 while (memberDeclaration.size() > 1) {
                     usages.remove(memberDeclaration.remove(0));
                 }
+            }
+
+            @Override
+            public void visit(FormalParameter node) {
+                Identifier parameterType = node.getParameterType();
+                if (parameterType != null && identifier != null && 
+                        parameterType.getName().equals(identifier.getName())) {
+                    String name = parameterType.getName();
+                    if (name != null) {
+                        if (el == a.getElement(parameterType)) {
+                            usages.add(parameterType);
+                        }
+                    }
+                }
+                super.visit(node);
             }
 
             @Override

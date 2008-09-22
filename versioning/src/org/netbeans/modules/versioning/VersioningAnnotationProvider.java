@@ -313,23 +313,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             clearMap(filesToRefresh);
             clearMap(parentsToRefresh);            
             
-            Set<FileSystem> filesystems = new HashSet<FileSystem>(1);
-            File[] allRoots = File.listRoots();
-            for (int i = 0; i < allRoots.length; i++) {
-                File root = allRoots[i];
-                FileObject fo = FileUtil.toFileObject(root);
-                if (fo != null) {
-                    try {
-                        filesystems.add(fo.getFileSystem());
-                    } catch (FileStateInvalidException e) {
-                        // ignore invalid filesystems
-                    }
-                }
-            }
-            for (Iterator<FileSystem> i = filesystems.iterator(); i.hasNext();) {
-                FileSystem fileSystem = i.next();
-                fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));                
-            }            
+            FileSystem fileSystem = Utils.getRootFilesystem();
+            fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));
         }
     });    
     

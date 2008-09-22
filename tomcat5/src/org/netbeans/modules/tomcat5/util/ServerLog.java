@@ -128,10 +128,11 @@ class ServerLog extends Thread {
         } else {
             writer.println(line);
             if (line.startsWith("SEVERE: WSSERVLET11: failed to parse runtime descriptor: java.lang.LinkageError:")) { // NOI18N
-                File file = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+                File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+                File jaxbApi  = InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
                 File endoresedDir = tomcatManager.getTomcatProperties().getJavaEndorsedDir();
-                if (file != null) {
-                    writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11", file.getParent(), endoresedDir));
+                if (jaxwsApi != null && jaxbApi != null) {
+                    writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11", jaxwsApi.getParent(), jaxbApi.getParent(), endoresedDir));
                 } else {
                     writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11_NOJAR", endoresedDir));
                 }

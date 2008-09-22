@@ -61,6 +61,7 @@ public class ServletForEJB extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         processRequest(request, response);
@@ -73,6 +74,7 @@ public class ServletForEJB extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         processRequest(request, response);
@@ -82,6 +84,7 @@ public class ServletForEJB extends HttpServlet {
      * Returns a short description of the servlet.
      * @return a String containing servlet description
      */
+
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>

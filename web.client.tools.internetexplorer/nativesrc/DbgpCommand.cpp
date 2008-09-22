@@ -43,6 +43,7 @@
 #include <exdisp.h>
 #include "Breakpoint.h"
 #include "wininet.h"
+#include <list>
 
 map<tstring, DbgpCommand *> DbgpCommand::commandResponseMap;
 
@@ -114,6 +115,8 @@ DbgpResponse *FeatureGetCommand::process(DbgpConnection *pDbgpConnection, map<ch
         result = pScriptDebugger->isFeatureSet(SUSPEND_ON_ERRORS);
     }else if(feature == _T("suspendOnDebuggerKeyword")) {
         result = pScriptDebugger->isFeatureSet(SUSPEND_ON_DEBUGGER_KEYWORD);
+    }else if(feature == _T("ignoreQueryStrings")) {
+        result = pScriptDebugger->isFeatureSet(IGNORE_QUERY_STRINGS);
     }
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(FEATURE_GET, argsMap.find('i')->second);
     pDbgpResponse->addAttribute(SUPPORTED, result ? 1 : 0);
@@ -149,6 +152,8 @@ DbgpResponse *FeatureSetCommand::process(DbgpConnection *pDbgpConnection, map<ch
                 pScriptDebugger->setFeature(SUSPEND_ON_ERRORS);
             }else if(feature == _T("suspendOnDebuggerKeyword")) {
                 pScriptDebugger->setFeature(SUSPEND_ON_DEBUGGER_KEYWORD);
+            }else if(feature == _T("ignoreQueryStrings")) {
+                pScriptDebugger->setFeature(IGNORE_QUERY_STRINGS);
             }
         }
         pDbgpResponse->addAttribute(SUCCESS, 1);
@@ -449,36 +454,23 @@ DbgpResponse *SourceCommand::process(DbgpConnection *pDbgpConnection, map<char, 
     TCHAR *buffer = pScriptDebugger->getSourceText(fileURI, beginLine, endLine);
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(SOURCE, argsMap.find('i')->second);
     int success = 0;
-    if(buffer == NULL) {
-        tstring domText;
-        //If document is not yet loaded, generate using DOM
-        //Check for exception status is made to avoid an issue where-in getDOMText blocks forever
-        if(pScriptDebugger->getStatus() != STATE_EXCEPTION) {
-            domText = getDOMText(pDbgpConnection, fileURI);
-        }
-        if(domText.length() != 0) {
-            pDbgpResponse->setValue(domText);
-            success = 1;
-        }else {
-            //As a last resort, get the source using WinInet APIs
-            USES_CONVERSION;
-            HINTERNET hSession = InternetOpen(L"Source Reader", PRE_CONFIG_INTERNET_ACCESS, L"", 
-                                                NULL, INTERNET_INVALID_PORT_NUMBER);
-            if (hSession != NULL) {
-                HINTERNET hUrlFile = InternetOpenUrl(hSession, fileURI.c_str(), NULL, 0, 0, 0);
-                if (hUrlFile != NULL) {
-                    DWORD bufSize;
-                    if(InternetQueryDataAvailable(hUrlFile, &bufSize, 0, 0)) {
-                        char *pBytes = new char[bufSize+1];
-                        DWORD dwBytesRead = 0;
-                        BOOL read = InternetReadFile(hUrlFile, pBytes, bufSize, &dwBytesRead);
-                        if(read) {
-                            pBytes[dwBytesRead] = 0;
-                            pDbgpResponse->setValue(A2W(pBytes));
-                            success = 1;
-                            delete []pBytes;
-                        }
-                    }
+    if(buffer == NULL || buffer[0] == 0) {
+        //Get the source using WinInet APIs
+        USES_CONVERSION;
+        HINTERNET hSession = InternetOpen(L"Source Reader", PRE_CONFIG_INTERNET_ACCESS, L"", 
+                                            NULL, INTERNET_INVALID_PORT_NUMBER);
+        if (hSession != NULL) {
+            HINTERNET hUrlFile = InternetOpenUrl(hSession, fileURI.c_str(), NULL, 0, 0, 0);
+            DWORD bufSize;
+            if (hUrlFile != NULL && InternetQueryDataAvailable(hUrlFile, &bufSize, 0, 0)) {
+                char *pBytes = new char[bufSize+1];
+                DWORD dwBytesRead = 0;
+                BOOL read = InternetReadFile(hUrlFile, pBytes, bufSize, &dwBytesRead);
+                if(read) {
+                    pBytes[dwBytesRead] = 0;
+                    pDbgpResponse->setValue(A2W(pBytes));
+                    success = 1;
+                    delete []pBytes;
                 }
             }
         }
@@ -517,22 +509,48 @@ tstring SourceCommand::getDOMText(DbgpConnection *pDbgpConnection, tstring fileU
                 long items;
                 if(spHTMLElementCollection != NULL) {
                     spHTMLElementCollection->get_length(&items);
+                    //Track the visited elements to prevent duplication of text
+                    list<IHTMLElement *> visitedElements;
                     for (long i=0; i<items; i++) {
                         CComVariant index = i;
                         CComPtr<IDispatch> spDisp1;
                         hr = spHTMLElementCollection->item(index, index, &spDisp1);
                         CComQIPtr<IHTMLElement> spHTMLElement = spDisp1;
                         if(spHTMLElement != NULL) {
-                            CComBSTR bstr;
-                            spHTMLElement->get_outerHTML(&bstr);
-                            if(bstr != NULL) {
-                                result.append((TCHAR *)(bstr));
+                            //Ignore if element is child of an visited element for which source is 
+                            //already generated
+                            CComPtr<IHTMLElement> spParentHTMLElement;
+                            spHTMLElement->get_parentElement(&spParentHTMLElement);
+                            list<IHTMLElement *>::iterator iter = visitedElements.begin();
+                            boolean ignore = false;
+                            while(iter != visitedElements.end()) {
+                                IHTMLElement *pHTMLElementTemp = *iter;
+                                if(pHTMLElementTemp == spParentHTMLElement) {
+                                    ignore = true;
+                                }
+                                ++iter;
+                            }
+                            IHTMLElement *pHTMLElement = spHTMLElement.Detach();
+                            visitedElements.push_front(pHTMLElement);
+                            if(!ignore) {
+                                CComBSTR bstr;
+                                pHTMLElement->get_outerHTML(&bstr);
+                                if(bstr != NULL) {
+                                    result.append((TCHAR *)(bstr));
+                                }
                             }
                         }
                      }
+                    list<IHTMLElement *>::iterator iter = visitedElements.begin();
+                    while(iter != visitedElements.end()) {
+                        IHTMLElement *pHTMLElement = *iter;
+                        pHTMLElement->Release();
+                        ++iter;
+                    }
                 }
             }
         }
+        Utils::log(1, _T("Source from DOM - %s\n"), fileURI.c_str());
     }
     return result;
 }
