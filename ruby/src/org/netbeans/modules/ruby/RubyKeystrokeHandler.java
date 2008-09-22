@@ -50,8 +50,10 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
+import org.jruby.nb.ast.CallNode;
 import org.jruby.nb.ast.NewlineNode;
 import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EditorOptions;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -1888,12 +1890,24 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
             Node node = it.next();
 
             // Filter out some uninteresting nodes
-            if (node instanceof NewlineNode) {
+            if (node.nodeId == NodeType.NEWLINENODE) {
                 continue;
             }
 
             OffsetRange range = AstUtilities.getRange(node);
-            
+
+            if (node.nodeId == NodeType.CALLNODE && ranges.size() == 0 && node == path.leaf()) {
+                // Try to handle scenarios like issue 111941 - in a call like
+                //  foo.bar.snark
+                // there's no AST node for the "bar" part - only a CallNode for "foo.bar",
+                // so add in an extra range for this case
+                Node receiver = ((CallNode)node).getReceiverNode();
+                OffsetRange receiverRange = AstUtilities.getRange(receiver);
+                if (receiver != null && astOffset > receiverRange.getEnd() && receiverRange.getEnd()+1 < range.getEnd()) {
+                   ranges.add(new OffsetRange(receiverRange.getEnd()+1, range.getEnd()));
+                }
+            }
+
             // The contains check should be unnecessary, but I end up getting
             // some weird positions for some JRuby AST nodes
             if (range.containsInclusive(astOffset) && !range.equals(previous)) {
