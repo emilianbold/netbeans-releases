@@ -385,7 +385,9 @@ public class WSITModelSupport {
                 public void run(CompilationController controller) throws java.io.IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                    result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                    if (sourceUtils != null) {
+                        result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                    }
                 }
             }, true);
             
