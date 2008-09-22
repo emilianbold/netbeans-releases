@@ -82,30 +82,35 @@ public class PHPCompletionResult extends DefaultCompletionResult {
                     }
 
                     FileObject currentFolder = completionContext.getInfo().getFileObject().getParent();
-                    String includePath = FileUtil.getRelativePath(currentFolder, elem.getFileObject());
+                    
+                    FileObject fileObject = elem.getFileObject();
+                    
+                    if (fileObject != null) {
+                        String includePath = FileUtil.getRelativePath(currentFolder, fileObject);
 
-                    final StringBuilder builder = new StringBuilder();
-                    builder.append("\nrequire \""); //NOI18N
-                    builder.append(includePath);
-                    builder.append("\";\n"); //NOI18N
+                        final StringBuilder builder = new StringBuilder();
+                        builder.append("\nrequire \""); //NOI18N
+                        builder.append(includePath);
+                        builder.append("\";\n"); //NOI18N
 
-                    TokenHierarchy th = TokenHierarchy.get(doc);
-                    TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
-                    tokenSequence.moveStart();
+                        TokenHierarchy th = TokenHierarchy.get(doc);
+                        TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
+                        tokenSequence.moveStart();
 
-                    while (tokenSequence.moveNext()) {
-                        if (tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG) {
-                            int position = tokenSequence.offset() + tokenSequence.token().length();
-                            try {
-                                int prevLineNumber = Utilities.getLineOffset(doc, position);
-                                int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
-                                doc.insertString(position, builder.toString(), null);
-                                Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + builder.length()));
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
+                        while (tokenSequence.moveNext()) {
+                            if (tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG) {
+                                int position = tokenSequence.offset() + tokenSequence.token().length();
+                                try {
+                                    int prevLineNumber = Utilities.getLineOffset(doc, position);
+                                    int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
+                                    doc.insertString(position, builder.toString(), null);
+                                    Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + builder.length()));
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+
+                                break;
                             }
-
-                            break;
                         }
                     }
                 }
