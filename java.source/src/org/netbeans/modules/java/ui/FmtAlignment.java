@@ -65,6 +65,14 @@ public class FmtAlignment extends javax.swing.JPanel {
         amMethodParamsCheckBox.putClientProperty(OPTION_ID, alignMultilineMethodParams);
         amCallArgsCheckBox.putClientProperty(OPTION_ID, alignMultilineCallArgs);
         amAnnotationArgsCheckBox.putClientProperty(OPTION_ID, alignMultilineAnnotationArgs);
+        amArrayInitCheckBox1.putClientProperty(OPTION_ID, alignMultilineArrayInit);
+        amAssignCheckBox1.putClientProperty(OPTION_ID, alignMultilineAssignment);
+        amBinaryOpCheckBox1.putClientProperty(OPTION_ID, alignMultilineBinaryOp);
+        amForCheckBox1.putClientProperty(OPTION_ID, alignMultilineFor);
+        amImplementsCheckBox1.putClientProperty(OPTION_ID, alignMultilineImplements);
+        amParenthesizedCheckBox1.putClientProperty(OPTION_ID, alignMultilineParenthesized);
+        amTernaryOpCheckBox1.putClientProperty(OPTION_ID, alignMultilineTernaryOp);
+        amThrowsCheckBox1.putClientProperty(OPTION_ID, alignMultilineThrows);
     }
     
     public static PreferencesCustomizer.Factory getController() {

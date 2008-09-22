@@ -662,7 +662,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                             // Adjust the indent at the given line (specified by offset) to the given indent
                             int currentIndent = GsfUtilities.getLineIndent(doc, lineBegin);
 
-                            if (currentIndent != indent) {
+                            if (currentIndent != indent && indent >= 0) {
                                 //org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
                                 //editorFormatter.changeRowIndent(doc, lineBegin, indent);
                                 context.modifyIndent(lineBegin, indent);
