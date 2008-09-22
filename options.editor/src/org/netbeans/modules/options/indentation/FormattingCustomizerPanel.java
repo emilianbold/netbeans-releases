@@ -282,7 +282,13 @@ private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
                         removeAllKidsAndKeys(toPrjPrefs);
                         deepCopy(fromPrjPrefs, toPrjPrefs);
+
+                        // XXX: detect somehow if the basic options are overriden in fromPrjPrefs
+                        // and set the flag accordingly in toPrjPrefs
                         
+                        //dump(fromPrjPrefs, "fromPrjPrefs");
+                        //dump(toPrjPrefs, "toPrjPrefs");
+
                         return newPrefsFactory;
                     }
                 });
@@ -327,14 +333,14 @@ private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 }//GEN-LAST:event_loadButtonActionPerformed
 
-//    private void dump(Preferences prefs, String prefsId) throws BackingStoreException {
-//        for(String key : prefs.keys()) {
-//            System.out.println(prefsId + ", " + prefs.absolutePath() + "/" + key + "=" + prefs.get(key, null));
-//        }
-//        for(String child : prefs.childrenNames()) {
-//            dump(prefs.node(child), prefsId);
-//        }
-//    }
+    private void dump(Preferences prefs, String prefsId) throws BackingStoreException {
+        for(String key : prefs.keys()) {
+            System.out.println(prefsId + ", " + prefs.absolutePath() + "/" + key + "=" + prefs.get(key, null));
+        }
+        for(String child : prefs.childrenNames()) {
+            dump(prefs.node(child), prefsId);
+        }
+    }
 
 private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editGlobalButtonActionPerformed
     OptionsDisplayer.getDefault().open(GLOBAL_OPTIONS_CATEGORY);
