@@ -370,9 +370,26 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         insertChar("/foo^", '/',
                 "/foo/^");
     }
-
     public void testNotRegexp1() throws Exception {
         insertChar("x = 10 ^", '/', "x = 10 /^");
+    }
+
+
+
+    public void testRegexpToComment1() throws Exception {
+        insertChar("/^/", '*', "/*^");
+    }
+
+    public void testRegexpToComment2() throws Exception {
+        insertChar("/^/\n", '*', "/*^\n");
+    }
+
+    public void testRegexpToComment3() throws Exception {
+        insertChar("x = /^/", '*', "x = /*^");
+    }
+
+    public void testRegexpToComment4() throws Exception {
+        insertChar("x = /^/\n", '*', "x = /*^\n");
     }
 
     public void testNotRegexp2() throws Exception {
@@ -540,9 +557,17 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         insertBreak("function foo() {\n  // cmnt1\n^  // cmnt2\n}\n", "function foo() {\n  // cmnt1\n  // ^\n  // cmnt2\n}\n");
     }
 
+    public void testContComment18() throws Exception {
+        insertBreak("x = /*^\n*/", "x = /*\n *^\n*/");
+    }
+
     public void testNoContComment() throws Exception {
         // No auto-// on new lines
         insertBreak("foo // ^", "foo // \n^");
+    }
+
+    public void testNoContcomment2() throws Exception {
+        insertBreak("x = /*\n*/^", "x = /*\n*/\n^");
     }
 
     public void testDeleteContComment() throws Exception {

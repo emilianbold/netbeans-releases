@@ -589,7 +589,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
                             // Adjust the indent at the given line (specified by offset) to the given indent
                             int currentIndent = GsfUtilities.getLineIndent(doc, lineBegin);
 
-                            if (currentIndent != indent) {
+                            if (currentIndent != indent && indent >= 0) {
                                 if (context != null) {
                                     assert lineBegin == Utilities.getRowStart(doc, lineBegin);
                                     context.modifyIndent(lineBegin, indent);

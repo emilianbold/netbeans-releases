@@ -312,12 +312,12 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             }
         }
         
-        if (id == JsTokenId.BLOCK_COMMENT && offset > ts.offset()) {
+        if (id == JsTokenId.BLOCK_COMMENT && offset > ts.offset() && offset < ts.offset()+ts.token().length()) {
             // Continue *'s
             int begin = Utilities.getRowFirstNonWhite(doc, offset);
             int end = Utilities.getRowEnd(doc, offset)+1;
             String line = doc.getText(begin, end-begin);
-            boolean isBlockStart = line.startsWith("/*");
+            boolean isBlockStart = line.startsWith("/*") || (begin != -1 && begin < ts.offset());
             if (isBlockStart || line.startsWith("*")) {
                 int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
@@ -627,7 +627,15 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         TokenId id = token.id();
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
-        
+
+        if (ch == '*' && id == JsTokenId.LINE_COMMENT && caretOffset == ts.offset()+1) {
+            // Just typed "*" inside a "//" -- the user has typed "/", which automatched to
+            // "//" and now they're typing "*" (e.g. to type "/*", but ended up with "/*/".
+            // Remove the auto-matched /.
+            doc.remove(caretOffset, 1);
+            return false; // false: continue to insert the "*"
+        }
+
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
         if (ch == '\"' || ch == '\'') {
             stringTokens = STRING_TOKENS;
