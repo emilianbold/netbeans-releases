@@ -1440,12 +1440,18 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 List<File> seen = seenTimestampedFiles.get(language);
                 int seenCount = seen != null ? seen.size() : 0;
                 Map<String,String> stamps = timeStamps.get(language);
+                // TODO - do I really need to pull out the keySet() here?
                 int indexedCount = stamps != null ? stamps.keySet().size() : 0;
                 if (seenCount != indexedCount) {
                     // We only count files that we've timestamped, thus we can
                     // never get a greater seen count than the number of files in
                     // the index.
-                    assert seenCount < indexedCount;
+                    if (seenCount > indexedCount) {
+                        LOGGER.warning("Unexpectedly encountered more timestamped files (" + seenCount + ") than indexed (" + indexedCount + ")"); // NOI18N
+                        if (seenCount < 50) {
+                            LOGGER.warning(" Details: seen=" + seen + "; stamps=" + stamps);
+                        }
+                    }
 
                     // Now we have to figure out which files were deleted. Those
                     // are the files we have in the index that weren't encountered
