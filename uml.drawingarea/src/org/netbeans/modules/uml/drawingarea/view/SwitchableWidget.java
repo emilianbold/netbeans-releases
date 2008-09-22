@@ -40,7 +40,6 @@ package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,7 +47,6 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.visual.graph.GraphScene;
-import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -113,16 +111,6 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     public void switchTo(String view)
     {
         switchTo(view, getObject());
-//        if(getScene() instanceof ObjectScene)
-//        {
-////            ObjectScene scene = (ObjectScene)getScene();
-//            switchTo(view, getObject());
-////            Object data = scene.findObject(this);
-////            if(data instanceof IPresentationElement)
-////            {
-////                switchTo(view, (IPresentationElement)data);
-////            }
-//        }
     }
     
     public void switchTo(String view, IPresentationElement element)
@@ -327,7 +315,6 @@ public abstract class SwitchableWidget extends UMLNodeWidget
 
     @Override
     public void save(NodeWriter nodeWriter) {
-//        nodeWriter.setViewName(this.viewName);
         HashMap map = nodeWriter.getProperties();
         map.put(NodeInfo.VIEW_NAME, this.viewName);
         nodeWriter.setProperties(map);
@@ -433,15 +420,6 @@ public abstract class SwitchableWidget extends UMLNodeWidget
                         NodeWidgetFactory factory = (NodeWidgetFactory) instance;
                         retVal = factory.createNode(scene);
                     }
-//                    Class cl = cookie.instanceClass();
-//                    if(cl != null)
-//                    {
-//                        Constructor constructor = cl.getConstructor(Scene.class);
-//                        if(constructor != null)
-//                        {
-//                            retVal = (Widget) constructor.newInstance(getScene());
-//                        }
-//                    }
                 }
                 catch (Exception e)
                 {
