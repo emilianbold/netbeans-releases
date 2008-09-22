@@ -109,25 +109,30 @@ public class MainProjectScanningScope extends TaskScanningScope
     
     @Override
     public boolean isInScope( FileObject resource ) {
-        if( null == resource || null == currentProject )
+        Project p = null;
+        synchronized( this ) {
+            p = currentProject;
+        }
+
+        if( null == resource || null == p )
             return false;
         
         Project owner = FileOwnerQuery.getOwner( resource );
         if( null == owner )
             return false;
         
-        if( owner.equals( currentProject ) )
+        if( owner.equals( p ) )
             return true;
         
-        if( currentProject.equals( OpenProjects.getDefault().getMainProject() ) ) {
+        if( p.equals( OpenProjects.getDefault().getMainProject() ) ) {
             Project[] projects = OpenProjects.getDefault().getOpenProjects();
             for( int i=0; i<projects.length; i++ ) {
-                if( projects[i].equals( currentProject ) )
+                if( projects[i].equals( p ) )
                     continue;
 
                 SubprojectProvider subProjectProvider = projects[i].getLookup().lookup( SubprojectProvider.class );
                 if( null != subProjectProvider 
-                        && subProjectProvider.getSubprojects().contains( currentProject )
+                        && subProjectProvider.getSubprojects().contains( p )
                         && projects[i].equals( owner ) ) {
                     return true;
                 }
