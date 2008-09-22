@@ -101,7 +101,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
             return new Object[0];
         } 
         
-        Object[] ch = original.getChildren(parent, 0, 0);
+        Object[] ch = original.getChildren(parent, from, to);
         List l = new ArrayList();
         int i, k = ch.length, n = to - from;
         Map maxLines = new HashMap();
