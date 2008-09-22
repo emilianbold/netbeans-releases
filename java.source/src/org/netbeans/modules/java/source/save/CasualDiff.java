@@ -1987,7 +1987,14 @@ public class CasualDiff {
         if (printParens && oldList.isEmpty()) {
             printer.print(makeAround[1].fixedText());
         }
-        return oldList.isEmpty() ? pos : endPos(oldList);
+        if (oldList.isEmpty()) {
+            return pos;
+        } else {
+            int endPos2 = endPos(oldList);
+            tokenSequence.move(endPos2);
+            moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+            return tokenSequence.offset();
+        }
     }
     
     /**
