@@ -41,9 +41,11 @@ package org.netbeans.modules.extbrowser;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Level;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Basic support for default browser funcionality on Unix system,
@@ -55,18 +57,21 @@ import org.openide.util.Exceptions;
  */
 class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     
-    private static final String COMMAND = "xdg-open"; // NOI18N
+    private static final String XDG_COMMAND = "xdg-open"; // NOI18N
+    private static final String XBROWSER_COMMAND = "x-www-browser"; // NOI18N
 
-    private static final boolean AVAILABLE;
+    private static final boolean XDG_AVAILABLE;
+    private static final boolean XBROWSER_AVAILABLE;
     
     static {
         // XXX Lame check to find out whether the functionality is installed.
         // TODO Find some better way to ensure it is there.
-        AVAILABLE = new File("/usr/bin/" + COMMAND).exists(); // NOI18N
+        XDG_AVAILABLE = new File("/usr/bin/" + XDG_COMMAND).exists(); // NOI18N
+        XBROWSER_AVAILABLE = new File("/usr/bin/" + XBROWSER_COMMAND).exists(); // NOI18N
     }
     
     static boolean isAvailable() {
-        return AVAILABLE;
+        return XDG_AVAILABLE || XBROWSER_AVAILABLE;
     }
     
     
@@ -83,16 +88,48 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDeaultUnixBrowserImpl.setUrl: " + url); // NOI18N
         }
-        String urlArgument = url.toExternalForm();
-        ProcessBuilder pb = new ProcessBuilder(new String[] {
-            COMMAND,
-            urlArgument
-        });
+        String urlArg = url.toExternalForm();
+        // go with x-www-browser if available
+        String command = XBROWSER_AVAILABLE ? XBROWSER_COMMAND : XDG_COMMAND;
+
+        ProcessBuilder pb = new ProcessBuilder(new String[] { command, urlArg });
         try {
             Process p = pb.start();
+            RequestProcessor.getDefault().post(new ProcessWatcher(p));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+
     }
+
+    private static final class ProcessWatcher implements Runnable {
+
+        private final Process p;
+
+        ProcessWatcher (Process p) {
+            this.p = p;
+        }
+
+        public void run() {
+            try {
+                int exitValue = p.waitFor();
+                if (exitValue != 0) {
+                    StringBuilder sb = new StringBuilder();
+                    InputStream is = p.getErrorStream();
+                    try {
+                        int curByte = 0;
+                        while ((curByte = is.read()) != -1) {
+                            sb.append((char)curByte);
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    ExtWebBrowser.getEM().log(Level.WARNING, sb.toString()); // NOI18N
+                }
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    } // ProcessWatcher
 
 }
