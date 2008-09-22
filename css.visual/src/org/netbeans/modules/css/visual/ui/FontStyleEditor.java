@@ -239,20 +239,18 @@ public class FontStyleEditor extends StyleEditor {
         
         // Set the Text Decoration the GUI
         String textDecoration = cssStyleData.getProperty(CssProperties.TEXT_DECORATION);
-        noDecorationCheckbox.setSelected(false);
-        underlineCheckbox.setSelected(false);
-        overlineCheckbox.setSelected(false);
-        strikethroughCheckbox.setSelected(false);
-        if(textDecoration != null){
+
+        boolean thereIsDecoration = textDecoration != null;
+        if(thereIsDecoration){
             textDecorationData.setDecoration(textDecoration);
-            if (textDecorationData.noDecorationEnabled()){
-                noDecorationCheckbox.setSelected(true);
-            }else{
-                underlineCheckbox.setSelected(textDecorationData.underlineEnabled());
-                overlineCheckbox.setSelected(textDecorationData.overlineEnabled());
-                strikethroughCheckbox.setSelected(textDecorationData.lineThroughEnabled());
-            }
         }
+        boolean nodecoration = thereIsDecoration && textDecorationData.noDecorationEnabled();
+
+        noDecorationCheckbox.setSelected(nodecoration);
+        underlineCheckbox.setSelected(thereIsDecoration && !nodecoration && textDecorationData.underlineEnabled());
+        overlineCheckbox.setSelected(thereIsDecoration && !nodecoration && textDecorationData.overlineEnabled());
+        strikethroughCheckbox.setSelected(thereIsDecoration && !nodecoration && textDecorationData.lineThroughEnabled());
+        
         
         // Set the Bckground Color the GUI
         String textColor = cssStyleData.getProperty(CssProperties.COLOR);
