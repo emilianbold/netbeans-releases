@@ -86,7 +86,7 @@ public class BindingOperationInputNode extends WSDLExtensibilityElementNode<Bind
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindinginput.png");
     
     public BindingOperationInputNode(BindingInput wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<BindingInput>(wsdlConstruct), wsdlConstruct, new BindingOperationInputNewTypesFactory());
+        super(wsdlConstruct, new BindingOperationInputNewTypesFactory());
     }
     
     @Override

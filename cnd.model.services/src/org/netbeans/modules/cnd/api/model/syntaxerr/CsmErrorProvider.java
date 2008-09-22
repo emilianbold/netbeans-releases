@@ -111,8 +111,8 @@ public abstract class CsmErrorProvider implements NamedEntity {
     // Implementation part
     //
 
-    private static final boolean ENABLE = getBoolean("cnd.csm.errors", true);
-    private static final boolean ASYNC = getBoolean("cnd.csm.errors.async", true);
+    private static final boolean ENABLE = getBoolean("cnd.csm.errors", true); //NOI18N
+    private static final boolean ASYNC = getBoolean("cnd.csm.errors.async", true); //NOI18N
 
     private static abstract class BaseMerger extends CsmErrorProvider {
 
@@ -138,7 +138,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
         }
 
         public String getName() {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
         }
    }
 

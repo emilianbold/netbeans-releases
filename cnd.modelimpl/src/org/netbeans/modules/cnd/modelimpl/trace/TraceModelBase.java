@@ -53,10 +53,10 @@ import org.openide.util.Utilities;
  */
 public class TraceModelBase {
 
-    private boolean useCSysIncludes = Boolean.getBoolean("cnd.modelimpl.c.include");
-    private boolean useCSysDefines = Boolean.getBoolean("cnd.modelimpl.c.define");
-    private boolean useCppSysIncludes = Boolean.getBoolean("cnd.modelimpl.cpp.include");
-    private boolean useCppSysDefines = Boolean.getBoolean("cnd.modelimpl.cpp.define");
+    private boolean useCSysIncludes = Boolean.getBoolean("cnd.modelimpl.c.include"); //NOI18N
+    private boolean useCSysDefines = Boolean.getBoolean("cnd.modelimpl.c.define"); //NOI18N
+    private boolean useCppSysIncludes = Boolean.getBoolean("cnd.modelimpl.cpp.include"); //NOI18N
+    private boolean useCppSysDefines = Boolean.getBoolean("cnd.modelimpl.cpp.define"); //NOI18N
     
     private ModelImpl model;
 
@@ -103,7 +103,7 @@ public class TraceModelBase {
         Cancellable task = model.enqueueModelTask(new Runnable(){
             public void run() {
             }
-        }, "wait finished other tasks");
+        }, "wait finished other tasks"); //NOI18N
         if (task instanceof Task) {
             ((Task)task).waitFinished();
         }

@@ -398,7 +398,7 @@ public final class JsfForm implements ActiveEditorDrop {
             //non editable
             String temporal = ( isRelationship == JpaControllerUtil.REL_NONE && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ) ? getTemporal(controller, method, fieldAccess) : null;
             String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\"" + (isRelationship == JpaControllerUtil.REL_NONE ? "" : " ") + "#'{'{1}.{2}'}'\" title=\"{0}\" ";
-            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n";
+            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime pattern=\"{4}\" />\n</h:outputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( isRelationship == JpaControllerUtil.REL_NONE && (formType == FORM_TYPE_NEW || formType == FORM_TYPE_EDIT) ) {
@@ -410,7 +410,7 @@ public final class JsfForm implements ActiveEditorDrop {
             template += isLob ? "<h:inputTextarea rows=\"4\" cols=\"30\"" : "<h:inputText";
             template += " id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{5}\" ";
-            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n";
+            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime pattern=\"{4}\" />\n</h:inputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName, null, null, requiredMessage} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal), requiredMessage};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( isRelationship == JpaControllerUtil.REL_TO_ONE && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {

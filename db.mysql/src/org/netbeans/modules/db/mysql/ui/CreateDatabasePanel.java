@@ -182,6 +182,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         boolean dbCreated = false;
 
         try {
+            if (! ensureConnected()) {
+                return;
+            }
+
             if ( ! checkExistingDatabase(server, getDatabaseName()) ) {
                 return;
             }
@@ -219,6 +223,22 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             displayCreateFailure(server, ex, dbname, dbCreated);
             dbconn = null;
         }
+    }
+
+    private boolean ensureConnected() throws DatabaseException {
+        try {
+            server.validateConnection();
+        } catch (DatabaseException dbe) {
+            LOGGER.log(Level.FINE, null, dbe);
+        }
+        
+        if (server.isConnected()) {
+            return true;
+        }
+        
+        server.reconnect(false, false);
+
+        return server.isConnected();
     }
         
     private static void displayCreateFailure(DatabaseServer server,
@@ -359,6 +379,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
     private void setGrantAccess(boolean grant) {
         this.chkGrantAccess.setSelected(grant);
+        comboUsers.setEnabled(grant);
     }
     
     private boolean isGrantAccess() {

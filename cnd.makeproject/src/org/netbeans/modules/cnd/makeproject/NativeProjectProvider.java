@@ -91,8 +91,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void runOnCodeModelReadiness(Runnable task) {
-        DevelopmentHostConfiguration host = ((MakeConfiguration)getMakeConfigurationDescriptor().getConfs().getActive()).getDevelopmentHost();
-        CompilerSetManagerEvents.get(host.getName()).runOnCodeModelReadiness(task);
+        if (getMakeConfigurationDescriptor() != null) {
+            DevelopmentHostConfiguration host = ((MakeConfiguration)getMakeConfigurationDescriptor().getConfs().getActive()).getDevelopmentHost();
+            CompilerSetManagerEvents.get(host.getName()).runOnCodeModelReadiness(task);
+        }
     }
 
     private void addMyListeners() {
@@ -457,8 +459,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         BooleanConfiguration ccInheritMacros;
         Item[] items;
         
-        // Check first whether compiler set has changed
-        if (makeConfiguration.getCompilerSet().getDirty()) {
+        // Check first whether the development host has changed
+        if (makeConfiguration.getDevelopmentHost().getDirty()) {
+            makeConfiguration.getDevelopmentHost().setDirty(false);
+            items = getMakeConfigurationDescriptor().getProjectItems();
+            firePropertiesChanged(items, true, true, true);
+            return;
+        } else if (makeConfiguration.getCompilerSet().getDirty()) {
+            // Next, check whether the compiler set has changed
             makeConfiguration.getCompilerSet().setDirty(false);
             items = getMakeConfigurationDescriptor().getProjectItems();
             firePropertiesChanged(items, true, true, true);

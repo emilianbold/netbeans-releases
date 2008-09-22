@@ -182,4 +182,67 @@ public class GeneralPHP extends JellyTestCase {
       Sleep( 100 );
     }
   }
+
+  protected void CheckResult(
+      EditorOperator eoPHP,
+      String sCheck
+    )
+  {
+    CheckResult( eoPHP, sCheck, 0 );
+  }
+
+  protected void CheckResult(
+      EditorOperator eoPHP,
+      String sCheck,
+      int iOffset
+    )
+  {
+    String sText = eoPHP.getText( eoPHP.getLineNumber( ) + iOffset );
+
+    // Check code completion list
+    if( -1 == sText.indexOf( sCheck ) )
+      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sCheck + "\"" );
+  }
+
+  protected void CheckResultRegex(
+      EditorOperator eoPHP,
+      String sCheck
+    )
+  {
+    String sText = eoPHP.getText( eoPHP.getLineNumber( ) );
+
+    // Check code completion list
+    if( !sText.matches( sCheck ) )
+      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sCheck + "\"" );
+  }
+
+  protected void TypeCodeCheckResult(
+      EditorOperator eoPHP,
+      String sType,
+      String sCheck
+    )
+  {
+    TypeCodeCheckResult( eoPHP, sType, sCheck, 0 );
+  }
+
+  protected void TypeCodeCheckResult(
+      EditorOperator eoPHP,
+      String sType,
+      String sCheck,
+      int iOffset
+    )
+  {
+    TypeCode( eoPHP, sType );
+    CheckResult( eoPHP, sCheck, iOffset );
+  }
+
+  protected void TypeCodeCheckResultRegex(
+      EditorOperator eoPHP,
+      String sType,
+      String sCheck
+    )
+  {
+    TypeCode( eoPHP, sType );
+    CheckResultRegex( eoPHP, sCheck );
+  }
 }

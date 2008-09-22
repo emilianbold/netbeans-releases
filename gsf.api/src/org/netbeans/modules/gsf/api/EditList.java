@@ -45,9 +45,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.Formatter;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
@@ -65,8 +63,8 @@ import org.openide.util.Exceptions;
 public class EditList {
     private BaseDocument doc;
     private List<Edit> edits;
-    private Formatter formatter;
     private boolean formatAll;
+    private List<DelegatedPosition> positions = new ArrayList<DelegatedPosition>();;
     
     public EditList(BaseDocument doc) {
         this.doc = doc;
@@ -78,6 +76,21 @@ public class EditList {
         return "EditList(" + edits + ")";
     }
 
+    /**
+     * Create a position using an original offset that after applying the fixes
+     * will return the corresponding offset in the edited document
+     */
+    public Position createPosition(int offset) {
+        return createPosition(offset, Position.Bias.Forward);
+    }
+
+    public Position createPosition(int offset, Position.Bias bias) {
+        DelegatedPosition pos = new DelegatedPosition(offset, bias);
+        positions.add(pos);
+
+        return pos;
+    }
+
     public EditList replace(int offset, int removeLen, String insertText, boolean format, int offsetOrdinal) {
         edits.add(new Edit(offset, removeLen, insertText, format, offsetOrdinal));
         
@@ -86,7 +99,7 @@ public class EditList {
     
     public void applyToDocument(BaseDocument otherDoc/*, boolean narrow*/) {
         EditList newList = new EditList(otherDoc);
-        newList.formatter = formatter;
+        newList.formatAll = formatAll;
         /*
         if (narrow) {
             OffsetRange range = getRange();
@@ -107,69 +120,71 @@ public class EditList {
         newList.apply();
     }
 
-    public void apply() {
-        apply(-1);
-    }
-    
-    public void setFormatter(Formatter formatter, boolean formatAll) {
-        this.formatter = formatter;
+    public void setFormatAll(boolean formatAll) {
         this.formatAll = formatAll;
     }
     
     /** Apply the given list of edits in the current document. If positionOffset is a position
      * within one of the regions, return a document Position that corresponds to it.
      */
-    public Position apply(int positionOffset) {
+    public void apply() {
         if (edits.size() == 0) {
-            if (positionOffset >= 0) {
-                try {
-                    return doc.createPosition(0);
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
-                }
-            }
-            return null;
+            return;
         }
-
-        Position position = null;
 
         Collections.sort(edits);
         Collections.reverse(edits);
 
-        try {
-            doc.atomicLock();
-            int lastOffset = edits.get(0).offset;
-            Position lastPos = doc.createPosition(lastOffset, Position.Bias.Forward);
-            
-            // Apply edits in reverse order (to keep offsets accurate)
-            for (Edit edit : edits) {
-                if (edit.removeLen > 0) {
-                    doc.remove(edit.offset, edit.removeLen);
-                }
-                if (edit.getInsertText() != null) {
-                    doc.insertString(edit.offset, edit.insertText, null);
-                    int end = edit.offset + edit.insertText.length();
-                    if (edit.getOffset() <= positionOffset && end >= positionOffset) {
-                        position = doc.createPosition(positionOffset); // Position of the comment
-                    }
-                    if (edit.format && formatter != null) {
-                        formatter.reindent(doc, edit.offset, end);
-                    }
-                }
-            }
-            
-            if (formatAll) {
-                int firstOffset = edits.get(edits.size()-1).offset;
-                lastOffset = lastPos.getOffset();
-                formatter.reindent(doc, firstOffset, lastOffset);
-            }
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-        } finally {
-            doc.atomicUnlock();
-        }
+        doc.runAtomic(new Runnable() {
 
-        return position;
+            public void run() {
+                try {
+                    int lastOffset = edits.get(0).offset;
+                    Position lastPos = doc.createPosition(lastOffset, Position.Bias.Forward);
+
+                    // Apply edits in reverse order (to keep offsets accurate)
+                    for (Edit edit : edits) {
+                        if (edit.removeLen > 0) {
+                            doc.remove(edit.offset, edit.removeLen);
+                        }
+                        if (edit.getInsertText() != null) {
+                            doc.insertString(edit.offset, edit.insertText, null);
+                            int end = edit.offset + edit.insertText.length();
+                            for (int i = 0; i < positions.size(); i++) {
+                                DelegatedPosition pos = positions.get(i);
+                                int positionOffset = pos.originalOffset;
+                                if (edit.getOffset() <= positionOffset && end >= positionOffset) {
+                                    pos.delegate = doc.createPosition(positionOffset, pos.bias); // Position of the comment
+                                }
+                            }
+                            if (edit.format) {
+                                final org.netbeans.editor.Formatter f = doc.getFormatter();
+                                try {
+                                    f.reformatLock();
+                                    f.reformat(doc, edit.offset, end);
+                                } finally {
+                                    f.reformatUnlock();
+                                }
+                            }
+                        }
+                    }
+
+                    if (formatAll) {
+                        int firstOffset = edits.get(edits.size() - 1).offset;
+                        lastOffset = lastPos.getOffset();
+                        final org.netbeans.editor.Formatter f = doc.getFormatter();
+                        try {
+                            f.reformatLock();
+                            f.reformat(doc, firstOffset, lastOffset);
+                        } finally {
+                            f.reformatUnlock();
+                        }
+                    }
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
+                }
+            }
+        });
     }
     
     public OffsetRange getRange() {
@@ -247,4 +262,22 @@ public class EditList {
         }
     }
     
+    private class DelegatedPosition implements Position {
+        private int originalOffset;
+        private Position delegate;
+        private Position.Bias bias;
+
+        private DelegatedPosition(int offset, Position.Bias bias) {
+            this.originalOffset = offset;
+            this.bias = bias;
+        }
+
+        public int getOffset() {
+            if (delegate != null) {
+                return delegate.getOffset();
+            }
+
+            return -1;
+        }
+    }
 }

@@ -43,11 +43,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_INTERPRETER;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_PORT;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_STOP_AT_FIRST_LINE;
@@ -62,17 +57,6 @@ import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_GLOBAL_
  * @since 1.2
  */
 public final class PhpOptions {
-    /**
-     * The default value for short (&lt?) tags (<code>{@value #SHORT_TAGS_ENABLED}</code>).
-     * @since 2.2
-     */
-    public static final boolean SHORT_TAGS_ENABLED = true;
-    /**
-     * The default value for ASP (&lt% and %&gt;) tags (<code>{@value #ASP_TAGS_ENABLED}</code>).
-     * @since 2.2
-     */
-    public static final boolean ASP_TAGS_ENABLED = false;
-
     public static final String PROP_PHP_INTERPRETER = "propPhpInterpreter"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_PORT = "proPhpDebuggerPort"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_STOP_AT_FIRST_LINE = "propPhpDebuggerStopAtFirstLine"; // NOI18N
@@ -144,44 +128,6 @@ public final class PhpOptions {
     }
 
     /**
-     * Find out whether short (&lt;?) tags are supported or not. This option is project specific.
-     * If no file is provided (file is <code>null</code>) then {@link #SHORT_TAGS_ENABLED the default value} is returned.
-     * @param file a file which could belong to a project or <code>null</code> for getting {@link #SHORT_TAGS_ENABLED the default value}.
-     * @return <code>true</code> if short tags are supported, <code>false</code> otherwise.
-     * @see #SHORT_TAGS_ENABLED
-     * @since 2.2
-     */
-    public boolean areShortTagsEnabled(FileObject file) {
-        if (file == null) {
-            return SHORT_TAGS_ENABLED;
-        }
-        PhpProject phpProject = getPhpProject(file);
-        if (phpProject == null) {
-            return SHORT_TAGS_ENABLED;
-        }
-        return ProjectPropertiesSupport.areShortTagsEnabled(phpProject);
-    }
-
-    /**
-     * Find out whether ASP (&lt% and %&gt;) tags are supported or not. This option is project specific.
-     * If no file is provided (file is <code>null</code>) then {@link #ASP_TAGS_ENABLED the default value} is returned.
-     * @param file a file which could belong to a project or <code>null</code> for getting {@link #ASP_TAGS_ENABLED the default value}.
-     * @return <code>true</code> if ASP tags are supported, <code>false</code> otherwise.
-     * @see #ASP_TAGS_ENABLED
-     * @since 2.2
-     */
-    public boolean areAspTagsEnabled(FileObject file) {
-        if (file == null) {
-            return ASP_TAGS_ENABLED;
-        }
-        PhpProject phpProject = getPhpProject(file);
-        if (phpProject == null) {
-            return ASP_TAGS_ENABLED;
-        }
-        return ProjectPropertiesSupport.areAspTagsEnabled(phpProject);
-    }
-
-    /**
      * @since 1.4
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -193,13 +139,5 @@ public final class PhpOptions {
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
-    }
-
-    private PhpProject getPhpProject(FileObject file) {
-        Project project = FileOwnerQuery.getOwner(file);
-        if (project instanceof PhpProject) {
-            return (PhpProject) project;
-        }
-        return null;
     }
 }

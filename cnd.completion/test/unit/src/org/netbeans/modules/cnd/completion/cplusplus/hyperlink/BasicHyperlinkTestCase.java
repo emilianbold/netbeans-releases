@@ -351,6 +351,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("labels.cc", 31, 12, "labels.cc", 33, 9);
         performTest("labels.cc", 38, 12, "labels.cc", 40, 9);
         performTest("labels.cc", 45, 12, "labels.cc", 47, 9);
+        performTest("labels.cc", 57, 19, "labels.cc", 54, 13);
     }
 
     public void testStaticConstInNamespace() throws Exception {
@@ -467,12 +468,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz_145553_namesakes.cc", 47, 23, "iz_145553_namesakes.cc", 31, 13);
         performTest("iz_145553_namesakes.cc", 49, 25, "iz_145553_namesakes.cc", 41, 5);
     }
-    
+
     public void testIZ145071() throws Exception {
         // IZ#145071 : forward declarations marked as error
         performTest("IZ145071.cc", 2, 20, "IZ145071.cc", 2, 1);
     }
-    
+
     public void testIZ136731() throws Exception {
         // IZ#136731 : No hyper link on local extern function
         performTest("IZ136731_local_extern_function.cc", 4, 18, "IZ136731_local_extern_function.cc", 3, 5);
@@ -484,6 +485,24 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ146464.c", 1, 16, "IZ146464.c", 1, 1); // NOI18N
         performTest("IZ146464.c", 2, 5, "IZ146464.c", 1, 1); // NOI18N
         performTest("IZ146464.c", 2, 23, "IZ146464.c", 1, 1); // NOI18N
+    }
+
+    public void testIZ147627() throws Exception {
+        // IZ#147627 : IDE highlights code with 'i' in 'for' as wrong
+        performTest("IZ147627.cc", 6, 18, "IZ147627.cc", 6, 14); // NOI18N
+        performTest("IZ147627.cc", 7, 23, "IZ147627.cc", 6, 14); // NOI18N
+        performTest("IZ147627.cc", 7, 28, "IZ147627.cc", 6, 14); // NOI18N
+        performTest("IZ147627.cc", 8, 18, "IZ147627.cc", 8, 14); // NOI18N
+        performTest("IZ147627.cc", 9, 23, "IZ147627.cc", 8, 14); // NOI18N
+        performTest("IZ147627.cc", 9, 28, "IZ147627.cc", 8, 14); // NOI18N
+    }
+
+    public void testIZ147632() throws Exception {
+        // IZ#147632 : IDE highlights global variable in 'if' as wrong
+        performTest("IZ147632.cc", 8, 16, "IZ147632.cc", 1, 1);
+        performTest("IZ147632.cc", 8, 25, "IZ147632.cc", 3, 5);
+        performTest("IZ147632.cc", 10, 25, "IZ147632.cc", 3, 5);
+        performTest("IZ147632.cc", 12, 25, "IZ147632.cc", 3, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

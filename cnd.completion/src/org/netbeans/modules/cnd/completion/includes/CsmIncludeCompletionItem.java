@@ -125,10 +125,13 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             Completion.get().hideDocumentation();
-            Completion.get().hideCompletion();
+            boolean folder = this.isFolder();            
+            if (!folder) {
+                Completion.get().hideCompletion();
+            }
             int caretOffset = component.getSelectionEnd();
             substituteText(component, substitutionOffset, caretOffset - substitutionOffset, isFolder() ? SLASH : null);
-            if (this.isFolder()) {
+            if (folder) {
                 Completion.get().showCompletion();
             }
         }

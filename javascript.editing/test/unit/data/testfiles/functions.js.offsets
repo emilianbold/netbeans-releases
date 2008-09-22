@@ -1,0 +1,46 @@
+
+<SCRIPT><VAR>var <NAME>multiply = <NEW>new <NAME>Function</NAME>(<STRING>"x"</STRING>, <STRING>"y"</STRING>, <STRING>"return x * y;"</STRING>)</NEW></NAME></VAR>;
+<FUNCTION>function <FUNCNAME>multiply2</FUNCNAME>(<PARAMETER>x</PARAMETER>, <PARAMETER>y</PARAMETER>) <BLOCK>{
+   <RETURN>return <MUL><NAME>x</NAME> * <NAME>y</NAME></MUL></RETURN>;</BLOCK>
+}</FUNCTION>
+<VAR>var <NAME>multiply3 = <FUNCTION>function(<PARAMETER>x</PARAMETER>, <PARAMETER>y</PARAMETER>) <BLOCK>{
+   <RETURN>return <MUL><NAME>x</NAME> * <NAME>y</NAME></MUL></RETURN>;</BLOCK>
+}</FUNCTION></NAME></VAR>
+<VAR>var <NAME>multiply4 = <FUNCTION>function <FUNCNAME>func_name</FUNCNAME>(<PARAMETER>x</PARAMETER>, <PARAMETER>y</PARAMETER>) <BLOCK>{
+   <RETURN>return <MUL><NAME>x</NAME> * <NAME>y</NAME></MUL></RETURN>;</BLOCK>
+}</FUNCTION></NAME></VAR>
+<FUNCTION>function <FUNCNAME>foo</FUNCNAME>() <BLOCK>{</BLOCK><RETURN/>}</FUNCTION>
+<EXPR_RESULT><CALL><NAME>alert</NAME>(<NAME>foo</NAME>)</CALL></EXPR_RESULT>; // alerted string contains function name "foo"
+<VAR>var <NAME>bar = <NAME>foo</NAME></NAME></VAR>;
+<EXPR_RESULT><CALL><NAME>alert</NAME>(<NAME>bar</NAME>)</CALL></EXPR_RESULT>; // alerted string still contains function name "foo"
+
+<EXPR_RESULT><CALL><NAME>foo2</NAME>()</CALL></EXPR_RESULT>; // alerts FOO!
+<FUNCTION>function <FUNCNAME>foo2</FUNCNAME>() <BLOCK>{
+   <EXPR_VOID><CALL><NAME>alert</NAME>(<STRING>'FOO!'</STRING>)</CALL></EXPR_VOID>;
+</BLOCK><RETURN/>}</FUNCTION>
+
+// function declaration
+<FUNCTION>function <FUNCNAME>foo3</FUNCNAME>() <BLOCK>{</BLOCK><RETURN/>}</FUNCTION>
+
+// function expression
+(<EXPR_RESULT><FUNCTION>function <FUNCNAME>bar2</FUNCNAME>() <BLOCK>{</BLOCK><RETURN/>})</FUNCTION></EXPR_RESULT>
+
+// function expression
+<EXPR_RESULT><SETNAME><BINDNAME>x</BINDNAME> = <FUNCTION>function <FUNCNAME>hello</FUNCNAME>() <BLOCK>{</BLOCK><RETURN/>}</FUNCTION></SETNAME></EXPR_RESULT>
+
+<BLOCK>if (<IFNE><NAME>x</NAME></IFNE>) <BLOCK>{
+   // function expression
+   <FUNCTION>function <FUNCNAME>world</FUNCNAME>() <BLOCK>{</BLOCK><RETURN/>}</FUNCTION>
+}</BLOCK></BLOCK><TARGET/>
+
+// function statement
+<FUNCTION>function <FUNCNAME>a</FUNCNAME>() <BLOCK>{
+   // function statement
+   <FUNCTION>function <FUNCNAME>b</FUNCNAME>() <BLOCK>{</BLOCK><RETURN/>}</FUNCTION>
+   <BLOCK>if (<IFNE><NUMBER>0</NUMBER></IFNE>) <BLOCK>{
+      // function expression
+      <FUNCTION>function <FUNCNAME>c</FUNCNAME>() <BLOCK>{</BLOCK><RETURN/>}</FUNCTION>
+   }</BLOCK></BLOCK><TARGET/>
+</BLOCK><RETURN/>}</FUNCTION></SCRIPT>
+
+

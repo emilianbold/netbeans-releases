@@ -382,22 +382,6 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         map.put("delete", deleteActionPerformer); // NOI18N
         return map;
     }
-
-    
-    public void fitToZoom()
-    {
-        Rectangle rectangle = new Rectangle (0, 0, 1, 1);
-        
-        for (Widget widget : scene.getChildren ())
-        {
-            rectangle = rectangle.union(widget.convertLocalToScene(widget.getBounds()));
-        }
-        
-        Dimension dim = rectangle.getSize ();
-        Dimension viewDim = jScrollPane1.getViewportBorderBounds ().getSize ();
-        
-        scene.setZoomFactor (Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height));
-    }
     
     ///////////////////////////////////////////////////////////////////////////
     // TopCompnent Overrides
@@ -935,6 +919,8 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
             diagramView.addMouseListener(this);
 
             jScrollPane1.setViewportView(view);
+            jScrollPane1.getVerticalScrollBar().setUnitIncrement(20);
+            jScrollPane1.getHorizontalScrollBar().setUnitIncrement(20);
             SceneChangeListener scListener = new SceneChangeListener(getDiagramDO(), scene);
             scene.addObjectSceneListener(scListener, 
                                          ObjectSceneEventType.OBJECT_ADDED,

@@ -157,21 +157,43 @@ final class VisualizerChildren extends Object {
 
     final String dumpIndexes(VisualizerNode visNode) {
         StringBuilder sb = new StringBuilder();
-        sb.append("EMPTY: " + (visNode == VisualizerNode.EMPTY) + ", Lazy: " + snapshot.getClass().getName().endsWith("LazySnapshot"));
-        sb.append("\nSeeking for: ").append(visNode.toId());
-        sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()) != null
-                ? ((VisualizerNode)visNode.getParent()).toId() : "null");
-        sb.append("\nSeeking in : ").append(parent != null ? parent.toId() : "null").append("\n");
+        sb.append("EMPTY: " + (visNode == VisualizerNode.EMPTY) + ", Lazy: " // NOI18N
+                + snapshot.getClass().getName().endsWith("LazySnapshot")); // NOI18N
+        sb.append("\nSeeking for: ").append(visNode.toId()); // NOI18N
+        sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()) != null // NOI18N
+                ? ((VisualizerNode)visNode.getParent()).toId() : "null"); // NOI18N
+        sb.append("\nSeeking in : ").append(parent != null ? parent.toId() : "null").append("\n"); // NOI18N
+        addVisNodesInfo(sb);
+        return sb.toString();
+    }
+    
+    private void addVisNodesInfo(StringBuilder sb) {
         for (int i = 0; i < visNodes.size(); i++) {
             VisualizerNode node = (VisualizerNode) visNodes.get(i);
-            sb.append("  ").append(i);
+            sb.append("  ").append(i); // NOI18N
             if (node != null) {
-                sb.append(" = ").append(node.toId());
+                sb.append(" = ").append(node.toId()); // NOI18N
             } else {
-                sb.append(" = null");
+                sb.append(" = null"); // NOI18N
             }
-            sb.append('\n');
+            sb.append('\n'); // NOI18N
+        }        
+    }
+    
+    final String dumpEventInfo(VisualizerEvent ev) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nEvent: " + ev.getClass().getName()); // NOI18N
+        sb.append("\nOriginal event: " + ev.originalEvent.getClass().getName()); // NOI18N
+        sb.append("\ncurrent vis. nodes:"); // NOI18N
+        addVisNodesInfo(sb);
+        sb.append("\nIndexes: "); // NOI18N
+        int[] arr = ev.getArray();
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(Integer.toString(arr[i]));
+            sb.append(" "); // NOI18N
         }
+        sb.append("\n"); // NOI18N
+        sb.append(ev.originalEvent.toString());
         return sb.toString();
     }
     
@@ -229,6 +251,8 @@ final class VisualizerChildren extends Object {
         if (idxs.length == 0) {
             return;
         }
+        
+        assert visNodes.size() > idxs[idxs.length - 1] : dumpEventInfo(ev);
 
         for (int i = idxs.length - 1; i >= 0; i--) {
             VisualizerNode visNode = visNodes.remove(idxs[i]);
@@ -260,6 +284,15 @@ final class VisualizerChildren extends Object {
      */
     private int[] reorderByComparator(Comparator<VisualizerNode> c) {
         VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
+
+        for (int i = 0; i < old.length; i++) {
+            if (old[i] == null) {
+                Node node = snapshot.get(i);
+                old[i] = VisualizerNode.getVisualizer(this, node);
+                old[i].indexOf = i;
+            }
+        }
+
         Arrays.sort(old, c);
 
         int[] idxs = new int[old.length];

@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby;
 
 import java.awt.event.ActionEvent;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.options.CodeStyle;
 import org.openide.filesystems.FileObject;
 import javax.swing.text.BadLocationException;
@@ -79,7 +80,7 @@ public class ReflowParagraphAction extends BaseAction {
             return;
         }
 
-        FileObject fo = NbUtilities.findFileObject(target);
+        FileObject fo = GsfUtilities.findFileObject(target);
 
         if (fo != null) {
             int offset = target.getCaret().getDot();
@@ -338,8 +339,8 @@ public class ReflowParagraphAction extends BaseAction {
 
         private void reflow(OffsetRange range) throws BadLocationException {
             sb.setLength(0);
-            int start = range.getStart();
-            int end = range.getEnd();
+            final int start = range.getStart();
+            final int end = range.getEnd();
             indent = LexUtilities.getLineIndent(doc, start);
 
             int offset = start;
@@ -402,27 +403,27 @@ public class ReflowParagraphAction extends BaseAction {
             }
             flush();
 
-            try {
-                doc.atomicLock();
-                String replaceWith = sb.toString();
-                if (replaceWith.endsWith("\n")) {
-                    replaceWith = replaceWith.substring(0, replaceWith.length() - 1);
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        String replaceWith = sb.toString();
+                        if (replaceWith.endsWith("\n")) {
+                            replaceWith = replaceWith.substring(0, replaceWith.length() - 1);
+                        }
+                        int index = replaceWith.indexOf(CARET_MARKER);
+                        if (index != -1) {
+                            replaceWith = replaceWith.substring(0, index) + replaceWith.substring(index + 1);
+                        }
+                        doc.replace(start, end - start, replaceWith, null);
+                        if (index != -1 && target != null) {
+                            target.getCaret().setDot(start + index);
+                        }
+                    }
+                    catch (BadLocationException ble){
+                        Exceptions.printStackTrace(ble);
+                    }
                 }
-                int index = replaceWith.indexOf(CARET_MARKER);
-                if (index != -1) {
-                    replaceWith = replaceWith.substring(0, index) + replaceWith.substring(index + 1);
-                }
-                doc.replace(start, end - start, replaceWith, null);
-                if (index != -1 && target != null) {
-                    target.getCaret().setDot(start + index);
-                }
-            }
-            catch (BadLocationException ble){
-                Exceptions.printStackTrace(ble);
-            }
-            finally{
-                doc.atomicUnlock();
-            }
+            });
         }
 
         public void appendLine(String text) {

@@ -289,11 +289,22 @@ public class SceneAcceptProvider implements AcceptProvider
                             setLocPoint=getNewLocation(startingPoint, point, original.getLocation());
                         }
                         Widget copy = engine.addWidget(presentation, setLocPoint);
-                        duplicates.put(pre, presentation);
-                        engine.getScene().validate();
-                        if (original instanceof UMLNodeWidget)
+                        if(copy != null)
                         {
-                            ((UMLNodeWidget) original).duplicate(true, copy);
+                            duplicates.put(pre, presentation);
+                            engine.getScene().validate();
+                            if (original instanceof UMLNodeWidget)
+                            {
+                                ((UMLNodeWidget) original).duplicate(true, copy);
+                            }
+                        }
+                        else
+                        {
+                            engine.getScene().removeNode(presentation);
+                            
+                            presentations.remove(presentation);
+                            presentation.removeSubject(pre.getFirstSubject());
+                            presentation.delete();
                         }
                     }
 

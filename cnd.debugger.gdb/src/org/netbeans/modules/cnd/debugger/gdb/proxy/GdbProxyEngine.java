@@ -58,11 +58,11 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
+import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Lookup;
 
 /**
  * Class GdbProxyEngine implements the communication with gdb (low level)
@@ -89,7 +89,7 @@ public class GdbProxyEngine {
     private final boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
     private final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
-    
+
     /**
      * Create a gdb process
      *
@@ -214,7 +214,7 @@ public class GdbProxyEngine {
             sb.append(' ');
         }
         
-        provider = Lookup.getDefault().lookup(InteractiveCommandProvider.class);
+        provider = InteractiveCommandProviderFactory.create(debugger.getHostKey());
         if (provider != null && provider.run(debugger.getHostKey(), sb.toString(), null)) {
             try {
                 toGdb = gdbReader(provider.getInputStream(), provider.getOutputStream());

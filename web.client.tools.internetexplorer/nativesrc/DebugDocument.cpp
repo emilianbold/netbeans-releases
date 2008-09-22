@@ -49,14 +49,17 @@ STDMETHODIMP DebugDocument::onDestroy(void) {
 }
 
 STDMETHODIMP DebugDocument::onInsertText(ULONG cCharacterPosition, ULONG cNumToInsert) {
+    Utils::log(4, _T("Insert pos - %d, num - %d\n"), cCharacterPosition, cNumToInsert);
     return handleSourceChange();
 }
     
 STDMETHODIMP DebugDocument::onRemoveText(ULONG cCharacterPosition, ULONG cNumToRemove) {
+    Utils::log(4, _T("Remove pos - %d, num - %d\n"), cCharacterPosition, cNumToRemove);
     return handleSourceChange();
 }
 
 STDMETHODIMP DebugDocument::onReplaceText(ULONG cCharacterPosition, ULONG cNumToReplace) {
+    Utils::log(4, _T("Replace pos - %d, num - %d\n"), cCharacterPosition, cNumToReplace);
     return handleSourceChange();
 }
 
@@ -70,8 +73,15 @@ STDMETHODIMP DebugDocument::onUpdateDocumentAttributes(TEXT_DOC_ATTR textdocattr
 
 HRESULT DebugDocument::handleSourceChange() {
     Utils::log(4, _T("Text modified - %s\n"), name.c_str());
-    if(pDbgpConnection != NULL) {
-        pDbgpConnection->sendReloadSourcesMessage(name);
+    if(pScriptDebugger != NULL) {
+        BreakpointManager *pMgr = pScriptDebugger->getBreakpointManager();
+        if(pMgr != NULL) {
+            pMgr->processBreakpoints(name);
+        }
+        DbgpConnection *pDbgpConnection = pScriptDebugger->getDbgpConnection();
+        if(pDbgpConnection != NULL) {
+            pDbgpConnection->sendReloadSourcesMessage(name);
+        }
     }
     return S_OK;
 }

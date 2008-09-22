@@ -1,7 +1,8 @@
 <?php
   class ParentClass{
+      const ParentClassConst = 1;
       public function publicParentMethod(){
-          self::privateParentMethod();
+          self::ParentClassConst;
       }
 
       protected function protectedParentMethod(){}

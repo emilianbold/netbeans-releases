@@ -59,6 +59,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.nodes.Children.Entry;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -1061,6 +1062,7 @@ abstract class EntrySupport {
                 try {
                     Children.PR.enterWriteAccess();
                     boolean zero = false;
+                    LAZY_LOG.fine("register node"); // NOI18N
                     synchronized (Lazy.this.LOCK) {
                         int cnt = 0;
                         boolean found = false;
@@ -1211,7 +1213,7 @@ abstract class EntrySupport {
             }
 
             Node oldNode = info.currentNode();
-            Node newNode = info.refreshNode();
+            Node newNode = info.getNode(true);
 
             boolean newIsDummy = isDummyNode(newNode);
             if (newIsDummy && info.isHidden()) {
@@ -1445,49 +1447,73 @@ abstract class EntrySupport {
             /** Gets or computes the nodes. It holds them using weak reference
              * so they can get garbage collected.
              */
-            public final  Node getNode() {
-                synchronized (LOCK) {
-                    Node n = null;
-                    if (refNode != null) {
-                        n = refNode.get();
-                    }
-                    if (n == null) {
-                        n = refreshNode();
-                    }
-                    return n;
-                }
-            }
-
-            /** extract current node (if was already created) */
-            Node currentNode() {
-                synchronized (LOCK) {
-                    return refNode == null ? null : refNode.get();
-                }
+            public final Node getNode() {
+                return getNode(false);
             }
             
-
-
-            Node refreshNode() {
-                Collection<Node> nodes = entry.nodes();
-                if (nodes.size() != 1) {
-                    LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
-                    if (nodes.size() == 0) {
-                        Node dummyNode = new DummyNode();
-                        return useNode(dummyNode);
+            private boolean creatingNode = false;
+            public final Node getNode(boolean refresh) {
+                while (true) {
+                    Node node = null;
+                    boolean creating = false;
+                    synchronized (LOCK) {
+                        if (refresh) {
+                            refNode = null;
+                        }
+                        if (refNode != null) {
+                            node = refNode.get();
+                            if (node != null) {
+                                return node;
+                            }
+                        }
+                        if (creatingNode) {
+                            try {
+                                LOCK.wait();
+                            } catch (InterruptedException ex) {
+                            }
+                        } else {
+                            creatingNode = creating = true;
+                        }
                     }
-                }
-                return useNode(nodes.iterator().next());
-            }
-
-            /** Assignes new set of nodes to this entry. */
-            public final Node useNode(Node node) {
-                synchronized (LOCK) {
-                    refNode = new NodeRef(node, this);
-
+                    Collection<Node> nodes = creating ? entry.nodes() : null;
+                    synchronized (LOCK) {
+                        if (!creating) {
+                            if (refNode != null) {
+                                node = refNode.get();
+                                if (node != null) {
+                                    return node;
+                                }
+                            }
+                            // node created by other thread was GCed meanwhile, try once again
+                            continue;
+                        }
+                        if (nodes.size() != 1) {
+                            LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
+                            if (nodes.size() == 0) {
+                                node = new DummyNode();
+                            } else {
+                                node = nodes.iterator().next();
+                            }
+                        } else {
+                            node = nodes.iterator().next();
+                        }
+                        refNode = new NodeRef(node, this);
+                        if (creating) {
+                            creatingNode = false;
+                            LOCK.notifyAll();
+                        }
+                    }
                     // assign node to the new children
                     node.assignTo(children, -1);
                     node.fireParentNodeChange(null, children.parent);
                     return node;
+                }
+            }
+            
+            /** extract current node (if was already created) */
+            Node currentNode() {
+                synchronized (LOCK) {
+                    return refNode == null ? null : refNode.get();
                 }
             }
 

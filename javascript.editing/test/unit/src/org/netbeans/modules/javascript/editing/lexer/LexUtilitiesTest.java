@@ -92,5 +92,4 @@ public class LexUtilitiesTest extends JsTestBase {
         BaseDocument doc = getDocument(text);
         return getPositionedSequence(doc, offset);
     }
-    
 }

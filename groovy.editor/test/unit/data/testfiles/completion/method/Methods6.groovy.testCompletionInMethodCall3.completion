@@ -1,0 +1,10 @@
+Code completion result for source line:
+if (new File("/").is|) {
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     is(Object)                                 boolean
+METHOD     isAbsolute()                               boolean
+METHOD     isCase(Object)                             boolean
+METHOD     isDirectory()                              boolean
+METHOD     isFile()                                   boolean
+METHOD     isHidden()                                 boolean

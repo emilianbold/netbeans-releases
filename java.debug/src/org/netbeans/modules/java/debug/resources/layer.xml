@@ -48,18 +48,22 @@ made subject to such option by the copyright holder.
                 <folder name="x-java">
                     <file name="org-netbeans-modules-java-debug-TreeNavigatorProviderImpl.instance">
                         <attr name="position" intvalue="200"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.navigator.NavigatorPanel"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.debug.HighlightsLayerFactoryImpl.createNavigatorPanel" />
                     </file>
                     <file name="org-netbeans-modules-java-debug-ElementNavigatorProviderImpl.instance">
                         <attr name="position" intvalue="300"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.navigator.NavigatorPanel"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.debug.HighlightsLayerFactoryImpl.createNavigatorPanel" />
                     </file>
                     <file name="org-netbeans-modules-java-debug-ErrorNavigatorProviderImpl.instance">
                         <attr name="position" intvalue="400"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.navigator.NavigatorPanel"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.debug.HighlightsLayerFactoryImpl.createNavigatorPanel" />
                     </file>
                     <file name="org-netbeans-modules-java-debug-ClasspathNavigatorProviderImpl.instance">
                         <attr name="position" intvalue="450"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.navigator.NavigatorPanel"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.debug.HighlightsLayerFactoryImpl.createNavigatorPanel" />
                     </file>
                 </folder>

@@ -405,23 +405,7 @@ public class J2SEProjectProperties {
     
     public void save() {
         try {                   
-            boolean result = true;            
-            if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                J2SEProject.class.getResource("resources/build-impl.xsl")) //NOI18N
-                & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                if (showModifiedMessage (NbBundle.getMessage(J2SEProjectProperties.class,"TXT_ModifiedTitle"))) {
-                    //Delete user modified build-impl.xml
-                    final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                    final FileObject fo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                }
-                else {
-                    result = false;
-                }
-            }
-            if (result) {
+            if (regenerateBuild) {
                 saveLibrariesLocation();
                 // Store properties 
                 ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -453,6 +437,31 @@ public class J2SEProjectProperties {
             ErrorManager.getDefault().notify( ex );
         }
     }
+
+    void checkModified () {
+        regenerateBuild = true;
+        if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+            J2SEProject.class.getResource("resources/build-impl.xsl")) //NOI18N
+            & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
+            if (showModifiedMessage (NbBundle.getMessage(J2SEProjectProperties.class,"TXT_ModifiedTitle"))) {
+                //Delete user modified build-impl.xml
+                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
+                final FileObject fo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                if (fo != null) {
+                    try {
+                        fo.delete();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            else {
+                regenerateBuild = false;
+            }
+        }
+    }
+    //where
+    private volatile boolean regenerateBuild;
 
     private void saveLibrariesLocation() throws IOException, IllegalArgumentException {
         try {

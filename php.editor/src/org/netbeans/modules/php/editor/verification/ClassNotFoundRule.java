@@ -40,8 +40,8 @@ package org.netbeans.modules.php.editor.verification;
 
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -78,12 +78,10 @@ public class ClassNotFoundRule extends PHPRule {
     private void check(Expression expression) {
         if (expression instanceof Identifier) {
             String className = ((Identifier) expression).getName();
-            
-            for (IndexedClass indexedClass : context.index.getClassInheritanceLine(null, className)) {
-                return;
+
+            if (context.index.getClasses(null, className, NameKind.EXACT_NAME).isEmpty()){
+                addHint(expression);
             }
-            
-            addHint(expression);
         }
     }
 

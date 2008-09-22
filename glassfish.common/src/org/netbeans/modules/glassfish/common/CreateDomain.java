@@ -45,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -86,7 +87,7 @@ public class CreateDomain extends Thread {
 
     static private void computePorts(Map<String, String> ip, Map<String, String> createProps) {
         int portBase = 8900;
-        int kicker = (ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR)+ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() % 50000;
+        int kicker = ((new Date()).toString() + ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR)+ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() % 40000;
         kicker = kicker < 0 ? -kicker : kicker;
         
         int httpPort = portBase + kicker + 80;

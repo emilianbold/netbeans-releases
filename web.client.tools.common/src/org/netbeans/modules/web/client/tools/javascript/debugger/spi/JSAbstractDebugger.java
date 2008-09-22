@@ -255,7 +255,11 @@ public abstract class JSAbstractDebugger implements JSDebugger {
 
     protected void fireJSDebuggerEvent(JSDebuggerEvent debuggerEvent) {
         for (JSDebuggerEventListener listener : listeners) {
-            listener.onDebuggerEvent(debuggerEvent);
+            try {
+                listener.onDebuggerEvent(debuggerEvent);
+            } catch (Exception ex) {
+                Log.getLogger().log(Level.INFO, "Exception in debugger event listener", ex);
+            }
         }
     }
 

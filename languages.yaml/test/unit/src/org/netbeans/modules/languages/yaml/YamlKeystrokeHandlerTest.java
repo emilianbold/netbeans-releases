@@ -52,11 +52,17 @@ public class YamlKeystrokeHandlerTest extends YamlTestBase {
         super(testName);
     }
 
-    private void insertChar(String original, char insertText, String expected) throws BadLocationException, Exception {
+    @Override
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
+    }
+
+    private void insertChar(String original, char insertText, String expected) throws Exception {
         insertChar(original, insertText, expected, null);
     }
 
-    private void insertChar(String original, char insertText, String expected, String selection) throws BadLocationException, Exception {
+    private void insertChar(String original, char insertText, String expected, String selection) throws Exception {
         insertChar(original, insertText, expected, selection, false);
     }
 

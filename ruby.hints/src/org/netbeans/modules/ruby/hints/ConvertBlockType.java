@@ -513,7 +513,7 @@ public class ConvertBlockType extends RubyAstRule {
                     Exceptions.printStackTrace(ble);
                 }
             }
-            edits.setFormatter(new RubyFormatter(), true);
+            edits.setFormatAll(true);
         }
 
         private void collapse(EditList edits, BaseDocument doc, Node node, int startOffset, int endOffset) {
@@ -636,7 +636,7 @@ public class ConvertBlockType extends RubyAstRule {
                     Exceptions.printStackTrace(ble);
                 }
             }
-            edits.setFormatter(new RubyFormatter(), true);
+            edits.setFormatAll(true);
         }
 
         /** Determine whether parentheses are necessary around the call

@@ -117,10 +117,14 @@ public class FFormatter extends ExtFormatter {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, "else")) { // NOI18N
                     ret = new int[]{fnw, fnw + 4};
+                } else if (checkCase(doc, fnw, "endsubroutine")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 13};
+                } else if (checkCase(doc, fnw, "end subroutine")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 14};
                 }
             } catch (BadLocationException e) {
             }
-        }else if ("o".equals(typedText) || "O".equals(typedText)) { // NOI18N
+        } else if ("o".equals(typedText) || "O".equals(typedText)) { // NOI18N
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, "enddo")) { // NOI18N
@@ -130,13 +134,23 @@ public class FFormatter extends ExtFormatter {
                 }
             } catch (BadLocationException e) {
             }
-        }else if ("f".equals(typedText) || "F".equals(typedText)) { // NOI18N
+        } else if ("f".equals(typedText) || "F".equals(typedText)) { // NOI18N
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, "endif")) { // NOI18N
                     ret = new int[]{fnw, fnw + 5};
                 } else if (checkCase(doc, fnw, "end if")) { // NOI18N
                     ret = new int[]{fnw, fnw + 6};
+                }
+            } catch (BadLocationException e) {
+            }
+        } else if ("m".equals(typedText) || "M".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "endprogram")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 10};
+                } else if (checkCase(doc, fnw, "end program")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 11};
                 }
             } catch (BadLocationException e) {
             }
@@ -177,7 +191,7 @@ public class FFormatter extends ExtFormatter {
             try {
                 FFormatSupport ffs = (FFormatSupport) createFormatSupport(fw);
                 FormatTokenPosition pos = ffs.getFormatStartPosition();
-                if (ffs.getFreeFormat()) {
+                //if (ffs.getFreeFormat()) {
                     if (ffs.isIndentOnly()) {  // create indentation only
                         ffs.indentLine(pos);
                     } else { // regular formatting
@@ -206,7 +220,7 @@ public class FFormatter extends ExtFormatter {
                             }
                         }
                     }
-                }
+                //}
             } catch (IllegalStateException e) {
             }
         }

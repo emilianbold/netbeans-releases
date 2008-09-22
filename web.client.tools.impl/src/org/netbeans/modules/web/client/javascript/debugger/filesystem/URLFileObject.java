@@ -49,6 +49,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.logging.Level;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
@@ -56,6 +57,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,7 +67,8 @@ import org.openide.util.NbBundle;
 public class URLFileObject extends FileObject {
     private static final long serialVersionUID = -129282139186842072L;
     private static final String EXC_STRING = "FileObject is read-only"; // NOI18N
-    
+
+    private URL actualURL;
     private final URL sourceURL;
     private final String name;
     private final String ext;
@@ -88,6 +91,7 @@ public class URLFileObject extends FileObject {
         this.filesystem = filesystem;
         this.parent = null;
         this.sourceURL = null;
+        this.actualURL = null;
         this.relativePath = "";
     }
 
@@ -98,6 +102,7 @@ public class URLFileObject extends FileObject {
         this.parent = parent;
 
         this.sourceURL = sourceURL;
+        this.actualURL = sourceURL;
 
         String path = this.sourceURL.toExternalForm();
         
@@ -123,6 +128,36 @@ public class URLFileObject extends FileObject {
     
     URL getSourceURL() {
         return sourceURL;
+    }
+
+    // For ignore-query-string support
+    public URL getActualURL() {
+        synchronized (cacheLock) {
+            return actualURL;
+        }
+    }
+
+    public String getDisplayName() {
+        return getActualURL().toExternalForm();
+    }
+
+    public void setActualURL(URL url) {
+        boolean changed = false;
+        synchronized (cacheLock) {
+            if (!actualURL.toExternalForm().equals(url.toExternalForm())) {
+                actualURL = url;
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            invalidate();
+            try {
+                ((URLFileSystem) getFileSystem()).fireStatusChange(this);
+            } catch (Exception ex) {
+                Log.getLogger().log(Level.INFO, "Unexpected exception while changing URLFileObject URL", ex);
+            }
+        }
     }
 
     @Override
@@ -225,7 +260,7 @@ public class URLFileObject extends FileObject {
             synchronized (cacheLock) {
                 if ( (cacheInvalid || cachedContent == null) && provider != null) {
                     if (cachedContent != null) {
-                        URLContent content = provider.getContent(sourceURL);
+                        URLContent content = provider.getContent(actualURL);
                         InputStream is = null;
                         try {
                             is = content.getInputStream();
@@ -238,7 +273,7 @@ public class URLFileObject extends FileObject {
                             cachedContent = new BufferedURLContent(is);
                         }
                     } else {
-                        cachedContent = new BufferedURLContent(provider.getContent(sourceURL));
+                        cachedContent = new BufferedURLContent(provider.getContent(actualURL));
                     }
                 } else if (provider == null && cachedContent == null) {
                     String defaultMsg = NbBundle.getMessage(URLFileObject.class, "NO_CONTENT_MSG");
@@ -248,7 +283,7 @@ public class URLFileObject extends FileObject {
             try {
                 return cachedContent.getInputStream();
             } catch (IOException ex) {
-                throw new FileNotFoundException("Could not open InputStream for URL: " + sourceURL.toExternalForm());
+                throw new FileNotFoundException("Could not open InputStream for URL: " + actualURL.toExternalForm());
             }
         } else {
             return null;

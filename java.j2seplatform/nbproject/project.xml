@@ -236,7 +236,11 @@ made subject to such option by the copyright holder.
                     <name>qa-functional</name>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.projectimport.eclipse.core</friend>
+                <friend>org.netbeans.modules.projectimport.jbuilder</friend>
+                <package>org.netbeans.modules.java.j2seplatform.api</package>
+            </friend-packages>
             <extra-compilation-unit>
                 <package-root>probesrc</package-root>
                 <classpath/>

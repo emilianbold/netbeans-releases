@@ -336,28 +336,28 @@ BOOL ScriptDebugger::getStackFrameDescriptor(int stackDepth, DebugStackFrameDesc
 }
 
 TCHAR *ScriptDebugger::getSourceText(tstring fileURI, int beginLine, int endLine) {
+    TCHAR *buffer = NULL;
     map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
     if(iter != debugDocumentsMap.end()) {
         DebugDocument *pDebugDoc = iter->second;
         DWORD cookie = pDebugDoc->getCookie();
         CComPtr<IDebugDocument> spDebugDocument;
         Utils::getInterfaceFromGlobal(cookie, IID_IDebugDocument, (void **)&spDebugDocument);
-        if(spDebugDocument != NULL && isDocumentReady(spDebugDocument)) {
+        if(spDebugDocument != NULL) {
             CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
             ULONG lines, numChars;
             spDebugDocText->GetSize(&lines, &numChars);
             SOURCE_TEXT_ATTR *attrs = new SOURCE_TEXT_ATTR[numChars+1];
-            TCHAR *buffer = new TCHAR[numChars+1];
+            buffer = new TCHAR[numChars+1];
             ULONG actualSize = 0;
             HRESULT hr = spDebugDocText->GetText(0, buffer, attrs, &actualSize, numChars);
-            if(hr == S_OK && actualSize > 0) {
+            if(hr == S_OK && actualSize >= 0) {
                 buffer[actualSize] = 0;
                 delete[] attrs;
-                return buffer;
             }
         }
     }
-    return NULL;
+    return buffer;
 }
 
 Property *ScriptDebugger::eval(tstring expression, int stackDepth) {
@@ -654,7 +654,7 @@ STDMETHODIMP ScriptDebugger::onAddChild(IDebugApplicationNode __RPC_FAR *prddpCh
             CComObject<DebugDocument>::CreateInstance(&pComDebugDoc);
             DebugDocument *pDebugDoc = (DebugDocument *)pComDebugDoc;
             pDebugDoc->setDocumentName(docName);
-            pDebugDoc->setDbgpConnection(m_pDbgpConnection);
+            pDebugDoc->setScriptDebugger(this);
             pDebugDoc->setCookie(cookie);
             CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
             cookie = registerForDebugDocTextEvents(spDebugDocText, pComDebugDoc);
@@ -682,7 +682,6 @@ STDMETHODIMP ScriptDebugger::onRemoveChild(IDebugApplicationNode __RPC_FAR *prdd
                 Utils::revokeInterfaceFromGlobal(pDebugDoc->getCookie());
                 CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
                 unregisterForDebugDocTextEvents(spDebugDocText, pDebugDoc->getEventCookie());
-                pDebugDoc->Release();
                 debugDocumentsMap.erase(iter);
             }
         }
@@ -746,7 +745,25 @@ BOOL ScriptDebugger::setBreakpoint(IDebugDocument *pDebugDocument, Breakpoint *p
 }
 
 BOOL ScriptDebugger::setBreakpoint(Breakpoint *pBreakpoint, BOOL remove) {
+    BOOL result = false;
     tstring fileURI = pBreakpoint->getFileURI();
+    map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
+    if (iter == debugDocumentsMap.end()) {
+        if(isFeatureSet(IGNORE_QUERY_STRINGS)) {
+            for (iter = debugDocumentsMap.begin(); iter != debugDocumentsMap.end();++iter) {
+                size_t pos = iter->first.find(fileURI);
+                if (pos != std::string::npos) {
+                    result = setBreakpoint(pBreakpoint, iter->first, remove);
+                }
+            }
+        }
+        return result;
+    }else {
+        return setBreakpoint(pBreakpoint, fileURI, remove);
+    }
+}
+
+BOOL ScriptDebugger::setBreakpoint(Breakpoint *pBreakpoint, tstring fileURI, BOOL remove) {
     map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
     if(iter != debugDocumentsMap.end()) {
         DebugDocument *pDebugDoc = iter->second;

@@ -124,43 +124,12 @@ public final class WebServiceManager {
 
             assert wsData.getWsdlFile() != null;
 
-            File localWsdlFile = new File(wsData.getWsdlFile());
-            URL wsdlUrl = localWsdlFile.toURI().toURL();
-
-            WsdlModelProvider wsdlModelProvider = null;
-            Collection<? extends WsdlModelProvider> providers = Lookup.getDefault().lookupAll(WsdlModelProvider.class);
-            if (providers != null) {
-                for (WsdlModelProvider provider : providers) {
-                    if (provider.canAccept(wsdlUrl)) {
-                        wsdlModelProvider = provider;
-                        break;
-                    }
-                }
-            }
-            WsdlModel wsdlModel = null;
-            if (wsdlModelProvider != null) {
-                String packageName = wsdlModelProvider.getEffectivePackageName();
-                wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName);
-            }
+            WsdlModel wsdlModel = getWsdlModel(wsData);
             boolean dataInModel = listModel.webServiceExists(wsData);
 
             if (wsdlModel == null) {
                 wsData.setResolved(false);
                 removeWebService(wsData, true, false);
-
-                Throwable exc = wsdlModelProvider.getCreationException();//wsdlModeler.getCreationException();
-                String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
-                if (exc != null) {
-                    String cause = exc.getLocalizedMessage();
-                    String excString = exc.getClass().getName() + " - " + cause;
-                    message += "\n\n" + excString; // NOI18N
-
-                    Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
-                } else {
-                    exc = new IllegalStateException(message);
-                    Exceptions.printStackTrace(exc);
-                }
-
                 return;
             } else if (wsdlModel.getServices().isEmpty()) {
                 // If there are no services in the WSDL, warn the user
@@ -237,7 +206,52 @@ public final class WebServiceManager {
         }
     }
 
-    public void refreshWebService(WebServiceData wsData) throws IOException {
+    public WsdlModel getWsdlModel(WebServiceData wsData) throws IOException {
+        File localWsdlFile = new File(wsData.getWsdlFile());
+        URL wsdlUrl = localWsdlFile.toURI().toURL();
+
+        WsdlModelProvider wsdlModelProvider = null;
+        Collection<? extends WsdlModelProvider> providers = Lookup.getDefault().lookupAll(WsdlModelProvider.class);
+        if (providers != null) {
+            for (WsdlModelProvider provider : providers) {
+                if (provider.canAccept(wsdlUrl)) {
+                    wsdlModelProvider = provider;
+                    break;
+                }
+            }
+        }
+        WsdlModel wsdlModel = null;
+        if (wsdlModelProvider != null) {
+            String packageName = wsdlModelProvider.getEffectivePackageName();
+            File catalogFile = new File(wsData.getCatalog());
+            URL catalogUrl = catalogFile.toURI().toURL();
+            wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName, catalogUrl);
+        }
+       
+        if (wsdlModel == null) {
+            wsData.setResolved(false);
+            removeWebService(wsData, true, false);
+
+            Throwable exc = wsdlModelProvider.getCreationException();//wsdlModeler.getCreationException();
+            String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
+            if (exc != null) {
+                String cause = exc.getLocalizedMessage();
+                String excString = exc.getClass().getName() + " - " + cause;
+                message += "\n\n" + excString; // NOI18N
+
+                Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
+            } else {
+                exc = new IllegalStateException(message);
+                Exceptions.printStackTrace(exc);
+            }
+        }
+        
+        return wsdlModel;
+    }
+    
+    public
+
+     void refreshWebService(WebServiceData wsData) throws IOException {
         removeWebService(wsData, false, true);
         wsData.setWsdlFile(null);
         wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);

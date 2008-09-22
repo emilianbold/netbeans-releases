@@ -43,12 +43,13 @@ package org.netbeans.modules.java.source.ant;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Javac;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -61,13 +62,14 @@ public class JavacTask extends Javac {
         Project p = getProject();
         
         p.log("Overridden Javac task called", Project.MSG_DEBUG);
-        
-        String ensureBuilt = p.getProperty("ensure.built.source.roots");
-        
-        if (ensureBuilt != null) {
-            for (String path : PropertyUtils.tokenizePath(ensureBuilt)) {
-                File f = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), path);
 
+        boolean ensureBuilt =    p.getProperty("ensure.built.source.roots") != null
+                              || Boolean.valueOf(p.getProperty("deploy.on.save"));
+        
+        if (ensureBuilt) {
+            for (String path : getSrcdir().list()) {
+                File f = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), path);
+                
                 try {
                     if (!BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL(), false)) {
                         throw new UserCancel();
@@ -77,6 +79,19 @@ public class JavacTask extends Javac {
                 }
             }
         } else {
+            if (HideOverrideTaskWarning.cleanBuild.get() && getSrcdir() != null) {
+                for (String path : getSrcdir().list()) {
+                    File f = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), path);
+
+                    try {
+                        p.log("Forcing rescan of: " + f.getAbsolutePath(), Project.MSG_VERBOSE);
+                        RepositoryUpdater.getDefault().rebuildRoot(f.toURI().toURL(), false);
+                    } catch (MalformedURLException ex) {
+                        p.log(ex.getMessage(), ex, Project.MSG_VERBOSE);
+                    }
+                }
+            }
+
             super.execute();
         }
     }

@@ -159,7 +159,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         }
 
         if (path.size() == 0) {
-            return null;
+            return DeclarationLocation.NONE;
         }
 
         path = new LinkedList<ASTNode>(path);
@@ -211,6 +211,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         fromIndex = index.getFunctions(null, el.getName(), NameKind.PREFIX);
                     }
                     break;
+                case IFACE:
+                    fromIndex = index.getInterfaces(null, el.getName(), NameKind.PREFIX);
+                    break;
                 case CLASS:
                     fromIndex = index.getClasses(null, el.getName(), NameKind.PREFIX);
                     break;
@@ -221,7 +224,11 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     } else if (n.hasSecond()) {
                         final IndexedElement indexed = n.second();
                         FileObject file = indexed.getFileObject();
-                        assert file != null;
+
+                        if (file == null){
+                            return DeclarationLocation.NONE;
+                        }
+
                         return new DeclarationLocation(file, indexed.getOffset());
                     } else {
                         fromIndex = Collections.emptyList();

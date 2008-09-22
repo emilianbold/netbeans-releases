@@ -53,6 +53,16 @@ NetBeans.Logger = {};
         }
         consoleService.logStringMessage("NETBEANS-LOGGER-MSG: " + message);
     }
+
+    this.getLogger = function() {
+        if ( !consoleService ) {
+            consoleService = NetBeans.Utils.CCSV(
+            NetBeans.Constants.ConsoleServiceCID,
+            NetBeans.Constants.ConsoleServiceIF);
+        }
+
+        return consoleService;
+    }
     
     this.log = function( message, level ){
         if ( typeof(message) == 'object' && "fileName" in message && "lineNumber" in message ) {

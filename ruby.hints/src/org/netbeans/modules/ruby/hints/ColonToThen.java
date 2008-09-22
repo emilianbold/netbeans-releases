@@ -235,7 +235,7 @@ public class ColonToThen extends RubyAstRule {
             EditList list = new EditList(doc);
             switch (mode) {
             case INSERT_NEWLINE:
-                list.setFormatter(new RubyFormatter(), false);
+                list.setFormatAll(false);
                 list.replace(offset, 1, "\n", true, 0); // NOI18N
                 break;
             case INSERT_THEN: {

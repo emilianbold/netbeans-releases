@@ -47,7 +47,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.net.URL;
-import java.util.*;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
@@ -103,6 +102,10 @@ public abstract class GsfCompletionItem implements CompletionItem {
         }
         
         public int getSortPriority() {
+            if (item.getSortPrioOverride() != 0) {
+                return item.getSortPrioOverride();
+            }
+
             switch (item.getKind()) {
             case ERROR: return -5000;
             case DB: return item.isSmart() ? 155 - SMART_TYPE : 155;
@@ -313,23 +316,29 @@ public abstract class GsfCompletionItem implements CompletionItem {
             }
         }
             
-        private void defaultSubstituteText(final JTextComponent c, int offset, int len, String toAdd) {
-            String template = item.getCustomInsertTemplate();
+        private void defaultSubstituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
+            final String template = item.getCustomInsertTemplate();
             if (template != null) {
-                BaseDocument doc = (BaseDocument)c.getDocument();
-                CodeTemplateManager ctm = CodeTemplateManager.get(doc);
+                final BaseDocument doc = (BaseDocument)c.getDocument();
+                final CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
-                    doc.atomicLock();
-                    try {
-                        doc.remove(offset, len);
-                        c.getCaret().setDot(offset);
-                    } catch (BadLocationException e) {
-                        // Can't update
-                    } finally {
-                        doc.atomicUnlock();
-                    }
-                
+                    doc.runAtomic(new Runnable() {
+                        public void run() {
+                            try {
+                                doc.remove(offset, len);
+                                c.getCaret().setDot(offset);
+                            } catch (BadLocationException e) {
+                                // Can't update
+                            }
+
+                            // SHOULD be run here:
+                            //ctm.createTemporary(template).insert(c);
+                            // (see issue 147494) but running code template inserts
+                            // under a document writelock is risky (see issue 147657)
+                        }
+                    });
                     ctm.createTemporary(template).insert(c);
+                
                     // TODO - set the actual method to be used here so I don't have to 
                     // work quite as hard...
                     //tipProposal = item;
@@ -339,50 +348,9 @@ public abstract class GsfCompletionItem implements CompletionItem {
                 return;
             }
             
-            List<String> params = item.getInsertParams();
-            if (params == null || params.size() == 0) {
-                // TODO - call getParamListDelimiters here as well!
-                super.substituteText(c, offset, len, toAdd);
-                return;
-            }
-
             super.substituteText(c, offset, len, toAdd);
-            
-            BaseDocument doc = (BaseDocument)c.getDocument();
-            CodeTemplateManager ctm = CodeTemplateManager.get(doc);
-            if (ctm != null) {
-                StringBuilder sb = new StringBuilder();
-                String[] delimiters = item.getParamListDelimiters();
-                assert delimiters.length == 2;
-                sb.append(delimiters[0]);
-                int id = 1;
-                for (Iterator<String> it = params.iterator(); it.hasNext();) {
-                    String paramDesc = it.next();
-                    sb.append("${"); //NOI18N
-                    // Ensure that we don't use one of the "known" logical parameters
-                    // such that a parameter like "path" gets replaced with the source file
-                    // path!
-                    sb.append("gsf-cc-"); // NOI18N
-                    sb.append(Integer.toString(id++));
-                    sb.append(" default=\""); // NOI18N
-                    sb.append(paramDesc);
-                    sb.append("\""); // NOI18N
-                    sb.append("}"); //NOI18N
-                    if (it.hasNext())
-                        sb.append(", "); //NOI18N
-                }
-                sb.append(delimiters[1]);
-                sb.append("${cursor}");
-                ctm.createTemporary(sb.toString()).insert(c);
-                // TODO - set the actual method to be used here so I don't have to 
-                // work quite as hard...
-                //tipProposal = item;
-                Completion.get().showToolTip();
-            }
-            
         }        
     }
-    
 
     public static final GsfCompletionItem createItem(CompletionProposal proposal, CodeCompletionResult result, CompilationInfo info) {
         return new DelegatedItem(info, result, proposal);
@@ -543,9 +511,9 @@ public abstract class GsfCompletionItem implements CompletionItem {
         return null;
     }
 
-    protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-        BaseDocument doc = (BaseDocument)c.getDocument();
-        String text = getInsertPrefix().toString();
+    protected void substituteText(JTextComponent c, final int offset, final int len, String toAdd) {
+        final BaseDocument doc = (BaseDocument)c.getDocument();
+        final String text = getInsertPrefix().toString();
         if (text != null) {
             //int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
             //if (semiPos > -2)
@@ -582,27 +550,30 @@ public abstract class GsfCompletionItem implements CompletionItem {
             //    }
             //}
         
-            int semiPos = -2;
             //  Update the text
-            doc.atomicLock();
-            try {
-                String textToReplace = doc.getText(offset, len);
-                if (text.equals(textToReplace)) {
-                    if (semiPos > -1)
-                        doc.insertString(semiPos, ";", null); //NOI18N
-                    return;
-                }                
-                Position position = doc.createPosition(offset);
-                Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                doc.remove(offset, len);
-                doc.insertString(position.getOffset(), text, null);
-                if (semiPosition != null)
-                    doc.insertString(semiPosition.getOffset(), ";", null);
-            } catch (BadLocationException e) {
-                // Can't update
-            } finally {
-                doc.atomicUnlock();
-            }
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        int semiPos = -2;
+                        String textToReplace = doc.getText(offset, len);
+                        if (text.equals(textToReplace)) {
+                            if (semiPos > -1) {
+                                doc.insertString(semiPos, ";", null); //NOI18N
+                            }
+                            return;
+                        }
+                        Position position = doc.createPosition(offset);
+                        Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                        doc.remove(offset, len);
+                        doc.insertString(position.getOffset(), text, null);
+                        if (semiPosition != null) {
+                            doc.insertString(semiPosition.getOffset(), ";", null);
+                        }
+                    } catch (BadLocationException e) {
+                        // Can't update
+                    }
+                }
+            });
         }
     }
 

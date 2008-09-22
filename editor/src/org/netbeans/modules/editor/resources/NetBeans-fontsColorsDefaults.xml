@@ -43,9 +43,9 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="default" foreColor="black" bgColor="white">
-        <font size="13"/>
-    </fontcolor>
+    <!-- #146541, do not set font size. By default it has to pick up value of
+         the "fontsize" command line option. -->
+    <fontcolor name="default" foreColor="black" bgColor="white"/>
     <fontcolor name="char" foreColor="ffCE7B00"/>
     <fontcolor name="comment" foreColor="ff969696"/>
     <fontcolor name="error" waveUnderlined="red"/>
