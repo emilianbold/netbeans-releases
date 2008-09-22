@@ -291,7 +291,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         if (resolver != null) {
             CsmOffsetableDeclaration context = sup.getDefinition(offset, getFileReferencesContext());
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort);
-           ctx.resolveExp(exp);
+            ctx.resolveExp(exp);
             if (ctx.result != null) {
                 ctx.result.setSimpleVariableExpression(isSimpleVariableExpression(exp));
             }
@@ -1120,6 +1120,15 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 if (compResolver.refresh() && compResolver.resolve(varPos, var, openingSource)) {
                                     res = compResolver.getResult();
                                 }
+                                if (res.size() == 1) {
+                                    // lastType should be set even if last=true
+                                    // to facilitate recursive invocation of resolveExp/resolveItem
+                                    List<? extends CsmObject> list = new ArrayList();
+                                    res.addResulItemsToCol(list);
+                                    if (list.size() == 1 && CsmKindUtilities.isVariable(list.get(0))) {
+                                        lastType = ((CsmVariable)list.get(0)).getType();
+                                    }
+                                }
 //                                CsmClass cls = sup.getClass(varPos); // get baseDocument class
 //                                if (cls != null) {
 //                                    res.addAll(findFieldsAndMethods(finder, getNamespaceName(cls), cls, var, false,
@@ -1566,7 +1575,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 break;
 
             case CsmCompletionExpression.PARENTHESIS:
-                cont = resolveItem(item.getParameter(0), first, last, kind);
+                cont = resolveExp(item.getParameter(0));
                 break;
 
             case CsmCompletionExpression.CONSTRUCTOR: // constructor can be part of a DOT expression
