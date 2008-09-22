@@ -115,6 +115,8 @@ DbgpResponse *FeatureGetCommand::process(DbgpConnection *pDbgpConnection, map<ch
         result = pScriptDebugger->isFeatureSet(SUSPEND_ON_ERRORS);
     }else if(feature == _T("suspendOnDebuggerKeyword")) {
         result = pScriptDebugger->isFeatureSet(SUSPEND_ON_DEBUGGER_KEYWORD);
+    }else if(feature == _T("ignoreQueryStrings")) {
+        result = pScriptDebugger->isFeatureSet(IGNORE_QUERY_STRINGS);
     }
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(FEATURE_GET, argsMap.find('i')->second);
     pDbgpResponse->addAttribute(SUPPORTED, result ? 1 : 0);
@@ -150,6 +152,8 @@ DbgpResponse *FeatureSetCommand::process(DbgpConnection *pDbgpConnection, map<ch
                 pScriptDebugger->setFeature(SUSPEND_ON_ERRORS);
             }else if(feature == _T("suspendOnDebuggerKeyword")) {
                 pScriptDebugger->setFeature(SUSPEND_ON_DEBUGGER_KEYWORD);
+            }else if(feature == _T("ignoreQueryStrings")) {
+                pScriptDebugger->setFeature(IGNORE_QUERY_STRINGS);
             }
         }
         pDbgpResponse->addAttribute(SUCCESS, 1);
@@ -450,7 +454,7 @@ DbgpResponse *SourceCommand::process(DbgpConnection *pDbgpConnection, map<char, 
     TCHAR *buffer = pScriptDebugger->getSourceText(fileURI, beginLine, endLine);
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(SOURCE, argsMap.find('i')->second);
     int success = 0;
-    if(buffer == NULL) {
+    if(buffer == NULL || buffer[0] == 0) {
         //Get the source using WinInet APIs
         USES_CONVERSION;
         HINTERNET hSession = InternetOpen(L"Source Reader", PRE_CONFIG_INTERNET_ACCESS, L"", 

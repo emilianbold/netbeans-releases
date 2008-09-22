@@ -104,6 +104,14 @@ function fn1(clsAVarAssignment $aParam) {
         $cParam2->aCreateA();
     }
 }
+function fn3(clsAVarAssignment &$aParam3) {
+    $aParam4 = $aParam3;
+    $aParam4->aCreateA();
+    function fn4(clsAVarAssignment &$cParam4) {
+        $cParam5 = $cParam4;
+        $cParam5->aCreateA();
+    }
+}
 
 function mytest() {
     if (1) {

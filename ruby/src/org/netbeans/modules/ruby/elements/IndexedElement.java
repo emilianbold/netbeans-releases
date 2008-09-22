@@ -49,9 +49,9 @@ import javax.swing.text.Document;
 
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.ruby.NbUtilities;
 import org.openide.filesystems.FileObject;
 
 

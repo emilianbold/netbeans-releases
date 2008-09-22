@@ -352,15 +352,17 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
         
         void associatePalette(HtmlEditorSupport s) {
+            DataObject dataObject = s.getDataObject();
+            if(!dataObject.isValid()) {
+                return ;
+            }
             
-            Node nodes[] = { s.getDataObject().getNodeDelegate() };
+            Node nodes[] = { dataObject.getNodeDelegate() };
             InstanceContent instanceContent = new InstanceContent();
             associateLookup(new ProxyLookup(new Lookup[] { new AbstractLookup(instanceContent), nodes[0].getLookup()}));
             instanceContent.add(getActionMap());
             
             setActivatedNodes(nodes);
-            
-            DataObject dataObject = s.getDataObject();
             if (dataObject instanceof HtmlDataObject) {
                 try {
                     PaletteController pc = HTMLPaletteFactory.getPalette();

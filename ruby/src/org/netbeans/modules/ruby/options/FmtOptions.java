@@ -348,7 +348,7 @@ public class FmtOptions {
             
             CodeStyle codeStyle = CodeStyle.get(previewPrefs);
             RubyFormatter formatter = new RubyFormatter(codeStyle, rm);
-            formatter.reformat(jep.getDocument(), 0, jep.getDocument().getLength(), null);
+            formatter.reindent(null, jep.getDocument(), 0, jep.getDocument().getLength(), null, false);
             
             jep.setIgnoreRepaint(false);
             jep.scrollRectToVisible(new Rectangle(0,0,10,10) );

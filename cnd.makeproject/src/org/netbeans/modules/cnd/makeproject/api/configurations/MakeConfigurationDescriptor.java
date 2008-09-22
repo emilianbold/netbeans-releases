@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -738,7 +739,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     }
                 }
                 if (addPath) {
-                    sourceRoots.add(relPath);
+                    String usePath;
+                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
+                        usePath = FilePathAdaptor.normalize(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), path));
+                    else if (PathPanel.getMode() == PathPanel.REL)
+                        usePath = relPath;
+                    else
+                        usePath = absPath;
+                    
+                    sourceRoots.add(usePath);
                     setModified();
                 }
             }
@@ -962,7 +971,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     folder.removeFolder(dirfolder);
                 }
             } else {
-                String filePath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
+                String filePath;
+                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
+                        filePath = IpeUtils.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
+                    else if (PathPanel.getMode() == PathPanel.REL)
+                        filePath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
+                    else
+                        filePath = IpeUtils.toAbsolutePath(baseDir, files[i].getPath());
                 Item item = new Item(FilePathAdaptor.normalize(filePath));
                 if (folder.addItem(item, notify) != null) {
                     filesAdded.add(item);

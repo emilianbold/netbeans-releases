@@ -264,6 +264,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     private boolean popupMenuEnabled;
 
     public static final String LINE_HEIGHT_CHANGED_PROP = "line-height-changed-prop"; //NOI18N
+    public static final String TAB_SIZE_CHANGED_PROP = "tab-size-changed-prop"; //NOI18N
 
     /** init paste action #39678 */
     private static boolean isPasteActionInited = false;
@@ -1572,6 +1573,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             
             String settingName = evt == null ? null : evt.getKey();
             settingsChangeImpl(settingName);
+
+            if (SimpleValueNames.TAB_SIZE.equals(settingName)) { // Only on explicit tab-size change to minimize perf impact
+                firePropertyChange(TAB_SIZE_CHANGED_PROP, null, null);
+            }
             
             if (settingName == null || SimpleValueNames.LINE_NUMBER_VISIBLE.equals(settingName)) {
                 lineNumberVisibleSetting = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, EditorPreferencesDefaults.defaultLineNumberVisible);

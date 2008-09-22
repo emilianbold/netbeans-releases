@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,78 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.proxy;
-
+package org.netbeans.modules.ruby.railsprojects.classpath;
+import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import org.openide.util.Exceptions;
+import java.net.URL;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Logger;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author eu155513
+ * @author Pete Lebet <plebet@netbeans.org>
  */
-public class TTYProxy {
-    private final File file;
-    private FileReader reader = null;
-    private FileWriter writer = null;
-
-    public TTYProxy(String hkey) {
-        // TODO: need to support remote
-        file = new File("/tmp/gdbFifo");
-        ProcessBuilder pb = new ProcessBuilder("/usr/bin/mkfifo", file.getAbsolutePath()); // NOI18N
-        try {
-            pb.start();
-        } catch (IOException ex) {
+final class JavascriptsClassPathImplementation implements ClassPathImplementation {
+    private final List<PathResourceImplementation> resources;
+    
+    public JavascriptsClassPathImplementation(File projectFolder) {
+        List<PathResourceImplementation> list = new LinkedList<PathResourceImplementation>();
+        
+        File f = PropertyUtils.resolveFile(projectFolder, "public//javascripts"); // NOI18N
+        URL entry = FileUtil.urlForArchiveOrDir(f);
+        if (entry != null) {
+            list.add(ClassPathSupport.createResource(entry));
+        } else {
+            Logger.getLogger(PublicClassPathImplementation.class.getName()).severe(f + " does not look like a valid folder");
         }
-        file.deleteOnExit();
+        
+        resources = Collections.unmodifiableList(list);
+    }
+    
+    public List<? extends PathResourceImplementation> getResources() {
+        return resources;
     }
 
-    public String getFilename() {
-        return file.getAbsolutePath();
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
     }
 
-    public Reader getReader() {
-        if (reader == null) {
-            try {
-                reader = new FileReader(file);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return reader;
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
     }
 
-    public Writer getWriter() {
-        if (writer == null) {
-            try {
-                writer = new FileWriter(file);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return writer;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        if (reader != null) {
-            reader.close();
-        }
-        if (writer != null) {
-            writer.close();
-        }
-        if (file.exists()) {
-            file.delete();
-        }
-    }
 }
+

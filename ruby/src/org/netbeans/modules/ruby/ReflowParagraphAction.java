@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby;
 
 import java.awt.event.ActionEvent;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.options.CodeStyle;
 import org.openide.filesystems.FileObject;
 import javax.swing.text.BadLocationException;
@@ -79,7 +80,7 @@ public class ReflowParagraphAction extends BaseAction {
             return;
         }
 
-        FileObject fo = NbUtilities.findFileObject(target);
+        FileObject fo = GsfUtilities.findFileObject(target);
 
         if (fo != null) {
             int offset = target.getCaret().getDot();

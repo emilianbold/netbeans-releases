@@ -41,10 +41,16 @@ package org.netbeans.modules.glassfish.spi;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
@@ -242,4 +248,53 @@ public final class ServerUtilities {
     static public boolean isTP2(String gfRoot) {
         return ServerUtilities.getJarName(gfRoot, ServerUtilities.GFV3_PREFIX_JAR_NAME).getName().indexOf("-tp-2-") > -1; // NOI18N
     }
+  
+    /**
+     * create a list of jars that appear to be Java EE api jars that live in the 
+     * modules directory.
+     * 
+     * @param jarList the list "so far"
+     * @param parent the directory to look into
+     * @param depth depth of the server
+     * @return the complete list of jars that match the selection criteria
+     */
+    public static List<String> filterByManifest(List<String> jarList, File parent, int depth) {
+        if(parent.exists()) {
+            int parentLength = parent.getPath().length();
+            for(File candidate: parent.listFiles()) {
+                if(candidate.isDirectory()) {
+                    if(depth < 1) {
+                        filterByManifest(jarList, candidate, depth+1);
+                    }
+                    continue;
+                } else if(!candidate.getName().endsWith(".jar")) {
+                    continue;
+                }
+                try {
+                    JarFile jarFile = new JarFile(candidate, false);
+                    Manifest manifest = jarFile.getManifest();
+                    if(manifest != null) {
+                        Attributes attrs = manifest.getMainAttributes();
+                        if(attrs != null) {
+                            String bundleName = attrs.getValue("Bundle-SymbolicName");
+                            //String bundleName = attrs.getValue("Extension-Name");
+                            if(bundleName != null  && bundleName.contains("javax")) {
+                                String val = candidate.getPath().substring(parentLength+1);
+                                jarList.add(val);
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(ServerUtilities.class.getName()).log(Level.INFO, 
+                            candidate.getAbsolutePath(), ex);
+                }
+
+            }
+        } else {
+           Logger.getLogger(ServerUtilities.class.getName()).log(Level.FINER, 
+                            parent.getAbsolutePath() + " does not exist");
+        }
+        return jarList;
+    }
+
 }

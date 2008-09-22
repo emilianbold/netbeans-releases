@@ -148,6 +148,10 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     }
 
     private String[] findAllExecutables(File root) {
+        if (!root.exists() || !root.isDirectory()) {
+            // Something is wrong
+            return new String[]{};
+        }
         ArrayList list = new ArrayList();
         addExecutables(root, list);
         return (String[])list.toArray(new String[list.size()]);

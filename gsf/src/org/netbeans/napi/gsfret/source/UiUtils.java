@@ -56,6 +56,7 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.gsfret.navigation.Icons;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -88,20 +89,7 @@ public final class UiUtils {
     }
 
     public static BaseDocument getDocument(FileObject fileObject, boolean openIfNecessary) {
-        try {
-            DataObject dobj = DataObject.find(fileObject);
-            
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            if (ec != null) {
-                return (BaseDocument)(openIfNecessary ? ec.openDocument() : ec.getDocument());
-            }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        return null;
+        return GsfUtilities.getDocument(fileObject, openIfNecessary);
     }
 
     /** Gets correct icon for given ElementKind.

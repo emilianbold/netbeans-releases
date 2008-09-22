@@ -140,6 +140,7 @@ static const unsigned int SUSPEND_ON_FIRSTLINE = STEP_FILTERS_ENABLED << 1;
 static const unsigned int SUSPEND_ON_EXCEPTIONS = SUSPEND_ON_FIRSTLINE << 1;
 static const unsigned int SUSPEND_ON_ERRORS = SUSPEND_ON_EXCEPTIONS << 1;
 static const unsigned int SUSPEND_ON_DEBUGGER_KEYWORD = SUSPEND_ON_ERRORS << 1;
+static const unsigned int IGNORE_QUERY_STRINGS = SUSPEND_ON_DEBUGGER_KEYWORD << 1;
 
 // ScriptDebugger
 class ATL_NO_VTABLE ScriptDebugger :
@@ -212,6 +213,9 @@ public:
     }
     BOOL setBreakpoint(Breakpoint *pBreakpoint) {
         return setBreakpoint(pBreakpoint, false);
+    }
+   BOOL setBreakpoint(Breakpoint *pBreakpoint, tstring fileURI) {
+        return setBreakpoint(pBreakpoint, fileURI, false);
     }
     BOOL removeBreakpoint(Breakpoint *pBreakpoint) {
         return setBreakpoint(pBreakpoint, true);
@@ -297,6 +301,7 @@ private:
     IDebugExpression *getDebugExpression(tstring expression, int stackDepth);
     tstring getObjectType(tstring fullName, int stackDepth);
     BOOL setBreakpoint(Breakpoint *pBreakpoint, BOOL remove);
+    BOOL setBreakpoint(Breakpoint *pBreakpoint, tstring fileURI, BOOL remove);
     BOOL handleBreakpoint(StackFrame frame);
     BOOL breakRequested;
     BOOL documentLoaded;
