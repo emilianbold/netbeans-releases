@@ -391,7 +391,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                             gdb.gdb_set("environment", "LD_PRELOAD=" + unbuffer); // NOI18N
                         }
                     }
-                    inputProxy = new InputProxy(hkey, iotab);
+                    inputProxy = InputProxy.create(hkey, iotab);
                 }
 
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
@@ -856,6 +856,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (inputProxy != null) {
                 inputProxy.stop();
             }
+            iotab.getOut().close();
             GdbContext.getInstance().invalidate(true);
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }
@@ -1243,10 +1244,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     /** Handle gdb responses starting with '@' */
     public void targetStreamOutput(String msg) {
        log.finest("GD.targetStreamOutput: " + msg);  // NOI18N
-    }
-
-    public InputOutput getIotab() {
-        return iotab;
     }
 
     /**
