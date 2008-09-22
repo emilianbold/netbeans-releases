@@ -46,6 +46,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.ArrayList;
 import javax.accessibility.*;
 import javax.swing.*;
 import javax.swing.JComponent.AccessibleJComponent;
@@ -71,6 +72,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
     /** Maps name to <code>Toolbar</code>s */
     private Map<String, Toolbar> toolbars;
+    private ArrayList<String> toolbarNames;
     /** Maps name to <code>ToolbarPool.Configuration</code>s */
     private Map<String, ToolbarPool.Configuration> toolbarConfigs;
 
@@ -133,6 +135,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
         setLayout (new BorderLayout ());
         listener = new PopupListener();
         toolbars = new TreeMap<String, Toolbar>();
+        toolbarNames = new ArrayList<String>(20);
         toolbarConfigs = new TreeMap<String, ToolbarPool.Configuration>();
 
         instance = new Folder (df);
@@ -246,8 +249,10 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * @param toolbars map (String, Toolbar) of toolbars
      * @param conf map (String, Configuration) of configs
      */
-    void update (Map<String, Toolbar> toolbars, Map<String, ToolbarPool.Configuration> conf) {
+    void update (Map<String, Toolbar> toolbars, Map<String, ToolbarPool.Configuration> conf,
+            ArrayList<String> toolbarNames) {
         this.toolbars = toolbars;
+        this.toolbarNames = new ArrayList<String>( toolbarNames );
         this.toolbarConfigs = conf;
 
         if (!"".equals(name)) {
@@ -376,8 +381,12 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * @return the toolbars contained in this pool
      */
     public final synchronized Toolbar[] getToolbars() {
-        Toolbar[] arr = new Toolbar[toolbars.size ()];
-        return toolbars.values ().toArray (arr);
+        Toolbar[] arr = new Toolbar[toolbarNames.size ()];
+        int index = 0;
+        for( String tn : toolbarNames ) {
+            arr[index++] = findToolbar(tn);
+        }
+        return arr;
     }
 
     /**
@@ -519,6 +528,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
             final int length = cookies.length;
 
             final Map<String, Toolbar> toolbars = new TreeMap<String, Toolbar> ();
+            final ArrayList<String> toolbarNames = new ArrayList<String>();
             final Map<String, Configuration> conf = new TreeMap<String, Configuration> ();
 
             for (int i = 0; i < length; i++) {
@@ -532,6 +542,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
                         toolbar.removeMouseListener(listener);
                         toolbar.addMouseListener(listener);
                         toolbars.put(toolbar.getName(), toolbar);
+                        toolbarNames.add(toolbar.getName());
                         continue;
                     }
                     if (obj instanceof org.openide.awt.ToolbarPool.Configuration) {
@@ -563,7 +574,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            update (toolbars, conf);
+            update (toolbars, conf, toolbarNames);
 
             return ToolbarPool.this;
         }
