@@ -47,6 +47,24 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="SetSelectedNodes">
+        <api name="explorer"/>
+        <summary>setSelectedNodes() does partial selection instead of throwing IllegalArgumentException when 
+        some of newly selected nodes are not under root context.</summary>
+        <version major="6" minor="16"/>
+        <date day="16" month="9" year="2008"/>
+        <author login="t_h"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="no"/>
+        <description>Nodes can be removed outside of AWT thread while e.g. view can
+        try to select them. This generated IllegalArgumentException during checking if
+        such a node is under root context. Now 
+        <a href="@TOP@/org/openide/explorer/ExplorerManager.html#setSelectedNodes(org.openide.nodes.Node[])"><code>setSelectedNodes()</code></a>.
+        does partial selection 
+        of valid nodes instead of throwing IllegalArgumentException.
+        </description>
+        <class package="org.openide.explorer" name="ExplorerManager"/>
+        <issue number="145376"/>
+    </change>    
     <change id="OutlineView">
         <api name="explorer"/>
         <summary>Added OutlineView component which is a replacement for buggy TreeTableView.</summary>
