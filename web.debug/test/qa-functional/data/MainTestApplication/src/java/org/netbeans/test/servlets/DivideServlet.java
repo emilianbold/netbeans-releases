@@ -35,7 +35,7 @@ public class DivideServlet extends HttpServlet {
         out.println("<body>");
         out.println("<h1>Servlet DivideServlet at " + request.getContextPath () + "</h1>");
         
-        org.netbeans.test.freeformlib.Divider d = new org.netbeans.test.freeformlib.Divider();
+        org.netbeans.test.freeformlib.Multiplier d = new org.netbeans.test.freeformlib.Multiplier();
         try {
             String attributeX = request.getParameter("x");
             if (attributeX == null) {
@@ -56,7 +56,7 @@ public class DivideServlet extends HttpServlet {
         if (d.getY() == 0) {
             out.println("<b>y</b> can't be 0!");
         } else {
-            out.println("" + d.getX() + " / " + d.getY() + " = " + d.getDivision());
+            out.println("" + d.getX() + " / " + d.getY() + " = " + d.getMultiplication());
         }
         
         out.println("<br/>");

@@ -62,6 +62,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
@@ -76,6 +77,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -262,20 +264,23 @@ public class PHPIndexer implements Indexer {
             for (SingleFieldDeclaration field : fieldsDeclaration.getFields()) {
                 if (field.getName().getName() instanceof Identifier) {
                     Identifier identifier = (Identifier) field.getName().getName();
-                    StringBuilder fieldSignature = new StringBuilder();
-                    fieldSignature.append(identifier.getName() + ";"); //NOI18N
-                    fieldSignature.append(field.getStartOffset() + ";"); //NOI18N
-                    fieldSignature.append(fieldsDeclaration.getModifier() + ";"); //NOI18N
                     String type = getFieldTypeFromPHPDoc(field);
-
-                    if (type != null){
-                        fieldSignature.append(type);
-                    }
-
-                    fieldSignature.append(";"); //NOI18N
-                    document.addPair(FIELD_FIELD, fieldSignature.toString(), false);
+                    String signature = createFieldsDeclarationRecord(identifier.getName(), type, fieldsDeclaration.getModifier(), field.getStartOffset());
+                    document.addPair(FIELD_FIELD, signature, false);
                 }
             }
+        }
+
+        private String createFieldsDeclarationRecord(String name, String type, int modifier, int offset) {
+            StringBuilder fieldSignature = new StringBuilder();
+            fieldSignature.append(name + ";"); //NOI18N
+            fieldSignature.append(offset + ";"); //NOI18N
+            fieldSignature.append(modifier + ";"); //NOI18N
+            if (type != null){
+                fieldSignature.append(type);
+            }
+            fieldSignature.append(";"); //NOI18N
+            return fieldSignature.toString();
         }
 
         private class IndexerVisitor extends DefaultTreePathVisitor{
@@ -307,7 +312,7 @@ public class PHPIndexer implements Indexer {
                 documents.add(classDocument);
                 indexClass((ClassDeclaration) node, classDocument);
                 List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
-                IdentifierSignature.add(node, idSignatures);
+                IdentifierSignature.add(node, Utils.getPropertyTags(root, node), idSignatures);
                 for (IdentifierSignature idSign : idSignatures) {
                     identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true);
                 }
@@ -436,7 +441,10 @@ public class PHPIndexer implements Indexer {
                         document.addPair(FIELD_CLASS_CONST, signature.toString(), false);
                     }
                 }
-
+            }
+            for (PHPDocPropertyTag tag : Utils.getPropertyTags(root, classDeclaration)) {
+                String signature = createFieldsDeclarationRecord(tag.getFieldName(), tag.getFieldType(), BodyDeclaration.Modifier.PUBLIC, tag.getStartOffset());
+                document.addPair(FIELD_FIELD, signature, false);
             }
         }
 

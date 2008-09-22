@@ -68,12 +68,12 @@ public class PhpStructureScannerTest extends ParserTestBase{
      * Test of scan method, of class PhpStructureScanner.
      */
     
-    public void xtestScan() throws Exception {
+    public void testScan() throws Exception {
         performTest("interface_001");
 
     }
 
-    public void xtest133484() throws Exception {
+    public void test133484() throws Exception {
         performTest("referenceParameter_001");
     }
 
@@ -85,6 +85,10 @@ public class PhpStructureScannerTest extends ParserTestBase{
         performTest("issue142644");
     }
 
+    public void testPHPDocTagProperty() throws Exception {
+        performTest("propertyTag");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         StringBuffer sb = new StringBuffer();
@@ -93,6 +97,7 @@ public class PhpStructureScannerTest extends ParserTestBase{
         List<? extends StructureItem> result = instance.scan(info);
         for (StructureItem structureItem : result) {
             sb.append(printStructureItem(structureItem, 0));
+            sb.append("\n");
         }
         return sb.toString();
     }

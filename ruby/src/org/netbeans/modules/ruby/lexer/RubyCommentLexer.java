@@ -76,7 +76,6 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
         };
     private final LexerInput input;
     private final TokenFactory<RubyCommentTokenId> tokenFactory;
-    private boolean inWord;
     private String[] markers;
 
     public RubyCommentLexer(LexerRestartInfo<RubyCommentTokenId> info) {
@@ -136,7 +135,7 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
     }
 
     public Token<RubyCommentTokenId> nextToken() {
-        inWord = false;
+        boolean inWord = false;
 
     inputLoop:
         while (true) {

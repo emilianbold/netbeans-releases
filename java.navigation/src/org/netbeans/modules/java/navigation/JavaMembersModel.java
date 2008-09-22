@@ -70,6 +70,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -605,7 +606,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
         
         void update() {
-            DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+            final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
             
             TreeNode javaMembersModelRoot = (TreeNode) javaMembersModel.getRoot();
             int childCount = javaMembersModelRoot.getChildCount();
@@ -617,8 +618,11 @@ public final class JavaMembersModel extends DefaultTreeModel {
                     root.add(filterNode);
                 }
             }
-            
-            setRoot(root);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setRoot(root);
+                }
+            });            
         }
         
         /**

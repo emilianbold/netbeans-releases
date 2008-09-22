@@ -969,7 +969,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls),
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly && !memberPointer, false, true,this.scopeAccessedClassifier,true,sort); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly && !memberPointer, false, true,this.scopeAccessedClassifier,false,sort); // NOI18N
                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, "", false, true, sort);
                             res.addAll(nestedClassifiers);
                         }
@@ -1049,7 +1049,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind) {
             boolean cont = true; // whether parsing should continue or not
             boolean methodOpen = false; // helper flag for unclosed methods
-            boolean skipConstructors = (kind != ExprKind.NONE);
+            boolean skipConstructors = (kind != ExprKind.NONE && kind != ExprKind.SCOPE);
             switch (item.getExpID()) {
             case CsmCompletionExpression.CONSTANT: // Constant item
                 if (first) {

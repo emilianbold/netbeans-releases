@@ -58,6 +58,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URL;
 import java.nio.CharBuffer;
 import java.util.Arrays;
 import java.util.Collection;
@@ -3719,6 +3720,16 @@ public abstract class GsfTestBase extends NbTestCase {
         DeclarationLocation location = finder.findDeclaration(info, caretOffset);
 
         return location;
+    }
+
+    protected void checkDeclaration(String relFilePath, String caretLine, URL url) throws Exception {
+        DeclarationLocation location = findDeclaration(relFilePath, caretLine);
+        if (location == DeclarationLocation.NONE) {
+            // if we dont found a declaration, bail out.
+            assertTrue("DeclarationLocation.NONE", false);
+        }
+
+        assertEquals(location.getUrl(), url);
     }
 
     protected void checkDeclaration(String relFilePath, String caretLine, String declarationLine) throws Exception {

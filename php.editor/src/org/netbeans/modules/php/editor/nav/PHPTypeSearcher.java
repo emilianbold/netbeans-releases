@@ -54,12 +54,12 @@ import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.NbUtilities;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -233,7 +233,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         }
 
         public void open() {
-            NbUtilities.open(element.getFileObject(), element.getOffset(), element.getName());
+            GsfUtilities.open(element.getFileObject(), element.getOffset(), element.getName());
         }
 
         public String getContextName() {

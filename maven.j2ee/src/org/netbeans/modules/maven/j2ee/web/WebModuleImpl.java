@@ -71,6 +71,7 @@ import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -273,7 +274,7 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
                 String finalName = proj.getBuild().getFinalName();
                 loc = proj.getBuild().getDirectory() + File.separator + finalName;
             }
-            File fil = FileUtil.normalizeFile(new File(loc));
+            File fil = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), loc);
     //        System.out.println("get content=" + fil);
             fo = FileUtil.toFileObject(fil);
         } 

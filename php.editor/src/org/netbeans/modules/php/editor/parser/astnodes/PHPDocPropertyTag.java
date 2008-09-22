@@ -37,72 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.proxy;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
  *
- * @author eu155513
+ * @author Petr Pisl
  */
-public class TTYProxy {
-    private final File file;
-    private FileReader reader = null;
-    private FileWriter writer = null;
+public class PHPDocPropertyTag extends PHPDocTag {
 
-    public TTYProxy(String hkey) {
-        // TODO: need to support remote
-        file = new File("/tmp/gdbFifo");
-        ProcessBuilder pb = new ProcessBuilder("/usr/bin/mkfifo", file.getAbsolutePath()); // NOI18N
-        try {
-            pb.start();
-        } catch (IOException ex) {
-        }
-        file.deleteOnExit();
+    private final String fieldName;
+    private final String fieldType;
+
+     public PHPDocPropertyTag(int start, int end, PHPDocTag.Type kind, String fieldName, String fieldType, String fieldDescription) {
+        super(start, end, kind, fieldDescription);
+        this.fieldName = fieldName;
+        this.fieldType = fieldType;
     }
 
-    public String getFilename() {
-        return file.getAbsolutePath();
+    public String getFieldName() {
+        return fieldName;
     }
 
-    public Reader getReader() {
-        if (reader == null) {
-            try {
-                reader = new FileReader(file);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return reader;
+    public String getFieldType() {
+        return fieldType;
     }
-
-    public Writer getWriter() {
-        if (writer == null) {
-            try {
-                writer = new FileWriter(file);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return writer;
-    }
-
+     
     @Override
-    protected void finalize() throws Throwable {
-        if (reader != null) {
-            reader.close();
-        }
-        if (writer != null) {
-            writer.close();
-        }
-        if (file.exists()) {
-            file.delete();
-        }
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }
