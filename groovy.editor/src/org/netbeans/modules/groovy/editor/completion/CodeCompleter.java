@@ -2100,7 +2100,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
         if (expression != null) {
-            // testCollection3 fails without this
+            // see http://jira.codehaus.org/browse/GROOVY-3050
             if (expression instanceof RangeExpression
                     && "java.lang.Object".equals(expression.getType().getName())) {
                 expression.setType(
