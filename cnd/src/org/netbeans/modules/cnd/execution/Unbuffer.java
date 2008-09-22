@@ -40,11 +40,14 @@
 package org.netbeans.modules.cnd.execution;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.dwarfdump.FileMagic;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -62,6 +65,18 @@ public class Unbuffer {
             return Unbuffer.getLocalPath(is64bits);
         } else {
             return Unbuffer.getRemotePath(hkey, is64bits);
+        }
+    }
+
+    public static boolean is64BitExecutable(String executable) {
+        try {
+            FileMagic magic = new FileMagic(executable);
+            ElfReader er = new ElfReader(executable, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
+            return er.is64Bit();
+        } catch (IOException e) {
+            log.warning("Executable " + executable + " not found"); // NOI18N
+            // something wrong - return false
+            return false;
         }
     }
     

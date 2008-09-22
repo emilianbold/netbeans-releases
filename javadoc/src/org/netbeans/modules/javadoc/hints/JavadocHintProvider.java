@@ -56,8 +56,8 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.text.Document;
@@ -79,6 +79,7 @@ public final class JavadocHintProvider extends AbstractHint {
     
     public static final String SCOPE_KEY = "scope";             // NOI18N
     public static final String SCOPE_DEFAULT = "protected"; // NOI18N
+    public static final String AVAILABILITY_KEY = "availability"; // NOI18N
 
     private boolean createJavadocKind;
     
@@ -92,10 +93,17 @@ public final class JavadocHintProvider extends AbstractHint {
     }
     
     public List<ErrorDescription> run(CompilationInfo javac, TreePath path) {
-        if (Boolean.FALSE.equals(AccessibilityQuery.isPubliclyAccessible(javac.getFileObject().getParent()))) {
+        Preferences pref = getPreferences(null);
+        boolean createJavadocForNonPublic = pref.getBoolean(AVAILABILITY_KEY + true, false);
+        boolean correctJavadocForNonPublic = pref.getBoolean(AVAILABILITY_KEY + false, false);
+        boolean isPubliclyA11e = AccessibilityQuery.isPubliclyAccessible(javac.getFileObject().getParent());
+
+        if (createJavadocKind && !isPubliclyA11e && !createJavadocForNonPublic)
             return null;
-        }
-        
+
+        if (!createJavadocKind && !isPubliclyA11e && !correctJavadocForNonPublic)
+            return null;
+
         if (javac.getElements().getTypeElement("java.lang.Object") == null) { // NOI18N
             // broken java platform
             return Collections.<ErrorDescription>emptyList();
@@ -164,7 +172,7 @@ public final class JavadocHintProvider extends AbstractHint {
         group.add( radio );
         radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
         radio.setOpaque(false);
-        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL, new Insets(8,8,0,8),0,0 ) );
+        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE, new Insets(8,8,0,8),0,0 ) );
         
         radio = new JRadioButton();
         Mnemonics.setLocalizedText(radio, NbBundle.getMessage(JavadocHintProvider.class, "CTL_PROTECTED_OPTION")); // NOI18N
@@ -175,7 +183,7 @@ public final class JavadocHintProvider extends AbstractHint {
         group.add( radio );
         radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
         radio.setOpaque(false);
-        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL, new Insets(8,8,0,8),0,0 ) );
+        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE, new Insets(8,8,0,8),0,0 ) );
         
         radio = new JRadioButton();
         Mnemonics.setLocalizedText(radio, NbBundle.getMessage(JavadocHintProvider.class, "CTL_PACKAGE_OPTION")); // NOI18N
@@ -186,7 +194,7 @@ public final class JavadocHintProvider extends AbstractHint {
         group.add( radio );
         radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
         radio.setOpaque(false);
-        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL, new Insets(8,8,0,8),0,0 ) );
+        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE, new Insets(8,8,0,8),0,0 ) );
         
         radio = new JRadioButton();
         Mnemonics.setLocalizedText(radio, NbBundle.getMessage(JavadocHintProvider.class, "CTL_PRIVATE_OPTION")); // NOI18N
@@ -197,10 +205,23 @@ public final class JavadocHintProvider extends AbstractHint {
         group.add( radio );
         radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
         radio.setOpaque(false);
-        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL, new Insets(8,8,0,8),0,0 ) );
+        res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE, new Insets(8,8,0,8),0,0 ) );
         
-        outerPanel.add( res, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH, new Insets(0,0,0,0),0,0 ) );
-        outerPanel.add( new JLabel(), new GridBagConstraints(1,1,1,1,1.0,1.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE, new Insets(0,0,0,0),0,0 ) );
+        outerPanel.add( res, new GridBagConstraints(0,0,1,2,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE, new Insets(0,0,0,0),0,0 ) );
+        JCheckBox apiCheckbox = new JCheckBox();
+        apiCheckbox.setText(NbBundle.getMessage(JavadocHintProvider.class, "CTL_APICHECKBOX"));
+        apiCheckbox.setSelected(node.getBoolean(AVAILABILITY_KEY + createJavadocKind, false));
+        apiCheckbox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(JavadocHintProvider.class, "AN_APICHECKBOX")); // NOI18N
+        apiCheckbox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavadocHintProvider.class, "AD_APICHECKBOX")); // NOI18N
+
+        apiCheckbox.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox cb = (JCheckBox) e.getSource();
+                node.putBoolean(AVAILABILITY_KEY + createJavadocKind, cb.isSelected());
+            }
+        });
+        outerPanel.add(apiCheckbox, new GridBagConstraints(0,2,1,2,1.0,1.0,GridBagConstraints.WEST,GridBagConstraints.NONE, new Insets(0,0,0,0),0,0 ));
         return outerPanel;
     }
     

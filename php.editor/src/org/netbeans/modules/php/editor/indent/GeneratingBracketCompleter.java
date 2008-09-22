@@ -47,6 +47,7 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.nav.SemiAttribute;
@@ -211,7 +212,7 @@ public class GeneratingBracketCompleter {
     
     private static void generateDocEntry(StringBuilder toAdd, String text, int indent, String name, AttributedType type) {
         toAdd.append("\n");
-        LexUtilities.indent(toAdd, indent);
+        GsfUtilities.indent(toAdd, indent);
 
         toAdd.append(" * ");
         toAdd.append(text);

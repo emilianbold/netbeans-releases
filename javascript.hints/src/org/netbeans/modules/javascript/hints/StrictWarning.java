@@ -60,10 +60,10 @@ import org.netbeans.modules.gsf.api.HintFix;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.JsParseResult;
-import org.netbeans.modules.javascript.editing.NbUtilities;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -463,7 +463,7 @@ public class StrictWarning extends JsErrorRule {
             Position pos = edits.createPosition(varOffset);
             edits.apply();
             if (pos != null && pos.getOffset() != -1) {
-                JTextComponent target = NbUtilities.getPaneFor(context.compilationInfo.getFileObject());
+                JTextComponent target = GsfUtilities.getPaneFor(context.compilationInfo.getFileObject());
                 if (target != null) {
                     int start = pos.getOffset();
                     int end = start + varName.length();

@@ -55,6 +55,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.options.CodeStyle;
@@ -586,7 +587,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
                             }
 
                             // Adjust the indent at the given line (specified by offset) to the given indent
-                            int currentIndent = LexUtilities.getLineIndent(doc, lineBegin);
+                            int currentIndent = GsfUtilities.getLineIndent(doc, lineBegin);
 
                             if (currentIndent != indent) {
                                 if (context != null) {

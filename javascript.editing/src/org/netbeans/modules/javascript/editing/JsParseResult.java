@@ -54,6 +54,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.util.Exceptions;
@@ -188,7 +189,7 @@ public class JsParseResult extends ParserResult {
                         @Override
                         public Document getDocument() {
                             if (doc == null) {
-                                doc = NbUtilities.getDocument(getFileObject(), true);
+                                doc = GsfUtilities.getDocument(getFileObject(), true);
                             }
                             
                             return doc;

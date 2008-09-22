@@ -1319,10 +1319,10 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 final ClasspathInfo cpInfo;
                 if (!this.ignoreExcludes.contains(root)) {
                     entry = getClassPathEntry(sourcePath, root);
-                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath, filter, true,false);
+                    cpInfo = ClasspathInfoAccessor.getInstance().create(bootPath,compilePath,sourcePath, filter, true,false);
                 }
                 else {
-                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath, filter, true,true);
+                    cpInfo = ClasspathInfoAccessor.getInstance().create(bootPath,compilePath,sourcePath, filter, true,true);
                 }
                 
 //                Set<ElementHandle<TypeElement>> removed = isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
@@ -1507,7 +1507,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             final File fileFile = FileUtil.toFile(fo);
             ParserFile active = FileObjects.fileFileObject(fileFile, rootFile, false, null/*filter*/);
             ParserFile[] activeList = new ParserFile[]{active};
-            ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (fo, null/*filter*/, true, false);
+            ClasspathInfo cpInfo = ClasspathInfoAccessor.getInstance().create (fo, null/*filter*/, true, false);
             ClassPath.Entry entry = getClassPathEntry (cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),root);
             boolean scan = (entry == null || entry.includes(fo));
             String sourceLevel = scan ? SourceLevelQuery.getSourceLevel(fo) : null;
@@ -1551,7 +1551,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 //                }
                 if (scan) {
                     final CompilerListener listener = new CompilerListener ();
-                    //final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);                
+                    //final JavaFileManager fm = ClasspathInfoAccessor.getInstance().getFileManager(cpInfo);                
                     //JavaFileObject active = FileObjects.fileFileObject(fileFile, rootFile, filter);
                     //JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
                     ParserTaskImpl jt = SourceAccessor.getINSTANCE().createParserTask(language, cpInfo, sourceLevel);
@@ -1944,7 +1944,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
         assert rootFo != null;
         assert cpInfo != null;
         ParserFile active = null;
-        //final JavaFileManager fileManager = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);
+        //final JavaFileManager fileManager = ClasspathInfoAccessor.getInstance().getFileManager(cpInfo);
         final CompilerListener listener = new CompilerListener ();        
 
         // Compute applicable indexers: Reduce the number of indexers to be queried during file interrogation
