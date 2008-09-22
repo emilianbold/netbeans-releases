@@ -42,6 +42,9 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,11 +60,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.InstallSupport;
@@ -89,6 +95,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -616,8 +623,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         flasher.startFlashing ();
         final Runnable showBalloon = new Runnable () {
             public void run () {
-                JLabel balloon = new JLabel (tooltip);
-                BalloonManager.show (flasher, balloon, new AbstractAction () {
+                BalloonManager.show (flasher, createBalloonContent (tooltip), new AbstractAction () {
                     public void actionPerformed (ActionEvent e) {
                         confirmOnClick.run ();
                     }
@@ -628,9 +634,25 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             SwingUtilities.invokeLater (showBalloon);
         }
         flasher.addMouseListener (new MouseAdapter () {
+            RequestProcessor.Task t = null;
+            private RequestProcessor RP = new RequestProcessor ("balloon-manager"); // NOI18N
+
             @Override
-            public void mouseEntered (MouseEvent e) {
-                showBalloon.run ();
+            public void mouseEntered(MouseEvent e) {
+                t = RP.post (new Runnable () {
+                    public void run () {
+                        showBalloon.run ();
+                    }
+                }, ToolTipManager.sharedInstance ().getInitialDelay ());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if( null != t ) {
+                    t.cancel ();
+                    t = null;
+                    BalloonManager.dismissSlowly (ToolTipManager.sharedInstance ().getDismissDelay ());
+                }
             }
         });
     }
@@ -654,11 +676,12 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         nwProblemFlasher.startFlashing ();
         final Runnable showBalloon = new Runnable () {
             public void run () {
-                JLabel balloon = new JLabel (getBundle ("InstallSupport_InBackground_NetworkError")); // NOI18N
-                BalloonManager.show (nwProblemFlasher, balloon, new AbstractAction () {
-                    public void actionPerformed (ActionEvent e) {
-                        onMouseClick.run ();
-                    }
+                BalloonManager.show (nwProblemFlasher,
+                        createBalloonContent (getBundle ("InstallSupport_InBackground_NetworkError")), // NOI18N
+                        new AbstractAction () {
+                            public void actionPerformed (ActionEvent e) {
+                                onMouseClick.run ();
+                            }
                 }, 0);
             }
         };
@@ -669,6 +692,16 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 showBalloon.run ();
             }
         });
+    }
+
+    private static JComponent createBalloonContent (String msg) {
+        JPanel panel = new JPanel (new GridBagLayout ());
+        panel.setOpaque (false);
+        JLabel top = new JLabel (msg);
+        top.setIcon (new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/autoupdate/ui/resources/info_icon.png"))); //NOI18N
+        top.setIconTextGap (10);
+        panel.add (top, new GridBagConstraints (0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets (0, 0, 0, 0), 0, 0));
+        return panel;
     }
 
     public HelpCtx getHelp() {
