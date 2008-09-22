@@ -263,7 +263,7 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                 } else {
                     List<Identifier> interfaes = node.getInterfaes();
                     for (Identifier identifier : interfaes) {
-                        if (el == a.getElement(identifier) || el.getName().equals(identifier.getName())) {
+                        if (el == a.getElement(identifier)) {
                             usages.add(identifier);
                             break;
                         }
@@ -279,7 +279,7 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                 Identifier superClass = node.getSuperClass();
                 if (el == a.getElement(node)) {
                     usages.add(node.getName());
-                } else if (superClass != null && el.getName().equals(superClass.getName())) {
+                } else if (el == a.getElement(superClass)) {
                     usages.add(superClass);
                 } else {
                     List<Identifier> interfaes = node.getInterfaes();

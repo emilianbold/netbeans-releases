@@ -14,5 +14,20 @@ function formalParamFuncCall1(
     clsDeclaration3 $clsDeclaration3Var,
     clsDeclaration4 $clsDeclaration4Var
 
-) {}
+) {
+    $ifaceDeclaration = 1;
+    $ifaceDeclaration2 = 1;
+    $ifaceDeclaration4 = 1;
+    $clsDeclaration  = 1;
+    $clsDeclaration2 = 1;
+    $clsDeclaration3 = 1;
+    $clsDeclaration4 = 1;
+}
+function ifaceDeclaration() {}
+function ifaceDeclaration2() {}
+function ifaceDeclaration4() {}
+function clsDeclaration() {}
+function clsDeclaration2() {}
+function clsDeclaration3() {}
+function clsDeclaration4() {}
 ?>
