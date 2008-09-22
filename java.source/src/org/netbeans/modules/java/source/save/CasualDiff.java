@@ -679,9 +679,11 @@ public class CasualDiff {
             if (hasModifiers(newT.mods)) {
                 localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
             } else {
-                int oldPos = getOldPos(oldT.mods);
-                copyTo(localPointer, oldPos);
-                localPointer = getOldPos(oldT.vartype);
+                if (hasModifiers(oldT.mods)) {
+                    int oldPos = getOldPos(oldT.mods);
+                    copyTo(localPointer, oldPos);
+                    localPointer = getOldPos(oldT.vartype);
+                }
             }
         }
         int[] vartypeBounds = getBounds(oldT.vartype);

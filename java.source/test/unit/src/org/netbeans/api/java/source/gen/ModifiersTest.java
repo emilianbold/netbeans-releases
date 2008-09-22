@@ -53,6 +53,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -113,6 +114,8 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute5"));
 //        suite.addTest(new ModifiersTest("testAddAnnotationToMethodPar"));
 //        suite.addTest(new ModifiersTest("test124701"));
+//        suite.addTest(new ModifiersTest("testRemoveVariableModifier"));
+//        suite.addTest(new ModifiersTest("testRewriteModifiers146517"));
         return suite;
     }
 
@@ -1400,6 +1403,87 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 ModifiersTree mods = method.getModifiers();
                 ModifiersTree copy = make.Modifiers(EnumSet.of(Modifier.PUBLIC), mods.getAnnotations());
                 workingCopy.rewrite(mods, copy);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveVariableModifier() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    private int a;\n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    int a;\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+                ModifiersTree mods = var.getModifiers();
+                ModifiersTree copy = make.Modifiers(EnumSet.noneOf(Modifier.class), mods.getAnnotations());
+                workingCopy.rewrite(mods, copy);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRewriteModifiers146517() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    private void test() {\n" +
+                "        try {\n" +
+                "        } catch (Exception e) {\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    private void test() {\n" +
+                "        try {\n" +
+                "        } catch (Exception e) {\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                new TreeScanner() {
+                    @Override
+                    public Object visitVariable(VariableTree var, Object p) {
+                        ModifiersTree mods = var.getModifiers();
+                        ModifiersTree copy = make.Modifiers(EnumSet.noneOf(Modifier.class), mods.getAnnotations());
+                        workingCopy.rewrite(mods, copy);
+                        return null;
+                    }
+                }.scan(clazz, null);
             }
         };
         testSource.runModificationTask(task).commit();
