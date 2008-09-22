@@ -248,6 +248,12 @@ table.components_table .bundle_display_name_no {
     color:              #808080;
 }
 
+table.components_table .community_note_number {
+    color:              #FF0000;
+    position:           relative;
+    bottom: 		4px;
+}
+
 
 table.components_table .title {
     font-size:			1.3em;
