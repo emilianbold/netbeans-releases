@@ -314,6 +314,9 @@ public class ClientHandlerButtonListener implements ActionListener {
         ClassPath cp = ClassPath.getClassPath(groups[0].getRootFolder(), ClassPath.SOURCE);
         final FileObject serviceFO = cp.findResource(serviceName.replaceAll("\\.", "/")  + ".java");  //NOI18N
 
+        //if serviceFO is null, the Service interface has not been generated, so no need to remove any annotation
+        if(serviceFO == null) return;
+
         final JavaSource javaSource = JavaSource.forFileObject(serviceFO);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
