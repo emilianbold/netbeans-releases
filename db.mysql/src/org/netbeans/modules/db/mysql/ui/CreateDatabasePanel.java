@@ -226,6 +226,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }
 
     private boolean ensureConnected() throws DatabaseException {
+        if (! server.checkRunning()) {
+            return false;
+        }
+        
         try {
             server.validateConnection();
         } catch (DatabaseException dbe) {
@@ -236,7 +240,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             return true;
         }
         
-        server.reconnect(false, false);
+        server.reconnect();
 
         return server.isConnected();
     }
