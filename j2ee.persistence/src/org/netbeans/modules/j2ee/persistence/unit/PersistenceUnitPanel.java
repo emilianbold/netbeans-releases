@@ -160,7 +160,10 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     }
     
     private void initDataSource(){
-        jtaCheckBox.setEnabled(!Util.isJavaSE(project));
+        // Fixed enable/disable JTA checkbox based on isContainerManaged, 
+        // instead of project environment (SE or not). See issue 147628
+        jtaCheckBox.setEnabled(isContainerManaged);
+        
         if (isContainerManaged && ProviderUtil.isValidServerInstanceOrNone(project)) {
             String jtaDataSource = persistenceUnit.getJtaDataSource();
             String nonJtaDataSource = persistenceUnit.getNonJtaDataSource();
@@ -477,7 +480,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         boolean isCm = isContainerManaged;
         datasourceLabel.setEnabled(isCm);
         dsCombo.setEnabled(isCm);
-        jtaCheckBox.setEnabled(isCm && !Util.isJavaSE(project));
+        jtaCheckBox.setEnabled(isCm);
         libraryLabel.setEnabled(!isCm);
         libraryComboBox.setEnabled(!isCm);
         jdbcLabel.setEnabled(!isCm);
