@@ -96,7 +96,7 @@ public class PHPIndexTest extends NbTestCase {
                 }
                 
                 for (StackTraceElement e : t.getStackTrace()) {
-                    if (   "org.netbeans.modules.php.editor.index.NbUtilities".equals(e.getClassName())
+                    if (   "org.netbeans.modules.php.editor.index.GsfUtilities".equals(e.getClassName())
                         && "getBaseDocument".equals(e.getMethodName())
                         && t instanceof ClassNotFoundException) {
                         return false;

@@ -64,7 +64,7 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
@@ -402,10 +402,10 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 }
 
                 // Try to find out which view we're in
-                JTextComponent pane = NbUtilities.getOpenPane();
+                JTextComponent pane = GsfUtilities.getOpenPane();
 
                 if (app != null && pane != null && pane.getCaret() != null) {
-                    FileObject fo = NbUtilities.findFileObject(pane);
+                    FileObject fo = GsfUtilities.findFileObject(pane);
 
                     if (fo != null) {
                         int offset = pane.getCaret().getDot();

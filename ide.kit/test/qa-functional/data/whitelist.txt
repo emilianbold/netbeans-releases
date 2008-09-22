@@ -70,6 +70,7 @@ com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager
 com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
 com.sun.org.apache.xerces.internal.impl.dv.dtd.DTDDVFactoryImpl
 com.sun.org.apache.xerces.internal.impl.dv.xs.SchemaDVFactoryImpl
+com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
 com.sun.org.apache.xerces.internal.jaxp.validation.xs.SchemaFactoryImpl
 com.sun.org.apache.xerces.internal.parsers.XIncludeAwareParserConfiguration
 com.sun.rave.designtime.Customizer2
@@ -940,12 +941,16 @@ org.netbeans.api.debugger.DebuggerManager$SessionListener
 org.netbeans.api.debugger.DebuggerManagerAdapter
 org.netbeans.api.debugger.DebuggerManagerListener
 org.netbeans.api.debugger.LazyActionsManagerListener
+org.netbeans.api.debugger.LazyArrayList
+org.netbeans.api.debugger.LazyArrayList$LazyEntry
 org.netbeans.api.debugger.LazyDebuggerManagerListener
 org.netbeans.api.debugger.Lookup
 org.netbeans.api.debugger.Lookup$Compound
 org.netbeans.api.debugger.Lookup$LookupList
+org.netbeans.api.debugger.Lookup$LookupList$LookupLazyEntry
 org.netbeans.api.debugger.Lookup$MetaInf
 org.netbeans.api.debugger.Lookup$MetaInf$MetaInfLookupList
+org.netbeans.api.debugger.Lookup$MetaInf$MetaInfLookupList$LazyInstance
 org.netbeans.api.debugger.Lookup$MetaInf$ModuleChangeListener
 org.netbeans.api.debugger.Session
 org.netbeans.api.debugger.Watch
@@ -2445,6 +2450,7 @@ org.netbeans.modules.debugger.jpda.ui.EditorContextBridge$CompoundContextProvide
 org.netbeans.modules.debugger.jpda.ui.JPDAAttachType
 org.netbeans.modules.debugger.jpda.ui.actions.EvaluateAction
 org.netbeans.modules.debugger.jpda.ui.actions.EvaluateAction$EnableListener
+org.netbeans.modules.debugger.jpda.ui.actions.SetCurrentThreadFromHistoryAction
 org.netbeans.modules.debugger.jpda.ui.actions.SourcesViewAction
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleBreakpointActionProvider
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleMethodFieldBreakpointAction
@@ -2535,9 +2541,11 @@ org.netbeans.modules.editor.NbEditorUI$SideBarsListener
 org.netbeans.modules.editor.NbEditorUI$SystemActionPerformer
 org.netbeans.modules.editor.NbEditorUtilities
 org.netbeans.modules.editor.NbLocalizer
+org.netbeans.modules.editor.bookmarks.BookmarksPersistence
+org.netbeans.modules.editor.bookmarks.BookmarksPersistence$ProjectsListener
 org.netbeans.modules.editor.bookmarks.DocumentUnmodifiedListener
 org.netbeans.modules.editor.bookmarks.EditorBookmarksModule
-org.netbeans.modules.editor.bookmarks.EditorBookmarksModule$BookmarksSettingsInitializer
+org.netbeans.modules.editor.bookmarks.EditorBookmarksModule$BookmarksInitializer
 org.netbeans.modules.editor.bookmarks.NbBookmarkManager
 org.netbeans.modules.editor.bookmarks.NbBookmarkManager$Factory
 org.netbeans.modules.editor.bookmarks.PersistentBookmarks
@@ -3087,6 +3095,7 @@ org.netbeans.modules.java.hints.introduce.IntroduceHintFactory
 org.netbeans.modules.java.hints.introduce.IntroduceKind
 org.netbeans.modules.java.j2seplatform.J2SEPlatformModule
 org.netbeans.modules.java.j2seplatform.libraries.J2SELibraryTypeProvider
+org.netbeans.modules.java.j2seplatform.libraries.J2SELibraryTypeProvider$J2SELibraryImpl
 org.netbeans.modules.java.j2seplatform.platformdefinition.DefaultPlatformImpl
 org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl
 org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor

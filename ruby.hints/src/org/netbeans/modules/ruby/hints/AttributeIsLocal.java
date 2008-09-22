@@ -52,7 +52,7 @@ import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
@@ -350,7 +350,7 @@ public class AttributeIsLocal extends RubyAstRule {
             int astOffset = element.getNode().getPosition().getStartOffset();
             int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
             if (lexOffset != -1) {
-                NbUtilities.open(fo, lexOffset, element.getName());
+                GsfUtilities.open(fo, lexOffset, element.getName());
             }
         }
 

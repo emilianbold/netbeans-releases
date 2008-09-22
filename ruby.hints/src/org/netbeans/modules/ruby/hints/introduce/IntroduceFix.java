@@ -63,7 +63,7 @@ import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyFormatter;
-import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
@@ -135,7 +135,7 @@ class IntroduceFix implements PreviewableFix {
 
         // Warp to the inserted method and show the comment
         if (commentPosition != null && commentPosition.getOffset() != -1) {
-            JTextComponent target = NbUtilities.getPaneFor(info.getFileObject());
+            JTextComponent target = GsfUtilities.getPaneFor(info.getFileObject());
             if (target != null) {
                 int offset = commentPosition.getOffset();
                 String commentText = getCommentText();

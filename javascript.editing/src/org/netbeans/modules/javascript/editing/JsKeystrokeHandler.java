@@ -61,6 +61,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;
@@ -191,14 +192,14 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
                 sb.append("\n"); // XXX On Windows, do \r\n?
-                LexUtilities.indent(sb, indent);
+                GsfUtilities.indent(sb, indent);
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
                 sb.append(restOfLine);
                 sb.append("\n");
-                LexUtilities.indent(sb, indent);
+                GsfUtilities.indent(sb, indent);
                 doc.remove(offset, restOfLine.length());
             }
             
@@ -220,13 +221,13 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             // See if it's a block comment opener
             String text = token.text().toString();
             if (text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
-                int indent = LexUtilities.getLineIndent(doc, offset);
+                int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
-                sb.append(LexUtilities.getIndentString(indent));
+                sb.append(GsfUtilities.getIndentString(indent));
                 sb.append(" * "); // NOI18N
                 int offsetDelta = sb.length()+1;
                 sb.append("\n"); // NOI18N
-                sb.append(LexUtilities.getIndentString(indent));
+                sb.append(GsfUtilities.getIndentString(indent));
                 sb.append(" */"); // NOI18N
                 // TODO - possibly populate associated types in JS-doc style!
                 //if (text.startsWith("/**")) {
@@ -241,7 +242,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         if (id == JsTokenId.STRING_LITERAL || 
                 (id == JsTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
             // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-            //int indent = LexUtilities.getLineIndent(doc, offset);
+            //int indent = GsfUtilities.getLineIndent(doc, offset);
             //int delimiterOffset = id == JsTokenId.STRING_END ? ts.offset() : ts.offset()-1;
             //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
             //doc.insertString(offset, delimiter + " + " + delimiter, null);
@@ -258,7 +259,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         if (id == JsTokenId.REGEXP_LITERAL || 
                 (id == JsTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
             // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-            //int indent = LexUtilities.getLineIndent(doc, offset);
+            //int indent = GsfUtilities.getLineIndent(doc, offset);
             //doc.insertString(offset, "/ + /", null);
             //caret.setDot(offset+3);
             //return offset + 5 + indent;
@@ -287,11 +288,11 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                 JsTokenId prevTokenId = prevToken.id();
                 if (id == JsTokenId.RBRACE && prevTokenId == JsTokenId.LBRACE ||
                         id == JsTokenId.RBRACKET && prevTokenId == JsTokenId.LBRACKET) {
-                    int indent = LexUtilities.getLineIndent(doc, offset);
+                    int indent = GsfUtilities.getLineIndent(doc, offset);
                     StringBuilder sb = new StringBuilder();
                     // XXX On Windows, do \r\n?
                     sb.append("\n"); // NOI18N
-                    LexUtilities.indent(sb, indent);
+                    GsfUtilities.indent(sb, indent);
 
                     int insertOffset = offset; // offset < length ? offset+1 : offset;
                     doc.insertString(insertOffset, sb.toString(), null);
@@ -323,12 +324,12 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             String line = doc.getText(begin, end-begin);
             boolean isBlockStart = line.startsWith("/*");
             if (isBlockStart || line.startsWith("*")) {
-                int indent = LexUtilities.getLineIndent(doc, offset);
+                int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
                 if (isBlockStart) {
                     indent++;
                 }
-                LexUtilities.indent(sb, indent);
+                GsfUtilities.indent(sb, indent);
                 sb.append("*"); // NOI18N
                 // Copy existing indentation
                 int afterStar = isBlockStart ? begin+2 : begin+1;
@@ -433,9 +434,9 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                 
             if (continueComment) {
                 // Line comments should continue
-                int indent = LexUtilities.getLineIndent(doc, offset);
+                int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
-                LexUtilities.indent(sb, indent);
+                GsfUtilities.indent(sb, indent);
                 sb.append("//"); // NOI18N
                 // Copy existing indentation
                 int afterSlash = begin+2;
@@ -515,7 +516,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         if ((beginEndBalance == 1) || (braceBalance == 1)) {
             // There is one more opening token on the line than a corresponding
             // closing token.  (If there's is more than one we don't try to help.)
-            int indent = LexUtilities.getLineIndent(doc, offset);
+            int indent = GsfUtilities.getLineIndent(doc, offset);
 
             // Look for the next nonempty line, and if its indent is > indent,
             // or if its line balance is -1 (e.g. it's an end) we're done
@@ -529,7 +530,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                     continue;
                 }
 
-                int nextIndent = LexUtilities.getLineIndent(doc, next);
+                int nextIndent = GsfUtilities.getLineIndent(doc, next);
 
                 if (nextIndent > indent) {
                     insertEnd = false;
@@ -593,7 +594,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         //dumpTokens(doc, caretOffset);
 
         if (target.getSelectionStart() != -1) {
-            if (NbUtilities.isCodeTemplateEditing(doc)) {
+            if (GsfUtilities.isCodeTemplateEditing(doc)) {
                 int start = target.getSelectionStart();
                 int end = target.getSelectionEnd();
                 if (start < end) {
@@ -774,7 +775,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                     ts.move(dotPos);
 
                     if (ts.moveNext() && (ts.offset() < dotPos)) {
-                        LexUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
+                        GsfUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
                     }
                 }
             }
@@ -957,9 +958,9 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
 
                 if (begin != OffsetRange.NONE) {
                     int beginOffset = begin.getStart();
-                    int indent = LexUtilities.getLineIndent(doc, beginOffset);
-                    previousAdjustmentIndent = LexUtilities.getLineIndent(doc, offset);
-                    LexUtilities.setLineIndentation(doc, offset, indent);
+                    int indent = GsfUtilities.getLineIndent(doc, beginOffset);
+                    previousAdjustmentIndent = GsfUtilities.getLineIndent(doc, offset);
+                    GsfUtilities.setLineIndentation(doc, offset, indent);
                     previousAdjustmentOffset = caret.getDot();
                 }
             }
