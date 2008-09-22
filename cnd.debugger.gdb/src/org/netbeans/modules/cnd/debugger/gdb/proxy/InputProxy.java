@@ -40,14 +40,10 @@
 package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.Writer;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
@@ -55,21 +51,16 @@ import org.openide.windows.InputOutput;
  * Creates two fifos for the process input and output and forward them to the specified io tab
  * @author eu155513
  */
-public class TTYProxy {
-    private final File inFile;
-    private final File outFile;
-    private final InputOutput io;
-    private final OutputReaderThread ort;
+public class InputProxy {
+    private final File file;
+    //private final InputOutput io;
+    //private final OutputReaderThread ort;
     private final InputReaderThread irt;
 
-    public TTYProxy(String hkey, InputOutput io) {
-        inFile = createNewFifo();
-        outFile = createNewFifo();
-        outFile.deleteOnExit();
-        inFile.deleteOnExit();
-        this.io = io;
-        ort = new OutputReaderThread(io.getOut());
-        ort.start();
+    public InputProxy(String hkey, InputOutput io) {
+        file = createNewFifo();
+        file.deleteOnExit();
+        //this.io = io;
         irt = new InputReaderThread(io.getIn());
         irt.start();
     }
@@ -94,30 +85,24 @@ public class TTYProxy {
         return null;
     }
 
-    public String getInFilename() {
-        return inFile.getAbsolutePath();
-    }
-
-    public String getOutFilename() {
-        return outFile.getAbsolutePath();
+    public String getFilename() {
+        return file.getAbsolutePath();
     }
 
     public void stop() {
-        ort.cancel();
         irt.cancel();
     }
 
     @Override
     protected void finalize() throws Throwable {
         stop();
-        inFile.delete();
-        outFile.delete();
+        file.delete();
     }
 
-    private final class OutputReaderThread  extends Thread {
+    /*private final class OutputReaderThread  extends Thread {
 
         /** This is all output, not just stderr */
-        private Writer output;
+        /*private Writer output;
         private boolean cancel = false;
 
         public OutputReaderThread(Writer output) {
@@ -132,7 +117,7 @@ public class TTYProxy {
          *  Java don't have a good way of interleaving stdout and stderr while keeping the
          *  exact order of the output.
          */
-        @Override
+        /*@Override
         public void run() {
             InputStream is = null;
             try {
@@ -175,7 +160,7 @@ public class TTYProxy {
         public void cancel() {
             cancel = true;
         }
-    }
+    }*/
 
     /** Helper class to read the input from the build */
     private final class InputReaderThread extends Thread {
@@ -200,7 +185,7 @@ public class TTYProxy {
             OutputStream pout = null;
 
             try {
-                pout = new FileOutputStream(inFile);
+                pout = new FileOutputStream(file);
 
                 while ((ch = in.read()) != -1) {
                     if (cancel) {

@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
-import org.netbeans.modules.cnd.debugger.gdb.proxy.TTYProxy;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.InputProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
@@ -202,6 +202,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private PathMap pathMap;
     private Map<String, ShareInfo> shareTab;
     private String sig = null;
+    private InputProxy inputProxy = null;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -390,6 +391,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                             gdb.gdb_set("environment", "LD_PRELOAD=" + unbuffer); // NOI18N
                         }
                     }
+                    inputProxy = new InputProxy(hkey, iotab);
                 }
 
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
@@ -407,9 +409,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
                 gdb.data_list_register_names("");
                 try {
-                    TTYProxy ttyProxy = gdb.getProxyEngine().getTtyProxy();
-                    String outRedir = ttyProxy == null ? "" : " >" + ttyProxy.getOutFilename(); // NOI18N
-                    gdb.exec_run(pae.getProfile().getArgsFlat() + outRedir);
+                    String inRedir = inputProxy == null ? "" : " <" + inputProxy.getFilename(); // NOI18N
+                    gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
                     ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
@@ -852,6 +853,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 gah.executionFinished(0);
             }
             Disassembly.close();
+            if (inputProxy != null) {
+                inputProxy.stop();
+            }
             GdbContext.getInstance().invalidate(true);
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }

@@ -90,8 +90,6 @@ public class GdbProxyEngine {
     
     private final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
 
-    private TTYProxy ttyProxy = null;
-    
     /**
      * Create a gdb process
      *
@@ -111,10 +109,6 @@ public class GdbProxyEngine {
                 debuggerCommand.add("-tty"); // NOI18N
                 debuggerCommand.add(tty);
             }
-        } else if (termpath == null) {
-            ttyProxy = new TTYProxy(null, debugger.getIotab());
-            debuggerCommand.add("-tty"); // NOI18N
-            debuggerCommand.add(ttyProxy.getInFilename());
         }
         this.debugger = debugger;
         this.gdbProxy = gdbProxy;
@@ -263,13 +257,6 @@ public class GdbProxyEngine {
         if (gdbReader != null) {
             gdbReader.cancel();
         }
-        if (ttyProxy != null) {
-            ttyProxy.stop();
-        }
-    }
-
-    public TTYProxy getTtyProxy() {
-        return ttyProxy;
     }
     
     private int nextToken() {
