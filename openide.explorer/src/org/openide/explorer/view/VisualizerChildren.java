@@ -84,6 +84,8 @@ final class VisualizerChildren extends Object {
      * @return true if there is non-null object inside
      */
     private final boolean recomputeIndexes(VisualizerNode tn) {
+        assert visNodes.size() == snapshot.size() : "visnodes.size()=" + visNodes.size()
+                + " snapshot.size()=" + snapshot.size();
 
         boolean isNonNull = false;
         for (int i = 0; i < visNodes.size(); i++) {
@@ -259,7 +261,6 @@ final class VisualizerChildren extends Object {
             ev.removed.add(visNode != null ? visNode : VisualizerNode.EMPTY);
         }
 
-        // notify event about changed indexes
         recomputeIndexes(null);
 
         VisualizerNode parent = this.parent;
