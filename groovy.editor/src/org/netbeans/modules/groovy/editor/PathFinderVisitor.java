@@ -592,7 +592,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     private void fixCoordinates(ASTNode node) {
-        // see http://jira.codehaus.org/browse/GROOVY-3049
+        // see http://jira.codehaus.org/browse/GROOVY-3052
         if (node instanceof RangeExpression) {
             RangeExpression range = (RangeExpression) node;
             Expression from = range.getFrom();
