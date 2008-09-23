@@ -74,7 +74,7 @@ public class OccurrencesFinderImplTest extends TestBase {
         return retval;
     }
 
-    public void testGotoTypeClsIface() throws Exception {
+    public void testMarkClsIface() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "class clsDeclaration implements ifaceDeclaration {}",
@@ -82,11 +82,17 @@ public class OccurrencesFinderImplTest extends TestBase {
                 "class clsDeclaration3 extends clsDeclaration {}",
                 "class clsDeclaration3 extends ^clsDeclaration^ {}",
                 "clsDeclaration  $clsDeclarationVar,",
-                "^clsDeclaration^  $clsDeclarationVar,"
+                "^clsDeclaration^  $clsDeclarationVar,",
+                "} catch (clsDeclaration $cex) {",
+                "} catch (^clsDeclaration^ $cex) {",
+                "if ($cex instanceof clsDeclaration) {",
+                "if ($cex instanceof ^clsDeclaration^) {",
+                "$cex = new clsDeclaration;",
+                "$cex = new ^clsDeclaration^;"
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
-    public void testGotoTypeClsIface2() throws Exception {
+    public void testMarkClsIface2() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "class clsDeclaration implements ifaceDeclaration {}",
@@ -94,11 +100,17 @@ public class OccurrencesFinderImplTest extends TestBase {
                 "class clsDeclaration3 extends clsDeclaration {}",
                 "class clsDeclaration3 extends ^clsDec|laration^ {}",
                 "clsDeclaration  $clsDeclarationVar,",
-                "^clsDeclaration^  $clsDeclarationVar,"                
+                "^clsDeclaration^  $clsDeclarationVar,",
+                "} catch (clsDeclaration $cex) {",
+                "} catch (^clsDeclaration^ $cex) {",
+                "if ($cex instanceof clsDeclaration) {",
+                "if ($cex instanceof ^clsDeclaration^) {",
+                "$cex = new clsDeclaration;",
+                "$cex = new ^clsDeclaration^;"                
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
-    public void testGotoTypeClsIface3() throws Exception {
+    public void testMarkClsIface3() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration {}",
@@ -114,7 +126,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
-    public void testGotoTypeClsIface4() throws Exception {
+    public void testMarkClsIface4() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration {}",
@@ -130,7 +142,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
-    public void testGotoTypeClsIface5() throws Exception {
+    public void testMarkClsIface5() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration {}",
@@ -146,7 +158,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
-    public void testGotoTypeClsIface6() throws Exception {
+    public void testMarkClsIface6() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration {}",
@@ -162,7 +174,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
-    public void testGotoTypeClsIface7() throws Exception {
+    public void testMarkClsIface7() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
@@ -174,7 +186,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, true);
     }
-    public void testGotoTypeClsIface8() throws Exception {
+    public void testMarkClsIface8() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
@@ -187,7 +199,7 @@ public class OccurrencesFinderImplTest extends TestBase {
         performTestOccurrences(gotoTypeTest, true);
     }
     //test no naming clashes for different kinds like fnc, var
-    public void testGotoTypeClsIface9() throws Exception {
+    public void testMarkClsIface9() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "$ifaceDeclaration = 1;",
@@ -195,7 +207,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface10() throws Exception {
+    public void testMarkClsIface10() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "$ifaceDeclaration2 = 1;",
@@ -203,7 +215,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface11() throws Exception {
+    public void testMarkClsIface11() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "$ifaceDeclaration4 = 1;",
@@ -211,7 +223,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface12() throws Exception {
+    public void testMarkClsIface12() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "$clsDeclaration  = 1;",
@@ -219,7 +231,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface13() throws Exception {
+    public void testMarkClsIface13() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "$clsDeclaration2 = 1;",
@@ -227,7 +239,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface14() throws Exception {
+    public void testMarkClsIface14() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "$clsDeclaration4 = 1;",
@@ -235,7 +247,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface15() throws Exception {
+    public void testMarkClsIface15() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "$clsDeclaration3 = 1;",
@@ -243,15 +255,15 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface16() throws Exception {
+    public void testMarkClsIface16() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
-                "function ifaceDeclaration() {}",
-                "function ^ifaceDe|claration^() {}"
+                "function ifaceDeclaration() {",
+                "function ^ifaceDe|claration^() {"
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface17() throws Exception {
+    public void testMarkClsIface17() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "function ifaceDeclaration2() {}",
@@ -259,7 +271,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface18() throws Exception {
+    public void testMarkClsIface18() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "function ifaceDeclaration4() {}",
@@ -267,7 +279,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface19() throws Exception {
+    public void testMarkClsIface19() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "function clsDeclaration() {}",
@@ -275,7 +287,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface20() throws Exception {
+    public void testMarkClsIface20() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "function clsDeclaration2() {}",
@@ -283,7 +295,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface21() throws Exception {
+    public void testMarkClsIface21() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "function clsDeclaration3() {}",
@@ -291,7 +303,7 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
-    public void testGotoTypeClsIface22() throws Exception {
+    public void testMarkClsIface22() throws Exception {
         String gotoTypeTest = prepareTestFile(
                 "testfiles/gotoType.php",
                 "function clsDeclaration4() {}",
