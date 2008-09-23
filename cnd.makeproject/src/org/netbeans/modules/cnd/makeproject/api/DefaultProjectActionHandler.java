@@ -57,6 +57,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -360,9 +361,15 @@ public class DefaultProjectActionHandler implements ActionListener {
                         //TODO: only output window for remote for now
                         conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                     }
-                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) { 
-                        args = pae.getProfile().getArgsFlat();
-                        exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
+                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                        if (HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS) {
+                            // we need to run the application under cmd on windows
+                            exe = "cmd.exe"; // NOI18N
+                            args = "/c " + IpeUtils.quoteIfNecessary(pae.getExecutable()) + " " + pae.getProfile().getArgsFlat(); // NOI18N
+                        } else {
+                            exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
+                            args = pae.getProfile().getArgsFlat();
+                        }
                         unbuffer = true;
                     } else {
                         showInput = false;
