@@ -64,9 +64,9 @@ public class RailsViewsTest extends HintTestBase {
     public void testActionViews() throws Exception {
         checkHints(this, createRule(), "testfiles/projects/railsproj/app/controllers/foo_controller.rb", null);
     }
-    
+
     public void testActionViews2() throws Exception {
         checkHints(this, createRule(), "testfiles/projects/railsproj/app/controllers/timezone.rb", null);
     }
-    
+
 }

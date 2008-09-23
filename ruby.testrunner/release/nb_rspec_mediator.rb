@@ -99,7 +99,8 @@ class Reporter < Spec::Runner::Reporter
       
   def failure(example, error)
     backtrace_tweaker.tweak_backtrace(error)
-    puts "%RSPEC_TEST_FAILED% #{example.description} time=#{elapsed_time} message=#{error.message} location=#{error.backtrace[0]}"
+    error_msg = error.message != nil ? error.message : ""
+    puts "%RSPEC_TEST_FAILED% #{example.description} time=#{elapsed_time} message=#{error_msg.to_s.gsub($/, " ")} location=#{error.backtrace[0]}"
     super
   end
   alias_method :example_failed, :failure

@@ -5,16 +5,12 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.util.concurrent.Callable;
-import javax.swing.JComponent;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import java.util.logging.Logger;
-import javax.swing.Action;
-import org.openide.awt.DynamicMenuContent;
-import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
@@ -22,7 +18,6 @@ import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
-import org.openide.awt.Actions;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 
@@ -90,26 +85,5 @@ public final class GenerateAllAction extends NodeAction {
         return "domain".equals(name);
     }
 
-    public JMenuItem getPopupPresenter() {
-        class SpecialMenuItem extends JMenuItem implements DynamicMenuContent {
-
-            public JComponent[] getMenuPresenters() {
-                if(isEnabled()){
-                    return new JComponent[] {this};
-                    }
-                else {
-                    return new JComponent[] {};
-                    }
-            }
-            public JComponent[] synchMenuPresenters(JComponent[] items) {
-                return getMenuPresenters();
-            }
-        }
-        
-        SpecialMenuItem menuItem = new SpecialMenuItem();
-        
-        Actions.connect(menuItem, (Action)this);
-        return menuItem;
-    }
 }
 

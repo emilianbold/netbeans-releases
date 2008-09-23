@@ -38,7 +38,7 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-VERSION=0.8
+VERSION=0.9
 
 # Prepend /usr/bin and /bin so we're ensured that standard Unix commands
 # don't get replaced by a non-standard version
@@ -52,25 +52,33 @@ uname=$(type -p uname)
 OS=$($uname -s)
 ARCH=$($uname -m)
 
-# Now restore the original path, but append a few directories
-# where compiler sets may be found.
-if [ "$OS" == "SunOS" ]
+if [ -n "$1" ]
 then
-    PATH=$OPATH:/opt/sfw/bin:/usr/sfw/bin:/opt/SUNWspro/bin
-    if [ "$ARCH" == "i86pc" -a -x /usr/xpg4/bin/grep ] && /usr/xpg4/bin/grep -sq OpenSolaris /etc/release /dev/null
-    then
-        PATH=$PATH:/opt/SunStudioExpress/bin
-    fi
+	# If parameter was provides just look there for compiler sets
+	PATHSLIST=$1
 else
-    PATH=$OPATH:/usr/bin:/bin
+	# Now restore the original path, but append a few directories
+	# where compiler sets may be found.
+	if [ "$OS" == "SunOS" ]
+	then
+	    PATH=$OPATH:/opt/sfw/bin:/usr/sfw/bin:/opt/SUNWspro/bin
+	    if [ "$ARCH" == "i86pc" -a -x /usr/xpg4/bin/grep ] && /usr/xpg4/bin/grep -sq OpenSolaris /etc/release /dev/null
+	    then
+	        PATH=$PATH:/opt/SunStudioExpress/bin
+	    fi
+	else
+	    PATH=$OPATH:/usr/bin:/bin
+	fi
+
+	# First line read should be platform information
+	echo "$OS $ARCH"
+
+	PATHSLIST=$PATH
 fi
 
-# First line read should be platform information
-echo "$OS $ARCH"
-
-# Now find the compiler collections from the user's PATH
+# Now find the compiler collections from the $PATHSLIST
 IFS=:
-for f in $PATH
+for f in $PATHSLIST
 do
     line=
     flavor=

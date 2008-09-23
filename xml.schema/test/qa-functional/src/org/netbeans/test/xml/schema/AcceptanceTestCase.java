@@ -507,7 +507,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         boolean bValid = true;
         // Get text editor for schema view source representation
         EditorOperator opEditor = new EditorOperator(strSchemaName);
-        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
+        Helpers.pause( 1000 ); // try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
         // Call popup menu on schema source code
         opEditor.clickForPopup();
         // Push "Validate XML" menu item
@@ -516,6 +516,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         Helpers.waitNoEvent();
         // Get output operator
         OutputOperator opOutput = new OutputOperator();
+        Helpers.pause( 1000 ); // try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
         // Get text from output
         String strOutput = opOutput.getText();
         // Check text against pattern represents correct output

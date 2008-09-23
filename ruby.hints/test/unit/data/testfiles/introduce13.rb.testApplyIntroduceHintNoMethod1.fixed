@@ -1,12 +1,12 @@
 class Foo
   # TODO Comment
-  def mymethod
+  def new_name
     a = 1
     b = 2
   end
   
   some_call1 do
-    mymethod
+    new_name
   end # some_call1
 end
 

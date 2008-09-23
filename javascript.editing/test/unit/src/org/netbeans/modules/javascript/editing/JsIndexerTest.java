@@ -347,6 +347,10 @@ public class JsIndexerTest extends JsTestBase {
         checkIndexer("testfiles/yui.sdoc");
     }
 
+    public void testScriptDoc3() throws Exception {
+        checkIndexer("testfiles/jquery2.sdoc");
+    }
+
     public void testTwoNames() throws Exception {
         checkIndexer("testfiles/two-names.js");
     }

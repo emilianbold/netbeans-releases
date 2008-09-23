@@ -438,8 +438,8 @@ class OutWriter extends PrintWriter {
             }
         } catch (IOException ioe) {
             handleException(ioe);
-            return lineCount;
         }
+        lines.delayedFire();
         return lineCount;
     }
 
@@ -451,7 +451,6 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void println() {
         doWrite(lineSeparator, 0, lineSeparator.length());
-        lines.fire();
     }
 
     /**

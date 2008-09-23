@@ -1197,6 +1197,13 @@ public class ReformatterImpl {
                 }
             }
         }
+        boolean isNewLineArrayInit = false;
+        if (entry != null && entry.isLikeToArrayInitialization()){
+            isNewLineArrayInit = ts.isOpenBraceLastLineToken(1);
+            if (ts.isFirstLineToken() && !isNewLineArrayInit){
+                done = removeLineBefore(codeStyle.spaceWithinBraces());
+            }
+        }
         if (previous != null && !done) {
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
@@ -1233,7 +1240,11 @@ public class ReformatterImpl {
                             if (entry != null && !entry.isLikeToArrayInitialization()) {
                                 ts.addBeforeCurrent(1, indent, true);
                             } else {
-                                spaceBefore(previous, codeStyle.spaceWithinBraces());
+                                if (isNewLineArrayInit) {
+                                    ts.addBeforeCurrent(1, indent, true);
+                                } else {
+                                    spaceBefore(previous, codeStyle.spaceWithinBraces());
+                                }
                             }
                         }
                     } else if (diff.replace != null) {
@@ -1250,7 +1261,11 @@ public class ReformatterImpl {
                         ts.replacePrevious(previous, 0, indent, true);
                     } else {
                         if (entry != null && entry.isLikeToArrayInitialization()) {
-                            spaceBefore(previous, codeStyle.spaceWithinBraces());
+                            if (isNewLineArrayInit) {
+                                ts.replacePrevious(previous, 1, indent, true);
+                            } else {
+                                spaceBefore(previous, codeStyle.spaceWithinBraces());
+                            }
                         } else if (braces.parenDepth <= 0) {
                             ts.replacePrevious(previous, 1, indent, true);
                         }
@@ -1265,7 +1280,11 @@ public class ReformatterImpl {
                     } else if (entry != null && !entry.isLikeToArrayInitialization()) {
                         ts.addBeforeCurrent(1, indent, true);
                     } else {
-                        spaceBefore(previous, codeStyle.spaceWithinBraces());
+                        if (isNewLineArrayInit) {
+                            ts.addBeforeCurrent(1, indent, true);
+                        } else {
+                            spaceBefore(previous, codeStyle.spaceWithinBraces());
+                        }
                     }
                 }
             }

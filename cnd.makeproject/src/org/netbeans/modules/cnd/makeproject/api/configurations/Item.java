@@ -78,7 +78,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     private Folder folder;
     private File file = null;
     private String id = null;
-    
+    private DataObject lastDataObject = null;
+
     public Item(String path) {
         this.path = path;
         this.sortName = IpeUtils.getBaseName(path).toLowerCase();
@@ -166,28 +167,18 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     
     public void setFolder(Folder folder) {
         this.folder = folder;
-        if (folder != null)
-            addPropertyChangeListener();
-    }
-    
-    private DataObject myDataObject = null;
-    public void addPropertyChangeListener() {
-        myDataObject = getDataObject();
-        if (myDataObject != null) {
-            myDataObject.addPropertyChangeListener(this);
-        }
-    }
-    
-    public void removePropertyChangeListener() {
-        //DataObject dataObject = getDataObject();
-        if (myDataObject != null) {
-            myDataObject.removePropertyChangeListener(this);
-            myDataObject = null;
+        if (folder == null) { // Item is removed, let's clean up.
+            synchronized (this) {
+                if (lastDataObject != null) {
+                    lastDataObject.removePropertyChangeListener(this);
+                    lastDataObject = null;
+                }
+            }
         }
     }
     
     public DataObject getLastDataObject(){
-        return myDataObject;
+        return lastDataObject;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -301,6 +292,19 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             } catch (DataObjectNotFoundException e) {
                 // should not happen
                 ErrorManager.getDefault().notify(e);
+            }
+        }
+        if (dataObject != lastDataObject) {
+            // DataObject can change without notification. We need to track this
+            // and properly attach/detach listeners.
+            synchronized (this) {
+                if (lastDataObject != null) {
+                    lastDataObject.removePropertyChangeListener(this);
+                }
+                if (dataObject != null) {
+                    dataObject.addPropertyChangeListener(this);
+                }
+                lastDataObject = dataObject;
             }
         }
         return dataObject;

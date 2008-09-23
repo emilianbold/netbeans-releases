@@ -42,9 +42,7 @@ package org.netbeans.modules.clearcase.util;
 
 import org.netbeans.modules.clearcase.*;
 import org.netbeans.modules.clearcase.ui.hijack.HijackAction;
-import org.netbeans.modules.clearcase.ui.hijack.UnhijackPanel;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 
 import java.io.File;
@@ -56,16 +54,13 @@ import org.netbeans.modules.clearcase.client.*;
 import org.netbeans.modules.clearcase.client.status.FileEntry;
 import org.netbeans.modules.clearcase.client.status.ListStatus;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.DialogDescriptor;
-import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 
-import javax.swing.*;
 
 /**
  * Clearase specific utility methods.
@@ -194,7 +189,7 @@ public class ClearcaseUtils {
         } catch (NumberFormatException e) {
             return null;
         }
-        return rev.substring(0, idx + 1) + (revno - 1);
+        return revno == 0 ? null : rev.substring(0, idx + 1) + (revno - 1);
     }
     
     /**

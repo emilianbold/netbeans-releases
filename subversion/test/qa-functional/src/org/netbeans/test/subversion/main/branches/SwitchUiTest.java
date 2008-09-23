@@ -97,7 +97,9 @@ public class SwitchUiTest extends JellyTestCase{
             oto.waitText("Committed revision 7");
             
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+            Thread.sleep(2000);
             SwitchOperator so = SwitchOperator.invoke(projNode);
+            Thread.sleep(2000);
             //only required nodes are expended - want to see all in browser
             so.setRepositoryFolder("");
             RepositoryBrowserOperator rbo = so.browseRepositoryFolder();

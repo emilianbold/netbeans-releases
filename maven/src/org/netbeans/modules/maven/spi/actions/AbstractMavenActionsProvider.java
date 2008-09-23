@@ -270,8 +270,9 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
             while (it.hasNext()) {
                 NetbeansActionMapping elem = (NetbeansActionMapping) it.next();
                 if (actionName.equals(elem.getActionName()) &&
-                        (elem.getPackagings().contains(prjPack.trim()) ||
-                        elem.getPackagings().contains("*"))) {//NOI18N
+                        (elem.getPackagings().isEmpty() ||
+                         elem.getPackagings().contains(prjPack.trim()) ||
+                         elem.getPackagings().contains("*"))) {//NOI18N
                     action = elem;
                     break;
                 }

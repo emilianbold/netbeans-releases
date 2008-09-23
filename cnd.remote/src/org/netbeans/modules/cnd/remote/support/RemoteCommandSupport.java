@@ -47,8 +47,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 
 /**
  * Run a remote command. This remote command should <b>not</b> expect input. The output
@@ -89,11 +87,10 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                         out.write(line + '\n');
                         out.flush();
                     }
-
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                    }
+                }
+                try {
+                    Thread.sleep(100); // according to jsch samples
+                } catch (InterruptedException e) {
                 }
                 in.close();
                 is.close();
@@ -119,6 +116,10 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     @Override
     public String toString() {
+        return getOutput();
+    }
+
+    public String getOutput() {
         if (out != null) {
             return out.toString();
         } else {
@@ -143,13 +144,12 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 // echannel.setEnv(ev, env.get(ev));
 
                 // so we do next
-                cmdline.append(ShellUtils.prepareExportString(key, env));
+                cmdline.append(ShellUtils.prepareExportString(env));
             }
 
-            String pathName = "PATH";//PlatformInfo.getDefault(key).getPathName();
+            String pathName = "PATH";//PlatformInfo.getDefault(key).getPathName();//NOI18N
             if (env == null || env.get(pathName) == null) {
-                String exportCommand = RemoteHostInfoProvider.getHostInfo(key).isCshShell() + " "; // NOI18N
-                cmdline.append(exportCommand).append(pathName).append("=/bin:/usr/bin:$PATH;");
+                cmdline.append(ShellUtils.prepareExportString(new String[] {pathName + "=/bin:/usr/bin:$PATH"}));//NOI18N
             }
         } else {
             assert env==null || env.size() == 0; // if one didn't want command to be changed but provided env he should be aware of doing something wrong
@@ -158,7 +158,13 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
         cmdline.append(cmd);
 
-        echannel.setCommand(cmd);
+        String theCommand = cmdline.toString();
+
+        if (!preserveCommand) {
+            theCommand = ShellUtils.wrapCommand(key, theCommand);
+        }
+
+        echannel.setCommand(theCommand);
         echannel.setInputStream(null);
         echannel.setErrStream(System.err);
         echannel.connect();

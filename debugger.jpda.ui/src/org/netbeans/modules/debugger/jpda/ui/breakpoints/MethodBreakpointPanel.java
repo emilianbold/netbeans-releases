@@ -75,13 +75,13 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     private static MethodBreakpoint createBreakpoint () {
         String className;
         try {
-            className = EditorContextBridge.getContext().getCurrentClassName();
+            className = EditorContextBridge.getMostRecentClassName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             className = "";
         }
         String methodName;
         try {
-            methodName = EditorContextBridge.getContext().getCurrentMethodName();
+            methodName = EditorContextBridge.getMostRecentMethodName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             methodName = "";
         }
@@ -90,7 +90,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             methodName
         );
         try {
-            mb.setMethodSignature(EditorContextBridge.getCurrentMethodSignature());
+            mb.setMethodSignature(EditorContextBridge.getMostRecentMethodSignature());
         } catch (java.awt.IllegalComponentStateException icsex) {}
         mb.setPrintText (
             NbBundle.getBundle (MethodBreakpointPanel.class).getString 

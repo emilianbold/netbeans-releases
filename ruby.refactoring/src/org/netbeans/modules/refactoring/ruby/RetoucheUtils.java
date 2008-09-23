@@ -45,9 +45,7 @@ import java.awt.Color;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -108,6 +106,9 @@ import org.openide.xml.XMLUtil;
  * @author Tor Norbye
  */
 public class RetoucheUtils {
+    private RetoucheUtils() {
+    }
+
     // XXX Should this be unused now?
     public static Source createSource(ClasspathInfo cpInfo, FileObject fo) {
         if (RubyUtils.canContainRuby(fo)) {
@@ -251,8 +252,9 @@ public class RetoucheUtils {
     }
 
     private static String color(String string, AttributeSet set) {
-        if (set==null)
+        if (set==null) {
             return string;
+        }
         if (string.trim().length() == 0) {
             return Utilities.replaceString(Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
         } 
@@ -285,23 +287,14 @@ public class RetoucheUtils {
         return html_color;
     }
 
-    public static boolean isElementInOpenProject(FileObject f) {
-        Project p = FileOwnerQuery.getOwner(f);
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i])
-                return true;
-        }
-        return false;
-    }
-
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
         Project p = FileOwnerQuery.getOwner(file);
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i])
+            if (p==opened[i]) {
                 return true;
+            }
         }
         return false;
     }
@@ -344,59 +337,14 @@ public class RetoucheUtils {
     public static boolean isRefactorable(FileObject file) {
         return RubyUtils.canContainRuby(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
-    
+
     public static String getPackageName(FileObject folder) {
         assert folder.isFolder() : "argument must be folder";
         return ClassPath.getClassPath(
                 folder, ClassPath.SOURCE)
                 .getResourceName(folder, '.', false);
     }
-    
-    public static String getPackageName(URL url) {
-        File f = null;
-        try {
-            f = FileUtil.normalizeFile(new File(url.toURI()));
-        } catch (URISyntaxException uRISyntaxException) {
-            throw new IllegalArgumentException("Cannot create package name for url " + url);
-        }
-        String suffix = "";
-        
-        do {
-            FileObject fo = FileUtil.toFileObject(f);
-            if (fo != null) {
-                if ("".equals(suffix))
-                    return getPackageName(fo);
-                String prefix = getPackageName(fo);
-                return prefix + ("".equals(prefix)?"":".") + suffix;
-            }
-            if (!"".equals(suffix)) {
-                suffix = "." + suffix;
-            }
-            suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar)+1)) + suffix;
-            f = f.getParentFile();
-        } while (f!=null);
-        throw new IllegalArgumentException("Cannot create package name for url " + url);
-    }
 
-    /**
-     * creates or finds FileObject according to 
-     * @param url
-     * @return FileObject
-     */
-    public static FileObject getOrCreateFolder(URL url) throws IOException {
-        try {
-            FileObject result = URLMapper.findFileObject(url);
-            if (result != null)
-                return result;
-            File f = new File(url.toURI());
-            
-            result = FileUtil.createFolder(f);
-            return result;
-        } catch (URISyntaxException ex) {
-            throw (IOException) new IOException().initCause(ex);
-        }
-    }
-    
     public static FileObject getClassPathRoot(URL url) throws IOException {
         FileObject result = URLMapper.findFileObject(url);
         File f = FileUtil.normalizeFile(new File(url.getPath()));
@@ -416,8 +364,9 @@ public class RetoucheUtils {
         Set<URL> dependentRoots = new HashSet<URL>();
         for (FileObject fo: files) {
             Project p = null;
-            if (fo!=null)
-                p=FileOwnerQuery.getOwner(fo);
+            if (fo!=null) {
+                p = FileOwnerQuery.getOwner(fo);
+            }
             if (p!=null) {
                 ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
                 if (classPath == null) {

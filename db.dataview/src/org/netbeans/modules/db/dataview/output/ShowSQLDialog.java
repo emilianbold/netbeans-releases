@@ -44,6 +44,9 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
@@ -64,6 +67,14 @@ class ShowSQLDialog extends javax.swing.JDialog {
         super(WindowManager.getDefault().getMainWindow(), true);
         initComponents();
 
+        //jButton1.setFont(new java.awt.Font("Tahoma", 0, 16));
+        //jButton1.setText("TESTING");
+        Font font = jButton1.getFont();
+        FontMetrics metrics = getFontMetrics(font);
+        int width = metrics.stringWidth(jButton1.getText());
+        int height = metrics.getHeight();        
+        jButton1.setSize(width*2,height+height); 
+
         jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "showsql.editorpane.accessibleName"));
         jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.jEditorPane1.AccessibleContext.accessibleDescription"));
 
@@ -78,8 +89,7 @@ class ShowSQLDialog extends javax.swing.JDialog {
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.AccessibleContext.accessibleDescription"));
 
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE"); // NOI18N
-        getRootPane().getActionMap().put("ESCAPE", escapeAction); // NOI18N
-
+        getRootPane().getActionMap().put("ESCAPE", escapeAction); // NOI18N  
     }
 
     public void setText(String sqlScript) {

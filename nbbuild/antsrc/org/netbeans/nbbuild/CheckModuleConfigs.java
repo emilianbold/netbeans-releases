@@ -185,7 +185,7 @@ public final class CheckModuleConfigs extends Task {
     }
     
     @SuppressWarnings("unchecked")
-    private Set<String> split(String list, boolean warnIfUnsorted) {
+    private Set<String> split(String list, boolean warnIfUnsorted, String what) {
         List elements = Collections.list(new StringTokenizer(list, ", "));
         if (warnIfUnsorted) {
             List sorted = new ArrayList(elements);
@@ -194,7 +194,14 @@ public final class CheckModuleConfigs extends Task {
                 log("warning: unsorted list: " + elements);
             }
         }
-        return new HashSet(elements);
+        HashSet set = new HashSet(elements);
+        for (Object o : set) {
+            elements.remove(o);
+        }
+        if (!elements.isEmpty()) { // #147690
+            log("warning: duplicates found in " + what + ": " + elements);
+        }
+        return set;
     }
     
     private Map<String,Set<String>> loadModuleConfigs(Map<String,String> buildProperties, File buildPropertiesFile) {
@@ -205,11 +212,11 @@ public final class CheckModuleConfigs extends Task {
                 continue;
             }
             String config = k.substring(prefix.length());
-            Set<String> modules = new TreeSet<String>(split(buildProperties.get(k), false));
+            Set<String> modules = new TreeSet<String>(split(buildProperties.get(k), false, k));
             String fixedK = "config.fixedmodules." + config;
             String fixed = buildProperties.get(fixedK);
             if (fixed != null) {
-                modules.addAll(split(fixed, false));
+                modules.addAll(split(fixed, false, fixedK));
             } else {
                 log(buildPropertiesFile + ": warning: have " + k + " but no " + fixedK, Project.MSG_WARN);
             }
@@ -238,19 +245,20 @@ public final class CheckModuleConfigs extends Task {
     }
 
     private Map<String,Set<String>> loadModuleClusters(Map<String,String> clusterProperties, File clusterPropertiesFile) {
-        String l = clusterProperties.get("clusters.config.full.list");
+        String fullConfig = "clusters.config.full.list";
+        String l = clusterProperties.get(fullConfig);
         if (l == null) {
             log(clusterPropertiesFile + ": warning: no definition for clusters.config.full.list", Project.MSG_WARN);
             return Collections.emptyMap();
         }
         Map<String,Set<String>> clusters = new TreeMap<String,Set<String>>();
-        for (String cluster : split(l, false)) {
+        for (String cluster : split(l, false,fullConfig)) {
             l = clusterProperties.get(cluster);
             if (l == null) {
                 log(clusterPropertiesFile + ": warning: no definition for " + cluster, Project.MSG_WARN);
                 continue;
             }
-            clusters.put(cluster, new TreeSet<String>(split(l, true)));
+            clusters.put(cluster, new TreeSet<String>(split(l, true,fullConfig)));
         }
         return clusters;
     }

@@ -85,12 +85,10 @@
 	<mapID target="uml_diagrams_associating_elements" url="diagrams/associating_elements.html"/>
 	<mapID target="uml_diagrams_class_creating_attributes" url="diagrams/class_creating_attributes.html"/>
 	<mapID target="uml_diagrams_class_creating_operations" url="diagrams/class_creating_operations.html"/>
-	<mapID target="uml_diagrams_class_hiding_showing_attributes" url="diagrams/class_hiding_showing_attributes.html"/>
 	<mapID target="uml_diagrams_class_renaming_attributes" url="diagrams/class_renaming_attributes.html"/>
 	<mapID target="uml_diagrams_class_renaming_operations" url="diagrams/class_renaming_operations.html"/>
 	<mapID target="uml_diagrams_class_reordering_moving_attributes" url="diagrams/class_reordering_moving_attributes.html"/>
 	<mapID target="uml_diagrams_class_reordering_moving_operations" url="diagrams/class_reordering_moving_operations.html"/>
-      <mapID target="uml_diagrams_class_using_compartment_customize_db" url="diagrams/class_using_compartment_customize_db.html"/>
 	<mapID target="uml_diagrams_class_ww_attributes" url="diagrams/class_ww_attributes.html"/>
 	<mapID target="uml_diagrams_class_ww_diagram_elements" url="diagrams/class_ww_diagram_elements.html"/>
 	<mapID target="uml_diagrams_class_ww_operations" url="diagrams/class_ww_operations.html"/>
@@ -113,7 +111,6 @@
 	<mapID target="uml_diagrams_component_ww_components_dependencies" url="diagrams/component_ww_components_dependencies.html"/>
 	<mapID target="uml_diagrams_component_ww_diagram_elements" url="diagrams/component_ww_diagram_elements.html"/>
 	<mapID target="uml_diagrams_component_ww_ports_interfaces" url="diagrams/component_ww_ports_interfaces.html"/>
-	<mapID target="uml_diagrams_creating_diagram_dependency" url="diagrams/creating_diagram_dependency.html"/>
 	<mapID target="uml_diagrams_creating_diagram_elements" url="diagrams/creating_diagram_elements.html"/>
 	<mapID target="uml_diagrams_creating_diagram_from_selected_elements" url="diagrams/creating_diagram_from_selected_elements.html"/>
 	<mapID target="uml_diagrams_creating_diagrams" url="diagrams/creating_diagrams.html"/>
@@ -141,7 +138,6 @@
 	<mapID target="uml_diagrams_editing_diagram_elements_renaming" url="diagrams/editing_diagram_elements_renaming.html"/>
 	<mapID target="uml_diagrams_editing_diagram_elements_selecting_all" url="diagrams/editing_diagram_elements_selecting_all.html"/>
 	<mapID target="uml_diagrams_editing_diagram_elements_selecting_all_similar" url="diagrams/editing_diagram_elements_selecting_all_similar.html"/>
-	<mapID target="uml_diagrams_editing_diagram_elements_using_redefine_db" url="diagrams/editing_diagram_elements_using_redefine_db.html"/>
 	<mapID target="uml_diagrams_generating_code" url="diagrams/generating_code.html"/>
 	<mapID target="uml_diagrams_source_code_synchronization" url="diagrams/source_code_synchronization.html"/>
 	<mapID target="uml_diagrams_labeling_class_diagram_elements" url="diagrams/labeling_class_diagram_elements.html"/>
@@ -179,7 +175,6 @@
 	<mapID target="uml_editors_windows_navigating_by_links_in_diagrams" url="editors_windows/navigating_by_links_in_diagrams.html"/>
 	<mapID target="uml_editors_windows_navigating_diagram_element" url="editors_windows/navigating_diagram_element.html"/>
 	<mapID target="uml_editors_windows_navigating_within_diagrams" url="editors_windows/navigating_within_diagrams.html"/>
-	<mapID target="uml_editors_windows_specifying_display_drawing_preferences" url="editors_windows/specifying_display_drawing_preferences.html"/>
 	<mapID target="uml_editors_windows_stacking_diagram_elements" url="editors_windows/stacking_diagram_elements.html"/>
 	<mapID target="uml_editors_windows_using_diagram_windows" url="editors_windows/using_diagram_windows.html"/>
 	<mapID target="uml_editors_windows_using_overview_window" url="editors_windows/using_overview_window.html"/>
@@ -197,8 +192,6 @@
 	<mapID target="uml_prefs_configuring_templates_options" url="prefs/configuring_templates_options.html"/>
 	<mapID target="uml_reverse_eng_about_java_code_rev_eng" url="reverse_eng/about_java_code_rev_eng.html"/>
 	<mapID target="uml_reverse_eng_classes" url="reverse_eng/classes.html"/>
-	<mapID target="uml_reverse_eng_reverse_eng_dialog_box" url="reverse_eng/reverse_eng_dialog_box.html"/>
-	<mapID target="uml_reverse_eng_exceptions_access_control_modifiers" url="reverse_eng/exceptions_access_control_modifiers.html"/>
 	<mapID target="uml_reverse_eng_interfaces" url="reverse_eng/interfaces.html"/>
 	<mapID target="uml_reverse_eng_launching_rev_eng" url="reverse_eng/launching_rev_eng.html"/>
 	<mapID target="uml_reverse_eng_packages" url="reverse_eng/packages.html"/>

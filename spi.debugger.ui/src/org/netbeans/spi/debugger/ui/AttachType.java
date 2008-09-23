@@ -61,9 +61,37 @@ public abstract class AttachType {
 
     /**
      * Returns visual customizer for this Attach Type. Customizer can
-     * optionally implement {@link Controller} intarface.
+     * optionally implement {@link Controller} interface. In that case please
+     * notice the clash of {@link Controller#isValid()} method with
+     * {@link javax.swing.JComponent#isValid()} and consider extending
+     * {@link #getController()} method in case you need to provide
+     * false validity in some cases.
      *
      * @return visual customizer for this Attach Type
      */
     public abstract JComponent getCustomizer ();
+
+    /**
+     * Return the implementation of {@link Controller} interface.<br/>
+     * In cases when it's not desired to implement {@link Controller} interface
+     * by the JComponent returned from {@link #getCustomizer()} method, because
+     * of the clash of {@link Controller#isValid()} method with
+     * {@link javax.swing.JComponent#isValid()}, an explicit implementation
+     * can be returned by overriding this method.
+     * The default implementation returns the result of {@link #getCustomizer()}
+     * if that implements the {@link Controller} interface, or <code>null</code>
+     * otherwise.
+     *
+     * @return Controller implementation or <code>null</code>.
+     * @since 2.14
+     */
+    public Controller getController() {
+        JComponent c = getCustomizer();
+        if (c instanceof Controller) {
+            return ((Controller) c);
+        } else {
+            return null;
+        }
+    }
+
 }

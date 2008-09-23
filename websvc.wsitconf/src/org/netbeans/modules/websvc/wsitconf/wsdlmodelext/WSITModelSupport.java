@@ -164,8 +164,8 @@ public class WSITModelSupport {
         try {
             String wsdlUrl = service.getWsdlUrl();
             if (wsdlUrl == null) { // WS from Java
-                if (implClass == null) {
-                    logger.log(Level.INFO, "Implementation class is null");
+                if ((implClass == null) || (!implClass.isValid() || implClass.isVirtual())) {
+                    logger.log(Level.INFO, "Implementation class is null or not valid, or just virtual: " + implClass + ", service: " + service);
                     return null;
                 }
                 JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(implClass);
@@ -396,8 +396,9 @@ public class WSITModelSupport {
         }
         
         // check whether config file already exists
-        if (supp.getWsdlFolder(true) != null) {
-            FileObject wsdlFO = supp.getWsdlFolder(true).getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
+        FileObject wsdlFolder = supp.getWsdlFolder(create);
+        if ((wsdlFolder != null) && (wsdlFolder.isValid())) {
+            FileObject wsdlFO = wsdlFolder.getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
             if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
                 return getModelFromFO(wsdlFO, true);
             }
@@ -405,10 +406,9 @@ public class WSITModelSupport {
         
         if (create) {
             // config file doesn't exist - generate empty file
-            FileObject wsdlFolder = supp.getWsdlFolder(true).getParent();
-            FileObject wsdlFO = wsdlFolder.getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);   //NOI18N
+            FileObject wsdlFO = wsdlFolder.getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);   //NOI18N
             if ((wsdlFO == null) || !(FileUtil.toFile(wsdlFO).exists())) {
-                wsdlFO = wsdlFolder.createData(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
+                wsdlFO = wsdlFolder.getParent().createData(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
                 if (createdFiles != null) {
                     createdFiles.add(wsdlFO);
                 }

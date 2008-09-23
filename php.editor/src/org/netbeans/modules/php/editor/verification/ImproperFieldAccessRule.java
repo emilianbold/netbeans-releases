@@ -127,7 +127,7 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
         PHPIndex index = PHPIndex.get(i);
         List<IndexedElement> l = new LinkedList<IndexedElement>();
         Collection<IndexedConstant> flds = null;        
-        for (IndexedClass indexedClass : index.getClassInheritanceLine(null, className)) {
+        for (IndexedClass indexedClass : index.getClassAncestors(null, className)) {
             flds = getFields(index, indexedClass.getName(), field, modifiers);
             if (!flds.isEmpty()) {
                 break;

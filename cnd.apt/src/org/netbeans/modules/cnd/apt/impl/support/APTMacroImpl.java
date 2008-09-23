@@ -46,8 +46,8 @@ import antlr.TokenStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -59,14 +59,20 @@ import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
  */
 public class APTMacroImpl implements APTMacro {
     private final Token name;
-    private final Collection<Token> params;
+    //private final Collection<Token> params;
+    private final Token[] paramsArray;
     private final List<Token> body;
     private final boolean system;
 
     public APTMacroImpl(Token name, Collection<Token> params, List<Token> body, boolean system) {
         assert (name != null);
         this.name = name;
-        this.params = params;
+        //this.params = params;
+        if (params != null) {
+            paramsArray = params.toArray(new Token[params.size()]);
+        } else {
+            paramsArray = null;
+        }
         this.body = body;
         this.system = system;
     }
@@ -76,7 +82,7 @@ public class APTMacroImpl implements APTMacro {
     }
 
     public boolean isFunctionLike() {
-        return params != null;
+        return paramsArray != null;
     }
 
     public Token getName() {
@@ -84,7 +90,14 @@ public class APTMacroImpl implements APTMacro {
     }
 
     public Collection<Token> getParams() {
-        return params;
+        if (paramsArray == null) {
+            return null;
+        }
+        List<Token> res = new ArrayList<Token>(paramsArray.length);
+        for (Token elem : paramsArray) {
+            res.add(elem);
+        }
+        return res;
     }
 
     public TokenStream getBody() {
@@ -119,23 +132,22 @@ public class APTMacroImpl implements APTMacro {
         retValue.append(isSystem() ? "<S>":"<U>"); // NOI18N
         retValue.append("#define '"); // NOI18N
         retValue.append(getName());
-        if (params != null) {
+        if (paramsArray != null) {
             retValue.append("["); // NOI18N
-            for (Iterator<Token> it = params.iterator();it.hasNext();) {
-                Token elem = it.next();
-                retValue.append(elem);
-                if (it.hasNext()) {
+            boolean first = true;
+            for (Token elem : paramsArray) {
+                if (!first) {
                     retValue.append(", "); // NOI18N
-                } else {
-                    break;
-                } 
+                }
+                first = false;
+                retValue.append(elem);
             }
             retValue.append("]"); // NOI18N
         }
-        TokenStream body = getBody();
-        if (body != null) {
+        TokenStream bodyStream = getBody();
+        if (bodyStream != null) {
             retValue.append("'='"); // NOI18N
-            retValue.append(APTUtils.toString(body));
+            retValue.append(APTUtils.toString(bodyStream));
         }
         return retValue.toString();
     }       

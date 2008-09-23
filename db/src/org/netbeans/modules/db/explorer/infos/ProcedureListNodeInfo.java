@@ -56,6 +56,9 @@ public class ProcedureListNodeInfo extends DatabaseNodeInfo {
             return;
         }
         try {
+            if (!ensureConnected()) {
+                return;
+            }
             DriverSpecification drvSpec = getDriverSpecification();
             drvSpec.getProcedures("%");
             ResultSet rs = drvSpec.getResultSet();

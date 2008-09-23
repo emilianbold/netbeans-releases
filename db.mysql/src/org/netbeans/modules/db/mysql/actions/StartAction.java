@@ -182,7 +182,7 @@ public class StartAction extends CookieAction {
 
             private void waitForStart() {
                 int tries = 0;
-                while (tries <= 3) {
+                while (tries <= 10) {
                     tries++;
                     if (server.isRunning()) {
                         return;

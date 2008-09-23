@@ -54,8 +54,6 @@ package org.netbeans.modules.servicetag;
 //
 // So we keep this class in src/share/classes instead of src/<os>/classes.
 
-import java.io.*;
-
 /**
  * Linux implementation of the SystemEnvironment class.
  */

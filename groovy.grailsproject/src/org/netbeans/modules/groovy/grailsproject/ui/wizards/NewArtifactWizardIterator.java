@@ -177,8 +177,6 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
         
         pls = new GetArtifactNameStep(serverRunning, serverConfigured, project, sourceCategory);
         Component c = pls.getComponent();
-        pls.setArtifactName(artifactName);
-        
         if (c instanceof JComponent) { // assume Swing components
             JComponent jc = (JComponent)c;
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(1));

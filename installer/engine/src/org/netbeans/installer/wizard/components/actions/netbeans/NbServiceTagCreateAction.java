@@ -147,7 +147,9 @@ public class NbServiceTagCreateAction extends WizardAction {
         for (Product product : products) {
             String uid = product.getUid();
             if (uid.equals("nb-base")) {
-                createSTNetBeans(product);
+                createSTNetBeans(product, false);
+            } else if (uid.equals("nb-cnd")) {
+                createSTNetBeans(product, true);
             } else if (uid.equals("glassfish")) {
                 createSTGlassFish(product, true);
             } else if (uid.equals("sjsas")) {
@@ -163,7 +165,7 @@ public class NbServiceTagCreateAction extends WizardAction {
         LogManager.logExit("... finished service tags action");
     }
 
-    private void createSTNetBeans(Product nbProduct) {
+    private void createSTNetBeans(Product nbProduct, boolean isCndRegistered) {
         try {
             LogManager.log("... create ST for NetBeans");
             File nbLocation = nbProduct.getInstallationLocation();
@@ -174,12 +176,19 @@ public class NbServiceTagCreateAction extends WizardAction {
                 }
             })[0];
 
-            System.setProperty("netbeans.home", nbPlatform.getPath());
-            NbServiceTagSupport.createNbServiceTag(source,
+            System.setProperty("netbeans.home", nbPlatform.getPath());            
+            if (isCndRegistered) {
+                NbServiceTagSupport.createCndServiceTag(source,
+                    JavaUtils.getVersion(
+                    new File(NetBeansUtils.getJavaHome(nbPlatform.getParentFile()))).
+                    toJdkStyle());                
+            } else {
+                NbServiceTagSupport.createNbServiceTag(source,
                     JavaUtils.getVersion(
                     new File(NetBeansUtils.getJavaHome(nbPlatform.getParentFile()))).
                     toJdkStyle());
-            setNetBeansStatus(false);
+                setNetBeansStatus(false);
+            }            
         } catch (IOException e) {
             LogManager.log(e);
         }

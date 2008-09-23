@@ -50,9 +50,16 @@ public class ShellUtils {
     private ShellUtils() {
     }
 
-    public static String prepareExportString(String hkey, Map<String, String> env) {
-        boolean isCshShell = RemoteHostInfoProvider.getHostInfo(hkey).isCshShell();
-        return prepareExportString(isCshShell, env);
+    public static String wrapCommand(String hkey, String command) {
+        StringBuilder wrappedCmd = new StringBuilder();
+        wrappedCmd.append(ShellUtils.getPrefix(hkey)).append("bash -c '"); //NOI18N
+        wrappedCmd.append(command.replace('\\', '/')); //NOI18N
+        wrappedCmd.append("'"); //NOI18N
+        return wrappedCmd.toString();
+    }
+
+    public static String prepareExportString(Map<String, String> env) {
+        return prepareExportString(false, env);
     }
 
     public static String prepareExportString(boolean isCshShell, Map<String, String> env) {
@@ -65,9 +72,15 @@ public class ShellUtils {
         return cmdline.toString();
     }
 
-    public static String prepareExportString(String hkey, String[] envp) {
-        boolean isCshShell = RemoteHostInfoProvider.getHostInfo(hkey).isCshShell();
-        return prepareExportString(isCshShell, envp);
+    static String prepareExportString(String[] envp) {
+        return prepareExportString(false, envp);
+    }
+
+    private static final String cshBinz = "setenv PATH /bin:/usr/bin:$PATH; "; //NOI18N
+    private static final String shBinz = "PATH=/bin:/usr/bin:$PATH "; //NOI18N
+
+    static String getPrefix(String hkey) {
+        return RemoteHostInfoProvider.getHostInfo(hkey).isCshShell() ? cshBinz : shBinz;
     }
 
     static String prepareExportString(boolean isCshShell, String[] envp) {
@@ -80,11 +93,10 @@ public class ShellUtils {
         return cmdline.toString();
     }
 
-    private static final String BashExport = "export"; //NOI8N
-    private static final String CshExport = "setenv"; //NOI8N
-    // all other shells are smart enough to know both
+    private static final String BashExport = "export"; //NOI18N
+    private static final String CshExport = "setenv"; //NOI18N
     
     private static String getExportCommand(boolean isCshShell) {
-        return (isCshShell ? CshExport : BashExport) + " ";
+        return (isCshShell ? CshExport : BashExport) + " "; //NOI18N
     }
 }

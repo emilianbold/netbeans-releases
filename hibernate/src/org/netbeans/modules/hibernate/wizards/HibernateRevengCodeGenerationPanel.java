@@ -51,6 +51,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.hibernate.wizards.support.SelectedTables;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.hibernate.wizards.support.SourceGroupUISupport;
@@ -101,6 +102,9 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
 
         // Setting the location drop down.
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
+        if(sourceGroups != null && sourceGroups.length == 0) {
+            sourceGroups = HibernateUtil.getSourceGroups(project);
+        }
         SourceGroupUISupport.connect(cmbLocation, sourceGroups);
 
         cmbPackage.setRenderer(PackageView.listRenderer());

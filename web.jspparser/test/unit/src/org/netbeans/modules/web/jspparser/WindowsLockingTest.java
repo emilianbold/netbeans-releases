@@ -58,6 +58,10 @@ import org.openide.filesystems.FileUtil;
  */
 public class WindowsLockingTest extends NbTestCase {
 
+    private static final String ISSUE_WA_VENDOR = "Sun Microsystems";
+    private static final int ISSUE_WA_MAJOR_VERSION = 1;
+    private static final int ISSUE_WA_MINOR_VERSION = 6;
+
     public WindowsLockingTest(String name) {
         super(name);
     }
@@ -77,6 +81,19 @@ public class WindowsLockingTest extends NbTestCase {
     }
 
     public void testNotLockedIssue128360() throws IOException {
+        String vendor = System.getProperty("java.vendor");
+        if (!vendor.contains(ISSUE_WA_VENDOR)) {
+            return;
+        }
+        String version = System.getProperty("java.version");
+        System.out.println(version);
+
+        String[] parts = version.split("\\.");
+        if (parts.length < 2 || Integer.parseInt(parts[0]) < ISSUE_WA_MAJOR_VERSION
+                || (Integer.parseInt(parts[0]) == ISSUE_WA_MAJOR_VERSION && Integer.parseInt(parts[1]) < ISSUE_WA_MINOR_VERSION)) {
+            return;
+        }
+
         FileObject project = FileUtil.toFileObject(
                 FileUtil.normalizeFile(getWorkDir())).getFileObject("emptyWebProject128360");
 

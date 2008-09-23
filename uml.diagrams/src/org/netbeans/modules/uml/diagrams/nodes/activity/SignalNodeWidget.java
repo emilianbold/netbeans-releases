@@ -64,9 +64,11 @@ public class SignalNodeWidget extends ActivityNodeWidget
 {
     public static final int MIN_NODE_WIDTH =  50;
     public static final int MIN_NODE_HEIGHT = 40;
+    
     public SignalNodeWidget(Scene scene)
     {
         super(scene, true, false);
+        setMinimumSize(new Dimension(MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
     }
 
     @Override
@@ -79,43 +81,35 @@ public class SignalNodeWidget extends ActivityNodeWidget
             
             //create main view 
             MainViewWidget mainView = new MainViewWidget(scene,
-                                                                 getResourcePath(),
-                                                                 bundle.getString("LBL_body"));
-           mainView.setMinimumSize(new Dimension(
-                                      MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
+                                                         getResourcePath(),
+                                                         bundle.getString("LBL_body"));    
             mainView.setLayout(
                     LayoutFactory.createVerticalFlowLayout(
                     LayoutFactory.SerialAlignment.JUSTIFY, 2));
             
             mainView.setUseGradient(useGradient);
+            mainView.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); 
             mainView.setCustomizableResourceTypes(
                     new ResourceType[]{ResourceType.BACKGROUND});
             mainView.setOpaque(true);
 
             // stereotype widget
-            mainView.addChild(this.createStereoTypeWidget(), 10);
+            mainView.addChild(this.createStereoTypeWidget());
             enableStereoTypeWidget(element);
-
-            Widget editorPanel = new Widget(scene);
-            editorPanel.setForeground(null);
-            editorPanel.setLayout(
-                    LayoutFactory.createHorizontalFlowLayout(
-                    LayoutFactory.SerialAlignment.JUSTIFY, 0));
-
+       
             // create multiline editable widget
             nameWidget = new MultilineEditableCompartmentWidget(scene, "", null,
                                                                  mainView,
                                                                  getWidgetID()+".name",
                                                                  bundle.getString("LBL_text"));
-            nameWidget.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5)); 
             nameWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
             String labelStr = element.getNameWithAlias();
             nameWidget.setLabel(labelStr != null && labelStr.trim().length() > 0 ? labelStr : "");
-            editorPanel.addChild(nameWidget, 90);
-            mainView.addChild(editorPanel, 80);
+            
+            mainView.addChild(nameWidget, 1);
             
             //taggedvalue widget
-            mainView.addChild(createTaggedValueWidget(), 10);
+            mainView.addChild(createTaggedValueWidget());
             enableTaggedValueWidget(element);
             
             setCurrentView(mainView);
@@ -126,6 +120,12 @@ public class SignalNodeWidget extends ActivityNodeWidget
     public String getWidgetID()
     {
         return UMLWidgetIDString.SIGNALNODEWIDGET.toString();
+    }
+
+    @Override
+    public Dimension getDefaultMinimumSize()
+    {
+        return new Dimension(MIN_NODE_WIDTH, MIN_NODE_HEIGHT);
     }
     
     private class MainViewWidget extends CustomizableWidget

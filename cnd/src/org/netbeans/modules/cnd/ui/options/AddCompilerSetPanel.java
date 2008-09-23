@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
@@ -61,12 +62,21 @@ import org.openide.util.NbBundle;
         
 public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
     private DialogDescriptor dialogDescriptor = null;
-    private CompilerSetManager csm;
+    private final CompilerSetManager csm;
+    private final boolean local;
+
     
     /** Creates new form AddCompilerSetPanel */
     public AddCompilerSetPanel(CompilerSetManager csm) {
         initComponents();
         this.csm = csm;
+        this.local = RemoteUtils.isLocalhost(csm.getHost());
+
+        if (!local) {
+            // we can't have Browse button for remote, so we use it to validate path on remote host
+            btBaseDirectory.setText(getString("AddCompilerSetPanel.btBaseDirectoryRemoteMode.text"));
+            btBaseDirectory.setMnemonic(0);
+        }
         
         List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
@@ -92,15 +102,30 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         this.dialogDescriptor = dialogDescriptor;
         dialogDescriptor.setValid(false);
     }
+
+    private CompilerSet lastFoundRemoteCompilerSet;
     
     private void updateDataBaseDir() {
-        File dirFile = new File(tfBaseDirectory.getText());
-        List<CompilerFlavor> flavors = CompilerSet.getCompilerSetFlavor(dirFile.getAbsolutePath(), csm.getPlatform());
-        if (flavors.size() > 0) {
-            cbFamily.setSelectedItem(flavors.get(0));
+        if (local) {
+            File dirFile = new File(tfBaseDirectory.getText());
+            List<CompilerFlavor> flavors = CompilerSet.getCompilerSetFlavor(dirFile.getAbsolutePath(), csm.getPlatform());
+            if (flavors.size() > 0) {
+                cbFamily.setSelectedItem(flavors.get(0));
+            } else {
+                cbFamily.setSelectedItem(CompilerFlavor.getUnknown(csm.getPlatform()));
+            }
         } else {
-            cbFamily.setSelectedItem(CompilerFlavor.getUnknown(csm.getPlatform()));
+            lastFoundRemoteCompilerSet = null;
+            String path = tfBaseDirectory.getText().trim();
+            if (path.length() > 0) {
+                List<CompilerSet> css = csm.findRemoteCompilerSets(path);
+                if (css.size() > 0) {
+                    cbFamily.setSelectedItem(css.get(0).getCompilerFlavor());
+                    lastFoundRemoteCompilerSet = css.get(0);
+                } 
+            }
         }
+
         updateDataFamily();
         if (!dialogDescriptor.isValid()) {
             tfName.setText("");
@@ -122,50 +147,52 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         }
         tfName.setText(suggestedName);
         
-        updateDataName();
-    }
-    
-    private void updateDataName() {
         validateData();
     }
     
     private void validateData() {
         boolean valid = true;
         lbError.setText(""); // NOI18N
-        
-        File dirFile = new File(tfBaseDirectory.getText());
-        if (valid && !dirFile.exists() || !dirFile.isDirectory() || !IpeUtils.isPathAbsolute(dirFile.getPath())) {
-            valid = false;
-            lbError.setText(getString("BASE_INVALID"));
-            cbFamily.setEnabled(false);
-            tfName.setEnabled(false);
+
+        if (local) {
+            File dirFile = new File(tfBaseDirectory.getText());
+            if (valid && !dirFile.exists() || !dirFile.isDirectory() || !IpeUtils.isPathAbsolute(dirFile.getPath())) {
+                valid = false;
+                lbError.setText(getString("BASE_INVALID"));
+            }
+        } else {
+            if (lastFoundRemoteCompilerSet == null) {
+                valid = false;
+                lbError.setText(getString("REMOTEBASE_INVALID"));
+            }
         }
-        else {
-            cbFamily.setEnabled(true);
-            tfName.setEnabled(true);
-        }
-        
+
+        cbFamily.setEnabled(valid);
+        tfName.setEnabled(valid);
+
         String compilerSetName = IpeUtils.replaceOddCharacters(tfName.getText().trim(), '_');
         if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
             valid = false;
             lbError.setText(getString("NAME_INVALID"));
         }
-        
+
         if (valid && csm.getCompilerSet(compilerSetName.trim()) != null) {
             valid = false;
             lbError.setText(getString("TOOLNAME_ALREADY_EXISTS"));
         }
-        
+
         if (dialogDescriptor != null)
             dialogDescriptor.setValid(valid);
     }
     
     private void handleUpdate(DocumentEvent e) {
         if (e.getDocument() == tfBaseDirectory.getDocument()) {
-            updateDataBaseDir();
+            if (local) { // we can't support real-time validation for remote base dir
+                updateDataBaseDir();
+            }
         }
         else {
-            updateDataName();
+            validateData();
         }
     }
     
@@ -185,12 +212,27 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         return tfBaseDirectory.getText();
     }
     
-    public CompilerSet.CompilerFlavor getFamily() {
+    private CompilerSet.CompilerFlavor getFamily() {
         return (CompilerSet.CompilerFlavor)cbFamily.getSelectedItem();
     }
     
-    public String getCompilerSetName() {
+    private String getCompilerSetName() {
         return IpeUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+    }
+
+    public CompilerSet getCompilerSet() {
+        String compilerSetName = getCompilerSetName().trim();
+        if (local) {
+            String baseDirectory = getBaseDirectory();
+            CompilerSet.CompilerFlavor flavor = getFamily();
+
+            CompilerSet cs = CompilerSet.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
+            CompilerSetManager.getDefault().initCompilerSet(cs);
+            return cs;
+        } else {
+            lastFoundRemoteCompilerSet.setName(compilerSetName);
+            return lastFoundRemoteCompilerSet;
+        }
     }
     
     /** This method is called from within the constructor to
@@ -334,24 +376,26 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
     }// </editor-fold>//GEN-END:initComponents
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
-    String seed = null;
-    if (tfBaseDirectory.getText().length() > 0) {
-        seed = tfBaseDirectory.getText();
+    if (local) {
+        String seed = null;
+        if (tfBaseDirectory.getText().length() > 0) {
+            seed = tfBaseDirectory.getText();
+        }
+        else if (FileChooser.getCurrectChooserFile() != null) {
+            seed = FileChooser.getCurrectChooserFile().getPath();
+        }
+        else {
+            seed = System.getProperty("user.home"); // NOI18N
+        }
+        FileChooser fileChooser = new FileChooser(getString("SELECT_BASE_DIRECTORY_TITLE"), null, JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+        int ret = fileChooser.showOpenDialog(this);
+        if (ret == JFileChooser.CANCEL_OPTION) {
+            return;
+        }
+        String dirPath = fileChooser.getSelectedFile().getPath();
+        tfBaseDirectory.setText(dirPath);
+
     }
-    else if (FileChooser.getCurrectChooserFile() != null) {
-        seed = FileChooser.getCurrectChooserFile().getPath();
-    }
-    else {
-        seed = System.getProperty("user.home"); // NOI18N
-    }
-    FileChooser fileChooser = new FileChooser(getString("SELECT_BASE_DIRECTORY_TITLE"), null, JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-    int ret = fileChooser.showOpenDialog(this);
-    if (ret == JFileChooser.CANCEL_OPTION) {
-        return;
-    }
-    String dirPath = fileChooser.getSelectedFile().getPath();
-    tfBaseDirectory.setText(dirPath);
-    
     updateDataBaseDir();
 }//GEN-LAST:event_btBaseDirectoryActionPerformed
 

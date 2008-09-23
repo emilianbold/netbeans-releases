@@ -468,7 +468,21 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
             if(tc != null && tc.isOpened() && isMultiViewTopComponent(tc)){
                 TopComponent topComponent = getSelectedMultiView(tc);
                 if(topComponent != null && isDesignerTopComponent(topComponent)) {
-                    DataObject dObj = topComponent.getActivatedNodes()[0].getLookup().lookup(DataObject.class);
+//                    DataObject dObj = topComponent.getActivatedNodes()[0].getLookup().lookup(DataObject.class);
+                    // XXX #131996 Defend against possible NPE's.
+                    org.openide.nodes.Node[] activatedNodes = topComponent.getActivatedNodes();
+                    if (activatedNodes == null || activatedNodes.length == 0) {
+                        info(new NullPointerException("TopComponent doesn't have any activated nodes, topComponent="
+                                + topComponent + ", nodes=" + activatedNodes)); // NOI18N
+                        continue;
+                    }
+                    DataObject dObj = activatedNodes[0].getLookup().lookup(DataObject.class);
+                    if (dObj == null) {
+                        info(new NullPointerException("Activated node from top component"
+                                + " doesn't contain DataObject in its first activated node lookup, topComponent="
+                                + topComponent + ", node=" + activatedNodes[0])); // NOI18N
+                        continue;
+                    }
                     visibleModels.add((FacesModel)getModel(dObj.getPrimaryFile()));
                 }
             }
@@ -1475,5 +1489,8 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         }
     }
 
+    private static void info(Exception ex) {
+        Logger.getLogger(FacesModelSet.class.getName()).log(Level.INFO, null, ex);
+    }
     
 }

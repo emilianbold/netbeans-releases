@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -120,6 +129,8 @@
                 <friend>org.netbeans.modules.scala.project</friend>
                 <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.php.prado</friend>
+                <friend>org.netbeans.modules.php.symfony</friend>
                 <package>org.netbeans.modules.gsf.api</package>
                 <package>org.netbeans.modules.gsf.api.annotations</package>
                 <package>org.netbeans.modules.gsf.spi</package>

@@ -44,11 +44,8 @@ package org.netbeans.modules.ruby;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.openide.filesystems.FileObject;
 
 /**
  * @todo Test that if you insert x="" and then DELETE the ", it wipes out BOTH of them!
@@ -75,16 +72,16 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         super.assertMatches(original);
     }
     
-    private void insertChar(String original, char insertText, String expected) throws BadLocationException {
+    private void insertChar(String original, char insertText, String expected) throws Exception {
         insertChar(original, insertText, expected, null);
     }
 
-    private void insertChar(String original, char insertText, String expected, String selection) throws BadLocationException {
+    private void insertChar(String original, char insertText, String expected, String selection) throws Exception {
         insertChar(original, insertText, expected, selection, false);
     }
 
     @Override
-    public void deleteWord(String original, String expected) throws BadLocationException {
+    public void deleteWord(String original, String expected) throws Exception {
         // Try deleting the word not just using the testcase but also surrounded by strings
         // to make sure there's no problem with lexer token directions
         super.deleteWord(original, expected);
@@ -690,10 +687,9 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
     }
     
-    // Functionality works but test is broken
-    //public void testReplaceSelectionNotInTemplateMode2() throws Exception {
-    //    insertChar("x = \"foo^bar\"", '#', "x = \"#{^}bar\"", "foo", true);
-    //}
+    public void testReplaceSelectionNotInTemplateMode2() throws Exception {
+        insertChar("x = \"foo^bar\"", '#', "x = \"#{^}bar\"", "foo", true);
+    }
     
     public void testReplaceCommentSelectionBold() throws Exception {
         insertChar("# foo^", '*', "# *foo*^", "foo");

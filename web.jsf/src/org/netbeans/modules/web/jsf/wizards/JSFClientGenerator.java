@@ -900,7 +900,8 @@ public class JSFClientGenerator {
         final String[] idClassSimpleName = new String[1];
         final String[] idPropertyType = new String[1];
         final ArrayList<MethodModel> paramSetters = new ArrayList<MethodModel>();
-        //final boolean[] fieldAccess = new boolean[] { false };
+        final boolean[] isPrimitiveIdPropertyType = new boolean[] { false };
+        
         final String[] idGetterName = new String[1];
         JavaSource controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
         controllerJavaSource.runUserActionTask(new Task<CompilationController>() {
@@ -915,11 +916,37 @@ public class JSFClientGenerator {
                     embeddable[0] = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
                     idClassSimpleName[0] = idClass.getSimpleName().toString();
                     idPropertyType[0] = idClass.getQualifiedName().toString();
-                    for (ExecutableElement method : ElementFilter.methodsIn(idClass.getEnclosedElements())) {
-                        if (method.getSimpleName().toString().startsWith("set")) {
-                            paramSetters.add(MethodModelSupport.createMethodModel(compilationController, method));
+                    if (embeddable[0]) {
+                        for (ExecutableElement method : ElementFilter.methodsIn(idClass.getEnclosedElements())) {
+                            if (method.getSimpleName().toString().startsWith("set")) {
+                                paramSetters.add(MethodModelSupport.createMethodModel(compilationController, method));
+                            }
                         }
                     }
+                } else if (TypeKind.BOOLEAN == idType.getKind()) {
+                    idClassSimpleName[0] = idPropertyType[0] = "boolean";
+                    isPrimitiveIdPropertyType[0] = true;
+                } else if (TypeKind.BYTE == idType.getKind()) {
+                    idClassSimpleName[0] = idPropertyType[0] = "byte";
+                    isPrimitiveIdPropertyType[0] = true;
+                } else if (TypeKind.CHAR == idType.getKind()) {
+                    idClassSimpleName[0] = idPropertyType[0] = "char";
+                    isPrimitiveIdPropertyType[0] = true;
+                } else if (TypeKind.DOUBLE == idType.getKind()) {
+                    idClassSimpleName[0] = idPropertyType[0] = "double";
+                    isPrimitiveIdPropertyType[0] = true;
+                } else if (TypeKind.FLOAT == idType.getKind()) {
+                    idClassSimpleName[0] = idPropertyType[0] = "float";
+                    isPrimitiveIdPropertyType[0] = true;
+                } else if (TypeKind.INT == idType.getKind()) {
+                    idClassSimpleName[0] = idPropertyType[0] = "int";
+                    isPrimitiveIdPropertyType[0] = true;
+                } else if (TypeKind.LONG == idType.getKind()) {
+                    idClassSimpleName[0] = idPropertyType[0] = "long";
+                    isPrimitiveIdPropertyType[0] = true;
+                } else if (TypeKind.SHORT == idType.getKind()) {
+                    idClassSimpleName[0] = idPropertyType[0] = "short";
+                    isPrimitiveIdPropertyType[0] = true;
                 }
             }
         }, true);
@@ -1062,7 +1089,11 @@ public class JSFClientGenerator {
             getAsStringBody.append(";\n");
         } else {
             String oDotGetId = "o." + idGetterName[0] + "()";
-            getAsStringBody.append("return " + oDotGetId + " == null ? \"\" : " + oDotGetId + ".toString();\n");
+            if (isPrimitiveIdPropertyType[0]) {
+                getAsStringBody.append("return String.valueOf(" + oDotGetId + ");\n");
+            } else {
+                getAsStringBody.append("return " + oDotGetId + " == null ? \"\" : " + oDotGetId + ".toString();\n");
+            }
         }
         getAsStringBody.append("} else {\n"
                 + "throw new IllegalArgumentException(\"object \" + object + \" is of type \" + object.getClass().getName() + \"; expected type: " + entityClass +"\");\n}");
@@ -1152,11 +1183,25 @@ public class JSFClientGenerator {
                         idClass = (TypeElement) declaredType.asElement();
                         embeddable[0] = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
                         idPropertyType[0] = idClass.getQualifiedName().toString();
+                    } else if (TypeKind.BOOLEAN == idType.getKind()) {
+                        idPropertyType[0] = "boolean";
+                    } else if (TypeKind.BYTE == idType.getKind()) {
+                        idPropertyType[0] = "byte";
+                    } else if (TypeKind.CHAR == idType.getKind()) {
+                        idPropertyType[0] = "char";
+                    } else if (TypeKind.DOUBLE == idType.getKind()) {
+                        idPropertyType[0] = "double";
+                    } else if (TypeKind.FLOAT == idType.getKind()) {
+                        idPropertyType[0] = "float";
+                    } else if (TypeKind.INT == idType.getKind()) {
+                        idPropertyType[0] = "int";
+                    } else if (TypeKind.LONG == idType.getKind()) {
+                        idPropertyType[0] = "long";
+                    } else if (TypeKind.SHORT == idType.getKind()) {
+                        idPropertyType[0] = "short";
                     }
                     
                     String simpleIdPropertyType = JpaControllerUtil.simpleClassName(idPropertyType[0]);
-                    
-//                    TreeMaker make = workingCopy.getTreeMaker();
                     
                     TypeElement controllerTypeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
                     ClassTree classTree = workingCopy.getTrees().getTree(controllerTypeElement);

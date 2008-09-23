@@ -50,6 +50,36 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testOperatorsInBaseClasses() throws Exception {
+        // IZ#147312: Code completion issue with operator-> and operator*
+        performTest("iz147312_operators_in_base_cls.cc", 85, 10, // o.myMethod1();
+                    "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 88, 20, // sp.get()->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 89, 15, // sp->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 90, 15, // (*sp).myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 93, 20, // tp.get()->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 94, 15, // tp->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 95, 15, // (*tp).myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 98, 20, // s2p.get()->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 99, 15, // s2p->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 100, 15, // (*s2p).myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 103, 20, // t2p.get()->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 104, 15, // t2p->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 105, 15, // (*t2p).myMethod1(); 
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+    }
+
     public void testTemplateParamsInNestedClasses() throws Exception {
         // IZ#144881: template parameter is not resolved in nested class
 
@@ -61,7 +91,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("templateParameters.h", 109, 15, "templateParameters.h", 100, 24);// _Alloc
     }
 
-    public void checkPtrOperator() throws Exception {
+    public void testPtrOperator() throws Exception {
         // noIZ:fixed ptr operator handling
         performTest("checkPtrOperator.cc", 16, 15, "checkPtrOperator.cc", 11, 9);
     }
@@ -608,6 +638,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz145077.cc", 173, 22, "iz145077.cc", 143, 9);
     }
     
+    public void testIZ145071() throws Exception {
+        // IZ#145071 : forward declarations marked as error
+        performTest("IZ145071.cc", 4, 23, "IZ145071.cc", 4, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

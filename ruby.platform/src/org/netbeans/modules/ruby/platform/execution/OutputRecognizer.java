@@ -60,7 +60,18 @@ public class OutputRecognizer {
      */
     public void start() {
     }
-    
+
+    /**
+     * Called after output processing is done, but before the
+     * {@link #finish()} method and before the output writer is closed.
+     * This allows output recognizers to output lines after processing is done
+     * (see #145447 for a use case).
+     *
+     * @return lines to be written to output; must not be null.
+     */
+    public String[] beforeFinish() {
+        return new String[0];
+    }
     /**
      * Called after output processing is done.
      */

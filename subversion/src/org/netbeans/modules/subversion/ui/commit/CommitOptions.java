@@ -46,7 +46,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Maros Sandor
  */
-abstract class CommitOptions {
+public abstract class CommitOptions {
 
     public static final CommitOptions ADD_TEXT = new Add("CTL_CommitOption_AddAsText");  // NOI18N
     public static final CommitOptions ADD_BINARY = new Add("CTL_CommitOption_AddAsBinary"); // NOI18N

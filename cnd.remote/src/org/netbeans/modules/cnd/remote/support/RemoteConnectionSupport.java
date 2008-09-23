@@ -68,6 +68,7 @@ public abstract class RemoteConnectionSupport {
     private boolean cancelled = false;
     private boolean failed = false;
     private String failureReason;
+    private Integer timeout = Integer.getInteger("cnd.remote.timeout"); // NOI18N
     protected static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public RemoteConnectionSupport(String key, int port) {
@@ -89,7 +90,7 @@ public abstract class RemoteConnectionSupport {
                 RemoteUserInfo ui = RemoteUserInfo.getUserInfo(key, retry);
                 retry = false;
                 session.setUserInfo(ui);
-                session.connect();
+                session.connect(timeout == null ? 30000 : timeout.intValue());
                 if (!session.isConnected()) {
                     log.fine("RCS<Init>: Connection failed on " + key);
                 }
@@ -170,6 +171,7 @@ public abstract class RemoteConnectionSupport {
         }
         if (session != null) {
             session.disconnect();
+            session = null;
         }
     }
     

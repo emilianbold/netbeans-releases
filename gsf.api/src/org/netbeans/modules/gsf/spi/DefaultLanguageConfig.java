@@ -115,7 +115,7 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
      * NOTE: Code folding doesn't work until you enable code folding for your
      * editor kit; see GsfEditorKitFactory's reference to CODE_FOLDING_ENABLE for
      * an example.
-     * @deprecated This function is not called anymore. You
+     * @wasdeprecated This function is not called anymore. You
      *  MUST register the custom editor kit attribute via the layer! That's because
      *  currently, finding out whether a module has supplies a custom editor
      *  kit must be done early during startup (in the file type recognition code,
@@ -124,7 +124,6 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
      *  (including classes they reference) at startup. Hopefully a
      *  better solution will be provided soon.
      */
-    @Deprecated
     public boolean isUsingCustomEditorKit() {
         return false;
     }
@@ -200,7 +199,7 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
      * 
      * @return true iff this language configuration provides a
      *  structure scanner.
-     * @deprecated This function is not called anymore. You
+     * @wasdeprecated This function is not called anymore. You
      *  MUST register structure scanners via the layer! That's because
      *  currently, finding out whether a module has a structure scanner
      *  has to be done very early (before any language types are opened)
@@ -208,7 +207,6 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
      *  (including classes they reference) at startup. Hopefully a
      *  better solution will be provided soon.
      */
-    @Deprecated
     public boolean hasStructureScanner() {
         return false;
     }

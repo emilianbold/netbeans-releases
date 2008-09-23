@@ -64,13 +64,13 @@ public class AddAsDependencyAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
          StringBuffer buffer = new StringBuffer();
-         buffer.append("<b>");
+         buffer.append("<b>"); //NOI18N
          buffer.append(record.getArtifactId());
-         buffer.append("</b>");
-         buffer.append(":");
-         buffer.append("<b>");
+         buffer.append("</b>");//NOI18N
+         buffer.append(":");//NOI18N
+         buffer.append("<b>");//NOI18N
          buffer.append(record.getVersion().toString());
-         buffer.append("</b>");
+         buffer.append("</b>");//NOI18N
 
         AddDependencyUI adui = new AddDependencyUI(buffer.toString());
         DialogDescriptor dd = new DialogDescriptor(adui, NbBundle.getMessage(AddAsDependencyAction.class, "TIT_Add_Dependency"));

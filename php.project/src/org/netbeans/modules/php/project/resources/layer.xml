@@ -41,15 +41,33 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
+    <folder name="Actions">
+        <folder name="PHP">
+            <file name="org-netbeans-modules-php-project-ui-logicalview-DownloadAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.logicalview.SrcNode.createDownloadAction"/>
+            </file>
+            <file name="org-netbeans-modules-php-project-ui-logicalview-UploadAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.logicalview.SrcNode.createUploadAction"/>
+            </file>
+        </folder>
+    </folder>
+    <!-- uncomment/change default values for actions Download, Upload
+    <folder name="Shortcuts">
+        <file name="CSA-D.shadow">
+            <attr name="originalFile" stringvalue="Actions/PHP/org-netbeans-modules-php-project-ui-logicalview-DownloadAction.instance"/>
+        </file>
+        <file name="CSA-U.shadow">
+            <attr name="originalFile" stringvalue="Actions/PHP/org-netbeans-modules-php-project-ui-logicalview-UploadAction.instance"/>
+        </file>
+    </folder>
+    -->
     <folder name="Templates">
         <folder name="Project">
             <folder name="PHP">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpDescription.html"/>
                 <attr name="position" intvalue="700"/>
-
                 <file name="PHPProject.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/index.php">
                     <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
@@ -59,7 +77,6 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPhpProject.html"/>
                 </file>
-
                 <file name="existingPHPProject.php">
                     <attr name="position" intvalue="200"/>
                     <attr name="template" boolvalue="true"/>
@@ -73,7 +90,6 @@ made subject to such option by the copyright holder.
         <folder name="Scripting">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
             <attr name="position" intvalue="20"/>
-
             <file name="EmptyPHP" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -112,15 +128,12 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>
-
     </folder>
-
     <folder name="OptionsDialog">
         <file name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory.instance">
             <attr name="position" intvalue="650"/>
         </file>
     </folder>
-
     <folder name="Projects">
         <folder name="org-netbeans-modules-php-project">
             <folder name="Customizer">
@@ -137,10 +150,10 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="300"/>
                 </file>
                 <file name="Formatting.instance">
-                   <attr name="instanceClass"
+                    <attr name="instanceClass"
 stringvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel$Factory"/>
-                   <attr name="position" intvalue="1000"/>
-               </file>
+                    <attr name="position" intvalue="1000"/>
+                </file>
             </folder>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-php-project-ui-logicalview-SourcesNodeFactory.instance">
@@ -152,13 +165,11 @@ stringvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel$
             </folder>
         </folder>
     </folder>
-
     <folder name="PHP">
         <folder name="RuntimeLibraries">
             <file name="pdo_mysql.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/pdo_mysql.php"/>
         </folder>
     </folder>
-
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-php5">
@@ -231,5 +242,4 @@ stringvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel$
             </folder>
         </folder>
     </folder>
-
 </filesystem>

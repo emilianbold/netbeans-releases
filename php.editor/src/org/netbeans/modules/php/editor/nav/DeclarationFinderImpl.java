@@ -68,6 +68,7 @@ import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.ClassMemberElement;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -121,15 +122,17 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
                         Collections.reverse(path);
 
+                        Scalar where = null;
                         for (ASTNode n : path) {
                             if (n instanceof Include) {
                                 FileObject file = NavUtils.resolveInclude(parameter, (Include) n);
-
-                                if (file != null) {
-                                    result[0] = new OffsetRange(n.getStartOffset(), n.getEndOffset());
+                                if (file != null && where != null) {
+                                    result[0] = new OffsetRange(where.getStartOffset()+1, where.getEndOffset()-1);
+                                    break;
                                 }
-
-                                break;
+                            }
+                            else if (n instanceof Scalar) {
+                                where = (Scalar)n;
                             }
                         }
                     }
@@ -156,7 +159,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         }
 
         if (path.size() == 0) {
-            return null;
+            return DeclarationLocation.NONE;
         }
 
         path = new LinkedList<ASTNode>(path);
@@ -207,6 +210,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     } else {
                         fromIndex = index.getFunctions(null, el.getName(), NameKind.PREFIX);
                     }
+                    break;
+                case IFACE:
+                    fromIndex = index.getInterfaces(null, el.getName(), NameKind.PREFIX);
                     break;
                 case CLASS:
                     fromIndex = index.getClasses(null, el.getName(), NameKind.PREFIX);

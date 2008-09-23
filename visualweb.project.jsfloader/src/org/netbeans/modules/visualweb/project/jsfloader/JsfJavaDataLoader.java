@@ -73,30 +73,30 @@ public class JsfJavaDataLoader extends MultiFileLoader {
     protected static Object dataObjectPool;
     protected static Method dataObjectPoolFindMethod;
 
-    static {
-        // EAT: All this to make sure I dont make a change to NB to make DataObjectPool public
-        try {
-            Class clazz = Class.forName("org.openide.loaders.DataObjectPool");
-            Method getPoolMethod = clazz.getDeclaredMethod("getPOOL", new Class[0]);
-            getPoolMethod.setAccessible(true);
-            dataObjectPool = getPoolMethod.invoke(null, new Object[0]);
-            dataObjectPoolFindMethod = clazz.getDeclaredMethod("find", new Class[] {FileObject.class});
-            dataObjectPoolFindMethod.setAccessible(true);
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-        }
-    }
-
-    public static DataObject DataObjectPoolFind(FileObject fileObject) {
-        // EAT: All this to make sure I dont make a change to NB to make DataObjectPool public
-        try {
-            Object result = dataObjectPoolFindMethod.invoke(dataObjectPool, new Object[] {fileObject});
-            return (DataObject) result;
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-            return null;
-        }
-    }
+//    static {
+//        // EAT: All this to make sure I dont make a change to NB to make DataObjectPool public
+//        try {
+//            Class clazz = Class.forName("org.openide.loaders.DataObjectPool");
+//            Method getPoolMethod = clazz.getDeclaredMethod("getPOOL", new Class[0]);
+//            getPoolMethod.setAccessible(true);
+//            dataObjectPool = getPoolMethod.invoke(null, new Object[0]);
+//            dataObjectPoolFindMethod = clazz.getDeclaredMethod("find", new Class[] {FileObject.class});
+//            dataObjectPoolFindMethod.setAccessible(true);
+//        } catch (Exception e) {
+//            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+//        }
+//    }
+//
+//    public static DataObject DataObjectPoolFind(FileObject fileObject) {
+//        // EAT: All this to make sure I dont make a change to NB to make DataObjectPool public
+//        try {
+//            Object result = dataObjectPoolFindMethod.invoke(dataObjectPool, new Object[] {fileObject});
+//            return (DataObject) result;
+//        } catch (Exception e) {
+//            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+//            return null;
+//        }
+//    }
 
     public JsfJavaDataLoader() {
         // use String name instead of class.getName() for performance reasons
@@ -138,16 +138,18 @@ public class JsfJavaDataLoader extends MultiFileLoader {
         if (!isTemplate && !JsfProjectUtils.isJsfProjectFile(primaryFile)) {
             return null;
         }
-        
-        // It is most likely a Java file, however, we need to see if there is already a JsfJavaDataObject registered
-        // for this file object.  There is a case where by in middle of refactoring, the JSP and the JAVA file are not
-        // linked as they should be, but there is still a JsfJavaDataObject registered uner this file object
-        // Duplicated in JsfJspDataObject
-        // XXX This causes some performance issues and should probably be removed
-        DataObject dataObject = DataObjectPoolFind(fo);
-        if (dataObject instanceof JsfJavaDataObject) {
-            return fo;
-        }
+
+        // XXX #146796 The lines below are redundant. If the fileobject is already assigned to data object, than this method is not called.
+//        // It is most likely a Java file, however, we need to see if there is already a JsfJavaDataObject registered
+//        // for this file object.  There is a case where by in middle of refactoring, the JSP and the JAVA file are not
+//        // linked as they should be, but there is still a JsfJavaDataObject registered uner this file object
+//        // Duplicated in JsfJspDataObject
+//        // XXX This causes some performance issues and should probably be removed
+//        DataObject dataObject = DataObjectPoolFind(fo);
+//        if (dataObject instanceof JsfJavaDataObject) {
+//            return fo;
+//        }
+
         // We now know look for the jsp file
         FileObject jspFile = Utils.findJspForJava(primaryFile);
         if(jspFile == null) {

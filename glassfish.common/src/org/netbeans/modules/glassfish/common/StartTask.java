@@ -44,9 +44,10 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -59,7 +60,6 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
-import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.DialogDisplayer;
@@ -68,6 +68,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -134,7 +135,13 @@ public class StartTask extends BasicTask<OperationState> {
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
         }
         
-        Process serverProcess = createProcess();
+        Process serverProcess = null;
+        try {
+            serverProcess = createProcess();
+        } catch (IOException ex) {
+            fireOperationStateChanged(OperationState.FAILED, 
+                    "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
+        }
         if (serverProcess == null) {
             // failed event already sent...
             return OperationState.FAILED;
@@ -229,7 +236,7 @@ public class StartTask extends BasicTask<OperationState> {
         return result;
     }
     
-    private NbProcessDescriptor createProcessDescriptor() {
+    private NbProcessDescriptor createProcessDescriptor() throws IOException {
         String startScript;
         if (null == jdkHome) {
            startScript = System.getProperty("java.home") +        
@@ -274,7 +281,7 @@ public class StartTask extends BasicTask<OperationState> {
         return path.indexOf(' ') == -1 ? path : "\"" + path + "\"";
     }
     
-    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf) {
+    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf) throws IOException {
         for(String option: optList) {
             argumentBuf.append(' ');
             argumentBuf.append(option);
@@ -282,9 +289,22 @@ public class StartTask extends BasicTask<OperationState> {
 
         if(GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
 //            javaOpts.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
-            argumentBuf.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=");
-            argumentBuf.append(ip.get(GlassfishModule.DEBUG_PORT));
-            argumentBuf.append(",server=y,suspend=n"); // NOI18N
+            try {
+                int debugPort = 8787;
+                // calculate the port and save it.
+                ServerSocket t = new ServerSocket(0);
+                debugPort = t.getLocalPort();
+                String debugPortString = Integer.toString(debugPort);
+                ip.put(GlassfishModule.DEBUG_PORT, debugPortString);
+                argumentBuf.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address="); // NOI18N
+                argumentBuf.append(debugPortString);
+                argumentBuf.append(",server=y,suspend=n"); // NOI18N
+                t.close();
+            } catch (IOException ioe) {
+                Logger.getLogger("glassfish").log(Level.FINE, "Could not get a socket for debugging",ioe);
+                fireOperationStateChanged(OperationState.FAILED,
+                    "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N                throw ioe;
+            }
         }
         return argumentBuf;
     }
@@ -315,7 +335,7 @@ public class StartTask extends BasicTask<OperationState> {
         return argumentBuf;
     }
     
-    private Process createProcess() {
+    private Process createProcess() throws IOException {
         Process process = null;
         NbProcessDescriptor pd = createProcessDescriptor();
         if(pd != null) {
@@ -342,7 +362,7 @@ public class StartTask extends BasicTask<OperationState> {
     
     private void readJvmArgs(File domainRoot, List<String> optList, Map<String, String> argMap) {
         Map<String, String> varMap = new HashMap<String, String>();
-        
+
         varMap.put("com.sun.aas.installRoot", fixPath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)));
         varMap.put("com.sun.aas.instanceRoot", fixPath(domainRoot.getAbsolutePath()));
         varMap.put("com.sun.aas.javaRoot", fixPath(System.getProperty("java.home")));

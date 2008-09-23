@@ -103,10 +103,10 @@ public final class SetMultiplicityAction extends SceneNodeAction
     public Action createContextAwareInstance(Lookup actionContext)
     {
         end = actionContext.lookup(IAssociationEnd.class);
-        if (end == null)
-        {
-            return null;
-        }
+//        if (end == null)
+//        {
+//            return null;
+//        }
         
         return this;
     }

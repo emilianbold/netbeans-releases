@@ -40,6 +40,9 @@ var PRODUCT_NAME      = "NetBeans {0}";
 var INSTALLER_MESSAGE = "Installer for {0}";
 var NOFILE_MESSAGE    = "No file requested" ;
 
+var NETBEANS_DOWNLOAD_STARTED_PAGE_TITLE       = "NetBeans IDE Download Started";
+var NETBEANS_DOWNLOAD_STARTER_PAGE_DESCRIPTION = "NetBeans IDE Download Started";
+
 var NETBEANS_DOWNLOAD_STARTED_HEADER = "NetBeans IDE {0} Download Started";
 var RELEASE_NOTES_LABEL = "Release Notes";
 var INSTALL_NOTES_LABEL = "Installation Instructions";

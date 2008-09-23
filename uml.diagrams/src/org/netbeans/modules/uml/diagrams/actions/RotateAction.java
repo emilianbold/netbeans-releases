@@ -49,6 +49,7 @@ import org.netbeans.api.visual.animator.AnimatorListener;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 
 public class RotateAction extends WidgetAction.Adapter
 {
@@ -65,9 +66,7 @@ public class RotateAction extends WidgetAction.Adapter
     {
         State retVal = State.REJECTED;
         
-        if((event.isControlDown() == true) && 
-                ((event.getKeyChar() == KeyEvent.VK_ENTER) ||
-                 (event.getKeyChar() == '\r')))
+        if(Util.isPaletteExecute(event) == true)
         {
             ContextPaletteManager manager = null;
             if(widget.getScene() != null)

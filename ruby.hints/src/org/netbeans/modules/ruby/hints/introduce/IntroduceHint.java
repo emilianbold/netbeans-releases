@@ -92,9 +92,6 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class IntroduceHint extends RubySelectionRule {
-    /** For test infrastructure only - a way to bypass the interactive name dialog */
-    static String testName;
-    
     public void run(RubyRuleContext context, List<Hint> result) {
         CompilationInfo info = context.compilationInfo;
         int start = context.selectionStart;

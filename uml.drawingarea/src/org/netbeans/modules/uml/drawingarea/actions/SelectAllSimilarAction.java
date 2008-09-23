@@ -141,4 +141,10 @@ public class SelectAllSimilarAction extends NodeAction
         return null;
     }
 
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
+
 }

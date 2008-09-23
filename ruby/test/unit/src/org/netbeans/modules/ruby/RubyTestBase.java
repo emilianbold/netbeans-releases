@@ -41,23 +41,25 @@
 
 package org.netbeans.modules.ruby;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.jruby.nb.ast.Node;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.options.CodeStyle;
 import org.netbeans.modules.ruby.options.FmtOptions;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -65,14 +67,29 @@ import org.openide.util.NbPreferences;
  */
 public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTestBase {
 
+    static {
+        //RubyIndex.setClusterUrl("file:/bogus"); // No translation
+        try {
+            RubyIndex.setClusterUrl(TestUtil.getXTestJRubyHome().getParentFile().toURI().toURL().toExternalForm());
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     public RubyTestBase(String testName) {
         super(testName);
     }
 
     @Override
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-        RubyIndex.setClusterUrl("file:/bogus"); // No translation
+
         TestSourceModelFactory.currentTest = this;
     }
     
@@ -85,7 +102,15 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
     protected String getPreferredMimeType() {
         return RubyInstallation.RUBY_MIME_TYPE;
     }
-    
+
+    @Override
+    protected void setupDocumentIndentation(BaseDocument doc, IndentPrefs preferences) {
+        // Ensure that I pick up the code style settings
+        super.setupDocumentIndentation(doc, preferences);
+        int size = preferences != null ? preferences.getIndentation() : 2;
+        CodeStylePreferences.get(doc).getPreferences().putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, size);
+    }
+
     @Override
     protected void initializeClassPaths() {
         System.setProperty("netbeans.user", getWorkDirPath());

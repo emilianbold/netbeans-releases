@@ -45,6 +45,7 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -109,6 +110,7 @@ public class CodeUtils {
         return (superClass != null) ? superClass.getName():null;
     }
 
+    @CheckForNull // null for RelectionVariable
     public static String extractVariableName(Variable var) {
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
@@ -125,8 +127,7 @@ public class CodeUtils {
             return extractVariableName(name);
         }
         
-        throw new IllegalStateException("unsupported type returned by Variable.getName():"
-                    + var.getName().getClass().toString());
+        return null;
     }
     
     public static boolean isVariableTypeResolved(IndexedConstant var){
@@ -230,13 +231,15 @@ public class CodeUtils {
                 } else {
                     IndexedConstant dispatcher = varStack.get(varName);
 
-                    if (dispatcher != null) {
+                    if (dispatcher != null
+                            // preventing infinite loop
+                            && dispatcher != variable) {
                         resolveFunctionType(context, index, varStack, dispatcher);
                         className = dispatcher.getTypeName();
                     }
                 }
 
-                if (className != null && className.trim().length() > 0) {
+                if (className != null) {
                     for (IndexedFunction func : index.getAllMethods(context, className,
                             methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
 

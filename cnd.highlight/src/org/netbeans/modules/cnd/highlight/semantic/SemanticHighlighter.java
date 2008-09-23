@@ -41,8 +41,11 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -57,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupte
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
+import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
 /**
@@ -155,7 +159,26 @@ public final class SemanticHighlighter extends HighlighterBase {
                     }
                 }
                 // to show inactive code and macros first
-                getHighlightsBag(doc).setHighlights(newBag);
+                OffsetsBag old = getHighlightsBag(doc);
+                if (old != null) {
+                    OffsetsBag tempBag = new OffsetsBag(doc);
+                    tempBag.addAllHighlights(newBag.getHighlights(0, Integer.MAX_VALUE));
+                    HighlightsSequence seq = newBag.getHighlights(0, Integer.MAX_VALUE);
+                    Set<AttributeSet> set = new HashSet<AttributeSet>();
+                    while (seq.moveNext()) {
+                        set.add(seq.getAttributes());
+                        tempBag.addAllHighlights(seq);
+                    }
+                    seq = old.getHighlights(0, Integer.MAX_VALUE);
+                    while (seq.moveNext()) {
+                        if (!set.contains(seq.getAttributes())) {
+                            tempBag.addHighlight(seq.getStartOffset(), seq.getEndOffset(), seq.getAttributes());
+                        }
+                    }
+                    getHighlightsBag(doc).setHighlights(tempBag);
+                } else {
+                    getHighlightsBag(doc).setHighlights(newBag);
+                }
                 // here we invoke the collectors
                 // but not for huge documents
                 if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
@@ -177,7 +200,9 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }
                 if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + csmFile.getAbsolutePath());
             }
-            getHighlightsBag(doc).setHighlights(newBag);
+            if (!interruptor.cancelled()){
+                getHighlightsBag(doc).setHighlights(newBag);
+            }
         }
     }
 

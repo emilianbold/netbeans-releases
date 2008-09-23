@@ -78,10 +78,11 @@ made subject to such option by the copyright holder.
 <!ELEMENT use-provider (#PCDATA)>
 
 <!ELEMENT wsimport-options ((wsimport-option)*)>
-<!ELEMENT wsimport-option (wsimport-option-name, wsimport-option-value)>
+<!ELEMENT wsimport-option (wsimport-option-name, wsimport-option-value, jaxboption?)>
 <!ELEMENT wsimport-option-name (#PCDATA)>
 <!ELEMENT wsimport-option-value (#PCDATA)>
 
+<!ELEMENT jaxboption (#PCDATA)>
 <!ELEMENT jsr109 (#PCDATA)>
 
 <!--- Put your DTDDoc comment here. -->

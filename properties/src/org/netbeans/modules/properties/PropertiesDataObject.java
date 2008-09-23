@@ -66,8 +66,6 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import static java.util.logging.Level.FINER;
 
 
@@ -125,23 +123,9 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         return ((PropertiesDataLoader) getLoader()).getEncoding();
     }
     
-    private Lookup getSuperLookup() {
-        return super.getLookup();
-    }
-    
     @Override
     public Lookup getLookup() {
-        if (lookup == null) {
-            lookup = new ProxyLookup(
-                    Lookups.singleton(getEncoding()),
-                    Lookups.proxy(
-                            new Lookup.Provider() {
-                                    public Lookup getLookup() {
-                                        return getSuperLookup();
-                                    }
-                    }));
-        }
-        return lookup;
+        return getCookieSet().getLookup();
     }
     
     /** Initializes the object. Used by construction and deserialized. */
@@ -151,6 +135,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         arr[0] = PropertiesOpen.class;
         arr[1] = PropertiesEditorSupport.class;
         getCookieSet().add(arr, this);
+        getCookieSet().assign(PropertiesEncoding.class, getEncoding());
     }
 
     /** Implements <code>CookieSet.Factory</code> interface method. */

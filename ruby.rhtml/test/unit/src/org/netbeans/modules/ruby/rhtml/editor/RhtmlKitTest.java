@@ -70,7 +70,7 @@ public class RhtmlKitTest extends RhtmlTestBase {
     }
 
     @Override
-    protected void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws BadLocationException {
+    protected void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws Exception {
         JEditorPane pane;
         try {
             pane = getPane(original);
@@ -97,7 +97,7 @@ public class RhtmlKitTest extends RhtmlTestBase {
             assertEquals(selection, pane.getSelectedText());
         }
         runKitAction(pane, DefaultEditorKit.defaultKeyTypedAction, ""+insertText);
-        
+
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(expected, formatted);
         if (finalCaretPos != -1) {
@@ -106,7 +106,7 @@ public class RhtmlKitTest extends RhtmlTestBase {
     }
 
     @Override
-    protected void deleteChar(String original, String expected) throws BadLocationException {
+    protected void deleteChar(String original, String expected) throws Exception {
         JEditorPane pane;
         try {
             pane = getPane(original);
@@ -124,15 +124,15 @@ public class RhtmlKitTest extends RhtmlTestBase {
         caret.setDot(afterRemoveOffset);
         BaseDocument doc = (BaseDocument)pane.getDocument();
         char ch = doc.getChars(afterRemoveOffset-1, 1)[0];
-        
+
         runKitAction(pane, DefaultEditorKit.deletePrevCharAction, ""+ch);
-        
+
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(expected, formatted);
         if (finalCaretPos != -1) {
             assertEquals(finalCaretPos, caret.getDot());
         }
-    }    
+    }
 
     public void testInsertTag() throws Exception {
         insertChar("<^", '%', "<%^%>");

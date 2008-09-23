@@ -63,6 +63,7 @@ public class CppTypeProvider implements TypeProvider {
 
 //    public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType type) {
     public void computeTypeNames(Context context, Result res) {
+        isCancelled = false;
         Project project = context.getProject();
         String text = context.getText();
         SearchType type = context.getSearchType();

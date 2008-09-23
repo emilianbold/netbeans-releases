@@ -108,7 +108,7 @@ public class DebugCommand extends Command implements Displayable {
                             invokeAction(context);
                         }
                     } else {
-                        final FileObject fileForProject = fileForProject();
+                        final FileObject fileForProject = fileForProject(true);
                         if (fileForProject != null) {
                             dbgStarter.start(getProject(), runnable, fileForProject, scriptSelected);
                         } else {

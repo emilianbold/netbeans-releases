@@ -570,7 +570,8 @@ public class GenerateCodePanel extends javax.swing.JPanel
 
     private void populateExistingProjectElementGroup()
     {
-        ProjectCellRenderer projectCellRenderer = new ProjectCellRenderer();
+        ProjectCellRenderer projectCellRenderer 
+            = new ProjectCellRenderer(targetProjectCombo.getRenderer());
         targetProjectCombo.setRenderer(projectCellRenderer);
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         ArrayList<Project> list = new ArrayList<Project>();
@@ -654,7 +655,8 @@ public class GenerateCodePanel extends javax.swing.JPanel
 
     private void populateSourceFolderCombo(Project prj)
     {
-        SourceRootCellRenderer srcCellRenderer = new SourceRootCellRenderer();
+        SourceRootCellRenderer srcCellRenderer 
+            = new SourceRootCellRenderer(srcFolderCombo.getRenderer());
         srcFolderCombo.setRenderer(srcCellRenderer);
         ArrayList<SourceGroup> srcRoots = new ArrayList<SourceGroup>();
         int index = 0;
@@ -787,9 +789,11 @@ public class GenerateCodePanel extends javax.swing.JPanel
     private static class ProjectCellRenderer extends JLabel 
         implements ListCellRenderer
     {
-        public ProjectCellRenderer()
+        ListCellRenderer renderer;
+
+        public ProjectCellRenderer(ListCellRenderer hostRenderer)
         {
-            setOpaque(true);
+            renderer = hostRenderer;
         }
         
         public Component getListCellRendererComponent(
@@ -799,36 +803,50 @@ public class GenerateCodePanel extends javax.swing.JPanel
             boolean isSelected,
             boolean cellHasFocus)
         {
+            Component comp = null;
+
+            if (renderer != null) 
+            {
+                comp = renderer.getListCellRendererComponent(list, value, index, 
+                                                             isSelected, cellHasFocus);
+            }
             
+            JLabel label = null;
+
+            if (comp instanceof JLabel) 
+            {                
+                label = (JLabel) comp;
+            }
+            else 
+            {
+                label = this;
+                if (isSelected)
+                {
+                    setBackground(list.getSelectionBackground());
+                    setForeground(list.getSelectionForeground());
+                }            
+                else
+                {
+                    setBackground(list.getBackground());
+                    setForeground(list.getForeground());                
+                }
+                setOpaque(true);
+            }
+
             if (value instanceof Project)
             {
                 ProjectInformation pi = 
                     ProjectUtils.getInformation((Project)value);
                 
-                setText(pi.getDisplayName());
-                setIcon(pi.getIcon());
+                label.setText(pi.getDisplayName());
+                label.setIcon(pi.getIcon());
             }
-
             else
             {
-                setText( value == null ? " " : value.toString() ); // NOI18N
-                setIcon( null );
+                label.setText( value == null ? " " : value.toString() ); // NOI18N
+                label.setIcon( null );
             }
-
-            if (isSelected)
-            {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            }
-            
-            else
-            {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-                
-            }
-            
-            return this;
+            return label;                  
         }
     }
 
@@ -837,9 +855,11 @@ public class GenerateCodePanel extends javax.swing.JPanel
         implements ListCellRenderer
     {
 
-        public SourceRootCellRenderer()
+        ListCellRenderer renderer;
+
+        public SourceRootCellRenderer(ListCellRenderer hostRenderer)
         {
-            setOpaque(true);
+            renderer = hostRenderer;
         }
 
         public Component getListCellRendererComponent(
@@ -850,6 +870,36 @@ public class GenerateCodePanel extends javax.swing.JPanel
             boolean cellHasFocus)
         {
 
+            Component comp = null;
+
+            if (renderer != null) 
+            {
+                comp = renderer.getListCellRendererComponent(list, value, index, 
+                                                             isSelected, cellHasFocus);
+            }
+            
+            JLabel label = null;
+
+            if (comp instanceof JLabel) 
+            {                
+                label = (JLabel) comp;
+            }
+            else 
+            {
+                label = this;
+                if (isSelected)
+                {
+                    setBackground(list.getSelectionBackground());
+                    setForeground(list.getSelectionForeground());
+                }             
+                else
+                {
+                    setBackground(list.getBackground());
+                    setForeground(list.getForeground());
+                }
+                setOpaque(true);
+            }
+
             if (value instanceof SourceGroup)
             {
                 SourceGroup sg = (SourceGroup) value;
@@ -859,26 +909,13 @@ public class GenerateCodePanel extends javax.swing.JPanel
                     FileObject fo = sg.getRootFolder();
                     desc = fo.getPath();
                 }
-                setText(desc);
+                label.setText(desc);
             }
             else
             {
-                setText(value == null ? " " : value.toString()); // NOI18N
-            }
-
-            if (isSelected)
-            {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            }
-             
-            else
-            {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            return this;
+                label.setText(value == null ? " " : value.toString()); // NOI18N
+            }            
+            return label;
         }
     }
     

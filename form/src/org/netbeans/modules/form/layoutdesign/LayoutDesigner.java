@@ -1052,6 +1052,7 @@ public class LayoutDesigner implements LayoutConstants {
                     gap.setSizes(min, pref, max);
                 } else {
                     gap.setSizes(interval.getMinimumSize(), interval.getPreferredSize(), interval.getMaximumSize());
+                    gap.setPaddingType(interval.getPaddingType());
                 }
                 return gap;
             } else {
@@ -1660,6 +1661,17 @@ public class LayoutDesigner implements LayoutConstants {
      * @param direction the direction of addition - LEADING or TRAILING
      */
     public void duplicateLayout(String[] sourceIds, String[] targetIds, int dimension, int direction) {
+        if (logTestCode()) {
+            testCode.add("// > DUPLICATE"); // NOI18N
+            testCode.add("{"); // NOI18N
+            LayoutTestUtils.writeStringArray(testCode, "sourceIds", sourceIds); // NOI18N
+            LayoutTestUtils.writeStringArray(testCode, "targetIds", targetIds); // NOI18N
+            testCode.add("int dimension = " + dimension + ";"); // NOI18N
+            testCode.add("int direction = " + direction + ";"); // NOI18N
+            testCode.add("ld.duplicateLayout(sourceIds, targetIds, dimension, direction);"); // NOI18N
+            testCode.add("}"); // NOI18N
+            testCode.add("// < DUPLICATE"); // NOI18N
+        }
         LayoutComponent[] sourceComps = new LayoutComponent[sourceIds.length];
         LayoutInterval[][] sourceIntervals = new LayoutInterval[DIM_COUNT][sourceIds.length];
         LayoutComponent[] targetComps = new LayoutComponent[targetIds.length];
@@ -1720,10 +1732,10 @@ public class LayoutDesigner implements LayoutConstants {
     private void duplicateSequentially(LayoutInterval[] intervals,
             Map<LayoutComponent, LayoutComponent> componentMap,
             int dimension, int direction) {
-        // get the root groups/components to duplicate, prepare parent sequences
+        // determine roots to duplicate, eliminate subcontained
         Set<LayoutInterval> dupRoots = new HashSet<LayoutInterval>();
-        Set<LayoutInterval> dupParents = new HashSet<LayoutInterval>();
         for (LayoutInterval li : intervals) {
+            // check if not under already determined root
             LayoutInterval parent = li.getParent();
             while (parent != null) {
                 if (dupRoots.contains(parent)) {
@@ -1732,46 +1744,59 @@ public class LayoutDesigner implements LayoutConstants {
                     parent = parent.getParent();
                 }
             }
-            if (parent == null) { // interval not known yet
+            if (parent == null) { // not determined yet
                 parent = li.getParent();
                 while (parent != null) {
                     if (shouldDuplicateWholeGroup(parent, li, intervals)) {
                         li = parent;
                         parent = li.getParent();
                     } else {
-                        dupRoots.add(li);
-                        LayoutInterval targetSeq;
-                        if (li.isSequential()) {
-                            targetSeq = li;
-                        } else if (parent.isSequential()) {
-                            targetSeq = parent;
-                        } else {
-                            LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
-                            layoutModel.addInterval(seq, parent, layoutModel.removeInterval(li));
-                            layoutModel.addInterval(li, seq, -1);
-                            targetSeq = seq;
+                        if (li.isGroup()) { // we might find a parent of some previous root
+                            for (Iterator<LayoutInterval> it = dupRoots.iterator(); it.hasNext(); ) {
+                                LayoutInterval dRoot = it.next();
+                                if (li.isParentOf(dRoot)) {
+                                    it.remove();
+                                }
+                            }
                         }
-                        dupParents.add(targetSeq);
+                        dupRoots.add(li);
                         break;
                     }
                 }
-                if (parent == null) { // the root duplicated
-                    parent = li;
-                    LayoutInterval group = new LayoutInterval(PARALLEL);
-                    group.setGroupAlignment(parent.getGroupAlignment());
-                    while (parent.getSubIntervalCount() > 0) {
-                        layoutModel.addInterval(layoutModel.removeInterval(parent, 0), group, -1);
-                    }
-                    LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
-                    layoutModel.addInterval(seq, parent, -1);
-                    layoutModel.addInterval(group, seq, -1);
-                    dupParents.add(seq);
+                if (parent == null) { // whole layout root to be duplicated
+                    dupRoots.clear();
+                    dupRoots.add(li);
+                    break;
                 }
             }
         }
 
-        // duplicate...
-        for (LayoutInterval seq : dupParents) {
+        // duplicate the roots
+        for (LayoutInterval dRoot : dupRoots) {
+            // prepare parent sequence
+            LayoutInterval seq;
+            LayoutInterval parent = dRoot.getParent();
+            if (parent != null) {
+                if (dRoot.isSequential()) {
+                    seq = dRoot;
+                } else if (parent.isSequential()) {
+                    seq = parent;
+                } else {
+                    seq = new LayoutInterval(SEQUENTIAL);
+                    layoutModel.addInterval(seq, parent, layoutModel.removeInterval(dRoot));
+                    layoutModel.addInterval(dRoot, seq, -1);
+                }
+            } else { // duplicating entire layout root
+                LayoutInterval group = new LayoutInterval(PARALLEL);
+                group.setGroupAlignment(dRoot.getGroupAlignment());
+                while (dRoot.getSubIntervalCount() > 0) {
+                    layoutModel.addInterval(layoutModel.removeInterval(dRoot, 0), group, -1);
+                }
+                seq = new LayoutInterval(SEQUENTIAL);
+                layoutModel.addInterval(seq, dRoot, -1);
+                layoutModel.addInterval(group, seq, -1);
+            }
+            // determine parts of the sequence to duplicate
             int start = -1;
             boolean wholeSeq = dupRoots.contains(seq);
             LayoutRegion space = seq.getParent().getCurrentSpace();
@@ -1784,10 +1809,8 @@ public class LayoutDesigner implements LayoutConstants {
                 }
                 if (start >= 0 && ((!duplicate && !sub.isEmptySpace()) || last)) {
                     int count = i - start;
-                    if (last) {
-                        if (!sub.isEmptySpace()) {
-                            count++;
-                        }
+                    if (last && duplicate) {
+                        count++;
                     } else if (seq.getSubInterval(i-1).isEmptySpace()) {
                         count--;
                     }
@@ -3197,7 +3220,7 @@ public class LayoutDesigner implements LayoutConstants {
             }
         }
 
-        if (group.getGroupAlignment() == CENTER || group.getGroupAlignment() == BASELINE) {
+        if (group.getGroupAlignment() == BASELINE) {
             return -1;
         }
         int nonEmptyCount = LayoutInterval.getCount(group, LayoutRegion.ALL_POINTS, true);

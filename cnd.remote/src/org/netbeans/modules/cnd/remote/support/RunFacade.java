@@ -114,7 +114,7 @@ public abstract class RunFacade {
         public int doRun(String command) {
             RemoteCommandSupport support = new RemoteCommandSupport(hkey, command);
             int result = support.run();
-            output = support.toString();
+            output = support.getOutput();
             return result;
         }
     }

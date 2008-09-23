@@ -1,0 +1,21 @@
+
+            function |>METHOD:foo<|(|>UNUSED:text<|){
+            return 10;
+        }
+        
+
+        |>GLOBAL:dojo<|.provide("dojox.wire.ml.tests.markup.Action");
+
+        |>GLOBAL:dojo<|.require("dojo.parser");
+
+        |>GLOBAL:dojo<|.addOnLoad(function(){
+            |>GLOBAL:doh<|.register("dojox.wire.ml.tests.markup.Action", [
+                function |>METHOD:test_Action_triggerEvent<|(|>UNUSED:t<|){
+                    |>GLOBAL:dojox<|.wire.ml.tests.markup.Action.target = {};
+                },
+            ]);
+            |>GLOBAL:doh<|.run();
+        }
+    );
+        
+

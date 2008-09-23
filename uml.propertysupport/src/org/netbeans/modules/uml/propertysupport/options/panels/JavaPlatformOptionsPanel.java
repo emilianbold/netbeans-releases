@@ -92,7 +92,6 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.jLabel2.text")); // NOI18N
 
-        removePrefixCB.setSelected(true);
         removePrefixCB.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.removePrefixCB.text")); // NOI18N
         removePrefixCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -190,9 +189,7 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
                                 .add(jLabel11)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(layout.createSequentialGroup()
-                                .add(collectionsUseGenCB)
-                                .add(14, 14, 14)))
+                            .add(collectionsUseGenCB))
                         .addContainerGap(157, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
@@ -310,7 +307,7 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
             nameNavEndsCB.setSelected(false);
         }
         
-        if (prefs.getBoolean("NO_PREFIX_ON_ACCESSORS", true)) {// NOI18N
+        if (prefs.getBoolean("NO_PREFIX_ON_ACCESSORS", false)) {// NOI18N
             this.removePrefixCB.setSelected(true);
         }else {
             removePrefixCB.setSelected(false);

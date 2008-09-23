@@ -90,15 +90,18 @@ import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -110,6 +113,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.elements.IndexedMethod;
@@ -138,8 +142,6 @@ public class CodeCompleter implements CodeCompletionHandler {
     List<String> dfltImports = new ArrayList<String>();
 
     public CodeCompleter() {
-        LOG.setLevel(Level.OFF);
-
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
         List<URL> docfolder = platform.getJavadocFolders();
@@ -312,8 +314,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         
 
         if (active != null) {
-            if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0) ||
-                active.id().primaryCategory().equals("separator")) {
+            if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0)
+                    /*|| active.id().primaryCategory().equals("separator")*/) {
                 LOG.log(Level.FINEST, "ts.movePrevious() - 1");
                 ts.movePrevious();
             } else if (active.id() == GroovyTokenId.NLS ) {
@@ -492,6 +494,9 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return CaretLocation.INSIDE_COMMENT;
             }
 
+            if (t.id() == GroovyTokenId.STRING_LITERAL) {
+                return CaretLocation.INSIDE_STRING;
+            }
             // This is a special case. If we have a NLS right behind a LINE_COMMENT it
             // should be treated as a CaretLocation.INSIDE_COMMENT. Therefore we have to rewind.
 
@@ -676,7 +681,7 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param request completion request which includes position information
      * @return the next surrouning ClassNode
      */
-    private ClassNode getSurroundingClassdNode(CompletionRequest request) {
+    private ClassNode getSurroundingClassNode(CompletionRequest request) {
         if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
@@ -718,6 +723,23 @@ public class CodeCompleter implements CodeCompletionHandler {
         return new AstPath(root, request.astOffset, request.doc);
     }
 
+    private AstPath getPath(CompilationInfo info, BaseDocument doc, int astOffset) {
+        // figure out which class we are dealing with:
+        ASTNode root = AstUtilities.getRoot(info);
+
+        // in some cases we can not repair the code, therefore root == null
+        // therefore we can not complete. See # 131317
+
+        if (root == null) {
+            LOG.log(Level.FINEST, "AstUtilities.getRoot(request.info) returned null."); // NOI18N
+            LOG.log(Level.FINEST, "request.info   = {0}", info); // NOI18N
+
+            return null;
+        }
+
+        return new AstPath(root, astOffset, doc);
+    }
+    
     private AstPath getPathFromInfo(final int caretOffset, final CompilationInfo info) {
 
         assert info != null;
@@ -961,14 +983,14 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (request.behindDot) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
 
-            declaringClass = getDeclaringClass(request);
+            declaringClass = getBeforeDotDeclaringClass(request);
 
             if (declaringClass == null) {
                 LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
                 return false;
             }
         } else {
-            declaringClass = getSurroundingClassdNode(request);
+            declaringClass = getSurroundingClassNode(request);
 
             if (declaringClass == null) {
                 LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
@@ -1377,19 +1399,20 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     boolean checkBehindDot(final CompletionRequest request) {
-
         boolean behindDot = false;
 
         if (request == null || request.ctx == null || request.ctx.before1 == null) {
             behindDot = false;
         } else {
-            if (request.ctx.before1.text().equals(".")) {
+            if (CharSequenceUtilities.textEquals(request.ctx.before1.text(), ".") // NOI18N
+                    || (request.ctx.before1.text().toString().equals(request.prefix)
+                        && request.ctx.before2 != null
+                        && CharSequenceUtilities.textEquals(request.ctx.before2.text(), "."))) { // NOI18N
                 behindDot = true;
             }
         }
 
         return behindDot;
-
     }
 
     PackageCompletionRequest getPackageRequest(final CompletionRequest request) {
@@ -1523,7 +1546,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         assert pathInfo != null : "Can not get ClasspathInfo";
 
-        if (request.ctx.before1 != null && request.ctx.before1.text().equals("*") && request.behindImport) {
+        if (request.ctx.before1 != null
+                && CharSequenceUtilities.textEquals(request.ctx.before1.text(), "*")
+                && request.behindImport) {
             return false;
         }
 
@@ -1668,6 +1693,12 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             return true;
 
+        }
+        // already exited if package completion
+        
+        // dont want types for objectExpression.something
+        if (request.behindDot) {
+            return false;
         }
 
         // This ModuleNode is used to retrieve the types defined here
@@ -1967,13 +1998,22 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     /**
-     * Get the ClassNode this request operates on.
-     * This is used to complete methods and fields for classes.
+     * Get the ClassNode for the before-dot expression. This is important for
+     * field and method completion.
+     * <p>
+     * If the <code>request.declaringClass</code> is not <code>null</code>
+     * this value is immediately returned.
+     * <p>
+     * Returned value is stored to <code>request.declaringClass</code> too.
      *
      * Here are some sample paths:
      *
      * new String().
      * [ModuleNode:ConstructorCallExpression:ExpressionStatement:ConstructorCallExpression:]
+     *
+     * new String().[caret] something_unrelated
+     * [ModuleNode:ClassNode:MethodCallExpression]
+     * for this case we have to go for object expression of the method call
      *
      * s.
      * [ModuleNode:VariableExpression:ExpressionStatement:VariableExpression:]
@@ -1993,22 +2033,34 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param request
      * @return a valid ASTNode or null
      */
-    private ClassNode getDeclaringClass(CompletionRequest request) {
+    private ClassNode getBeforeDotDeclaringClass(CompletionRequest request) {
 
-        if (request.path == null) {
-            LOG.log(Level.FINEST, "path == null"); // NOI18N
-            return null;
-        }
+        assert request.behindDot;
 
         if (request.declaringClass != null && request.declaringClass instanceof ClassNode) {
             LOG.log(Level.FINEST, "returning declaringClass from request."); // NOI18N
             return request.declaringClass;
         }
 
-        ASTNode closest = request.path.leaf();
+        /*
+         * Actually we don't care about the caret location path, but about
+         * the path to before-dot location. In future there may be need to
+         * make this more accurate.
+         */
+        int position = request.lexOffset - request.prefix.length() - 1;
+        int astOffset = AstUtilities.getAstOffset(request.info, position);
+
+        AstPath realPath = getPath(request.info, request.doc, astOffset);
+
+        if (realPath == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
+
+        ASTNode closest = realPath.leaf();
 
         LOG.log(Level.FINEST, "getDeclaringClass() ----------------------------------------");
-        LOG.log(Level.FINEST, "Path : {0}", request.path);
+        LOG.log(Level.FINEST, "Path : {0}", realPath);
 
 
         if (closest == null) {
@@ -2020,33 +2072,45 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         // Loop the path till we find something usefull.
 
-        for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
+        for (Iterator<ASTNode> it = realPath.iterator(); it.hasNext();) {
             ASTNode current = it.next();
 
             printASTNodeInformation("Declaring-class, current is:", current);
 
-            if (current instanceof VariableExpression) {
-                LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
-                declClass = ((VariableExpression) current).getType();
-                break;
-            } else if (current instanceof ExpressionStatement) {
-                LOG.log(Level.FINEST, "* ExpressionStatement"); // NOI18N
-                Expression expr = ((ExpressionStatement) current).getExpression();
-                declClass = expr.getType();
-                break;
-            } else if (current instanceof PropertyExpression) {
-                LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
-                declClass = ((PropertyExpression) current).getObjectExpression().getType();
-                break;
-            } else if (current instanceof ConstructorCallExpression) {
-                LOG.log(Level.FINEST, "* ConstructorCallExpression"); // NOI18N
-                declClass = ((ConstructorCallExpression) current).getType();
+            declClass = getBeforeDotDeclaringClass(current);
+            if (declClass != null) {
                 break;
             }
         }
 
         request.declaringClass = declClass;
         return declClass;
+    }
+
+    private ClassNode getBeforeDotDeclaringClass(ASTNode current) {
+        printASTNodeInformation("Declaring-class, current is:", current);
+
+        if (current instanceof VariableExpression) {
+            LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
+            return ((VariableExpression) current).getType();
+        } else if (current instanceof ExpressionStatement) {
+            LOG.log(Level.FINEST, "* ExpressionStatement"); // NOI18N
+            return ((ExpressionStatement) current).getExpression().getType();
+        } else if (current instanceof PropertyExpression) {
+            LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
+            return ((PropertyExpression) current).getObjectExpression().getType();
+        } else if (current instanceof ConstructorCallExpression) {
+            LOG.log(Level.FINEST, "* ConstructorCallExpression"); // NOI18N
+            return ((ConstructorCallExpression) current).getType();
+        } else if (current instanceof MethodCallExpression) {
+            LOG.log(Level.FINEST, "* MethodCallExpression"); // NOI18N
+            // TODO unfortunately object expression is always of type java.lang.Object
+            return ((MethodCallExpression) current).getObjectExpression().getType();
+        } else if (current instanceof ConstantExpression) {
+            LOG.log(Level.FINEST, "* ConstantExpression"); // NOI18N
+            return ((ConstantExpression) current).getType();
+        }
+        return null;
     }
 
     /**
@@ -2056,7 +2120,12 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param request
      * @return
      */
+    // FIXME afaik this should operate on the same path as getBeforeDotDeclaringClass
+    // otherwise for example inside of for(new Date().^;;) we get the ClosureListExpression
+    // instead of Date
     private Expression getPossibleCollection(CompletionRequest request) {
+        assert request.behindDot;
+
         if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
@@ -2317,7 +2386,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
-        ClassNode declaringClass = getDeclaringClass(request);
+        ClassNode declaringClass = getBeforeDotDeclaringClass(request);
 
         if (declaringClass == null) {
             LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
@@ -2490,7 +2559,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         if (clz != null) {
             MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
-
+            
             if (metaClz != null) {
 
                 List<MethodItem> result = new ArrayList<MethodItem>();
@@ -2543,12 +2612,17 @@ public class CodeCompleter implements CodeCompletionHandler {
         for (MethodItem methodItem : methodItemList) {
             MetaMethod listMethod = methodItem.getMethod();
 
-            if (listMethod.getName().equals(methodToStore.getName()) &&
-                listMethod.getSignature().equals(methodToStore.getSignature()) &&
-                listMethod.getDeclaringClass().getSuperClassDistance() < toStoreDistance) {
-                LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
-                methodItemList.remove(methodItem);
-                break; // it's unlikely that we have more then one Method with a smaller distance
+            if (listMethod.getName().equals(methodToStore.getName())
+                    && listMethod.getSignature().equals(methodToStore.getSignature())) {
+
+                if (listMethod.getDeclaringClass().getSuperClassDistance() < toStoreDistance) {
+                    LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
+                    methodItemList.remove(methodItem);
+                    break; // it's unlikely that we have more then one Method with a smaller distance
+                } else {
+                    LOG.log(Level.FINEST, "Not removing existing method: {0}", listMethod.getName()); // NOI18N
+                    return;
+                }
             }
         }
 
@@ -2580,7 +2654,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         // Are we dealing with an all-uppercase prefix?
         if (prefix != null && prefix.length() > 0 && prefix.equals(prefix.toUpperCase())) {
 
-            ClassNode requestedClass = getSurroundingClassdNode(request);
+            ClassNode requestedClass = getSurroundingClassNode(request);
 
             if (requestedClass == null) {
                 LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
@@ -2685,6 +2759,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             assert request.ctx != null;
             request.behindDot = checkBehindDot(request);
 
+            if (request.behindDot) {
+                request.declaringClass = getBeforeDotDeclaringClass(request);
+            }
+
             boolean definitionLine = checkForVariableDefinition(request);
 
             // are we're right behind an import statement?
@@ -2694,11 +2772,10 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             if (definitionLine) {
                 newVars = getNewVarNameSuggestion(request.ctx);
-            }
+            } else {
 
-            if (!definitionLine) {
-
-                if (!(request.location == CaretLocation.OUTSIDE_CLASSES)) {
+                if (!(request.location == CaretLocation.OUTSIDE_CLASSES
+                        || request.location == CaretLocation.INSIDE_STRING)) {
                     // complete packages
                     completePackages(proposals, request);
 
@@ -2710,12 +2787,13 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                 if (!request.behindImport) {
 
-                    // complette keywords
-                    completeKeywords(proposals, request);
+                    if (request.location != CaretLocation.INSIDE_STRING) {
+                        // complete keywords
+                        completeKeywords(proposals, request);
 
-                    // complete methods
-                    completeMethods(proposals, request);
-
+                        // complete methods
+                        completeMethods(proposals, request);
+                    }
 
                     // complete fields
                     completeFields(proposals, request);

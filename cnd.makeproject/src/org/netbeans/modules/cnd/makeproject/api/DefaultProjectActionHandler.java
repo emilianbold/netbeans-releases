@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -366,7 +367,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     } else {
                         showInput = false;
                         if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                            conType = pae.getProfile().getDefaultConsoleType();
+                            conType = RunProfile.getDefaultConsoleType();
                         }
                         if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
                             try {
@@ -509,6 +510,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 try {
                     FileObject projectFileObject = paes[currentAction].getProject().getProjectDirectory();
                     projectFileObject.getFileSystem().refresh(false);
+                    MakeLogicalViewProvider.refreshBrokenItems(paes[currentAction].getProject());
                 } catch (Exception e) {
                 }
             }

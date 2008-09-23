@@ -41,7 +41,6 @@ package org.netbeans.modules.php.editor.nav;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -50,33 +49,26 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.VarTypeResolver;
-import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.ClassElement;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -258,7 +250,24 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                 }
                 super.visit(node);
             }
-                       
+
+            @Override
+            public void visit(InterfaceDeclaration node) {
+                if (el == a.getElement(node)) {
+                    usages.add(node.getName());
+                } else {
+                    List<Identifier> interfaes = node.getInterfaes();
+                    for (Identifier identifier : interfaes) {
+                        if (el == a.getElement(identifier) || el.getName().equals(identifier.getName())) {
+                            usages.add(identifier);
+                            break;
+                        }
+                    }
+                }
+                super.visit(node);
+            }
+
+
 
             @Override
             public void visit(ClassDeclaration node) {
@@ -267,6 +276,14 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                     usages.add(node.getName());
                 } else if (superClass != null && el.getName().equals(superClass.getName())) {
                     usages.add(superClass);
+                } else {
+                    List<Identifier> interfaes = node.getInterfaes();
+                    for (Identifier identifier : interfaes) {
+                        if (el == a.getElement(identifier)) {
+                            usages.add(identifier);
+                            break;
+                        }
+                    }
                 }
                 clsName = CodeUtils.extractClassName(node);
                 superClsName = CodeUtils.extractSuperClassName(node);

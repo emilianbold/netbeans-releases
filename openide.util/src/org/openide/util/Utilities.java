@@ -182,15 +182,27 @@ public final class Utilities {
 
     /** Operating system is one of the Unix variants but we don't know which
      * one it is.
+     * @since 7.18
      */
-    private static final int OS_UNIX_OTHER = OS_WINVISTA << 1;
+    public static final int OS_UNIX_OTHER = OS_WINVISTA << 1;
 
-    /** A mask for Windows platforms. */
+    /** Operating system is OpenBSD.
+     * @since 7.18
+     */
+    public static final int OS_OPENBSD = OS_UNIX_OTHER << 1;
+
+    /** A mask for Windows platforms.
+     * @deprecated Use {@link #isWindows()} instead.
+     */
+    @Deprecated
     public static final int OS_WINDOWS_MASK = OS_WINNT | OS_WIN95 | OS_WIN98 | OS_WIN2000 | OS_WINVISTA | OS_WIN_OTHER;
 
-    /** A mask for Unix platforms. */
+    /** A mask for Unix platforms.
+     * @deprecated Use {@link #isUnix()} instead.
+     */
+    @Deprecated
     public static final int OS_UNIX_MASK = OS_SOLARIS | OS_LINUX | OS_HP | OS_AIX | OS_IRIX | OS_SUNOS | OS_TRU64 |
-        OS_MAC | OS_FREEBSD | OS_UNIX_OTHER;
+        OS_MAC | OS_FREEBSD | OS_OPENBSD | OS_UNIX_OTHER;
 
     /** A height of the windows's taskbar */
     public static final int TYPICAL_WINDOWS_TASKBAR_HEIGHT = 27;
@@ -337,6 +349,8 @@ public final class Utilities {
                 operatingSystem = OS_MAC;
             } else if (osName.toLowerCase(Locale.US).startsWith("freebsd")) { // NOI18N 
                 operatingSystem = OS_FREEBSD;
+            } else if ("OpenBSD".equals(osName)) { // NOI18N
+                operatingSystem = OS_OPENBSD;
             } else if (File.pathSeparatorChar == ':') { // NOI18N
                 operatingSystem = OS_UNIX_OTHER;
             } else {

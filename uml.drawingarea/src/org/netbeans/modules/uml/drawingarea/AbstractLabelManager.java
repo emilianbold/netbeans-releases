@@ -66,6 +66,8 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
+import org.netbeans.modules.uml.drawingarea.actions.MoveNodeKeyAction;
+import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
@@ -149,11 +151,13 @@ public abstract class AbstractLabelManager implements LabelManager
                 scene.removeObject(data);
             }
             DesignerScene ds = (DesignerScene) scene;
-            EdgeLabelMoveSupport labelMoveSupport = new EdgeLabelMoveSupport(connector);
+            EdgeLabelMoveSupport labelMoveSupport = 
+                    new EdgeLabelMoveSupport(connector);
 
             WidgetAction.Chain chain = child.createActions(DesignerTools.SELECT);
             chain.addAction(scene.createSelectAction());
             chain.addAction(ActionFactory.createMoveAction(labelMoveSupport, labelMoveSupport));
+            chain.addAction(new MoveNodeKeyAction(labelMoveSupport, labelMoveSupport));
             chain.addAction(new WidgetAction.Adapter()
             {
                 public WidgetAction.State keyPressed(Widget widget,
@@ -189,15 +193,18 @@ public abstract class AbstractLabelManager implements LabelManager
                     connector.setConstraint(child,
                             getDefaultAlignment(name, type),
                             0.5f);
+                    labelMoveSupport.setAnchorLocation(0.5f);
                 }
                 else
                 {
                     connector.setConstraint(child,
                             getDefaultAlignment(name, type),
                             getAlignmentDistance(type));
+                    labelMoveSupport.setAnchorLocation(getAlignmentPrecent(type));
                 }
                 scene.validate();
              }
+
         }
         else
         {
@@ -503,6 +510,21 @@ public abstract class AbstractLabelManager implements LabelManager
     }
 
     /**
+     * The createLineWidget method is used to create a line widget that can 
+     * be used to connect a label to the associated connnection widget.
+     * 
+     * @param scene The scene that will own the line widget.
+     * @return The line widget.
+     */
+    private ConnectionWidget createLineWidget(Scene scene)
+    {
+        ConnectionWidget widget = new ConnectionWidget(scene);
+        widget.setStroke(DiagramEngine.ALIGN_STROKE);
+        widget.setForeground(Color.GRAY);
+        return widget;
+    }
+
+    /**
      * The ConnectionLabelWidget provides some basic features for all label
      * widgets.  For example the connection widget will has the ability to
      * highlight when selected.
@@ -535,7 +557,12 @@ public abstract class AbstractLabelManager implements LabelManager
                 setBackground(UIManager.getColor("List.selectionBackground"));
                 setForeground(UIManager.getColor("List.selectionForeground"));
 
-                setBorder(SELECTED_BORDER);
+                setBorder(SELECTED_BORDER);               
+                
+                if(this.getPreferredLocation() == null)
+                {
+                    setPreferredLocation(new Point(0,0));//getConnector().convertSceneToLocal(this.getLocation()));
+                }
             }
             else if((previousState.isSelected() == true) && (state.isSelected() == false))
             {
@@ -582,6 +609,8 @@ public abstract class AbstractLabelManager implements LabelManager
     {
         private Widget edgeWidget;
         private Point origLoc;
+        private ConnectionWidget lineWidget;
+        private float anchorLocation = 0.5f;
 
         public EdgeLabelMoveSupport(Widget edgeWidget)
         {
@@ -590,10 +619,12 @@ public abstract class AbstractLabelManager implements LabelManager
 
         public void movementStarted(Widget widget)
         {
+            show(widget);
         }
 
         public void movementFinished(Widget widget)
         {
+            hide();
             if (origLoc == null)
             {
                 origLoc = widget.getLocation();
@@ -619,6 +650,7 @@ public abstract class AbstractLabelManager implements LabelManager
 
         public void setNewLocation(Widget widget, Point location)
         {
+//            connectLineWidget(location);
             widget.setPreferredLocation(location);
         }
 
@@ -635,6 +667,52 @@ public abstract class AbstractLabelManager implements LabelManager
 
             return suggestedLocation;
         }
+        
+        public void show(Widget label)
+        {
+            Widget owner = connector.getParentWidget();
+            if (owner != null)
+            {
+                if (lineWidget == null)
+                {
+                    lineWidget = createLineWidget(connector.getScene());
+                    lineWidget.setSourceAnchor(new ConnectionAnchor(connector, anchorLocation));
+                    lineWidget.setTargetAnchor(new ShapeUniqueAnchor(label, false));
+                }
+                owner.addChild(lineWidget);
+            }
+        }
+
+        public void hide()
+        {
+            if(lineWidget != null)
+            {
+                lineWidget.removeFromParent();
+                lineWidget = null;
+            }
+        }
+
+        private void setAnchorLocation(float location)
+        {
+            anchorLocation = location;
+        }
+
+//        private void connectLineWidget(Widget widget, Point location)
+//        {
+//            Point labelLocation = widget.getLocation();
+//            Rectangle widgetBounds = widget.getBounds();
+//            Rectangle labelBounds = widget.convertLocalToScene(widgetBounds);
+//
+//            Rectangle nodeBounds = nodeWidget.getBounds();
+//            nodeBounds = nodeWidget.convertLocalToScene(nodeBounds);
+//            nodeBounds.getCenterX();
+//            labelBounds.translate(suggestedLocation.x - labelLocation.x, suggestedLocation.y - labelLocation.y);
+//
+//            ArrayList<Point> controlPoints = new ArrayList<Point>();
+//            controlPoints.add(new Point((int) nodeBounds.getCenterX(), (int) nodeBounds.getCenterY()));
+//            controlPoints.add(new Point((int) labelBounds.getCenterX(), (int) labelBounds.getCenterY()));
+//            lineWidget.setControlPoints(controlPoints, true);
+//        }
 
     }
 

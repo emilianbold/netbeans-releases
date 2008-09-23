@@ -52,6 +52,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
+import org.netbeans.modules.cnd.editor.fortran.FKit;
 
 /**
  * IMPORTANT NOTE:
@@ -104,6 +105,8 @@ public abstract class BaseTestCase extends NbTestCase {
         MockMimeLookup.setInstances(mimePath, new CCKit());
         mimePath = MimePath.parse("text/x-c"); // NOI18N
         MockMimeLookup.setInstances(mimePath, new CKit());
+        mimePath = MimePath.parse("text/x-fortran"); // NOI18N
+        MockMimeLookup.setInstances(mimePath, new FKit());
     }
 
     /**

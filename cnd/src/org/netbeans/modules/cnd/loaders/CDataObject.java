@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import java.util.HashSet;
-
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.nodes.*;

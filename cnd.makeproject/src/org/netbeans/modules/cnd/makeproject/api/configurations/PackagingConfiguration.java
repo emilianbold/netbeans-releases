@@ -81,6 +81,7 @@ public class PackagingConfiguration {
     private BooleanConfiguration verbose;
     private VectorConfiguration svr4Header;
     private VectorConfiguration rpmHeader;
+    private VectorConfiguration debianHeader;
     private VectorConfiguration files;
     private StringConfiguration output;
     private StringConfiguration tool;
@@ -93,6 +94,7 @@ public class PackagingConfiguration {
         verbose = new BooleanConfiguration(null, true);
         svr4Header = new VectorConfiguration(null); // NOI18N
         rpmHeader = new VectorConfiguration(null); // NOI18N
+        debianHeader = new VectorConfiguration(null); // NOI18N
         files = new VectorConfiguration(null); // NOI18N
         output = new StringConfiguration(null, ""); // NOI18N
         tool = new StringConfiguration(null, ""); // NOI18N
@@ -134,14 +136,19 @@ public class PackagingConfiguration {
         elem.setDefaultValue(true);
         files.add(elem);
         
-        // Solaris SVR4
-        String defArch = getString("DefaultArchictureValue");
+        String defArch;
         if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
             defArch = "i386"; // NOI18N
         }
         else if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
             defArch = "sparc"; // NOI18N
         }
+        else {
+            // Anything else ?
+            defArch = "i386"; // NOI18N
+        }
+        
+        // Solaris SVR4
         List<InfoElement> headerList = getSvr4Header().getValue();
         headerList.add(new InfoElement("PKG", getOutputName(), true, true)); // NOI18N
         headerList.add(new InfoElement("NAME", "Package description ...", true, true)); // NOI18N
@@ -161,6 +168,14 @@ public class PackagingConfiguration {
         rpmHeaderList.add(new InfoElement("Group", "Applications/System", true, true)); // NOI18N
         rpmHeaderList.add(new InfoElement("License", "BSD-type", true, true)); // NOI18N
         rpmHeaderList.add(new InfoElement("%description", "Description...", true, true)); // NOI18N
+        
+        // Debian
+        List<InfoElement> debianHeaderList = getDebianHeader().getValue();
+        debianHeaderList.add(new InfoElement("Package", getOutputName(), true, true)); // NOI18N
+        debianHeaderList.add(new InfoElement("Version", "1.0", true, true)); // NOI18N
+        debianHeaderList.add(new InfoElement("Architecture", defArch, false, true)); // NOI18N
+        debianHeaderList.add(new InfoElement("Maintainer", System.getProperty("user.name"), false, true)); // NOI18N
+        debianHeaderList.add(new InfoElement("Description", "...", false, true)); // NOI18N
     }
     
     public boolean isModified() {
@@ -196,8 +211,14 @@ public class PackagingConfiguration {
             }
         }
         if (getType().getValue() == TYPE_DEBIAN_PACKAGE) {
-            // FIXUP
-            return true;
+            if (debianHeader.getValue().size() != 5) {
+                return true;
+            }
+            for (InfoElement elem : (List<InfoElement>)debianHeader.getValue()) {
+                if (!elem.isDefaultValue()) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -241,6 +262,14 @@ public class PackagingConfiguration {
 
     public void setRpmHeader(VectorConfiguration rpmHeader) {
         this.rpmHeader = rpmHeader;
+    }
+    
+    public VectorConfiguration getDebianHeader() {
+        return debianHeader;
+    }
+
+    public void setDebianHeader(VectorConfiguration debianHeader) {
+        this.debianHeader = debianHeader;
     }
 
     public VectorConfiguration getFiles() {
@@ -290,6 +319,7 @@ public class PackagingConfiguration {
         getVerbose().assign(conf.getVerbose());
         getSvr4Header().assign(conf.getSvr4Header());
         getRpmHeader().assign(conf.getRpmHeader());
+        getDebianHeader().assign(conf.getDebianHeader());
         getFiles().assign(conf.getFiles());
         getOutput().assign(conf.getOutput());
         getTool().assign(conf.getTool());
@@ -304,6 +334,7 @@ public class PackagingConfiguration {
         clone.setVerbose((BooleanConfiguration) getVerbose().clone());
         clone.setSvr4Header((VectorConfiguration) getSvr4Header().clone());
         clone.setRpmHeader((VectorConfiguration) getRpmHeader().clone());
+        clone.setDebianHeader((VectorConfiguration) getDebianHeader().clone());
         clone.setFiles((VectorConfiguration) getFiles().clone());
         clone.setOutput((StringConfiguration) getOutput().clone());
         clone.setTool((StringConfiguration) getTool().clone());

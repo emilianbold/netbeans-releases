@@ -103,10 +103,13 @@ public final class RubyBreakpointManager {
 
     public static void removeBreakpoint(final RubyBreakpoint breakpoint) {
         if (breakpoint instanceof RubyLineBreakpoint) {
-            BreakpointLineUpdater blu = BLUS.remove(breakpoint);
-            assert blu != null : "No BreakpointLineUpdater for RubyBreakpoint:" + breakpoint;
-            if (blu != null) {
-                blu.detach();
+            RubyLineBreakpoint lineBp = ((RubyLineBreakpoint) breakpoint);
+            if (isBreakpointOnLine(lineBp.getFileObject(), lineBp.getLineNumber())) {
+                BreakpointLineUpdater blu = BLUS.remove(breakpoint);
+                assert blu != null : "No BreakpointLineUpdater for RubyBreakpoint:" + breakpoint;
+                if (blu != null) {
+                    blu.detach();
+                }
             }
         }
         for (RubyDebuggerProxy proxy : RubyDebuggerProxy.PROXIES) {

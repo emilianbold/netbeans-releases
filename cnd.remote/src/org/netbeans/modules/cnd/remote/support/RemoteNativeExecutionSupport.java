@@ -91,6 +91,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         } catch (JSchException jse) {
         } catch (IOException ex) {
         } finally {
+            log.finest("RNES return value: " + getExitStatus());
             disconnect();
         }
     }
@@ -110,22 +111,17 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         }
 
         StringBuilder command = new StringBuilder(); // NOI18N
-
         if (envp != null) {
-            command.append(ShellUtils.prepareExportString(false, envp));
+            command.append(ShellUtils.prepareExportString(envp));
         }
-
-        command.append(exe).append(" ").append(args).append(" 2>&1");
+        command.append(exe).append(" ").append(args).append(" 2>&1"); // NOI18N
         command.insert(0, dircmd);
 
-        if (RemoteHostInfoProvider.getHostInfo(key).isCshShell()) {
-            // cshell doesn't support redirection error stream to output
-            command.insert(0, "bash -c '");
-            command.append("'");
-        }
+        String theCommand = ShellUtils.wrapCommand(key, command.toString());
+
         channel = createChannel();
-        log.finest("RNES: running command: " + command);
-        ((ChannelExec) channel).setCommand(command.toString().replace('\\', '/'));
+        log.finest("RNES: running command: " + theCommand);
+        ((ChannelExec) channel).setCommand(theCommand);
     }
 
     private final static class ReaderInputStream extends InputStream {

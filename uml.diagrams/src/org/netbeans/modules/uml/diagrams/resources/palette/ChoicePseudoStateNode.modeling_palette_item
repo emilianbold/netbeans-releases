@@ -43,8 +43,8 @@ made subject to such option by the copyright holder.
 <palette_item version="1.0">
   <element name="PseudoState" />
 
-  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/choice-pseudo-state.png" />
-  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/choice-pseudo-state-32.png" />
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/pseudostate-choice.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/pseudostate-choice-32.png" />
 
   <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.palette.Bundle"
                display-name-key="NAME_ChoicePseudoStateNode"

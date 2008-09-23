@@ -156,6 +156,36 @@ public class RubyStructureAnalyzer implements StructureScanner {
         
         private AnalysisResult() {
         }
+
+        public AstElement getElementFor(Node node) {
+            for (AstElement element : getElements()) {
+                AstElement result = findElement(element, node);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        public AstElement findElement(AstElement element, Node node) {
+            if (element.getNode() == node) {
+                return element;
+            }
+
+            for (AstElement child : element.getChildren()) {
+                if (child.getNode() == node) {
+                    return child;
+                }
+
+                AstElement result = findElement(child, node);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
+        }
         
         public Set<String> getRequires() {
             return requires;

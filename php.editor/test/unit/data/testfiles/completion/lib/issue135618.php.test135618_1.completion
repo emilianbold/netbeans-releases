@@ -1,5 +1,5 @@
 Code completion result for source line:
 B135618::|AAA;
 (QueryType=COMPLETION, NameKind=PREFIX)
-VARIABLE   ? AAA                           [STATIC]   A135618
-VARIABLE   ? BBB                                      B135618
+CONSTANT   ? AAA                                      A135618
+CONSTANT   ? BBB                                      B135618

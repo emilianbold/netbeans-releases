@@ -128,7 +128,7 @@ public class CustomizerDisplayer
             applyButton = new JButton(NbBundle.getMessage(CustomizerDisplayer.class, "Apply")); // NOI18N
             applyButton.setMnemonic(NbBundle.getMessage(CustomizerDisplayer.class, "Apply_mnemonic").charAt(0));
             applyButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerDisplayer.class, "APPLY_ACCESS_NAME"));
-            applyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerDisplayer.class, "APPLY_ACCESS_NAME"));
+            applyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerDisplayer.class, "APPLY_ACCESS_DESC"));
             boolean enabled = customizer.isModified(); // in case changes aren't cached
             applyButton.setEnabled(enabled);
 

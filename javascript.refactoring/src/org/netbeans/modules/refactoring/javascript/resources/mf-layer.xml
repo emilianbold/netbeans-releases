@@ -82,15 +82,15 @@ made subject to such option by the copyright holder.
                 <folder name="Actions">
                     <file name="RefactoringWhereUsed.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                        <attr name="position" intvalue="1700"/>
+                        <attr name="position" intvalue="1210"/>
                     </file>
                     <file name="RefactoringAll.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-                        <attr name="position" intvalue="1800"/>
+                        <attr name="position" intvalue="1220"/>
                     </file>
                     <file name="RefactoringSeparator-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1900"/>
+                        <attr name="position" intvalue="1230"/>
                     </file>
                 </folder>
             </folder>

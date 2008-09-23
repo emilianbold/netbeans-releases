@@ -43,6 +43,9 @@ package org.netbeans.modules.web.core.syntax.completion;
 
 import java.util.*;
 import java.beans.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import javax.swing.ImageIcon;
@@ -256,9 +259,10 @@ public class AttrSupports {
                 }
                 
                 if (className != null) {
+                    ClassLoader cld = null;
                     try {
                         FileObject fileObject = NbEditorUtilities.getDataObject( sup.getDocument()).getPrimaryFile();
-                        ClassLoader cld = JspUtils.getModuleClassLoader( sup.getDocument(), fileObject);
+                        cld = JspUtils.getModuleClassLoader( sup.getDocument(), fileObject);
                         Class beanClass = Class.forName(className, false, cld);
                         Introspector.flushFromCaches(beanClass);
                         BeanInfo benInfo = Introspector.getBeanInfo(beanClass);
@@ -273,6 +277,15 @@ public class AttrSupports {
                         //do nothing
                     } catch (IntrospectionException e) {
                         //do nothing
+                    } finally {
+                        // avoids JAR locking
+                        if (cld != null && (cld instanceof Closeable)) {
+                            try {
+                                ((Closeable) cld).close();
+                            } catch (IOException ex) {
+                                Logger.getLogger(AttrSupports.class.getName()).log(Level.INFO, null, ex);
+                            }
+                        }
                     }
                 }
             }

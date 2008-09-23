@@ -85,8 +85,8 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
             }
             try {
                 enterReadAccess(dbconn);
-                Metadata metadata = jdbcMetadata.getMetadata();
-                if (metadata != null) {
+                if (jdbcMetadata != null) {
+                    Metadata metadata = jdbcMetadata.getMetadata();
                     action.run(metadata);
                 }
             } catch (SQLException e) {

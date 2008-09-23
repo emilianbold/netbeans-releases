@@ -4,11 +4,9 @@ Document 0
 Searchable Keys:
   base : g_modules;;g_modules;|GLOBAL|;;0;;;;
   base : g_mycallback;;g_mycallback;|FUNCTION|;info;0;;;void;
-  base : g_mycallback;;g_mycallback;|GLOBAL|;;0;;;;
   base : yahoo_config;;YAHOO_config;|PROPERTY|;;0;;;;
   fqn : g_modules;;g_modules;|GLOBAL|;;0;;;;
   fqn : g_mycallback;;g_mycallback;|FUNCTION|;info;0;;;void;
-  fqn : g_mycallback;;g_mycallback;|GLOBAL|;;0;;;;
   fqn : yahoo_config;;YAHOO_config;|PROPERTY|;;0;;;;
 
 Not Searchable Keys:

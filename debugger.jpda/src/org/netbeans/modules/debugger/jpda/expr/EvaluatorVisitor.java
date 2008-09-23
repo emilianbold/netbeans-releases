@@ -2381,8 +2381,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (!evaluationContext.canInvokeMethods()) {
             Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
         }
-        ThreadReference evaluationThread = evaluationContext.getFrame().thread();
+        ThreadReference evaluationThread = null;
         try {
+            evaluationThread = evaluationContext.getFrame().thread();
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("STARTED : "+objectReference+"."+method+" ("+argVals+") in thread "+evaluationThread);
             }
@@ -2419,6 +2420,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } catch (IncompatibleThreadStateException itsex) {
             InvalidExpressionException ieex = new InvalidExpressionException (itsex);
             ieex.initCause(itsex);
+            throw new IllegalStateException(ieex);
+        } catch (InvalidStackFrameException isfex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (isfex);
+            ieex.initCause(isfex);
             throw new IllegalStateException(ieex);
         } catch (InvocationException iex) {
             Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());

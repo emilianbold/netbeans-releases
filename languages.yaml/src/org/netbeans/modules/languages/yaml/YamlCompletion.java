@@ -322,14 +322,6 @@ public class YamlCompletion implements CodeCompletionHandler {
             return null;
         }
 
-        public List<String> getInsertParams() {
-            return null;
-        }
-
-        public String[] getParamListDelimiters() {
-            return null;
-        }
-
         public FileObject getFileObject() {
             return null;
         }
@@ -344,6 +336,10 @@ public class YamlCompletion implements CodeCompletionHandler {
 
         public boolean signatureEquals(ElementHandle handle) {
             return false;
+        }
+
+        public int getSortPrioOverride() {
+            return 0;
         }
     }
 }

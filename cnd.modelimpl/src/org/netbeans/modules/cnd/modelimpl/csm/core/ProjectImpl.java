@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -100,11 +99,10 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    protected void scheduleIncludedFileParsing(FileImpl csmFile, Collection<APTPreprocHandler.State> states, boolean replaceStates) {
-        // add project's file to the head
-        ParserQueue.instance().add(csmFile, states, ParserQueue.Position.HEAD, replaceStates);
+    protected final ParserQueue.Position getIncludedFileParserQueuePosition() {
+        return ParserQueue.Position.HEAD;
     }
-
+    
     public @Override void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {
         if( !acceptNativeItem(nativeFile)) {
             return;

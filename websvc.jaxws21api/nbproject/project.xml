@@ -73,9 +73,6 @@ made subject to such option by the copyright holder.
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/api/saaj-api.jar</runtime-relative-path>
             </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jaxb/api/jaxb-api.jar</runtime-relative-path>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

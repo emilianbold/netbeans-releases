@@ -44,6 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -130,21 +131,27 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
         }
         
         public java.net.URL[] getRoots() {
-            if (file.exists()) {
-                try {
+            try {
+                if (file.exists()) {
+                    if (!FileUtil.isArchiveFile(FileUtil.toFileObject(file))) {
+                        //#124175  ignore any jar files that are not jar files (like when downloaded file is actually an error html page).
+                        Logger.getLogger(RepositoryJavadocForBinaryQueryImpl.class.getName()).info("The following javadoc jar in repository is not really a jar file: " + file.getAbsolutePath()); //NOI18N
+                        return new URL[0];
+                    }
+                    
                     URL[] url = new URL[2];
                     // maven2 puts the javadocs in apidocs/ folder in the jar, 
                     // however there are non-maven built javadocs that have the docs in the root.
                     // don't examine here, just return 2 places..
                     url[0] = FileUtil.getArchiveRoot(file.toURI().toURL());
                     url[1] = new URL(url[0] + "apidocs/"); //NOI18N
-                    
+
                     //TODO there are also some other possible layout in the remote repository
                     // eg. jung/jung jas javadoc i "doc" subfolder, not sure we can cater for everything..
                     return url;
-                } catch (MalformedURLException exc) {
-                    ErrorManager.getDefault().notify(exc);
                 }
+            } catch (MalformedURLException exc) {
+                ErrorManager.getDefault().notify(exc);
             }
             return new URL[0];
         }

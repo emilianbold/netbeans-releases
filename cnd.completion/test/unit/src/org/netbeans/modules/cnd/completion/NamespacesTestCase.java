@@ -133,4 +133,8 @@ public class NamespacesTestCase extends CompletionBaseTestCase {
     public void testStaticMembers5() throws Exception {
         super.performTest("file2.cc", 17, 1, "S1::S2::");
     }
+
+    public void testIZ146962() throws Exception {
+        super.performTest("iz146962.cc", 3, 5, "Gtk::");
+    }
 }

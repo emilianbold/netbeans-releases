@@ -546,11 +546,12 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
 //            // and so it was preventing me from visiting expression deeper
 //            return true;
 //        }
-        
-        int beginLine = node.getLineNumber();
-        int beginColumn = node.getColumnNumber();
-        int endLine = node.getLastLineNumber();
-        int endColumn = node.getLastColumnNumber();
+
+        Coordinates coords = new Coordinates(node);
+        int beginLine = coords.getBeginLine();
+        int beginColumn = coords.getBeginColumn();
+        int endLine = coords.getEndLine();
+        int endColumn = coords.getEndColumn();
         
         LOG.finest("isInside: " + node + " - " + beginLine + ", " + beginColumn + ", " + endLine + ", " + endColumn);
         
@@ -590,4 +591,55 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         return addToPath ? true : result;
     }
 
+    private static class Coordinates {
+
+        private int beginLine;
+
+        private int endLine;
+
+        private int beginColumn;
+
+        private int endColumn;
+
+        public Coordinates(ASTNode node) {
+            this.beginLine = node.getLineNumber();
+            this.endLine = node.getLastLineNumber();
+            this.beginColumn = node.getColumnNumber();
+            this.endColumn = node.getLastColumnNumber();
+
+            // see http://jira.codehaus.org/browse/GROOVY-3049
+            if (node instanceof PropertyExpression) {
+                // bit suspucious, try to fix the data
+                if (beginLine == endLine && beginColumn == endColumn) {
+                    PropertyExpression propertyExpression = (PropertyExpression) node;
+                    Expression expression = propertyExpression.getProperty();
+                    if (expression.getLastLineNumber() == 0 && expression.getLastColumnNumber() == 0) {
+                        if (expression.getLineNumber() > 0 && expression.getColumnNumber() > 0) {
+                            endColumn = endColumn + expression.getText().length();
+                        }
+                    } else {
+                        endLine = expression.getLastLineNumber();
+                        endColumn = expression.getLastColumnNumber();
+                    }
+                }
+            }
+        }
+
+        public int getBeginColumn() {
+            return beginColumn;
+        }
+
+        public int getBeginLine() {
+            return beginLine;
+        }
+
+        public int getEndColumn() {
+            return endColumn;
+        }
+
+        public int getEndLine() {
+            return endLine;
+        }
+        
+    }
 }

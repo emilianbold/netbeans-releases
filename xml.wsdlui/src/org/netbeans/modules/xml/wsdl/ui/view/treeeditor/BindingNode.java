@@ -95,7 +95,7 @@ public class BindingNode extends WSDLExtensibilityElementNode<Binding> {
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/binding.png");
 
     public BindingNode(Binding wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<Binding>(wsdlConstruct), wsdlConstruct, new BindingNewTypesFactory());
+        super(wsdlConstruct, new BindingNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         this.mPropertyAdapter = new BindingPropertyAdapter();

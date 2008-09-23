@@ -125,6 +125,7 @@ public class SvnPropertiesTest extends JellyTestCase {
 
             // set svnProperty for file
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+            Thread.sleep(3000);
             SvnPropertiesOperator spo = SvnPropertiesOperator.invoke(node);
             spo.typePropertyName("fileName");
             spo.typePropertyValue("fileValue");

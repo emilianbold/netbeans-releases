@@ -239,7 +239,14 @@ public class GeneratingBracketCompleterTest extends TestBase {
             int endPos = startPos+1;
 
             //ParserResult result = parse(fo);
-            formatter.reindent(doc, startPos, endPos);
+            final org.netbeans.editor.Formatter f = doc.getFormatter();
+            try {
+                f.reformatLock();
+                f.reformat(doc, startPos, endPos);
+            } finally {
+                f.reformatUnlock();
+            }
+
             int indent = LexUtilities.getLineIndent(doc, insertOffset+1);
 
             //bc.afterBreak(doc, insertOffset, caret);

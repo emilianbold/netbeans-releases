@@ -42,7 +42,10 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -60,6 +63,7 @@ import org.openide.util.Exceptions;
 
 final class RsrcLoader extends Configuration 
 implements TemplateLoader, TemplateExceptionHandler {
+    private static final Logger LOG = Logger.getLogger(FreemarkerEngine.class.getName());
     private FileObject fo;
     private ScriptContext map;
     private Bindings engineScope;
@@ -70,11 +74,17 @@ implements TemplateLoader, TemplateExceptionHandler {
         this.engineScope = map.getBindings(ScriptContext.ENGINE_SCOPE);
         setTemplateLoader(this);
         setTemplateExceptionHandler(this);
+        Logger.getLogger("freemarker.runtime").setLevel(Level.OFF);
     }
 
     public void handleTemplateException(TemplateException ex, Environment env, Writer w) throws TemplateException {
         try {
             w.append(ex.getLocalizedMessage());
+            LOG.log(Level.INFO, "Failure processing " + fo, ex);
+            LOG.log(Level.INFO, "Bindings:"); // NOI18N
+            for (Map.Entry<String, Object> entry : engineScope.entrySet()) {
+                LOG.log(Level.INFO, "  key: " + entry.getKey() + " value: " + entry.getValue()); // NOI18N
+            }
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }

@@ -64,6 +64,9 @@ public class IndexNodeInfo extends TableNodeInfo {
     
     public void initChildren(Vector children) throws DatabaseException {
         try {
+            if (!ensureConnected()) {
+                return;
+            }
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();

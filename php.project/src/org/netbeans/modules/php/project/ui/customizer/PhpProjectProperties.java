@@ -89,6 +89,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String REMOTE_CONNECTION = "remote.connection"; // NOI18N
     public static final String REMOTE_DIRECTORY = "remote.directory"; // NOI18N
     public static final String REMOTE_UPLOAD = "remote.upload"; // NOI18N
+    public static final String SHORT_TAGS = "tags.short"; // NOI18N
+    public static final String ASP_TAGS = "tags.asp"; // NOI18N
 
     public static final String[] CFG_PROPS = new String[] {
         URL,
@@ -144,6 +146,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     private String url;
     private String indexFile;
     private String encoding;
+    private String shortTags;
+    private String aspTags;
 
     // CustomizerRun
     Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> runConfigs;
@@ -199,6 +203,28 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public void setCopySrcTarget(String copySrcTarget) {
         this.copySrcTarget = copySrcTarget;
+    }
+
+    public String getShortTags() {
+        if (shortTags == null) {
+            shortTags = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(SHORT_TAGS);
+        }
+        return shortTags;
+    }
+
+    public void setShortTags(String shortTags) {
+        this.shortTags = shortTags;
+    }
+
+    public String getAspTags() {
+        if (aspTags == null) {
+            aspTags = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(ASP_TAGS);
+        }
+        return aspTags;
+    }
+
+    public void setAspTags(String aspTags) {
+        this.aspTags = aspTags;
     }
 
     /**
@@ -317,6 +343,12 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         }
         if (webRoot != null) {
             projectProperties.setProperty(WEB_ROOT, webRoot);
+        }
+        if (shortTags != null) {
+            projectProperties.setProperty(SHORT_TAGS, shortTags);
+        }
+        if (aspTags != null) {
+            projectProperties.setProperty(ASP_TAGS, aspTags);
         }
 
         // php include path

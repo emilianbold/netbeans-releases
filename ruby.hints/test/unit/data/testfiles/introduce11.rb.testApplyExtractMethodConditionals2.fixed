@@ -3,14 +3,14 @@ class ExtractMethodSample
     c = 1
     
     # begin
-    c = extract(a, c)
+    c = new_name(a, c)
     # end
     
     puts a,c
   end
   
   # TODO Comment
-  def extract(a, c)
+  def new_name(a, c)
     if (a < 5)
       puts c
     end

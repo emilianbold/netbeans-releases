@@ -285,7 +285,7 @@ public class ExpandSameLineDef extends RubyAstRule {
                         newlines.add(offset);
                     }
                     
-                    edits.setFormatter(new RubyFormatter(), true);
+                    edits.setFormatAll(true);
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
                 }

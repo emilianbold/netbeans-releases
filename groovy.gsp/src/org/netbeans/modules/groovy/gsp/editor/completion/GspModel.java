@@ -191,9 +191,19 @@ public class GspModel {
                 int generatedStart = buffer.length();
 
                 String text = token.text().toString();
+                // handle <%-- foo --%> and %{-- bar --%} comments
+                String trimmedText = text.trim();
+                if (trimmedText.startsWith("--") && trimmedText.endsWith("--")) { // NOI18N
+                    int first = text.indexOf("--");
+                    int last = text.lastIndexOf("--");
+                    buffer.append("/*");
+                    buffer.append(text.substring(first + 2, last));
+                    buffer.append("*/");
+                } else {
+                    buffer.append(text);
+                    buffer.append(';');
+                }
                 skipNewline = false;
-                buffer.append(text);
-                buffer.append(';');
 
                 int generatedEnd = buffer.length();
 

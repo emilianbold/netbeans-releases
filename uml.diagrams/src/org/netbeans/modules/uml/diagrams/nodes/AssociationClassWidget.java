@@ -48,6 +48,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.actions.SceneSelectAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 
 
 public class AssociationClassWidget extends UMLClassWidget
@@ -88,6 +89,7 @@ public class AssociationClassWidget extends UMLClassWidget
         {
             Widget connection = bridgeConnection.getSourceAnchor().getRelatedWidget();
             connection.removeFromParent();
+            bridgeConnection.removeFromParent();
             
             if (bridgeConnection.getScene() instanceof GraphScene)
             {

@@ -216,8 +216,6 @@ made subject to such option by the copyright holder.
             <file name="templateNew2" url="../wizard/loader/templateNew2"/>
             <file name="templateresolver.xml" url="../wizard/loader/templateresolver.xml"/>
             <file name="moduleInstall.java" url="../wizard/moduleinstall/moduleInstall.javx"/>
-            <file name="template_mypluginAdvancedOption.java" url="../wizard/options/template_mypluginAdvancedOption"/>
-            <file name="template_mypluginOptionsCategory.java" url="../wizard/options/template_mypluginOptionsCategory"/>
             <file name="template_mypluginOptionsPanelController.java" url="../wizard/options/template_mypluginOptionsPanelController"/>
             <file name="template_mypluginPanel.java" url="../wizard/options/template_mypluginPanel"/>
             <file name="template_myplugin_formPanel.form" url="../wizard/options/template_myplugin_formPanel"/>

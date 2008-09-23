@@ -78,7 +78,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.INavigableEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
@@ -1773,12 +1772,18 @@ public class JavaChangeHandlerUtilities
                 {
                     if (doIt)
                     {
-                        String opName = readAccessorPrefix();
+                        String opNamePrefix = readAccessorPrefix();
                         String attrNameFix =
                             removePrefixFromAttributeName(attrName);
                         String attrNameCap = capAttributeName(attrNameFix);
-                        if (opName != null && attrNameCap != null)
-                            opName += attrNameCap;
+                        String opName = attrNameCap;
+                        if ( !removePrefixFromAccessor())
+                        {
+                            if (opNamePrefix != null && attrNameCap != null )
+                            {
+                                opName = opNamePrefix + attrNameCap;
+                            }
+                        }
 
                         IOperation pAccessor = null;
                         ETList < IJRPParameter > noParms =
@@ -1923,12 +1928,19 @@ public class JavaChangeHandlerUtilities
                         // the AddOperation routine. Why check again? batch attribute!!!!
                         // In this case, the attribute type corresponds to the parameter type.
 
-                        String opName = writeAccessorPrefix();
+                        
+                        String opNamePrefix = writeAccessorPrefix();
                         String attrNameFix =
                             removePrefixFromAttributeName(attrName);
                         String attrNameCap = capAttributeName(attrNameFix);
-                        if (opName != null && attrNameCap != null)
-                            opName += attrNameCap;
+                        String opName = attrNameCap;
+                        if ( !removePrefixFromAccessor())
+                        {
+                            if (opNamePrefix != null && attrNameCap != null )
+                            {
+                                opName = opNamePrefix + attrNameCap;
+                            }
+                        }
 
                         ETList < IJRPParameter > parms =
                             new ETArrayList < IJRPParameter > ();
@@ -3582,13 +3594,13 @@ public class JavaChangeHandlerUtilities
      */
     public boolean removePrefixFromAccessor()
     {
-        return true;
+        return getBooleanPreferenceValue("NO_PREFIX_ON_ACCESSORS", false);
     }
 
     public String removePrefixFromAttributeName(String attrName)
     {
         String attrNameFix = attrName;
-        if (attrName != null && removePrefixFromAccessor())
+        if (attrName != null && !removePrefixFromAccessor())
         {
             String prefix = attributePrefix();
                         

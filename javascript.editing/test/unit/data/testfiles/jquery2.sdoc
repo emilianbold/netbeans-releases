@@ -1,0 +1,2888 @@
+/* Doc definitions for JQuery support in NetBeans, 
+ * automatically generated from the JQuery documentation
+ * using the generator in misc/javascript.generatestubs/jquery-sdoc
+ * Version: 1.0
+ */
+
+/**
+ * @id jQuery
+ * @global jQuery
+ * @type jQuery
+ */
+
+/**
+ * This function accepts a string containing a CSS selector which is then used to match a set of elements.
+ * The core functionality of jQuery centers around this function. Everything in jQuery is based upon this, or uses this in some way. The most basic use of this function is to pass in an expression (usually consisting of CSS), which then finds all matching elements. By default, if no context is specified, $() looks for DOM elements within the context of the current HTML document. If you do specify a context, such as a DOM element or jQuery object, the expression will be matched against the contents of that context. See<a href='Selectors'>Selectors</a> for the allowed CSS syntax for expressions.
+ * @code
+ * $("div", xml.responseXML);
+ * @id jQuery.jQuery
+ * @param {String} expression An expression to search with.
+ * @param {Element, jQuery} context A DOM Element, Document or jQuery to use as context
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Create DOM elements on-the-fly from the provided String of raw HTML.
+ * You can pass in plain HTML Strings written by hand, create them using some template engine or plugin, or load them via AJAX. There are limitations when creating input elements, see the second example. Also when passing strings that may include slashes (such as an image path), escape the slashes. When creating single elements use the closing tag or XHTML format. For example, to create a span use $("<span/>") or $("<span></span>") instead of without the closing slash/tag.
+ * @code
+ * // Does NOT work in IE:
+ * $("<input/>").attr("type", "checkbox");
+ * // Does work in IE:
+ * $("<input type='checkbox'/>");
+ * @id jQuery.jQuery
+ * @param {String} html A string of HTML to create on the fly.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Wrap jQuery functionality around a single or multiple DOM Element(s).
+ * This function also accepts XML Documents and Window objects as valid arguments (even though they are not DOM Elements).
+ * @code
+ * $(myForm.elements).hide()
+ * @id jQuery.jQuery
+ * @param {Element, Array<Element>} elements DOM element(s) to be encapsulated by a jQuery object.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * A shorthand for $(document).ready().
+ * Allows you to bind a function to be executed when the DOM document has finished loading. This function behaves just like $(document).ready(), in that it should be used to wrap other $() operations on your page that depend on the DOM being ready to be operated on. While this function is, technically, chainable - there really isn't much use for chaining against it. You can have as many $(document).ready events on your page as you like. See ready(Function) for details about the ready event.
+ * @code
+ * jQuery(function($) {
+ *   // Your code using failsafe $ alias here...
+ * });
+ * @id jQuery.jQuery
+ * @param {Function} callback The function to execute when the DOM is ready.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Execute a function within the context of every matched element.
+ * This means that every time the passed-in function is executed (which is once for every element matched) the 'this' keyword points to the specific DOM element. Additionally, the function, when executed, is passed a single argument representing the position of the element in the matched set (integer, zero-index). Returning 'false' from within the each function completely stops the loop through all of the elements (this is like using a 'break' with a normal loop). Returning 'true' from within the loop skips to the next iteration (this is like using a 'continue' with a normal loop).
+ * @code
+ * $("button").click(function () {
+ *       $("div").each(function (index, domEle) {
+ *         // domEle == this
+ *         $(domEle).css("backgroundColor", "yellow"); 
+ *         if ($(this).is("#stop")) {
+ *           $("span").text("Stopped at div index #" + index);
+ *           return false;
+ *         }
+ *       });
+ *     });
+ * @id jQuery.each
+ * @param {Function} callback The callback to execute for each matched element.
+ * 
+ * <pre>function callback(index, domElement) {
+ *   this; // this == domElement
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * The number of elements in the jQuery object.
+ * This returns the same number as the '<a href='Core/length'>length</a> ' property of the jQuery object.
+ * @code
+ * $(document.body).click(function () {
+ *       $(document.body).append($("<div>"));
+ *       var n = $("div").size();
+ *       $("span").text("There are " + n + " divs." +
+ *                      "Click to add more.");
+ *     }).click(); // trigger the click to start
+ * @id jQuery.size
+ * @type Number
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * The number of elements in the jQuery object.
+ * In a The number of elements currently matched. The<a href='Core/size'>size</a> function will return the same value.
+ * @code
+ * $(document.body).click(function () {
+ *       $(document.body).append($("<div>"));
+ *       var n = $("div").length;
+ *       $("span").text("There are " + n + " divs." +
+ *                      "Click to add more.");
+ *     }).trigger('click'); // trigger the click to start
+ * @id jQuery.length
+ * @type Number
+ * @property
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Reduce the set of matched elements to a single element.
+ * The position of the element in the set of matched elements starts at 0 and goes to length - 1.
+ * @code
+ * $("p").eq(1)
+ * @id jQuery.eq
+ * @param {Number} position The index of the element to select.
+ * @type jQuery
+ * @since 1.0
+ * @removed 1.2
+ * @deprecated <a href='Traversing/slice'>slice</a>
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Access all matched DOM elements.
+ * This serves as a backwards-compatible way of accessing all matched elements (other than the jQuery object itself, which is, in fact, an array of elements). It is useful if you need to operate on the DOM elements themselves instead of using built-in jQuery functions.
+ * @code
+ * function disp(divs) {
+ *       var a = [];
+ *       for (var i = 0; i < divs.length; i++) {
+ *         a.push(divs[i].innerHTML);
+ *       }
+ *       $("span").text(a.join(" "));
+ *     }
+ *     
+ *     disp( $("div").get().reverse() );
+ * @id jQuery.get
+ * @type Array<Element>
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Access a single matched DOM element at a specified index in the matched set.
+ * This allows you to extract the actual DOM element and operate on it directly without necessarily using jQuery functionality on it. This function called as $(this).get(0) is the equivalent of using square bracket notation on the jQuery object itself like $(this)[0].
+ * @code
+ * $("*", document.body).click(function (e) {
+ *       e.stopPropagation();
+ *       var domEl = $(this).get(0);
+ *       $("span:first").text("Clicked on - " + domEl.tagName);
+ *     });
+ * @id jQuery.get
+ * @param {Number} index Access the element in the Nth position.
+ * @type Element
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Searches every matched element for the object and returns the index of the element, if found, starting with zero.
+ * Returns -1 if the object wasn't found.
+ * @code
+ * $("*").index( $('#bar')[0] )
+ * @id jQuery.index
+ * @param {Element } subject Object to search for.
+ * @type Number
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Extends the jQuery element set to provide new methods (used to make a typical jQuery plugin).
+ * Can be used to add functions into the to add<a href='Plugins/Authoring'>plugin methods (plugins)</a> .
+ * @code
+ * jQuery.fn.extend({
+ *   check: function() {
+ *     return this.each(function() { this.checked = true; });
+ *   },
+ *   uncheck: function() {
+ *     return this.each(function() { this.checked = false; });
+ *   }
+ * });
+ * @id jQuery.jQuery.fn.extend
+ * @param {Object} object The object that will be merged into the jQuery object.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Extends the jQuery object itself.
+ * Can be used to add functions into the jQuery namespace. See<a href='Core/jQuery.fn.extend'>jQuery.fn.extend</a> for more information on using this method to add<a href='Plugins/Authoring'>Plugins</a> .
+ * @code
+ * jQuery.extend({
+ *   min: function(a, b) { return a < b ? a : b; },
+ *   max: function(a, b) { return a > b ? a : b; }
+ * });
+ * @id jQuery.jQuery.extend
+ * @param {Object} object The object that will be merged into the jQuery object.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Run this function to give control of the $ variable back to whichever library first implemented it.
+ * This helps to make sure that jQuery doesn't conflict with the $ object of other libraries. By using this function, you will only be able to access jQuery using the 'jQuery' variable. For example, where you used to do $("div p"), you now must do jQuery("div p").
+ * @code
+ * var j = jQuery.noConflict();
+ * // Do something with jQuery
+ * j("div p").hide();
+ * // Do something with another library's $()
+ * $("content").style.display = 'none';
+ * @id jQuery.jQuery.noConflict
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Revert control of both the $ and jQuery variables to their original owners. '''Use with discretion.'''
+ * This is a more-extreme version of the simple<a href='Core/jQuery.noConflict'>noConflict</a> method, as this one will completely undo what jQuery has introduced. This is to be used in an extreme case where you'd like to embed jQuery into a high-conflict environment. '''NOTE:''' It's very likely that plugins won't work after this particular method has been called.
+ * @code
+ * var dom = {};
+ * dom.query = jQuery.noConflict(true);
+ * @id jQuery.jQuery.noConflict
+ * @param {Boolean} extreme Set to true to enable the extreme rollback of jQuery and it's variables.
+ * @type jQuery
+ * @since 1.1.4
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Access a property on the first matched element. This method makes it easy to retrieve a property value from the first matched element. If the element does not have an attribute with such a name, undefined is returned.
+ * 
+ * @code
+ * var title = $("em").attr("title");
+ *     $("div").text(title);
+ * @id jQuery.attr
+ * @param {String} name The name of the property to access.
+ * @type Object
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set a key/value object as properties to all matched elements.
+ * This serves as the best way to set a large number of properties on all matched elements. Note that you must use 'className' as key if you want to set the class-Attribute. Or use .addClass( class ) or .removeClass( class ).
+ * @code
+ * $("img").attr({ 
+ *           src: "/images/hat.gif",
+ *           title: "jQuery",
+ *           alt: "jQuery Logo"
+ * 
+ *         });
+ *     $("div").text($("img").attr("alt"));
+ * @id jQuery.attr
+ * @param {Map} properties Key/value pairs to set as object properties.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set a single property to a value, on all matched elements.
+ * 
+ * @code
+ * $("button:gt(0)").attr("disabled","disabled");
+ * @id jQuery.attr
+ * @param {String} key The name of the property to set.
+ * @param {Object} value The value to set the property to.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set a single property to a computed value, on all matched elements.
+ * Instead of supplying a string value as described<a href='#keyvalue'>above</a> , a function is provided that computes the value.
+ * @code
+ * $("img").attr("src", function() { 
+ *           return "/images/" + this.title; 
+ *         });
+ * @id jQuery.attr
+ * @param {String} key The name of the property to set.
+ * @param {Function} fn A function returning the value to set. Scope: Current element, argument: Index of current element
+ * <pre>function callback(indexArray) {
+ *   // indexArray[0] == position in the jQuery object
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Remove an attribute from each of the matched elements.
+ * 
+ * @code
+ * $("button").click(function () {
+ *       $(this).next().removeAttr("disabled")
+ *              .focus()
+ *              .val("editable now");
+ *     });
+ * @id jQuery.removeAttr
+ * @param {String} name The name of the property to remove.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Adds the specified class(es) to each of the set of matched elements.
+ * 
+ * @code
+ * $("p:last").addClass("selected highlight");
+ * @id jQuery.addClass
+ * @param {String} class One or more CSS classes to add to the elements, these are separated by spaces.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Removes all or the specified class(es) from the set of matched elements.
+ * 
+ * @code
+ * $("p:eq(1)").removeClass();
+ * @id jQuery.removeClass
+ * @param {String ''(optional)''} class One or more CSS classes to remove from the elements, these are separated by spaces.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Adds the specified class if it is not present, removes the specified class if it is present.
+ * 
+ * @code
+ * $("p").click(function () {
+ *       $(this).toggleClass("highlight");
+ *     });
+ * @id jQuery.toggleClass
+ * @param {String} class A CSS class to toggle on the elements.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get the html contents (innerHTML) of the first matched element. This property is not available on XML documents (although it will work for XHTML documents).
+ * 
+ * @code
+ * $("p").click(function () {
+ *       var htmlStr = $(this).html();
+ *       $(this).text(htmlStr);
+ *     });
+ * @id jQuery.html
+ * @type String
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set the html contents of every matched element. This property is not available on XML documents (although it will work for XHTML documents).
+ * 
+ * @code
+ * $("div").html("<b>Wow!</b> Such excitement...");
+ *     $("div b").append(document.createTextNode("!!!"))
+ *               .css("color", "red");
+ * @id jQuery.html
+ * @param {string} val Set the html contents to the specified value.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get the combined text contents of all matched elements.
+ * The result is a string that contains the combined text contents of all matched elements. This method works on both HTML and XML documents.
+ * @code
+ * var str = $("p:first").text();
+ *     $("p:last").html(str);
+ * @id jQuery.text
+ * @type String
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set the text contents of all matched elements.
+ * Similar to html(), but escapes HTML (replace "<" and ">" with their HTML entities).
+ * @code
+ * $("p").text("<b>Some</b> new text.");
+ * @id jQuery.text
+ * @param {String} val The text value to set the contents of the element to.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get the content of the value attribute of the first matched element.
+ * In jQuery 1.2, a value is now returned for all elements, including selects. For multiple selects an array of values is returned. For older versions of jQuery use the [http://www.malsup.com/jquery/form/#fields fieldValue function of the Form Plugin].
+ * @code
+ * $("input").keyup(function () {
+ *       var value = $(this).val();
+ *       $("p").text(value);
+ *     }).keyup();
+ * @id jQuery.val
+ * @type String|Array
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set the value attribute of every matched element.
+ * In jQuery 1.2, this is also able to set the value of select elements, but selecting the appropriate options.
+ * @code
+ * $("button").click(function () {
+ *       var text = $(this).text();
+ *       $("input").val(text);
+ *     });
+ * @id jQuery.val
+ * @param {String} val The value to set on the matched element.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Checks, or selects, all the radio buttons, checkboxes, and select options that match the set of values.
+ * 
+ * @code
+ * $("#single").val("Single2");
+ *     $("#multiple").val(["Multiple2", "Multiple3"]);
+ *     $("input").val(["check2", "radio1"]);
+ * @id jQuery.val
+ * @param {Array<String>} val The set of values to check/select.
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Reduce the set of matched elements to a single element.
+ * The position of the element in the set of matched elements starts at 0 and goes to length - 1.
+ * @code
+ * $("div").eq(2).addClass("red");
+ * @id jQuery.eq
+ * @param {Integer} index The index of the element in the jQuery object.
+ * @type jQuery
+ * @since 1.1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Checks the current selection against a class and returns true, if at least one element of the selection has the given class.
+ * This is an alternative to is("." + class).
+ * @code
+ * $("div").click(function(){
+ *       if ( $(this).hasClass("protected") )
+ *         $(this).animate({ left: -10 }, 75)
+ *                .animate({ left: 10 }, 75)
+ *                .animate({ left: -10 }, 75)
+ *                .animate({ left: 10 }, 75)
+ *                .animate({ left: 0 }, 75);
+ *     });
+ * @id jQuery.hasClass
+ * @param {String} class The class to match.
+ * @type Boolean
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Removes all elements from the set of matched elements that do not match the specified expression(s).
+ * This method is used to narrow down the results of a search. Provide a comma-separated list of expressions to apply multiple filters at once.
+ * @code
+ * $("p").filter(".selected, :first")
+ * @id jQuery.filter
+ * @param {Expression} expr An expression to pass into the filter
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Removes all elements from the set of matched elements that does not match the specified function.
+ * The function is called with a context equal to the current element (just like<a href='Core/each'>$.each</a> ). If the function returns false, then the element is removed - anything else and the element is kept.
+ * @code
+ * $("p").filter(function(index) {
+ *    return $("ol", this).length == 0;
+ *  });
+ * @id jQuery.filter
+ * @param {Function} fn A function to pass into the filter
+ * 
+ * <pre>function callback(indexInJQueryObject) {
+ *   var keepItBoolean = true;
+ * 
+ *   this; // dom element
+ * 
+ *   return keepItBoolean;
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Checks the current selection against an expression and returns true, if at least one element of the selection fits the given expression.
+ * If no element fits, or the expression is not valid, then the response will be 'false'.<a href='Traversing/filter'>filter</a> is used internally, therefore all rules that apply there apply here, as well.
+ * @code
+ * var isFormParent = $("input[@type='checkbox']").parent().is("form")
+ *     $("div").text("isFormParent = " + isFormParent);
+ * @id jQuery.is
+ * @param {String} expr The expression with which to filter
+ * @type Boolean
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Translate a set of elements in the jQuery object into another set of values in an array (which may, or may not, be elements).
+ * You could use this to build lists of values, attributes, css values - or even perform special, custom, selector transformations. This is provided as a convenience method for using<a href='Utilities/jQuery.map'>$.map()</a> .
+ * @code
+ * var mappedItems = $("li").map(function (index) {
+ *       var replacement = $("<li>").text($(this).text()).get(0);
+ *       if (index == 0) {
+ *         // make the first item all caps
+ *         $(replacement).text($(replacement).text().toUpperCase());
+ *       } else if (index == 1 || index == 3) {
+ *         // delete the second and fourth items
+ *         replacement = null;
+ *       } else if (index == 2) {
+ *         // make two of the third item and add some text
+ *         replacement = [replacement,$("<li>").get(0)];
+ *         $(replacement[0]).append("<b> - A</b>");
+ *         $(replacement[1]).append("Extra <b> - B</b>");
+ *       }
+ * 
+ *       // replacment will be an dom element, null, 
+ *       // or an array of dom elements
+ *       return replacement;
+ *     });
+ *     $("#results").append(mappedItems);
+ * @id jQuery.map
+ * @param {Function} callback The function to execute on each element in the set.
+ * <pre>function callback(index, domElement) {
+ *   var replacement;
+ * 
+ *   this; // also dom element
+ * 
+ *   // replacement == null : delete spot
+ *   // replacement == array : insert the elements of the array
+ *   // else replace the spot with replacement
+ *   return replacement;
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Removes elements matching the specified expression from the set of matched elements.
+ * 
+ * @code
+ * $("p").not($("div p.selected"))
+ * @id jQuery.not
+ * @param {String, DOMElement, Array<DOMElement>} expr An expression with which to remove matching elements, an element to remove from the set or a set of elements to remove from the jQuery set of matched elements.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Selects a subset of the matched elements.
+ * Behaves exactly like the built-in Array slice method.
+ * @code
+ * $("p").slice(-1).wrapInner("<b></b>");
+ * @id jQuery.slice
+ * @param {Integer} start Where to start the subset. The first element is at zero. Can be negative to start from the end of the selection.
+ * @param {Integer} end Where to end the subset. If unspecified, ends at the end of the selection.
+ * @type jQuery
+ * @since 1.1.4
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Adds more elements, matched by the given expression, to the set of matched elements.
+ * 
+ * @code
+ * $("p").add(document.getElementById("a")).css("background", "yellow");
+ * @id jQuery.add
+ * @param {String, DOMElement, Array<DOMElement>} expr An expression whose matched elements are added for String, a string of HTML to create on the fly for DOMElement or one or more Elements to add if an Array.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get a set of elements containing all of the unique immediate children of each of the matched set of elements.
+ * This set can be filtered with an optional expression that will cause only elements matching the selector to be collected. Also note: while parents() will look at all ancestors, children() will only consider immediate child elements.
+ * @code
+ * $("div").children(".selected").css("color", "blue");
+ * @id jQuery.children
+ * @param {String} expr An expression to filter the child Elements with.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Find all the child nodes inside the matched elements (including text nodes), or the content document, if the element is an iframe.
+ * 
+ * @code
+ * $("iframe").contents().find("body").append("I'm in an iframe!");
+ * @id jQuery.contents
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Searches for all elements that match the specified<a href='Selectors'>expression</a> . This method is a good way to find additional descendant elements with which to process.
+ * All searching is done using a<a href='Selectors'>jQuery expression</a> . The expression can be written using CSS 1-3 Selector syntax.
+ * @code
+ * var newText = $("p").text().split(" ").join("</span> <span>");
+ *     newText = "<span>" + newText + "</span>";
+ * 
+ *     $("p").html(newText)
+ *           .find("span")
+ *             .hover(function () { $(this).addClass("hilite"); },
+ *                    function () { $(this).removeClass("hilite"); })
+ *           .end()
+ *           .find(":contains('t')")
+ *             .css({"font-style":"italic", "font-weight":"bolder"});
+ * @id jQuery.find
+ * @param {String} expr An expression to search with.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get a set of elements containing the unique next siblings of each of the given set of elements.
+ * next only returns the very next sibling for each element, not all next siblings (see nextAll). You may provide an optional expression to filter the returned set.
+ * @code
+ * $("p").next(".selected").css("background", "yellow");
+ * @id jQuery.next
+ * @param {String} expr An expression with which to filter the returned set.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Find all sibling elements after the current element.
+ * Use an optional expression to filter the matched set.
+ * @code
+ * $(":nth-child(1)").nextAll("p").addClass("after");
+ * @id jQuery.nextAll
+ * @param {String} expr An expression to filter the next Elements with.
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get a set of elements containing the unique parents of the matched set of elements.
+ * You may use an optional expression to filter the set of parent elements that will match.
+ * @code
+ * $("p").parent(".selected").css("background", "yellow");
+ * @id jQuery.parent
+ * @param {String} expr An expression to filter the parents with.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get a set of elements containing the unique ancestors of the matched set of elements (except for the root element). The matched elements can be filtered with an optional expression.
+ * 
+ * @code
+ * function showParents() {
+ *       $("div").css("border-color", "white");
+ *       var len = $("span.selected")
+ *                        .parents("div")
+ *                        .css("border", "2px red solid")
+ *                        .length;
+ *       $("b").text("Unique div parents: " + len);
+ *     }
+ *     $("span").click(function () {
+ *       $(this).toggleClass("selected");
+ *       showParents();
+ *     });
+ * @id jQuery.parents
+ * @param {String} expr An expression to filter the ancestors with
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get a set of elements containing the unique previous siblings of each of the matched set of elements.
+ * Use an optional expression to filter the matched set. Only the immediately previous sibling is returned, not all previous siblings.
+ * @code
+ * $("p").prev(".selected").css("background", "yellow");
+ * @id jQuery.prev
+ * @param {String} expr An expression to filter the previous Elements with.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Find all sibling elements before the current element.
+ * Use an optional expression to filter the matched set.
+ * @code
+ * $("div:last").prevAll().addClass("before");
+ * @id jQuery.prevAll
+ * @param {String} expr An expression to filter the previous Elements with.
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get a set of elements containing all of the unique siblings of each of the matched set of elements. Can be filtered with an optional expressions.
+ * 
+ * @code
+ * $("p").siblings(".selected").css("background", "yellow");
+ * @id jQuery.siblings
+ * @param {String} expr An expression to filter the sibling Elements with
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Add the previous selection to the current selection.
+ * Useful for traversing elements, and then adding something that was matched before the last traversion.
+ * @code
+ * $("div").find("p").andSelf().addClass("border");
+ *     $("div").find("p").addClass("background");
+ * @id jQuery.andSelf
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Revert the most recent 'destructive' operation, changing the set of matched elements to its previous state (right before the destructive operation).
+ * If there was no destructive operation before, an empty set is returned. A 'destructive' operation is any operation that changes the set of matched jQuery elements, which means any Traversing function that returns a jQuery object - including<a href='Traversing/add'>add</a> ,<a href='Traversing/andSelf'>andSelf</a> ,<a href='Traversing/children'>children</a> ,<a href='Traversing/filter'>filter</a> ,<a href='Traversing/find'>find</a> ,<a href='Traversing/map'>map</a> ,<a href='Traversing/next'>next</a> ,<a href='Traversing/nextAll'>nextAll</a> ,<a href='Traversing/not'>not</a> ,<a href='Traversing/parent'>parent</a> ,<a href='Traversing/parents'>parents</a> ,<a href='Traversing/prev'>prev</a> ,<a href='Traversing/prevAll'>prevAll</a> ,<a href='Traversing/siblings'>siblings</a> and<a href='Traversing/slice'>slice</a> - plus the<a href='Manipulation/clone'>clone</a> function (from Manipulation).
+ * @code
+ * $("p").find("span").end().css("border", "2px red solid");
+ * @id jQuery.end
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get the html contents (innerHTML) of the first matched element. This property is not available on XML documents (although it will work for XHTML documents).
+ * 
+ * @code
+ * $("p").click(function () {
+ *       var htmlStr = $(this).html();
+ *       $(this).text(htmlStr);
+ *     });
+ * @id jQuery.html
+ * @type String
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set the html contents of every matched element. This property is not available on XML documents (although it will work for XHTML documents).
+ * 
+ * @code
+ * $("div").html("<b>Wow!</b> Such excitement...");
+ *     $("div b").append(document.createTextNode("!!!"))
+ *               .css("color", "red");
+ * @id jQuery.html
+ * @param {string} val Set the html contents to the specified value.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get the combined text contents of all matched elements.
+ * The result is a string that contains the combined text contents of all matched elements. This method works on both HTML and XML documents.
+ * @code
+ * var str = $("p:first").text();
+ *     $("p:last").html(str);
+ * @id jQuery.text
+ * @type String
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set the text contents of all matched elements.
+ * Similar to html(), but escapes HTML (replace "<" and ">" with their HTML entities).
+ * @code
+ * $("p").text("<b>Some</b> new text.");
+ * @id jQuery.text
+ * @param {String} val The text value to set the contents of the element to.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Append content to the inside of every matched element.
+ * This operation is similar to doing an appendChild to all the specified elements, adding them into the document.
+ * @code
+ * $("p").append( $("b") );
+ * @id jQuery.append
+ * @param {String, Element, jQuery} content Content to append to the target.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Append all of the matched elements to another, specified, set of elements.
+ * This operation is, essentially, the reverse of doing a regular $(A).append(B), in that instead of appending B to A, you're appending A to B.
+ * @code
+ * $("span").appendTo("#foo"); // check append() examples
+ * @id jQuery.appendTo
+ * @param {String} content target to which the content will be appended.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Prepend content to the inside of every matched element.
+ * This operation is the best way to insert elements inside, at the beginning, of all matched elements.
+ * @code
+ * $("p").prepend( $("b") );
+ * @id jQuery.prepend
+ * @param {String, Element, jQuery} content Content to prepend to the target.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Prepend all of the matched elements to another, specified, set of elements.
+ * This operation is, essentially, the reverse of doing a regular $(A).prepend(B), in that instead of prepending B to A, you're prepending A to B.
+ * @code
+ * $("span").prependTo("#foo"); // check prepend() examples
+ * @id jQuery.prependTo
+ * @param {String} content target to which the content will be prepended.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Insert content after each of the matched elements.
+ * 
+ * @code
+ * $("p").after( $("b") );
+ * @id jQuery.after
+ * @param {String, Element, jQuery} content Content to insert after each target.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Insert content before each of the matched elements.
+ * 
+ * @code
+ * $("p").before( $("b") );
+ * @id jQuery.before
+ * @param {String, Element, jQuery} content Content to insert before each target.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Insert all of the matched elements after another, specified, set of elements.
+ * This operation is, essentially, the reverse of doing a regular $(A).after(B), in that instead of inserting B after A, you're inserting A after B.
+ * @code
+ * $("p").insertAfter("#foo"); // check after() examples
+ * @id jQuery.insertAfter
+ * @param {String} content Content after which the selected element(s) is inserted.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Insert all of the matched elements before another, specified, set of elements.
+ * This operation is, essentially, the reverse of doing a regular $(A).before(B), in that instead of inserting B before A, you're inserting A before B.
+ * @code
+ * $("p").insertBefore("#foo"); // check before() examples
+ * @id jQuery.insertBefore
+ * @param {String} content Content after which the selected element(s) is inserted.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Wrap all matched elements with a structure of other elements.
+ * This wrapping process is most useful for injecting additional structure into a document, without ruining the original semantic qualities of a document. This works by going through the first element provided (which is generated, on the fly, from the provided HTML) and finds the deepest ancestor element within its structure -- it is that element that will enwrap everything else. This does not work with elements that contain text. Any necessary text must be added after the wrapping is done.
+ * @code
+ * $("span").wrap("<div><div><p><em><b></b></em></p></div></div>");
+ * @id jQuery.wrap
+ * @param {String} html A string of HTML that will be created on the fly and wrapped around the target.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Wrap all matched elements with a structure of other elements.
+ * 
+ * @code
+ * $("p").wrap($("<div>"));
+ * @id jQuery.wrap
+ * @param {Element} elem A DOM element that will be wrapped around the target.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Wrap all the elements in the matched set into a single wrapper element.
+ * This is different from<a href='Manipulation/wrap'>.wrap()</a> where each element in the matched set would get wrapped with an element. This wrapping process is most useful for injecting additional structure into a document, without ruining the original semantic qualities of a document. This works by going through the first element provided (which is generated, on the fly, from the provided HTML) and finds the deepest ancestor element within its structure -- it is that element that will enwrap everything else.
+ * @code
+ * $("span").wrapAll("<div><div><p><em><b></b></em></p></div></div>");
+ * @id jQuery.wrapAll
+ * @param {String} html A string of HTML that will be created on the fly and wrapped around the target.
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Wrap all the elements in the matched set into a single wrapper element.
+ * This is different from<a href='Manipulation/wrap'>.wrap()</a> where each element in the matched set would get wrapped with an element.
+ * @code
+ * $("p").wrapAll($(".doublediv"));
+ * @id jQuery.wrapAll
+ * @param {Element} elem A DOM element that will be wrapped around the target.
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Wrap the inner child contents of each matched element (including text nodes) with an HTML structure.
+ * This wrapping process is most useful for injecting additional structure into a document, without ruining the original semantic qualities of a document. This works by going through the first element provided (which is generated, on the fly, from the provided HTML) and finds the deepest ancestor element within its structure -- it is that element that will enwrap everything else.
+ * @code
+ * $("body").wrapInner("<div><div><p><em><b></b></em></p></div></div>");
+ * @id jQuery.wrapInner
+ * @param {String} html A string of HTML that will be created on the fly and wrapped around the target.
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Wrap the inner child contents of each matched element (including text nodes) with a DOM element.
+ * 
+ * @code
+ * $("p").wrapInner($("<span class='red'></span>"));
+ * @id jQuery.wrapInner
+ * @param {Element} elem A DOM element that will be wrapped around the target.
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Replaces all matched elements with the specified HTML or DOM elements.
+ * 
+ * @code
+ * $("p").click(function () {
+ *       $(this).replaceWith($("div"));
+ *     });
+ * @id jQuery.replaceWith
+ * @param {String, Element, jQuery} content Content to replace the matched elements with.
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Replaces the elements matched by the specified selector with the matched elements.
+ * This function is the complement to replaceWith() which does the same task with the parameters reversed.
+ * @code
+ * $("<b>Paragraph. </b>").replaceAll("p"); // check replaceWith() examples
+ * @id jQuery.replaceAll
+ * @param {Selector} selector The elements to find and replace the matched elements with.
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Remove all child nodes from the set of matched elements.
+ * Note that this function starting with 1.2.2 will also remove all event handlers and internally cached data.
+ * @code
+ * $("button").click(function () {
+ *       $("p").empty();
+ *     });
+ * @id jQuery.empty
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Removes all matched elements from the DOM.
+ * This does NOT remove them from the jQuery object, allowing you to use the matched elements further. Note that this function starting with 1.2.2 will also remove all event handlers and internally cached data. So: <code> $("#foo").remove().appendTo("#bar"); </code> should be written as <code> $("#foo").appendTo("#bar"); </code> to avoid losing the event handlers. Can be filtered with an optional expression.
+ * @code
+ * $("button").click(function () {
+ *       $("p").remove(":contains('Hello')");
+ *     });
+ * @id jQuery.remove
+ * @param {String} expr A jQuery expression to filter the set of elements to be removed.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Clone matched DOM Elements and select the clones.
+ * This is useful for moving copies of the elements to another location in the DOM.
+ * @code
+ * $("b").clone().prependTo("p");
+ * @id jQuery.clone
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Clone matched DOM Elements, and all their event handlers, and select the clones.
+ * This is useful for moving copies of the elements, and their events, to another location in the DOM.
+ * @code
+ * $("button").click(function(){
+ *       $(this).clone(true).insertAfter(this);
+ *     });
+ * @id jQuery.clone
+ * @param {Boolean} true Set to true to enable cloning of event handlers.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Return a style property on the first matched element.
+ * 
+ * @code
+ * $("div").click(function () {
+ *       var color = $(this).css("background-color");
+ *       $("#result").html("That div is <span style='color:" +
+ *                          color + ";'>" + color + "</span>.");
+ *     });
+ * @id jQuery.css
+ * @param {String} name The name of the property to access.
+ * @type String
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set a key/value object as style properties to all matched elements.
+ * This is the best way to set several style properties on all matched elements.
+ * @code
+ * $("p").hover(function () {
+ *       $(this).css({ "background-color":"yellow", "font-weight":"bolder" });
+ *     }, function () {
+ *       var cssObj = {
+ *         "background-color": "#ddd",
+ *         "font-weight": "",
+ *         color: "rgb(0,40,244)"
+ * 
+ *       }
+ *       $(this).css(cssObj);
+ *     });
+ * @id jQuery.css
+ * @param {Map} properties Key/value pairs to set as style properties.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set a single style property to a value on all matched elements.
+ * If a number is provided, it is automatically converted into a pixel value.
+ * @code
+ * var words = $("p:first").text().split(" ");
+ *     var text = words.join("</span> <span>");
+ *     $("p:first").html("<span>" + text + "</span>");
+ *     $("span").click(function () {
+ *       $(this).css("background-color","yellow");
+ *     });
+ * @id jQuery.css
+ * @param {String} name The name of the property to set.
+ * @param {String or Number} value The value to set the property to.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get the current offset of the first matched element relative to the viewport.
+ * The returned object contains two<a href='Types#Integer'>Integer</a> properties, top and left. The method works only with visible elements.
+ * @code
+ * $("*", document.body).click(function (e) {
+ *       var offset = $(this).offset();
+ *       e.stopPropagation();
+ *       $("#result").text(this.tagName + " coords ( " + offset.left + ", " +
+ *                                       offset.top + " )");
+ *     });
+ * @id jQuery.offset
+ * @type Object{top|left}
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get the current computed, pixel, height of the first matched element.
+ * In jQuery 1.2, this method is able to find the height of the window and document.
+ * @code
+ * function showHeight(ele, h) {
+ *       $("div").text("The height for the " + ele + 
+ *                     " is " + h + "px.");
+ *     }
+ *     $("#getp").click(function () { 
+ *       showHeight("paragraph", $("p").height()); 
+ *     });
+ *     $("#getd").click(function () { 
+ *       showHeight("document", $(document).height()); 
+ *     });
+ *     $("#getw").click(function () { 
+ *       showHeight("window", $(window).height()); 
+ *     });
+ * @id jQuery.height
+ * @type Integer
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set the CSS height of every matched element.
+ * If no explicit unit was specified (like 'em' or '%') then "px" is concatenated to the value.
+ * @code
+ * $("div").one('click', function () {
+ *       $(this).height(30)
+ *              .css({cursor:"auto", backgroundColor:"green"});
+ *     });
+ * @id jQuery.height
+ * @param {String or Number} val Set the CSS 'height' property to the specified value.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Get the current computed, pixel, width of the first matched element.
+ * In jQuery 1.2, this method is able to find the width of the window and document.
+ * @code
+ * function showWidth(ele, w) {
+ *       $("div").text("The width for the " + ele + 
+ *                     " is " + w + "px.");
+ *     }
+ *     $("#getp").click(function () { 
+ *       showWidth("paragraph", $("p").width()); 
+ *     });
+ *     $("#getd").click(function () { 
+ *       showWidth("document", $(document).width()); 
+ *     });
+ *     $("#getw").click(function () { 
+ *       showWidth("window", $(window).width()); 
+ *     });
+ * @id jQuery.width
+ * @type Integer
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Set the CSS width of every matched element.
+ * If no explicit unit was specified (like 'em' or '%') then "px" is concatenated to the value.
+ * @code
+ * $("div").one('click', function () {
+ *       $(this).width(30)
+ *              .css({cursor:"auto", "background-color":"blue"});
+ *     });
+ * @id jQuery.width
+ * @param {String, Number} val Set the CSS 'width' property to the specified value.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a function to be executed whenever the DOM is ready to be traversed and manipulated.
+ * <p>This is probably the most important function included in the event module, as it can greatly improve the response times of your web applications.</p><p>In a nutshell, this is a solid replacement for using window.onload, and attaching a function to that. By using this method, your bound function will be called the instant the DOM is ready to be read and manipulated, which is when what 99.99% of all JavaScript code needs to run.</p><p>There is one argument passed to the ready event handler: A reference to the jQuery function. You can name that argument whatever you like, and can therefore stick with the $ alias without risk of naming collisions.</p><p>Please ensure you have no code in your <body> onload event handler, otherwise $(document).ready() may not fire.</p><p>You can have as many $(document).ready events on your page as you like. The functions are then executed in the order they were added.</p>
+ * @code
+ * $(function() {
+ *   // Your code here...
+ * });
+ * @id jQuery.ready
+ * @param {Function} fn The function to be executed when the DOM is ready.
+ * 
+ * <pre>function callback(jQueryReference) {
+ *   this; // document
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a handler to a particular event (like click) for each matched element. Can also bind custom events.
+ * The event handler is passed an event object that you can use to prevent default behaviour. To stop both default action and event bubbling, your handler has to return false. Note that this will prevent handlers on parent elements from running but not other jQuery handlers on the same element. In most cases, you can define your event handlers as anonymous functions (see first example). In cases where that is not possible, you can pass additional data as the second parameter (and the handler function as the third), see second example.
+ * @code
+ * $("p").bind("myCustomEvent", function(e, myName, myValue){
+ *       $(this).text(myName + ", hi there!");
+ *       $("span").stop().css("opacity", 1)
+ *                .text("myName = " + myName)
+ *                .fadeIn(30).fadeOut(1000);
+ *     });
+ *     $("button").click(function () {
+ *       $("p").trigger("myCustomEvent", [ "John" ]);
+ *     });
+ * @id jQuery.bind
+ * @param {String} type An event type
+ * @param {Object} data Additional data passed to the event handler as event.data
+ * @param {Function} fn A function to bind to the event on each of the set of matched elements
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a handler to a particular event to be executed <i>once</i> for each matched element.
+ * <p>The handler is executed only once for each element. Otherwise, the same rules as described in<a href='Events/bind'>bind</a> () apply. The event handler is passed an event object that you can use to prevent default behaviour. To stop both default action and event bubbling, your handler should return false.</p><p>In most cases, you can define your event handlers as anonymous functions (see first example). In cases where that is not possible, you can pass additional data as the second paramter (and the handler function as the third), see second example.</p>
+ * @code
+ * $("p").one("click", function(){
+ *   alert( $(this).text() );
+ * });
+ * @id jQuery.one
+ * @param {String} type An event type
+ * @param {Object} data Additional data passed to the event handler as event.data
+ * @param {Function} fn A function to bind to the specified event on each of the matched elements.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Trigger a type of event on every matched element.
+ * <p>This will also cause the default action of the browser with the same name (if one exists) to be executed. For example, passing 'submit' to the trigger() function will also cause the browser to submit the form. This default action can be prevented by returning false from one of the functions bound to the event.</p><p>You can also trigger custom events registered with bind.</p>
+ * @code
+ * $("p").bind("myEvent", function (event, message1, message2) {
+ *   alert(message1 + ' ' + message2);
+ * });
+ * $("p").trigger("myEvent", ["Hello","World!"]);
+ * @id jQuery.trigger
+ * @param {String} type  An event type to trigger.
+ * @param {Array} data  Additional data to pass as arguments (after the event object) to the event handler.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * This particular method triggers all bound event handlers on an element (for a specific event type) WITHOUT executing the browsers default actions.
+ * 
+ * @code
+ * $("#old").click(function(){
+ *       $("input").trigger("focus");
+ *     });
+ *     $("#new").click(function(){
+ *       $("input").triggerHandler("focus");
+ *     });
+ *     $("input").focus(function(){
+ *       $("<span>Focused!</span>").appendTo("body").fadeOut(1000);
+ *     });
+ * @id jQuery.triggerHandler
+ * @param {String} type  An event type to trigger.
+ * @param {Array} data  Additional data to pass as arguments (after the event object) to the event handler.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * This does the opposite of bind, it removes bound events from each of the matched elements.
+ * <p>Without any arguments, all bound events are removed.</p><p>You can also unbind custom events registered with bind.</p><p>If the type is provided, all bound events of that type are removed.</p><p>If the function that was passed to bind is provided as the second argument, only that specific event handler is removed.</p>
+ * @code
+ * var foo = function () {
+ *   // code to handle some kind of event
+ * };
+ * 
+ * $("p").bind("click", foo); // ... now foo will be called when paragraphs are clicked ...
+ * 
+ * $("p").unbind("click", foo); // ... foo will no longer be called.
+ * @id jQuery.unbind
+ * @param {String} type  An event type to unbind.
+ * @param {Function} data  A function to unbind from the event on each of the set of matched elements.
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Simulates hovering (moving the mouse on, and off, an object). This is a custom method which provides an 'in' to a frequent task.
+ * Whenever the mouse cursor is moved over a matched element, the first specified function is fired. Whenever the mouse moves off of the element, the second specified function fires. Additionally, checks are in place to see if the mouse is still within the specified element itself (for example, an image inside of a div), and if it is, it will continue to 'hover', and not move out (a common error in using a mouseout event handler).
+ * @code
+ * $("td").hover(
+ *   function () {
+ *     $(this).addClass("hover");
+ *   },
+ *   function () {
+ *     $(this).removeClass("hover");
+ *   }
+ * );
+ * @id jQuery.hover
+ * @param {Function} over The function to fire when the mouse is moved over a matched element.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @param {Function} out The function to fire when the mouse is moved off of a matched element.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Toggle between two function calls every other click.
+ * <p>Whenever a matched element is clicked, the first specified function is fired, when clicked again, the second is fired. All subsequent clicks continue to rotate through the two functions.</p><p>Use unbind("click") to remove.</p>
+ * @code
+ * $("td").toggle(
+ *   function () {
+ *     $(this).addClass("selected");
+ *   },
+ *   function () {
+ *     $(this).removeClass("selected");
+ *   }
+ * );
+ * @id jQuery.toggle
+ * @param {Function} fn The function to execute on every even click.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @param {Function} fn The function to execute on every odd click.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Triggers the blur event of each matched element.
+ * This causes all of the functions that have been bound to that blur event to be executed, and calls the browser's default blur action on the matching element(s). This default action can be prevented by returning false from one of the functions bound to the blur event. The blur event usually fires when an element loses focus either via the pointing device or by tabbing navigation
+ * @code
+ * $("p").blur();
+ * @id jQuery.blur
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the blur event of each matched element.
+ * The blur event fires when an element loses focus either via the pointing device or by tabbing navigation.
+ * @code
+ * $("p").blur( function () { alert("Hello World!"); } );
+ * @id jQuery.blur
+ * @param {Function} fn A function to bind to the blur event on each of the matched elements.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Triggers the change event of each matched element.
+ * This causes all of the functions that have been bound to that change event to be executed, and calls the browser's default change action on the matching element(s). This default action can be prevented by returning false from one of the functions bound to the change event. The change event usually fires when a control loses the input focus and its value has been modified since gaining focus.
+ * @id jQuery.change
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a function to the change event of each matched element.
+ * The change event fires when a control loses the input focus and its value has been modified since gaining focus.
+ * @code
+ * $("input[@type='text']").change( function() {
+ *   // check input for validity here
+ * });
+ * @id jQuery.change
+ * @param {Function} fn A function to bind to the change event on each of the matched elements.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Triggers the click event of each matched element.
+ * Causes all of the functions that have been bound to that click event to be executed.
+ * @code
+ * $("p").click();
+ * @id jQuery.click
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a function to the click event of each matched element.
+ * The click event fires when the pointing device button is clicked over an element. A click is defined as a mousedown and mouseup over the same screen location. The sequence of these events is:<ul><li>mousedown</li><li>mouseup</li><li>click</li></ul>
+ * @code
+ * $("p").click(function () { 
+ *       $(this).slideUp(); 
+ *     });
+ *     $("p").hover(function () {
+ *       $(this).addClass("hilite");
+ *     }, function () {
+ *       $(this).removeClass("hilite");
+ *     });
+ * @id jQuery.click
+ * @param {Function} fn A function to bind to the click event on each of the matched elements.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Triggers the dblclick event of each matched element.
+ * This causes all of the functions that have been bound to that dblclick event to be executed, and calls the browser's default dblclick action on the matching element(s). This default action can be prevented by returning false from one of the functions bound to the dblclick event. The dblclick event usually fires when the pointing device button is double clicked over an element.
+ * @id jQuery.dblclick
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a function to the dblclick event of each matched element.
+ * The dblclick event fires when the pointing device button is double clicked over an element
+ * @code
+ * $("p").dblclick( function () { alert("Hello World!"); });
+ * @id jQuery.dblclick
+ * @param {Function} fn The function to bind to the dblclick event on each of the matched elements.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * 
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Triggers the error event of each matched element.
+ * This causes all of the functions that have been bound to that error event to be executed, and calls the browser's default error action on the matching element(s). This default action can be prevented by returning false from one of the functions bound to the error event. The error event usually fires when an element loses focus either via the pointing device or by tabbing navigation.
+ * @id jQuery.error
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a function to the error event of each matched element.
+ * <p>There is no public standard for the error event. In most browsers, the window object's error event is triggered when a JavaScript error occurs on the page. An image object's error event is triggered when it is set an invalid src attribute - either a non-existent file, or one with corrupt image data.</p><p>If the event is thrown by the window object, the event handler will be passed three parameters: <ol><li>A message describing the event ("varName is not defined", "missing operator in expression", etc.),</li><li>the full URL of the document containing the error, and</li><li>the line number on which the error occured.</li></ol></p> <p>If the event handler returns true, it signifies that the event was handled, and the browser raises no errors.</p><p>For more information, see: <ul><li>[http://msdn2.microsoft.com/en-us/library/ms536930.aspx msdn - onerror Event]</li><li>[http://developer.mozilla.org/en/docs/DOM:window.onerror Gecko DOM Reference - onerror Event]</li><li>[http://developer.mozilla.org/en/docs/DOM:event Gecko DOM Reference - Event object]</li><li>[http://en.wikipedia.org/wiki/DOM_Events Wikipedia: DOM Events]</ul></p>
+ * @code
+ * $("img").error(function(){
+ *   $(this).hide();
+ * });
+ * @id jQuery.error
+ * @param {Function} fn An event handler function to bind to the error event.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Triggers the focus event of each matched element.
+ * This causes all of the functions that have been bound to the focus event to be executed. Note that this does not execute the focus method of the underlying elements.
+ * @code
+ * $(document).ready(function(){
+ *   $("#login").focus();
+ * });
+ * @id jQuery.focus
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a function to the focus event of each matched element.
+ * The focus event fires when an element receives focus either via the pointing device or by tab navigation.
+ * @code
+ * $("input[@type=text]").focus(function(){
+ *   $(this).blur();
+ * });
+ * @id jQuery.focus
+ * @param {Function} fn A function to bind to the focus event on each of the matched elements.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Triggers the keydown event of each matched element.
+ * This causes all of the functions that have been bound to the keydown event to be executed, and calls the browser's default keydown action on the matching element(s). This default action can be prevented by returning false from one of the functions bound to the keydown event. The keydown event usually fires when a key on the keyboard is pressed.
+ * @id jQuery.keydown
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the keydown event of each matched element.
+ * The keydown event fires when a key on the keyboard is pressed.
+ * @code
+ * $(window).keydown(function(event){
+ *   switch (event.keyCode) {
+ *     // ...
+ *     // different keys do different things
+ *     // Different browsers provide different codes
+ *     // see here for details: http://unixpapa.com/js/key.html    
+ *     // ...
+ *   }
+ * });
+ * @id jQuery.keydown
+ * @param {Function} fn A function to bind to the keydown event on each of the matched elements.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Triggers the keypress event of each matched element.
+ * This causes all of the functions that have been bound to the keypress event to be executed, and calls the browser's default keypress action on the matching element(s). This default action can be prevented by returning false from one of the functions bound to the keypress event. The keypress event usually fires when a key on the keyboard is pressed.
+ * @id jQuery.keypress
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a function to the keypress event of each matched element.
+ * The keypress event fires when a key on the keyboard is "clicked". A keypress is defined as a keydown and keyup on the same key. The sequence of these events is: <ul><li>keydown</li><li>keyup</li><li>keypress</li></ul>
+ * @code
+ * $("input").keypress(function (e) {
+ *       if (e.which == 32 || (65 <= e.which && e.which <= 65 + 25)
+ *                         || (97 <= e.which && e.which <= 97 + 25)) {
+ *         var c = String.fromCharCode(e.which);
+ *         $("p").append($("<span/>"))
+ *               .children(":last")
+ *               .append(document.createTextNode(c));
+ *       } else if (e.which == 8) {
+ *         // backspace in IE only be on keydown
+ *         $("p").children(":last").remove();
+ *       }
+ *       $("div").text(e.which);
+ *     });
+ * @id jQuery.keypress
+ * @param {Function} fn A function to bind to the keypress event on each of the matched elements.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * 
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Triggers the keyup event of each matched element.
+ * This causes all of the functions that have been bound to the keyup event to be executed, and calls the browser's default keyup action on the matching element(s). This default action can be prevented by returning false from one of the functions bound to the keyup event. The keyup event usually fires when a key on the keyboard is released.
+ * @id jQuery.keyup
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the keyup event of each matched element.
+ * The keyup event fires when a key on the keyboard is released.
+ * @code
+ * $(document).keyup(function(event){
+ *     if (event.keyCode == 27) {
+ *         alert('escaped!');
+ *     }
+ * });
+ * @id jQuery.keyup
+ * @param {Function} fn A function to bind to the keyup event on each of the matched elements.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a function to the load event of each matched element.
+ * When bound to the window element, the event fires when the user agent finishes loading all content within a document, including window, frames, objects and images. For elements, it fires when the target element and all of its content has finished loading.
+ * @code
+ * $(window).load(function () {
+ *       // run code
+ *     });
+ * @id jQuery.load 
+ * @param {Function} fn A function to bind to the load event on each of the matched elements.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a function to the mousedown event of each matched element.
+ * The mousedown event fires when the pointing device button is pressed over an element.
+ * @id jQuery.mousedown 
+ * @param {Function} fn A function to bind to the mousedown event on each of the matched elements.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the mousemove event of each matched element.
+ * The mousemove event fires when the pointing device is moved while it is over an element. The event handler is passed one variable - the event object. Its .clientX and .clientY properties represent the coordinates of the mouse.
+ * @code
+ * $("div").mousemove(function(e){
+ *       var pageCoords = "( " + e.pageX + ", " + e.pageY + " )";
+ *       var clientCoords = "( " + e.clientX + ", " + e.clientY + " )";
+ *       $("span:first").text("( e.pageX, e.pageY ) - " + pageCoords);
+ *       $("span:last").text("( e.clientX, e.clientY ) - " + clientCoords);
+ *     });
+ * @id jQuery.mousemove
+ * @param {Function} fn A function to bind to the mousmove event on each of the matched elements.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the mouseout event of each matched element.
+ * The mouseout event fires when the pointing device is moved away from an element.
+ * @id jQuery.mouseout
+ * @param {Function} fn A function to bind to the mouseout event on each of the matched elements.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the mouseover event of each matched element.
+ * The mouseout event fires when the pointing device is moved onto an element.
+ * @id jQuery.mouseover
+ * @param {Function} fn A function to bind to the mouseover event on each of the matched elements.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the mouseup event of each matched element.
+ * The mouseup event fires when the pointing device button is released over an element.
+ * @id jQuery.mouseup
+ * @param {Function} fn A function to bind to the mouseup event on each of the matched elements.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the resize event of each matched element.
+ * The resize event fires when a document view is resized
+ * @code
+ * $(window).resize(function(){
+ *   alert("Stop it!");
+ * });
+ * @id jQuery.resize
+ * @param {Function} fn A function to bind to the resize event on each of the matched elements.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the scroll event of each matched element.
+ * The scroll event fires when a document view is scrolled.
+ * @code
+ * $("p").clone().appendTo(document.body);
+ *     $("p").clone().appendTo(document.body);
+ *     $("p").clone().appendTo(document.body);
+ *     $(window).scroll(function () { 
+ *       $("span").css("display", "inline").fadeOut("slow"); 
+ *     });
+ * @id jQuery.scroll
+ * @param {Function} fn A function to bind to the scroll event on each of the matched elements.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * 
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Trigger the select event of each matched element.
+ * This causes all of the functions that have been bound to that select event to be executed, and calls the browser's default select action on the matching element(s). This default action can be prevented by returning false from one of the functions bound to the select event.
+ * @code
+ * $("input").select();
+ * @id jQuery.select
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the select event of each matched element.
+ * The select event fires when a user selects some text in a text field, including input and textarea.
+ * @code
+ * $(document).select( function () { 
+ *       $("div").text("Something was selected").show().fadeOut(1000); 
+ *     });
+ * @id jQuery.select
+ * @param {Function} fn A function to bind to the select event on each of the matched elements.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Trigger the submit event of each matched element.
+ * This causes all of the functions that have been bound to that submit event to be executed, and calls the browser's default submit action on the matching element(s). This default action can be prevented by returning false from one of the functions bound to the submit event.
+ * @code
+ * $("form:first").submit();
+ * @id jQuery.submit
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Bind a function to the submit event of each matched element.
+ * The select event fires when a form is submitted
+ * @code
+ * $("form").submit( function () {
+ *   return this.some_flag_variable;
+ * } );
+ * @id jQuery.submit
+ * @param {Function} fn A function to bind to the submit event on each of the matched elements.
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Binds a function to the unload event of each matched element.
+ * 
+ * @code
+ * $(window).unload( function () { alert("Bye now!"); } );
+ * @id jQuery.unload
+ * @param {Function} fn function to bind to the unload event on each of the matched elements.
+ * 
+ * <pre>function callback(eventObject) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Displays each of the set of matched elements if they are hidden.
+ * Same as<a href='Effects/show#speedcallback'>show( speed, [callback] )</a> without animations. Doesn't change anything if the selected elements are all visible. It doesn't matter if the element is hidden via a hide() call, or via a display:none in a stylesheet.
+ * @code
+ * $("p").show()
+ * @id jQuery.show
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Show all matched elements using a graceful animation and firing an optional callback after completion.
+ * The height, width, and opacity of each of the matched elements are changed dynamically according to the specified speed.
+ * @code
+ * function doIt() {
+ *       $("span,div").show("normal");
+ *     }
+ *     $("button").click(doIt); // can pass in function name
+ *     $("form").submit(function () {
+ *       if ($("input").val() == "yes") {
+ *         $("p").show(4000, function () {
+ *           $(this).text("Ok, DONE! (now showing)");
+ *         });
+ *       }
+ *       $("span,div").hide("normal");
+ *       return false; // to stop the submit
+ *     });
+ * @id jQuery.show
+ * @param {String, Number } speed A string representing one of the three predefined speeds ("slow", "normal", or "fast") or the number of milliseconds to run the animation (e.g. 1000).
+ * @param {Function} callback A function to be executed whenever the animation completes, executes once for each element animated against.
+ * 
+ * <pre>function callback() {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Hides each of the set of matched elements if they are shown.
+ * Same as<a href='Effects/hide#speedcallback'>hide( speed, [callback] )</a> without animations. Doesn't change anything if the selected elements are all hidden.
+ * @code
+ * $("p").hide();
+ *     $("a").click(function () {
+ *       $(this).hide();
+ *       return false;
+ *     });
+ * @id jQuery.hide
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Hide all matched elements using a graceful animation and firing an optional callback after completion.
+ * The height, width, and opacity of each of the matched elements are changed dynamically according to the specified speed.
+ * @code
+ * for (var i = 0; i < 5; i++) {
+ *       $("<div>").appendTo(document.body);
+ *     }
+ *     $("div").click(function () {
+ *       $(this).hide(2000, function () {
+ *         $(this).remove();
+ *       });
+ *     });
+ * @id jQuery.hide
+ * @param {String, Number } speed A string representing one of the three predefined speeds ("slow", "normal", or "fast") or the number of milliseconds to run the animation (e.g. 1000).
+ * @param {Function} callback A function to be executed whenever the animation completes, executes once for each element animated against.
+ * 
+ * <pre>function callback() {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Toggles each of the set of matched elements.
+ * If they are shown, toggle makes them hidden. If they are hidden, toggle makes them shown.
+ * @code
+ * $("button").click(function () {
+ *       $("p").toggle();
+ *     });
+ * @id jQuery.toggle
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Reveal all matched elements by adjusting their height and firing an optional callback after completion.
+ * Only the height is adjusted for this animation, causing all matched elements to be revealed in a "sliding" manner.
+ * @code
+ * $("div").click(function () {
+ *       $(this).css({ borderStyle:"inset", cursor:"wait" });
+ *       $("input").slideDown(1000,function(){
+ *         $(this).css("border", "2px red inset")
+ *                .filter(".middle")
+ *                  .css("background", "yellow")
+ *                  .focus();
+ *         $("div").css("visibility", "hidden");
+ *       });
+ *     });
+ * @id jQuery.slideDown
+ * @param {String, Number } speed A string representing one of the three predefined speeds ("slow", "normal", or "fast") or the number of milliseconds to run the animation (e.g. 1000).
+ * @param {Function} callback A function to be executed whenever the animation completes, executes once for each element animated against.
+ * 
+ * <pre>function callback() {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Hide all matched elements by adjusting their height and firing an optional callback after completion.
+ * Only the height is adjusted for this animation, causing all matched elements to be hidden in a "sliding" manner.
+ * @code
+ * $("button").click(function () {
+ *       $(this).parent().slideUp("slow", function () {
+ *         $("#msg").text($("button", this).text() + " has completed.");
+ *       });
+ *     });
+ * @id jQuery.slideUp
+ * @param {String, Number } speed A string representing one of the three predefined speeds ("slow", "normal", or "fast") or the number of milliseconds to run the animation (e.g. 1000).
+ * @param {Function} callback A function to be executed whenever the animation completes, executes once for each element animated against.
+ * 
+ * <pre>function callback() {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Toggle the visibility of all matched elements by adjusting their height and firing an optional callback after completion.
+ * Only the height is adjusted for this animation, causing all matched elements to be hidden or shown in a "sliding" manner.
+ * @code
+ * $("button").click(function () {
+ *       $("div:not(.still)").slideToggle("slow", function () {
+ *         var n = parseInt($("span").text(), 10);
+ *         $("span").text(n + 1);
+ *       });
+ *     });
+ * @id jQuery.slideToggle
+ * @param {String, Number } speed A string representing one of the three predefined speeds ("slow", "normal", or "fast") or the number of milliseconds to run the animation (e.g. 1000).
+ * @param {Function} callback A function to be executed whenever the animation completes, executes once for each element animated against.
+ * 
+ * <pre>function callback() {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Fade in all matched elements by adjusting their opacity and firing an optional callback after completion.
+ * Only the opacity is adjusted for this animation, meaning that all of the matched elements should already have some form of height and width associated with them.
+ * @code
+ * $("a").click(function () {
+ *       $("div").fadeIn(3000, function () {
+ *         $("span").fadeIn(100);
+ *       });
+ *       return false;
+ *     });
+ * @id jQuery.fadeIn
+ * @param {String, Number } speed A string representing one of the three predefined speeds ("slow", "normal", or "fast") or the number of milliseconds to run the animation (e.g. 1000).
+ * @param {Function} callback A function to be executed whenever the animation completes, executes once for each element animated against.
+ * 
+ * <pre>function callback() {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Fade out all matched elements by adjusting their opacity and firing an optional callback after completion.
+ * Only the opacity is adjusted for this animation, meaning that all of the matched elements should already have some form of height and width associated with them.
+ * @code
+ * $("span").click(function () {
+ *       $(this).fadeOut(1000, function () {
+ *         $("div").text("'" + $(this).text() + "' has faded!");
+ *         $(this).remove();
+ *       });
+ *     });
+ *     $("span").hover(function () {
+ *       $(this).addClass("hilite");
+ *     }, function () {
+ *       $(this).removeClass("hilite");
+ *     });
+ * @id jQuery.fadeOut
+ * @param {String, Number } speed A string representing one of the three predefined speeds ("slow", "normal", or "fast") or the number of milliseconds to run the animation (e.g. 1000).
+ * @param {Function} callback A function to be executed whenever the animation completes, executes once for each element animated against.
+ * <pre>function callback() {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Fade the opacity of all matched elements to a specified opacity and firing an optional callback after completion.
+ * Only the opacity is adjusted for this animation, meaning that all of the matched elements should already have some form of height and width associated with them.
+ * @code
+ * var getPos = function (n) {
+ *       return (Math.floor(n) * 90) + "px";
+ *     };
+ *     $("p").each(function (n) {
+ *       var r = Math.floor(Math.random() * 3);
+ *       var tmp = $(this).text();
+ *       $(this).text($("p:eq(" + r + ")").text());
+ *       $("p:eq(" + r + ")").text(tmp);
+ *       $(this).css("left", getPos(n));
+ *     });
+ *     $("div").each(function (n) {
+ *                   $(this).css("left", getPos(n));
+ *                 })
+ *             .css("cursor", "pointer")
+ *             .click(function () {
+ *                   $(this).fadeTo(250, 0.25, function () {
+ *                         $(this).css("cursor", "")
+ *                                .prev().css({"font-weight": "bolder",
+ *                                             "font-style": "italic"});
+ *                       });
+ *                 });
+ * @id jQuery.fadeTo
+ * @param {String, Number } speed A string representing one of the three predefined speeds ("slow", "normal", or "fast") or the number of milliseconds to run the animation (e.g. 1000).
+ * @param {Number } opacity The opacity to fade to (a number from 0 to 1).
+ * @param {Function} callback A function to be executed whenever the animation completes, executed once for each element animated against.
+ * 
+ * <pre>function callback() {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * A function for making your own, custom animations.
+ * The key aspect of this function is the object of style properties that will be animated, and to what end. Each key within the object represents a style property that will also be animated (for example: "height", "top", or "opacity"). Note that properties should be specified using camel case eg. marginLeft instead of margin-left. The value associated with the key represents to what end the property will be animated. If a number is provided as the value, then the style property will be transitioned from its current state to that new number. Otherwise if the string "hide", "show", or "toggle" is provided, a default animation will be constructed for that property. Only properties that take numeric values are supported (e.g. backgroundColor is not supported by animate()). As of jQuery 1.2 you can now animate properties by em and % (where applicable). Additionally, in jQuery 1.2, you can now do relative animations - specifying a "''+=''" or "''-=''" in front of the property value to move the element positively, or negatively, relative to the current position.
+ * @code
+ * $("p").animate({
+ *       "opacity": "show"
+ * 
+ *     }, "slow", "easein");
+ * @id jQuery.animate
+ * @param {Options} params A set of style attributes that you wish to animate, and to what end.
+ * @param {String, Number } duration A string representing one of the three predefined speeds ("slow", "normal", or "fast") or the number of milliseconds to run the animation (e.g. 1000).
+ * @param {String } easing The name of the easing effect that you want to use (Plugin Required). There are two built-in values, "linear" and "swing".
+ * @param {Function} callback A function to be executed whenever the animation completes, executes once for each element animated against.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * A function for making your own, custom animations.
+ * The key aspect of this function is the object of style properties that will be animated, and to what end. Each key within the object represents a style property that will also be animated (for example: "height", "top", or "opacity"). Note that properties should be specified using camel case eg. marginLeft instead of margin-left. The value associated with the key represents to what end the property will be animated. If a number is provided as the value, then the style property will be transitioned from its current state to that new number. Otherwise if the string "hide", "show", or "toggle" is provided, a default animation will be constructed for that property.
+ * @code
+ * $("p").animate({
+ *       "opacity": "show"
+ * 
+ *     }, { "duration": "slow", "easing": "easein" });
+ * @id jQuery.animate
+ * @param {Options} params A set of style attributes that you wish to animate, and to what end.
+ * @param {Options } options A set of options with which to configure the animation.
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Stops all the currently running animations on all the specified elements.
+ * If any animations are queued to run, then they will begin immediately.
+ * @code
+ * // Start animation
+ *     $("#go").click(function(){
+ *       $(".block").animate({left: '+=100px'}, 2000);
+ *     });
+ * 
+ *     // Stop animation when button is clicked
+ *     $("#stop").click(function(){
+ *       $(".block").stop();
+ *     });
+ * 
+ *     // Start animation in the opposite direction
+ *     $("#back").click(function(){
+ *       $(".block").animate({left: '-=100px'}, 2000);
+ *     });
+ * @id jQuery.stop
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Returns a reference to the first element's queue (which is an array of functions).
+ * 
+ * @code
+ * $("#show").click(function () {
+ *       var n = $("div").queue("fx");
+ *       $("span").text("Queue length is: " + n.length);
+ *     });
+ *     function runIt() {
+ *       $("div").show("slow");
+ *       $("div").animate({left:'+=200'},2000);
+ *       $("div").slideToggle(1000);
+ *       $("div").slideToggle("fast");
+ *       $("div").animate({left:'-=200'},1500);
+ *       $("div").hide("slow");
+ *       $("div").show(1200);
+ *       $("div").slideUp("normal", runIt);
+ *     }
+ *     runIt();
+ * @id jQuery.queue
+ * @type Array<Function>
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Adds a new function, to be executed, onto the end of the queue of all matched elements.
+ * 
+ * @code
+ * $(document.body).click(function () {
+ *       $("div").show("slow");
+ *       $("div").animate({left:'+=200'},2000);
+ *       $("div").queue(function () {
+ *         $(this).addClass("newcolor");
+ *         $(this).dequeue();
+ *       });
+ *       $("div").animate({left:'-=200'},500);
+ *       $("div").queue(function () {
+ *         $(this).removeClass("newcolor");
+ *         $(this).dequeue();
+ *       });
+ *       $("div").slideUp();
+ *     });
+ * @id jQuery.queue
+ * @param {Function} callback The function to add to the queue.
+ * 
+ * <pre>function callback() {
+ *   this; // dom element
+ *   // to continue the queue you must call
+ *   jQuery(this).dequeue();
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Replaces the queue of all matched element with this new queue (the array of functions).
+ * 
+ * @code
+ * $("#start").click(function () {
+ *       $("div").show("slow");
+ *       $("div").animate({left:'+=200'},5000);
+ *       $("div").queue(function () {
+ *         $(this).addClass("newcolor");
+ *         $(this).dequeue();
+ *       });
+ *       $("div").animate({left:'-=200'},1500);
+ *       $("div").queue(function () {
+ *         $(this).removeClass("newcolor");
+ *         $(this).dequeue();
+ *       });
+ *       $("div").slideUp();
+ *     });
+ *     $("#stop").click(function () {
+ *       $("div").queue("fx", []);
+ *       $("div").stop();
+ *     });
+ * @id jQuery.queue
+ * @param {Array<Function>} queue The queue to replace all the queues with.  The functions have the same parameters and this value as queue(callback).
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Removes a queued function from the front of the queue and executes it.
+ * 
+ * @code
+ * $("button").click(function () {
+ *       $("div").animate({left:'+=200px'}, 2000);
+ *       $("div").animate({top:'0px'}, 600);
+ *       $("div").queue(function () {
+ *         $(this).toggleClass("red");
+ *         $(this).dequeue();
+ *       });
+ *       $("div").animate({left:'10px', top:'30px'}, 700);
+ *     });
+ * @id jQuery.dequeue
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Load a remote page using an HTTP request.
+ * This is jQuery's low-level AJAX implementation. See $.get, $.post etc. for higher-level abstractions that are often easier to understand and use, but don't offer as much functionality (such as error callbacks). '''Warning: All POST are converted to GET when 'script' is the dataType.(because it loads script as a dom script tag)''' $.ajax() returns the XMLHttpRequest that it creates. In most cases you won't need that object to manipulate directly, but it is available if you need to abort the request manually. '''Note:''' If you specify the dataType option described below, make sure the server sends the correct MIME type in the response (eg. xml as "text/xml"). Sending the wrong MIME type can lead to unexpected problems in your script. See<a href='Specifying_the_Data_Type_for_AJAX_Requests'>Specifying the Data Type for AJAX Requests</a> for more information. $.ajax() takes one argument, an object of key/value pairs, that are used to initialize and handle the request. See below for a full list of the key/values that can be used. As of jQuery 1.2, you can load JSON data located on another domain if you specify a [http://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/ JSONP] callback, which can be done like so: "myurl?callback=?". jQuery automatically replaces the ? with the correct method name to call, calling your specified callback. Or, if you set the dataType to "jsonp" a callback will be automatically added to your Ajax request.
+ * @code
+ * var xmlDocument = [create xml document];
+ *  $.ajax({
+ *    url: "page.php",
+ *    processData: false,
+ *    data: xmlDocument,
+ *    success: handleResponse
+ *  });
+ * @id jQuery.jQuery.ajax
+ * @param {Options} options A set of key/value pairs that configure the Ajax request. All options are optional. A default can be set for any option with <a href='Ajax/jQuery.ajaxSetup'>$.ajaxSetup</a>().
+ * @type XMLHttpRequest
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Load HTML from a remote file and inject it into the DOM.
+ * A GET request will be performed by default - but if you pass in any extra parameters then a POST will occur. In jQuery 1.2 you can now specify a jQuery selector in the URL. Doing so will filter the incoming HTML document, only injecting the elements that match the selector. The syntax looks something like "url #some > selector". See the examples for more information.
+ * @code
+ * $("#feeds").load("feeds.php", {limit: 25}, function(){
+ *    alert("The last 25 entries in the feed have been loaded");
+ *  });
+ * @id jQuery.load
+ * @param {String} url The URL of the HTML page to load.
+ * @param {Map} data Key/value pairs that will be sent to the server.
+ * @param {Callback} callback The function called when the ajax request is complete (not necessarily success).
+ * 
+ * <pre>function (responseText, textStatus, XMLHttpRequest) {
+ *   this; // dom element
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Load a remote page using an HTTP GET request.
+ * This is an easy way to send a simple GET request to a server without having to use the more complex $.ajax function. It allows a single callback function to be specified that will be executed when the request is complete (and only if the response has a successful response code). If you need to have both error and success callbacks, you may want to use $.ajax.
+ * @code
+ * $.get("test.cgi", { name: "John", time: "2pm" },
+ *    function(data){
+ *      alert("Data Loaded: " + data);
+ *    });
+ * @id jQuery.jQuery.get
+ * @param {String} url The URL of the page to load.
+ * @param {Map} data Key/value pairs that will be sent to the server.
+ * @param {Function} callback A function to be executed whenever the data is loaded successfully.
+ * 
+ * <pre>function (data, textStatus) {
+ *   // data could be xmlDoc, jsonObj, html, text, etc...
+ *   this; // the options for this ajax request
+ * }
+ * </pre>
+ * @type XMLHttpRequest
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Load JSON data using an HTTP GET request.
+ * As of jQuery 1.2, you can load JSON data located on another domain if you specify a [http://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/ JSONP] callback, which can be done like so: "myurl?callback=?". jQuery automatically replaces the ? with the correct method name to call, calling your specified callback. Note: Keep in mind, that lines after this function will be executed before callback.
+ * @code
+ * var id=$("#id").attr("value");
+ *   $.getJSON("pages.php",{id:id},dates);
+ * function dates(datos)
+ * {
+ * 	
+ *  $("#list").html("Name:"+datos[1].name+"<br>"+"Last Name:"+datos[1].lastname+"<br>"+"Address:"+datos[1].address);
+ * }
+ * @id jQuery.jQuery.getJSON
+ * @param {String} url The URL of the page to load.
+ * @param {Map} data Key/value pairs that will be sent to the server.
+ * @param {Function} callback A function to be executed whenever the data is loaded successfully.
+ * 
+ * <pre>function (data, textStatus) {
+ *   // data will be a jsonObj
+ *   this; // the options for this ajax request
+ * }
+ * </pre>
+ * @type XMLHttpRequest
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Loads, and executes, a local JavaScript file using an HTTP GET request.
+ * Before jQuery 1.2, getScript was only able to load scripts from the same domain as the original page. As of 1.2, you can now load JavaScript files from any domain. Warning: Safari 2 and older is unable to evaluate scripts in a global context synchronously. If you load functions via getScript, make sure to call them after a delay.
+ * @code
+ * $.getScript("test.js", function(){
+ *    alert("Script loaded and executed.");
+ *  });
+ * @id jQuery.jQuery.getScript
+ * @param {String} url The URL of the page to load.
+ * @param {Function} callback A function to be executed whenever the data is loaded successfully.
+ * <pre>function (data, textStatus) {
+ *   // data should be javascript
+ *   this; // the options for this ajax request
+ * }
+ * </pre>
+ * @type XMLHttpRequest
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Load a remote page using an HTTP POST request.
+ * This is an easy way to send a simple POST request to a server without having to use the more complex $.ajax function. It allows a single callback function to be specified that will be executed when the request is complete (and only if the response has a successful response code). If you need to have both error and success callbacks, you may want to use $.ajax.
+ * @code
+ * $.post("test.cgi", { name: "John", time: "2pm" },
+ *    function(data){
+ *      alert("Data Loaded: " + data);
+ *    });
+ * @id jQuery.jQuery.post
+ * @param {String} url The URL of the page to load.
+ * @param {Map} data Key/value pairs that will be sent to the server.
+ * @param {Function} callback A function to be executed whenever the data is loaded successfully.
+ * 
+ * <pre>function (data, textStatus) {
+ *   // data could be xmlDoc, jsonObj, html, text, etc...
+ *   this; // the options for this ajax request
+ * }
+ * </pre>
+ * @type XMLHttpRequest
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Attach a function to be executed whenever an AJAX request completes. This is an<a href='Ajax_Events'>Ajax Event</a> .
+ * The XMLHttpRequest and settings used for that request are passed as arguments to the callback.
+ * @code
+ * $("#msg").ajaxComplete(function(request, settings){
+ *    $(this).append("<li>Request Complete.</li>");
+ *  });
+ * @id jQuery.ajaxComplete
+ * @param {Function} callback The function to execute.
+ * 
+ * <pre>function (event, XMLHttpRequest, ajaxOptions) {
+ *   this; // dom element listening
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Attach a function to be executed whenever an AJAX request fails. This is an<a href='Ajax_Events'>Ajax Event</a> .
+ * The XMLHttpRequest and settings used for that request are passed as arguments to the callback. A third argument, an exception object, is passed if an exception occured while processing the request.
+ * @code
+ * $("#msg").ajaxError(function(request, settings){
+ *    $(this).append("<li>Error requesting page " + settings.url + "</li>");
+ *  });
+ * @id jQuery.ajaxError
+ * @param {Function} callback The function to execute.
+ * 
+ * <pre>function (event, XMLHttpRequest, ajaxOptions, thrownError) {
+ *   // thrownError only passed if an error was caught
+ *   this; // dom element listening
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Attach a function to be executed before an AJAX request is sent. This is an<a href='Ajax_Events'>Ajax Event</a> .
+ * The XMLHttpRequest and settings used for that request are passed as arguments to the callback.
+ * @code
+ * $("#msg").ajaxSend(function(evt, request, settings){
+ *    $(this).append("<li>Starting request at " + settings.url + "</li>");
+ *  });
+ * @id jQuery.ajaxSend
+ * @param {Function} callback The function to execute.
+ * 
+ * <pre>function (event, XMLHttpRequest, ajaxOptions) {
+ *   this; // dom element listening
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Attach a function to be executed whenever an AJAX request begins and there is none already active. This is an<a href='Ajax_Events'>Ajax Event</a> .
+ * 
+ * @code
+ * $("#loading").ajaxStart(function(){
+ *    $(this).show();
+ *  });
+ * @id jQuery.ajaxStart
+ * @param {Function} callback The function to execute.
+ * 
+ * <pre>function () {
+ *   this; // dom element listening
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Attach a function to be executed whenever all AJAX requests have ended. This is an<a href='Ajax_Events'>Ajax Event</a> .
+ * 
+ * @code
+ * $("#loading").ajaxStop(function(){
+ *    $(this).hide();
+ *  });
+ * @id jQuery.ajaxStop
+ * @param {Function} callback The function to execute.
+ * <pre>function () {
+ *   this; // dom element listening
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Attach a function to be executed whenever an AJAX request completes successfully. This is an<a href='Ajax_Events'>Ajax Event</a> .
+ * The event object, XMLHttpRequest, and settings used for that request are passed as arguments to the callback.
+ * @code
+ * $("#msg").ajaxSuccess(function(evt, request, settings){
+ *    $(this).append("<li>Successful Request!</li>");
+ *  });
+ * @id jQuery.ajaxSuccess
+ * @param {Function} callback The function to execute.
+ * 
+ * <pre>function (event, XMLHttpRequest, ajaxOptions) {
+ *   this; // dom element listening
+ * }
+ * </pre>
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Setup global settings for AJAX requests.
+ * See<a href='Ajax/jQuery.ajax'>$.ajax</a> for a description of all available options.
+ * @code
+ * $.ajaxSetup({
+ *    url: "/xmlhttp/",
+ *    global: false,
+ *    type: "POST"
+ * 
+ *  });
+ *  $.ajax({ data: myData });
+ * @id jQuery.jQuery.ajaxSetup
+ * @param {Options} options A set of key/value pairs that configure the default Ajax request. All options are optional.
+ * @type 
+ * @since 1.1
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Serializes a set of input elements into a string of data. This will serialize all given elements.
+ * As of jQuery 1.2 the serialize method correctly serializes forms. For older versions of jQuery, the [http://www.malsup.com/jquery/form/ Form Plugin's] fieldSerialize method should be used.
+ * @code
+ * function showValues() {
+ *       var str = $("form").serialize();
+ *       $("#results").text(str);
+ *     }
+ * 
+ *     $(":checkbox, :radio").click(showValues);
+ *     $("select").change(showValues);
+ *     showValues();
+ * @id jQuery.serialize
+ * @type jQuery
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Serializes all forms and form elements (like the<a href='Ajax/serialize'>.serialize()</a> method) but returns a JSON data structure for you to work with.
+ * 
+ * @code
+ * function showValues() {
+ *       var fields = $(":input").serializeArray();
+ *       $("#results").empty();
+ *       jQuery.each(fields, function(i, field){
+ *         $("#results").append(field.value + " ");
+ *       });
+ *     }
+ * 
+ *     $(":checkbox, :radio").click(showValues);
+ *     $("select").change(showValues);
+ *     showValues();
+ * @id jQuery.serializeArray
+ * @type jQuery
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Contains flags for the useragent, read from navigator.userAgent.
+ * Available flags are: * safari * opera * msie * mozilla This property is available before the DOM is ready, therefore you can use it to add ready events only for certain browsers. There are situations where object detection is not reliable enough, in such cases it makes sense to use browser detection. A combination of browser and object detection yields quite reliable results.
+ * @code
+ * if ($.browser.safari) {
+ *     alert("this is safari!");
+ *  }
+ * @id jQuery.jQuery.browser
+ * @type Map
+ * @property
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * The version number of the rendering engine for the user's browser.
+ * Here are some typical results: * Internet Explorer: 6.0, 7.0 * Mozilla/Firefox/Flock/Camino: 1.7.12, 1.8.1.3 * Opera: 9.20 * Safari/Webkit: 312.8, 418.9
+ * @code
+ * if (jQuery.browser.msie) {
+ *   alert(parseInt(jQuery.browser.version));
+ * }
+ * @id jQuery.jQuery.browser.version
+ * @type String
+ * @property
+ * @since 1.1.3
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * States if the current page, in the user's browser, is being rendered using the [http://www.w3.org/TR/REC-CSS2/box.html W3C CSS Box Model].
+ * 
+ * @code
+ * $.boxModel
+ * @id jQuery.jQuery.boxModel
+ * @type Boolean
+ * @property
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * A generic iterator function, which can be used to seamlessly iterate over both objects and arrays.
+ * This function is not the same as $().each() - which is used to iterate, exclusively, over a jQuery object. This function can be used to iterate over anything. The callback has two arguments:the key (objects) or index (arrays) as the first, and the value as the second. If you wish to break the each() loop at a particular iteration you can do so by making your function return false. Other return values are ignored.
+ * @code
+ * $.each( { name: "John", lang: "JS" }, function(i, n){
+ *    alert( "Name: " + i + ", Value: " + n );
+ *  });
+ * @id jQuery.jQuery.each
+ * @param {Object} object The object, or array, to iterate over.
+ * @param {Function} callback The function that will be executed on every object.
+ * <pre>function callback(indexInArray, valueOfElement) {
+ *   var booleanKeepGoing;
+ * 
+ *   this; // == valueOfElement
+ * 
+ *   return booleanKeepGoing; // optional, unless false 
+ *                            // and want to stop looping
+ * }
+ * </pre>
+ * @type Object
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Extend one object with one or more others, returning the original, modified, object.
+ * This is a great utility for simple inheritance.
+ * @code
+ * var empty = {}
+ * var defaults = { validate: false, limit: 5, name: "foo" };
+ * var options = { validate: true, name: "bar" };
+ * var settings = $.extend(empty, defaults, options);
+ * @id jQuery.jQuery.extend
+ * @param {Object} target The object to extend.
+ * @param {Object} object1 The object that will be merged into the first.
+ * @param {Object} objectN More objects to merge into the first.
+ * @type Object
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Filter items out of an array, by using a filter function.
+ * The specified function will be passed two arguments: The current array item and the index of the item in the array. The function must return 'true' to keep the item in the array, false to remove it.
+ * @code
+ * $.grep( [0,1,2,3,4,5], "a > 1", true);
+ * @id jQuery.jQuery.grep
+ * @param {Array} array The Array to find items in.
+ * @param {Function} callback The function to process each item against.  The first argument to the function is the list item, and the second argument is the list index.  The function should return a Boolean value.  Optionally, this argument may be a string rather than a function.  If the argument is a string, it is treated as a short "lambda-form" function, with "a" representing the list item and "i" representing the index.  For example, "a > 0" may be passed instead of "function(a){ return a > 0; }".
+ * 
+ * <pre>function callback(elementOfArray, indexInArray) {
+ *   var shouldKeepIt;
+ * 
+ *   this; // unmapped
+ * 
+ *   return shouldKeepIt;
+ * }
+ * </pre>
+ * @param {Boolean} invert If "invert" is false, or not provided, then the function returns an array consisting of all elements for which "callback" returns true.  If "invert" is true, then the function returns an array consisting of all elements for which "callback" returns false.
+ * @type Array
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Turns an array-like object into a true array.
+ * Array-like objects have a length property and its properties are numbered from 0 to length - 1. Typically it will be unnecessary to use this function if you are using jQuery which uses this function internally.
+ * @code
+ * var arr = jQuery.makeArray(document.getElementsByTagName("div"));
+ *     arr.reverse(); // use an Array method on list of dom elements
+ *     $(arr).appendTo(document.body);
+ * @id jQuery.jQuery.makeArray
+ * @param {Object} obj Array-like object to turn in to an actual Array.
+ * @type Array
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Translate all items in an array to another array of items.
+ * The translation function that is provided to this method is called for each item in the array and is passed one argument: The item to be translated. The function can then return the translated value, 'null' (to remove the item), or an array of values - which will be flattened into the full array.
+ * @code
+ * $.map( [0,1,2,3], "a * a" );
+ * @id jQuery.jQuery.map
+ * @param {Array} array The Array to translate.
+ * @param {Function} callback The function to process each item against.  The argument to the function is the list item. The function can return any value.  Optionally, this argument may be a string rather than a function. If the argument is a string, it is treated as a short "lambda-form" function, with "a" representing the list item. For example, "a * a" may be passed instead of "function(a){ return a * a; }". 
+ * 
+ * <pre>function callback(elementOfArray, indexInArray) {
+ *   var replacementValue;
+ * 
+ *   this; // unmapped
+ * 
+ *   return replacementValue;
+ * }
+ * </pre>
+ * @type Array
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Determine the index of the first parameter in the Array (-1 if not found).
+ * 
+ * @code
+ * var arr = [ 4, "Pete", 8, "John" ];
+ * 
+ *     $("span:eq(0)").text(jQuery.inArray("John", arr));
+ *     $("span:eq(1)").text(jQuery.inArray(4, arr));
+ *     $("span:eq(2)").text(jQuery.inArray("David", arr));
+ * @id jQuery.jQuery.inArray
+ * @param {Any} value Value to see if it exists in the array.
+ * @param {Array} array Array to look through for the value.
+ * @type Number
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Remove all duplicate elements from an array of elements.
+ * 
+ * @code
+ * $.unique(document.getElementsByTagName("div"));
+ * @id jQuery.jQuery.unique
+ * @param {Array} array The Array to translate.
+ * @type Array
+ * @since 1.1.3
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Determine if the parameter passed is a function.
+ * 
+ * @code
+ * $.isFunction(function(){});
+ * @id jQuery.jQuery.isFunction
+ * @param {Object} obj Object to test whether or not it is a function.
+ * @type boolean
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Remove the whitespace from the beginning and end of a string.
+ * Uses a regular expression to remove whitespace from the given string.
+ * @code
+ * $.trim("  hello, how are you?  ");
+ * @id jQuery.jQuery.trim
+ * @param {String} str The string to trim.
+ * @type String
+ * @since 1.0
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Returns a unique ID for the element.
+ * Typically this function will only be used internally. It is called automatically when necessary when using the other data() functionality.
+ * @code
+ * $(document.body).click(function(e) {
+ *       var id = jQuery.data(e.target);
+ *       $("span").text(id);
+ *     });
+ * @id jQuery.jQuery.data
+ * @param {Element} elem DOM element of interest.
+ * @type Number
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Returns value at named data store for the element.
+ * 
+ * @code
+ * $("button").click(function(e) {
+ *       var adiv = $("div").get(0);
+ *       var value;
+ * 
+ *       switch ($("button").index(this)) {
+ *         case 0 :
+ *           value = jQuery.data(adiv, "blah");
+ *           break;
+ *         case 1 :
+ *           jQuery.data(adiv, "blah", "hello");
+ *           value = "Stored!";
+ *           break;
+ *         case 2 :
+ *           jQuery.data(adiv, "blah", 86);
+ *           value = "Stored!";
+ *           break;
+ *         case 3 :
+ *           jQuery.removeData(adiv);
+ *           value = "Removed!";
+ *           break;
+ *       }
+ * 
+ *       $("span").text("" + value);
+ *     });
+ * @id jQuery.jQuery.data
+ * @param {Element} elem DOM element of interest.
+ * @param {String} name Name of the data stored.
+ * @type Any
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Stores the value in the named spot and also returns the value.
+ * This function can be useful for attaching data to elements without having to create a new expando. It also isn't limited to a string. The value can be any format. To avoid conflicts in plugins, it is usually effective to store one object using the plugin name and put all the necessary information in that object. <code> var obj = jQuery.data($("#target").get(0), "pluginname", {}); obj[...] = ... </code>
+ * @code
+ * var adiv = $("div").get(0);
+ *     jQuery.data(adiv, "test", { first: 16, last: "pizza!" });
+ *     $("span:first").text(jQuery.data(adiv, "test").first);
+ *     $("span:last").text(jQuery.data(adiv, "test").last);
+ * @id jQuery.jQuery.data
+ * @param {Element} elem DOM element of interest.
+ * @param {String} name Name of the data to store.
+ * @param {Any} value Value to be stored.
+ * @type Any
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Remove the expando attribute that allows data storage on an element.
+ * This is the complement function to jQuery.data(elem) which is called as necessary by jQuery.data(elem, name, value).
+ * @code
+ * var adiv = $("div").get(0);
+ * 
+ *     $("span:eq(0)").text("" + jQuery.data(adiv, "test1"));
+ *     jQuery.data(adiv, "test1", "VALUE-1");
+ *     jQuery.data(adiv, "test2", "VALUE-2");
+ *     $("span:eq(1)").text("" + jQuery.data(adiv, "test1"));
+ *     jQuery.removeData(adiv);
+ *     $("span:eq(2)").text("" + jQuery.data(adiv, "test1"));
+ *     $("span:eq(3)").text("" + jQuery.data(adiv, "test2"));
+ * @id jQuery.jQuery.removeData
+ * @param {Element} elem Element to delete the data store from.
+ * @type 
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Removes just this one named data store.
+ * This is the complement function to jQuery.data(elem, name, value).
+ * @code
+ * var adiv = $("div").get(0);
+ * 
+ *     $("span:eq(0)").text("" + jQuery.data(adiv, "test1"));
+ *     jQuery.data(adiv, "test1", "VALUE-1");
+ *     jQuery.data(adiv, "test2", "VALUE-2");
+ *     $("span:eq(1)").text("" + jQuery.data(adiv, "test1"));
+ *     jQuery.removeData(adiv, "test1");
+ *     $("span:eq(2)").text("" + jQuery.data(adiv, "test1"));
+ *     $("span:eq(3)").text("" + jQuery.data(adiv, "test2"));
+ * @id jQuery.jQuery.removeData
+ * @param {Element} elem Element to delete the named data store property from.
+ * @param {String} name The name of the data store property to remove.
+ * @type 
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+
+/**
+ * Serializes an array of form elements or an object (core of<a href='Ajax/serialize'>.serialize()</a> method).
+ * 
+ * @code
+ * var params = { width:1680, height:1050 };
+ *     var str = jQuery.param(params);
+ *     $("#results").text(str);
+ * @id jQuery.jQuery.param
+ * @param {Array<Elements>, jQuery, Object} obj An Array or jQuery object is serialized by name/value pairs.  An object by key/value pairs.
+ * @type String
+ * @since 1.2
+ * @compat=IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+ */
+

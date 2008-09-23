@@ -371,13 +371,19 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.css.devtools</friend>
+                <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.erlang.editing</friend>
                 <friend>org.netbeans.modules.erlang.platform</friend>
                 <friend>org.netbeans.modules.erlang.project</friend>
@@ -395,6 +401,7 @@
                 <friend>org.netbeans.modules.scala.platform</friend>
                 <friend>org.netbeans.modules.scala.project</friend>
                 <package>org.netbeans.napi.gsfret.source</package>
+                <package>org.netbeans.napi.gsfret.source.support</package>
             </friend-packages>
         </data>
     </configuration>

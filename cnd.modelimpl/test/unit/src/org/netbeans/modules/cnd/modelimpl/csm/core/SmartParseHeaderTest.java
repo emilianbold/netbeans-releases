@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
@@ -69,20 +68,6 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
         getTraceModel().setDumpModel(true);
         getTraceModel().setDumpPPState(true);
         ParseStatistics.getInstance().clear();
-    }
-
-    private FileImpl findFile(String name) throws Exception{
-        ProjectBase project = this.getProject();
-        if (project != null) {
-            String toCompare = File.separator + name;
-            for (FileImpl file : project.getAllFileImpls()) {
-                if (file.getAbsolutePath().toString().endsWith(toCompare)) {
-                    return file;
-                }
-            }
-        }
-        assertTrue("CsmFile not found for " + name, false);
-        return null;
     }
 
     private void assertParseCount(String fileName, int expectedParseCount) throws Exception {
@@ -198,6 +183,10 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
 
     public void testElifElse() throws Exception {
         performTrivialTest("elif_else_simple.cc", "elif_else_simple.h", 5, true);
+    }
+
+    public void testElifElseModel() throws Exception {
+        performTest(new String[] {"elif_else_simple.cc", "elif_else_simple.h"}, "elif_else_simple_model");
     }
 
     /////////////////////////////////////////////////////////////////////

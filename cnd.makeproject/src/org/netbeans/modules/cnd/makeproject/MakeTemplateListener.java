@@ -161,6 +161,9 @@ public class MakeTemplateListener implements OperationListener {
             if (ioFile.isDirectory()) {
                 return;
             } // don't add directories.
+            if (!makeConfigurationDescriptor.okToChange()) {
+                return;
+            }
             String itemPath;
             if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
                 itemPath = IpeUtils.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());

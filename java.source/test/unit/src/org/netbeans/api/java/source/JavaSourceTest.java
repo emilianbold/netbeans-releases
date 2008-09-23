@@ -44,8 +44,11 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.util.SimpleTreeVisitor;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import java.io.File;
@@ -62,7 +65,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.tools.JavaFileObject;
 import junit.framework.*;
@@ -77,6 +84,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -173,7 +181,7 @@ public class JavaSourceTest extends NbTestCase {
     }
 
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(JavaSourceTest.class);        
+        TestSuite suite = new NbTestSuite(JavaSourceTest.class);
 //        TestSuite suite = new NbTestSuite ();
 //        suite.addTest(new JavaSourceTest("testRegisterSameTask"));
         return suite;
@@ -1391,6 +1399,156 @@ public class JavaSourceTest extends NbTestCase {
         js = JavaSource.create(cpInfo, testFile1);
         js.addPhaseCompletionTask(task, Phase.PARSED, Priority.NORMAL);
         assertTrue(latch2.await(10, TimeUnit.SECONDS));
+    }
+
+    public void testIncrementalReparse () throws Exception {
+        final FileObject testFile = createTestFile ("Test");
+        final ClassPath bootPath = createBootPath ();
+        final ClassPath compilePath = createCompilePath ();
+        final JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), testFile);
+        final DataObject dobj = DataObject.find(testFile);
+        final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+        final StyledDocument doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        final TokenHierarchy h = TokenHierarchy.get(doc);
+        final TokenSequence ts = h.tokenSequence(JavaTokenId.language());
+        //Run sync task
+        final CompilationInfoImpl[] impls = new CompilationInfoImpl[1];
+        final Pair[] res = new Pair[1];
+        js.runUserActionTask(new Task<CompilationController> () {
+            public void run (final CompilationController c) throws IOException {
+                c.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cu = c.getCompilationUnit();
+                FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc, c.getTrees().getSourcePositions(), "main");
+                v.visit(cu, null);
+                impls[0] = c.impl;
+                res[0] = v.result;
+            }
+        }, true);
+        final boolean[] loggerResult = new boolean[1];
+        final Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                String msg = record.getMessage();
+                if (msg.startsWith("Reflowed method in: ")) {
+                    loggerResult[0] = true;
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        final Logger logger = Logger.getLogger(JavaSource.class.getName());
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        try {
+            assertNotNull(impls[0]);
+            assertNotNull(res[0]);
+            //Do modification
+            NbDocument.runAtomic (doc,
+            new Runnable () {
+                public void run () {
+                    try {
+                        String text = doc.getText(0,doc.getLength());
+                        int index = text.indexOf(REPLACE_PATTERN);
+                        assertTrue (index != -1);
+                        doc.remove(index,REPLACE_PATTERN.length());
+                        doc.insertString(index,"System.out.println();",null);
+                    } catch (BadLocationException ble) {
+                        ble.printStackTrace(System.out);
+                    }
+                }
+            });
+            //Workaround, in test lexer events return wrong affected range
+            impls[0].setChangedMethod(res[0]);
+            //Run sync task
+            js.runUserActionTask(new Task<CompilationController> () {
+                public void run (final CompilationController c) throws IOException {
+                    c.toPhase(JavaSource.Phase.PARSED);
+                }
+            }, true);
+            //Check that there was an incremental reparse
+            assertTrue(loggerResult[0]);
+            loggerResult[0] = false;
+
+            //Do modification
+            NbDocument.runAtomic (doc,
+            new Runnable () {
+                public void run () {
+                    try {
+                        doc.insertString(0,"/** Hello **/",null);
+                    } catch (BadLocationException ble) {
+                        ble.printStackTrace(System.out);
+                    }
+                }
+            });
+            //Run sync task
+            js.runUserActionTask(new Task<CompilationController> () {
+                public void run (final CompilationController c) throws IOException {
+                    c.toPhase(JavaSource.Phase.PARSED);
+                }
+            }, true);
+            //Check that there was not an incremental reparse
+            assertFalse(loggerResult[0]);
+        } finally {
+            logger.removeHandler(handler);
+        }
+    }
+
+    private static class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {
+
+        final Document doc;
+        final SourcePositions pos;
+        final String methodName;
+        CompilationUnitTree cu;
+
+        Pair<JavaSource.DocPositionRegion,MethodTree> result;
+
+        public FindMethodRegionsVisitor (final Document doc, final SourcePositions pos, String methodName) {
+            assert doc != null;
+            assert pos != null;
+            assert methodName != null;
+            this.doc = doc;
+            this.pos = pos;
+            this.methodName = methodName;
+        }
+
+        @Override
+        public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
+            cu = node;
+            for (Tree t : node.getTypeDecls()) {
+                visit (t,p);
+            }
+            return null;
+        }
+
+        @Override
+        public Void visitClass(ClassTree node, Void p) {
+            for (Tree t : node.getMembers()) {
+                visit(t, p);
+            }
+            return null;
+        }
+
+        @Override
+        public Void visitMethod(MethodTree node, Void p) {
+            assert cu != null;
+            int startPos = (int) pos.getStartPosition(cu, node.getBody());
+            int endPos = (int) pos.getEndPosition(cu, node.getBody());
+            if (methodName.equals(node.getName().toString()) && startPos >=0) {
+                try {
+                    result = Pair.<JavaSource.DocPositionRegion,MethodTree>of(new JavaSource.DocPositionRegion(doc,startPos,endPos),node);
+                } catch (BadLocationException e) {
+                    //todo: reocvery
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
     }
     
     private static class TestProvider implements JavaSource.JavaFileObjectProvider {

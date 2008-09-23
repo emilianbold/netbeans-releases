@@ -53,6 +53,7 @@ import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.napi.gsfret.source.ParserTaskImpl;
 import org.netbeans.modules.gsf.Language;
+import org.openide.filesystems.FileObject;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -111,11 +112,16 @@ public class SourceAnalyser implements IndexDocumentFactory {
     
     void analyseUnitAndStore (Indexer indexer, ParserResult result) throws IOException {
         String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
-        List<IndexDocument> documents = indexer.index(result, this);
-        if (documents == null) {
-            // Null means delete this document from the index which is different than
-            // a document with no indexable information
-            documents = Collections.emptyList();
+        FileObject fo = result.getFile().getFileObject();
+        List<IndexDocument> documents = null;
+        if (fo != null && fo.isValid()) {
+            // http://www.netbeans.org/issues/show_bug.cgi?id=145386
+            documents = indexer.index(result, this);
+            if (documents == null) {
+                // Null means delete this document from the index which is different than
+                // a document with no indexable information
+                documents = Collections.emptyList();
+            }
         }
         index.store(fileUrl, documents);
     }

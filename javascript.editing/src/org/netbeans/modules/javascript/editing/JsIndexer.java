@@ -605,6 +605,7 @@ public class JsIndexer implements Indexer {
                         String superClz = null;
                         String nameSpace = null;
                         String fullName = null;
+                        String compatibility = "";
                         StringBuilder argList = new StringBuilder();
                         cts.moveStart();
                         while (cts.moveNext()) {
@@ -661,6 +662,8 @@ public class JsIndexer implements Indexer {
                                     clz = JsCommentLexer.nextIdentGroup(cts);
                                 } else if (TokenUtilities.textEquals("@memberOf", text)) { // NOI18N
                                     clz = JsCommentLexer.nextIdentGroup(cts);
+                                } else if (TokenUtilities.textEquals("@compat", text)) { // NOI18N
+                                    compatibility = JsCommentLexer.getCompat(cts);
                                 } else if (TokenUtilities.textEquals("@method", text)) { // NOI18N
                                     flags = flags | IndexedElement.FUNCTION;
                                     name = JsCommentLexer.nextIdentGroup(cts);
@@ -759,7 +762,6 @@ public class JsIndexer implements Indexer {
                             sb.append(';');
                             index++;
                             assert index == IndexedElement.BROWSER_INDEX;
-                            String compatibility = "";
                             sb.append(compatibility);
 
                             // Types

@@ -74,7 +74,7 @@ public class LocalVarScanner extends TreePathScanner<Boolean, Element> {
             if (current !=null && current.equals(p)) {
                 result = true;
             }
-        } else if (current.getKind().isField() && node.getName().toString().equals(newName)) {
+        } else if (current != null && current.getKind() == ElementKind.FIELD && node.getName().toString().equals(newName)) {
             result = true;
         }
         return super.visitIdentifier(node, p);

@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.subversion.options;
 
+import org.netbeans.modules.versioning.util.FilePathCellRenderer;
+
 /**
  *
  * @author  Tomas Stupka
@@ -50,6 +52,7 @@ public class AnnotationSettingsPanel extends javax.swing.JPanel {
     public AnnotationSettingsPanel() {
         initComponents();
         initModel();
+        expresionsTable.setDefaultRenderer(String.class, new FilePathCellRenderer());
     }
     
     /** This method is called from within the constructor to

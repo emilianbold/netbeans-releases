@@ -66,6 +66,9 @@ var NOTE_MACOSX  = "Note: Java ME is only available for Windows and Linux. <br>T
 var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers. The UML Pack is available on the Update Center.";
 var NOTE_OTHER   = "Note: The UML Pack is available on the Update Center.";
 
+var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE Download";
+var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE Download";
+
 
 var NETBEANS_DOWNLOAD_HEADER = "NetBeans IDE {0} Download";
 var DEVELOPMENT_TITLE        = "Development";
@@ -79,7 +82,7 @@ var LANGUAGE_LABEL           = "Language:";
 var PLATFORM_LABEL           = "Platform:";
 var PLUGIN_MANAGER_LABEL     = "You can add or remove packs later using the IDE's Plugin Manager (Tools | Plugins).<br><br>";
 var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a> or <a href=\"http://download.netbeans.org/netbeans/6.1/mysql_bundle/\">MySQL GlassFish Bundle</a>.";
-var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a href=\"{0}zip/\">zip file format</a>.";
+var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a href=\"{0}\">zip file format</a>.";
 var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources\">instructions on how to build the IDE from sources</a> or <a href=\"{0}\">installation instructions</a>.";
 
 var LICENSE_NOTES_LINK      = "http://www.netbeans.org/about/legal/product-licences.html";
@@ -88,9 +91,9 @@ var ARCHIVE_BUILDS_LINK      = "http://www.netbeans.info/downloads/dev.php";
 var DEVELOPMENT_BUILDS_LINK  = "http://bits.netbeans.org/download/trunk/nightly/latest/";
 
 // TRANSLATE NOTE: change download*.gif to download*_<locale>.gif
-var DOWNLOAD_BUTTON_NORMAL    = "img/download.gif";
-var DOWNLOAD_BUTTON_DISABLED  = "img/download_d.gif";
-var DOWNLOAD_BUTTON_HIGHLIGHT = "img/download_h.gif";
+var DOWNLOAD_BUTTON_NORMAL    = "download.gif";
+var DOWNLOAD_BUTTON_DISABLED  = "download_d.gif";
+var DOWNLOAD_BUTTON_HIGHLIGHT = "download_h.gif";
 
 // DO NOT TRANSLATE
 var START_PAGE = "start.html";

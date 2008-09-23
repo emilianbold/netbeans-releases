@@ -42,7 +42,6 @@ package org.netbeans.modules.subversion.ui.properties;
 
 import java.awt.Dialog;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -75,7 +74,9 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -284,12 +285,10 @@ public class SvnProperties implements ActionListener, DocumentListener {
                 protected void perform() {
                     try {
                         client = Subversion.getInstance().getClient(repositoryUrl);
-                    } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, true);
-                        return;
-                    }
-
-                    try {
+                        ISVNStatus status = client.getSingleStatus(root);
+                        if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
+                            return;
+                        }
                         isvnProps = client.getProperties(root);
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
@@ -344,17 +343,18 @@ public class SvnProperties implements ActionListener, DocumentListener {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }
-
+                    boolean recursively = panel.cbxRecursively.isSelected();
                     try {
+                        addFile(client, root, recursively);
                         if (isLoadedFromFile()) {
                             try {
-                                client.propertySet(root, getPropertyName(), getLoadedValueFile(), panel.cbxRecursively.isSelected());
+                                client.propertySet(root, getPropertyName(), getLoadedValueFile(), recursively);
                             } catch (IOException ex) {
                                 Subversion.LOG.log(Level.SEVERE, null, ex);
                                 return;
                             }
                         } else {
-                            client.propertySet(root, getPropertyName(), getPropertyValue(), panel.cbxRecursively.isSelected());
+                            client.propertySet(root, getPropertyName(), getPropertyValue(), recursively);
                         }
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
@@ -373,6 +373,21 @@ public class SvnProperties implements ActionListener, DocumentListener {
             support = null;
         }
         refreshProperties();
+    }
+
+    private void addFile(SvnClient client, File file, boolean recursively) throws SVNClientException {
+        if(SvnUtils.isPartOfSubversionMetadata(file)) return;
+        ISVNStatus status = client.getSingleStatus(file);
+        if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
+            client.addFile(file);
+            if(recursively && file.isDirectory()) {
+                File[] files = file.listFiles();
+                if(files == null) return;
+                for (File f : files) {
+                    addFile(client, f, recursively);
+                }
+            }
+        }
     }
 
     public void removeProperties() {

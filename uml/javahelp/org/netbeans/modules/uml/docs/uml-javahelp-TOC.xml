@@ -30,7 +30,6 @@
 				<tocitem text="Setting UML Modeling Preferences" target="uml_prefs_using_preferences_editor" />
 				<tocitem text="UML Categories in the Options Window" target="uml_prefs_categories_in_preferences_editor" />
 				<tocitem text="Configuring Domain Templates Options" target="uml_prefs_configuring_templates_options" />
-				<tocitem text="Specifying Display and Drawing Preferences" target="uml_editors_windows_specifying_display_drawing_preferences" />
 			</tocitem>
 		</tocitem>
 		<tocitem text="Understanding Projects and Diagrams" target="uml_basics_understanding_projects_diagrams">
@@ -58,7 +57,6 @@
 			<tocitem text="Using the Diagram Editor" target="uml_editors_windows_using_diagram_windows">
 				<tocitem text="Zooming in Diagrams" target="uml_editors_windows_zooming_in_diagrams" />
 				<tocitem text="Stacking Diagram Elements" target="uml_editors_windows_stacking_diagram_elements" />
-				<tocitem text="Specifying Display and Drawing Preferences" target="uml_editors_windows_specifying_display_drawing_preferences" />
 				<tocitem text="Navigating Within Diagrams" target="uml_editors_windows_navigating_within_diagrams">
 					<tocitem text="Using the Overview Window" target="uml_editors_windows_using_overview_window" />
 					<tocitem text="Navigating Between Instances and Classifiers" target="uml_editors_windows_navigating_between_instances_classifiers" />
@@ -84,7 +82,6 @@
 				<tocitem text="Creating an Empty Diagram" target="uml_diagrams_creating_diagrams_empty" />
 				<tocitem text="Creating a Scoped Diagram" target="uml_diagrams_creating_diagrams_scoped" />
 				<tocitem text="Creating a Diagram From Selected Elements" target="uml_diagrams_creating_diagram_from_selected_elements" />
-				<tocitem text="Creating a Dependency Diagram for a Classifier" target="uml_diagrams_creating_diagram_dependency" />
 			</tocitem>
 			<tocitem text="Opening and Closing Diagrams" target="uml_diagrams_opening_closing" />
 			<tocitem text="Creating Diagram Elements" target="uml_diagrams_creating_diagram_elements" />
@@ -100,11 +97,12 @@
 				<tocitem text="Changing Diagram Element Size" target="uml_diagrams_editing_diagram_elements_changing_size" />
 				<tocitem text="Finding Diagram Elements in the Projects Window" target="uml_diagrams_editing_diagram_elements_finding" />
 				<tocitem text="Using the Redefine Dialog Box" target="uml_diagrams_editing_diagram_elements_using_redefine_db" />
+				<tocitem text="Deleting Diagram Elements" target="uml_diagrams_deleting_diagram_elements" />
+			    <tocitem text="Deleting Diagrams" target="uml_diagrams_deleting_diagrams" />
 			</tocitem>
-			<tocitem text="Deleting Diagram Elements" target="uml_diagrams_deleting_diagram_elements" />
-			<tocitem text="Deleting Diagrams" target="uml_diagrams_deleting_diagrams" />
+			
 			<tocitem text="Working With Activity Diagrams" target="uml_diagrams_activity_ww_diagram_elements">
-				<tocitem text="Working With Activity Groups" target="uml_diagrams_activity_ww_activity_groups">
+				<tocitem text="Working With Activity Groups" target="uml_diagrams_activity_ww_activity_groups">/>
 					<tocitem text="Selecting and Modifying an Activity Group Kind" target="uml_diagrams_activity_selecting_modifying_activity_group_kind" />
 					<tocitem text="Selecting and Modifying an Activity Group GroupKind" target="uml_diagrams_activity_selecting_modifying_activity_group_groupkind" />
 					<tocitem text="Adding or Modifying Activity Group Conditions" target="uml_diagrams_activity_adding_modifying_activity_group_conditions" />
@@ -134,13 +132,10 @@
 					<tocitem text="Reordering and Moving Operations" target="uml_diagrams_class_reordering_moving_operations" />
 				</tocitem>
 				<tocitem text="Working With Attributes" target="uml_diagrams_class_ww_attributes">
-					<tocitem text="Hiding and Showing Attributes in a Class Diagram" target="uml_diagrams_class_hiding_showing_attributes" />
 					<tocitem text="Creating Attributes" target="uml_diagrams_class_creating_attributes" />
 					<tocitem text="Renaming Attributes" target="uml_diagrams_class_renaming_attributes" />
 					<tocitem text="Reordering and Moving Attributes" target="uml_diagrams_class_reordering_moving_attributes" />
 				</tocitem>
-				<tocitem text="Using the Compartment Customize Dialog Box" target="uml_diagrams_class_using_compartment_customize_db" />
-			</tocitem>
 				<tocitem text="Working With Ports and Interfaces" target="uml_diagrams_component_ww_ports_interfaces">
 					<tocitem text="Adding Interfaces to Component Elements" target="uml_diagrams_component_adding_interfaces_to_components" />
 					<tocitem text="Connecting an Interface to a Component Element" target="uml_diagrams_component_connecting_interface_to_component" />

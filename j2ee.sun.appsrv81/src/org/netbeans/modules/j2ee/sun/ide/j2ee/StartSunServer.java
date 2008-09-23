@@ -387,6 +387,15 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 if (cmd == CMD_STOP) {  // don't mess with this during a restart, since CMD_START will do the right thing.
                     HttpMonitorSupport.synchronizeMonitor((SunDeploymentManagerInterface) dm, 
                             false);
+
+                    // remove the http proxy info if the user has switched the bit
+                    // since they started up the server.
+                    //
+                    if (!dmProps.isSyncHttpProxyOn()) {
+                        HttpProxyUpdater hpu = new HttpProxyUpdater(sunDm.getManagement(), false);
+                        hpu.removeHttpProxySettings();
+                    }
+                
                 }
             } catch (Exception eee){
                 Logger.getLogger(StartSunServer.class.getName()).log(Level.FINE,"",eee);
@@ -447,8 +456,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 HttpProxyUpdater hpu = new HttpProxyUpdater(sunDm.getManagement(), false);
                 if(dmProps.isSyncHttpProxyOn()){
                     hpu.addHttpProxySettings();
+                } else {
+                    hpu.removeHttpProxySettings();
                 }
             }catch(Exception ex){
+                Logger.getLogger(StartSunServer.class.getName()).log(Level.INFO,"",ex);
             }
             
             //for glassfishserver, need a real start-domain command for possible JBI addon startup as well.

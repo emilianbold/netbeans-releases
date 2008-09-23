@@ -332,15 +332,31 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         mgr.addPropertyChangeListener(l);
         Library lib = mgr.createURILibrary("j2se", "javahelp", content);
         mgr.removePropertyChangeListener(l);
-        assertTrue(list.size() == 1);
+        assertEquals(1, list.size());
+        final PropertyChangeListener l2 = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                list.add(evt);
+                if (evt.getPropertyName().equals(LibraryManager.PROP_LIBRARIES)) {
+                    // by the time we got this event library must be removed
+                    assertTrue("must have zero libraries", mgr.getLibraries().length == 0);
+                }
+            }
+        };
+        mgr.addPropertyChangeListener(l2);
         mgr.removeLibrary(lib);
+        mgr.removePropertyChangeListener(l2);
+        assertEquals(2, list.size());
         FileSystem fs = projdir.getFileSystem();
         fs.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 mgr.addPropertyChangeListener(l);
-                mgr.createURILibrary("j2se", "javahelp", content);
+                Library lib = mgr.createURILibrary("j2se", "javahelp", content);
                 mgr.removePropertyChangeListener(l);
-                assertTrue(list.size() == 2);
+                assertEquals(3, list.size());
+                mgr.addPropertyChangeListener(l2);
+                mgr.removeLibrary(lib);
+                mgr.removePropertyChangeListener(l2);
+                assertEquals(4, list.size());
             }});
     }
 

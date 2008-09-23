@@ -45,6 +45,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
+import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 
 /**
  * Run a remote command which requires interactive I/O. The caller is responsible for setting up the
@@ -52,18 +53,20 @@ import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
  * 
  * @author gordonp
  */
-public class RemoteInteractiveCommandProvider extends InteractiveCommandProvider {
+public class RemoteInteractiveCommandProvider implements InteractiveCommandProvider {
+
+    public RemoteInteractiveCommandProvider(String hkey) {
+        this.hkey = hkey;
+    }
     
     private RemoteInteractiveCommandSupport support;
     private String hkey;
 
-    @Override
     public boolean run(String hkey, String cmd, Map<String, String> env) {
         support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
         return !support.isFailedOrCancelled();
     }
 
-    @Override
     public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env) {
         assert hkey != null;
         StringBuilder plainCommand = new StringBuilder();
@@ -81,35 +84,25 @@ public class RemoteInteractiveCommandProvider extends InteractiveCommandProvider
         return !support.isFailedOrCancelled();
     }
 
-    @Override
     public InputStream getInputStream() throws IOException {
         return support == null ? null : support.getInputStream();
     }
 
-    @Override
     public OutputStream getOutputStream() throws IOException {
         return support == null ? null : support.getOutputStream();
     }
     
-    @Override
     public void disconnect() {
         if (support != null) {
             support.disconnect();
         }
     }
 
-    @Override
     public int waitFor() {
         return support == null ? -1 : support.waitFor();
     }
 
-    @Override
     public int getExitStatus() {
         return support == null ? -1 : support.getExitStatus();
-    }
-
-    @Override
-    protected void init(String hkey) {
-        this.hkey = hkey;
     }
 }

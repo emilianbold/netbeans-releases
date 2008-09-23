@@ -41,11 +41,7 @@
 
 package org.netbeans.modules.editor.gsfret;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.editor.CodeFoldingSideBar;
 
 /**
@@ -57,17 +53,11 @@ import org.netbeans.editor.CodeFoldingSideBar;
  *  Java Code Folding Side Bar. Component responsible for drawing folding signs and responding
  *  on user fold/unfold action.
  *
- *  @author  Martin Roskanin
+ * @todo Hmmm, we don't do anything here.... perhaps we should just nuke this class
+ *   and use CodeFoldingSideBar directly??
  */
 public class GsfCodeFoldingSideBar extends CodeFoldingSideBar{
 
-    private int startPos;
-    private int endPos;
-    private List elems = new ArrayList();
-    
-    public GsfCodeFoldingSideBar(){
-    }
-    
     /** Creates a new instance of NbCodeFoldingSideBar */
     public GsfCodeFoldingSideBar(JTextComponent target) {
         super(target);

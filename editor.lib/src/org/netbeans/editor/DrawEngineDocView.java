@@ -382,7 +382,12 @@ implements FoldHierarchyListener, PropertyChangeListener {
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
         JTextComponent component = (JTextComponent)getContainer();
         if (component==null || evt==null || 
-            !EditorUI.LINE_HEIGHT_CHANGED_PROP.equals(evt.getPropertyName())) return;
+            (!EditorUI.LINE_HEIGHT_CHANGED_PROP.equals(evt.getPropertyName()) &&
+             !EditorUI.TAB_SIZE_CHANGED_PROP.equals(evt.getPropertyName())
+            )
+        ) {
+            return;
+        }
         
         AbstractDocument doc = (AbstractDocument)getDocument();
         if (doc!=null) {

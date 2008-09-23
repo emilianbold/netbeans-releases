@@ -516,8 +516,10 @@ public final class EditorContextDispatcher {
                 }
             } else if (type == EditorCookie.class) {
                 Collection<? extends EditorCookie> ecs = resEditorCookie.allInstances();
-                EditorCookie newEditor;
+                final EditorCookie newEditor;
+                final EditorCookie oldEditor;
                 synchronized (EditorContextDispatcher.this) {
+                    oldEditor = currentEditorCookie;
                     if (currentEditorCookie instanceof EditorCookie.Observable) {
                         ((EditorCookie.Observable) currentEditorCookie).removePropertyChangeListener(this);
                     }
@@ -535,6 +537,17 @@ public final class EditorContextDispatcher {
                             mostRecentEditorCookieRef = new WeakReference(newEditor);
                         }
                     }
+                }
+                if (newEditor != null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        // getOpenedPanes() MUST be called on AWT.
+                        public void run() {
+                            updateCurrentOpenedPane(TopComponent.getRegistry().getActivated(), newEditor);
+                        }
+                    });
+                } else if (oldEditor != newEditor) {
+                    //  newEditor == null
+                    refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, null));
                 }
                 /* Fire the editor event only when JEditorPane is set/unset
                 if (oldEditor != newEditor) {

@@ -42,6 +42,10 @@
 package org.netbeans.modules.gsf;
 
 import java.io.IOException;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -206,11 +210,13 @@ public class GsfDataObject extends MultiDataObject {
                 }
             }
         }
-        
+
+        private Language language;
 
         public GenericEditorSupport(GsfDataObject dataObject, Language language) {
             super(dataObject, new Environment(dataObject));
             setMIMEType(language.getMimeType());
+            this.language = language;
         }
         
         
@@ -234,5 +240,17 @@ public class GsfDataObject extends MultiDataObject {
         public @Override boolean close(boolean ask) {
             return super.close(ask);
         }
+
+        @Override
+        protected StyledDocument createStyledDocument (EditorKit kit) {
+            StyledDocument doc = super.createStyledDocument(kit);
+            // Enter the file object in to InputAtrributes. It can be used by lexer.
+            InputAttributes attributes = new InputAttributes();
+            FileObject fileObject = NbEditorUtilities.getFileObject(doc);
+            attributes.setValue(language.getGsfLanguage().getLexerLanguage(), FileObject.class, fileObject, false);
+            doc.putProperty(InputAttributes.class, attributes);
+            return doc;
+        }
+
     }
 }

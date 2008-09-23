@@ -64,7 +64,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
-import org.openide.util.Lookup;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
@@ -395,22 +394,6 @@ public final class XMLUtil extends Object {
         }
         ser.write(doc2, output);
          */
-        // XXX #66563 workaround
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        ClassLoader global = Lookup.getDefault().lookup(ClassLoader.class);
-        ClassLoader target = XMLUtil.class.getClassLoader();
-        if (global == null) {
-            global = target;
-        }
-        try {
-            Class clazz = global.loadClass("org.netbeans.core.startup.SAXFactoryImpl");
-            if (clazz != null) target = clazz.getClassLoader();
-        } catch (Exception e) {
-            //Ignore...
-            //ErrorManager.getDefault().notify(e);
-        } 
-        Thread.currentThread().setContextClassLoader(target);
-        
         try {
             Transformer t = TransformerFactory.newInstance().newTransformer(
                     new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
@@ -440,8 +423,6 @@ public final class XMLUtil extends Object {
             t.transform(source, result);
         } catch (Exception e) {
             throw (IOException) new IOException(e.toString()).initCause(e);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
         }
     }
 

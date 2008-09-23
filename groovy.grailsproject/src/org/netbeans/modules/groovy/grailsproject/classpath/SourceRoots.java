@@ -73,6 +73,7 @@ public class SourceRoots {
         addRoot(SourceCategory.GRAILSAPP_UTILS, result);
         addRoot(SourceCategory.SCRIPTS, result);
         addRoot(SourceCategory.SRC_GROOVY, result);
+        addRoot(SourceCategory.SRC_JAVA, result);
         addRoot(SourceCategory.TEST_INTEGRATION, result);
         addRoot(SourceCategory.TEST_UNIT, result);
         for (FileObject child : projectRoot.getChildren()) {

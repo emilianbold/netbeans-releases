@@ -70,6 +70,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node.IncludeDirective;
 import org.netbeans.modules.web.jsps.parserapi.Node.Visitor;
@@ -354,25 +355,30 @@ public class SimplifiedJSPServlet {
         }
 
         JspSyntaxSupport syntaxSupport = JspSyntaxSupport.get(doc);
-        Collection<String> prefixes = JspUtils.getJSPColoringData(doc, fobj).getPrefixMapper().keySet();
-        TagData fooArg = new TagData((Object[][])null);
+        JSPColoringData coloringData = JspUtils.getJSPColoringData(doc, fobj);
 
-        for (String prefix : prefixes) {
-            List<TagInfo> tags = syntaxSupport.getAllTags(prefix);
+        if (coloringData != null && coloringData.getPrefixMapper() != null){
+            Collection<String> prefixes = coloringData.getPrefixMapper().keySet();
+            TagData fooArg = new TagData((Object[][])null);
 
-            for (TagInfo tag : tags) {
-                VariableInfo vars[] = tag.getVariableInfo(fooArg);
+            for (String prefix : prefixes) {
+                List<TagInfo> tags = syntaxSupport.getAllTags(prefix, false); //do not require fresh data - #146762
 
-                if (vars != null){
-                    for (VariableInfo var : vars) {
-                        // Create Variable Definitions
-                        String varDeclaration = var.getClassName() + " " + var.getVarName() + ";\n";
-                        beanDeclarationsBuff.append(varDeclaration);
+                for (TagInfo tag : tags) {
+                    VariableInfo vars[] = tag.getVariableInfo(fooArg);
+
+                    if (vars != null){
+                        for (VariableInfo var : vars) {
+                            // Create Variable Definitions
+                            if (var.getVarName() != null && var.getClassName() != null){
+                                String varDeclaration = var.getClassName() + " " + var.getVarName() + ";\n";
+                                beanDeclarationsBuff.append(varDeclaration);
+                            }
+                        }
                     }
                 }
             }
         }
-
 
         return beanDeclarationsBuff.toString();
     }

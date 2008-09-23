@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.e2e.api.schema.Element;
 import org.netbeans.modules.e2e.api.schema.SchemaConstruct;
@@ -94,6 +96,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
             e.printStackTrace();
             return false;
         } catch( Exception e ) {
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "xxxxxx", e);
             e.printStackTrace();
             return false;
         }
@@ -1043,9 +1046,11 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             for( ExtensibilityElement exe : bindingOperation.getExtensibilityElements()) {
                                 if( exe instanceof SOAPOperation ) {
                                     SOAPOperation so = (SOAPOperation) exe;
-                                    off.write( "op.setProperty( Operation.SOAPACTION_URI_PROPERTY, \"" );
-                                    off.write( so.getSoapActionURI());
-                                    off.write( "\" );\n" );
+                                    if (so.getSoapActionURI() != null){
+                                        off.write( "op.setProperty( Operation.SOAPACTION_URI_PROPERTY, \"" );
+                                        off.write( so.getSoapActionURI());
+                                        off.write( "\" );\n" );
+                                    }
                                 }
                             }
                             off.write( "Object resultObj;\n" );

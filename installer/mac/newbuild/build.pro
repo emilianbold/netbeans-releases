@@ -33,7 +33,7 @@
     <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
 
     <loadresource property="glassfish.v3.build.number">
-          <url url="${glassfish.v3.location.prefix}/prelude/b20/bundles"/>
+          <url url="${glassfish.v3.location.prefix}/prelude/latest/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>

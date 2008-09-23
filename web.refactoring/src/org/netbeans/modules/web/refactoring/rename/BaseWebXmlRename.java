@@ -62,7 +62,7 @@ abstract class BaseWebXmlRename extends WebXmlRefactoring{
      */ 
     protected abstract List<RenameItem> getRenameItems();
     
-    
+ 
     public final Problem prepare(RefactoringElementsBag refactoringElements) {
         
         for (RenameItem item : getRenameItems()){

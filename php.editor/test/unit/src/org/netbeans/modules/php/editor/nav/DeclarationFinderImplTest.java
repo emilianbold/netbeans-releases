@@ -89,10 +89,85 @@ public class DeclarationFinderImplTest extends TestBase {
         performTestSimpleFindDeclaration(-1, manClass, personClass);
     }*/
 
+    public void testGotoTypeClsIface() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "interface ifaceDeclaration {}",
+                "^interface ifaceDeclaration {}",
+                "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "interface ifaceDeclaration2 extends ifaceDec|laration  {}"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeClsIface2() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "interface ifaceDeclaration {}",
+                "^interface ifaceDeclaration {}",
+                "class clsDeclaration implements ifaceDeclaration {}",
+                "class clsDeclaration implements ifaceDecl|aration {}"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeClsIface3() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "interface ifaceDeclaration {}",
+                "^interface ifaceDeclaration {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
+                "class clsDeclaration2 implements ifaceDec|laration, ifaceDeclaration2 {}"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeClsIface4() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "class clsDeclaration implements ifaceDeclaration {}",
+                "^class clsDeclaration implements ifaceDeclaration {}",
+                "class clsDeclaration3 extends clsDeclaration {}",
+                "class clsDeclaration3 extends clsDeclarat|ion {}"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeClsIface5() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "^interface ifaceDeclaration2 extends ifaceDeclaration  {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ifaceDeclaration2 {}",
+                "class clsDeclaration2 implements ifaceDeclaration, ifaceDecla|ration2 {}"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeClsIface6() throws Exception {
+        String gotoTest = prepareTestFile(
+                "testfiles/gotoType2.php",
+                "interface ifaceDeclaration4 {}",
+                "^interface ifaceDeclaration4 {}"
+                );
+        String gotoTest2 = prepareTestFile(
+                "testfiles/gotoType.php",
+                "class clsDeclaration4 extends clsDeclaration3 implements ifaceDeclaration4 {}",
+                "class clsDeclaration4 extends clsDeclaration3 implements ifaceDecla|ration4 {}"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTest2, gotoTest);
+    }
+
+
     /*TODO: in these animalTests is actually bug but not important I guess. Sometimes jumps:
      * 1/public static ^$count = 0, $animal;
      * 2/^public static $count = 0, $animal;
      */
+    public void testFuncParamAsReference() throws Exception {
+        String animalTest = prepareTestFile(
+                "testfiles/basicTest.php",
+                "function funcWithRefParam(&$param) {",
+                "function funcWithRefParam(&^$param) {",
+                "$param++;",
+                "$par|am++;;"
+                );
+        performTestSimpleFindDeclaration(-1, animalTest);
+    }
     public void testStaticFieldAccess() throws Exception {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
@@ -1487,7 +1562,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
 
-    public void testGoToInclude() throws Exception {
+    public void testGoToInclude01() throws Exception {
         performTestSimpleFindDeclaration(2,
                                          "<?php\n" +
                                          "include \"te|sta.php\";\n" +
@@ -1497,6 +1572,66 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
 
+    public void testGoToInclude02() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "include ('|testa.php');\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+
+    public void testGoToInclude03() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "require 'testa.php|';\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+
+    public void testGoToInclude04() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "include_once '|testa.php';\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+
+    public void testGoToInclude05() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "include_once ('|testa.php');\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+
+    public void testGoToInclude06() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "require_once '|testa.php';\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+
+    public void testGoToInclude07() throws Exception {
+        performTestSimpleFindDeclaration(2,
+                                         "<?php\n" +
+                                         "require_once (\"|testa.php\");\n" +
+                                         "?>",
+                                         "^<?php\n" +
+                                         "function foo() {}\n" +
+                                         "?>");
+    }
+    
     public void testGoToInstanceVar() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "class test {\n" +

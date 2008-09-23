@@ -58,6 +58,8 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.beans.ExceptionListener;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.websvc.registry.model.WebServiceData;
@@ -108,7 +110,7 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
 						WebServiceData wsData = (WebServiceData) decoder.readObject();
 						wsListModel.addWebService(wsData);
 					} catch(Exception exc) {
-						ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, exc);
+                                            Logger.getLogger(WebServicePersistenceManager.class.getName()).log(Level.FINE, "WS Persistance Manager: cannot read WebServiceData", exc);
 					}
 				}
 
@@ -130,12 +132,16 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
 					}
 				}
 			} catch(Throwable thrown) {
-				ErrorManager.getDefault().notify(ErrorManager.ERROR, thrown);
+                            Logger.getLogger(WebServicePersistenceManager.class.getName()).log(Level.FINE, "WS Persistance Manager loading failed", thrown);
 			} finally {
 				// Restore the SAXParserFactor property that was changed, restore
 				// this threads context classloader and close the decoder stream 
 				// if it was opened.
-                                System.getProperties().put(SAXParserFactory_PROP,originalParserFactory);
+                                if (originalParserFactory != null) {
+                                    System.getProperties().put(SAXParserFactory_PROP,originalParserFactory);
+                                } else {
+                                    System.getProperties().remove(SAXParserFactory_PROP);
+                                } 
                             
 				if(origClassLoader != null) {
 					Thread.currentThread().setContextClassLoader(origClassLoader);

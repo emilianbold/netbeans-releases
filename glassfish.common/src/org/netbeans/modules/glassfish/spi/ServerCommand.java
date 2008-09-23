@@ -197,7 +197,7 @@ public abstract class ServerCommand {
      */
     @Override
     public String toString() {
-        return getCommand() + QUERY_SEPARATOR + getQuery();
+        return (query == null) ? command : command + QUERY_SEPARATOR + query;
     }
     
     /**

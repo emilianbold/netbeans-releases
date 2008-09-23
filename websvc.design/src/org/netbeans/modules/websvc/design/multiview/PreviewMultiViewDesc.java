@@ -82,8 +82,9 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
     private static final long serialVersionUID = 1L;
     public static final String PREFERRED_ID = "webservice-wsdlpreview";
     private DataObject dataObject;
-    private Service service;
     private FileObject fo;
+    private String serviceName;
+    private String implementationClass;
 
     public PreviewMultiViewDesc() {
     }
@@ -99,13 +100,19 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
 
     public PreviewMultiViewDesc(DataObject dataObject, Service service, FileObject fo) {
         this.dataObject = dataObject;
-        this.service = service;
         this.fo = fo;
+        if (service != null) {
+            this.serviceName = service.getName();
+            this.implementationClass = service.getImplementationClass();
+        }
     }
 
     public PreviewMultiViewDesc(DataObject dataObject, Service service) {
         this.dataObject = dataObject;
-        this.service = service;
+        if (service != null) {
+            this.serviceName = service.getName();
+            this.implementationClass = service.getImplementationClass();
+        }
     }
 
     public String preferredID() {
@@ -138,14 +145,14 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
 
     public MultiViewElement createElement() {
 
-        if (service == null) {
+        if (implementationClass == null) {  //there was no Service that was passed
             if (dataObject == null) {
                 return MultiViewFactory.BLANK_ELEMENT;
             } else {
                 return new PreviewMultiViewElement(dataObject.getLookup().lookup(DataEditorSupport.class));
             }
         } else {
-            DataObject wsdl = createPreviewForJava(service);
+            DataObject wsdl = createPreviewForJava();
 //            dataObject.getPrimaryFile().addFileChangeListener(new FileChangeListener() {
 //
 //                public void fileFolderCreated(FileEvent fe) {
@@ -171,7 +178,7 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
 //                public void fileAttributeChanged(FileAttributeEvent fe) {
 //                }
 //            });
-            if ((wsdl == null)||(wsdl.getLookup().lookup(DataEditorSupport.class) == null)) {
+            if ((wsdl == null) || (wsdl.getLookup().lookup(DataEditorSupport.class) == null)) {
                 return new PreviewMultiViewElement();
             } else {
                 DataEditorSupport des = wsdl.getLookup().lookup(DataEditorSupport.class);
@@ -182,7 +189,7 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
         }
     }
 
-    public DataObject createPreviewForJava(Service service) {
+    public DataObject createPreviewForJava() {
         // DataObject created from FileObject of WSDL file - null if WSDL don't exist
         DataObject dataObj = null;
         // Source WSDL file in case of ws from WSDL
@@ -191,7 +198,6 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
         // Tempdir path - for generating of WSDL
         String tempdir = System.getProperty("java.io.tmpdir");
         // Web service name
-        final String serviceName = service.getName();
         // FileObject of WSDL file
         FileObject wsdlFile = null;
 
@@ -201,7 +207,7 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
         //System.out.println("Project = " + project);
         // Test if source java file of web service contains any operation
         // If there is none, no WSDL is generated and resulting DataObject remains null
-        JavaSource targetSource = JavaSource.forFileObject(getFileObject(service, project));
+        JavaSource targetSource = JavaSource.forFileObject(getFileObject(project));
         //JavaSource targetSource = JavaSource.forFileObject(primaryFile);
         //JavaSource targetSource = JavaSource.forFileObject(getEditorSupport().getDataObject().getPrimaryFile());
         //System.out.println("javaSource = " + targetSource);
@@ -225,7 +231,7 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
                         } catch (IllegalArgumentException ex) {
                             ErrorManager.getDefault().notify(ex);
                         } catch (java.io.IOException ex) {
-                             ErrorManager.getDefault().notify(ex);
+                            ErrorManager.getDefault().notify(ex);
                         }
                     }
                 });
@@ -268,9 +274,9 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
         return dataObj;
     }
 
-    public FileObject getFileObject(Service service, Project prj) {
+    public FileObject getFileObject(Project prj) {
         SourceGroup[] srcGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        String implClassResource = service.getImplementationClass().replace('.', '/') + ".java"; //NOI18N
+        String implClassResource = implementationClass.replace('.', '/') + ".java"; //NOI18N
         for (SourceGroup srcGroup : srcGroups) {
             FileObject implClassFo = srcGroup.getRootFolder().getFileObject(implClassResource);
             if (implClassFo != null) {
@@ -291,8 +297,7 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
         }
 
         public void run(CompilationController controller) throws Exception {
-            String serviceName = service.getImplementationClass();
-            TypeElement typeElement = controller.getElements().getTypeElement(serviceName);
+            TypeElement typeElement = controller.getElements().getTypeElement(implementationClass);
 //            String elm = "";
 //            String elmknd = "";
             if (typeElement != null) {

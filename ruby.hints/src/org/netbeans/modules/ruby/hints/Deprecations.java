@@ -292,7 +292,7 @@ public class Deprecations extends RubyAstRule {
                     if (gemName != null) {
                         list.replace(rowEnd, 0, "\nrequire \"" + gemName + "\"", false, 1); // NOI18N
                     }
-                    list.setFormatter(new RubyFormatter(), true);
+                    list.setFormatAll(true);
                 } else {
                     list.replace(range.getStart(), range.getLength(), deprecation.newName, false, 0);
                 }

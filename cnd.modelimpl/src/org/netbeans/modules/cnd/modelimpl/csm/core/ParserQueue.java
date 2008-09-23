@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -191,6 +193,36 @@ public final class ParserQueue {
 
     }
 
+    /**
+     * Determines what to do with a file that is being added to the queue
+     */
+    public static enum FileAction {
+        /**
+         * Nothing should be done
+         */
+        NOTHING,
+
+        /**
+         * File should be marked as "addition parse needed", i.e.
+         * FileImpl.markMoreParseNeeded() should be called
+         */
+        MARK_MORE_PARSE,
+        
+        /**
+         * File should be marked as "reparse needed", 
+         * without invalidating the APT cache, i.e.
+         * FileImpl.markReparseNeeded(false) should be called
+         */
+        MARK_REPARSE,
+
+        /**
+         * File should be marked as "reparse needed", 
+         * and APT cache should be invalidates, i.e.
+         * FileImpl.markReparseNeeded(true) should be called
+         */
+        MARK_REPARSE_AND_INVALIDATE
+    }
+
     /*package*/static String tracePreprocStates(Collection<APTPreprocHandler.State> ppStates) {
         StringBuilder sb = new StringBuilder('('); //NOI18N
         boolean first = false;
@@ -304,14 +336,16 @@ public final class ParserQueue {
      * otherwise moves it there
      */
     public void add(FileImpl file, APTPreprocHandler.State ppState, Position position) {
-        add(file, Collections.singleton(ppState), position, true);
+        add(file, Collections.singleton(ppState), position, true, FileAction.NOTHING);
     }
 
     /**
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there
      */
-    public void add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position, boolean clearPrevState) {
+    public void add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position, 
+            boolean clearPrevState, FileAction fileAction) {
+
         if (ppStates.isEmpty()) {
             Utils.LOG.severe("Adding a file with an emty preprocessor state set"); //NOI18N
         }
@@ -319,6 +353,17 @@ public final class ParserQueue {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: add " + file.getAbsolutePath() + " as " + position);
         synchronized ( lock ) {
             if( state == State.OFF  ) return;
+            switch (fileAction) {
+                case MARK_MORE_PARSE:
+                    file.markMoreParseNeeded();
+                    break;
+                case MARK_REPARSE:
+                    file.markReparseNeeded(false);
+                    break;
+                case MARK_REPARSE_AND_INVALIDATE:
+                    file.markReparseNeeded(true);
+                    break;
+            }
             if (!needEnqueue(file)) {
                 if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: do not add parsing or parsed " + file.getAbsolutePath());
                 return;
@@ -388,7 +433,7 @@ public final class ParserQueue {
         }
     }
 
-    public Entry poll() throws InterruptedException {
+    public Entry poll(AtomicReference<FileImpl.State> fileState) throws InterruptedException {
 
         synchronized (suspendLock) {
             while( state == State.SUSPENDED ) {
@@ -411,6 +456,9 @@ public final class ParserQueue {
                 return null;
             }
             file = e.getFile();
+            if (fileState != null) {
+                fileState.set(file.getState());
+            }
             project = file.getProjectImpl(true);
             ProjectData data = getProjectData(project, true);
             data.filesInQueue.remove(file);
@@ -433,7 +481,10 @@ public final class ParserQueue {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }
         }
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: polling " + e.getFile().getAbsolutePath());
+        if( TraceFlags.TRACE_PARSER_QUEUE_POLL ) {
+            System.err.printf("ParserQueue: polling %s with %d states in thread %s\n",
+                    e.getFile().getAbsolutePath(), e.getPreprocStates().size(), Thread.currentThread().getName());
+        }
         return e;
     }
 
