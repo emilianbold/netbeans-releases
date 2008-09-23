@@ -202,7 +202,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         }
     }
 
-    Map<Class,Who> members = Collections.synchronizedMap(new HashMap<Class, Who>());
+    private final Map<Class,Who> members = Collections.synchronizedMap(new HashMap<Class, Who>());
     @Override
     public void checkMemberAccess(Class<?> clazz, int which) {
         if (clazz == null) {
