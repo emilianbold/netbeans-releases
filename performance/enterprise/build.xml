@@ -7,14 +7,14 @@
 
     <property name="test.timeout" value="3600000"/>
 
-    <condition property="j2ee.appserver.path" value="C:\Program Files\glassfish-v3-prelude-b15b">
+    <condition property="j2ee.appserver.path" value="e:\\space\\appserver">
         <os family="windows"/>
     </condition>
     <condition property="j2ee.appserver.path" value="/space/appserver">
         <os family="unix"/>
     </condition>
 
-    <condition property="tomcat.webserver.path" value="C:\Program Files\Apache Software Foundation\Apache Tomcat 6.0.16">
+    <condition property="tomcat.webserver.path" value="e:\\space\\tomcat">
         <os family="windows"/>
     </condition>
     <condition property="tomcat.webserver.path" value="/space/tomcat">

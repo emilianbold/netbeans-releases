@@ -41,9 +41,11 @@
 package org.netbeans.jellytools;
 
 import junit.framework.Test;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.project.ui.ProjectsRootNode;
 
 /**
  * Test of org.netbeans.jellytools.NewProjectWizardOperator.
@@ -85,13 +87,11 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
                 tests);
     }
     
-    @Override
     protected void setUp() {
         System.out.println("### "+getName()+" ###");
         javaApplicationLabel =
             Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
                              "Templates/Project/Standard/emptyJ2SE.xml");
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
     }
     
     /** Constructor required by JUnit.

@@ -42,11 +42,12 @@ package org.netbeans.jellytools;
 
 import java.io.IOException;
 import junit.framework.Test;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 
 /**
@@ -84,11 +85,9 @@ public class NewFileWizardOperatorTest extends JellyTestCase {
                 tests);
     }
     
-    @Override
     protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
         openDataProjects("SampleProject");
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
     }
     
     /** Constructor required by JUnit.

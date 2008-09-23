@@ -364,7 +364,7 @@ public class Action {
         }
         // Need to wait here to be more reliable.
         // TBD - It can be removed after issue 23663 is solved.
-        new EventTool().waitNoEvent(3210);        
+        new EventTool().waitNoEvent(500);
         MainWindowOperator.getDefault().menuBar().pushMenu(menuPath, "|", getComparator());
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);

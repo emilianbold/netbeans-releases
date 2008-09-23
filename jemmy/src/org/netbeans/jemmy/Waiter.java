@@ -155,13 +155,14 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
      * @throws	TimeoutExpiredException
      * @exception	InterruptedException
      */
-    public Object waitAction(Object waitableObject) throws InterruptedException {
+    public Object waitAction(Object waitableObject)
+	throws InterruptedException {
 	startTime = System.currentTimeMillis();
 	out.printTrace(getWaitingStartedMessage());
 	out.printGolden(getGoldenWaitingStartedMessage());
 	long timeDelta = timeouts.getTimeout("Waiter.TimeDelta");
 	while((result = checkActionProduced(waitableObject)) == null) {
-	    Thread.sleep(timeDelta);
+	    Thread.currentThread().sleep(timeDelta);
 	    if(timeoutExpired()) {
 		out.printError(getTimeoutExpiredMessage(timeFromStart()));
 		out.printGolden(getGoldenTimeoutExpiredMessage());
@@ -171,7 +172,7 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
 	endTime = System.currentTimeMillis();
 	out.printTrace(getActionProducedMessage(endTime - startTime, result));
 	out.printGolden(getGoldenActionProducedMessage());
-	Thread.sleep(timeouts.getTimeout("Waiter.AfterWaitingTime"));
+	Thread.currentThread().sleep(timeouts.getTimeout("Waiter.AfterWaitingTime"));
 	return(result);
     }
 

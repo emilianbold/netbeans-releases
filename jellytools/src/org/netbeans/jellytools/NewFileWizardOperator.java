@@ -40,7 +40,6 @@
  */
 package org.netbeans.jellytools;
 
-import java.awt.EventQueue;
 import javax.swing.JDialog;
 import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -50,7 +49,6 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
 import javax.swing.tree.TreePath;
-import org.netbeans.jemmy.EventTool;
 
 /**
  * Handle NetBeans New File wizard.
