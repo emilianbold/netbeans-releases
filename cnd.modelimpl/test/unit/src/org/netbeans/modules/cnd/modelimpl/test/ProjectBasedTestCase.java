@@ -50,14 +50,10 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
-import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsInitializer;
-import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
@@ -126,9 +122,6 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     }
     
     protected final void initDocumentSettings() {
-        Settings.addInitializer(new CCSettingsInitializer(CCKit.class));
-        Settings.addInitializer(new CCSettingsInitializer(CKit.class));
-
         String methodName = ProjectBasedTestCase.class.getName() + ".getIdentifierAcceptor";
         Preferences prefs;
         prefs = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);

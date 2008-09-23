@@ -41,6 +41,7 @@ package org.netbeans.modules.db.mysql.impl;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
@@ -210,7 +211,7 @@ public class MySQLDatabaseServerTest extends TestBase {
         System.out.println(Repository.getDefault().getDefaultFileSystem());
         System.out.println(Arrays.asList(Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Databases/JDBCDrivers").getChildren()));
         assertFalse(server.isConnected());
-        server.reconnect(true, false);
+        server.reconnect();
         assertTrue(server.isConnected());
         server.disconnectSync();
         assertFalse(server.isConnected());
@@ -223,12 +224,11 @@ public class MySQLDatabaseServerTest extends TestBase {
      */
     public void testGetDisplayName() throws Exception {
         ResourceBundle bundle = Utils.getBundle();
-        String disconnectedString = bundle.getString("LBL_ServerNotConnectedDisplayName");
-        String connectedString = bundle.getString("LBL_ServerDisplayName");
+        String disconnectedString = MessageFormat.format(bundle.getString("LBL_ServerDisplayName"),
+                getHost() + ":" + getPort(), getUser(), bundle.getString("LBL_Disconnected"));
 
-        disconnectedString = disconnectedString.replace("{0}", getHost() + ":" + getPort()).replace("{1}", getUser());
-
-        connectedString = connectedString.replace("{0}", getHost() + ":" + getPort()).replace("{1}", getUser());
+        String connectedString = MessageFormat.format(bundle.getString("LBL_ServerDisplayName"),
+                getHost() + ":" + getPort(), getUser(), bundle.getString("LBL_Connected"));
 
         server.disconnectSync();
         assertEquals(disconnectedString, server.getDisplayName());
@@ -269,30 +269,6 @@ public class MySQLDatabaseServerTest extends TestBase {
      * Test of getDatabases method, of class MySQLDatabaseServer.
      */
     public void testGetDatabases() throws Exception {
-    }
-
-    /**
-     * Test of reconnect method, of class MySQLDatabaseServer.
-     */
-    public void testReconnect() throws Exception {
-    }
-
-    /**
-     * Test of disconnect method, of class MySQLDatabaseServer.
-     */
-    public void testDisconnect() {
-    }
-
-    /**
-     * Test of reconnectAsync method, of class MySQLDatabaseServer.
-     */
-    public void testReconnectAsync_0args() {
-    }
-
-    /**
-     * Test of reconnectAsync method, of class MySQLDatabaseServer.
-     */
-    public void testReconnectAsync_boolean() {
     }
 
     /**

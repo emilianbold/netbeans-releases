@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.heapwalk;
 
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.lib.profiler.heap.FieldValue;
 import org.netbeans.lib.profiler.heap.Instance;
 import org.netbeans.lib.profiler.heap.JavaClass;
@@ -51,10 +52,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDAArrayType;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -182,8 +185,32 @@ public class InstanceImpl implements Instance {
                     }
                 }
             } else {
-                int count = obj.getFieldsCount();
-                org.netbeans.api.debugger.jpda.Field[] allFields = obj.getFields(0, count);
+                org.netbeans.api.debugger.jpda.Field[] allFields;
+                if (obj instanceof ClassVariable) {
+                    try {
+                        type = (JPDAClassType) obj.getClass().getMethod("getReflectedType").invoke(obj);
+                    } catch (NoSuchMethodException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (SecurityException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    allFields = type.staticFields().toArray(new org.netbeans.api.debugger.jpda.Field[0]);
+                } else {
+                    org.netbeans.api.debugger.jpda.Field[] instanceFields = obj.getFields(0, Integer.MAX_VALUE);
+                    org.netbeans.api.debugger.jpda.Field[] inheritedFields = obj.getInheritedFields(0, Integer.MAX_VALUE);
+                    org.netbeans.api.debugger.jpda.Field[] staticFields = obj.getAllStaticFields(0, Integer.MAX_VALUE);
+                    allFields = new org.netbeans.api.debugger.jpda.Field
+                            [instanceFields.length + inheritedFields.length + staticFields.length];
+                    System.arraycopy(instanceFields, 0, allFields, 0, instanceFields.length);
+                    System.arraycopy(inheritedFields, 0, allFields, instanceFields.length, inheritedFields.length);
+                    System.arraycopy(staticFields, 0, allFields, instanceFields.length + inheritedFields.length, staticFields.length);
+                }
                 for (org.netbeans.api.debugger.jpda.Field field : allFields) {
                     if (field instanceof ObjectVariable &&
                         !referencedFields.contains(field) &&

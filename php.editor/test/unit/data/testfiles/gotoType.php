@@ -23,7 +23,15 @@ function formalParamFuncCall1(
     $clsDeclaration3 = 1;
     $clsDeclaration4 = 1;
 }
-function ifaceDeclaration() {}
+function ifaceDeclaration() {
+    try {
+    } catch (clsDeclaration $cex) {
+        if ($cex instanceof clsDeclaration) {
+            $cex = new clsDeclaration;
+        }
+        echo $cex;
+    }
+}
 function ifaceDeclaration2() {}
 function ifaceDeclaration4() {}
 function clsDeclaration() {}

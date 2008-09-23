@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.Error;
@@ -101,7 +102,18 @@ public class GsfTaskProvider extends PushTaskScanner  {
     private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
     private static boolean clearing;
     private static final RequestProcessor WORKER = new RequestProcessor("GSF Task Provider");
-    
+    // Keep in sync with RepositoryUpdater
+    private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn vendor"); // NOI18N
+
+    private static Set<String> parseSet(String propertyName, String defaultValue) {
+        StringTokenizer st = new StringTokenizer(System.getProperty(propertyName, defaultValue), " \t\n\r\f,-:+!");
+        Set<String> result = new HashSet<String>();
+        while (st.hasMoreTokens()) {
+            result.add(st.nextToken());
+        }
+        return result;
+    }
+
     //private static final GsfTaskProvider INSTANCE = new GsfTaskProvider(LanguageRegistry.getInstance().getLanguagesDisplayName());
     //public static GsfTaskProvider getInstance() {
     //    return INSTANCE;
@@ -255,11 +267,19 @@ public class GsfTaskProvider extends PushTaskScanner  {
             }
 
             if (file.isFolder()) {
-                // HACK Bypass all the libraries in Rails projects
-                // TODO FIXME The hints providers need to pass in relevant directories
-                if (file.getName().equals("vendor") && file.getParent().getFileObject("nbproject") != null) { // NOI18N
-                    return;
+                final String name = file.getName();
+                if (ignoredDirectories.contains(name)) {
+                    // HACK Bypass all the libraries in Rails projects
+                    if (name.equals("vendor")) { // NOI18N
+                        if (file.getParent().getFileObject("nbproject") != null) { // NOI18N
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
                 }
+
+                // TODO FIXME The hints providers need to pass in relevant directories
                 for (FileObject child : file.getChildren()) {
                     refreshFile(child);
                 }

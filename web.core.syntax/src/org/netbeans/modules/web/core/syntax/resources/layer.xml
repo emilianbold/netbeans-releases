@@ -42,7 +42,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
-    
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-jsp">
@@ -52,29 +51,37 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="structure.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.gsf.JspStructureScanner"/>
-                </file> 
+                </file>
             </folder>
-            
             <folder name="x-tag">
                 <attr name="displayName" stringvalue="TAG"/>
                 <attr name="useCustomEditorKit" boolvalue="true"/>
-                
                 <file name="language.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.gsf.JspLanguage"/>
                 </file>
                 <file name="structure.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.gsf.JspStructureScanner"/>
-                </file> 
+                </file>
             </folder>
         </folder>
     </folder>
-    
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-web-core-syntax-JspParserErrorAnnotation.xml" url="JspParserErrorAnnotation.xml"/>
         </folder>
         <folder name="text">
             <folder name="x-jsp">
+                <folder name="text">
+                    <folder name="x-java">
+                        <folder name="CodeTemplates">
+                            <folder name="Defaults">
+                                <file name="codetemplates.shadow">
+                                    <attr name="originalFile" stringvalue="Editors/text/x-jsp"/>
+                                </file>
+                            </folder>
+                        </folder>
+                    </folder>
+                </folder>
                 <folder name="Preferences">
                     <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml" />
                 </folder>
@@ -87,19 +94,15 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="1200"/>
                     </file>
                 </folder>
-                
                 <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance"/>
-                
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
                 <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance"/>
                 <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
-                
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-web-core-syntax-JspBracesMatching.instance">
                         <attr name="position" intvalue="40"/>
                     </file>
                 </folder>
-                
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
@@ -110,35 +113,30 @@ made subject to such option by the copyright holder.
                         </folder>
                     </folder>
                 </folder>
-                
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="org-netbeans-modules-web-core-syntax-keybindings.xml" url="DefaultKeyBindings.xml"/> 
-                            <file name="org-netbeans-modules-web-core-syntax-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml"> 
+                            <file name="org-netbeans-modules-web-core-syntax-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="org-netbeans-modules-web-core-syntax-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
                                 <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                             </file>
                         </folder>
                     </folder>
                 </folder>
-                
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-web-core-syntax-keybindings.xml" url="DefaultAbbrevs.xml"/>
                     </folder>
                 </folder>
-                
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-web-core-syntax-JspUpToDateStatusProviderFactory.instance"/>
                 </folder>
-                
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
-                
                 <file name="EditorKit.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JSPKit.createKitForJsp"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPKit"/>
@@ -146,28 +144,23 @@ made subject to such option by the copyright holder.
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 <folder name="Popup">
-                    
                     <file name="format">
                         <attr name="position" intvalue="1125"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.instance">
                         <attr name="position" intvalue="4200"/>
                     </file>
-                    
                     <file name="SeparatorProperties.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4100"/>
                     </file>
-                    
                     <file name="SeparatorFolding.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4300"/>
                     </file>
-                    
                     <file name="generate-fold-popup">
                         <attr name="position" intvalue="4400"/>
                     </file>
-                    
                 </folder>
                 <folder name="HyperlinkProviders">
                     <file name="JSPHyperlinkProvider.instance">
@@ -183,7 +176,6 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
-                
                 <folder name="text">
                     <folder name="html">
                         <folder name="CodeTemplates">
@@ -195,7 +187,6 @@ made subject to such option by the copyright holder.
                         </folder>
                     </folder>
                 </folder>
-                
             </folder>
             <folder name="x-tag">
                 <folder name="Preferences">
@@ -210,11 +201,9 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="1200"/>
                     </file>
                 </folder>
-                
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
                 <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance"/>
                 <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
-                
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
@@ -225,7 +214,6 @@ made subject to such option by the copyright holder.
                         </folder>
                     </folder>
                 </folder>
-                
                 <folder name="Popup">
                     <folder name="goto">
                         <!--
@@ -237,14 +225,10 @@ made subject to such option by the copyright holder.
                         <attr name="goto/org-netbeans-modules-editor-java-JavaFastOpenAction.instance" boolvalue="true"/>
                         -->
                         <attr name="position" intvalue="900"/>
-                    </folder> 
-                    
-                    
-                    
+                    </folder>
                     <file name="format">
                         <attr name="position" intvalue="1333"/>
                     </file>
-                    
                     <file name="org-openide-actions-PropertiesAction.instance">
                         <attr name="position" intvalue="4200"/>
                     </file>
@@ -256,37 +240,26 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4100"/>
                     </file>
-                    
-                    
-                    
                     <file name="SeparatorFolding.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4300"/>
                     </file>
-                    
-                    
-                    
                     <file name="generate-fold-popup">
                         <attr name="position" intvalue="4400"/>
                     </file>
-                    
-                    
                 </folder>
-                
                 <file name="EditorKit.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JSPKit.createKitForTag"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JSPKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
-                
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
-                
                 <folder name="HyperlinkProviders">
                     <file name="JSPHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPHyperlinkProvider"/>
@@ -301,12 +274,9 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
-                
             </folder>
         </folder>
     </folder>
-    
-    
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
@@ -316,6 +286,5 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
 </filesystem>
 

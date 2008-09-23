@@ -358,13 +358,19 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return (activity == Activity.ACTIVE);
     }
 
-    public void setInactiveAfterInconsistency() {
-        // Mark the hierarchy inactive to prevent further token changes but do not fire activity change
-        this.activity = Activity.INACTIVE;
-        if (LOG.isLoggable(Level.INFO)) {
-            StringBuilder sb = toStringNoTokens(null);
-            sb.append("Token hierarchy made INACTIVE due to internal INCONSISTENCY");
-            LOG.info(sb.toString());
+    /**
+     * Recreate token hierarchy if there was a runtime exception thrown during token hierarchy recreation.
+     *
+     * @param e runtime exception that was thrown.
+     */
+    public void recreateAfterError(RuntimeException e) {
+        if (TokenList.LOG.isLoggable(Level.FINE)) { // Running tests or strict mode
+            throw e;
+        } else {
+            LOG.log(Level.INFO, "Runtime exception occurred during token hierarchy updating. Token hierarchy will be rebuilt from scratch.", e);
+            if (isActiveNoInit()) {
+                rebuild();
+            }
         }
     }
 
@@ -491,7 +497,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             } // not active - no changes fired
         }
     }
-    
+
     public void fireTokenHierarchyChanged(TokenHierarchyEventInfo eventInfo) {
         TokenHierarchyEvent evt = LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo);
         Object[] listeners = listenerList.getListenerList();

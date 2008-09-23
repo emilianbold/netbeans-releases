@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -349,22 +350,37 @@ public class PHPIndex {
 
     /** returns all methods of a class or an interface. */
     public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
-        Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
+        Map<String, IndexedFunction> methods = new TreeMap<String, IndexedFunction>();
         
         for (String className : getClassAncestors(context, typeName)) {
             int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
-            methods.addAll(getMethods(context, className, name, kind, mask)); //NOI18N
+            
+            for (IndexedFunction method : getMethods(context, className, name, kind, mask)){
+                String methodName = method.getName();
+                
+                if (!methods.containsKey(methodName) || className.equals(typeName)){
+                    methods.put(methodName, method);
+                }
+            }
         }
         
         Collection<IndexedInterface> interfaceTree = getInterfaceTree(context, typeName);
 
         if (interfaceTree != null){
             for (IndexedInterface iface : interfaceTree){
-                methods.addAll(getMethods(context, iface.getName(), name, kind, attrMask));
+                String ifaceName = iface.getName();
+
+                for (IndexedFunction method : getMethods(context, ifaceName, name, kind, attrMask)) {
+                    String methodName = method.getName();
+
+                    if (!methods.containsKey(methodName) || ifaceName.equals(typeName)) {
+                        methods.put(methodName, method);
+                    }
+                }
             }
         }
 
-        return methods;
+        return methods.values();
     }
 
     /** returns all fields of a class or an interface. */

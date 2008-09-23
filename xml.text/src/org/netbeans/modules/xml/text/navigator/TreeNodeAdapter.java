@@ -268,9 +268,14 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         String documentText = "???";
         try {
             documentText = de.getDocumentModel().getDocument().getText(de.getStartOffset(), de.getEndOffset() - de.getStartOffset());
-            //cut the leading PI name and the <?
-            if(documentText.length() > 0) documentText = documentText.substring("<![CDATA[".length(), documentText.indexOf("]]")).trim();
-        }catch(BadLocationException e) {
+            //cut the leading "<![CDATA[" and trailing "]]"
+            String cdataStart = "<![CDATA[";    //NOI18N
+            String cdataEnd = "]]";             //NOI18N
+            if(documentText.length() > 0 && documentText.contains(cdataStart))
+                documentText = documentText.substring(cdataStart.length(), documentText.length()).trim();
+            if(documentText.length() > 0 && documentText.contains(cdataEnd))
+                documentText = documentText.substring(0, documentText.indexOf(cdataEnd)).trim();
+        } catch(Exception e) {
             return "???";
         }
         return documentText;

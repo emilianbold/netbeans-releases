@@ -410,25 +410,6 @@ public class DependencyNode extends AbstractNode {
         refreshNode();
     }
 
-    public void downloadMainArtifact(MavenEmbedder online) {
-        Artifact art2 = project.getEmbedder().createArtifactWithClassifier(
-                art.getGroupId(),
-                art.getArtifactId(),
-                art.getVersion(),
-                art.getType(),
-                art.getClassifier());
-        try {
-            StatusDisplayer.getDefault().setStatusText(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Checking", art.getId()));
-            online.resolve(art2, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
-        } catch (ArtifactNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (ArtifactResolutionException ex) {
-            ex.printStackTrace();
-        } finally {
-            StatusDisplayer.getDefault().setStatusText(""); //NOI18N
-        }
-        refreshNode();
-    }
 
     
     @Override

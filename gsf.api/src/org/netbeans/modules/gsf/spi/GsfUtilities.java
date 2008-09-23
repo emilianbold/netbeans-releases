@@ -90,19 +90,6 @@ public class GsfUtilities {
         }
     }
 
-    public static void indent(StringBuilder sb, int indent) {
-        for (int i = 0; i < indent; i++) {
-            sb.append(' ');
-        }
-    }
-
-    public static String getIndentString(int indent) {
-        StringBuilder sb = new StringBuilder(indent);
-        indent(sb, indent);
-
-        return sb.toString();
-    }
-
     /** Adjust the indentation of the line containing the given offset to the provided
      * indentation, and return the new indent.
      *
