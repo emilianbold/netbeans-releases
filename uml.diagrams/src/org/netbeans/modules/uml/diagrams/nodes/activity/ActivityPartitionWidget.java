@@ -253,7 +253,10 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         if (event.getSource() instanceof IActivityPartition)
         {
             nameWidget.propertyChange(event);
-        }   
+            getScene().validate();
+            setPreferredBounds(getBounds().union(calculateMinimumBounds()));
+            revalidate();
+        }
     }
 
     private void initializeSubPartitions(IActivityPartition parentPartition)
