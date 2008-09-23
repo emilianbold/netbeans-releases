@@ -48,7 +48,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -206,6 +206,7 @@ public class J2SEProjectGenerator {
                         }
                         ProjectManager.getDefault().saveProject (p);
                         copyRequiredLibraries(h[0], refHelper);
+                        ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                         return null;
                     }
                 });

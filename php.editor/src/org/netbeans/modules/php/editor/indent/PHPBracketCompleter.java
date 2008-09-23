@@ -59,6 +59,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -285,14 +286,15 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
                 sb.append("\n"); //NOI18N
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
+                
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
                 sb.append(restOfLine);
                 sb.append("\n"); //NOI18N
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 doc.remove(offset, restOfLine.length());
             }
             
@@ -328,7 +330,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             int indent = GsfUtilities.getLineIndent(doc, offset);
             StringBuilder sb = new StringBuilder();
             sb.append("\n"); // NOI18N
-            GsfUtilities.indent(sb, indent);
+            sb.append(IndentUtils.createIndentString(doc, indent));
 
             int insertOffset = offset; // offset < length ? offset+1 : offset;
             doc.insertString(insertOffset, sb.toString(), null);
@@ -411,7 +413,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
                 // Line comments should continue
                 int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("//"); // NOI18N
                 // Copy existing indentation
                 int afterHash = begin+1;
@@ -494,14 +496,14 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             int newCaretOffset;
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" * "); // NOI18N
                 newCaretOffset = insertOffset + sb.length() + 1;
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(insertOffset, Utilities.getRowEnd(doc, afterLastNonWhite)-insertOffset);
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" * "); // NOI18N
                 newCaretOffset = insertOffset + sb.length() + 1;
                 sb.append(restOfLine);
@@ -511,7 +513,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             if (addClosingTag) {
                 // add the closing tag
                 sb.append("\n");
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" */"); // NOI18N
             }
             
@@ -540,15 +542,15 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             StringBuilder sb = new StringBuilder();
             if (beforeFirstNonWhite >= insertOffset) {
                 // only whitespace in front of */
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" * ");
                 newCaretOffset = rowStart + sb.length();
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" "); //NOI18N
                 doc.remove(rowStart, insertOffset - rowStart);
                 insertOffset = rowStart;
             } else {
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" "); //NOI18N
             }
             

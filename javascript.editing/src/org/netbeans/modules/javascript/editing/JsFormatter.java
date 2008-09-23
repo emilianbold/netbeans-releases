@@ -45,12 +45,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
-import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -136,9 +132,16 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         doc.runAtomic(new Runnable() {
             public void run() {
                 try {
-                    for (Diff diff : jsPretty.getDiffs()) {
-                        doc.remove(diff.start, diff.end - diff.start);
-                        doc.insertString(diff.start, diff.text, null);
+                    ArrayList<Diff> diffs = jsPretty.getReverseDiffs();
+                    Collections.sort(diffs);
+                    for (int i = diffs.size()-1; i >= 0; i--) {
+                        Diff diff = diffs.get(i);
+                        if (diff.end > diff.start) {
+                            doc.remove(diff.start, diff.end - diff.start);
+                        }
+                        if (diff.text.length() > 0) {
+                            doc.insertString(diff.start, diff.text, null);
+                        }
                     }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
@@ -662,7 +665,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                             // Adjust the indent at the given line (specified by offset) to the given indent
                             int currentIndent = GsfUtilities.getLineIndent(doc, lineBegin);
 
-                            if (currentIndent != indent) {
+                            if (currentIndent != indent && indent >= 0) {
                                 //org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
                                 //editorFormatter.changeRowIndent(doc, lineBegin, indent);
                                 context.modifyIndent(lineBegin, indent);

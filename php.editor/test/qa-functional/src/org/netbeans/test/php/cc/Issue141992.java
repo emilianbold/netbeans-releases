@@ -72,6 +72,8 @@ public class Issue141992 extends cc
 {
   static final String TEST_PHP_NAME = "PhpProject_cc_Issue141992";
 
+  static final int AAA_LIST_SIZE = 999;
+
   public Issue141992( String arg0 )
   {
     super( arg0 );
@@ -116,19 +118,29 @@ public class Issue141992 extends cc
       sCode = sCode + "\nclass a" + i + ( ( 1 == i ) ? "" : ( " extends a" + ( i - 1 ) ) ) + "\n{\npublic $a" + i + ";\n}";
     }
     eoPHP.insert( sCode );
+    Sleep( 10000 );
     TypeCode( eoPHP, "\n$z = new a999;\n$z->" );
 
     // Check code completion list
-
     CompletionJListOperator jCompl = GetCompletion( );
     if( null == jCompl )
       fail( "Unale to find completion list in any form." );
     List list = jCompl.getCompletionItems( );
     // Magic CC number for complete list
-    if( COMPLETE_CC_LIST_SIZE != list.size( ) )
+    if( AAA_LIST_SIZE != list.size( ) )
       fail( "Invalid CC list size: " + list.size( ) + ", expected: " + COMPLETE_CC_LIST_SIZE );
 
     jCompl.hideAll( );
+
+    // Remove added code
+    eoPHP.select( 10, eoPHP.getLineNumber( ) );
+    eoPHP.pressKey( KeyEvent.VK_DELETE );
+
+    // Strat new declaration
+    eoPHP.setCaretPosition( "// put your code here", false );
+    TypeCode( eoPHP, "\nclass a\n{\n" );
+    Sleep( 1000 );
+    TypeCode( eoPHP, "$" );
 
     endTest( );
   }

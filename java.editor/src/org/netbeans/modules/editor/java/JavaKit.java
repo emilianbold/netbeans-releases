@@ -506,9 +506,12 @@ public class JavaKit extends NbEditorKit {
             } else {
                 try {
                     if (BraceCompletion.isAddRightBrace(doc, dotPos)) {
-                        int end = BraceCompletion.getRowOrBlockEnd(doc, dotPos);
-                        doc.insertString(end, "}", null); // NOI18N
-                        doc.getFormatter().indentNewLine(doc, end);                        
+                        boolean insert[] = {true};
+                        int end = BraceCompletion.getRowOrBlockEnd(doc, dotPos, insert);
+                        if (insert[0]) {
+                            doc.insertString(end, "}", null); // NOI18N
+                            doc.getFormatter().indentNewLine(doc, end);
+                        }
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
                     }

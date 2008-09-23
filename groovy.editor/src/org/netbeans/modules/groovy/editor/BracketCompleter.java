@@ -55,6 +55,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -167,14 +168,14 @@ public class BracketCompleter implements KeystrokeHandler {
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
                 sb.append("\n"); // XXX On Windows, do \r\n?
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
                 sb.append(restOfLine);
                 sb.append("\n");
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 doc.remove(offset, restOfLine.length());
             }
             
@@ -195,11 +196,11 @@ public class BracketCompleter implements KeystrokeHandler {
             if (text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
                 int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
-                sb.append(GsfUtilities.getIndentString(indent));
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" * "); // NOI18N
                 int offsetDelta = sb.length()+1;
                 sb.append("\n"); // NOI18N
-                sb.append(GsfUtilities.getIndentString(indent));
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" */"); // NOI18N
                 // TODO - possibly populate associated types in JS-doc style!
                 //if (text.startsWith("/**")) {
@@ -264,7 +265,7 @@ public class BracketCompleter implements KeystrokeHandler {
                     StringBuilder sb = new StringBuilder();
                     // XXX On Windows, do \r\n?
                     sb.append("\n"); // NOI18N
-                    GsfUtilities.indent(sb, indent);
+                    sb.append(IndentUtils.createIndentString(doc, indent));
 
                     int insertOffset = offset; // offset < length ? offset+1 : offset;
                     doc.insertString(insertOffset, sb.toString(), null);
@@ -301,7 +302,7 @@ public class BracketCompleter implements KeystrokeHandler {
                 if (isBlockStart) {
                     indent++;
                 }
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("*"); // NOI18N
                 // Copy existing indentation
                 int afterStar = isBlockStart ? begin+2 : begin+1;
@@ -408,7 +409,7 @@ public class BracketCompleter implements KeystrokeHandler {
                 // Line comments should continue
                 int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
-                GsfUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("//"); // NOI18N
                 // Copy existing indentation
                 int afterSlash = begin+2;

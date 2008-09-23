@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.modules.InstalledFileLocator;
@@ -63,6 +65,11 @@ final class BuildInfo {
     
     private static final Pattern linePattern = Pattern.compile("(.+):\\s+((.+)\\z)"); //NOI18N
 
+    static LogRecord logBuildInfoRec(){
+        LogRecord rec = new LogRecord(Level.CONFIG, BUILD_INFO_FILE);
+        rec.setParameters(logBuildInfo().toArray());
+        return rec;
+    }
     /** Gets build informations
      * @return list build informations in this order: number, date, branding, branch, tag, hg id, or null if the info is not available 
      */
@@ -75,7 +82,7 @@ final class BuildInfo {
         return lr;
     }
 
-    static List<String> logBuildInfo(File f) {
+    private static List<String> logBuildInfo(File f) {
         ArrayList<String> params = null;
         FileReader fr = null;
         try {

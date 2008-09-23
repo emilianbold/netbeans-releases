@@ -644,7 +644,10 @@ public abstract class TagBasedLexerFormatter {
         
         return true;
     }
-    
+
+    private String formatterName(){
+        return getClass().getSimpleName();
+    }
     
     private class FormattingTask implements Runnable{
         private Context context;
@@ -740,6 +743,7 @@ public abstract class TagBasedLexerFormatter {
 
                     // process a block of unformattable tokens (which may be separated with white spaces)
                     boolean wasPreviousTokenUnformattable = firstUnformattableLine != -1 && isWSToken(tokenSequence.token())
+                            && !tokenSequence.isJustAfterGap()
                             || isUnformattableToken(tokenSequence, tokenSequence.offset());
 
                     if (wasPreviousTokenUnformattable && firstUnformattableLine == -1) {
@@ -897,7 +901,7 @@ public abstract class TagBasedLexerFormatter {
                 }
 
                 buff.append("\n-------------\n"); //NOI18N
-                logger.fine(getClass().getName() + ":\n" + buff);
+                logger.fine(formatterName() + ":\n" + buff);
             }
         }
     }
