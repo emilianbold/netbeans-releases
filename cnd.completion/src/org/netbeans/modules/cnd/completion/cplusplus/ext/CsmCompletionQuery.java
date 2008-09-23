@@ -1119,15 +1119,6 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 }
                                 if (compResolver.refresh() && compResolver.resolve(varPos, var, openingSource)) {
                                     res = compResolver.getResult();
-                                    if (res.size() == 1) {
-                                        // lastType should be set even if last=true
-                                        // to facilitate recursive invocation of resolveExp/resolveItem
-                                        List<? extends CsmObject> list = new ArrayList();
-                                        res.addResulItemsToCol(list);
-                                        if (list.size() == 1 && CsmKindUtilities.isVariable(list.get(0))) {
-                                            lastType = ((CsmVariable)list.get(0)).getType();
-                                        }
-                                    }
                                 }
 //                                CsmClass cls = sup.getClass(varPos); // get baseDocument class
 //                                if (cls != null) {
@@ -1575,7 +1566,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 break;
 
             case CsmCompletionExpression.PARENTHESIS:
-                cont = resolveExp(item.getParameter(0));
+                lastType = resolveType(item.getParameter(0));
                 break;
 
             case CsmCompletionExpression.CONSTRUCTOR: // constructor can be part of a DOT expression
