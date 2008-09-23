@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -286,7 +287,9 @@ public class PackagingFilesPanel extends ListEditorPanel {
             
             @Override
             public void run() {
-                addFilesFromDirectory(dir, dir, progressPanel);
+                ArrayList<FileElement> listToAdd = new ArrayList<FileElement>();
+                addFilesFromDirectory(listToAdd, dir, dir, progressPanel);
+                addObjectsAction(listToAdd);
                 progressDialog.setVisible(false);
             }
         }
@@ -297,14 +300,14 @@ public class PackagingFilesPanel extends ListEditorPanel {
             }
         }
         
-        private void addFilesFromDirectory(File origDir, File dir, PackagingAddingFilesProgressPanel progressPanel) {
+        private void addFilesFromDirectory(ArrayList<FileElement> listToAdd, File origDir, File dir, PackagingAddingFilesProgressPanel progressPanel) {
             File[] files = dir.listFiles();
             for (int i = 0; i < files.length; i++) {
                 if (cancelled) {
                     break;
                 }
                 if (files[i].isDirectory()) {
-                    addFilesFromDirectory(origDir, files[i], progressPanel);
+                    addFilesFromDirectory(listToAdd, origDir, files[i], progressPanel);
                 }
                 else {
                     String path;
@@ -328,7 +331,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     else {
                         perm = packagingFilesOuterPanel.getFilePermTextField().getText();
                     }
-                    addObjectAction(new FileElement(
+//                    addObjectAction(new FileElement(
+                    listToAdd.add(new FileElement(
                             FileType.FILE,
                             path,
                             topFolder + toFile,

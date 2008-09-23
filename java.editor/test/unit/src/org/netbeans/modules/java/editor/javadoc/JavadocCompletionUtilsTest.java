@@ -204,6 +204,36 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         Doc jdoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
         assertEquals("Wrong Doc instance", exp, jdoc);
     }
+
+    public void testFindJavadoc_147533() throws Exception {
+        String code =
+                "package p;\n" +
+                "class C {\n" +
+                "    /**jd1*/\n" +
+                "    /**/\n" +
+                "    int f1;\n" +
+                "    /**jd2*/\n" +
+                "    /*a*/\n" +
+                "    int f2;\n" +
+                "}\n";
+        prepareTest(code);
+
+        Element fieldEl = info.getTopLevelElements().get(0).getEnclosedElements().get(1);
+        Doc exp = info.getElementUtilities().javaDocFor(fieldEl);
+
+        String what = "/**jd1*/";
+        int offset = code.indexOf(what) + 3;
+
+        Doc jdoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
+        assertNull("Wrong Doc instance", jdoc);
+
+        fieldEl = info.getTopLevelElements().get(0).getEnclosedElements().get(2);
+        exp = info.getElementUtilities().javaDocFor(fieldEl);
+        what = "/**jd2*/";
+        offset = code.indexOf(what) + 3;
+        jdoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
+        assertEquals("Wrong Doc instance", exp, jdoc);
+    }
     
     public void testResolveOtherText() throws Exception {
         // XXX obsolete, write new one

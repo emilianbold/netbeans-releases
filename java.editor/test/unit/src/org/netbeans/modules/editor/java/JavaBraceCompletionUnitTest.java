@@ -269,6 +269,29 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "  */"
         );
     }
+
+    public void testTypeAddRightBraceMultiLine() {
+        Context ctx = new Context(new JavaKit(),
+                "if (true) {| System.out.println(\n" +
+                "\"\");\n");
+
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "if (true) {\n" +
+                "    System.out.println(\n" +
+                "\"\");\n");
+    }
+
+    public void testTypeAddRightBraceSingleLine() {
+        Context ctx = new Context(new JavaKit(),
+                "if (true) {| System.out.println(\"\");\n");
+
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "if (true) {\n" +
+                "    System.out.println(\"\");\n" +
+                "}\n");
+    }
     
     
     // ------- Tests for completion of quote (") -------------    

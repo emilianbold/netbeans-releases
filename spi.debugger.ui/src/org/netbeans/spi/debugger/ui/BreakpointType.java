@@ -85,20 +85,14 @@ public abstract class BreakpointType {
      * of the clash of {@link Controller#isValid()} method with
      * {@link javax.swing.JComponent#isValid()}, an explicit implementation
      * can be returned by overriding this method.
-     * The default implementation returns the result of {@link #getCustomizer()}
-     * if that implements the {@link Controller} interface, or <code>null</code>
-     * otherwise.
+     * The default implementation returns  <code>null</code>, in which case
+     * the customizer component is cast to {@link Controller}.
      *
      * @return Controller implementation or <code>null</code>.
      * @since 2.14
      */
     public Controller getController() {
-        JComponent c = getCustomizer();
-        if (c instanceof Controller) {
-            return ((Controller) c);
-        } else {
-            return null;
-        }
+        return null;
     }
 
     /**

@@ -77,6 +77,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
     public static final List KNOWN_FOLDERS = Arrays.asList(
             "grails-app", // NOI18N
             "lib", // NOI18N
+            "plugins", // NOI18N
             "scripts", // NOI18N
             "src", // NOI18N
             "test", // NOI18N
@@ -148,6 +149,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             };
         } else if (GroovySources.SOURCES_TYPE_GRAILS_UNKNOWN.equals(type)) {
             List<SourceGroup> result = new ArrayList<SourceGroup>();
+            result.add(createGroup(SourceCategory.PLUGINS, "LBL_Plugins"));
             for (FileObject child : projectDir.getChildren()) {
                 if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS.contains(child.getName())) {
                     String name = child.getName();

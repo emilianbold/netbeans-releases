@@ -172,18 +172,25 @@ public class ApplyPatternAction extends CookieAction
     private void applyPattern(final IDesignPatternManager manager,
                               final IDesignPatternDetails pDetails)
     {
-        Runnable runnable = new Runnable() 
-            {
-                public void run() 
+        new Thread()
+        {
+            Runnable runnable = new Runnable() 
                 {
-                    manager.applyPattern(pDetails);
-                }
-            };
-        try {
-            SwingUtilities.invokeAndWait(runnable);
-        } catch (Exception iex) {
-            iex.printStackTrace();
-        }          
+                    public void run() 
+                    {
+                        manager.applyPattern(pDetails);
+                    }
+                };
+            @Override
+            public void run() 
+            {
+                try {
+                    SwingUtilities.invokeAndWait(runnable);
+                } catch (Exception iex) {
+                    iex.printStackTrace();
+                } 
+            }
+        }.start();//need to start new thread to avoid invokeAndWait invocation from even dispatcher thread
     }
 
     @Override

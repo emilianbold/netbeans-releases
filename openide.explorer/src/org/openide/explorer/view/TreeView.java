@@ -1115,19 +1115,15 @@ public abstract class TreeView extends JScrollPane {
         }
         
         if (remSel != null) {
-            sm.removeSelectionPaths(remSel.toArray(new TreePath[remSel.size()]));
+            try {
+                sm.removeSelectionPaths(remSel.toArray(new TreePath[remSel.size()]));
+            } catch (NullPointerException e) {
+                // if editing of label of removed node was in progress
+                // BasicTreeUI will try to cancel editing and repaint node 
+                // which fails because node is already removed so it cannot get bounds of it
+                // catch and ignore (issue #136123)
+            }
         }
-
-        /*
-        try {
-            Field f = BasicTreeUI.class.getDeclaredField("treeState");
-            f.setAccessible(true);
-            AbstractLayoutCache cache = (AbstractLayoutCache)f.get(tree.getUI());
-            cache.setModel(treeModel);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-         */
     }
 
     /** Listens to the property changes on tree */
