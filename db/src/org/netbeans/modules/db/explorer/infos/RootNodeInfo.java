@@ -97,7 +97,12 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             rootInfo = (RootNodeInfo) DatabaseNodeInfo.createNodeInfo(null, "root"); //NOI18N
         }
         return rootInfo;
-    }  
+    }
+
+    // Used by unit tests
+    Map<DatabaseConnection, ConnectionNodeInfo> getConn2InfoCache() {
+        return Collections.unmodifiableMap(conn2Info);
+    }
     
     public RootNodeInfo() {  
         try {

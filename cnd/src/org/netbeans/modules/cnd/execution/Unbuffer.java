@@ -129,7 +129,7 @@ public class Unbuffer {
     }
     
     private static String getLibName(int platform, boolean is64bits) {
-        String bitnessSuffix = is64bits ? "_64" : "";
+        String bitnessSuffix = is64bits ? "_64" : ""; // NOI18N
         switch (platform) {
             case PlatformTypes.PLATFORM_LINUX : return "unbuffer-Linux-x86" + bitnessSuffix + ".so"; // NOI18N
             case PlatformTypes.PLATFORM_SOLARIS_SPARC : return "unbuffer-SunOS-sparc" + bitnessSuffix + ".so"; // NOI18N
