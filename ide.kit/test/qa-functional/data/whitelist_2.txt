@@ -805,7 +805,6 @@ org.netbeans.modules.cnd.modelimpl.platform.ModelSupport
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$ModifiedObjectsChangeListener
 org.netbeans.modules.cnd.modelimpl.util.WeakList
 org.netbeans.modules.cnd.navigation.hierarchy.HierarchyTopComponent
-org.netbeans.modules.cnd.navigation.hierarchy.HierarchyTopComponent$ResolvableHelper
 org.netbeans.modules.cnd.utils.CndUtils
 org.netbeans.modules.css.CssModuleInstall
 org.netbeans.modules.css.editor.model.CssModelUpdateTask$CssModelUpdateTaskFactory
