@@ -141,7 +141,6 @@ public final class TokenHierarchyUpdate {
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.fine(msg);
                     }
-                    operation.setInactiveAfterInconsistency();    
                     throw new IllegalStateException("INCONSISTENCY in token hierarchy occurred"); // NOI18N
                 } else {
                     extraMsg = "(TokenHierarchy Check OK) ";

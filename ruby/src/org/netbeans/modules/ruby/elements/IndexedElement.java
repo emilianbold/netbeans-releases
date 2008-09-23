@@ -299,4 +299,14 @@ public abstract class IndexedElement extends RubyElement {
         return sb.toString();
     }
 
+    /**
+     * Returns whether this method pertains to the Module class, which is handle
+     * in a kind of special manner in Ruby.
+     *
+     * @return whether the element is declared in the Module
+     */
+    public boolean doesBelongToModule() {
+        return "Module".equals(getFqn()); // NOI18N
+    }
+
 }

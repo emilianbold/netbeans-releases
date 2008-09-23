@@ -49,6 +49,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -58,6 +59,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -101,7 +103,7 @@ public final class TreeViewTest extends NbTestCase {
 //    public static TreeViewTest suite() {
 //        return new TreeViewTest("testSetSelectedNodeIsSynchronizedLazy");
 //    }
-    
+
     /**
      * Tests whether <code>JTree</code>'s property <code>scrollsOnExpand</code>
      * is taken into account in
@@ -505,7 +507,7 @@ public final class TreeViewTest extends NbTestCase {
         }
         fail("Node shall not be GCed: " + ref.get());
     }
-    
+
     public void testSetSelectedNodeIsSynchronizedEager() throws Exception {
         doSetSelectedNodeIsSynchronized(false);
     }
@@ -579,6 +581,88 @@ public final class TreeViewTest extends NbTestCase {
         assertEquals("Selection should be updated", Arrays.asList(keys.getNodes()), 
                 Arrays.asList(testWindow.getExplorerManager().getSelectedNodes()));
         if (setSel.e != null) {
+            fail();
+        }      
+    }
+
+    @RandomlyFails // NB-Core-Build #1404
+    public void testPartialNodeSelectionEager() throws Exception {
+        doTestPartialNodeSelection(false);
+    }
+
+    @RandomlyFails // just guessing based on ...Eager failure and use of Thread.sleep
+    public void testPartialNodeSelectionLazy() throws Exception {
+        doTestPartialNodeSelection(true);
+    }
+
+    private void doTestPartialNodeSelection(boolean lazy) throws Exception {
+        assert !EventQueue.isDispatchThread();
+
+        testWindow = new ExplorerWindow();
+        testWindow.getContentPane().add(treeView = new TestTreeView());
+
+        class WindowDisplayer implements Runnable {
+            public void run() {
+                testWindow.pack();
+                testWindow.setVisible(true);
+            }
+
+            void waitShown() throws InterruptedException {
+                while (!testWindow.isShowing()) {
+                    Thread.sleep(100);
+                }
+                Thread.sleep(500);
+            }
+        }
+
+        final Keys keys = new Keys(lazy, "A", "B", "-B", "C");
+        AbstractNode node = new AbstractNode(keys);
+        node.setName(getName());
+        final AbstractNode root = node;
+
+        try {
+            WindowDisplayer wd = new WindowDisplayer();
+            testWindow.getExplorerManager().setRootContext(root);
+            EventQueue.invokeAndWait(wd);
+            wd.waitShown();
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+        }
+
+        waitAWT();
+        testWindow.getExplorerManager().setRootContext(root);
+        assertSame("Root is OK", root, testWindow.getExplorerManager().getRootContext());
+
+        Node[] arr = node.getChildren().getNodes();
+        testWindow.getExplorerManager().setExploredContext(node);
+
+        final Block block1 = new Block();
+        final Block block2 = new Block();
+        final AtomicBoolean exc = new AtomicBoolean(false);
+        
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                Node[] arr2 = root.getChildren().getNodes();
+                block1.unblock();
+                block2.block();
+                try {
+                    testWindow.getExplorerManager().setSelectedNodes(arr2);
+                } catch (Throwable ex) {
+                    ex.printStackTrace();
+                    exc.set(true);
+                }
+            }
+        });
+        
+        block1.block();
+        keys.keys("B", "D");
+        block2.unblock();
+        waitAWT();
+        
+        assertEquals("B should be selected", Arrays.asList(keys.getNodes()[0]), 
+                Arrays.asList(testWindow.getExplorerManager().getSelectedNodes()));        
+        if (exc.get()) {
             fail();
         }
     }

@@ -67,7 +67,6 @@ import org.openide.util.ChangeSupport;
  */
 public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryImplementation {
     
-    private static int MAX_DEPTH = 3;
     private final Map<URL,URL> normalizedURLCache = new HashMap<URL, URL>();
 
     /** Default constructor for lookup. */
@@ -91,7 +90,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                 if (this.cachedRoots == null) {
                     List<URL> result = new ArrayList<URL>();
                     for (URL u : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
-                        result.add (u);
+                        result.add (getIndexFolder(u));
                     }
                     this.cachedRoots = result.toArray(new URL[result.size()]);
                 }
@@ -175,6 +174,24 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
             url = FileUtil.getArchiveFile(url);
         }
         return "file".equals(url.getProtocol());    //NOI18N
+    }
+    
+    private static URL getIndexFolder (final URL url) {
+        assert url != null;
+        final FileObject root = URLMapper.findFileObject(url);
+        if (root == null) {
+            return url;
+        }
+        final FileObject index = JavadocAndSourceRootDetection.findJavadocRoot(root);
+        if (index == null) {
+            return url;
+        }
+        try {
+            return index.getURL();
+        } catch (FileStateInvalidException e) {
+            e.printStackTrace();
+            return url;
+        }
     }
     
 }

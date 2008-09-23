@@ -123,7 +123,15 @@ public class ExpandNodesWebProjectsView extends PerformanceTestCase {
         WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
-    
+
+    public void testExpandFolderWith1000JspFiles(){
+        pathToFolderNode = "Web Pages|jsp1000";
+        project = testDataProject;
+        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_PREPARE = 2000;
+        doMeasurement();
+    }
+
     public void initialize(){
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);

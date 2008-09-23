@@ -3789,18 +3789,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                         text = controller.getText().substring(pos, offset).trim();
                         if ("(".equals(text) || text.endsWith("{") || text.endsWith(",")) { //NOI18N
                             TypeElement el = (TypeElement)controller.getTrees().getElement(new TreePath(path, ann.getAnnotationType()));
-                            for (Element ee : el.getEnclosedElements()) {
-                                if (ee.getKind() == METHOD && "value".contentEquals(ee.getSimpleName())) {
-                                    type = ((ExecutableElement)ee).getReturnType();
-                                    while(dim-- > 0) {
+                            if (el != null) {
+                                for (Element ee : el.getEnclosedElements()) {
+                                    if (ee.getKind() == METHOD && "value".contentEquals(ee.getSimpleName())) {
+                                        type = ((ExecutableElement)ee).getReturnType();
+                                        while(dim-- > 0) {
+                                            if (type.getKind() == TypeKind.ARRAY)
+                                                type = ((ArrayType)type).getComponentType();
+                                            else
+                                                return null;
+                                        }
                                         if (type.getKind() == TypeKind.ARRAY)
                                             type = ((ArrayType)type).getComponentType();
-                                        else
-                                            return null;
+                                        return type != null ? Collections.singleton(type) : null;
                                     }
-                                    if (type.getKind() == TypeKind.ARRAY)
-                                        type = ((ArrayType)type).getComponentType();
-                                    return type != null ? Collections.singleton(type) : null;
                                 }
                             }
                         }
