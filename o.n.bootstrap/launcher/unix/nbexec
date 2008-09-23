@@ -322,6 +322,13 @@ install_new_updater() {
 
 # detect system http proxy setting
 
+detect_system_proxy () {
+    if [ ! -z "$http_proxy" ]; then
+        http_proxy_tmp=$http_proxy
+    fi
+    return 0
+}
+
 detect_gnome_proxy () {
     gconftool=/usr/bin/gconftool-2
     if [ -x  $gconftool ] ; then
@@ -341,7 +348,10 @@ detect_gnome_proxy () {
             return 0
         else
             if [ "$proxy_mode" = "none" ] ; then
-                http_proxy_tmp="DIRECT"
+                detect_system_proxy
+                if [ -z "$http_proxy_tmp" ]; then
+                    http_proxy_tmp="DIRECT"
+                fi
                 return 0
             fi
         fi
@@ -364,7 +374,10 @@ detect_kde_proxy () {
             fi
         else
             if /bin/grep -q 'ProxyType=0' "$kioslaverc" ; then
-                http_proxy_tmp="DIRECT"
+                detect_system_proxy
+                if [ -z "$http_proxy_tmp" ]; then
+                    http_proxy_tmp="DIRECT"
+                fi
                 return 0
             fi
         fi
