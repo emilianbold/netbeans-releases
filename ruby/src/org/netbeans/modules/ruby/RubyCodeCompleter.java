@@ -1009,7 +1009,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 }
 
                 // We can only call static methods
-                if (skipInstanceMethods && !method.isStatic()) {
+                
+                if (skipInstanceMethods && !method.isStatic() && !"Module".equals(method.getFqn())) { // NOI18N
                     continue;
                 }
 

@@ -183,6 +183,11 @@ public class RubyCodeCompleterTest extends RubyTestBase {
     public void testCompletion6() throws Exception {
         checkCompletion("testfiles/completion/lib/test2.rb", "class My^Test");
     }
+
+    public void testCompletion7() throws Exception {
+        checkCompletion("testfiles/completion/lib/test2.rb", "puts Module.class_variable^s");
+    }
+
 //    
 //    // TODO: Test open classes, class inheritance, relative symbols, finding classes, superclasses, def completion, ...
 
