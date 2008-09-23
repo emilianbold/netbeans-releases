@@ -65,7 +65,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
@@ -82,8 +84,10 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
@@ -1357,6 +1361,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 CsmType typ = resolveType(item.getParameter(0));
                 if (typ != null) {
                     lastType = typ;
+                    CsmClassifier cls = lastType.getClassifier();
+                    if (cls != null && CsmKindUtilities.isClass(cls)) {
+                        cls = createClassInstantiation((CsmClass) cls, item);
+                        if (cls != null) {
+                            lastType = CsmCompletion.getType(cls, 0);
+                        }
+                    }
                 }
                 break;
             }
@@ -1582,6 +1593,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 CsmCompletionExpression mtdNameExp = item.getParameter(0);
                 String mtdName = mtdNameExp.getTokenText(0);
 
+                if (mtdNameExp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
+                    lastType = resolveType(mtdNameExp);
+                }
+
                 // this() invoked, offer constructors
 //                if( ("this".equals(mtdName)) && (item.getTokenCount()>0) ){ //NOI18N
 //                    CsmClassifier cls = sup.getClass(item.getTokenOffset(0));
@@ -1761,6 +1776,27 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return cont;
         }
 
+        private CsmClass createClassInstantiation(CsmClass cls, CsmCompletionExpression exp) {
+            if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE && CsmKindUtilities.isTemplate(cls)) {
+                List<CsmTemplateParameter> patams = ((CsmTemplate) cls).getTemplateParameters();
+                if (patams != null) {
+                    int paramNumber = 1;
+                    Map<CsmTemplateParameter, CsmType> mapping = new HashMap<CsmTemplateParameter, CsmType>();
+                    for (CsmTemplateParameter param : patams) {
+                        CsmCompletionExpression paramInst = exp.getParameter(paramNumber);
+                        if (paramInst != null) {
+                            mapping.put(param, resolveType(paramInst));
+                        } else {
+                            break;
+                        }
+                    }
+                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                    return ip.instantiateClass(cls, mapping);
+                }
+            }
+            return null;
+        }
+        
         private CsmNamespace findExactNamespace(final String var, final int varPos) {
             CsmNamespace ns = null;
             compResolver.setResolveTypes(CompletionResolver.RESOLVE_GLOB_NAMESPACES | CompletionResolver.RESOLVE_LIB_NAMESPACES);
