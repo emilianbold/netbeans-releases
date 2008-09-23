@@ -2,19 +2,19 @@ Code completion result for source line:
 x = "Hell|o World"
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-KEYWORD    #{                                         #{expr}: Value of expr
-KEYWORD    \                                          \nnn Octal <i>nnn</i>
-KEYWORD    \C-                                        Control-<i>x</i>
-KEYWORD    \M-                                        \M-<i>x</i>: Meta-<i>x</i>
-KEYWORD    \M-\C-                                     Meta-control-<i>x</i>
-KEYWORD    \a                                         Bell/alert (0x07)
-KEYWORD    \b                                         Backspace (0x08)
-KEYWORD    \c                                         Control-<i>x</i>
-KEYWORD    \e                                         Escape (0x1b)
-KEYWORD    \f                                         Formfeed (0x0c)
-KEYWORD    \n                                         Newline (0x0a)
-KEYWORD    \r                                         Return (0x0d)
-KEYWORD    \s                                         Space (0x20)
-KEYWORD    \t                                         Tab (0x09)
-KEYWORD    \v                                         Vertical tab (0x0b)
-KEYWORD    \x                                         \x<i>nn</i>: Hex <i>nn</i>
+KEYWORD    #{ #{expr}: Value of expr                  null
+KEYWORD    \ \nnn Octal <i>nnn</i>                    null
+KEYWORD    \C- Control-<i>x</i>                       null
+KEYWORD    \M- \M-<i>x</i>: Meta-<i>x</i>             null
+KEYWORD    \M-\C- Meta-control-<i>x</i>               null
+KEYWORD    \a Bell/alert (0x07)                       null
+KEYWORD    \b Backspace (0x08)                        null
+KEYWORD    \c Control-<i>x</i>                        null
+KEYWORD    \e Escape (0x1b)                           null
+KEYWORD    \f Formfeed (0x0c)                         null
+KEYWORD    \n Newline (0x0a)                          null
+KEYWORD    \r Return (0x0d)                           null
+KEYWORD    \s Space (0x20)                            null
+KEYWORD    \t Tab (0x09)                              null
+KEYWORD    \v Vertical tab (0x0b)                     null
+KEYWORD    \x \x<i>nn</i>: Hex <i>nn</i>              null

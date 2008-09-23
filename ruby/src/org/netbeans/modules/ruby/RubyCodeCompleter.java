@@ -216,13 +216,14 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
     /** Default name values for ATTR_UNUSEDLOCAL and friends */
     private static final String ATTR_DEFAULTS = "defaults"; // NOI18N
+
     private static final String[] RUBY_BUILTIN_VARS =
         new String[] {
             // Predefined variables
             "__FILE__", "__LINE__", "STDIN", "STDOUT", "STDERR", "ENV", "ARGF", "ARGV", "DATA",
-            "RUBY_VERSION", "RUBY_RELEASE_DATE", "RUBY_PLATFORM", "$DEBUG", "$FILENAME",
-            "$LOAD_PATH", "$stderr", "$stdin", "$stdout", "$VERBOSE",
+            "RUBY_VERSION", "RUBY_RELEASE_DATE", "RUBY_PLATFORM",
         };
+    
     private static final String[] RUBY_REGEXP_WORDS =
         new String[] {
             // Dbl-space lines to keep formatter from collapsing pairs into a block
@@ -290,6 +291,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             
             "[:xdigit:]", "Hex digit (0-9, a-f, A-F)",
         };
+
     private static final String[] RUBY_PERCENT_WORDS =
         new String[] {
             // Dbl-space lines to keep formatter from collapsing pairs into a block
@@ -307,6 +309,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             
             "%s", "Symbol",
         };
+    
     private static final String[] RUBY_STRING_PAIRS =
         new String[] {
             // Dbl-space lines to keep formatter from collapsing pairs into a block
@@ -318,37 +321,57 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             
             "x", "<i>x</i>delimiters<i>x</i>",
         };
+
+    // Cf. http://en.wikibooks.org/wiki/Ruby_Programming/Syntax/Variables_and_Constants
     private static final String[] RUBY_DOLLAR_VARIABLES =
         new String[] {
-            // From http://www.ruby-doc.org/docs/UsersGuide/rg/globalvars.html
-            "$!", "Latest error message",
-            
-            "$@", "Location of error",
-            
-            "$_", "String last read by gets",
-            
-            "$.", "Line number last read by interpreter",
-            
-            "$&", "String last matched by regexp",
-            
-            "$~", "The last regexp match, as an array of subexpressions",
-            
-            "$n", "The nth subexpression in the last match (same as $~[n])",
-            
-            "$=", "Case-insensitivity flag",
-            
-            "$/", "Input record separator",
-            
-            "$\\", "Output record separator",
-            
-            "$0", "The name of the ruby script file",
-            
-            "$*", "The command line arguments",
-            
-            "$$", "Interpreter's process ID",
-            
-            "$?", "Exit status of last executed child process",
+            "$!",         "The exception information message set by 'raise'.",
+            "$@",         "Array of backtrace of the last exception thrown.",
+
+            "$&",         "The string matched by the last successful pattern match in this scope.",
+            "$`",         "The string to the left  of the last successful match.",
+            "$'",         "The string to the right of the last successful match.",
+            "$+",         "The last bracket matched by the last successful match.",
+            "$n",         "The Nth group of the last successful regexp match.",
+            "$~",         "The information about the last match in the current scope.",
+
+            "$=",         "The flag for case insensitive, nil by default.",
+            "$/",         "The input record separator, newline by default.",
+            "$\\",         "The output record separator for the print and IO#write. Default is nil.",
+            "$,",         "The output field separator for the print and Array#join.",
+            "$;",         "The default separator for String#split.",
+
+            "$.",         "The current input line number of the last file that was read.",
+            "$<",         "The virtual concatenation file of the files given on command line.",
+            "$>",         "The default output for print, printf. $stdout by default.",
+            "$_",         "The last input line of string by gets or readline.",
+
+            "$0",         "Contains the name of the script being executed. May be assignable.",
+            "$*",         "Command line arguments given for the script sans args.",
+            "$$",         "The process number of the Ruby running this script.",
+            "$?",         "The status of the last executed child process.",
+            "$:",         "Load path for scripts and binary modules by load or require.",
+
+            "$\"",        "The array contains the module names loaded by require.",
+            "$DEBUG",     "The status of the -d switch.",
+            "$FILENAME",  "Current input file from $&lt;. Same as $&lt;.filename.",
+            "$LOAD_PATH", "The alias to the $:.",
+            "$stderr",    "The current standard error output.",
+            "$stdin",     "The current standard input.",
+            "$stdout",    "The current standard output.",
+            "$VERBOSE",   "The verbose flag, which is set by the -v switch.",
+            "$-0",        "The alias to $/.",
+            "$-a",        "True if option -a (\"autosplit\" mode) is set. Read-only variable.",
+            "$-d",        "The alias to $DEBUG.",
+            "$-F",        "The alias to $;.",
+            "$-i",        "If in-place-edit mode is set, this variable holds the extension, otherwise nil.",
+            "$-I",        "The alias to $:.",
+            "$-l",        "True if option -l is set (\"line-ending processing\" is on). Read-only variable.",
+            "$-p",        "True if option -p is set (\"loop\" mode is on). Read-only variable.",
+            "$-v",        "The alias to $VERBOSE.",
+            "$-w",        "True if option -w is set.",
         };
+    
     private static final String[] RUBY_QUOTED_STRING_ESCAPES =
         new String[] {
             "\\a", "Bell/alert (0x07)",
@@ -3894,6 +3917,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     private class KeywordItem extends RubyCompletionItem {
+        
         private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
         private final String keyword;
         private final String description;
@@ -3915,15 +3939,21 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            if (description != null) {
-                //formatter.appendText(description);
-                formatter.appendHtml(description);
+        public String getRhsHtml(final HtmlFormatter formatter) {
+            return null;
+        }
 
-                return formatter.getText();
-            } else {
-                return null;
+        @Override
+        public String getLhsHtml(final HtmlFormatter formatter) {
+            ElementKind kind = getKind();
+            formatter.name(kind, true);
+            formatter.appendText(keyword);
+            formatter.appendText(" "); // NOI18N
+            formatter.name(kind, false);
+            if (description != null) {
+                formatter.appendHtml(description);
             }
+            return formatter.getText();
         }
 
         @Override
