@@ -49,6 +49,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
@@ -636,16 +637,20 @@ public final class TreeViewTest extends NbTestCase {
         Node[] arr = node.getChildren().getNodes();
         testWindow.getExplorerManager().setExploredContext(node);
 
-        final Block block1 = new Block();
-        final Block block2 = new Block();
+        final CountDownLatch block1 = new CountDownLatch(1);
+        final CountDownLatch block2 = new CountDownLatch(1);
         final AtomicBoolean exc = new AtomicBoolean(false);
         
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
                 Node[] arr2 = root.getChildren().getNodes();
-                block1.unblock();
-                block2.block();
+                block1.countDown();
+                try {
+                    block2.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 try {
                     testWindow.getExplorerManager().setSelectedNodes(arr2);
                 } catch (Throwable ex) {
@@ -655,9 +660,9 @@ public final class TreeViewTest extends NbTestCase {
             }
         });
         
-        block1.block();
+        block1.await();
         keys.keys("B", "D");
-        block2.unblock();
+        block2.countDown();
         waitAWT();
         
         assertEquals("B should be selected", Arrays.asList(keys.getNodes()[0]), 
