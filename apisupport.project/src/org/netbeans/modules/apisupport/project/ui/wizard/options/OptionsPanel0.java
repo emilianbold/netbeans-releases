@@ -144,15 +144,21 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     protected void readFromDataModel() {
         addListeners();
     }
+
+    private boolean smallerThan110(String version) {
+        String[] ver = version.split("\\.");
+        if (Integer.parseInt(ver[0]) <= 1 && Integer.parseInt(ver[1]) < 10) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     
     private void updateData() {
         NbPlatform platform = LayerUtils.getPlatformForProject(data.getProject());
-        try {
-            platform.setHarnessLocation(new File(platform.getDestDir() + "/harness")); // NOI18N
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (platform.getHarnessVersion() < 6) { //do not allow platforms older then 6.5
+
+        //do not allow platforms older then 6.5
+        if (smallerThan110(platform.getModule("org.netbeans.modules.options.api").getSpecificationVersion())) { // NOI18N
             setError(NbBundle.getMessage(OptionsPanel0.class, "MSG_INVALID_PLATFORM")); // NOI18N
             return;
         }
