@@ -47,12 +47,14 @@ import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
@@ -279,14 +281,14 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         if (destFolder.isDirectory()) {
             FileObject destFO = FileUtil.toFileObject(destFolder);
             assert destFO != null : "No FileObject for " + destFolder;
-            boolean clear = false;
+            Project  owner = null;
             try {
-                clear = ProjectManager.getDefault().findProject(destFO) == null;
+                owner = ProjectManager.getDefault().findProject(destFO);
             } catch (IOException e) {
                 // need not report here; clear remains false -> error
             }
-            if (!clear) {
-                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_ProjectFolderHasDeletedProject");
+            if (owner != null) {
+                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_ProjectFolderHasDeletedProject",ProjectUtils.getInformation(owner).getDisplayName());
             }
         }
         return null;
