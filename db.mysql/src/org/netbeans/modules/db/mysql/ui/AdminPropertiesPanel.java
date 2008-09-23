@@ -8,22 +8,31 @@ package org.netbeans.modules.db.mysql.ui;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.event.DocumentListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.impl.MySQLOptions;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 
 /**
  *
  * @author  David Van Couvering
  */
 public class AdminPropertiesPanel extends javax.swing.JPanel {
+    private static final Logger LOGGER = Logger.getLogger(AdminPropertiesPanel.class.getName());
+
     MySQLOptions options = MySQLOptions.getDefault();
     DialogDescriptor descriptor;
     private Color nbErrorForeground;
@@ -32,40 +41,66 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
     static private String recentDirectory = null;    
 
     private void validatePanel() {
-        if (descriptor == null) {
-            return;
-        }
-        
-        String error = null;
-        
-        String admin = getAdminPath();
-        String start = getStartPath();
-        String stop = getStopPath();
-        
-        if ( ! Utils.isValidExecutable(start, true)) {
-            error = NbBundle.getMessage(AdminPropertiesPanel.class,
-                    "AdminPropertiesPanel.MSG_InvalidStartPath");
-        }
-        
-        if ( ! Utils.isValidExecutable(stop, true)) {
-            error = NbBundle.getMessage(AdminPropertiesPanel.class,
-                    "AdminPropertiesPanel.MSG_InvalidStopPath");
-        }
+        descriptor.setValid(false);
+        messageLabel.setText(NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.MSG_ValidatingCommandPaths"));
 
-        if ( (!Utils.isValidURL(admin, true))  && 
-             (!Utils.isValidExecutable(admin, true))) {
-            error = NbBundle.getMessage(AdminPropertiesPanel.class,
-                    "AdminPropertiesPanel.MSG_InvalidAdminPath");
-        }
-        
-        
-        if (error != null) {
-            messageLabel.setText(error);
-            descriptor.setValid(false);
-        } else {
-            messageLabel.setText(" "); // NOI18N
-            descriptor.setValid(true);
-        }
+        revalidate();
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                // Issue 142538
+                // Run in background because this is doing I/O.  If the paths
+                // we're validating are on a remote file system, things can hang up
+                try {
+                    if (descriptor == null) {
+                        return;
+                    }
+
+                    String error = null;
+
+                    String admin = getAdminPath();
+                    String start = getStartPath();
+                    String stop = getStopPath();
+
+                    if ( ! Utils.isValidExecutable(start, true)) {
+                        error = NbBundle.getMessage(AdminPropertiesPanel.class,
+                                "AdminPropertiesPanel.MSG_InvalidStartPath");
+                    }
+
+                    if ( ! Utils.isValidExecutable(stop, true)) {
+                        error = NbBundle.getMessage(AdminPropertiesPanel.class,
+                                "AdminPropertiesPanel.MSG_InvalidStopPath");
+                    }
+
+                    if ( (!Utils.isValidURL(admin, true))  &&
+                         (!Utils.isValidExecutable(admin, true))) {
+                        error = NbBundle.getMessage(AdminPropertiesPanel.class,
+                                "AdminPropertiesPanel.MSG_InvalidAdminPath");
+                    }
+
+                    final String finalError = error;
+
+                    Mutex.EVENT.postReadRequest(new Runnable() {
+                        public void run() {
+                            if (finalError != null) {
+                                messageLabel.setForeground(nbErrorForeground);
+                                messageLabel.setText(finalError);
+                                descriptor.setValid(false);
+                            } else {
+                                messageLabel.setText(" "); // NOI18N
+                                descriptor.setValid(true);
+                            }
+                        }
+                    });
+                } catch (Throwable t) {
+                    messageLabel.setForeground(nbErrorForeground);
+                    messageLabel.setText(" "); // NOI18N
+                    descriptor.setValid(true);
+                    throw new RuntimeException(t);
+                }
+                
+            }
+        });
     }
     
     /** Creates new form PropertiesPanel */
@@ -79,6 +114,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         initComponents();
         this.setBackground(getBackground());
         messageLabel.setBackground(getBackground());
+        messageLabel.setText(" "); // NOI18N
         
         txtAdmin.setText(server.getAdminPath());
         txtAdminArgs.setText(server.getAdminArgs());
@@ -114,7 +150,6 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
 
     public void setDialogDescriptor(DialogDescriptor desc) {
         this.descriptor = desc;
-        validatePanel();
     }
     
     private void chooseFile(JTextField txtField) {
