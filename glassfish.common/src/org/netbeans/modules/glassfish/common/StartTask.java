@@ -170,10 +170,10 @@ public class StartTask extends BasicTask<OperationState> {
                 } catch (InterruptedException ex) {
                 }
                 OperationState state = OperationState.COMPLETED;
-                String messageKey = "MSG_START_SERVER_FAILED";
+                String messageKey = "MSG_SERVER_STARTED";
                 if (!gi.getCommonSupport().isReallyRunning()) {
                     state = OperationState.FAILED;
-                    messageKey = "MSG_SERVER_STARTED";
+                    messageKey = "MSG_START_SERVER_FAILED";
                 }
                 return fireOperationStateChanged(state,
                         messageKey, instanceName); // NOI18N
