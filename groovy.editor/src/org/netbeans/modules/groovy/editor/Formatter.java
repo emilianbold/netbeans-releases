@@ -57,6 +57,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.options.CodeStyle;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.util.Exceptions;
 
 
@@ -453,7 +454,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
             if (startOffset > 0) {
                 int prevOffset = Utilities.getRowStart(doc, startOffset-1);
                 initialOffset = getFormatStableStart(doc, prevOffset);
-                initialIndent = LexUtilities.getLineIndent(doc, initialOffset);
+                initialIndent = GsfUtilities.getLineIndent(doc, initialOffset);
             }
             
             // Build up a set of offsets and indents for lines where I know I need
@@ -504,7 +505,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
                                 // up "out of sync"
                                 int prevOffset = offsets.get(i-1);
                                 int prevIndent = indents.get(i-1);
-                                int actualPrevIndent = LexUtilities.getLineIndent(doc, prevOffset);
+                                int actualPrevIndent = GsfUtilities.getLineIndent(doc, prevOffset);
                                 if (actualPrevIndent != prevIndent) {
                                     // For blank lines, indentation may be 0, so don't adjust in that case
                                     if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
@@ -514,7 +515,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
                             }
 
                             // Adjust the indent at the given line (specified by offset) to the given indent
-                            int currentIndent = LexUtilities.getLineIndent(doc, lineBegin);
+                            int currentIndent = GsfUtilities.getLineIndent(doc, lineBegin);
 
                             if (currentIndent != indent) {
                                 context.modifyIndent(lineBegin, indent);
@@ -592,12 +593,12 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
 
                 if (isGspDocument && !indentOnly) {
                     // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
-                    initialIndent = LexUtilities.getLineIndent(doc, offset);
+                    initialIndent = GsfUtilities.getLineIndent(doc, offset);
                 }
                 
                 if (isInLiteral(doc, offset)) {
                     // Skip this line - leave formatting as it is prior to reformatting 
-                    indent = LexUtilities.getLineIndent(doc, offset);
+                    indent = GsfUtilities.getLineIndent(doc, offset);
 
                     if (isGspDocument && indentHtml && balance > 0) {
                         indent += balance * indentSize;

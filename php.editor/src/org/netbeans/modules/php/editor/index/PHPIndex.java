@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -330,13 +331,10 @@ public class PHPIndex {
     /** returns constnats of a class. */
     public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String typeName, String name, NameKind kind) {
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        List<IndexedClass> inheritanceLine = getClassAncestors(context, typeName);
-
-        if (inheritanceLine != null){
-            for (IndexedClass clazz : inheritanceLine){
-                //int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                constants.addAll(getClassConstants(context, clazz.getName(), name, kind));
-            }
+       
+        for (String className : getClassAncestors(context, typeName)) {
+            //int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
+            constants.addAll(getClassConstants(context, className, name, kind));
         }
 
         Collection<IndexedInterface> interfaceTree = getInterfaceTree(context, typeName);
@@ -352,37 +350,46 @@ public class PHPIndex {
 
     /** returns all methods of a class or an interface. */
     public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
-        Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
-        List<IndexedClass> inheritanceLine = getClassAncestors(context, typeName);
-
-        if (inheritanceLine != null){
-            for (IndexedClass clazz : inheritanceLine){
-                int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                methods.addAll(getMethods(context, clazz.getName(), name, kind, mask));
+        Map<String, IndexedFunction> methods = new TreeMap<String, IndexedFunction>();
+        
+        for (String className : getClassAncestors(context, typeName)) {
+            int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
+            
+            for (IndexedFunction method : getMethods(context, className, name, kind, mask)){
+                String methodName = method.getName();
+                
+                if (!methods.containsKey(methodName) || className.equals(typeName)){
+                    methods.put(methodName, method);
+                }
             }
         }
-
+        
         Collection<IndexedInterface> interfaceTree = getInterfaceTree(context, typeName);
 
         if (interfaceTree != null){
             for (IndexedInterface iface : interfaceTree){
-                methods.addAll(getMethods(context, iface.getName(), name, kind, attrMask));
+                String ifaceName = iface.getName();
+
+                for (IndexedFunction method : getMethods(context, ifaceName, name, kind, attrMask)) {
+                    String methodName = method.getName();
+
+                    if (!methods.containsKey(methodName) || ifaceName.equals(typeName)) {
+                        methods.put(methodName, method);
+                    }
+                }
             }
         }
 
-        return methods;
+        return methods.values();
     }
 
     /** returns all fields of a class or an interface. */
     public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
-        List<IndexedClass> inheritanceLine = getClassAncestors(context, typeName);
-
-        if (inheritanceLine != null){
-            for (IndexedClass clazz : inheritanceLine){
-                int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                properties.addAll(getProperties(context, clazz.getName(), name, kind, mask)); //NOI18N
-            }
+        
+        for (String className : getClassAncestors(context, typeName)) {
+            int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
+            properties.addAll(getProperties(context, className, name, kind, mask)); //NOI18N
         }
 
         return properties;
@@ -392,16 +399,16 @@ public class PHPIndex {
      *  The head item will be the queried class, otherwise it not safe to rely on the element order
      */
     @NonNull
-    public List<IndexedClass>getClassAncestors(PHPParseResult context, String className){
+    public Collection<String>getClassAncestors(PHPParseResult context, String className){
         return getClassAncestors(context, className, new TreeSet<String>());
     }
 
     @NonNull
-    private List<IndexedClass>getClassAncestors(PHPParseResult context, String className, Collection<String> processedClasses){
-        List<IndexedClass> ancestors = new LinkedList<IndexedClass>();
+    private Collection<String>getClassAncestors(PHPParseResult context, String className, Collection<String> processedClasses){
+        Collection<String> ancestors = new TreeSet<String>();
 
         if (processedClasses.contains(className)) {
-            return Collections.<IndexedClass>emptyList(); //TODO: circular reference, warn the user
+            return Collections.<String>emptyList(); //TODO: circular reference, warn the user
         }
 
         processedClasses.add(className);
@@ -410,7 +417,7 @@ public class PHPIndex {
         
         if (classes != null) {
             for (IndexedClass clazz : classes) {
-                ancestors.add(clazz);
+                ancestors.add(clazz.getName());
                 String parent = clazz.getSuperClass();
 
                 if (parent != null) {

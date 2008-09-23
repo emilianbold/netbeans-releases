@@ -229,7 +229,12 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
         }
         
         protected java.lang.String messageToolTip() {
-            return NbBundle.getMessage(CatalogEntryNode.class, "MSG_ENTITY_TOOLTIP", getSystemID()); // NOI18N
+            //return NbBundle.getMessage(CatalogEntryNode.class, "MSG_ENTITY_TOOLTIP", getSystemID()); // NOI18N
+            //return "hello there";
+            String publicID = getPublicID();
+            if(publicID.startsWith("SCHEMA:")) //NOI18N
+                publicID = publicID.substring("SCHEMA:".length()); //NOI18N
+            return publicID;
         }
 
         protected java.lang.String messageOpening() {

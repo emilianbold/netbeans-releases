@@ -115,6 +115,14 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/woodstock-body.js", new IndentPrefs(4,4));
     }
 
+    public void testIssue144248() throws Exception {
+        reformatFileContents("testfiles/issue144248.js", new IndentPrefs(4,4));
+    }
+
+    public void testIssue144248b() throws Exception {
+        reformatFileContents("testfiles/issue144248-minimal.js", new IndentPrefs(4,4));
+    }
+
     public void testSimpleBlock() throws Exception {
         format("if (true) {\nfoo();\n  }\n",
                "if (true) {\n    foo();\n}\n", null);

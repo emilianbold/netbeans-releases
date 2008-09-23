@@ -62,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -333,7 +334,7 @@ public class RubyTypeSearcher implements IndexSearcher {
             Node node = AstUtilities.getForeignNode(element, (Node[])null);
             
             if (node != null) {
-                NbUtilities.open(element.getFileObject(), node.getPosition().getStartOffset(), element.getName());
+                GsfUtilities.open(element.getFileObject(), node.getPosition().getStartOffset(), element.getName());
                 return;
             }
             

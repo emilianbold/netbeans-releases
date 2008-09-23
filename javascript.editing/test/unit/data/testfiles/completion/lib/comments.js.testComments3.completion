@@ -19,11 +19,9 @@ KEYWORD    @memberOf                                  null
 KEYWORD    @name                                      null
 KEYWORD    @namespace                                 null
 KEYWORD    @param                                     null
-KEYWORD    @param                                     null
 KEYWORD    @private                                   null
 KEYWORD    @property                                  null
 KEYWORD    @return                                    null
-KEYWORD    @scope                                     null
 KEYWORD    @scope                                     null
 KEYWORD    @static                                    null
 KEYWORD    @type                                      null

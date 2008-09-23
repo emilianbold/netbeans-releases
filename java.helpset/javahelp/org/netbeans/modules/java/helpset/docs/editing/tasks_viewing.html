@@ -8,92 +8,65 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<title>Tracking Errors and Pending Tasks in Java Projects</title>
-	<link rel="StyleSheet" href="../ide.css" type="text/css">
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
     <body>
 	<h2>Tracking Errors and Pending Tasks in Java Projects</h2>
-	<p><small><a href="#seealso">See Also</a></small></p>
         <p>You can use the Task List window to track all errors and 
         pending tasks in your project.</p>
-        <p>The Task List window scans your code and lists all TODO tasks. By default, the 
-	IDE recognizes all of the following as TODO tasks:</p>
-  
-	<!--PENDING(tm): explain that this functionality is automatic (no "search" button to click)-->
-  
+ 
     <p>The following are some of the things that create task list entries in Java projects:</p>
     <ul>
-        <li>Code comments that contain the patterns <tt>TODO</tt>, <tt>XXX</tt>, or <tt>FIXME</tt></li>
+      <li>Code comments that contain the patterns <tt>TODO</tt>, <tt>XXX</tt>, <tt>FIXME</tt>, and <tt>PENDING</tt></li>
         <li>The pattern <tt>&lt;&lt;&lt;&lt;&lt;&lt;</tt>, which denotes merge conflicts in CVS and other 
         version control systems</li>
         <li>Javadoc comments that contain the <tt>@todo</tt> keyword</li>
         <li>Lines where compiler errors are registered</li>
     </ul>
 
-	<ul class="note">
-	    <li>You can register custom task keywords. Choose Tools  &gt;  
-	    Options, click Miscellaneous, and then click the Tasks tab.
-	    Click Add and then type the new keyword.</li>
-	</ul>
-      
-	<p><b>To open the To Do window:</b></p>
+	<p><b>To open the Tasks window:</b></p>
 	<ul>
-	    <li>Choose Window &gt; To Do from the main window (Ctrl + 6). 
-	    The To Do window opens at the bottom of the IDE. You can scan:
+          <li>Choose Window &gt; Tasks from the main window (Ctrl + 6).
+            <p>The Tasks window opens at the bottom of the IDE.</p></li>
+          </ul>
+          <p>You can use the toolbar buttons to determine which files are scanned.
+          You scan the following things:</p>
 	    <ul>
-		<li><b>Current File.</b> Scan the selected file in the Source Editor. The To 
-		Do window scans each file as you open it in the Source Editor.</li>
-		<li><b>Opened Files.</b> Scan all the files that are currently open.</li>
-		<li><b>Selected Folder.</b> Specify a folder to scan for TODO tasks. 
-		You have to refresh the list manually using the Refresh button (<img src="images/todo_refresh.png" alt="refesh button">).</li>
-	    </ul></li>
+		<li>The current file. </li>
+		<li>The main project and dependent projects.</li>
+		<li>All open projects. </li>
+	    </ul>
+
+	<p><b>To jump to a task in the Source Editor:</b></p>
+	<ul>
+	    <li>Double-click the task in the Tasks window.</li>
 	</ul>
-	<ul class="note">
-	    <li>To filter the TODO tasks displayed, select a filter from the filter drop-down list. 
-	    You can modify existing filters and create your own To Do task filters.</li>
+
+	<p><b>To register a custom task keyword:</b></p>
+	<ol>
+	    <li>Choose Tools  &gt;  
+	    Options, click Miscellaneous, and then click the Tasks tab.</li>
+            <li>Click Add and then type the new keyword.</li>
+	</ol>
+
+	<p><b>To filter the tasks displayed:</b></p>
+	<ul>
+          <li>Select a filter from the Filter (<img src="images/todo_filter.gif">) drop-down list.</li>
 	</ul>
 	
-	<p><b>To create and modify To Do task filters:</b></p>
+	<p><b>To create and modify task filters:</b></p>
 	<ol>
-	    <li>Click the Edit Filter button (<img src="images/todo_filter.png"> ) in the toolbar to open the Edit Filter dialog box.</li>
+	    <li>Click the Filter (<img src="images/todo_filter.gif">) button in the toolbar to open the Task List Filter dialog box.</li>
 	    <li>Do one of the following:
 		<ul><li>To create a new filter, click New and enter a name for the filter.</li>
 		    <li>To modify an existing filter, select the filter in the Filters pane.</li>
 		</ul>
 	    </li>
 	    <li>Specify the filter conditions. Use the More and Fewer buttons to add or remove conditions for the filter.</li>
-	    <li>Click Preview to see the results when the filter is applied to the current list of To Do tasks in the To Do window.</li>
 	    <li>Click OK.</li>
 	</ol>
 	
-	<p><b>To jump to a TODO task in the Source Editor:</b></p>
-	<ul>
-	    <li>Double-click the task in the To Do window.</li>
-	    <p>Press F12 to jump to the next task in the list.</p>
-	</ul>
-
-<!--
-	<p><b>To filter the TODO tasks that are displayed:</b></p>
-	<ol>
-	    <li>Choose a filter from the drop-down list in the To Do window toolbar.</li>
-	    <li>If you have not set up a filter, click the Filters button (<img src="images/todo_filter.png" alt="filter button icon">) 
-	    and choose Edit Filter. </li>
-	    <li>Use the More and Fewer buttons to set conditions for the filter.</li>
-	    <li>Click the Preview button to see the results of applying the filter to the tasks in the Task List.</li>
-	    <li>Choose OK.</li>
-	</ol>
--->
-	<p><b>To specify what information is listed for each task:</b></p>
-	<ol>
-	    <li>Click the columns button (<img src="images/todo_columns.gif" width="12" height="12" alt="columns button">) 
-	    in the top right corner of the Task List window.</li>
-	    <li>Check the checkbox for each type of information you want to be listed.</li>
-	</ol>
-	<dl>
-	    <dt><a name="seealso">See Also</a></dt>
-	    <dd>    <a href="configuring/configuring.html">Configuring the Source Editor</a></dd>
-	    <dd>    <a href="../shortcuts/menucuts-setting.html">Setting Keyboard Shortcuts</a></dd>
-	</dl>
 
 	<hr>
 	<small><a href="../credits.html">Legal Notices</a></small> 

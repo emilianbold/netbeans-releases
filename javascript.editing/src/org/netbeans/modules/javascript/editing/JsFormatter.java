@@ -45,12 +45,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
-import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -60,6 +56,7 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.JsPretty.Diff;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -135,9 +132,16 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         doc.runAtomic(new Runnable() {
             public void run() {
                 try {
-                    for (Diff diff : jsPretty.getDiffs()) {
-                        doc.remove(diff.start, diff.end - diff.start);
-                        doc.insertString(diff.start, diff.text, null);
+                    ArrayList<Diff> diffs = jsPretty.getReverseDiffs();
+                    Collections.sort(diffs);
+                    for (int i = diffs.size()-1; i >= 0; i--) {
+                        Diff diff = diffs.get(i);
+                        if (diff.end > diff.start) {
+                            doc.remove(diff.start, diff.end - diff.start);
+                        }
+                        if (diff.text.length() > 0) {
+                            doc.insertString(diff.start, diff.text, null);
+                        }
                     }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
@@ -595,7 +599,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             if (startOffset > 0) {
                 int prevOffset = Utilities.getRowStart(doc, startOffset-1);
                 initialOffset = getFormatStableStart(doc, prevOffset);
-                initialIndent = LexUtilities.getLineIndent(doc, initialOffset);
+                initialIndent = GsfUtilities.getLineIndent(doc, initialOffset);
             }
             
             // Build up a set of offsets and indents for lines where I know I need
@@ -646,7 +650,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                                 // up "out of sync"
                                 int prevOffset = offsets.get(i-1);
                                 int prevIndent = indents.get(i-1);
-                                int actualPrevIndent = LexUtilities.getLineIndent(doc, prevOffset);
+                                int actualPrevIndent = GsfUtilities.getLineIndent(doc, prevOffset);
                                 // NOTE: in embedding this is usually true as we have some nonzero initial indent,
                                 // I am just not sure if it is better to add indentOnly check (as I did) or
                                 // remove blank lines condition completely?
@@ -659,9 +663,9 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                             }
 
                             // Adjust the indent at the given line (specified by offset) to the given indent
-                            int currentIndent = LexUtilities.getLineIndent(doc, lineBegin);
+                            int currentIndent = GsfUtilities.getLineIndent(doc, lineBegin);
 
-                            if (currentIndent != indent) {
+                            if (currentIndent != indent && indent >= 0) {
                                 //org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
                                 //editorFormatter.changeRowIndent(doc, lineBegin, indent);
                                 context.modifyIndent(lineBegin, indent);
@@ -763,7 +767,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         if (id == JsTokenId.BLOCK_COMMENT) {
                             if (ts.offset() == pos) {
                                 lineType = IN_BLOCK_COMMENT_START;
-                                originallockCommentIndention = LexUtilities.getLineIndent(doc, offset);
+                                originallockCommentIndention = GsfUtilities.getLineIndent(doc, offset);
                             } else {
                                 lineType =  IN_BLOCK_COMMENT_MIDDLE;
                             }
@@ -788,7 +792,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
                 if (lineType == IN_LITERAL) {
                     // Skip this line - leave formatting as it is prior to reformatting 
-                    indent = LexUtilities.getLineIndent(doc, offset);
+                    indent = GsfUtilities.getLineIndent(doc, offset);
                     
                     // No compound indent for JavaScript          
                     //                    if (embeddedJavaScript && indentHtml && balance > 0) {
@@ -807,7 +811,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         // in the commented out block... A possible later enhancement.
                         // This shifts by the starting line which is wrong - should use the first comment line
                         //indent = LexUtilities.getLineIndent(doc, offset)-originallockCommentIndention+adjustedBlockCommentIndention;
-                        indent = LexUtilities.getLineIndent(doc, offset);
+                        indent = GsfUtilities.getLineIndent(doc, offset);
                     }
                 } else if ((endIndents = isEndIndent(doc, offset)) > 0) {
                     indent = (balance-endIndents) * indentSize + hangingIndent + initialIndent;

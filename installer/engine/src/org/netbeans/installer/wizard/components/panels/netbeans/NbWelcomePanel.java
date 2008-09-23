@@ -44,8 +44,10 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ImageIcon;
@@ -67,8 +69,11 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
+import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
@@ -194,6 +199,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 DEFAULT_WARNING_NO_COMPATIBLE_JDK_FOUND);
         setProperty(WARNING_NO_COMPATIBLE_JAVA_FOUND,
                 DEFAULT_WARNING_NO_COMPATIBLE_JAVA_FOUND);
+        setProperty(WARNING_NO_COMPATIBLE_JDK_FOUND_DEPENDENT, 
+                DEFAULT_WARNING_NO_COMPATIBLE_JDK_FOUND_DEPENDENT);
         
         // initialize the registries used on the panel - see the initialize() and
         // canExecute() method
@@ -343,7 +350,48 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         }
         lastChosenProducts = list;
         lastWarningMessage = null;
-
+        
+        List <Product> jdkDependentProducts = new ArrayList<Product> ();
+        for (Product product : lastChosenProducts) {
+            final List<Dependency> dependencies = product.getDependencyByUid("nb-base");
+            if (dependencies.size() > 0 && product.getUid().startsWith("nb-")) {
+                final List<Product> sources =
+                        Registry.getInstance().getProducts(dependencies.get(0));
+                if (sources.size() > 0) {
+                    final Product nbProduct = sources.get(0);
+                    List<Product> dependents = Registry.getInstance().getInavoidableDependents(nbProduct);
+                    boolean requiresJDK = false;
+                    for (Product pr : dependents) {
+                        if (pr.getStatus().equals(Status.INSTALLED) && 
+                                "false".equals(pr.getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY))) {
+                            // e.g. base and javase is installed and we install uml
+                            requiresJDK = true;
+                        }
+                    }
+                    requiresJDK = requiresJDK || "false".equals(product.getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
+                    if (requiresJDK) {
+                        final File nbLocation = nbProduct.getInstallationLocation();
+                        try {
+                            final File javaHome = new File(NetBeansUtils.getJavaHome(nbLocation));
+                            if (JavaUtils.isJavaHome(javaHome) && !JavaUtils.isJdk(javaHome)) {
+                                jdkDependentProducts.add(product);
+                                continue;
+                            }
+                        } catch (IOException e) {
+                            LogManager.log(ErrorLevel.DEBUG, e);
+                        }
+                    }
+                }
+            }
+        }
+        if (jdkDependentProducts.size() > 0) {
+            lastWarningMessage = StringUtils.format(
+                    getProperty(WARNING_NO_COMPATIBLE_JDK_FOUND_DEPENDENT), 
+                    StringUtils.asString(jdkDependentProducts));
+            LogManager.log(lastWarningMessage);
+            return lastWarningMessage;
+        }
+        
         for (Product product : lastChosenProducts) {
             for (WizardComponent c : product.getWizardComponents()) {
                 if (c.getClass().getName().equals(SearchForJavaAction.class.getName())) {
@@ -1168,7 +1216,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "warning.no.compatible.jdk.found"; //NOI18N
     public static final String WARNING_NO_COMPATIBLE_JAVA_FOUND =
             "warning.no.compatible.java.found";//NOI18N
-    
+    public static final String WARNING_NO_COMPATIBLE_JDK_FOUND_DEPENDENT =
+            "warning.no.compatible.jdk.found.dependent";//NOI18N
+            
     public static final String DEFAULT_ERROR_NO_CHANGES =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.error.no.changes.both"); // NOI18N
@@ -1202,6 +1252,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_WARNING_NO_COMPATIBLE_JAVA_FOUND =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.warning.no.compatible.java.found"); // NOI18N
+    public static final String DEFAULT_WARNING_NO_COMPATIBLE_JDK_FOUND_DEPENDENT =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.warning.no.compatible.jdk.found.dependent"); // NOI18N
+    
     
     public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB
