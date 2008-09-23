@@ -124,15 +124,10 @@ public class CurrentEditorScanningScope extends TaskScanningScope
         }
         if( null != newCallback && newCallback != this.callback ) {
             this.callback = newCallback;
-            Runnable noRefershRunnable = new Runnable() {
-                public void run() {
-                    switchCurrentFile(false);
-                }
-            };
             if( SwingUtilities.isEventDispatchThread() ) {
-                noRefershRunnable.run();
+                run();
             } else {
-                SwingUtilities.invokeLater( noRefershRunnable );
+                SwingUtilities.invokeLater( this );
             }
         }
         this.callback = newCallback;
