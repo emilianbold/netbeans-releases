@@ -47,6 +47,8 @@
 package org.netbeans.jemmy.operators;
 
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.DefaultSingleSelectionModel;
@@ -61,6 +63,9 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.jemmy.util.NameComponentChooser;
 import org.netbeans.jemmy.util.RegExComparator;
@@ -82,6 +87,8 @@ public class JMenuBarOperatorTest extends TestCase {
      */
     private JMenuBar menuBar;
     
+    private ActionValidator v1, v2;
+    
     /**
      * Constructor.
      *
@@ -95,6 +102,7 @@ public class JMenuBarOperatorTest extends TestCase {
      * Setup before testing.
      */
     protected void setUp() throws Exception {
+//        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         frame = new JFrame();
         menuBar = new JMenuBar();
         menuBar.setName("JMenuBarOperatorTest");
@@ -103,6 +111,12 @@ public class JMenuBarOperatorTest extends TestCase {
         menuBar.add(menu);
         menu.add(new JMenuItem("JMenuItem1"));
         menu.add(new JMenuItem("JMenuItem11"));
+        v1 = new ActionValidator();
+        v2 = new ActionValidator();
+        menu.add(new JMenuItem("JMenuItemNoBlock"))
+                .addActionListener(v1.getNoBlockActionListener());
+        menu.add(new JMenuItem("JMenuItemBlock"))
+                .addActionListener(v2.getBlockActionListener());
         frame.setJMenuBar(menuBar);
         frame.setSize(400, 300);
         frame.setLocationRelativeTo(null);
@@ -195,6 +209,37 @@ public class JMenuBarOperatorTest extends TestCase {
         
         operator1.pushMenu("JMenu1", "/", new RegExComparator());
         operator1.pushMenu("JMenu1", new RegExComparator());
+    }
+
+    /**
+     * Test pushMenu method.
+     */
+    public void testPushMenuNew() throws InterruptedException {
+        frame.setVisible(true);
+        
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
+
+        v1.reset();
+        
+        String menuPath = "JMenu1|JMenuItemNoBlock";
+        
+        operator1.pushMenu(menuPath, "|", Operator.getDefaultStringComparator());
+
+        v1.waitActionPerformed();
+
+        v2.reset();
+
+        menuPath = "JMenu1|JMenuItemBlock";
+
+        operator1.pushMenuNoBlock(menuPath, "|", Operator.getDefaultStringComparator());
+
+        v2.waitActionPerformed();
+        
+        v2.releaseBlock();
     }
 
     /**
@@ -552,5 +597,81 @@ public class JMenuBarOperatorTest extends TestCase {
         
         JMenuItemOperator operator3 = operator2.showMenuItem("JMenuItem11", new DefaultStringComparator(true, true));
         assertTrue(operator3.getText().equals("JMenuItem11"));
+    }
+}
+
+class ActionValidator {
+    private volatile boolean actionPerformed = false;
+    private volatile boolean actionBlocked = false;
+    
+    ActionListener getNoBlockActionListener() {
+        return new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                actionPerformed = true;
+            }
+        };
+    }
+    
+    ActionListener getBlockActionListener() {
+        return new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                synchronized(this) {
+                    actionPerformed = true;
+                    actionBlocked = true;
+                    while (actionBlocked) {
+                        try {
+                            wait();
+                        } catch (InterruptedException ex) {
+                            ex.printStackTrace();
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        };
+    }
+    
+    boolean isBlocked() {
+        return actionBlocked;
+    }
+    
+    synchronized void releaseBlock() {
+        actionBlocked = false;
+        notifyAll();
+    }
+    
+    boolean getActionPerformed() {
+        return actionPerformed;
+    }
+
+    void waitActionPerformed() throws InterruptedException {
+        Thread w = new Thread() {
+
+            public void run() {
+                long startTime = System.currentTimeMillis();
+                while (!actionPerformed && System.currentTimeMillis() - startTime < 120000) {
+                    try {
+                        sleep(500);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                        throw new RuntimeException(ex);
+                    }
+                }
+                if (!actionPerformed) {
+                    throw new RuntimeException("Action was not performed for " + (System.currentTimeMillis() - startTime) + " ms");
+                }
+            }
+            
+        };
+        w.start();
+        w.join();
+    }
+
+    synchronized void reset() {
+        actionBlocked = false;
+        actionPerformed = false;
+        notifyAll();
     }
 }
