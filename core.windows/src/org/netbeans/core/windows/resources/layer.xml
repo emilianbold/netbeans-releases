@@ -47,6 +47,18 @@ made subject to such option by the copyright holder.
     Use this folder and subfolders in your XML layer to define
     desktop layout, modes and groups.
     -->
+
+    <!-- Set the order of toolbars so that their menu matches UI spec -->
+    <attr name="Toolbars\File\position" intvalue="100"/>
+    <attr name="Toolbars\Clipboard\position" intvalue="200"/>
+    <attr name="Toolbars\UndoRedo\position" intvalue="300"/>
+    <attr name="Toolbars\Build\position" intvalue="400"/>
+    <attr name="Toolbars\Debug\position" intvalue="500"/>
+    <attr name="Toolbars\Memory\position" intvalue="600"/>
+    <attr name="Toolbars\QuickSearch\position" intvalue="700"/>
+    <attr name="Toolbars\Standard.xml\position" intvalue="800"/>
+    <attr name="Toolbars\Debugging.xml\position" intvalue="900"/>
+
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="org-netbeans-core-windows-options-WinSysAdvancedOption.instance"/>
