@@ -74,12 +74,6 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class LexUtilities {
-    /** Tokens that match a corresponding END statement. Even though while, unless etc.
-     * can be statement modifiers, those luckily have different token ids so are not a problem
-     * here.
-     */
-    private static final Set<TokenId> END_PAIRS = new HashSet<TokenId>();
-
     /**
      * Tokens that should cause indentation of the next line. This is true for all {@link #END_PAIRS},
      * but also includes tokens like "else" that are not themselves matched with end but also contribute

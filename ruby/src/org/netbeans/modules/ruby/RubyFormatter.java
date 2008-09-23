@@ -522,7 +522,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
             if (startOffset > 0) {
                 int prevOffset = Utilities.getRowStart(doc, startOffset-1);
                 initialOffset = getFormatStableStart(doc, prevOffset);
-                initialIndent = LexUtilities.getLineIndent(doc, initialOffset);
+                initialIndent = GsfUtilities.getLineIndent(doc, initialOffset);
             }
             
             // Build up a set of offsets and indents for lines where I know I need
@@ -577,7 +577,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
                                 // up "out of sync"
                                 int prevOffset = offsets.get(i-1);
                                 int prevIndent = indents.get(i-1);
-                                int actualPrevIndent = LexUtilities.getLineIndent(doc, prevOffset);
+                                int actualPrevIndent = GsfUtilities.getLineIndent(doc, prevOffset);
                                 if (actualPrevIndent != prevIndent) {
                                     // For blank lines, indentation may be 0, so don't adjust in that case
                                     if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
@@ -677,12 +677,12 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
                 if (isEmbeddedDoc && !indentOnly) {
                     // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
-                    initialIndent = LexUtilities.getLineIndent(doc, offset);
+                    initialIndent = GsfUtilities.getLineIndent(doc, offset);
                 }
                 
                 if (isInLiteral(doc, offset)) {
                     // Skip this line - leave formatting as it is prior to reformatting 
-                    indent = LexUtilities.getLineIndent(doc, offset);
+                    indent = GsfUtilities.getLineIndent(doc, offset);
 
                     if (isEmbeddedDoc && indentHtml && balance > 0) {
                         indent += balance * indentSize;

@@ -308,7 +308,7 @@ public class StrictWarning extends JsErrorRule {
             } else {
                 int start = range.getStart();
                 int end = Math.min(Utilities.getRowEnd(doc, start), range.getEnd());
-                range = new OffsetRange(start, end);
+                range = new OffsetRange(Math.min(start,end), end);
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
