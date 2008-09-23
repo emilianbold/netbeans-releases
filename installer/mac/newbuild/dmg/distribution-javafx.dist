@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <installer-gui-script minSpecVersion="1.0">
-    <title>netbeans-mysql-Title</title>
+    <title>netbeans-Title</title>
     <welcome file="Welcome.html"></welcome>
     <license file="License.txt"></license>
     <background file="background.tif" scaling="none" alignment="topleft"></background>
@@ -51,7 +51,16 @@ function checkSystemversion() {
 		my.result.type = 'Fatal';
 		my.result.title = system.localizedStringWithFormat('ERR_INVALID_VERSION_TITLE');
 		my.result.message = system.localizedStringWithFormat('ERR_INVALID_VERSION_MSG');
-	}
+	} else {
+		//try {
+		//	result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6') == true;
+		//} catch (e) {}
+		//if(!result) {
+		//	my.result.type = 'Fatal';
+		//	my.result.title = system.localizedStringWithFormat('ERR_NO_JAVA6_TITLE');
+		//	my.result.message = system.localizedStringWithFormat('ERR_NO_JAVA6_MSG');
+		//}
+        }
 	return result;
 }
 /* js:pkmk:end */
@@ -81,17 +90,10 @@ function checkChoiceUpgradeAction() {
         <line choice="netbeans">
             <line choice="baseide"></line>
             <line choice="javase"></line>
-            <line choice="webcommon"></line>
-            <line choice="javaee"></line>
-            <line choice="ruby"></line>
+            <line choice="javafx"></line>
         </line>
-        <line choice="glassfish"></line>
-        <line choice="mysql"></line>
-        <line choice="mysqlstartup"></line>
     </choices-outline>
-    <choice id="glassfish" title="glassfish-title" description="glassfish-description" start_selected="true" start_enabled="true" start_visible="true">
-        <pkg-ref id="ident.pkg.glassfish"></pkg-ref>
-    </choice>
+   
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="org.netbeans.ide"></pkg-ref>
@@ -99,28 +101,12 @@ function checkChoiceUpgradeAction() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice>
-    <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
-        <pkg-ref id="ident.pkg.webcommon"></pkg-ref>
+    <choice id="javafx" title="javafx-title" description="javafx-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javafx.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
+        <pkg-ref id="ident.pkg.javafx"></pkg-ref>
     </choice>
-    <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
-        <pkg-ref id="ident.pkg.javaee"></pkg-ref>
-    </choice>
-    <choice id="ruby" title="ruby-title" description="ruby-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.ruby.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
-        <pkg-ref id="ident.pkg.ruby"></pkg-ref>
-    </choice>
-    <choice id="mysql" title="mysql-title" description="mysql-description" start_selected="true" start_enabled="true" start_visible="true" selected="true" enabled="true">
-        <pkg-ref id="com.mysql.mysql"></pkg-ref>
-    </choice>
-    <choice id="mysqlstartup" title="mysqlstartup-title" description="mysqlstartup-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.mysqlstartup.selected &amp;&amp; choices.mysql.selected" enabled="choices.mysql.selected">
-        <pkg-ref id="com.mysql.mysqlstartup"></pkg-ref>
-    </choice>
-    <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish.pkg</pkg-ref>
+    
     <pkg-ref id="org.netbeans.ide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/webcommon.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
-    <pkg-ref id="com.mysql.mysql" version="5.0.67.0.0" installKBytes="@SIZE_MYSQL@" auth="Root" onConclusion="None">file:./Contents/Packages/mysql.pkg</pkg-ref>
-    <pkg-ref id="com.mysql.mysqlstartup" version="1.0.0.1.0" installKBytes="@SIZE_MYSQLSTARTUP@" auth="Root" onConclusion="None">file:./Contents/Packages/mysqlstartup.pkg</pkg-ref>
-    
+    <pkg-ref id="ident.pkg.javafx" version="0.0.0.0.1" installKBytes="@SIZE_JAVAFX@" auth="Root" onConclusion="None">file:./Contents/Packages/javafx.pkg</pkg-ref>
+ 
 </installer-gui-script>
