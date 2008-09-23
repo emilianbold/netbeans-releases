@@ -250,7 +250,8 @@ public abstract class BaseAction extends TextAction {
         final JTextComponent target = getTextComponent(evt);
 
         // #146657 - Only perform the action if the document is BaseDocument's instance
-        if (!(target.getDocument() instanceof BaseDocument)) {
+        // #147899 - NPE
+        if (target == null || !(target.getDocument() instanceof BaseDocument)) {
             return;
         }
                               
