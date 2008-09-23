@@ -430,8 +430,12 @@ public class TaskManagerImpl extends TaskManager {
                         if( getFilter().isEnabled( scanner ) )
                             scanner.setScope( scopeToRefresh, Accessor.createCallback( this, scanner ) );
                     }
-                    startWorker();
-                    worker.scan( scope.iterator(), filter );
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            startWorker();
+                            worker.scan( scope.iterator(), filter );
+                        }
+                    });
                 }
             }
         }
