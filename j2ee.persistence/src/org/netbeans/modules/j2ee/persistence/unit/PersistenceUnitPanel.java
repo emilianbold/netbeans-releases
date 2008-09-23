@@ -59,7 +59,6 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Properties
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
 import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
-import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.JdbcListCellRenderer;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -135,6 +134,9 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private void registerModifiers(){
         if (isContainerManaged){
             addImmediateModifier(dsCombo);
+            if(dsCombo.isEditable()) {
+                addImmediateModifier((JTextComponent)dsCombo.getEditor().getEditorComponent());
+            }
             addImmediateModifier(providerCombo);
             addImmediateModifier(jtaCheckBox);
             
@@ -429,6 +431,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         
     }
     
+    @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
         if (nameTextField == source) {
             nameTextField.setText(persistenceUnit.getName());
@@ -462,6 +465,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         return jndiName;
     }
     
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
     }
