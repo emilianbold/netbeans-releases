@@ -743,6 +743,7 @@ public abstract class TagBasedLexerFormatter {
 
                     // process a block of unformattable tokens (which may be separated with white spaces)
                     boolean wasPreviousTokenUnformattable = firstUnformattableLine != -1 && isWSToken(tokenSequence.token())
+                            && !tokenSequence.isJustAfterGap()
                             || isUnformattableToken(tokenSequence, tokenSequence.offset());
 
                     if (wasPreviousTokenUnformattable && firstUnformattableLine == -1) {
