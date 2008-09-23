@@ -150,6 +150,10 @@ if [ -z "$ML_BUILD" ] ; then
     ML_BUILD=0
 fi
 
+if [ -z "$COMMUNITY_ML_BUILD" ] ; then
+    COMMUNITY_ML_BUILD=0
+fi
+
 if [ -z "$BUILD_JTB" ] ; then
     #do not build NetBeans/JDK5 bundles by default
     BUILD_JTB=0
@@ -172,6 +176,7 @@ run() {
             \"-Dnb.locales=${LOCALES}\" \
             \"-Dnb.build.type=${NB_BUILD_TYPE}\" \
             \"-Dgf.build.type=${GF_BUILD_TYPE}\" \
+            \"-Dcommunity.mlbuild=${COMMUNITY_ML_BUILD}\" \
             \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
             \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
             \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \

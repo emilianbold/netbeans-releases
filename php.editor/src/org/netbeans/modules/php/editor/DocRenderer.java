@@ -113,10 +113,7 @@ class DocRenderer {
         } else {
             FileObject fobj = indexedElement.getFile().getFileObject();
 
-            if (fobj == null) {
-                LOGGER.warning(String.format("%s .getFile().getFileObject() returned null for element %s defined in %s", 
-                        indexedElement.getClass().getSimpleName(), indexedElement.getName(), indexedElement.getFilenameUrl()));
-            } else {
+            if (fobj != null) {
                 Project project = FileOwnerQuery.getOwner(fobj);
 
                 if (project != null) {

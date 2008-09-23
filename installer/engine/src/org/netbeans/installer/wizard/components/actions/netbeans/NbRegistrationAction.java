@@ -88,9 +88,6 @@ public class NbRegistrationAction extends WizardAction {
             products.addAll(registry.getProducts(INSTALLED_WITH_WARNINGS));
             String productId = StringUtils.EMPTY_STRING;
             Product nbProduct = null;
-            Product gfProduct = null;
-            Product jdkProduct = null;
-            Product asProduct = null;
             List <Product> productsToRegister = new ArrayList<Product>();
             if (!products.isEmpty()) {
                 for (Product product : products) {
@@ -100,17 +97,18 @@ public class NbRegistrationAction extends WizardAction {
                         nbProduct = product;
                         productsToRegister.add(nbProduct);
                     } else if (uid.equals("jdk")) {
-                        productId = productId + "jdk";
-                        jdkProduct = product;
-                        productsToRegister.add(jdkProduct);
+                        productId = productId + "jdk";                        
+                        productsToRegister.add(product);
                     } else if (uid.equals("glassfish")) {
                         productId = productId + "gf";
-                        gfProduct = product;
-                        productsToRegister.add(gfProduct);
+                        productsToRegister.add(product);
+                    } else if (uid.equals("glassfish-mod")) {
+                        //not yet ready to register GlassFish V3...
+                        //productId = productId + "gfmod";
+                        productsToRegister.add(product);
                     } else if (uid.equals("sjsas")) {
                         productId = productId + "as";
-                        asProduct = product;
-                        productsToRegister.add(asProduct);
+                        productsToRegister.add(product);
                     }
 
                 }
@@ -119,23 +117,10 @@ public class NbRegistrationAction extends WizardAction {
             if (productId.startsWith("nb")) {
                 if (nbProduct != null) {
                     System.setProperty("netbeans.home", nbProduct.getInstallationLocation().getPath());
-                }
-                if (gfProduct != null) {
-                    System.setProperty("glassfish.home", gfProduct.getInstallationLocation().getPath());
-                }
-                if (asProduct != null) {
-                    System.setProperty("glassfish.home", asProduct.getInstallationLocation().getPath());
-                }
-
+                }                
                 boolean result = showRegistrationPage(productId, productsToRegister);
                 if (result) {
-                    registerNetBeans();
-                    if (gfProduct != null) {
-                        registerGlassFish(gfProduct.getInstallationLocation());
-                    }
-                    if (asProduct != null) {
-                        registerGlassFish(asProduct.getInstallationLocation());
-                    }
+                    registerNetBeans();                    
                 }
             }
         } catch (Exception ex) {
@@ -179,22 +164,6 @@ public class NbRegistrationAction extends WizardAction {
 
     private void registerNetBeans() {
         NbServiceTagCreateAction.setNetBeansStatus(true);
-    }
-
-    private void registerGlassFish(File location) {
-        File gfReg = new File(location, "lib/registration/servicetag-registry.xml");
-        /*
-        if (gfReg.exists()) {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("<registration_status>NOT_REGISTERED</registration_status>",
-                    "<registration_status>REGISTERED</registration_status>");
-            try {
-                FileUtils.modifyFile(gfReg, map);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        */
     }
 
     /**

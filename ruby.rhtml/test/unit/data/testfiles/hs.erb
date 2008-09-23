@@ -1,0 +1,13 @@
+<table>
+<% for product in @products %>
+   <tr>
+    <td><%=h product.title %></td>
+    <td><%=h product.description + 5 %></td>
+    <td><%= h product.image_url %></td>
+    <td><%= link_to 'Show', product %>></td>
+    <td><%= %>></td>
+    <td><%=h %>></td>
+  </tr>
+<% end %>
+</table>
+

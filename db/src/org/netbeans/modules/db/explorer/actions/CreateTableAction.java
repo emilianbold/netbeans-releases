@@ -48,6 +48,7 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableOwnerOperations;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DbUtilities;
+import org.openide.util.RequestProcessor;
 
 public class CreateTableAction extends DatabaseAction {
     static final long serialVersionUID =-7008851466327604724L;
@@ -60,15 +61,21 @@ public class CreateTableAction extends DatabaseAction {
             return;
 
         final DatabaseNodeInfo xnfo = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
-        TableOwnerOperations nfo = (TableOwnerOperations) xnfo.getParent(nodename);
+        final TableOwnerOperations nfo = (TableOwnerOperations) xnfo.getParent(nodename);
         Specification spec = (Specification) xnfo.getSpecification();
-        CreateTableDialog dlg = new CreateTableDialog(spec, (DatabaseNodeInfo) nfo);
+        final CreateTableDialog dlg = new CreateTableDialog(spec, (DatabaseNodeInfo) nfo);
         if (dlg.run()) {
-            try {
-                nfo.addTable(dlg.getTableName());
-            } catch ( DatabaseException de ) {
-                DbUtilities.reportError(bundle().getString("ERR_UnableToCreateTable"), de.getMessage()); // NOI18N
-            }
+            RequestProcessor.getDefault().post(
+                new Runnable() {
+                    public void run() {
+                        try {
+                            nfo.addTable(dlg.getTableName());
+                        } catch ( DatabaseException de ) {
+                            DbUtilities.reportError(bundle().getString("ERR_UnableToCreateTable"), de.getMessage()); // NOI18N
+                        }
+                    }
+                }
+            );
         }
     }
 }

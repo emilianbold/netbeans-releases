@@ -64,6 +64,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
@@ -502,29 +503,34 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             JEditorPane pane = (JEditorPane) getPreviewComponent();
             pane.setText(previewText);
             
-            BaseDocument doc = (BaseDocument) pane.getDocument();
-            Reformat reformat = Reformat.get(doc);
-            reformat.lock();
-            try {
-                doc.atomicLock();
+            final Document doc = pane.getDocument();
+            if (doc instanceof BaseDocument) {
+                final Reformat reformat = Reformat.get(doc);
+                reformat.lock();
                 try {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("Refreshing preview: expandTabs=" + IndentUtils.isExpandTabs(doc) //NOI18N
-                                + ", indentLevelSize=" + IndentUtils.indentLevelSize(doc) //NOI18N
-                                + ", tabSize=" + IndentUtils.tabSize(doc) //NOI18N
-                                + ", mimeType='" + doc.getProperty("mimeType") + "'" //NOI18N
-                                + ", doc=" + s2s(doc)); //NOI18N
-                    }
-                    reformat.reformat(0, doc.getLength());
-                } catch (BadLocationException ble) {
-                    LOG.log(Level.WARNING, null, ble);
+                    ((BaseDocument) doc).runAtomic(new Runnable() {
+                        public void run() {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("Refreshing preview: expandTabs=" + IndentUtils.isExpandTabs(doc) //NOI18N
+                                        + ", indentLevelSize=" + IndentUtils.indentLevelSize(doc) //NOI18N
+                                        + ", tabSize=" + IndentUtils.tabSize(doc) //NOI18N
+                                        + ", mimeType='" + doc.getProperty("mimeType") + "'" //NOI18N
+                                        + ", doc=" + s2s(doc)); //NOI18N
+                            }
+
+                            try {
+                                reformat.reformat(0, doc.getLength());
+                            } catch (BadLocationException ble) {
+                                LOG.log(Level.WARNING, null, ble);
+                            }
+                        }
+                    });
                 } finally {
-                    doc.atomicUnlock();
+                    reformat.unlock();
                 }
-            } finally {
-                reformat.unlock();
+            } else {
+                LOG.warning("Can't format " + doc + "; it's not BaseDocument."); //NOI18N
             }
-            
         }
 
     } // End of IndentationPreview class

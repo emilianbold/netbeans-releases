@@ -224,7 +224,11 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     } else if (n.hasSecond()) {
                         final IndexedElement indexed = n.second();
                         FileObject file = indexed.getFileObject();
-                        assert file != null;
+
+                        if (file == null){
+                            return DeclarationLocation.NONE;
+                        }
+
                         return new DeclarationLocation(file, indexed.getOffset());
                     } else {
                         fromIndex = Collections.emptyList();

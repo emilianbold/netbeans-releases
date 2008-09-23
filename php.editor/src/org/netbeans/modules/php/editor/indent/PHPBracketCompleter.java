@@ -59,8 +59,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.index.NbUtilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
@@ -285,14 +286,15 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
                 sb.append("\n"); //NOI18N
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
+                
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
                 sb.append(restOfLine);
                 sb.append("\n"); //NOI18N
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 doc.remove(offset, restOfLine.length());
             }
             
@@ -325,10 +327,10 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
         if ((id == PHPTokenId.PHP_CURLY_CLOSE || LexUtilities.textEquals(token.text(), ']')) && (Utilities.getRowLastNonWhite(doc, offset) == offset)) {
-            int indent = LexUtilities.getLineIndent(doc, offset);
+            int indent = GsfUtilities.getLineIndent(doc, offset);
             StringBuilder sb = new StringBuilder();
             sb.append("\n"); // NOI18N
-            LexUtilities.indent(sb, indent);
+            sb.append(IndentUtils.createIndentString(doc, indent));
 
             int insertOffset = offset; // offset < length ? offset+1 : offset;
             doc.insertString(insertOffset, sb.toString(), null);
@@ -409,9 +411,9 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
                 
             if (continueComment) {
                 // Line comments should continue
-                int indent = LexUtilities.getLineIndent(doc, offset);
+                int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("//"); // NOI18N
                 // Copy existing indentation
                 int afterHash = begin+1;
@@ -445,7 +447,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             boolean isEmptyComment = (Boolean) ret[1];
             
             if (isEmptyComment) {
-                final int indent = LexUtilities.getLineIndent(doc, ts.offset());
+                final int indent = GsfUtilities.getLineIndent(doc, ts.offset());
                 
                 //XXX: workaround for issue #133210:
                 SwingUtilities.invokeLater(new Runnable() {
@@ -483,7 +485,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
                 insertOffset = offset;
             }
 
-            int indent = LexUtilities.getLineIndent(doc, ts.offset());
+            int indent = GsfUtilities.getLineIndent(doc, ts.offset());
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, insertOffset);
 
             // find comment end
@@ -494,14 +496,14 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             int newCaretOffset;
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" * "); // NOI18N
                 newCaretOffset = insertOffset + sb.length() + 1;
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(insertOffset, Utilities.getRowEnd(doc, afterLastNonWhite)-insertOffset);
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" * "); // NOI18N
                 newCaretOffset = insertOffset + sb.length() + 1;
                 sb.append(restOfLine);
@@ -511,7 +513,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             if (addClosingTag) {
                 // add the closing tag
                 sb.append("\n");
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" */"); // NOI18N
             }
             
@@ -532,7 +534,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
                 assert false : "PHP_COMMENT_END without PHP_COMMENT or PHP_COMMENT_START"; //NOI18N
             }
             
-            int indent = LexUtilities.getLineIndent(doc, ts.offset());
+            int indent = GsfUtilities.getLineIndent(doc, ts.offset());
             int beforeFirstNonWhite = Utilities.getRowFirstNonWhite(doc, insertOffset);
             int rowStart = Utilities.getRowStart(doc, insertOffset);
             int newCaretOffset = insertOffset;
@@ -540,15 +542,15 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             StringBuilder sb = new StringBuilder();
             if (beforeFirstNonWhite >= insertOffset) {
                 // only whitespace in front of */
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" * ");
                 newCaretOffset = rowStart + sb.length();
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" "); //NOI18N
                 doc.remove(rowStart, insertOffset - rowStart);
                 insertOffset = rowStart;
             } else {
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" "); //NOI18N
             }
             
@@ -653,7 +655,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
         if ((beginEndBalance == 1) || (braceBalance == 1)) {
             // There is one more opening token on the line than a corresponding
             // closing token.  (If there's is more than one we don't try to help.)
-            int indent = LexUtilities.getLineIndent(doc, offset);
+            int indent = GsfUtilities.getLineIndent(doc, offset);
 
             // Look for the next nonempty line, and if its indent is > indent,
             // or if its line balance is -1 (e.g. it's an end) we're done
@@ -667,7 +669,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
                     continue;
                 }
 
-                int nextIndent = LexUtilities.getLineIndent(doc, next);
+                int nextIndent = GsfUtilities.getLineIndent(doc, next);
 
                 if (nextIndent > indent) {
                     insertEnd = false;
@@ -736,7 +738,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
         }
 
         if (target.getSelectionStart() != -1) {
-            if (NbUtilities.isCodeTemplateEditing(doc)) {
+            if (GsfUtilities.isCodeTemplateEditing(doc)) {
                 int start = target.getSelectionStart();
                 int end = target.getSelectionEnd();
                 if (start < end) {
@@ -976,7 +978,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
                     ts.move(dotPos);
 
                     if (ts.moveNext() && (ts.offset() < dotPos)) {
-                        LexUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
+                        GsfUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
                     }
                 }
             }
@@ -1181,9 +1183,9 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
 
                 if (begin != OffsetRange.NONE) {
                     int beginOffset = begin.getStart();
-                    int indent = LexUtilities.getLineIndent(doc, beginOffset);
-                    previousAdjustmentIndent = LexUtilities.getLineIndent(doc, offset);
-                    LexUtilities.setLineIndentation(doc, offset, indent);
+                    int indent = GsfUtilities.getLineIndent(doc, beginOffset);
+                    previousAdjustmentIndent = GsfUtilities.getLineIndent(doc, offset);
+                    GsfUtilities.setLineIndentation(doc, offset, indent);
                     previousAdjustmentOffset = caret.getDot();
                 }
             }

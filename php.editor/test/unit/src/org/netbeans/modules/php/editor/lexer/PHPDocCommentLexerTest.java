@@ -85,5 +85,20 @@ public class PHPDocCommentLexerTest extends NbTestCase {
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "*   <dd> \"*word\"  => ENDS_WITH(word)\n *   <dd> \"/^word.* /\" => REGEX(^word.*)\n *   <dd> \"word*word\" => REGEX(word.*word)");
     }
 
+    public void testPropertyTagTags() throws Exception {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText("" +
+                "comment 1\n" +
+                " * @property int age how old she is\n" +
+                " * @property-read string nick readonly property\n" +
+                " * @property-write boolean death", PHPDocCommentTokenId.language());
+        PHPLexerUtils.printTokenSequence(ts, "testSimpleComment"); ts.moveStart();
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "comment 1\n * ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_PROPERTY, "@property");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " int age how old she is\n * ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_PROPERTY_READ, "@property-read");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " string nick readonly property\n * ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE, "@property-write");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " boolean death");
+    }
     
 }

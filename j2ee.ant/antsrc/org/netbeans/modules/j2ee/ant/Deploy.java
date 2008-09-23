@@ -118,6 +118,7 @@ public class Deploy extends Task implements Deployment.Logger {
                         address = Integer.toString(sdi.getPort());
                     }
 
+                    getProject().setProperty("name", jmp.getDeploymentName());
                     getProject().setProperty("jpda.transport", transport);
                     getProject().setProperty("jpda.host", h);
                     getProject().setProperty("jpda.address", address);

@@ -71,6 +71,7 @@ import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 
 
 /**
@@ -190,22 +191,22 @@ public class JsParser implements IncrementalParser {
 
         try {
             // Sometimes the offset shows up on the next line
-            if (JsUtils.isRowEmpty(doc, offset) || JsUtils.isRowWhite(doc, offset)) {
-                offset = JsUtils.getRowStart(doc, offset)-1;
+            if (GsfUtilities.isRowEmpty(doc, offset) || GsfUtilities.isRowWhite(doc, offset)) {
+                offset = GsfUtilities.getRowStart(doc, offset)-1;
                 if (offset < 0) {
                     offset = 0;
                 }
             }
 
-            if (!(JsUtils.isRowEmpty(doc, offset) || JsUtils.isRowWhite(doc, offset))) {
+            if (!(GsfUtilities.isRowEmpty(doc, offset) || GsfUtilities.isRowWhite(doc, offset))) {
                 if ((sanitizing == Sanitize.EDITED_LINE) || (sanitizing == Sanitize.ERROR_LINE)) {
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineEnd = JsUtils.getRowLastNonWhite(doc, offset);
+                    int lineEnd = GsfUtilities.getRowLastNonWhite(doc, offset);
 
                     if (lineEnd != -1) {
                         lineEnd++; // lineEnd is exclusive, not inclusive
                         StringBuilder sb = new StringBuilder(doc.length());
-                        int lineStart = JsUtils.getRowStart(doc, offset);
+                        int lineStart = GsfUtilities.getRowStart(doc, offset);
                         if (lineEnd >= lineStart+2) {
                             sb.append(doc.substring(0, lineStart));
                             sb.append("//");
@@ -236,7 +237,7 @@ public class JsParser implements IncrementalParser {
                     assert sanitizing == Sanitize.ERROR_DOT || sanitizing == Sanitize.EDITED_DOT;
                     // Try nuking dots/colons from this line
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineStart = JsUtils.getRowStart(doc, offset);
+                    int lineStart = GsfUtilities.getRowStart(doc, offset);
                     int lineEnd = offset-1;
                     while (lineEnd >= lineStart && lineEnd < doc.length()) {
                         if (!Character.isWhitespace(doc.charAt(lineEnd))) {

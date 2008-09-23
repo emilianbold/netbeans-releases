@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,26 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.cplusplus;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
-import org.netbeans.modules.editor.options.BasePrintOptionsBeanInfo;
+/**
+ *
+ * @author Petr Pisl
+ */
+public class PHPDocPropertyTag extends PHPDocTag {
 
-/** BeanInfo for plain options */
-public class CCPrintOptionsBeanInfo extends BasePrintOptionsBeanInfo {
+    private final String fieldName;
+    private final String fieldType;
 
-    public CCPrintOptionsBeanInfo() {
-        super("/org/netbeans/modules/cnd/editor/cplusplus/CCIcon"); //NOI18N
+     public PHPDocPropertyTag(int start, int end, PHPDocTag.Type kind, String fieldName, String fieldType, String fieldDescription) {
+        super(start, end, kind, fieldDescription);
+        this.fieldName = fieldName;
+        this.fieldType = fieldType;
     }
 
-    public CCPrintOptionsBeanInfo(String iconPrefix) {
-        super(iconPrefix);
+    public String getFieldName() {
+        return fieldName;
     }
 
-    protected Class getBeanClass() {
-        return CCPrintOptions.class;
+    public String getFieldType() {
+        return fieldType;
     }
-
-
+     
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 }

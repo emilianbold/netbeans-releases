@@ -42,6 +42,10 @@ var ZIP_FILES_PREFIX            = "{nb.zip.files.prefix}";
 var BUNDLE_FILES_PREFIX         = "{nb.bundle.files.prefix}";
 var BOUNCER_PRODUCT_PREFIX      = "{nb.bundle.files.prefix}";
 
+var COMMUNITY_BUILD             = "{community.mlbuild}";
+var ADD_MORE_REDIRECT_VALUE     = "{enable.languages.redirect}";
+var MORE_LANGUAGES_REDIRECT_URL = "{alternative.languages.page.url}";
+
 var BUILD_LOCATION = "";
 
 var LOAD_OMNITURE_CODE = 0;
