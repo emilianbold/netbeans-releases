@@ -80,7 +80,8 @@ public class project_0001 extends project
   {
     return NbModuleSuite.create(
       NbModuleSuite.createConfiguration( project_0001.class ).addTest(
-          "CreateSimpleApplication"
+          "CreateSimpleApplicationDefault",
+          "CreateSimpleApplicationCustom"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -88,7 +89,31 @@ public class project_0001 extends project
       );
   }
 
-  public void CreateSimpleApplication( )
+  // Default name
+  public void CreateSimpleApplicationDefault( )
+  {
+    startTest( );
+
+    //for( int i = 0; i < 2; i++ )
+    {
+      String sProjectName = CreatePHPApplicationInternal( );
+
+      // Check created in tree
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode(
+          sProjectName + "|Source Files|" + "index.php"
+        );
+      prn.select( );
+
+      // Check index.php in editor
+      new EditorOperator( "index.php" );
+    }
+
+    endTest( );
+  }
+
+  // Custom name
+  public void CreateSimpleApplicationCustom( )
   {
     startTest( );
 
