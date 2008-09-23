@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DbUtilities;
 
@@ -82,6 +84,7 @@ public class AddColumnAction extends DatabaseAction {
                             try {
                                 nfo.refreshChildren();
                             } catch ( DatabaseException de ) {
+                                Logger.getLogger("global").log(Level.INFO, null, de);
                                 DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), de.getMessage()); // NOI18N
                             }
                         }
@@ -89,6 +92,7 @@ public class AddColumnAction extends DatabaseAction {
                 );
             }
         } catch(Exception exc) {
+            Logger.getLogger("global").log(Level.INFO, null, exc);
             DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
         }
     }
