@@ -29,25 +29,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
     private Color nbErrorForeground;
 
     // the most recent directory where a new path was chosen
-    static private String recentDirectory = null;
-    
-    private DocumentListener docListener = new DocumentListener() {
-        
-        public void removeUpdate(javax.swing.event.DocumentEvent e) {
-            validatePanel();
-            
-        }
-
-        public void insertUpdate(javax.swing.event.DocumentEvent e) {
-            validatePanel();
-        }
-
-        public void changedUpdate(javax.swing.event.DocumentEvent e) {
-            validatePanel();
-        }
-
-    };
-    
+    static private String recentDirectory = null;    
 
     private void validatePanel() {
         if (descriptor == null) {
@@ -97,10 +79,6 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         initComponents();
         this.setBackground(getBackground());
         messageLabel.setBackground(getBackground());
-        
-        txtAdmin.getDocument().addDocumentListener(docListener);
-        txtStart.getDocument().addDocumentListener(docListener);
-        txtStop.getDocument().addDocumentListener(docListener);
         
         txtAdmin.setText(server.getAdminPath());
         txtAdminArgs.setText(server.getAdminArgs());
@@ -374,7 +352,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnAdminBrowseActionPerformed
 
     private void txtAdminFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtAdminFocusLost
-        
+        validatePanel();
     }//GEN-LAST:event_txtAdminFocusLost
 
     private void txtAdminActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAdminActionPerformed
@@ -382,11 +360,11 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_txtAdminActionPerformed
 
     private void txtStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtStartActionPerformed
-        // TODO add your handling code here:
+        
 }//GEN-LAST:event_txtStartActionPerformed
 
     private void txtStartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtStartFocusLost
-        // TODO add your handling code here:
+        validatePanel();
 }//GEN-LAST:event_txtStartFocusLost
 
     private void btnStartBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartBrowseActionPerformed
@@ -398,7 +376,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_txtStopActionPerformed
 
     private void txtStopFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtStopFocusLost
-        // TODO add your handling code here:
+        validatePanel();
 }//GEN-LAST:event_txtStopFocusLost
 
     private void btnStopBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStopBrowseActionPerformed
