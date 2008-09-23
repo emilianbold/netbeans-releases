@@ -48,17 +48,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.StatFiles;
+import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous
  */
-@RandomlyFails // at least 5 different test cases, sporadically in NB-Core-Build
 public class StatFilesTest extends NbTestCase {
 
     private StatFiles monitor;
@@ -98,7 +97,12 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();
         monitor();
         assertNotNull(FileUtil.toFileObject(workDir));
-        monitor.getResults().assertResult(4, StatFiles.ALL);
+        int expectedCount = 4;
+        if(Utilities.isWindows()) {
+            expectedCount = 2;
+        }
+        monitor.getResults().assertResult(expectedCount, StatFiles.ALL);
+        monitor.getResults().assertResult(expectedCount, StatFiles.READ);
     }
 
     /** Tests it is not neccessary to create FileObjects for the whole path. */
@@ -118,7 +122,7 @@ public class StatFilesTest extends NbTestCase {
         FileObject root = FileUtil.toFileObject(rootFile);
         monitor.reset();
         assertNotNull(root.getFileObject(relativePath));
-        assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
+        monitor.getResults().assertResult(1, StatFiles.ALL);
     }
 
     public void testGetCachedChildren() throws IOException {
@@ -134,12 +138,12 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();
         //20 x FileObject + 1 File.listFiles
         FileObject[] children = parent.getChildren();
-        assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(1, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(1, StatFiles.ALL);
+        monitor.getResults().assertResult(1, StatFiles.READ);
         //second time
         monitor.reset();
         children = parent.getChildren();
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
+        monitor.getResults().assertResult(0, StatFiles.ALL);
     }
 
     /** Testing that queries for siblings in fully expanded folder do not generate
@@ -156,13 +160,13 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();
         //20 x FileObject + 1 File.listFiles
         FileObject[] children = parent.getChildren();
-        assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(1, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(1, StatFiles.ALL);
+        monitor.getResults().assertResult(1, StatFiles.READ);
         for (FileObject ch : children) {
             assertNull("No sibling", FileUtil.findBrother(ch, "exe"));
         }
-        assertEquals("No aditional touches", 1, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals("No aditional reads", 1, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(1, StatFiles.ALL);
+        monitor.getResults().assertResult(1, StatFiles.READ);
     }
 
     public void testLockFile() throws IOException {
@@ -170,8 +174,7 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();
         final FileLock lock = fobj.lock();
         try {
-            assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
-            assertEquals(0, monitor.getResults().statResult(StatFiles.READ));
+            monitor.getResults().assertResult(0, StatFiles.ALL);
             //second time
             monitor.reset();
             FileLock lock2 = null;
@@ -180,7 +183,7 @@ public class StatFilesTest extends NbTestCase {
                 fail();
             } catch (IOException ex) {
             }
-            assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
+            monitor.getResults().assertResult(0, StatFiles.ALL);
         } finally {
             lock.releaseLock();
         }
@@ -196,12 +199,12 @@ public class StatFilesTest extends NbTestCase {
         assertTrue(pXml.createNewFile());
         monitor.reset();
         FileObject ch = parent.getFileObject("nbbuild/project.xml");
-        assertEquals(2, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(2, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(2, StatFiles.ALL);
+        monitor.getResults().assertResult(2, StatFiles.READ);
         //second time
         monitor.reset();
         ch = parent.getFileObject("nbbuild/project.xml");
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
+        monitor.getResults().assertResult(0, StatFiles.ALL);
     }
 
     public void testIssueFileObject() throws IOException {
@@ -211,8 +214,8 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();
         assertGC("", new WeakReference(FileBasedFileSystem.getFileObject(testFile)));
         assertNotNull(FileBasedFileSystem.getFileObject(testFile));
-        assertEquals(1, monitor.getResults().statResult(testFile, StatFiles.ALL));
-        assertEquals(1, monitor.getResults().statResult(testFile, StatFiles.READ));
+        monitor.getResults().assertResult(1, StatFiles.ALL);
+        monitor.getResults().assertResult(1, StatFiles.READ);
 
         //parent not exists + testFile not exists
         monitor.reset();
@@ -220,46 +223,44 @@ public class StatFilesTest extends NbTestCase {
         assertGC("", new WeakReference(parent));
         assertGC("", new WeakReference(FileBasedFileSystem.getFileObject((testFile))));
         assertNotNull(FileBasedFileSystem.getFileObject((testFile)));
-        assertEquals(2, monitor.getResults().statResult(testFile, StatFiles.ALL));
-        assertEquals(2, monitor.getResults().statResult(testFile, StatFiles.READ));
+        monitor.getResults().assertResult(2, StatFiles.ALL);
+        monitor.getResults().assertResult(2, StatFiles.READ);
 
 
         parent = FileBasedFileSystem.getFileObject((testFile)).getParent();
         monitor.reset();
         FileObject fobj = FileBasedFileSystem.getFileObject((testFile));
         assertNotNull(fobj);
-        assertEquals(1, monitor.getResults().statResult(testFile, StatFiles.ALL));
-        assertEquals(1, monitor.getResults().statResult(testFile, StatFiles.READ));
+        monitor.getResults().assertResult(1, StatFiles.ALL);
+        monitor.getResults().assertResult(1, StatFiles.READ);
 
         monitor.reset();
         File tFile = testFile.getParentFile();
-        assertTrue(String.valueOf(monitor.getResults().statResult(tFile, StatFiles.ALL)), monitor.getResults().statResult(tFile, StatFiles.ALL) <= 1);
+        monitor.getResults().assertResult(0, StatFiles.ALL);
         while (tFile != null && tFile.getParentFile() != null) {
-            assertTrue(String.valueOf(monitor.getResults().statResult(tFile, StatFiles.ALL)), monitor.getResults().statResult(tFile, StatFiles.ALL) < 1);
+            monitor.getResults().assertResult(0, StatFiles.ALL);
             tFile = tFile.getParentFile();
         }
         //second time        
         monitor.reset();
         fobj = getFileObject(testFile);
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(0, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(0, StatFiles.ALL);
     }
 
     public void testGetParent() {
         FileObject fobj = getFileObject(testFile);
         monitor.reset();
         FileObject parent = fobj.getParent();
-        assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(1, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(1, StatFiles.ALL);
+        monitor.getResults().assertResult(1, StatFiles.READ);
         monitor.reset();
         parent = fobj.getParent();
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(0, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(0, StatFiles.ALL);
 
         //second time
         monitor.reset();
         parent = fobj.getParent();
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
+        monitor.getResults().assertResult(0, StatFiles.ALL);
     }
 
     //on trunk fails: expected:<0> but was:<1>
@@ -270,12 +271,11 @@ public class StatFilesTest extends NbTestCase {
         FileObject child = parent.createData("child");
         monitor.reset();
         FileObject ch = parent.getFileObject("child");
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(0, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(0, StatFiles.ALL);
         //second time
         monitor.reset();
         ch = parent.getFileObject("child");
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
+        monitor.getResults().assertResult(0, StatFiles.ALL);
     }
 
     //on trunk fails: expected:<2> but was:<5>
@@ -286,12 +286,12 @@ public class StatFilesTest extends NbTestCase {
         assertTrue(new File(getFile(parent), "child").createNewFile());
         monitor.reset();
         FileObject ch = parent.getFileObject("child");
-        assertEquals(2, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(2, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(2, StatFiles.ALL);
+        monitor.getResults().assertResult(2, StatFiles.READ);
         //second time
         monitor.reset();
         ch = parent.getFileObject("child");
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
+        monitor.getResults().assertResult(0, StatFiles.ALL);
     }
 
 
@@ -301,12 +301,12 @@ public class StatFilesTest extends NbTestCase {
         FileObject parent = fobj.getParent();
         monitor.reset();
         FileObject[] childs = parent.getChildren();
-        assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(1, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(1, StatFiles.ALL);
+        monitor.getResults().assertResult(1, StatFiles.READ);
         //second time
         monitor.reset();
         childs = parent.getChildren();
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
+        monitor.getResults().assertResult(0, StatFiles.ALL);
     }
 
 
@@ -323,24 +323,25 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();
         FileObject[] children = parent.getChildren();
         //20 x children, 1 x File.listFiles 
-        assertEquals(21, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(21, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(21, StatFiles.ALL);
+        monitor.getResults().assertResult(21, StatFiles.READ);
         //second time
         monitor.reset();
         children = parent.getChildren();
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
+        monitor.getResults().assertResult(0, StatFiles.ALL);
     }
 
     public void testRefreshFile() {
         FileObject fobj = getFileObject(testFile);
         monitor.reset();
         fobj.refresh();
-        assertEquals(2, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(2, monitor.getResults().statResult(StatFiles.READ));
+        monitor.getResults().assertResult(2, StatFiles.ALL);
+        monitor.getResults().assertResult(2, StatFiles.READ);
         //second time
         monitor.reset();
         fobj.refresh();
-        assertEquals(2, monitor.getResults().statResult(StatFiles.ALL));
+        monitor.getResults().assertResult(2, StatFiles.ALL);
+        monitor.getResults().assertResult(2, StatFiles.READ);
     }
 
     private void monitor() {
