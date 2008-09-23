@@ -214,7 +214,7 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
         return resizeProvider;
     }
     
-    private Rectangle calculateMinimumBounds()
+    protected Rectangle calculateMinimumBounds()
     {
         Rectangle clientArea = new Rectangle(getBounds().x, getBounds().y);
         clientArea.add(getNameWidget().getPreferredBounds());
