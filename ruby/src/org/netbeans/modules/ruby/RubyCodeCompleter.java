@@ -1008,9 +1008,13 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     continue;
                 }
 
-                // We can only call static methods
-                
-                if (skipInstanceMethods && !method.isStatic() && !"Module".equals(method.getFqn())) { // NOI18N
+                // We can only call static methods. And module class is a special case (#110267)
+                if (skipInstanceMethods && !method.isStatic() && !method.doesBelongToModule()) {
+                    continue;
+                }
+
+                // Do not offer instance methods of Module class as instance methods (issue #110267)
+                if (!skipInstanceMethods && method.doesBelongToModule()) {
                     continue;
                 }
 
@@ -3533,6 +3537,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return element.getKind();
         }
 
+        @Override
         public ImageIcon getIcon() {
             return null;
         }
