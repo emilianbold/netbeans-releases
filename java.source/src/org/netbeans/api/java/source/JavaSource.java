@@ -2066,7 +2066,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if (scp != js.classpathInfo.getClassPath(PathKind.SOURCE)) {
                 //Revalidate
                 final Project owner = FileOwnerQuery.getOwner(fo);
-                LOGGER.warning("ClassPath identity changed, class path owner: " +       //NOI18N
+                LOGGER.warning("ClassPath identity changed for " + fo + ", class path owner: " +       //NOI18N
                         (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")));       //NOI18N
                 js.classpathInfo = ClasspathInfo.create(fo);
             }
