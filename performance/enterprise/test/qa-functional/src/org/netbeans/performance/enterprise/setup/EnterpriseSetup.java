@@ -43,6 +43,7 @@ package org.netbeans.performance.enterprise.setup;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.performance.enterprise.EPUtilities;
@@ -107,6 +108,12 @@ public class EnterpriseSetup extends JellyTestCase {
     }
     
     public void closeWelcome() {
+        closeAllModal();
+        closeAllModal();
+        closeAllModal();
+        closeAllModal();
+        closeAllModal();
+        closeAllModal();
         CommonUtilities.closeWelcome();
     }
     
