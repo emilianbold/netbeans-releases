@@ -165,6 +165,9 @@ public class ConnectorPanel extends JPanel implements ActionListener {
         AttachType attachType = (AttachType) attachTypes.get (index);
         JComponent customizer = attachType.getCustomizer ();
         controller = attachType.getController();
+        if (controller == null && (customizer instanceof Controller)) {
+            controller = (Controller) customizer;
+        }
         firePropertyChange(PROP_TYPE, null, customizer);
         this.currentAttachType = attachType;
         add (customizer, c);
