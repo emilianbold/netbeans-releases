@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.impl.MySQLOptions;
 import org.openide.nodes.Node.Cookie;
 
 /**
@@ -59,22 +58,6 @@ public interface DatabaseServer extends Cookie {
      * called on the AWT thread.
      */
     public void reconnect() throws DatabaseException;
-
-    /**
-     * Reconnect to the MySQL server asynchronously,    can be called on the
-     * AWT thread.  If an error occurs, the error is quietly logged but no
-     * dialog is displayed.
-     */
-    public void reconnectAsync();
-
-    /**
-     * Connect to the server, with the option not to display
-     * a dialog but just write to the log if an error occurs
-     * @param quiet true if you don't want this to happen without any dialogs
-     * @param async true if you want to run this asychronously
-     * being displayed in case of error or to get more information.
-     */
-    public void reconnect(final boolean quiet, boolean async);
 
     /**
      * Create a database on the server.  This runs <b>asynchronously</b>
@@ -181,12 +164,29 @@ public interface DatabaseServer extends Cookie {
     public boolean isConnected();
 
     /**
-     * See if the server is running.  This method does network I/O and
-     * can not be called on the AWT event thread.
+     * Check to see if the server is running.  This method waits for three
+     * seconds and returns false if there is no response after this time.
      *
-     * @return true if it is running, false otherwise
+     * @return true if it appears to be running, false otherwise
      *
-     * @throws IllegalStateException if this method is called on the AWT event thread
+     */
+    public boolean checkRunning();
+
+    /**
+     * Check to see if the server is running.
+     *
+     * @param waitTime the number of milliseconds to wait before giving up and
+     * returning false.  0 means indefinite timeout.
+     *
+     * @return true if the server appears to be running, false otherwise
+     */
+    public boolean checkRunning(long waitTime);
+
+    /**
+     * Returns true if the server is running last time we checked.  Does not actually
+     * perform a check, so can be called on the AWT event thread.
+     *
+     * Run status is updated when the server is initialized and whenever a property is changed.
      */
     public boolean isRunning();
 
@@ -227,15 +227,6 @@ public interface DatabaseServer extends Cookie {
     public void addPropertyChangeListener(PropertyChangeListener listener);
 
     public void removePropertyChangeListener(PropertyChangeListener listener);
-
-    /**
-     * Determine if the given property change requires a reconnect to
-     * the server.
-     *
-     * @param evt The property change event representing the server property change
-     * @return true if a reconnect is needed, false otherwise
-     */
-    public boolean propertyChangeNeedsReconnect(PropertyChangeEvent evt);
 
     /**
      * Launch the admin tool.  If the specified admin path is a URL,

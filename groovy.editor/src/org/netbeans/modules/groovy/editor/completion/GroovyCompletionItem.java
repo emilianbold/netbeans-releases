@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
-import org.netbeans.modules.groovy.editor.*;
 import groovy.lang.MetaMethod;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,7 +47,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.codehaus.groovy.ast.ASTNode;
-import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
@@ -58,6 +56,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.codehaus.groovy.ast.Variable;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.modules.groovy.editor.NbUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
@@ -158,7 +157,11 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
     }
 
     
-        /**
+
+
+
+
+/**
      * 
      */
     class JavaMethodItem extends GroovyCompletionItem {
@@ -192,10 +195,10 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            
+            // FIXME
             String retType = NbUtilities.stripPackage(returnType);
 
-            formatter.appendHtml(retType);
+            formatter.appendText(retType);
 
             return formatter.getText();
         }
@@ -215,11 +218,9 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
         public ElementHandle getElement() {
             return null;
         }
+
+
     }
-    
-    
-    
-    
     class MethodItem extends GroovyCompletionItem {
 
         MetaMethod method;
@@ -296,7 +297,7 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
             String retType = method.getReturnType().toString();
             retType = NbUtilities.stripPackage(retType);
 
-            formatter.appendHtml(retType);
+            formatter.appendText(retType);
 
             return formatter.getText();
         }

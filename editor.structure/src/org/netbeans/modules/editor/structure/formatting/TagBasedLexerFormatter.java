@@ -644,7 +644,10 @@ public abstract class TagBasedLexerFormatter {
         
         return true;
     }
-    
+
+    private String formatterName(){
+        return getClass().getSimpleName();
+    }
     
     private class FormattingTask implements Runnable{
         private Context context;
@@ -897,7 +900,7 @@ public abstract class TagBasedLexerFormatter {
                 }
 
                 buff.append("\n-------------\n"); //NOI18N
-                logger.fine(getClass().getName() + ":\n" + buff);
+                logger.fine(formatterName() + ":\n" + buff);
             }
         }
     }

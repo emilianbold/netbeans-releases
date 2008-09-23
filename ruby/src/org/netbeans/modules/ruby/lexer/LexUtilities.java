@@ -617,18 +617,6 @@ public class LexUtilities {
         return balance;
     }
 
-    public static int getLineIndent(BaseDocument doc, int offset) {
-        return GsfUtilities.getLineIndent(doc, offset);
-    }
-
-    public static void indent(StringBuilder sb, int indent) {
-        GsfUtilities.indent(sb, indent);
-    }
-
-    public static String getIndentString(int indent) {
-        return GsfUtilities.getIndentString(indent);
-    }
-
     /**
      * Return true iff the line for the given offset is a Ruby comment line.
      * This will return false for lines that contain comments (even when the

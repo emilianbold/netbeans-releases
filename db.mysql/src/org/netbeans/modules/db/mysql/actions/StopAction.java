@@ -40,12 +40,11 @@ package org.netbeans.modules.db.mysql.actions;
 
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.mysql.impl.StopManager;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 
 /**
@@ -80,7 +79,7 @@ public class StopAction extends CookieAction {
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
         
-        return server != null && server.isConnected();
+        return server != null && server.checkRunning(1000);
     }
 
     @Override
@@ -105,15 +104,7 @@ public class StopAction extends CookieAction {
             path = server.getStopPath();
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    server.stop();
-                } catch ( DatabaseException dbe ) {
-                    Utils.displayError(Utils.getMessage("MSG_UnableToStopServer"), dbe);
-                }
-            }
-        });
+            StopManager.getDefault().stop(server);
     }
     
     @Override

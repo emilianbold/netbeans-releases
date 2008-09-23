@@ -79,7 +79,7 @@ public class ConnectionProcessor implements Runnable {
             conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
         } catch (SQLException e) {
             conn = null;
-            LOGGER.log(Level.INFO, null, e);
+            LOGGER.log(Level.FINE, null, e);
             throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"), e);
         }
     }

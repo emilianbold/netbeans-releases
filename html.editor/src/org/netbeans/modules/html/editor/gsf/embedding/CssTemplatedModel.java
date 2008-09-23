@@ -217,13 +217,10 @@ public class CssTemplatedModel extends CssModel {
                                         String selectorListText = buff.substring(from, curlyBracketIndex);
                                         int idx = selectorListText.indexOf(TEMPLATING);
                                         if(idx >= 0) {
-                                            StringBuilder fixedText = new StringBuilder(selectorListText);
-                                            clear(fixedText, idx, idx + TEMPLATING.length());
-                                            clearAndWrite(buff, from, curlyBracketIndex, fixedText.toString());
-                                            cleared[0] = true;
-                                        } else {
-                                            //probably not necessary?!?! should be covered by the 'true' if block
-                                            clearAndWrite(buff, from, curlyBracketIndex, FIXED_SELECTOR);
+                                            StringBuilder text = new StringBuilder(selectorListText);
+                                            //remove all semicolons in the text - just the generated identifier(s) will be left
+                                            String fixedText = text.toString().replace(';', ' ');
+                                            clearAndWrite(buff, from, curlyBracketIndex, fixedText);
                                             cleared[0] = true;
                                         }
                                     }

@@ -96,7 +96,8 @@ public final class JavadocHintProvider extends AbstractHint {
         Preferences pref = getPreferences(null);
         boolean createJavadocForNonPublic = pref.getBoolean(AVAILABILITY_KEY + true, false);
         boolean correctJavadocForNonPublic = pref.getBoolean(AVAILABILITY_KEY + false, false);
-        boolean isPubliclyA11e = AccessibilityQuery.isPubliclyAccessible(javac.getFileObject().getParent());
+        Boolean publiclyAccessible = AccessibilityQuery.isPubliclyAccessible(javac.getFileObject().getParent());
+        boolean isPubliclyA11e = publiclyAccessible == null ? true : publiclyAccessible;
 
         if (createJavadocKind && !isPubliclyA11e && !createJavadocForNonPublic)
             return null;
