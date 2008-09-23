@@ -76,7 +76,6 @@
 			<tocitem text="Creating Packages" target="uml_tasks_packages_creating" />
 			<tocitem text="Renaming Packages" target="uml_tasks_packages_renaming" />
 			<tocitem text="Deleting Packages" target="uml_tasks_packages_deleting" />
-			<tocitem text="Changing Package Element Display" target="uml_tasks_packages_changing_symbol_display" />
 		</tocitem>
 		<tocitem text="Working With Diagrams and Elements" target="uml_diagrams_ww_diagrams_elements">
 			<tocitem text="Creating Diagrams" target="uml_diagrams_creating_diagrams">
