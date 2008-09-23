@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -235,7 +236,7 @@ public final class VarTypeResolver {
 
             @Override
             public void visit(MethodInvocation node) {
-                int offset = anchor;                
+                int offset = anchor;
                 if ((offset != (-1) && offset >= node.getStartOffset())) {
                     if (isValidBlock(path)) {
 
@@ -274,7 +275,14 @@ public final class VarTypeResolver {
                                         assignments.put(leftVarName, Union2.<Variable, String>createFirst((Variable) rightHandSide));
                                     }
                                 } else if (rightHandSide instanceof ClassInstanceCreation) {
-                                    assignments.put(leftVarName, Union2.<Variable, String>createSecond(CodeUtils.extractClassName((ClassInstanceCreation) rightHandSide)));
+                                    ClassInstanceCreation clsInstanceCreation = (ClassInstanceCreation) rightHandSide;
+                                    ClassName className = clsInstanceCreation.getClassName();
+                                    Expression expr = className.getName();
+                                    if (expr instanceof Identifier) {
+                                        assignments.put(leftVarName, Union2.<Variable, String>createSecond(((Identifier) expr).getName()));
+                                    } else {
+                                        assignments.put(leftVarName, null);
+                                    }
                                 } else {
                                     String typeName = null;
                                     if (rightHandSide instanceof VariableBase) {
