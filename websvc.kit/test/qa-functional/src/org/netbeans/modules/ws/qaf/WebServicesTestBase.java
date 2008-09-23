@@ -38,12 +38,14 @@
  */
 package org.netbeans.modules.ws.qaf;
 
+import java.awt.Container;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.jellytools.Bundle;
@@ -59,6 +61,7 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -124,7 +127,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                     //Java Web
                     return Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web");
                 case EJB:
-                     //Java EE
+                    //Java EE
                     return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle", "Templates/Project/J2EE");
                 case APPCLIENT:
                     //Java EE
@@ -584,19 +587,28 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     protected void dumpOutput() throws IOException {
         OutputOperator oo = OutputOperator.invoke();
         oo.requestFocus();
-        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(oo);
-        for (int i = 0; i < jtpo.getTabCount(); i++) {
-            String tabTitle = jtpo.getTitleAt(i);
-            jtpo.selectPage(i);
-            OutputTabOperator oto = null;
-            if (tabTitle.indexOf("<html>") < 0) { //NOI18N
-                oto = new OutputTabOperator(tabTitle.trim());
-            } else {
-                oto = new OutputTabOperator(tabTitle.substring(9, 19).trim());
+        JTabbedPaneOperator jtpo = null;
+        if (null != JTabbedPaneOperator.findJTabbedPane((Container) oo.getSource(), ComponentSearcher.getTrueChooser(""))) {
+            jtpo = new JTabbedPaneOperator(oo);
+        }
+        if (jtpo != null) {
+            for (int i = 0; i < jtpo.getTabCount(); i++) {
+                String tabTitle = jtpo.getTitleAt(i);
+                jtpo.selectPage(i);
+                OutputTabOperator oto = null;
+                if (tabTitle.indexOf("<html>") < 0) { //NOI18N
+                    oto = new OutputTabOperator(tabTitle.trim());
+                } else {
+                    oto = new OutputTabOperator(tabTitle.substring(9, 19).trim());
+                }
+                oto.requestFocus();
+                writeToFile(oto.getText(),
+                        new File(getWorkDir(), tabTitle.trim().replace(' ', '_') + ".txt")); //NOI18N
             }
-            oto.requestFocus();
+        } else {
+            OutputTabOperator oto = oo.getOutputTab(""); //NOI18N
             writeToFile(oto.getText(),
-                    new File(getWorkDir(), tabTitle.trim().replace(' ', '_') + ".txt")); //NOI18N
+                    new File(getWorkDir(), "default_out.txt")); //NOI18N
         }
     }
 

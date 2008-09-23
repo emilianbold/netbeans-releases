@@ -42,6 +42,7 @@ public enum SourceCategory {
     GRAILSAPP_TAGLIB("grails-app/taglib", "create-tag-lib"),
     GRAILSAPP_UTILS("grails-app/utils", null),
     GRAILSAPP_VIEWS("grails-app/views", "generate-views"),
+    PLUGINS("plugins", null),
     TEST_INTEGRATION("test/integration", "create-integration-test"),
     TEST_UNIT("test/unit", "create-unit-test"),
     SCRIPTS("scripts", "create-script"),

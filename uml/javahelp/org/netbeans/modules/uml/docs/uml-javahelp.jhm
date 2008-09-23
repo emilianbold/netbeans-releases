@@ -40,6 +40,7 @@
 	<mapID target="uml_basics_documenting_objects" url="basics/documenting_objects.html"/>
 	<mapID target="uml_basics_navigation_windows" url="basics/navigation_windows.html"/>
 	<mapID target="uml_basics_palette" url="basics/palette.html"/>
+	<mapID target="uml_basics_context_palette" url="basics/context_palette.html"/>
 	<mapID target="uml_basics_properties_window" url="basics/properties_window.html"/>
 	<mapID target="uml_basics_source_editor" url="basics/source_editor.html"/>
 	<mapID target="uml_basics_toolbars" url="basics/toolbars.html"/>

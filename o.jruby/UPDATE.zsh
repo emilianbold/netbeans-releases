@@ -33,6 +33,7 @@ NB=$NBHGHOME/nbbuild/netbeans/bin/netbeans
 NATIVERUBY=$NATIVERUBYHOME/bin/ruby
 SCRATCHFILE=/tmp/native.zip
 USERDIR=/tmp/preindexing
+TMP_BINARIES=/tmp/binaries-list
 
 #############################################################################################
 # No user-configurable parts beyond this point...
@@ -125,3 +126,21 @@ find . -name "netbeans-index-*javascript*.zip"
 #find . -name "netbeans-index-*groovy*.zip" -exec rm {} \;
 #zip -r $NBHGHOME/javascript.editing/external/preindexed-native.zip preindexed-javascript/
 fi
+
+
+
+
+# Update binaries-list -- manual upload is still necessary!
+# Ruby
+rm -f $TMP_BINARIES
+cat $JR/ruby.platform/external/binaries-list | sed '/preindexed.zip/d' | sed '/preindexed-native.zip/d' > $TMP_BINARIES
+echo `openssl dgst -sha1 $NBHGHOME/ruby.platform/external/preindexed.zip | awk '{ print toupper($2) }'` preindexed.zip >> $TMP_BINARIES
+echo `openssl dgst -sha1 $NBHGHOME/ruby.platform/external/preindexed-native.zip | awk '{ print toupper($2) }'` preindexed-native.zip >> $TMP_BINARIES
+mv $TMP_BINARIES $JR/ruby.platform/external/binaries-list
+
+# JavaScript
+rm -f $TMP_BINARIES
+cat $JR/javascript.editing/external/binaries-list | sed '/preindexed.zip/d' > $TMP_BINARIES
+echo `openssl dgst -sha1 $NBHGHOME/javascript.editing/external/preindexed.zip | awk '{ print toupper($2) }'` preindexed.zip >> $TMP_BINARIES
+mv $TMP_BINARIES $JR/javascript.editing/external/binaries-list
+

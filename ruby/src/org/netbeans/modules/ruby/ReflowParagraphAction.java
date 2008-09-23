@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
@@ -341,7 +342,7 @@ public class ReflowParagraphAction extends BaseAction {
             sb.setLength(0);
             final int start = range.getStart();
             final int end = range.getEnd();
-            indent = LexUtilities.getLineIndent(doc, start);
+            indent = GsfUtilities.getLineIndent(doc, start);
 
             int offset = start;
             boolean foundCaret = false;
@@ -563,7 +564,7 @@ public class ReflowParagraphAction extends BaseAction {
 
         private void startComment() {
             if (!documentation) {
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("# ");
             }
         }
@@ -639,7 +640,7 @@ public class ReflowParagraphAction extends BaseAction {
             int oldOffset = sb.length();
             startComment();
             if (inList && indentedList) {
-                LexUtilities.indent(sb, listIndentation);
+                sb.append(IndentUtils.createIndentString(doc, listIndentation));
             }
             column += sb.length() - oldOffset;
             int maxWidth = rightMargin;
@@ -666,7 +667,7 @@ public class ReflowParagraphAction extends BaseAction {
                     oldOffset = sb.length();
                     startComment();
                     if (inList) {
-                        LexUtilities.indent(sb, listIndentation);
+                        sb.append(IndentUtils.createIndentString(doc, listIndentation));
                     }
                     //sb.append(" "); // NOI18N
                     column = sb.length() - oldOffset;

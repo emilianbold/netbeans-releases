@@ -1,0 +1,8 @@
+for:OTHER:[]:ESCAPED{for}:
+h product.title:OTHER:[]:ESCAPED{h product.title}:
+h product.description:OTHER:[]:ESCAPED{h product.description}:
+h product.image_url:OTHER:[]:ESCAPED{h product.image_url}:
+link_to:OTHER:[]:ESCAPED{link_to}:
+<% %>:OTHER:[]:ESCAPED{<% %>}:
+h :OTHER:[]:ESCAPED{h }:
+end:OTHER:[]:ESCAPED{end}:

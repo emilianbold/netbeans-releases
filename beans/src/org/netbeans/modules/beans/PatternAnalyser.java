@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -96,6 +98,8 @@ public final class PatternAnalyser {
     final AtomicBoolean canceled = new AtomicBoolean();
     /** deep introspection analyzes also super classes; useful for bean info*/
     private boolean deepIntrospection = false;
+
+    final static Logger LOG = Logger.getLogger(PatternAnalyser.class.getName());
 
     public PatternAnalyser( FileObject fileObject, BeanPanelUI ui ) {
         this(fileObject, ui, false);
@@ -361,7 +365,7 @@ public final class PatternAnalyser {
         }
         catch (IntrospectionException ex) {
             // PropertyPattern constructor found some differencies from design patterns.
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, ex.getMessage(), ex);
             pp = null;
         }
 

@@ -42,8 +42,6 @@
 package org.openide.util.actions;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.Reference;
@@ -99,7 +97,7 @@ public class CallbackSystemActionTest extends NbTestCase {
     }
 
     protected int timeOut() {
-        return 5000;
+        return 11000; // cf. SimpleCallbackAction.waitInstancesZero
     }
     
     protected boolean runInEQ() {
