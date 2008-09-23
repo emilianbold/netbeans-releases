@@ -261,7 +261,7 @@ public final class IncludePathUiSupport {
                     if (f.isAbsolute()) {
                         return f.getAbsolutePath();
                     }
-                    return FileUtil.toFile(projectFolder.getFileObject(item.getFilePath())).getAbsolutePath();
+                    return PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), item.getFilePath()).getAbsolutePath();
                     //break;
             }
         }

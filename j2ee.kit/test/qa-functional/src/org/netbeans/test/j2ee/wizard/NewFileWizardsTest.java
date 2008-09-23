@@ -52,6 +52,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -367,7 +368,8 @@ public class NewFileWizardsTest extends JellyTestCase {
         Project p = (hasMoreSrcRoots)
                 ? J2eeProjectSupport.getProject(new File(prjRoot), ".")
                 : J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
-        NewFileWizardOperator nfwo = WizardUtils.createNewFile(p, "Enterprise", type);
+        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
+        NewFileWizardOperator nfwo = WizardUtils.createNewFile(p, category, type);
         NewFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 ejbName, ejbPkg, srcRoot);
         if (type.equals("Message-Driven Bean")) {
@@ -427,7 +429,7 @@ public class NewFileWizardsTest extends JellyTestCase {
                 ? J2eeProjectSupport.getProject(new File(prjRoot), ".")
                 : J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
         String type = (caching) ? "Caching Service Locator" : "Service Locator";
-        String category = "Enterprise";
+        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
         if (prjRoot.startsWith(DEF_WEB_MOD) || prjRoot.startsWith(getMultiWebPath())) {
             category = "Web";
         }

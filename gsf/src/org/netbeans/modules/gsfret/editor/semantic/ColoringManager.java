@@ -165,7 +165,7 @@ public final class ColoringManager {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.get(mimeType)).lookup(FontColorSettings.class);
         
         if (fcs == null) {
-            //in tests:
+            //in tests (or possibly some other condition - see issue #137797)
             return AttributesUtilities.createImmutable();
         }
         

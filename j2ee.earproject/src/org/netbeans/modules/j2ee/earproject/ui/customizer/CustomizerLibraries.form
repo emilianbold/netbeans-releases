@@ -23,7 +23,7 @@
                   <Group type="102" attributes="0">
                       <Component id="sharedLibrariesLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="librariesLocation" pref="301" max="32767" attributes="2"/>
+                      <Component id="librariesLocation" pref="333" max="32767" attributes="2"/>
                   </Group>
                   <Component id="jScrollPane2" pref="414" max="32767" attributes="0"/>
               </Group>
@@ -167,7 +167,7 @@
     <Component class="javax.swing.JButton" name="jButtonMoveDown">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle.properties" key="LBL_CustomizeCompile_Classpath_MoveUp_JButton" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle.properties" key="LBL_CustomizeCompile_Classpath_MoveDown_JButton" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

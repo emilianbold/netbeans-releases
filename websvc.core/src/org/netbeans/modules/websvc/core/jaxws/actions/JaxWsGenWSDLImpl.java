@@ -41,6 +41,7 @@ package org.netbeans.modules.websvc.core.jaxws.actions;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.ProjectFileExplorer;
@@ -100,8 +101,9 @@ public class JaxWsGenWSDLImpl implements JaxWsGenWSDLCookie {
                 PropertyEvaluator evaluator = helper.getStandardPropertyEvaluator();
                 String buildGenDir = evaluator.evaluate(propValue);
                 String relativePath = buildGenDir + File.separator + "wsgen" + File.separator + "service" + File.separator + "resources"; //NOI18N
+                relativePath = Pattern.compile("\\\\").matcher(relativePath).replaceAll("/");   //relativePath  should not have backslashes
                 FileObject wsdlDir = project.getProjectDirectory().getFileObject(relativePath);
-                if (wsdlDir != null) {
+                if (wsdlDir != null && wsdlDir.getChildren().length > 0) {
                     FileObject[] wsdlArtifacts = wsdlDir.getChildren();
                     FileObject selectedFolder = projectExplorer.getSelectedFolder().getPrimaryFile();
                     for (int i = 0; i < wsdlArtifacts.length; i++) {
@@ -111,7 +113,7 @@ public class JaxWsGenWSDLImpl implements JaxWsGenWSDLCookie {
                             FileObject testFO = selectedFolder.getFileObject(wsdlArtifact.getNameExt());
                             if (testFO != null) {
                                 NotifyDescriptor.Confirmation notifyDescriptor =
-                                        new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsGenWSDLImpl.class, "MSG_FILE_EXISTS", testFO.getNameExt(), 
+                                        new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsGenWSDLImpl.class, "MSG_FILE_EXISTS", testFO.getNameExt(),
                                         selectedFolder.getName()), NotifyDescriptor.YES_NO_OPTION);   //NOI18N
                                 DialogDisplayer.getDefault().notify(notifyDescriptor);
                                 if (notifyDescriptor.getValue() == NotifyDescriptor.YES_OPTION) {
@@ -137,7 +139,9 @@ public class JaxWsGenWSDLImpl implements JaxWsGenWSDLCookie {
                         }
                     }
                 } else {
-                    throw new IOException(NbBundle.getMessage(JaxWsGenWSDLImpl.class, "ERROR_WSDL_NOT_FOUND"));  //NOI18N
+                    String mes = NbBundle.getMessage(JaxWsGenWSDLImpl.class, "ERROR_WSDL_NOT_FOUND");
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
                 }
             }
         }

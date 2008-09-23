@@ -41,18 +41,7 @@
 
 package org.netbeans.modules.cnd.editor;
 
-import org.netbeans.editor.Settings;
-import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
-import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsInitializer;
-import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.openide.modules.ModuleInstall;
 
 public class EditorModule extends ModuleInstall {
-
-    /** Module is being opened (NetBeans startup, or enable-toggled) */
-    @Override
-    public void restored() {
-        Settings.addInitializer(new CCSettingsInitializer(CCKit.class));
-	Settings.addInitializer(new CCSettingsInitializer(CKit.class));
-    }
 }

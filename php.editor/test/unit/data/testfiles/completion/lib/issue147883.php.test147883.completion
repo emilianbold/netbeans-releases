@@ -1,0 +1,4 @@
+Code completion result for source line:
+echo $a->|test();
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     test()                          [PUBLIC]   Test147883B
