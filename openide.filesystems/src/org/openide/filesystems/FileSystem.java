@@ -345,7 +345,7 @@ public abstract class FileSystem implements Serializable {
     */
     @Deprecated
     public FileObject find(String aPackage, String name, String ext) {
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
 
         StringBuffer bf = new StringBuffer();
 
@@ -899,7 +899,7 @@ public abstract class FileSystem implements Serializable {
     public static abstract class Environment extends Object {
         /** Deprecated. */
         public Environment() {
-            assert FileUtil.assertDeprecatedMethod();
+            assert false : "Deprecated.";
         }
 
         /** Adds one element to the class path environment variable.
