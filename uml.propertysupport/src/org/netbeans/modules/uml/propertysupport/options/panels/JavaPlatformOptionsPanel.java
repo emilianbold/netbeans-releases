@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,6 +31,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.uml.propertysupport.options.panels;
@@ -92,32 +90,36 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.jLabel2.text")); // NOI18N
 
-        removePrefixCB.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.removePrefixCB.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removePrefixCB, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.removePrefixCB.text")); // NOI18N
         removePrefixCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         capitalizeCB.setSelected(true);
-        capitalizeCB.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.capitalizeCB.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(capitalizeCB, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.capitalizeCB.text")); // NOI18N
         capitalizeCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         collectionsUseGenCB.setSelected(true);
-        collectionsUseGenCB.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.collectionsUseGenCB.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(collectionsUseGenCB, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.collectionsUseGenCB.text")); // NOI18N
         collectionsUseGenCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         displayDupCB.setSelected(true);
-        displayDupCB.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.displayDupCB.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(displayDupCB, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.displayDupCB.text")); // NOI18N
         displayDupCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         nameNavEndsCB.setSelected(true);
-        nameNavEndsCB.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.nameNavEndsCB.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nameNavEndsCB, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.nameNavEndsCB.text")); // NOI18N
         nameNavEndsCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jLabel14.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel14.text_1")); // NOI18N
+        jLabel14.setLabelFor(jTextField4);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel14, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel14.text_1")); // NOI18N
 
-        jLabel13.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel13.text_1")); // NOI18N
+        jLabel13.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel13, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel13.text_1")); // NOI18N
 
-        jLabel12.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel12.text_1")); // NOI18N
+        jLabel12.setLabelFor(jTextField3);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel12, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel12.text_1")); // NOI18N
 
-        jLabel11.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel11.text_1")); // NOI18N
+        jLabel11.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel11, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel11.text_1")); // NOI18N
 
         jTextField4.setText("set"); // NOI18N
 
@@ -131,14 +133,14 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
         jLabel3.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.jLabel3.text")); // NOI18N
 
         createAccCB.setSelected(true);
-        createAccCB.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.createAccCB.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createAccCB, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.createAccCB.text")); // NOI18N
         createAccCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         createConCB.setSelected(true);
-        createConCB.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.createConCB.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createConCB, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.createConCB.text")); // NOI18N
         createConCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        createFinCB.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.createFinCB.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createFinCB, org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "JavaPlatformOptionsPanel.createFinCB.text")); // NOI18N
         createFinCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         jLabel4.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jLabel4.text_3")); // NOI18N
@@ -254,6 +256,19 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
                 .add(nameNavEndsCB)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        removePrefixCB.getAccessibleContext().setAccessibleDescription(removePrefixCB.getText());
+        capitalizeCB.getAccessibleContext().setAccessibleDescription(capitalizeCB.getText());
+        collectionsUseGenCB.getAccessibleContext().setAccessibleDescription(collectionsUseGenCB.getText());
+        displayDupCB.getAccessibleContext().setAccessibleDescription(displayDupCB.getText());
+        nameNavEndsCB.getAccessibleContext().setAccessibleDescription(nameNavEndsCB.getText());
+        jTextField4.getAccessibleContext().setAccessibleDescription(jLabel14.getText());
+        jTextField2.getAccessibleContext().setAccessibleDescription(jLabel13.getText());
+        jTextField3.getAccessibleContext().setAccessibleDescription(jLabel12.getText());
+        jTextField1.getAccessibleContext().setAccessibleDescription(jLabel1.getText());
+        createAccCB.getAccessibleContext().setAccessibleDescription(createAccCB.getText());
+        createConCB.getAccessibleContext().setAccessibleDescription(createConCB.getText());
+        createFinCB.getAccessibleContext().setAccessibleDescription(createFinCB.getText());
     }// </editor-fold>//GEN-END:initComponents
 
         
