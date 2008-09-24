@@ -251,7 +251,7 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
-        <folder name="org-netbeans-modules-ant-freefrom">
+        <folder name="org-netbeans-modules-ant-freeform">
             <folder name="Customizer">
                 <file name="Formatting.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel$Factory"/>
