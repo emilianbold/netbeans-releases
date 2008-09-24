@@ -19,13 +19,8 @@ CLASS      IllegalThreadStateException                null
 CLASS      IncompatibleClassChangeError               null
 CLASS      IndexOutOfBoundsException                  null
 CLASS      Inet4Address                               null
-CLASS      Inet4AddressImpl                           null
 CLASS      Inet6Address                               null
-CLASS      Inet6AddressImpl                           null
 CLASS      InetAddress                                null
-CLASS      InetAddressContainer                       null
-CLASS      InetAddressImpl                            null
-CLASS      InetAddressImplFactory                     null
 CLASS      InetSocketAddress                          null
 CLASS      InheritableThreadLocal                     null
 CLASS      InputMismatchException                     null
