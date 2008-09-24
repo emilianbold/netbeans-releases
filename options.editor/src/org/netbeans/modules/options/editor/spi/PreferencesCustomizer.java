@@ -108,6 +108,34 @@ public interface PreferencesCustomizer {
      * The <code>PreferencesCustomizer</code> created by the factory is expected to
      * read and write values from the <code>Preferences</code> instance passed to
      * the {@link Factory#create(java.util.prefs.Preferences)} method.
+     *
+     * <p>If you need to show the default 'Tabs And Indents' customizer for your language
+     * you can use the following XML layer
+     * registration.
+     *
+     * <pre style="background-color: rgb(255, 255, 153);">
+     * &lt;folder name="OptionsDialog"&gt;
+     *   &lt;folder name="Editor"&gt;
+     *     &lt;folder name="Formatting"&gt;
+     *       &lt;folder name="your"&gt;
+     *         &lt;folder name="mimetype"&gt;
+     *           &lt;file name="TabsAndIndents.instance"&gt;
+     *             &lt;attr name="instanceOf" methodvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/&gt;
+     *             &lt;attr name="instanceCreate" methodvalue="org.netbeans.modules.options.editor.spi.CustomizerFactories.createDefaultTabsAndIndentsCustomizerFactory"/&gt;
+     *             &lt;attr name="previewTextFile" stringvalue="file/with/preview/text"/&gt;
+     *
+     *             &lt;attr name="position" intvalue="100"/&gt;
+     *           &lt;/file&gt;
+     *         &lt;/folder&gt;
+     *       &lt;/folder&gt;
+     *     &lt;/folder&gt;
+     *   &lt;/folder&gt;
+     * &lt;/folder&gt;</pre>
+     *
+     * <p>The <code>previewTextFile</code> attribute is optional. If it is not specified the
+     * preview text is loaded from <code>OptionsDialog/PreviewExamples/your/mimetype</code> file.
+     * If the attribute is specified it should contain the full path to the text preview file
+     * on the system filesystem.
      */
     public static interface Factory {
 
