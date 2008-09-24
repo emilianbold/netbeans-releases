@@ -101,7 +101,7 @@ public final class LookupProviderSupport {
     }
     
     static class DelegatingLookupImpl extends ProxyLookup implements LookupListener {
-        private Lookup baseLookup;
+        private final Lookup baseLookup;
         private Lookup.Result<LookupProvider> providerResult;
         private LookupListener providerListener;
         private List<LookupProvider> old = Collections.emptyList();
@@ -110,7 +110,7 @@ public final class LookupProviderSupport {
         private Lookup.Result<LookupMerger> mergers;
         private Reference<LookupListener> listenerRef;
         //#68623: the proxy lookup fires changes only if someone listens on a particular template:
-        private List<Lookup.Result<?>> results = new ArrayList<Lookup.Result<?>>();
+        private final List<Lookup.Result<?>> results = new ArrayList<Lookup.Result<?>>();
         
         public DelegatingLookupImpl(Lookup base, String path) {
             this(base, Lookups.forPath(path), path);
@@ -126,6 +126,7 @@ public final class LookupProviderSupport {
             doDelegate(providerResult.allInstances());
             providerListener = new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
+                    // XXX this may need to be run asynchronously; deadlock-prone
                     doDelegate(providerResult.allInstances());
                 }
             };
@@ -152,7 +153,8 @@ public final class LookupProviderSupport {
         }
         
         
-        private synchronized void doDelegate(Collection<? extends LookupProvider> providers) {
+        private void doDelegate(Collection<? extends LookupProvider> providers) {
+            synchronized (results) { // do not synch on this; conflicts with ProxyLookup synch
             //unregister listeners from the old results:
             for (Lookup.Result<?> r : results) {
                 r.removeLookupListener(this);
@@ -204,6 +206,7 @@ public final class LookupProviderSupport {
             lkp = Lookups.exclude(lkp, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
             Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
             setLookups(fixed, lkp);
+        }
         }
     }
     
