@@ -77,7 +77,7 @@ public class ForStatement extends Statement {
         this.body = action;
     }
 
-    public ForStatement(int start, int end, List initializations, List conditions, List increasements, Statement action) {
+    public ForStatement(int start, int end, List<Expression> initializations, List<Expression> conditions, List<Expression> increasements, Statement action) {
         this(start, end,
                 initializations == null ? null : (Expression[]) initializations.toArray(new Expression[initializations.size()]),
                 conditions == null ? null : (Expression[]) conditions.toArray(new Expression[conditions.size()]),

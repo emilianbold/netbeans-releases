@@ -93,7 +93,7 @@ public class PHPIndex {
     private static final Set<String> TERMS_CONST = Collections.singleton(PHPIndexer.FIELD_CONST);
     private static final Set<String> TERMS_CLASS = Collections.singleton(PHPIndexer.FIELD_CLASS);
     private static final Set<String> TERMS_VAR = Collections.singleton(PHPIndexer.FIELD_VAR);
-    private static final Set<String> TERMS_ALL = new HashSet();
+    private static final Set<String> TERMS_ALL = new HashSet<String>();
 
     {
         TERMS_ALL.add(PHPIndexer.FIELD_BASE);
@@ -844,7 +844,7 @@ public class PHPIndex {
 
     public Collection<String>getDirectIncludes(PHPParseResult context, String filePath){
         assert !filePath.startsWith("file:");
-        ArrayList includes = new ArrayList();
+        ArrayList<String> includes = new ArrayList<String>();
         final Set<SearchResult> result = new HashSet<SearchResult>();
         search("filename", "file:" + filePath, NameKind.EXACT_NAME, result, ALL_SCOPE, TERMS_BASE); //NOI18N
 

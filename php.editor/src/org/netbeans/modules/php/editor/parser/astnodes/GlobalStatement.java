@@ -63,7 +63,7 @@ public class GlobalStatement extends Statement {
         }
     }
 
-    public GlobalStatement(int start, int end, List variables) {
+    public GlobalStatement(int start, int end, List<Variable> variables) {
         this(start, end, variables == null ? null : (Variable[]) variables.toArray(new Variable[variables.size()]));
     }
 

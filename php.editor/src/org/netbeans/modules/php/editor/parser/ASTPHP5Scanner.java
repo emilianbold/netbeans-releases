@@ -1749,6 +1749,7 @@ public class ASTPHP5Scanner implements Scanner {
    * @return      the next token
    * @exception   java.io.IOException  if any I/O-Error occurs
    */
+  @SuppressWarnings("fallthrough")
   public Symbol next_token() throws java.io.IOException {
     int zzInput;
     int zzAction;
