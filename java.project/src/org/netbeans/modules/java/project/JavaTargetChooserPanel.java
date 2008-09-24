@@ -418,11 +418,14 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
         
         // target package should be writable
-        File targetPackage = new File (FileUtil.toFile(targetFolder), folderName);
-        if (! targetPackage.canWrite ()) {
+        File targetPackage = folderName != null ? new File (FileUtil.toFile (targetFolder), folderName) : FileUtil.toFile (targetFolder);
+        if (targetPackage != null) {
+            if (targetPackage.exists () && ! targetPackage.canWrite ()) {
+                return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_is_readonly"); // NOI18N
+            }
+        } else if (! targetFolder.canWrite ()) {
             return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_is_readonly"); // NOI18N
         }
-        
         
         if (existFileName(targetFolder, relFileName)) {
             return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_file_already_exist", newObjectNameToDisplay); // NOI18N
