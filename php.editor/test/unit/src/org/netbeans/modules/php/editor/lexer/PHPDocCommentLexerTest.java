@@ -100,5 +100,10 @@ public class PHPDocCommentLexerTest extends NbTestCase {
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE, "@property-write");
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " boolean death");
     }
-    
+
+    public void testIssue144337() throws Exception {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText(" @", PHPDocCommentTokenId.language());
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "@");
+    }
 }
