@@ -297,6 +297,19 @@ public class Commands {
         }
     
     };
+    /* set up keepSessions property if needed
+     * can return null is nothing has to be done
+     * *
+     */
+    private static String getKeepSessionsPropertyValue(){
+        boolean keepSessions =false;//need to read this from global property
+        String ret=null;
+        if (keepSessions){
+            ret = "properties=keepSessions"+ServerCommand.EQUAL_NONQUOTED+"true";//NOI18N
+        }
+        return ret;
+
+    }
     
     /**
      * Command to deploy a directory
@@ -318,6 +331,10 @@ public class Commands {
                 cmd.append(contextRoot);
             }
             cmd.append(PARAM_SEPARATOR + "force=true");
+            String keepSessions = getKeepSessionsPropertyValue();
+            if (keepSessions != null) {
+                cmd.append(PARAM_SEPARATOR + keepSessions);
+            }
             query = cmd.toString();
         }
         
@@ -337,6 +354,11 @@ public class Commands {
             if(contextRoot != null && contextRoot.length() > 0) {
                 cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
                 cmd.append(contextRoot);
+            }
+
+            String keepSessions = getKeepSessionsPropertyValue();
+            if (keepSessions != null) {
+                cmd.append(PARAM_SEPARATOR + keepSessions);
             }
             query = cmd.toString();
         }
