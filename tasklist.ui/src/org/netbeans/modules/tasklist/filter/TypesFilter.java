@@ -121,5 +121,7 @@ class TypesFilter {
     
     private void addDefaultTypes() {
         enabledProviders.add("org.netbeans.modules.java.source.tasklist.JavaTaskProvider"); //NOI18N
+        enabledProviders.add("org.netbeans.modules.tasklist.todo.TodoTaskScanner"); //NOI18N
+        enabledProviders.add("org.netbeans.modules.gsf.GsfTaskProvider"); //NOI18N
     } 
 } 

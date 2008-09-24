@@ -93,7 +93,8 @@ public class TaskTest extends NbTestCase {
     public void testWaitWithTimeOutReturnsImmediatellyOnFinishedTasks () throws Exception {
         assertTrue ("Was successfully finished", Task.EMPTY.waitFinished (0));
     }
-    
+
+    @RandomlyFails
     public void testWaitWithTimeOutReturnsAfterTimeOutWhenTheTaskIsNotComputedAtAll () throws Exception {
         long time = System.currentTimeMillis ();
         Task t = new Task (new R ());

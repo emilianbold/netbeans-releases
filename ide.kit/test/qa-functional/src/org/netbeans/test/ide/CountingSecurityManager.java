@@ -41,14 +41,18 @@ package org.netbeans.test.ide;
 
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.security.Permission;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import junit.framework.Assert;
 
@@ -77,6 +81,12 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         pw = new PrintWriter(msgs);
         CountingSecurityManager.prefix = prefix;
         allowed = allowedFiles;
+    }
+
+    static void assertReflection(int maxCount, String whitelist) {
+        System.setProperty("counting.reflection.whitelist", whitelist);
+        System.getSecurityManager().checkMemberAccess(null, maxCount);
+        System.getProperties().remove("counting.reflection.whitelist");
     }
 
     @Override
@@ -153,6 +163,156 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             pw.println("checkRead2: " + file);
         }
          */
+    }
+
+    private void assertMembers(int cnt) {
+        String res = System.getProperty("counting.reflection.whitelist");
+        if (res == null) {
+            Assert.fail("Please provide whitelist: " + res);
+        }
+        Properties okAccess = new Properties();
+        try {
+            okAccess.load(CountingSecurityManager.class.getResourceAsStream(res));
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
+        }
+
+        int myCnt = 0;
+        StringWriter w = new StringWriter();
+        PrintWriter p = new PrintWriter(w);
+        Set<Who> m;
+        synchronized (members) {
+            m = new TreeSet<Who>(members.values());
+        }
+        for (Who wh : m) {
+            if (wh.isIgnore()) {
+                continue;
+            }
+            String howMuchIsOK = okAccess.getProperty(wh.clazz.getName());
+            if (howMuchIsOK != null && Integer.parseInt(howMuchIsOK) >= wh.count) {
+                continue;
+            }
+
+                myCnt += wh.count;
+            wh.printStackTrace(p);
+            wh.count = 0;
+        }
+        if (myCnt > cnt) {
+            Assert.fail("Expected at much " + cnt + " reflection efforts, but was: " + myCnt + "\n" + w);
+        }
+    }
+
+    private final Map<Class,Who> members = Collections.synchronizedMap(new HashMap<Class, Who>());
+    @Override
+    public void checkMemberAccess(Class<?> clazz, int which) {
+        if (clazz == null) {
+            assertMembers(which);
+        }
+
+        Who w = members.get(clazz);
+        if (w == null) {
+            w = new Who(clazz);
+            members.put(clazz, w);
+        }
+        w.count++;
+    }
+
+    private static class Who extends Exception implements Comparable<Who> {
+        int hashCode;
+        final Class<?> clazz;
+        int count;
+
+        public Who(Class<?> who) {
+            super("");
+            this.clazz = who;
+        }
+
+        @Override
+        public void printStackTrace(PrintWriter s) {
+            s.println(clazz.getName() + "=" + count);
+            super.printStackTrace(s);
+        }
+
+        @Override
+        public int hashCode() {
+            if (hashCode != 0) {
+                return hashCode;
+            }
+            hashCode = clazz.hashCode();
+            for (StackTraceElement stackTraceElement : getStackTrace()) {
+                hashCode = hashCode * 2 + stackTraceElement.hashCode();
+            }
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Who other = (Who) obj;
+            if (this.clazz != other.clazz) {
+                return false;
+            }
+            if (this.hashCode() != other.hashCode()) {
+                return false;
+            }
+            return Arrays.equals(getStackTrace(), other.getStackTrace());
+        }
+
+        public int compareTo(Who o) {
+            if (o == this) {
+                return 0;
+            }
+            if (o.count < this.count) {
+                return -1;
+            }
+            if (o.count > this.count) {
+                return 1;
+            }
+            return this.clazz.getName().compareTo(o.clazz.getName());
+        }
+
+        private boolean isIgnore() {
+            if (clazz.getName().startsWith("sun.reflect.Generated")) {
+                return true;
+            }
+            if (clazz.getName().startsWith("$Proxy")) {
+                return true;
+            }
+            if (clazz.getName().startsWith("org.apache.tools.ant.")) {
+                return true;
+            }
+            if (clazz.getName().startsWith("sun.nio.")) {
+                return true;
+            }
+
+            for (StackTraceElement stackTraceElement : getStackTrace()) {
+                if (stackTraceElement.getClassName().contains("CountingSecurityManager")) {
+                    continue;
+                }
+                if (stackTraceElement.getClassName().equals("java.lang.Class")) {
+                    continue;
+                }
+                if (stackTraceElement.getClassName().equals("org.netbeans.jellytools")) {
+                    // ignore these invocations
+                    return true;
+                }
+                if (stackTraceElement.getClassName().equals("org.openide.util.lookup.MetaInfServicesLookup$P")) {
+                    // ignore these invocations
+                    return true;
+                }
+                if (stackTraceElement.getClassName().equals("org.openide.util.WeakListenerImpl$ListenerReference")) {
+                    // ignore: removeXYZListener is done using reflection
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }
     }
 
     @Override
@@ -232,6 +392,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             return;
         }
         if (cmd.endsWith("/hg")) {
+            return;
+        }
+        if (cmd.endsWith("hg.exe")) {
             return;
         }
 

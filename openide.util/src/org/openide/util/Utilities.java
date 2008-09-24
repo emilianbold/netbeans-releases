@@ -2782,6 +2782,8 @@ widthcheck:  {
      * Presenters for context menu items should <em>not</em> use
      * this method; instead see {@link ContextAwareAction}.
      * @see ContextGlobalProvider
+     * @see ContextAwareAction
+     * @see <a href="http://wiki.netbeans.org/DevFaqActionContextSensitive">NetBeans FAQ</a>
      * @return the context for actions
      * @since 4.10
      */
