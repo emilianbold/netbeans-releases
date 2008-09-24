@@ -55,6 +55,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
@@ -305,7 +306,7 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
             // #132615
             // Insert a special undoable-edit marker that - once undone will release CT editing.
             if (bdoc != null) {
-                bdoc.addUndoableEdit(new TemplateInsertUndoEdit());
+                bdoc.addUndoableEdit(new TemplateInsertUndoEdit(doc));
             }
             
             TextRegion<?> caretTextRegion = null;
@@ -518,12 +519,22 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         return sb.toString();
     }
 
-    private final class TemplateInsertUndoEdit extends AbstractUndoableEdit {
+    private static final class TemplateInsertUndoEdit extends AbstractUndoableEdit {
+        
+        private Document doc;
+        
+        TemplateInsertUndoEdit(Document doc) {
+            assert (doc != null);
+            this.doc = doc;
+        }
 
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            release();
+            CodeTemplateInsertHandler handler = (CodeTemplateInsertHandler) doc.getProperty(CT_HANDLER_DOC_PROPERTY);
+            if (handler != null) {
+                handler.release();
+            }
         }
 
     }
