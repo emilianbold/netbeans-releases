@@ -68,6 +68,7 @@ import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.DatabindingElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.DatabindingElementUI;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.FontEditorElement;
@@ -85,7 +86,7 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public class PropertyEditorResource extends PropertyEditorUserCode implements PropertyEditorElement {
-    //TODO This Map is memory leak!!
+
     private Map<String, DesignComponent> createdComponents;
     private final TypeID componentTypeID;
     private String noneComponentAsText;
@@ -94,6 +95,28 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     private JRadioButton radioButton;
     private PropertyEditorResourceElement perElement;
     private DatabindingElement databindingElement;
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (createdComponents != null) {
+            createdComponents.clear();
+            createdComponents = null;
+        }
+        if (rePanel != null) {
+            rePanel.clean(component);
+            rePanel = null;
+        }
+        radioButton = null;
+        if (perElement instanceof CleanUp) {
+            ((CleanUp) perElement).clean(component);
+        }
+        perElement = null;
+        if (databindingElement != null) {
+            databindingElement.clean(component);
+        }
+        databindingElement = null;
+    }
 
     private PropertyEditorResource(PropertyEditorResourceElement perElement,
             String newComponentAsText,
@@ -164,8 +187,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         perElement.getCustomEdiotrNotification();
         return super.getCustomEditor();
     }
-     
-    
+
     private Map<String, DesignComponent> getComponentsMap() {
         final Map<String, DesignComponent> componentsMap = new TreeMap<String, DesignComponent>();
         if (component == null || component.get() == null) {
@@ -204,6 +226,9 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
+        }
+        if (component == null || getPropertyNames() == null) {
+            return null;
         }
         String databinding = MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0));
         if (databinding != null) {
@@ -433,8 +458,6 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
         }
     }
-    
-    
 
     public JComponent getCustomEditorComponent() {
         return rePanel;

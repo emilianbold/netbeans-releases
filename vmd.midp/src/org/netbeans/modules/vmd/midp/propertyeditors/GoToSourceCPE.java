@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.lang.ref.WeakReference;
@@ -52,6 +51,13 @@ import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
 class GoToSourceCPE extends javax.swing.JPanel {
 
     private WeakReference<DesignComponent> component;
+
+    void cleanUp() {
+        component = null;
+        goToSourceButton = null;
+        noteLabel = null;
+        this.removeAll();
+    }
 
     /** Creates new form GoToSourceCPE */
     public GoToSourceCPE(WeakReference<DesignComponent> component) {
@@ -110,11 +116,8 @@ class GoToSourceCPE extends javax.swing.JPanel {
     private void goToSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goToSourceButtonActionPerformed
         GoToSourceSupport.goToSourceOfComponent(component.get());
 }//GEN-LAST:event_goToSourceButtonActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton goToSourceButton;
     private javax.swing.JLabel noteLabel;
     // End of variables declaration//GEN-END:variables
-    
 }

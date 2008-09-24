@@ -51,6 +51,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.PreviousScreenEventHandlerCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEventHandlerElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory;
 import org.openide.awt.Mnemonics;
@@ -60,7 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class GoToPreviousDisplayableElement implements PropertyEditorEventHandlerElement {
+public class GoToPreviousDisplayableElement implements PropertyEditorEventHandlerElement, CleanUp {
     private JRadioButton radioButton;
     
     public GoToPreviousDisplayableElement() {
@@ -74,7 +75,11 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
                 NbBundle.getMessage(GoToPreviousDisplayableElement.class, 
                         "ACSD_PREV_DISPL")); // NOI18N
     }
-    
+
+    public void clean(DesignComponent component) {
+        radioButton = null;
+    }
+
     public void createEventHandler(DesignComponent eventSource) {
         if (!radioButton.isSelected()) {
             return;

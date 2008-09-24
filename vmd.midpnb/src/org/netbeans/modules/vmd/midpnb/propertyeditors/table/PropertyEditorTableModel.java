@@ -76,6 +76,21 @@ public class PropertyEditorTableModel extends DesignPropertyEditor implements Pr
         return new PropertyEditorTableModel();
     }
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.clean(component);
+            customEditor = null;
+        }
+        values = null;
+        headers = null;
+        if (customEditorPanel == null) {
+            customEditorPanel.removeAll();
+        }
+        this.component = null;
+    }
+
     private void initComponents() {
         customEditor = new TableModelEditorElement();
         customEditor.addPropertyEditorResourceElementListener(this);
