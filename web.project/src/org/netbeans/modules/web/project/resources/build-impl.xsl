@@ -1282,7 +1282,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-main">
-                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,compile-single</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <webproject1:java classname="${{run.class}}"/>
             </target>
