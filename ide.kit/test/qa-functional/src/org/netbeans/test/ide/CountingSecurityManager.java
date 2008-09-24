@@ -394,6 +394,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (cmd.endsWith("/hg")) {
             return;
         }
+        if (cmd.endsWith("hg.exe")) {
+            return;
+        }
 
         super.checkExec(cmd);
         setCnt(getCnt() + 1);
