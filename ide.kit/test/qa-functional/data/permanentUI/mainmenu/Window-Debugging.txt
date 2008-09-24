@@ -10,7 +10,8 @@ Debugging               > Local Variables           L
                           Disassembly               m
                           Registers                 R
                           Memory                    o
-                          HTTP Monitor              H
+                          HTTP Server Monitor       H
+                          HTTP Client Monitor       i
                           ========================
                           BPEL Partner Links        a
                           BPEL Process Instances    P
