@@ -1,0 +1,10 @@
+<xsl:comment>sjmc-init</xsl:comment>
+
+    <target name="sjmc-pre-init" if="cdc-platform.trigger">
+        <condition property="sjmc-platform.trigger">
+            <equals arg1="sjmc" arg2="${{platform.type}}" casesensitive="false"/>
+        </condition>
+    </target>
+    <target name="sjmc-init" depends="sjmc-pre-init" if="sjmc-platform.trigger">
+    </target>
+    

@@ -83,6 +83,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.j2me.cdc.project.execui.MainClassChooser;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
@@ -563,18 +564,17 @@ public class MainClassChooserImpl extends MainClassChooser {
         ClassPath bcp=null;
         if (bootcp != null)
         {
-            StringTokenizer tokens=new StringTokenizer(bootcp,File.pathSeparator);
-            if (tokens.countTokens()>0)
+            String[] items = PropertyUtils.tokenizePath(bootcp);
+            if (items.length >0)
             {
-                FileObject bcpRoots[]=new FileObject[tokens.countTokens()];
+                FileObject bcpRoots[]=new FileObject[items.length];
                 int i=0;
-                for (;tokens.hasMoreTokens();i++)
-                {
-                    FileObject fo=FileUtil.toFileObject(new File(tokens.nextToken()));
+                for (String item : items) {
+                    FileObject fo=FileUtil.toFileObject(FileUtil.normalizeFile(new File(item)));
                     if (FileUtil.isArchiveFile(fo))
-                        bcpRoots[i]=FileUtil.getArchiveRoot(fo);
+                        bcpRoots[i++]=FileUtil.getArchiveRoot(fo);
                     else
-                        bcpRoots[i]=fo;
+                        bcpRoots[i++]=fo;
                 }
 
                 bcp=ClassPathSupport.createClassPath(bcpRoots);
