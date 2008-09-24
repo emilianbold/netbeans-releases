@@ -47,7 +47,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
@@ -205,9 +204,9 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                             Coloring coloring = null;
                             if (isWarning()) {
                                 // Not implemented rspecs: show yellow rather than green
-                                coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.YELLOW);
+                                coloring = new Coloring(null, Color.BLACK, Color.YELLOW);
                             } else {
-                                coloring = new Coloring(SettingsDefaults.defaultFont, Color.BLACK, Color.GREEN);
+                                coloring = new Coloring(null, Color.BLACK, Color.GREEN);
                             }
                             statusBar.setText(StatusBar.CELL_MAIN, message, coloring);
                             return;

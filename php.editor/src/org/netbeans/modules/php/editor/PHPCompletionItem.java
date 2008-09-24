@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,7 +50,7 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.php.editor.PHPCodeCompletion.KeywordCompletionType;
+import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
@@ -64,7 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-abstract class PHPCompletionItem implements CompletionProposal {
+public abstract class PHPCompletionItem implements CompletionProposal {
     private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
     protected static ImageIcon keywordIcon = null;
     protected final CompletionRequest request;
@@ -104,6 +105,10 @@ abstract class PHPCompletionItem implements CompletionProposal {
         return getName();
     }
 
+    public int getSortPrioOverride() {
+        return 0;
+    }
+
     public String getLhsHtml(HtmlFormatter formatter) {
         formatter.appendText(getName());
         return formatter.getText();
@@ -134,15 +139,6 @@ abstract class PHPCompletionItem implements CompletionProposal {
         return null;
     }
 
-    public List<String> getInsertParams() {
-        return null;
-    }
-
-    public String[] getParamListDelimiters() {
-        return new String[]{"(", ")"}; // NOI18N
-
-    }
-
     public String getRhsHtml(HtmlFormatter formatter) {
         if (element.getIn() != null) {
             formatter.appendText(element.getIn());
@@ -171,6 +167,8 @@ abstract class PHPCompletionItem implements CompletionProposal {
     static class KeywordItem extends PHPCompletionItem {
         private String description = null;
         private String keyword = null;
+        private static final List<String> CLS_KEYWORDS =
+                Arrays.asList(PHPCodeCompletion.PHP_CLASS_KEYWORDS);
 
 
         KeywordItem(String keyword, CompletionRequest request) {
@@ -209,6 +207,11 @@ abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public ImageIcon getIcon() {
             return keywordIcon;
+        }
+
+        @Override
+        public boolean isSmart() {
+            return CLS_KEYWORDS.contains(getName()) ? true : super.isSmart();
         }
 
         @Override
@@ -350,21 +353,38 @@ abstract class PHPCompletionItem implements CompletionProposal {
                 builder.append(getName());
                 builder.append("::${cursor}"); //NOI18N
                 return builder.toString();
-
             }
             return super.getCustomInsertTemplate();
         }
 
 
     }
-    
+
+    public static ImageIcon getInterfaceIcon() {
+        return InterfaceItem.icon();
+    }
+
     static class InterfaceItem extends PHPCompletionItem {
+        private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
+        private static ImageIcon INTERFACE_ICON = null;
         InterfaceItem(IndexedInterface iface, CompletionRequest request) {
             super(iface, request);
         }
 
         public ElementKind getKind() {
             return ElementKind.CLASS;
+        }
+
+        private static ImageIcon icon() {
+            if (INTERFACE_ICON == null) {
+                INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
+            }
+            return INTERFACE_ICON;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return icon();
         }
     }
 
@@ -412,7 +432,19 @@ abstract class PHPCompletionItem implements CompletionProposal {
             insertDollarPrefix = false;
         }
     }
-    
+
+    static class ClassConstantItem extends VariableItem {
+        ClassConstantItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CONSTANT;
+        }
+    }
+
+
     static class SpecialFunctionItem extends KeywordItem{
         public SpecialFunctionItem(String fncName, CompletionRequest request) {
             super(fncName, request);
@@ -426,7 +458,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return builder.toString();
         }
     }
-    
+
     static class ReturnItem extends KeywordItem{
         public ReturnItem(CompletionRequest request) {
             super("return", request); //NOI18N
@@ -438,18 +470,31 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
-    //TODO: dummy must show also parameters similar like FunctionItem
-    static class MagicMethodItem extends KeywordItem {
-        public MagicMethodItem(String fncName, CompletionRequest request) {
-            super(fncName, request);
+    static class MagicMethodItem extends FunctionDeclarationItem {
+        public MagicMethodItem(IndexedFunction function, CompletionRequest request) {
+            super(function, request, 0,false);
+        }
+        
+        @Override
+        public boolean isSmart() {
+            return false;
         }
 
         @Override
-        public ImageIcon getIcon() {
-            return null;
+        public String getLhsHtml(HtmlFormatter formatter) {
+            return super.getLhsHtml(formatter);
+        }
+
+        @Override
+        protected boolean emphasisName() {
+            return false;
+        }
+
+        @Override
+        protected String getFunctionBodyForTemplate() {
+            return "${cursor};\n";//NOI18N
         }
     }
-
 
     static class FunctionItem extends PHPCompletionItem {
         private int optionalArgCount = 0;
@@ -498,7 +543,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
 
             formatter.name(kind, true);
 
-            if (getFunction().isResolved()){
+            if (emphasisName()){
                 formatter.emphasis(true);
                 formatter.appendText(getName());
                 formatter.emphasis(false);
@@ -517,7 +562,10 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         }
 
-        @Override
+        protected boolean emphasisName() {
+            return getFunction().isResolved();
+        }
+
         public List<String> getInsertParams() {
             List<String> insertParams = new LinkedList<String>();
             String parameters[] = getFunction().getParameters().toArray(new String[0]);
@@ -586,24 +634,63 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class FunctionDeclarationItem extends FunctionItem {
-        public FunctionDeclarationItem(IndexedFunction function, CompletionRequest request, int optionalArgCount) {
+        private boolean isIface;
+        public FunctionDeclarationItem(IndexedFunction function, CompletionRequest request, int optionalArgCount,boolean isIface) {
             super(function, request, optionalArgCount);
+            this.isIface = isIface;
         }
 
         @Override
-        public String getCustomInsertTemplate() {
+        public final String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
             String modifierStr = getFunction().getModifiersString();
-            String functionSignature = getFunction().getFunctionSignature();
+            final String functionSignature = getFunction().getFunctionSignature();
             if (modifierStr.length() != 0) {
+                modifierStr = modifierStr.replace("abstract","").trim();//NOI18N
                 template.append(modifierStr);
             }
             template.append(" ").append("function");//NOI18N
             template.append(" ").append(functionSignature);//NOI18N
             template.append(" ").append("{\n");//NOI18N
-            template.append("${cursor};\n");//NOI18N
+            template.append(getFunctionBodyForTemplate());//NOI18N
             template.append("}");//NOI18N
             return template.toString();
+        }
+
+        /**
+         * @return body or null
+         */
+        protected String getFunctionBodyForTemplate() {
+            StringBuilder template = new StringBuilder();
+            if (isIface) {
+                template.append("${cursor};\n");//NOI18N
+            } else {
+                String functionSignature = getFunction().getFunctionSignature();
+                template.append("${cursor}parent::"+ functionSignature +";\n");//NOI18N
+            }
+            return template.toString();
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(super.getLhsHtml(formatter));
+            /* TODO: uncomment but first be sure that it really works
+            sb.append(" - ");//NOI18N
+            if (isIface || getFunction().isAbstract()) {
+                sb.append("implement"); //NOI18N
+            } else {
+                sb.append("override"); //NOI18N
+            }
+             */
+            //for now
+            sb.append(' ').append(NbBundle.getMessage(PHPCompletionItem.class, "Generate"));//NOI18N
+            return sb.toString();
+        }
+
+        @Override
+        public boolean isSmart() {
+            return true;
         }
     }
 

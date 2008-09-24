@@ -42,6 +42,7 @@ package org.netbeans.modules.uml.drawingarea.navigator;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
+import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
@@ -90,8 +91,12 @@ public class DiagramNavigatorPanel implements NavigatorPanel, LookupListener
 
     private TopComponent getTopComponent()
     {
-        TopComponent tc = WindowManager.getDefault().findTopComponent("UMLDiagramTopComponent");
-        return tc;
+        TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
+        if (tc instanceof UMLDiagramTopComponent) 
+        {
+            return tc;
+        }
+        return null;
     }
 
     public void panelActivated(Lookup context) 

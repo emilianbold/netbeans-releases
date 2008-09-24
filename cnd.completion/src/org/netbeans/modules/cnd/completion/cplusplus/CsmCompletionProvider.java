@@ -136,7 +136,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         private CsmCompletionQuery.QueryScope queryScope;
 
         Query(int caretOffset, int queryType) {
-            if (TRACE) System.err.println("Query started creating");
+            if (TRACE) System.err.println("Query started creating"); // NOI18N
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
             if ((queryType & COMPLETION_ALL_QUERY_TYPE) != COMPLETION_ALL_QUERY_TYPE) {
@@ -144,7 +144,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             } else {
                 this.queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
             }
-            if (TRACE) System.err.println("Query created " + getTestState());
+            if (TRACE) System.err.println("Query created " + getTestState()); // NOI18N
         }
 
         private String getTestState() {
@@ -165,7 +165,7 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         @Override
         protected void preQueryUpdate(JTextComponent component) {
-            if (TRACE) System.err.println("preQueryUpdate" + getTestState());
+            if (TRACE) System.err.println("preQueryUpdate" + getTestState()); // NOI18N
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
             String mimeType = CsmCompletionUtils.getMimeType(component);
@@ -173,13 +173,13 @@ public class CsmCompletionProvider implements CompletionProvider {
             if (creationCaretOffset > 0 && caretOffset >= creationCaretOffset) {
                 try {
                     if (isCppIdentifierPart(doc.getText(creationCaretOffset, caretOffset - creationCaretOffset))) {
-                        if (TRACE) System.err.println("preQueryUpdate return" + getTestState());
+                        if (TRACE) System.err.println("preQueryUpdate return" + getTestState()); // NOI18N
                         return;
                     }
                 } catch (BadLocationException e) {
                 }
             }
-            if (TRACE) System.err.println("preQueryUpdate hide completion" + getTestState());
+            if (TRACE) System.err.println("preQueryUpdate hide completion" + getTestState()); // NOI18N
             Completion.get().hideCompletion();
         }
         private static final int MAX_ITEMS_TO_DISPLAY;
@@ -187,18 +187,21 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         static {
             int val = 256;
-            if (System.getProperty("cnd.completion.items") != null) {
+            if (System.getProperty("cnd.completion.items") != null) { // NOI18N
                 try {
-                    val = Integer.parseInt(System.getProperty("cnd.completion.items"));
+                    val = Integer.parseInt(System.getProperty("cnd.completion.items")); // NOI18N
                 } catch (NumberFormatException numberFormatException) {
                     val = 256;
                 }
+            }
+            if (val < 0) {
+                val = Integer.MAX_VALUE;
             }
             MAX_ITEMS_TO_DISPLAY = val;
         }
 
         private void addItems(CompletionResultSet resultSet, Collection<CompletionItem> items) {
-            if (TRACE) System.err.println("adding items " + getTestState());
+            if (TRACE) System.err.println("adding items " + getTestState()); // NOI18N
             boolean limit = false;
             if (items.size() > MAX_ITEMS_TO_DISPLAY && queryResult.isSimpleVariableExpression()) {
                 limit = true;
@@ -225,7 +228,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         }
 
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            if (TRACE) System.err.println("query begin" + getTestState());
+            if (TRACE) System.err.println("query begin" + getTestState()); // NOI18N
             boolean hide = (caretOffset <= queryAnchorOffset) && (filterPrefix == null);
             if (!hide) {
                 creationCaretOffset = caretOffset;
@@ -236,14 +239,14 @@ public class CsmCompletionProvider implements CompletionProvider {
                     NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult) query.query(component, caretOffset, sup);
                     if (res == null || (res.getData().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
                         // switch to global context
-                        if (TRACE) System.err.println("query switch to global" + getTestState());
+                        if (TRACE) System.err.println("query switch to global" + getTestState()); // NOI18N
                         queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
                         if (res == null || res.isSimpleVariableExpression()) {
                             // try once more for non dereferenced expressions
                             query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
                             res = (NbCsmCompletionQuery.CsmCompletionResult) query.query(component, caretOffset, sup);
                         }
-                        if (TRACE) System.err.println("query switched to global" + getTestState());
+                        if (TRACE) System.err.println("query switched to global" + getTestState()); // NOI18N
                     }
                     if (res != null) {
                         if (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY && 
@@ -261,16 +264,16 @@ public class CsmCompletionProvider implements CompletionProvider {
                     }
                 }
             } else {
-                if (TRACE) System.err.println("query hide completion" + getTestState());
+                if (TRACE) System.err.println("query hide completion" + getTestState()); // NOI18N
                 Completion.get().hideCompletion();
             }
-            if (TRACE) System.err.println("query end" + getTestState());
+            if (TRACE) System.err.println("query end" + getTestState()); // NOI18N
             resultSet.finish();
         }
 
         @Override
         protected void prepareQuery(JTextComponent component) {
-            if (TRACE) System.err.println("prepareQuery" + getTestState());
+            if (TRACE) System.err.println("prepareQuery" + getTestState()); // NOI18N
             this.component = component;
         }
 
@@ -278,7 +281,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         protected boolean canFilter(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
-            if (TRACE) System.err.println("canFilter on " + caretOffset + getTestState());
+            if (TRACE) System.err.println("canFilter on " + caretOffset + getTestState()); // NOI18N
             filterPrefix = null;
             if (queryAnchorOffset > -1 && caretOffset >= creationCaretOffset) {
                 try {
@@ -297,9 +300,9 @@ public class CsmCompletionProvider implements CompletionProvider {
             }
             if (TRACE) {
                 if (filterPrefix == null) {
-                    System.err.println("canFilter ended with false:" + getTestState());
+                    System.err.println("canFilter ended with false:" + getTestState()); // NOI18N
                 } else {
-                    System.err.println("canFilter ended with true:" + getTestState());
+                    System.err.println("canFilter ended with true:" + getTestState()); // NOI18N
                 }
             }
             return (filterPrefix != null);
@@ -307,16 +310,16 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         @Override
         protected void filter(CompletionResultSet resultSet) {
-            if (TRACE) System.err.println("filter begin" + getTestState());
+            if (TRACE) System.err.println("filter begin" + getTestState());// NOI18N
             if (filterPrefix != null && queryResult != null) {
                 // no more title in NB 6 in completion window
                 //resultSet.setTitle(getFilteredTitle(queryResult.getTitle(), filterPrefix));
                 resultSet.setAnchorOffset(queryAnchorOffset);
                 Collection items = getFilteredData(queryResult.getData(), filterPrefix);
-                if (TRACE) System.err.println("filter with prefix" + getTestState());
+                if (TRACE) System.err.println("filter with prefix" + getTestState()); // NOI18N
                 addItems(resultSet, items);
             }
-            if (TRACE) System.err.println("filter end"+ getTestState());
+            if (TRACE) System.err.println("filter end"+ getTestState()); // NOI18N
             resultSet.finish();
         }
 
@@ -417,7 +420,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                         if (parms.size() > 0) {
                             idx = item.getCurrentParamIndex();
                         } else {
-                            parms.add(NbBundle.getMessage(CsmCompletionProvider.class, "CC-no-parameters"));
+                            parms.add(NbBundle.getMessage(CsmCompletionProvider.class, "CC-no-parameters")); // NOI18N
                         }
                         list.add(parms);
                     }

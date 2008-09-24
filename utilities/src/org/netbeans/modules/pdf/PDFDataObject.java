@@ -51,6 +51,7 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  * Data object representing a PDF file.
@@ -81,6 +82,11 @@ public class PDFDataObject extends MultiDataObject {
     @Override
     protected Node createNodeDelegate() {
         return new PDFDataNode(this);
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
 
 }

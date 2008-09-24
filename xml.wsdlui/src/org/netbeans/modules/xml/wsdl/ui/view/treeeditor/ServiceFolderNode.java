@@ -52,6 +52,7 @@ import java.util.Collection;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ServiceNewType;
+import org.openide.nodes.ChildFactory;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
@@ -64,8 +65,8 @@ public class ServiceFolderNode extends FolderNode {
 
     private Definitions mDef = null;
     
-    public ServiceFolderNode(Definitions element) {
-        super(new ServiceFolderChildren(element), element, Service.class);
+    public ServiceFolderNode(Definitions element, ChildFactory factory) {
+        super(factory, element, Service.class);
         mDef = element;
         this.setDisplayName(NbBundle.
                     getMessage(ServiceFolderNode.class, 

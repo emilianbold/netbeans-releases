@@ -76,7 +76,7 @@ public class ASTNodeUtilities {
                     @Override
                     public void visit(Variable node) {
                         String name = SemiAttribute.extractVariableName(node);
-                        if (acceptor.acceptVariable(name)) {
+                        if (name != null && acceptor.acceptVariable(name)) {
                             result.add(name);
                         }
                         super.visit(node);

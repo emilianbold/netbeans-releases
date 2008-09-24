@@ -194,6 +194,10 @@ public class FilterNode extends Node {
             (children == null) ? (original.isLeaf() ? org.openide.nodes.Children.LEAF : new Children(original)) : children,
             lookup
         );
+        
+        if (original == null) {
+            throw new IllegalArgumentException("Original node cannot be null.");  // NOI18N
+        }
 
         this.childrenProvided = children != null;
         this.original = original;

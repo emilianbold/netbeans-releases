@@ -43,6 +43,7 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -212,8 +213,13 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     }
     
     public ServerDebugInfo getDebugInfo(Target target) {
-        return new ServerDebugInfo(ip.getProperty(GlassfishModule.HOSTNAME_ATTR), 
-                Integer.parseInt(getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DEBUG_PORT)));
+        String debugPort = getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DEBUG_PORT);
+        ServerDebugInfo retVal = null;
+        if (null != debugPort && !"".equals(debugPort)) {
+            retVal = new ServerDebugInfo(ip.getProperty(GlassfishModule.HOSTNAME_ATTR), 
+                Integer.parseInt(debugPort));
+        }
+        return retVal;
     }
     
     public boolean supportsStartDeploymentManager() {

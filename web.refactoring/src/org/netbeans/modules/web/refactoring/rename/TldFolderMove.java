@@ -62,6 +62,9 @@ public class TldFolderMove extends BaseTldRename{
         List<FileObject> fos = new ArrayList<FileObject>();
         RefactoringUtil.collectChildren(folder, fos);
         for (FileObject each : fos){
+            if (RefactoringUtil.isPackageInfo(each)) {
+                continue;
+            }
             String oldFqn = JavaIdentifiers.getQualifiedName(each);
             String targetPackageName = getTargetPackageName(each.getParent());
             String oldUnqualifiedName = JavaIdentifiers.unqualify(oldFqn);

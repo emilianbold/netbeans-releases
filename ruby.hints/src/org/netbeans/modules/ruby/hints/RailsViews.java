@@ -38,16 +38,20 @@ import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintFix;
 import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.Arity;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.openide.filesystems.FileObject;
@@ -91,13 +95,26 @@ public class RailsViews extends RubyAstRule {
 
         FileObject view = RubyUtils.getRailsViewFor(file, name, false, true);
 
-        if (view == null && shouldHaveView(info, node)) {
+        if (view == null && shouldHaveView(info, node) && isPublic(context.parserResult, node)) {
             String displayName = NbBundle.getMessage(RailsViews.class, "MissingView");
             OffsetRange range = AstUtilities.getNameRange(node);
             List<HintFix> fixList = Collections.<HintFix>singletonList(new CreateViewFix(file, name));
             Hint desc = new Hint(this, displayName, file, range, fixList, 400);
             result.add(desc);
         }
+    }
+
+    private boolean isPublic(ParserResult result, Node node) {
+        RubyParseResult rpr = (RubyParseResult)result;
+        AstElement element = rpr.getStructure().getElementFor(node);
+        if (element != null) {
+            Set<Modifier> modifiers = element.getModifiers();
+            if (modifiers != null) {
+                return !(modifiers.contains(Modifier.PRIVATE) || modifiers.contains(Modifier.PROTECTED));
+            }
+        }
+
+        return true;
     }
     
     /**

@@ -74,7 +74,7 @@ public class TaskList {
     
     private Map<TaskGroup, List<Task>> group2tasks = new HashMap<TaskGroup,List<Task>>( 10 );
     
-    private WeakSet<Listener> listeners = new WeakSet<Listener>( 2 );
+    private final WeakSet<Listener> listeners = new WeakSet<Listener>( 2 );
     
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     
@@ -370,11 +370,15 @@ public class TaskList {
     }
     
     public void addListener( Listener l ) {
-        listeners.add( l );
+        synchronized( listeners ) {
+            listeners.add( l );
+        }
     }
     
     public void removeListener( Listener l ) {
-        listeners.remove( l );
+        synchronized( listeners ) {
+            listeners.remove( l );
+        }
     }
     
     public int indexOf( Task t ) {
@@ -401,23 +405,29 @@ public class TaskList {
     }
     
     private void fireTasksAdded( List<Task> tasks ) {
-        ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
-        for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
-            i.next().tasksAdded( tasks );
+        synchronized( listeners ) {
+            ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
+            for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
+                i.next().tasksAdded( tasks );
+            }
         }
     }
     
     private void fireTasksRemoved( List<Task> tasks ) {
-        ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
-        for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
-            i.next().tasksRemoved( tasks );
+        synchronized( listeners ) {
+            ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
+            for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
+                i.next().tasksRemoved( tasks );
+            }
         }
     }
     
     private void fireCleared() {
-        ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
-        for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
-            i.next().cleared();
+        synchronized( listeners ) {
+            ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
+            for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
+                i.next().cleared();
+            }
         }
     }
     

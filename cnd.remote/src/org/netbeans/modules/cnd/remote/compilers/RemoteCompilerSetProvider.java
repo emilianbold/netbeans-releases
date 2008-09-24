@@ -70,8 +70,8 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     public int getPlatform() {
         String platform = manager.getPlatform();
         if (platform == null || platform.length() == 0) {
-            log.warning("RCSP.getPlatform: Got null response on platform");
-            platform = "";
+            log.warning("RCSP.getPlatform: Got null response on platform"); //NOI18N
+            platform = ""; //NOI18N
         }
         if (platform.startsWith("Windows")) { // NOI18N
             return PlatformTypes.PLATFORM_WINDOWS;
@@ -99,7 +99,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     }
 
     public String[] getCompilerSetData(String hkey, String path) {
-        RemoteCommandSupport rcs = new RemoteCommandSupport(hkey, CompilerSetScriptManager.SCRIPT + " " + path);
+        RemoteCommandSupport rcs = new RemoteCommandSupport(hkey, CompilerSetScriptManager.SCRIPT + " " + path); //NOI18N
         if (rcs.run() == 0) {
             return rcs.getOutput().split("\n"); // NOI18N
         }

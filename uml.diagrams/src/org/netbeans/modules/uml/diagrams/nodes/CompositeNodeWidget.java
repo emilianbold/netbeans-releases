@@ -214,7 +214,7 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
         return resizeProvider;
     }
     
-    private Rectangle calculateMinimumBounds()
+    protected Rectangle calculateMinimumBounds()
     {
         Rectangle clientArea = new Rectangle(getBounds().x, getBounds().y);
         clientArea.add(getNameWidget().getPreferredBounds());
@@ -262,6 +262,20 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
         super.save(nodeWriter);
     }
     
+    public void clear()
+    {
+        for (ConnectionWidget connection: Util.getAllContainedEdges(this))
+        {
+            connection.removeFromParent();
+        }
+        for (CompartmentWidget compartment: getCompartmentWidgets())
+        {
+            compartment.removeFromParent();
+        }
+        getCompartmentWidgets().clear();      
+    }
+       
+    
     public abstract String getContextPalettePath();
     public abstract UMLNameWidget getNameWidget();
     public abstract void setOrientation(SeparatorWidget.Orientation orientation);
@@ -269,7 +283,6 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
     public abstract CompartmentWidget addCompartment(IElement element);
     public abstract Collection<CompartmentWidget> getCompartmentWidgets();    
     public abstract void removeCompartment(CompartmentWidget widget);
-    public abstract void clear();
     
   
     public class CompositeNodeResizeProvider extends WindowStyleResizeProvider

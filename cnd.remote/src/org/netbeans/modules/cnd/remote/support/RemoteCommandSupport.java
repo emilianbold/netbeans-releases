@@ -87,11 +87,10 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                         out.write(line + '\n');
                         out.flush();
                     }
-
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                    }
+                }
+                try {
+                    Thread.sleep(100); // according to jsch samples
+                } catch (InterruptedException e) {
                 }
                 in.close();
                 is.close();

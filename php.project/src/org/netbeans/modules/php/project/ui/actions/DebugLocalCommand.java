@@ -67,7 +67,7 @@ public class DebugLocalCommand  extends RunLocalCommand {
                 } 
             } else {
                 dbgStarter.start(getProject(), runnable,
-                        (context == null) ? fileForProject() : fileForContext(context), isScriptSelected());
+                        (context == null) ? fileForProject(false) : fileForContext(context), isScriptSelected());
             }
         }
     }
@@ -85,7 +85,7 @@ public class DebugLocalCommand  extends RunLocalCommand {
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return ((context == null) ? fileForProject() : fileForContext(context)) != null && XDebugStarterFactory.getInstance() != null;
+        return ((context == null) ? fileForProject(false) : fileForContext(context)) != null && XDebugStarterFactory.getInstance() != null;
     }
 
     @Override

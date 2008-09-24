@@ -135,6 +135,10 @@ private:
 
 class DbgpSourcesMessage {
 public:
+    DbgpSourcesMessage(tstring name) {
+        tag.setName(name);
+    }
+
     DbgpSourceTag &addSource() {
         return tag.addSourceTag();
     }

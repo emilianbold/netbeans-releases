@@ -84,8 +84,8 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private ArrayList               types = new ArrayList ();
     /** Currently selected type. */
     private BreakpointType          type;
-    private JComponent              customizer;
 
+    private JComponent              customizer;
     private javax.swing.JLabel      jLabel1;
     private javax.swing.JLabel      jLabel2;
     private javax.swing.JComboBox   cbCathegory;
@@ -135,7 +135,16 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     }
     
     public Controller getController () {
-        return (Controller) customizer;
+        if (type != null) {
+            Controller c = type.getController();
+            if (c == null && customizer instanceof Controller) {
+                return (Controller) customizer;
+            } else {
+                return c;
+            }
+        } else {
+            return null;
+        }
     }
     
     

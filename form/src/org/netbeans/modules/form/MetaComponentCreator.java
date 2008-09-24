@@ -1181,20 +1181,11 @@ public class MetaComponentCreator {
         if (newMenuItemComp.getBeanInstance() instanceof MenuItem) {
             MenuItem menu = (MenuItem) newMenuItemComp.getBeanInstance();
             if ("".equals(menu.getLabel())) { // NOI18N
-                String label;
-                if (menu instanceof PopupMenu) {
-                    label = FormUtils.getBundleString("FMT_LAB_PopupMenu"); // NOI18N
-                } else if (menu instanceof Menu) {
-                    label = FormUtils.getBundleString("FMT_LAB_Menu"); // NOI18N
-                } else if (menu instanceof CheckboxMenuItem) {
-                    label = FormUtils.getBundleString("FMT_LAB_CheckboxMenuItem"); // NOI18N
-                } else {
-                    label = FormUtils.getBundleString("FMT_LAB_MenuItem"); // NOI18N
-                }
+                newMenuItemComp.createCodeExpression();
                 RADProperty prop = newMenuItemComp.getBeanProperty("label"); // NOI18N
                 try {
                     prop.setChangeFiring(false);
-                    prop.setValue(label);
+                    prop.setValue(newMenuItemComp.getName());
                     prop.setChangeFiring(true);
                 } catch (Exception e) { // never mind, ignore
                 }
@@ -1203,7 +1194,7 @@ public class MetaComponentCreator {
 
         addMenuComponent(newMenuItemComp, targetComp, true);
 
-        // for added new menu bar we add one menu so it is not empty
+        // for added new AWT MenuBar we add sample menus so it is not empty
         if (newMenuComp != null) {
             int type = newMenuComp.getMenuItemType();
             if (type == RADMenuItemComponent.T_MENUBAR) {
@@ -1211,9 +1202,27 @@ public class MetaComponentCreator {
                     newTypes = newMenuComp.getNewTypes();
                 if (newTypes.length > 0) {
                     try {
-                        newTypes[0].create();
+                        newTypes[0].create();  // sample "File" menu added
+                        newTypes[0].create();  // sample "Edit" menu added
                     }
                     catch (java.io.IOException e) {} // ignore
+                }
+                
+                // set default sample menu names File and Edit
+                RADComponent[] subComponents = newMenuComp.getSubBeans();
+                String[] labelBundleKeys = new String[]{
+                                            "CTL_DefaultFileMenu", // NOI18N 
+                                            "CTL_DefaultEditMenu"  // NOI18N
+                                            };
+                if (subComponents.length > 1) {
+                    for (int i = 0; i < labelBundleKeys.length; i++) {
+                        RADProperty prop = subComponents[i].getBeanProperty("label"); // NOI18N
+                        try {
+                            prop.setChangeFiring(false);
+                            prop.setValue(FormUtils.getBundleString(labelBundleKeys[i]));
+                            prop.setChangeFiring(true);
+                        } catch (Exception e) {} //ignore
+                    }
                 }
             }
         }

@@ -654,7 +654,7 @@ public class ReflectionHelper {
                 if (wsdlFile != null) {
                     wsdlFile = wsdlFile.getCanonicalFile();
                 }
-                boolean isRPCEncoded = wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURL());
+                boolean isRPCEncoded = wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURI());
                 URL wsdlUrl = null;
                 if (isRPCEncoded) {
                     wsdlUrl = wsData.getJaxRpcDescriptor().getWsdlUrl();

@@ -45,12 +45,10 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
 import javax.swing.text.BadLocationException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
@@ -59,7 +57,6 @@ import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.TextBatchProcessor;
 import org.netbeans.editor.FinderFactory;
-import org.netbeans.editor.StringMap;
 import org.netbeans.editor.TokenID;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -142,8 +139,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     @Override
     protected void documentModified(DocumentEvent evt) {
         super.documentModified(evt);
-        classFieldMaps.clear();
-        fileVariableMaps.clear();
+        //classFieldMaps.clear();
+        //fileVariableMaps.clear();
     }
 
     protected void setJava15(boolean java15) {
@@ -509,10 +506,10 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     /////////////////////////////////////////////////
 
     /** Map holding the [position, class-fields-map] pairs */
-    private HashMap classFieldMaps = new HashMap();
+    //private HashMap classFieldMaps = new HashMap();
 
     /** Map holding the [position, class-fields-map] pairs */
-    private HashMap fileVariableMaps = new HashMap();
+    //private HashMap fileVariableMaps = new HashMap();
 
     /** Find the type of the variable. The default behavior is to first
     * search for the local variable declaration and then possibly for
@@ -521,6 +518,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     * @return it returns Object to enable the custom implementations
     *   to return the appropriate instances.
     */
+    @Deprecated
     @Override
     public Object findType(String varName, int varPos) {
         CsmType type = null;
@@ -556,72 +554,84 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return type;
     }
 
+    @Deprecated
     public Map getClassFieldMap(int offset) {
-        Integer posI = new Integer(offset);
-        Map varMap = (Map)classFieldMaps.get(posI);
-        if (varMap == null) {
-            varMap = buildClassFieldMap(offset);
-            classFieldMaps.put(posI, varMap);
-        }
-        return varMap;
+        return Collections.EMPTY_MAP;
+        //Integer posI = new Integer(offset);
+        //Map varMap = (Map)classFieldMaps.get(posI);
+        //if (varMap == null) {
+        //    varMap = buildClassFieldMap(offset);
+        //    classFieldMaps.put(posI, varMap);
+        //}
+        //return varMap;
     }
 
+    @Deprecated
     public Map getFileVariableMap(int offset) {
-        Integer posI = new Integer(offset);
-        Map varMap = (Map)fileVariableMaps.get(posI);
-        if (varMap == null) {
-            varMap = buildFileVariableMap(offset);
-            fileVariableMaps.put(posI, varMap);
-        }
-        return varMap;
+        return Collections.EMPTY_MAP;
+        //Integer posI = new Integer(offset);
+        //Map varMap = (Map)fileVariableMaps.get(posI);
+        //if (varMap == null) {
+        //    varMap = buildFileVariableMap(offset);
+        //    fileVariableMaps.put(posI, varMap);
+        //}
+        //return varMap;
     }
 
     ///////////////////////////////////////////////////////////////////////////
     //                  build variable maps
     ///////////////////////////////////////////////////////////////////////////
 
+    @Deprecated
     @Override
     protected Map buildLocalVariableMap(int offset) {
-        int methodStartPos = getMethodStartPosition(offset);
-        if (methodStartPos >= 0 && methodStartPos < offset) {
-            List res  = CompletionUtilities.findFunctionLocalVariables(getDocument(), offset, null);
-            return list2Map(res);
-        }
-        return null;
+        return Collections.EMPTY_MAP;
+        //int methodStartPos = getMethodStartPosition(offset);
+        //if (methodStartPos >= 0 && methodStartPos < offset) {
+        //    List res  = CompletionUtilities.findFunctionLocalVariables(getDocument(), offset, null);
+        //    return list2Map(res);
+        //}
+        //return null;
     }
 
+    @Deprecated
     @Override
     protected Map buildGlobalVariableMap(int offset) {
-        List res = CompletionUtilities.findGlobalVariables(getDocument(), offset);
-        return list2Map(res);
+        return Collections.EMPTY_MAP;
+        //List res = CompletionUtilities.findGlobalVariables(getDocument(), offset);
+        //return list2Map(res);
     }
 
+    @Deprecated
     protected Map buildClassFieldMap(int offset) {
-        List res = CompletionUtilities.findClassFields(getDocument(), offset);
-        return list2Map(res);
+        return Collections.EMPTY_MAP;
+        //List res = CompletionUtilities.findClassFields(getDocument(), offset);
+        //return list2Map(res);
     }
 
+    @Deprecated
     protected Map buildFileVariableMap(int offset) {
-        List res = CompletionUtilities.findFileVariables(getDocument(), offset);
-        return list2Map(res);
+        return Collections.EMPTY_MAP;
+        //List res = CompletionUtilities.findFileVariables(getDocument(), offset);
+        //return list2Map(res);
     }
 
     // utitlies
 
-    private Map/*<var-name, CsmType>*/ list2Map(List/*<CsmVariable>*/ vars) {
-        if (vars == null || vars.size() == 0) {
-            return null;
-        }
-        Map res = new StringMap();
-        for (Iterator it = vars.iterator(); it.hasNext();) {
-            Object elem = it.next();
-            if (elem instanceof CsmVariable) {
-                CsmVariable var = (CsmVariable) elem;
-                res.put(var.getName().toString(), var.getType());
-            }
-        }
-        return res;
-    }
+//    private Map/*<var-name, CsmType>*/ list2Map(List/*<CsmVariable>*/ vars) {
+//        if (vars == null || vars.size() == 0) {
+//            return null;
+//        }
+//        Map res = new StringMap();
+//        for (Iterator it = vars.iterator(); it.hasNext();) {
+//            Object elem = it.next();
+//            if (elem instanceof CsmVariable) {
+//                CsmVariable var = (CsmVariable) elem;
+//                res.put(var.getName().toString(), var.getType());
+//            }
+//        }
+//        return res;
+//    }
 
     @Override
     protected boolean isAbbrevDisabled(int offset) {
@@ -660,16 +670,35 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     public boolean isIncludeCompletionDisabled(int offset) {
         boolean completionDisabled = true;
-        TokenItem token = getTokenItem(offset);
-        token = shiftToNonWhiteBwd(token);
-        if (token != null) {
-            completionDisabled = !isOffsetInToken(token, INCLUDE_COMPLETION_TOKENS, offset);
+        TokenItem endToken = getTokenItem(offset);
+        if (endToken != null) {
+            TokenItem token = shiftToNonWhiteBwd(endToken);
+            if (token != null) {
+                completionDisabled = !isOffsetInToken(token, INCLUDE_COMPLETION_TOKENS, offset);
+                if (completionDisabled) {
+                    // check whether right after #include or #include_next directive
+                    switch (token.getTokenID().getNumericID()) {
+                        case CCTokenContext.CPPINCLUDE_ID:
+                        case CCTokenContext.CPPINCLUDE_NEXT_ID:
+                            return completionDisabled = false;
+                    }
+                }
+            }
+            // check for "#include prefix" (IZ 119931)
             if (completionDisabled) {
-                // check whether right after #include or #include_next directive
-                switch(token.getTokenID().getNumericID()) {
-                case CCTokenContext.CPPINCLUDE_ID:
-                case CCTokenContext.CPPINCLUDE_NEXT_ID:
-                    return completionDisabled = false;
+                token = endToken.getPrevious();
+                if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                    token = token.getPrevious();
+                    if (token != null) {
+                        token = shiftToNonWhiteBwd(token);
+                        if (token != null) {
+                            switch (token.getTokenID().getNumericID()) {
+                                case CCTokenContext.CPPINCLUDE_ID:
+                                case CCTokenContext.CPPINCLUDE_NEXT_ID:
+                                    return completionDisabled = false;
+                            }
+                        }
+                    }
                 }
             }
         }

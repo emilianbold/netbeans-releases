@@ -61,7 +61,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node.Cookie;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -71,20 +70,18 @@ public final class ClassDataObject extends MultiDataObject {
     
     public ClassDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
+        getCookieSet().add(new OpenSourceCookie());
     }
 
     public @Override Node createNodeDelegate() {
         return new JavaNode (this, false);
     }
 
-    public @Override <T extends Cookie> T getCookie(Class<T> type) {
-        if (type.isAssignableFrom(OpenSourceCookie.class)) {
-            return type.cast(new OpenSourceCookie());
-        } else {
-            return super.getCookie (type);
-        }
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
-    
+
     private final class OpenSourceCookie implements OpenCookie {
         
         public void open() {

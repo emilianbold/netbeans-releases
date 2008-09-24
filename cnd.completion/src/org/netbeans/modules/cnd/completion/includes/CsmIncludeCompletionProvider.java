@@ -256,6 +256,11 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                                 queryAnchorOffset = tok.offset(null);
                                 filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
                                 break;
+                            case PREPROCESSOR_IDENTIFIER:
+                                usrInclude = Boolean.TRUE;
+                                queryAnchorOffset = tok.offset(null);
+                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);                                
+                                break;
                         }
                         if (queryAnchorOffset < 0 && CppTokenId.WHITESPACE_CATEGORY.equals(tok.id().primaryCategory())) { // not inside "" or <>
                             tok = CndTokenUtilities.shiftToNonWhiteBwd(doc, caretOffset);

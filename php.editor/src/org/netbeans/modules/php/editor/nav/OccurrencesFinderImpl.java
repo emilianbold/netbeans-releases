@@ -41,7 +41,6 @@ package org.netbeans.modules.php.editor.nav;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -50,33 +49,30 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.VarTypeResolver;
-import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.ClassElement;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -115,7 +111,7 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
         if (el == null) {
             return result;
         }
-
+        Identifier id = null;
         Collections.reverse(path);
         for (ASTNode aSTNode : path) {
             if (aSTNode instanceof Identifier) {
@@ -128,11 +124,15 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                         return result;
                     } else if (name.equals("this")) {//NOI18N
                         return result;
+                    } else {
+                        id = identifier;
+                        break;
                     }
                 }
             }
         }
 
+        final Identifier identifier = id;
         final List<ASTNode> usages = new LinkedList<ASTNode>();
         final List<ASTNode> memberDeclaration = new LinkedList<ASTNode>();
         
@@ -258,15 +258,40 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                 }
                 super.visit(node);
             }
-                       
+
+            @Override
+            public void visit(InterfaceDeclaration node) {
+                if (el == a.getElement(node)) {
+                    usages.add(node.getName());
+                } else {
+                    List<Identifier> interfaes = node.getInterfaes();
+                    for (Identifier identifier : interfaes) {
+                        if (el == a.getElement(identifier)) {
+                            usages.add(identifier);
+                            break;
+                        }
+                    }
+                }
+                super.visit(node);
+            }
+
+
 
             @Override
             public void visit(ClassDeclaration node) {
                 Identifier superClass = node.getSuperClass();
                 if (el == a.getElement(node)) {
                     usages.add(node.getName());
-                } else if (superClass != null && el.getName().equals(superClass.getName())) {
+                } else if (el == a.getElement(superClass)) {
                     usages.add(superClass);
+                } else {
+                    List<Identifier> interfaes = node.getInterfaes();
+                    for (Identifier identifier : interfaes) {
+                        if (el == a.getElement(identifier)) {
+                            usages.add(identifier);
+                            break;
+                        }
+                    }
                 }
                 clsName = CodeUtils.extractClassName(node);
                 superClsName = CodeUtils.extractSuperClassName(node);
@@ -278,6 +303,42 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
                 while (memberDeclaration.size() > 1) {
                     usages.remove(memberDeclaration.remove(0));
                 }
+            }
+
+            @Override
+            public void visit(FormalParameter node) {
+                Identifier parameterType = node.getParameterType();
+                if (parameterType != null) {
+                    String name = parameterType.getName();
+                    if (name != null && el == a.getElement(parameterType)) {
+                        usages.add(parameterType);
+                    }
+                }
+                super.visit(node);
+            }
+
+            @Override
+            public void visit(InstanceOfExpression node) {
+                ClassName className = node.getClassName();
+                Expression expr = className != null ? className.getName() : null;
+                String name = (expr instanceof Identifier) ? ((Identifier) expr).getName() : null;
+                if (name != null && el == a.getElement(expr)) {
+                    usages.add(expr);
+                }
+                super.visit(node);
+            }
+
+
+            @Override
+            public void visit(CatchClause node) {
+                Identifier className = node.getClassName();
+                if (className != null) {
+                    String name = className.getName();
+                    if (name != null && el == a.getElement(className)) {
+                        usages.add(className);
+                    }
+                }
+                super.visit(node);
             }
 
             @Override

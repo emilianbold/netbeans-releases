@@ -735,7 +735,7 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { String s; K_and_R = false; boolean ctrName=false;}
+external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition;}
 	:      
 		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
@@ -801,6 +801,17 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                         (template_head)?   // :)
 			ctor_definition
 			{ #external_declaration_template = #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
+                |  
+                        // User-defined type cast
+                        {isCPlusPlus()}?
+                        ((template_head)? (literal_inline)? scope_override conversion_function_decl_or_def)=>
+                        {if (statementTrace>=1) 
+                                printf("external_declaration_6[%d]: Operator function\n",
+                                        LT(1).getLine());
+                        }
+                        (template_head)? (literal_inline)? s = scope_override definition = conversion_function_decl_or_def 
+                        { if( definition ) #external_declaration_template = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration_template);
+                            else	   #external_declaration_template = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #external_declaration_template); }
 		|
 			// Templated function declaration
 			(declaration_specifiers[false, false] function_declarator[false, false] SEMICOLON)=> 

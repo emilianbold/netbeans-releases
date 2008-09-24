@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JEditorPane;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
@@ -57,7 +56,6 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Nejedly, Marek Slama
  */
-@RandomlyFails // #144747
 public class ReusableEditor2Test extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");

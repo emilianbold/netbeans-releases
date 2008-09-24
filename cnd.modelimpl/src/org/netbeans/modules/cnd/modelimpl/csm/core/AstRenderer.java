@@ -81,8 +81,15 @@ public class AstRenderer {
                     render(token, currentNamespace, container);
                     break;
                 case CPPTokenTypes.CSM_NAMESPACE_DECLARATION:
-                    NamespaceDefinitionImpl ns = new NamespaceDefinitionImpl(token, file, currentNamespace);
-                    container.addDeclaration(ns);
+                    NamespaceDefinitionImpl ns;
+                    // #147376 Strange navigator behavior in header
+                    NamespaceDefinitionImpl existent = NamespaceDefinitionImpl.findNamespaceDefionition(container, token);                    
+                    if (existent == null) {
+                        ns = new NamespaceDefinitionImpl(token, file, currentNamespace);
+                        container.addDeclaration(ns);
+                    } else {
+                        ns = existent;
+                    }
                     render(token, (NamespaceImpl) ns.getNamespace(), ns);
                     break;
                 case CPPTokenTypes.CSM_CLASS_DECLARATION:
@@ -270,11 +277,11 @@ public class AstRenderer {
      * At the moment of rendering, we check whether this is a variable of a function
      * @return true if it's a variable, otherwise false (it's a function)
      */
-    private boolean isFuncLikeVariable(AST ast, boolean findVariablesForParams) {
+    private boolean isFuncLikeVariable(AST ast, boolean findRefsForParams) {
 	AST astParmList = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARMLIST);
 	if( astParmList != null ) {
             for( AST node = astParmList.getFirstChild(); node != null; node = node.getNextSibling() ) {
-                if( ! isRefToVariable(node, findVariablesForParams) ) {
+                if( ! isRefToVariableOrFunction(node, findRefsForParams) ) {
                     return false;
                 }
             }
@@ -324,7 +331,7 @@ public class AstRenderer {
      * @param findVariable indicates that we should find param variable or just check that it looks like id
      * @return true if might be just a reference to a variable, otherwise false
      */
-    private boolean isRefToVariable(AST node, boolean findVariable) {
+    private boolean isRefToVariableOrFunction(AST node, boolean findVariableOrFunction) {
 
 	if( node.getType() != CPPTokenTypes.CSM_PARAMETER_DECLARATION ) { // paranoja
 	    return false;
@@ -373,8 +380,8 @@ public class AstRenderer {
             varName.append(name.getText());
         }
 
-        if(findVariable) {
-            return findVariable(varName, csmAST.getOffset());
+        if(findVariableOrFunction) {
+            return findVariable(varName, csmAST.getOffset()) || findFunction(varName, csmAST.getOffset());
         } else {
             if (name.getNextSibling() != null) {
                 return isScopedId(name);
@@ -395,6 +402,18 @@ public class AstRenderer {
         return findVariable(name, file.getDeclarations(), offset);
     }
     
+    /**
+     * Finds function in globals and in the current file
+     */
+    private boolean findFunction(CharSequence name, int offset) {
+        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + 
+                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name; // NOI18N
+        if( findGlobal(file.getProject(), uname, new ArrayList<CsmProject>()) ) {
+            return true;
+        }
+        return findFunction(name, file.getDeclarations(), offset);
+    }
+
     private boolean findGlobal(CsmProject project, String uname, Collection<CsmProject> processedProjects) {
         if( processedProjects.contains(project) ) {
             return false;
@@ -440,6 +459,35 @@ public class AstRenderer {
         return false;
     }
 
+    private boolean findFunction(CharSequence name, Collection<CsmOffsetableDeclaration> declarations, int offset) {
+        for( CsmOffsetableDeclaration decl : declarations ) {
+            if( decl.getStartOffset() >= offset ) {
+                break;
+            }
+            switch( decl.getKind() ) {
+                case FUNCTION:
+                    if( CharSequenceKey.Comparator.compare(name, ((CsmFunction) decl).getName()) == 0 ) {
+                        return true;
+                    }
+                    break;
+                case FUNCTION_DEFINITION:
+                    if( CharSequenceKey.Comparator.compare(name, ((CsmFunctionDefinition) decl).getQualifiedName()) == 0 ) {
+                        return true;
+                    }
+                    break;
+                case NAMESPACE_DEFINITION:
+                    CsmNamespaceDefinition nd = (CsmNamespaceDefinition) decl;
+                    if( nd.getStartOffset() <= offset && nd.getEndOffset() >= offset ) {
+                        if( findFunction(name, nd.getDeclarations(), offset) ) {
+                            return true;
+                        }
+                    }
+                    break;
+            }
+        }
+        return false;
+    }
+    
     protected boolean isRenderingLocalContext() {
         return false;
     }

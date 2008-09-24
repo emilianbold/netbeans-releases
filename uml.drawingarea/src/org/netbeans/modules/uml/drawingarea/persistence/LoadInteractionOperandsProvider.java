@@ -88,10 +88,15 @@ public class LoadInteractionOperandsProvider implements ActionProvider{
                 }
             }
             combinedfragment.load(ioI);
-            //we have one cf per diagram
-            IPresentationElement ioPE=ioE.getPresentationElements().get(0);
-            Widget ioW=scene.findWidget(ioPE);
-            if(ioW instanceof DiagramNodeReader)
+            //we have one cf per diagram, but we can have several diagrams
+            Widget ioW=null;
+            for(int j=0;j<ioE.getPresentationElements().size();j++)
+            {
+                IPresentationElement ioPE=ioE.getPresentationElements().get(j);
+                ioW=scene.findWidget(ioPE);
+                if(ioW!=null)break;
+            }
+            if(ioW!=null && ioW instanceof DiagramNodeReader)
             {
                 ((DiagramNodeReader) ioW).loadDependencies(ioI);
             }

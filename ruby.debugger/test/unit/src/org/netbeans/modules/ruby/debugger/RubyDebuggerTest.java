@@ -52,7 +52,6 @@ import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyLineBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,7 +71,7 @@ public final class RubyDebuggerTest extends TestBase {
         super.setUp();
         watchStepping = false;
     }
-    
+
     public void testBasics() throws Exception {
         String[] testContent = {
             "puts 'aaa'",
@@ -81,11 +80,7 @@ public final class RubyDebuggerTest extends TestBase {
             "puts 'ddd'",
             "puts 'eee'",
         };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 2);
-        addBreakpoint(testFO, 4);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 2, 4);
         doContinue(); // 2 -> 4
         doAction(ActionsManager.ACTION_STEP_OVER); // 4 -> 5
         doContinue(); // finish
@@ -100,10 +95,7 @@ public final class RubyDebuggerTest extends TestBase {
             "a",
             "puts 'end'"
         };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 4);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 4);
         doAction(ActionsManager.ACTION_STEP_INTO); // 4 -> 2
         doAction(ActionsManager.ACTION_STEP_OVER); // 2 -> 5
         doAction(ActionsManager.ACTION_STEP_OVER); // 5 -> finish
@@ -121,10 +113,7 @@ public final class RubyDebuggerTest extends TestBase {
             "a",
             "puts 'end'"
         };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 2);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 2);
         doAction(ActionsManager.ACTION_STEP_OVER); // 2 -> 3
         doAction(ActionsManager.ACTION_STEP_OUT); // 3 -> 8
         doAction(ActionsManager.ACTION_STEP_OVER); // 8 -> finish
@@ -179,10 +168,7 @@ public final class RubyDebuggerTest extends TestBase {
     //            "exit 1 if ARGV.size != 2",
     //            "puts 'OK'"
     //        };
-    //        File testF = createScript(testContent);
-    //        FileObject testFO = FileUtil.toFileObject(testF);
-    //        addBreakpoint(testFO, 2);
-    //        Process p = startDebugging(testF);
+    //        Process p = startDebugging(testContent, 2);
     //        Thread.sleep(3000); // TODO: do not depend on timing (use e.g. RubyDebugEventListener)
     //        doContinue(); // 2 -> finish
     //        waitFor(p);
@@ -238,10 +224,7 @@ public final class RubyDebuggerTest extends TestBase {
             "sleep 0.1", // 1
             "sleep 0.1", // 2
         };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 2);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 2);
         Thread.sleep(3000); // TODO: rather wait for appropriate event
         doAction(ActionsManager.ACTION_KILL);
         waitFor(p);
@@ -252,10 +235,7 @@ public final class RubyDebuggerTest extends TestBase {
             "Thread.start() { puts 'hello from new thread' }",
             "puts 'main thread'"
         };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 1);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 1);
         doAction(ActionsManager.ACTION_STEP_OVER);
         doAction(ActionsManager.ACTION_KILL);
         waitFor(p);
@@ -268,10 +248,7 @@ public final class RubyDebuggerTest extends TestBase {
 //            "    puts '1'",
 //            "end"
 //        };
-//        File testF = createScript(testContent);
-//        FileObject testFO = FileUtil.toFileObject(testF);
-//        addBreakpoint(testFO, 2);
-//        Process p = startDebugging(testF);
+//        Process p = startDebugging(testContent, 2);
 //        Thread.sleep(3000); // TODO: rather wait for appropriate event
 //        doAction(ActionsManager.ACTION_KILL);
 //        waitFor(p);
@@ -284,10 +261,7 @@ public final class RubyDebuggerTest extends TestBase {
             "    sleep 0.001",
             "end"
         };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 2);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 2);
         while ((getEngineManager()) != null) {
             Thread.sleep(10);
             RequestProcessor.getDefault().post(new Runnable() {
@@ -312,10 +286,7 @@ public final class RubyDebuggerTest extends TestBase {
             "sleep 0.01",
             "sleep 0.01"
         };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 4);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 4);
         doAction(ActionsManager.ACTION_STEP_INTO);
         doAction(ActionsManager.ACTION_STEP_INTO);
         doAction(ActionsManager.ACTION_STEP_INTO);
@@ -331,10 +302,7 @@ public final class RubyDebuggerTest extends TestBase {
 //            "t.add 1",
 //            "t.add 2"
 //        };
-//        File testF = createScript(testContent);
-//        FileObject testFO = FileUtil.toFileObject(testF);
-//        addBreakpoint(testFO, 3);
-//        Process p = startDebugging(testF);
+//        Process p = startDebugging(testContent, 3);
 //        doAction(ActionsManager.ACTION_STEP_INTO);
 //        doAction(ActionsManager.ACTION_STEP_INTO);
 //        doAction(ActionsManager.ACTION_STEP_INTO);
@@ -342,31 +310,22 @@ public final class RubyDebuggerTest extends TestBase {
 //    }
     
     public void testCheckAndTuneSettings() throws IOException {
-        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform jruby = getSafeJRuby();
         ExecutionDescriptor descriptor = new ExecutionDescriptor(jruby);
         // DialogDisplayerImpl.createDialog() assertion would fail if dialog is shown
         assertTrue("default setting OK with JRuby", RubyDebugger.checkAndTuneSettings(descriptor));
-        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
-        GemManager.initializeRepository(gemRepo);
-        File origGemHome = jruby.getGemManager().getGemHomeF();
-        try {
-            jruby.setGemHome(FileUtil.toFile(gemRepo));
-            jruby.getInfo().setGemPath("");
-            assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
-
-            try {
-                assertTrue("fail when no fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
-            } catch (AssertionFailedError afe) {
-                // OK, expected
-            }
-
-            installFakeFastRubyDebugger(jruby);
-            assertTrue("succeed when fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
-        } finally {
-            jruby.setGemHome(origGemHome);
-        }
+        assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
+        installFakeFastRubyDebugger(jruby);
+        assertTrue("succeed when fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
     }
-    
+
+    public void testCheckAndTuneSettingsForJRubyAndRails() throws IOException {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor(jruby);
+        descriptor.fastDebugRequired(true); // simulate Rails
+        assertTrue("default setting OK with JRuby and Rails", RubyDebugger.checkAndTuneSettings(descriptor));
+    }
+
     public void testRubiniusDebugging() throws IOException {
         RubyPlatform rubinius = RubyPlatformManager.addPlatform(setUpRubinius());
         ExecutionDescriptor descriptor = new ExecutionDescriptor(rubinius);
@@ -383,12 +342,21 @@ public final class RubyDebuggerTest extends TestBase {
             "import 'java.lang.System'",
             "s = System",
         };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 2);
-        Process p = startDebugging(testF);
+        Process p = startDebugging(testContent, 2);
         doAction(ActionsManager.ACTION_STEP_OVER);
         doAction(ActionsManager.ACTION_STEP_OVER);
+        waitFor(p);
+    }
+
+    public void testJVMArguments() throws Exception {
+        String[] testContent = {
+            "require 'java'",
+            "import 'java.lang.System'",
+            "s = System",
+        };
+        setJVMArgs("-Xmx1024m");
+        Process p = startDebugging(testContent, 2);
+        doContinue();
         waitFor(p);
     }
 

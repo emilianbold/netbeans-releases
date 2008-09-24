@@ -102,6 +102,9 @@ public class AddExistingItemAction extends NodeAction {
 	ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
 	ConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
 
+        if (!((MakeConfigurationDescriptor)projectDescriptor).okToChange()) {
+            return;
+        }
 	String seed = null;
 	if (FileChooser.getCurrectChooserFile() != null) {
 	    seed = FileChooser.getCurrectChooserFile().getPath();

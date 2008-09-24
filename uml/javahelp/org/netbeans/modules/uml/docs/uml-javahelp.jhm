@@ -40,6 +40,7 @@
 	<mapID target="uml_basics_documenting_objects" url="basics/documenting_objects.html"/>
 	<mapID target="uml_basics_navigation_windows" url="basics/navigation_windows.html"/>
 	<mapID target="uml_basics_palette" url="basics/palette.html"/>
+	<mapID target="uml_basics_context_palette" url="basics/context_palette.html"/>
 	<mapID target="uml_basics_properties_window" url="basics/properties_window.html"/>
 	<mapID target="uml_basics_source_editor" url="basics/source_editor.html"/>
 	<mapID target="uml_basics_toolbars" url="basics/toolbars.html"/>
@@ -175,7 +176,6 @@
 	<mapID target="uml_editors_windows_navigating_by_links_in_diagrams" url="editors_windows/navigating_by_links_in_diagrams.html"/>
 	<mapID target="uml_editors_windows_navigating_diagram_element" url="editors_windows/navigating_diagram_element.html"/>
 	<mapID target="uml_editors_windows_navigating_within_diagrams" url="editors_windows/navigating_within_diagrams.html"/>
-	<mapID target="uml_editors_windows_specifying_display_drawing_preferences" url="editors_windows/specifying_display_drawing_preferences.html"/>
 	<mapID target="uml_editors_windows_stacking_diagram_elements" url="editors_windows/stacking_diagram_elements.html"/>
 	<mapID target="uml_editors_windows_using_diagram_windows" url="editors_windows/using_diagram_windows.html"/>
 	<mapID target="uml_editors_windows_using_overview_window" url="editors_windows/using_overview_window.html"/>
@@ -193,8 +193,6 @@
 	<mapID target="uml_prefs_configuring_templates_options" url="prefs/configuring_templates_options.html"/>
 	<mapID target="uml_reverse_eng_about_java_code_rev_eng" url="reverse_eng/about_java_code_rev_eng.html"/>
 	<mapID target="uml_reverse_eng_classes" url="reverse_eng/classes.html"/>
-	<mapID target="uml_reverse_eng_reverse_eng_dialog_box" url="reverse_eng/reverse_eng_dialog_box.html"/>
-	<mapID target="uml_reverse_eng_exceptions_access_control_modifiers" url="reverse_eng/exceptions_access_control_modifiers.html"/>
 	<mapID target="uml_reverse_eng_interfaces" url="reverse_eng/interfaces.html"/>
 	<mapID target="uml_reverse_eng_launching_rev_eng" url="reverse_eng/launching_rev_eng.html"/>
 	<mapID target="uml_reverse_eng_packages" url="reverse_eng/packages.html"/>

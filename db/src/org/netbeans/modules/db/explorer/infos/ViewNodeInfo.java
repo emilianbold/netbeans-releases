@@ -58,8 +58,12 @@ import org.openide.util.Exceptions;
 public class ViewNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =8370676447530973161L;
 
+    @Override
     public void initChildren(Vector children) throws DatabaseException {
         try {
+            if (!ensureConnected()) {
+                return;
+            }
             String view = (String)get(DatabaseNode.VIEW);
 
             // Columns

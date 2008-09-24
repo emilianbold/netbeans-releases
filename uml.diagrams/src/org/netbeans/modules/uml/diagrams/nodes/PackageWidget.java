@@ -289,6 +289,12 @@ public class PackageWidget extends ContainerNode
         super.initializeNode(presentation);
     }
 
+    @Override
+    protected void notifyElementDeleted()
+    {
+        getContainer().firePropertyChange(ContainerWidget.CHILDREN_CHANGED, null, null);
+    }
+
     protected void updateStereotypes(List<String> stereotypes)
     {
         String stereotypeStr = "";

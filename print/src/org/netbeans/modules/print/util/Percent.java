@@ -57,312 +57,288 @@ import static org.netbeans.modules.print.ui.UI.*;
  */
 public final class Percent extends JComboBox implements ActionListener {
 
-  public interface Listener {
+    public interface Listener {
 
-    /**
-     * Returns custom value (e.g. fit to page, fit to width).
-     * @return custom value
-     */
-    double getCustomValue(int index);
+        double getCustomValue(int index);
+        void valueChanged(double value, int index);
+        void invalidValue(String value);
+    }
 
-    /**
-     * Calls when value is changed.
-     * @param value new value
-     * @param index new index
-     */
-    void valueChanged(double value, int index);
-
-    /**
-     * Calls when value is invalid.
-     * @param value invalid value
-     */
-    void invalidValue(String value);
-  }
-
-  public Percent(Listener listener, double initValue, int [] values, final int defaultCustomIndex, String [] customs, String toolTip) {
+    public Percent(Listener listener, double initValue, int[] values, final int defaultCustomIndex, String[] customs, String toolTip) {
 //out("<New> Percent: " + initValue);
-    for (int value : values) {
-      addItem(value + PERCENT);
+        for (int value : values) {
+            addItem(value + PERCENT);
+        }
+        if (customs != null) {
+            for (String custom : customs) {
+                addItem(custom);
+            }
+        }
+        setToolTipText(toolTip);
+
+        setEditable(true);
+        myCustoms = customs;
+        myListener = listener;
+
+        JTextComponent editor = (JTextComponent) getEditor().getEditorComponent();
+        InputMap inputMap = editor.getInputMap();
+        ActionMap actionMap = editor.getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke('+'), INCREASE);
+        inputMap.put(KeyStroke.getKeyStroke('='), INCREASE);
+        inputMap.put(KeyStroke.getKeyStroke('-'), DECREASE);
+        inputMap.put(KeyStroke.getKeyStroke('_'), DECREASE);
+        inputMap.put(KeyStroke.getKeyStroke('/'), NORMAL);
+        inputMap.put(KeyStroke.getKeyStroke('*'), CUSTOM);
+
+        actionMap.put(INCREASE, new AbstractAction() {
+            public void actionPerformed(ActionEvent event) {
+                increaseValue();
+            }
+        });
+        actionMap.put(DECREASE, new AbstractAction() {
+            public void actionPerformed(ActionEvent event) {
+                decreaseValue();
+            }
+        });
+        actionMap.put(NORMAL, new AbstractAction() {
+            public void actionPerformed(ActionEvent event) {
+                normalValue();
+            }
+        });
+        actionMap.put(CUSTOM, new AbstractAction() {
+            public void actionPerformed(ActionEvent event) {
+                customValue(defaultCustomIndex);
+            }
+        });
+        addActionListener(this);
+        setValue(initValue);
+        selectValue();
     }
-    if (customs != null) {
-      for (String custom : customs) {
-        addItem(custom);
-      }
+
+    private void selectValue() {
+        String text = getEditorItem();
+
+        for (int i = 0; i < getItemCount(); i++) {
+            if (text.equals(getItemAt(i))) {
+                setSelectedIndex(i);
+            }
+        }
     }
-    setToolTipText(toolTip);
 
-    setEditable(true);
-    myCustoms = customs;
-    myListener = listener;
-
-    JTextComponent editor = (JTextComponent) getEditor().getEditorComponent();
-    InputMap inputMap = editor.getInputMap();
-    ActionMap actionMap = editor.getActionMap();
-
-    inputMap.put(KeyStroke.getKeyStroke('+'), INCREASE);
-    inputMap.put(KeyStroke.getKeyStroke('='), INCREASE);
-    inputMap.put(KeyStroke.getKeyStroke('-'), DECREASE);
-    inputMap.put(KeyStroke.getKeyStroke('_'), DECREASE);
-    inputMap.put(KeyStroke.getKeyStroke('/'), NORMAL);
-    inputMap.put(KeyStroke.getKeyStroke('*'), CUSTOM);
-    
-    actionMap.put(INCREASE, new AbstractAction() {
-      public void actionPerformed(ActionEvent event) {
-        increaseValue();
-      }
-    });
-    actionMap.put(DECREASE, new AbstractAction() {
-      public void actionPerformed(ActionEvent event) {
-        decreaseValue();
-      }
-    });
-    actionMap.put(NORMAL, new AbstractAction() {
-      public void actionPerformed(ActionEvent event) {
-        normalValue();
-      }
-    });
-    actionMap.put(CUSTOM, new AbstractAction() {
-      public void actionPerformed(ActionEvent event) {
-        customValue(defaultCustomIndex);
-      }
-    });
-    addActionListener(this);
-    setValue(initValue);
-    selectValue();
-  }
-
-  private void selectValue() {
-    String text = getEditorItem();
-    
-    for (int i=0; i < getItemCount(); i++) {
-      if (text.equals(getItemAt(i))) {
-        setSelectedIndex(i);
-      }
+    public boolean isCustomValue() {
+        return getCustomIndex(getEditorItem()) != -1;
     }
-  }
 
-  public boolean isCustomValue() {
-    return getCustomIndex(getEditorItem()) != -1;
-  }
+    public String getEditorItem() {
+        return getEditor().getItem().toString();
+    }
 
-  public String getEditorItem() {
-    return getEditor().getItem().toString();
-  }
-
-  public void actionPerformed(ActionEvent event) {
+    public void actionPerformed(ActionEvent event) {
 //out();
-    String value = getEditorItem();
+        String value = getEditorItem();
 //out("Action: " + value);
-    int k = getCustomIndex(value);
+        int k = getCustomIndex(value);
 
-    if (k != -1) {
+        if (k != -1) {
 //out("  it is custom");
-      valueChanged(getCustomValue(k), k);
-      return;
-    }
-    double percent = parsePercent(value);
+            valueChanged(getCustomValue(k), k);
+            return;
+        }
+        double percent = parsePercent(value);
 
-    if (isValid(percent)) {
+        if (isValid(percent)) {
 //out("  it's valid value");
-      int i = getCustomIndex(percent);
+            int i = getCustomIndex(percent);
 
-      if (i != -1) {
-        setValue(percent, i);
-      }
-      else {
-        valueChanged(percent, i);
-      }
-    }
-    else {
+            if (i != -1) {
+                setValue(percent, i);
+            } else {
+                valueChanged(percent, i);
+            }
+        } else {
 //out("  it's invalid value");
-      myListener.invalidValue(value);
+            myListener.invalidValue(value);
 //out("    restore.");
-      setText(myCurrentText);
+            setText(myCurrentText);
+        }
     }
-  }
 
-  private int getCustomIndex(String value) {
-    if (myCustoms == null) {
-      return -1;
+    private int getCustomIndex(String value) {
+        if (myCustoms == null) {
+            return -1;
+        }
+        for (int i = 0; i < myCustoms.length; i++) {
+            if (myCustoms[i].equals(value)) {
+                return i;
+            }
+        }
+        return -1;
     }
-    for (int i=0; i < myCustoms.length; i++) {
-      if (myCustoms [i].equals(value)) {
-        return i;
-      }
+
+    public double getValue() {
+        return myCurrentValue;
     }
-    return -1;
-  }
 
-  public double getValue() {
-    return myCurrentValue;
-  }
-
-  public void increaseValue() {
-    if (myCurrentValue < THRESHOLD) {
-      setValue(myCurrentValue + SUBTRAHEND);
+    public void increaseValue() {
+        if (myCurrentValue < THRESHOLD) {
+            setValue(myCurrentValue + SUBTRAHEND);
+        } else {
+            setValue(myCurrentValue * FACTOR);
+        }
     }
-    else {
-      setValue(myCurrentValue * FACTOR);
+
+    public void decreaseValue() {
+        if (myCurrentValue > THRESHOLD) {
+            setValue(myCurrentValue / FACTOR);
+        } else {
+            setValue(myCurrentValue - SUBTRAHEND);
+        }
     }
-  }
 
-  public void decreaseValue() {
-    if (myCurrentValue > THRESHOLD) {
-      setValue(myCurrentValue / FACTOR);
+    public void normalValue() {
+        setValue(1.0);
     }
-    else {
-      setValue(myCurrentValue - SUBTRAHEND);
+
+    public void customValue(int index) {
+        setValue(getCustomValue(index), index);
     }
-  }
 
-  public void normalValue() {
-    setValue(1.0);
-  }
-
-  public void customValue(int index) {
-    setValue(getCustomValue(index), index);
-  }
-
-  public void setValue(double value) {
+    public void setValue(double value) {
 //out("SET value: " + value);
-    setValue(value, getCustomIndex(value));
-  }
-
-  private void setValue(double value, int index) {
-//out("  set value: " + value + " " + index);
-    String text = valueChanged(value, index);
-
-    if (text != null) {
-      setText(text);
+        setValue(value, getCustomIndex(value));
     }
-  }
 
-  private String valueChanged(double value, int index) {
-    boolean isCustomValue = index != -1;
+    private void setValue(double value, int index) {
+//out("  set value: " + value + " " + index);
+        String text = valueChanged(value, index);
+
+        if (text != null) {
+            setText(text);
+        }
+    }
+
+    private String valueChanged(double value, int index) {
+        boolean isCustomValue = index != -1;
 //out("  value changed: " + value + " " + isCustomValue);
 
-    if ( !isCustomValue && !isValid(value)) {
+        if (!isCustomValue && !isValid(value)) {
 //out("  it's not valid value");
-      return null;
-    }
-    myCurrentValue = value;
+            return null;
+        }
+        myCurrentValue = value;
 //out("myCurrentValue: " + myCurrentValue);
 
-    if (isCustomValue && myCustoms != null) {
-      myCurrentText = myCustoms [index];
-    }
-    else {
-      myCurrentText = getPercent(value);
-    }
+        if (isCustomValue && myCustoms != null) {
+            myCurrentText = myCustoms[index];
+        } else {
+            myCurrentText = getPercent(value);
+        }
 //out("myCurrentText: " + myCurrentText);
-    myListener.valueChanged(value, index);
+        myListener.valueChanged(value, index);
 
-    return myCurrentText;
-  }
-  
-  private void setText(String text) {
-    getEditor().setItem(text);
-  }
-
-  private int getCustomIndex(double value) {
-    if (myCustoms == null) {
-      return -1;
+        return myCurrentText;
     }
+
+    private void setText(String text) {
+        getEditor().setItem(text);
+    }
+
+    private int getCustomIndex(double value) {
+        if (myCustoms == null) {
+            return -1;
+        }
 //out("-- " + getPercent(value) + " " + getPercent(getCustomValue()));
-    for (int i=0; i < myCustoms.length; i++) {
-      if (getPercent(value).equals(getPercent(getCustomValue(i)))) {
-        return i;
-      }
+        for (int i = 0; i < myCustoms.length; i++) {
+            if (getPercent(value).equals(getPercent(getCustomValue(i)))) {
+                return i;
+            }
+        }
+        return -1;
     }
-    return -1;
-  }
 
-  private boolean isValid(double value) {
+    private boolean isValid(double value) {
 //out("is valid: " + value);
-    return MIN_VALUE <= value && value <= MAX_VALUE;
-  }
-
-  private double getCustomValue(int index) {
-    return myListener.getCustomValue(index);
-  }
-
-  private double parsePercent(String text) {
-    String value = text;
-
-    if (value.endsWith(PERCENT)) {
-      value = value.substring (0, value.length() - 1);
+        return MIN_VALUE <= value && value <= MAX_VALUE;
     }
-    return getInt(value.trim()) / YUZ;
-  }
 
-  private String getPercent(double value) {
-    return (int) Math.round(YUZ * value) + PERCENT;
-  }
-
-  public static double getZoomFactor(double zoom, double defaultValue) {
-    if (0 < zoom && zoom <= MAX_VALUE) {
-      return zoom;
+    private double getCustomValue(int index) {
+        return myListener.getCustomValue(index);
     }
-    return defaultValue;
-  }
 
-  public static int getZoomWidth(double zoom, int defaultValue) {
-    if (BOUND_1 <= zoom && zoom < BOUND_2) {
-      return round(zoom - BOUND_1);
+    private double parsePercent(String text) {
+        String value = text;
+
+        if (value.endsWith(PERCENT)) {
+            value = value.substring(0, value.length() - 1);
+        }
+        return getInt(value.trim()) / YUZ;
     }
-    return defaultValue;
-  }
-  
-  public static int getZoomHeight(double zoom, int defaultValue) {
-    if (BOUND_2 <= zoom) {
-      return round(zoom - BOUND_2);
+
+    private String getPercent(double value) {
+        return (int) Math.round(YUZ * value) + PERCENT;
     }
-    return defaultValue;
-  }
 
-  public static boolean isZoomFactor(double zoom) {
-    return zoom < BOUND_1;
-  }
+    public static double getZoomFactor(double zoom, double defaultValue) {
+        if (0 < zoom && zoom <= MAX_VALUE) {
+            return zoom;
+        }
+        return defaultValue;
+    }
 
-  public static boolean isZoomWidth(double zoom) {
-    return BOUND_1 <= zoom && zoom < BOUND_2;
-  }
+    public static int getZoomWidth(double zoom, int defaultValue) {
+        if (BOUND_1 <= zoom && zoom < BOUND_2) {
+            return round(zoom - BOUND_1);
+        }
+        return defaultValue;
+    }
 
-  public static boolean isZoomHeight(double zoom) {
-    return BOUND_2 <= zoom;
-  }
+    public static int getZoomHeight(double zoom, int defaultValue) {
+        if (BOUND_2 <= zoom) {
+            return round(zoom - BOUND_2);
+        }
+        return defaultValue;
+    }
 
-  public static boolean isZoomPage(double zoom) {
-    return zoom == 0.0;
-  }
+    public static boolean isZoomFactor(double zoom) {
+        return zoom < BOUND_1;
+    }
 
-  public static double createZoomWidth(double zoom) {
-    return BOUND_1 + zoom;
-  }
+    public static boolean isZoomWidth(double zoom) {
+        return BOUND_1 <= zoom && zoom < BOUND_2;
+    }
 
-  public static double createZoomHeight(double zoom) {
-    return BOUND_2 + zoom;
-  }
+    public static boolean isZoomHeight(double zoom) {
+        return BOUND_2 <= zoom;
+    }
 
-  private Listener myListener;
-  private String [] myCustoms;
-  private String myCurrentText;
-  private double myCurrentValue;
+    public static boolean isZoomPage(double zoom) {
+        return zoom == 0.0;
+    }
 
-  private static final int BOUND_1 = 1000;
-  private static final int BOUND_2 = 2000;
+    public static double createZoomWidth(double zoom) {
+        return BOUND_1 + zoom;
+    }
 
-  private static final double FACTOR = 1.05;
-  private static final double THRESHOLD = 0.2;
-  private static final double SUBTRAHEND = 0.01;
-  private static final double MIN_VALUE = 0.01;
-  private static final double MAX_VALUE = 15.0;
+    public static double createZoomHeight(double zoom) {
+        return BOUND_2 + zoom;
+    }
 
-  private static final String CUSTOM   = "custom";   // NOI18N
-  private static final String NORMAL   = "normal";   // NOI18N
-  private static final String INCREASE = "increase"; // NOI18N
-  private static final String DECREASE = "decrease"; // NOI18N
-  
-  private static final double YUZ = 100.0;
-  private static final String PERCENT = "%"; // NOI18N
+    private Listener myListener;
+    private String[] myCustoms;
+    private String myCurrentText;
+    private double myCurrentValue;
+    private static final int BOUND_1 = 1000;
+    private static final int BOUND_2 = 2000;
+    private static final double FACTOR = 1.05;
+    private static final double THRESHOLD = 0.2;
+    private static final double SUBTRAHEND = 0.01;
+    private static final double MIN_VALUE = 0.01;
+    private static final double MAX_VALUE = 15.0;
+    private static final String CUSTOM = "custom";   // NOI18N
+    private static final String NORMAL = "normal";   // NOI18N
+    private static final String INCREASE = "increase"; // NOI18N
+    private static final String DECREASE = "decrease"; // NOI18N
+    private static final double YUZ = 100.0;
+    private static final String PERCENT = "%"; // NOI18N
 }

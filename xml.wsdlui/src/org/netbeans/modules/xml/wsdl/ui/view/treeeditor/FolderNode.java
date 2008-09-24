@@ -69,6 +69,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -96,15 +97,17 @@ public abstract class FolderNode extends AbstractNode
         null,
         SystemAction.get(NewAction.class),
     };
+    private ChildFactory factory;
 
-    protected FolderNode(Children children, WSDLComponent comp,
+    protected FolderNode(ChildFactory factory, WSDLComponent comp,
             Class<? extends WSDLComponent> childType) {
-        this(children, new InstanceContent(), comp, childType);
+        this(factory, new InstanceContent(), comp, childType);
     }
 
-    protected FolderNode(Children children, InstanceContent contents,
+    protected FolderNode(ChildFactory factory, InstanceContent contents,
             WSDLComponent comp, Class<? extends WSDLComponent> childType) {
-        super(children, new AbstractLookup(contents));
+        super(Children.create(factory, true), new AbstractLookup(contents));
+        this.factory = factory;
         mLookupContents = contents;
         this.childType = childType;
         this.mElement = comp;
@@ -336,6 +339,12 @@ public abstract class FolderNode extends AbstractNode
                 Node n = DataFolder.findFolder(Repository.getDefault()
                                     .getDefaultFileSystem().getRoot()).getNodeDelegate();
                 return isOpened ? n.getOpenedIcon(type) : n.getIcon(type);
+        }
+    }
+    
+    public void updateChildren() {
+        if (factory instanceof Refreshable) {
+            ((Refreshable) factory).refreshChildren(true);
         }
     }
 }

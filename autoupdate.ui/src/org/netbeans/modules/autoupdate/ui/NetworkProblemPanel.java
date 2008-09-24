@@ -78,7 +78,11 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         initComponents ();
         taTitle.setToolTipText (problem);
         if (isWarning) {
-            taMessage.setText(NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_WarningText")); // NOI18N
+            if (buttons.length == 2) { // XXX: called from InstallStep
+                taMessage.setText (NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_WarningTextWithReload")); // NOI18N
+            } else {
+                taMessage.setText(NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_WarningText")); // NOI18N
+            }
         } else {
             taMessage.setText(NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_ErrorText")); // NOI18N
         }

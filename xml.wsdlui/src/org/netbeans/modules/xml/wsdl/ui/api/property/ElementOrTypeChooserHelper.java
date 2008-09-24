@@ -71,6 +71,7 @@ import org.netbeans.modules.xml.wsdl.ui.wsdl.nodes.BuiltInTypeFolderNode;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.ui.customizer.FolderNode;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -106,29 +107,39 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
         filters.add(GlobalSimpleType.class);
         filters.add(GlobalComplexType.class);
         filters.add(GlobalElement.class);
-     
-        if (project == null) {
+        Project wsdlProject = null;
+        DefaultProjectCatalogSupport catalogSupport = null;
+        if (project != null) {
+            wsdlProject = project;
+            //Fix for IZ 147816
+            SubprojectProvider provider = wsdlProject.getLookup().lookup(SubprojectProvider.class);
+            if (provider != null) {
+                catalogSupport = new DefaultProjectCatalogSupport(wsdlProject);
+            }
+        } else {
             FileObject wsdlFile = model.getModelSource().getLookup().lookup(FileObject.class);
             if(wsdlFile != null) {
-                project = FileOwnerQuery.getOwner(wsdlFile);
+                catalogSupport = DefaultProjectCatalogSupport.getInstance(wsdlFile);
+                wsdlProject = FileOwnerQuery.getOwner(wsdlFile);
             }
         }
-        if (project != null) {
+        if (wsdlProject != null) {
             projectsFolderNode = new FolderNode(new Children.Array()); 
             projectsFolderNode.setDisplayName(NbBundle.getMessage(ElementOrTypeChooserHelper.class, "LBL_ByFile_DisplayName"));
-            LogicalViewProvider viewProvider = project.getLookup().lookup(LogicalViewProvider.class);
+            LogicalViewProvider viewProvider = wsdlProject.getLookup().lookup(LogicalViewProvider.class);
 
 
             ArrayList<Node> nodes = new ArrayList<Node>();
-            nodes.add(new EnabledNode(new SchemaProjectFolderNode(viewProvider.createLogicalView(), project, filters)));
-
-            DefaultProjectCatalogSupport catalogSupport = new DefaultProjectCatalogSupport(project);
-            Set refProjects = catalogSupport.getProjectReferences();
-            if (refProjects != null && refProjects.size() > 0) {
-                for (Object o : refProjects) {
-                    Project refPrj = (Project) o;
-                    viewProvider = refPrj.getLookup().lookup(LogicalViewProvider.class);
-                    nodes.add(new EnabledNode(new SchemaProjectFolderNode(viewProvider.createLogicalView(), refPrj, filters)));
+            nodes.add(new EnabledNode(new SchemaProjectFolderNode(viewProvider.createLogicalView(), wsdlProject, filters)));
+            
+            if (catalogSupport != null) {
+                Set refProjects = catalogSupport.getProjectReferences();
+                if (refProjects != null && refProjects.size() > 0) {
+                    for (Object o : refProjects) {
+                        Project refPrj = (Project) o;
+                        viewProvider = refPrj.getLookup().lookup(LogicalViewProvider.class);
+                        nodes.add(new EnabledNode(new SchemaProjectFolderNode(viewProvider.createLogicalView(), refPrj, filters)));
+                    }
                 }
             }
             projectsFolderNode.getChildren().add(nodes.toArray(new Node[nodes.size()]));

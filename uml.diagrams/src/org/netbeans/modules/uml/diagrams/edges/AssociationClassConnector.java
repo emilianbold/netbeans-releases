@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.diagrams.edges;
 
+import org.netbeans.modules.uml.drawingarea.ConnectionAnchor;
 import java.awt.BasicStroke;
 import java.awt.Point;
 import java.awt.Rectangle;

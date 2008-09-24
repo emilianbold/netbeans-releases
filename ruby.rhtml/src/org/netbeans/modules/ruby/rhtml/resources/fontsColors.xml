@@ -45,10 +45,10 @@ made subject to such option by the copyright holder.
 <fontscolors>
     <!-- See http://ui.netbeans.org/docs/ui/editor_fonts_colors/Editor_fonts_and_colors.htm#jsp -->
     <!-- RHTML tokens -->
-    <fontcolor name="ruby-delimiter" foreColor="black" bgColor="ffD8EED2" default="default">
+    <fontcolor name="ruby-delimiter" foreColor="black" bgColor="ffe3f2e1" default="default">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="html" default="default"/>
-    <fontcolor name="ruby" bgColor="ffD8EED2" default="default"/>
-    <fontcolor name="RUBYCOMMENT" bgColor="ffD8EED2" default="comment"/>
+    <fontcolor name="ruby" bgColor="ffe3f2e1" default="default"/>
+    <fontcolor name="RUBYCOMMENT" bgColor="ffe3f2e1" default="comment"/>
 </fontscolors>

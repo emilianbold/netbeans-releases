@@ -235,8 +235,9 @@ public class NodeTreeModel extends DefaultTreeModel {
                 return;
             }
             
-            for (TreeView tw : m.views) tw.removedNodes(ev.removed);
-            
+            for (TreeView tw : m.views) {
+                tw.removedNodes(ev.removed);
+            }
             m.nodesWereRemoved(ev.getVisualizer(), ev.getArray(), ev.removed.toArray());
         }
 

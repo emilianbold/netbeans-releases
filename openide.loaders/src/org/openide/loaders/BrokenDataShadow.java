@@ -76,6 +76,7 @@ import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 /** For representing data shadows with broken link to original file.
@@ -106,6 +107,11 @@ final class BrokenDataShadow extends MultiDataObject {
             }
         }
         enqueueBrokenDataShadow(this);
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
         
     /** Map of <String(nameoffileobject), DataShadow> */

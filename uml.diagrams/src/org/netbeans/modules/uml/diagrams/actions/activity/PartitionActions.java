@@ -99,13 +99,14 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
             popupMenu.add(new AddRowAction(loc("CTL_AddPartitionRow")));
         } else
         {
-            popupMenu.add(activityPartitionWidget.isHorizontalLayout() ? new AddColumnAction(loc("CTL_AddPartitionColumn")) : new AddRowAction(loc("CTL_AddPartitionRow")));
+            popupMenu.add(activityPartitionWidget.getOrientation() == Orientation.HORIZONTAL ? 
+                new AddColumnAction(loc("CTL_AddPartitionColumn")) : new AddRowAction(loc("CTL_AddPartitionRow")));
         }
         for (CompartmentWidget w : activityPartitionWidget.getCompartmentWidgets())
         {
             if (w.isSelected())
             {
-                String name = activityPartitionWidget.isHorizontalLayout()? 
+                String name = activityPartitionWidget.getOrientation() == Orientation.HORIZONTAL? 
                     loc("CTL_DeletePartitionColumn") : loc("CTL_DeletePartitionRow");
                 popupMenu.add(new DeleteCompartmentWidgetAction(w, name));
                 break;

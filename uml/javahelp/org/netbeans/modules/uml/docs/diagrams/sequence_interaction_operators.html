@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Interaction Operators (UML Modeling)</title>
+</head>
+<body>
+<h2>Interaction Operators</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The IDE's UML Modeling feature offers a menu of interaction operators that lets you easily select the base operator for any combined fragment in your Sequence diagram. The table below describes the available interaction operators:</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr valign="top">
+<th scope="col" align="left">Interaction Operator</th>
+<th scope="col" align="left">Description</th>
+</tr>
+<tr valign="top">
+<td>Alt</td>
+<td>Designates that the combined fragment represents a choice of behavior. No more than one operand executes for an Alt operation. The operand that executes must have a guard expression that evaluates to true at this point in the interaction. For operands that have no guard, the IDE assumes an implicit true guard. The set of message lines that defines a choice is the union of the (guarded) message lines of the operands. </td>
+</tr>
+<tr valign="top">
+<td>Assert</td>
+<td>Designates that the combined fragment represents an assertion. The subsequences described by the assertion operand must execute.</td>
+</tr>
+<tr valign="top">
+<td>Else</td>
+<td>Designates an guarded operand that is the negation of the conjunction of all other guards in the enclosing combined fragment.</td>
+</tr>
+<tr valign="top">
+<td>Loop</td>
+<td>Designates that the combined fragment represents a loop. Each time the loop operand repeats, the guard expression is evaluated. The guard can include a specific number of iterations of the loop. The term for minimum value for iterations is <tt>minint</tt>. The term for maximum number is <tt>maxint</tt>. After the minimum number of iterations executes, and the Boolean expression is false, the loop terminates.</td>
+</tr>
+<tr valign="top">
+<td>Neg</td>
+<td>Designates that the combined fragment represents message lines that are impossible. The set of message lines that define a negative combined fragment is equal to the set of message lines given by its (sole) operand.</td>
+</tr>
+<tr valign="top">
+<td>Opt</td>
+<td>Designates that the combined fragment represents a choice of behavior where either the (sole) operand happens or nothing happens. An option is a shorthand for a choice where there is only one operand and the second operand is empty.</td>
+</tr>
+<tr valign="top">
+<td>Par</td>
+<td>Designates that the combined fragment represents a parallel merge between the behaviors of the operands. You can interleave the event occurrences of the different operands in any way as long as the ordering imposed by each operand is preserved. The set of message lines that defines a parallel merge is a set of message lines that describes all the ways that event occurrences of the operands can be interleaved without obstructing the order of the event occurrences within the operand.</td>
+</tr>
+<tr valign="top">
+<td>Ref</td>
+<td>Designates that the combined fragment box both references and represents a <a href="sequence_creating_interaction_occ_to_nest_diagrams.html">nested Sequence diagram</a>.</td>
+</tr>
+<tr valign="top">
+<td>Region</td>
+<td>Designates that the combined fragment represents a critical region. A critical region means that the message lines of the region cannot be interleaved by other event occurrences (on those lifelines covered by the region), even though enclosing combined fragments may imply that some event occurrences may interleave into the region. Thus the set of message lines of enclosing constructs are restricted by critical regions.</td>
+</tr>
+<tr valign="top">
+<td>Seq</td>
+<td>Designates that the combined fragment represents a weak sequencing between the behaviors of the operands. Weak sequencing exists where the ordering of event occurrences within each of the operands is maintained in the result; or, where event occurrences on different participants (lifelines) from different operands can come in any order; or, where event occurrences on the same participant from different operands are ordered such that the event occurrences of the left operand comes before that of the right operand. Thus weak sequencing reduces to a parallel merge when the operands are on disjunct sets of participants. Weak sequencing reduces to strict sequencing when the operands work on only one participant.</td>
+</tr>
+<tr valign="top">
+<td>Strict</td>
+<td>Designates that the combined fragment represents a strict sequencing between the behaviors of the operands. This means that the vertical coordinate of the contained fragments is significant throughout the whole scope of the combined fragment and not only on one lifeline.</td>
+</tr>
+</table>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="sequence_creating_populating_combined_fragments.html">Creating and Populating Combined Fragments</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

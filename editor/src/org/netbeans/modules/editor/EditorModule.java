@@ -566,6 +566,8 @@ public class EditorModule extends ModuleInstall {
         // Don't use CloneableEditorSupport.getEditorKit so that it can safely
         // fallback to JEP.createEKForCT if it doesn't find Netbeans kit.
         private EditorKit findKit(String mimeType) {
+            if (!MimePath.validate(mimeType)) // #146276 - exclude invalid mime paths
+                return null;
             Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
             EditorKit kit = (EditorKit) lookup.lookup(EditorKit.class);
             return kit == null ? null : (EditorKit) kit.clone();

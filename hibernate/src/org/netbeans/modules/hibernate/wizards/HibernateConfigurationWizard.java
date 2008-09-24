@@ -221,7 +221,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
                 new HibernateConfigurationWizardDescriptor(project);
         if (Templates.getTargetFolder(wizard) == null) {
             HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
-            FileObject location = provider != null ? provider.getLocation() : null;
+            FileObject location = provider != null ? provider.getSourceLocation() : null;
             if (location != null) {
                 Templates.setTargetFolder(wizard, location);
             }

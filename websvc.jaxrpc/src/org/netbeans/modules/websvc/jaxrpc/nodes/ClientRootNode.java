@@ -98,7 +98,6 @@ public final class ClientRootNode extends AbstractNode {
 		return new Action[] {
 			org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction(),
 			null,
-//			org.openide.util.actions.SystemAction.get( org.netbeans.modules.websvc.jaxrpc.actions.RefreshClientsAction.class ),
 			org.openide.util.actions.SystemAction.get( org.openide.actions.FindAction.class ),
 			null,
 			org.openide.util.actions.SystemAction.get( org.openide.actions.PasteAction.class ),

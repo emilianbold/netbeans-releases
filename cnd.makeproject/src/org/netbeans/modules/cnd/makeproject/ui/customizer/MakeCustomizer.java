@@ -337,7 +337,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     public void save() {
-        projectPropPanel.save();
+        if (projectPropPanel != null) {
+            projectPropPanel.save();
+        }
     }
     
     

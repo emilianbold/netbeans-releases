@@ -42,8 +42,11 @@
 package org.netbeans.modules.masterfs.providers;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TooManyListenersException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 
 /** Can provide status and actions for FileObjects. Register it
@@ -54,9 +57,9 @@ import org.openide.filesystems.FileStatusListener;
  */
 public abstract class AnnotationProvider extends Object {
     /** listeners */
-    private List fsStatusListener = new ArrayList();
+    private List<FileStatusListener> fsStatusListener = new ArrayList<FileStatusListener>();
     /** lock for modification of listeners */
-    private static Object LOCK = new Object ();
+    private static final Object LOCK = new Object();
     
     
     /** Annotate the name of a file cluster.
@@ -64,7 +67,7 @@ public abstract class AnnotationProvider extends Object {
     * @param files an immutable set of {@link FileObject}s belonging to this filesystem
     * @return the annotated name or null if this provider does not know how to annotate these files
     */
-    public abstract String annotateName (String name, java.util.Set files);
+    public abstract String annotateName(String name, Set<? extends FileObject> files);
 
     /** Annotate the icon of a file cluster.
      * <p>Please do <em>not</em> modify the original; create a derivative icon image,
@@ -74,12 +77,12 @@ public abstract class AnnotationProvider extends Object {
     * @param files an immutable set of {@link FileObject}s belonging to this filesystem
     * @return the annotated icon or null if some other provider shall anotate the icon
     */
-    public abstract java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files);
+    public abstract java.awt.Image annotateIcon(java.awt.Image icon, int iconType, Set<? extends FileObject> files);
     
     /** Annotate a name such that the returned value contains HTML markup.
      * The return value less the html content should typically be the same 
      * as the return value from <code>annotateName()</code>.  This is used,
-     * for example, by VCS filesystems to de&euml;phasize the status information
+     * for example, by VCS filesystems to deemphasize the status information
      * included in the file name by using a light grey font color. 
      * <p>
      * For consistency with <code>Node.getHtmlDisplayName()</code>, 
@@ -88,16 +91,26 @@ public abstract class AnnotationProvider extends Object {
      * the filesystem they proxy does not provide an implementation of
      * HTMLStatus.
      *
+     * @param name the name suggested by default. It cannot contain HTML
+     * markup tags but must escape HTML metacharacters. For example
+     * "&lt;default package&gt;" is illegal but "&amp;lt;default package&amp;gt;"
+     * is fine.
+     * @param files an immutable set of {@link FileObject}s belonging to this filesystem
+     * @return the annotated name. It may be the same as the passed-in name.
+     * It may be null if getStatus returned status that doesn't implement
+     * HtmlStatus but plain Status.
+     * 
      * @see org.openide.awt.HtmlRenderer
      * @see <a href="@org-openide-loaders@/org/openide/loaders/DataNode.html#getHtmlDisplayName()"><code>DataNode.getHtmlDisplayName()</code></a>
      * @see org.openide.nodes.Node#getHtmlDisplayName
      **/
-    public abstract String annotateNameHtml (String name, java.util.Set files);
+    public abstract String annotateNameHtml(String name, Set<? extends FileObject> files);
 
     /** Provides actions that should be added to given set of files.
+     * @param files an immutable set of {@link FileObject}s belonging to this filesystem
      * @return null or array of actions for these files.
      */
-    public abstract javax.swing.Action[] actions (java.util.Set files);
+    public abstract javax.swing.Action[] actions(Set<? extends FileObject> files);
     
     //
     // Listener support
@@ -108,11 +121,10 @@ public abstract class AnnotationProvider extends Object {
     * The implementation registers the listener only when getStatus () is 
     * overriden to return a special value.
     *
-    * @param listener The listener to register.
+     * @param listener The listener to register.
+     * @throws java.util.TooManyListenersException
     */
-    public final void addFileStatusListener (
-        org.openide.filesystems.FileStatusListener listener
-    ) throws java.util.TooManyListenersException {
+    public final void addFileStatusListener(FileStatusListener listener) throws TooManyListenersException {
         synchronized (LOCK) {
             fsStatusListener.add(listener);
         }
@@ -121,9 +133,7 @@ public abstract class AnnotationProvider extends Object {
     /** Removes FileStatusListener from the list of listeners.
      *@param listener The listener to remove.
      */
-    public final void removeFileStatusListener (
-        org.openide.filesystems.FileStatusListener listener
-    ) {
+    public final void removeFileStatusListener(FileStatusListener listener) {
         synchronized (LOCK) {
             fsStatusListener.remove(listener);
         }
@@ -133,16 +143,18 @@ public abstract class AnnotationProvider extends Object {
     *
     * @param event The event to be fired
     */
-    protected final void fireFileStatusChanged(org.openide.filesystems.FileStatusEvent event) {
-        List listeners = new ArrayList();
+    protected final void fireFileStatusChanged(FileStatusEvent event) {
+        List<FileStatusListener> listeners = new ArrayList<FileStatusListener>();
         synchronized (LOCK) {
             listeners.addAll(fsStatusListener);
         }
-        for (Iterator it = listeners.iterator(); it.hasNext();) {
-            FileStatusListener l = (FileStatusListener) it.next();
-            l.annotationChanged(event);
+        for (FileStatusListener fileStatusListener : listeners) {
+            fileStatusListener.annotationChanged(event);
         }
     }    
     
+    /** Returns an InterceptionListener.
+     * @return InterceptionListener
+     */
     public abstract InterceptionListener getInterceptionListener();
 }

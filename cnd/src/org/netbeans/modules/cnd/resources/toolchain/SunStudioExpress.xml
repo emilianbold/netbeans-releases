@@ -58,8 +58,8 @@ made subject to such option by the copyright holder.
             <performance_debug flags="-g -xO3 -xhwcprof"/>
             <test_coverage flags="-xprofile=tcov -xinline="/>
             <diagnosable_release flags="-g -xO2"/>
-            <release flags="-xO3 -xstrconst"/>
-            <performance_release flags="-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -xalias_level=basic"/>
+            <release flags="-fast"/>
+            <performance_release flags="-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -106,8 +106,8 @@ made subject to such option by the copyright holder.
             <performance_debug flags="-g0 -xO3 -xhwcprof"/>
             <test_coverage flags="-xprofile=tcov +d -xinline="/>
             <diagnosable_release flags="-g0 -xO2"/>
-            <release flags="-xO3"/>
-            <performance_release flags="-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no -xalias_level=simple"/>
+            <release flags="-fast"/>
+            <performance_release flags="-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no"/>
         </development_mode>
         <warning_level>
             <no_warnings flags="-w"/>
@@ -158,7 +158,7 @@ made subject to such option by the copyright holder.
             <performance_debug flags="-g -O"/>
             <test_coverage flags="-g"/>
             <diagnosable_release flags="-g -O2"/>
-            <release flags="-O3"/>
+            <release flags="-fast"/>
             <performance_release flags="-O4"/>
         </development_mode>
         <warning_level>
@@ -188,7 +188,7 @@ made subject to such option by the copyright holder.
         <library_search flags="-L"/>
         <dynamic_library_search flags="-R"/>
         <library flags="-l"/>
-        <PIC flags="-Kpic "/>
+        <PIC flags="-KPIC "/>
         <static_library flags="-Bstatic"/>
         <dynamic_library flags="-Bdynamic"/>
         <dynamic_library_basic flags="-G "/>

@@ -54,6 +54,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -64,8 +65,6 @@ import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -76,12 +75,15 @@ import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Registry;
-import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
-import org.netbeans.spi.editor.completion.*;
+import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.ErrorManager;
@@ -113,14 +115,23 @@ public class GsfCompletionProvider implements CompletionProvider {
             return null;
         }
     }
-    
-    static CodeCompletionHandler getCompletable(Document doc, int offset) {
+
+    private static Language getCompletableLanguage(Document doc, int offset) {
         BaseDocument baseDoc = (BaseDocument)doc;
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
         for (Language l : list) {
             if (l.getCompletionProvider() != null) {
-                return l.getCompletionProvider();
+                return l;
             }
+        }
+
+        return null;
+    }
+    
+    static CodeCompletionHandler getCompletable(Document doc, int offset) {
+        Language l = getCompletableLanguage(doc, offset);
+        if (l != null) {
+            return l.getCompletionProvider();
         }
 
         return null;
@@ -213,7 +224,8 @@ public class GsfCompletionProvider implements CompletionProvider {
         JavaCompletionQuery query = new JavaCompletionQuery(DOCUMENTATION_QUERY_TYPE, -1);
         query.element = element;
 
-        return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
+        //return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
+        return new AsyncCompletionTask(query, EditorRegistry.lastFocusedComponent());
     }
 
     static final class JavaCompletionQuery extends AsyncCompletionQuery implements CancellableTask<CompilationController> {
@@ -243,8 +255,9 @@ public class GsfCompletionProvider implements CompletionProvider {
 
             if (newCaretOffset >= caretOffset) {
                 try {
-                    if (isJavaIdentifierPart(component.getDocument()
-                                                          .getText(caretOffset,
+                    Document doc = component.getDocument();
+                    Language language = getCompletableLanguage(doc, caretOffset);
+                    if (isJavaIdentifierPart(language, doc.getText(caretOffset,
                                     newCaretOffset - caretOffset))) {
                         return;
                     }
@@ -330,8 +343,10 @@ public class GsfCompletionProvider implements CompletionProvider {
                         return true;
                     if (newOffset >= caretOffset) {
                         try {
-                            String prefix = component.getDocument().getText(offset, newOffset - offset);
-                            filterPrefix = isJavaIdentifierPart(prefix) ? prefix : null;
+                            Document doc = component.getDocument();
+                            Language language = getCompletableLanguage(doc, caretOffset);
+                            String prefix = doc.getText(offset, newOffset - offset);
+                            filterPrefix = isJavaIdentifierPart(language, prefix) ? prefix : null;
                             if (filterPrefix != null && filterPrefix.length() == 0)
                                 anchorOffset = newOffset;
                         } catch (BadLocationException e) {}
@@ -438,6 +453,9 @@ public class GsfCompletionProvider implements CompletionProvider {
             
                     int index = info.getCurrentIndex();
                     anchorOffset = info.getAnchorOffset();
+                    if (anchorOffset == -1) {
+                        anchorOffset = offset;
+                    }
                     toolTip = new MethodParamsTipPaintComponent(parameterList, index, component);
                     //startPos = (int)sourcePositions.getEndPosition(env.getRoot(), mi.getMethodSelect());
                     //String text = controller.getText().substring(startPos, offset);
@@ -598,10 +616,15 @@ public class GsfCompletionProvider implements CompletionProvider {
             }
         }
 
-        // TODO - delegate to language support!
-        private boolean isJavaIdentifierPart(String text) {
+        private boolean isJavaIdentifierPart(Language language, String text) {
+            GsfLanguage gsfLanguage = language != null ? language.getGsfLanguage() : null;
             for (int i = 0; i < text.length(); i++) {
-                if (!(Character.isJavaIdentifierPart(text.charAt(i)))) {
+                char c = text.charAt(i);
+                if (gsfLanguage == null) {
+                    if (!Character.isJavaIdentifierPart(c)) {
+                        return false;
+                    }
+                } else if (!gsfLanguage.isIdentifierChar(c)) {
                     return false;
                 }
             }

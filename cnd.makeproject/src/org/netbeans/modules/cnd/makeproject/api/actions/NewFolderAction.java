@@ -42,7 +42,9 @@
 package org.netbeans.modules.cnd.makeproject.api.actions;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -62,6 +64,13 @@ public class NewFolderAction extends NodeAction {
 	assert thisNode != null;
 	Project project = (Project)n.getValue("Project"); // NOI18N
 	assert project != null;
+        
+        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        if (!makeConfigurationDescriptor.okToChange()) {
+            return;
+        }
+        
 	Folder newFolder = folder.addNewFolder(true);
 	MakeLogicalViewProvider.setVisible(project, newFolder); 
     }

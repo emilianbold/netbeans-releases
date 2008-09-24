@@ -6,7 +6,6 @@ require 'rubygems'
 require 'rake'
 
 app = Rake.application
-app.do_option('--silent', nil)
 app.init
 app.load_rakefile
 commented_tasks = app.tasks

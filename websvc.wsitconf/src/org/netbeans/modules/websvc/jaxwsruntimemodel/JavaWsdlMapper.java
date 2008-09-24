@@ -68,6 +68,7 @@ import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * This class is compiled from:
@@ -131,7 +132,6 @@ public class JavaWsdlMapper {
      * @return the <code>wsdl:serviceName</code> for the <code>implClass</code>
      */
     public static QName getServiceName(FileObject implClass) {
-
         final java.lang.String[] serviceNameQNameARR = new String[2];
         if (implClass == null) {
             return null;
@@ -142,6 +142,7 @@ public class JavaWsdlMapper {
                  public void run(CompilationController controller) throws java.io.IOException {
                      controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                      SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                     if (sourceUtils == null) return; // see 147028
                      TypeElement te = sourceUtils.getTypeElement();
 
                      serviceNameQNameARR[0] = te.getSimpleName().toString() + SERVICE;

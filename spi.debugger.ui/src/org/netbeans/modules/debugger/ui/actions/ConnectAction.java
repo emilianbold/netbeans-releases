@@ -82,12 +82,6 @@ public final class ConnectAction extends AbstractAction {
             )
         );
         putValue (
-            Action.SMALL_ICON, 
-            Utils.getIcon (
-                "org/netbeans/modules/debugger/resources/actions/Attach" // NOI18N
-            )
-        );
-        putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/Attach.gif" // NOI18N
         );

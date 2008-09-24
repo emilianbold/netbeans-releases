@@ -90,7 +90,7 @@ public class FKit extends NbEditorKit {
      */
     @Override
     public Syntax createSyntax(Document doc) {
-        return new FSyntax();
+        return new FSyntax(doc);
     }
 
     /** Create the formatter appropriate for this kit */

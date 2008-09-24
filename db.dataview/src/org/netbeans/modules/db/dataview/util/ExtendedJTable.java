@@ -91,16 +91,16 @@ public class ExtendedJTable extends JTable {
         // Table column re-ordering is too badly implemented to enable.
         getTableHeader().setReorderingAllowed(false);
 
-        if (System.getProperty("os.name").contains("Mac")) {
+        if (isMacOs()) {
             // Work around Apple 4352937 (fixed in 10.5).
             if (System.getProperty("os.version").startsWith("10.4")) {
                 ((JLabel) getTableHeader().getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEADING);
             }
-
-            // Use an iTunes-style vertical-only "grid".
-            setShowHorizontalLines(false);
-            setShowVerticalLines(true);
         }
+        // Use an iTunes-style vertical-only "grid".
+        setShowHorizontalLines(false);
+        setShowVerticalLines(true);
+
     }
 
     /**
@@ -130,7 +130,7 @@ public class ExtendedJTable extends JTable {
             }
 
             // Mac OS' Aqua LAF never draws vertical grid lines, so we have to draw them ourselves.
-            if (System.getProperty("os.name").contains("Mac") && getShowVerticalLines()) {
+            if (getShowVerticalLines()) {
                 g.setColor(MAC_UNFOCUSED_UNSELECTED_VERTICAL_LINE_COLOR);
                 TableColumnModel colModel = getColumnModel();
                 int x = 0;
@@ -151,6 +151,8 @@ public class ExtendedJTable extends JTable {
         if (UIManager.getLookAndFeel().getClass().getName().contains("GTK")) {
             return (row % 2 == 0) ? Color.WHITE : UIManager.getColor("Table.background");
         } else if (System.getProperty("os.name").contains("Mac")) {
+            return (row % 2 == 0) ? Color.WHITE : MAC_OS_ALTERNATE_ROW_COLOR;
+        } else if (System.getProperty("os.name").contains("Win")) {
             return (row % 2 == 0) ? Color.WHITE : MAC_OS_ALTERNATE_ROW_COLOR;
         }
         return UIManager.getColor("Table.background");
@@ -184,32 +186,26 @@ public class ExtendedJTable extends JTable {
     private Component prepareComponent(Component c, int row, int column) {
         boolean focused = hasFocus();
         boolean selected = isCellSelected(row, column);
-        if(!selected) {
+        if (!selected) {
             c.setBackground(backgroundColorForRow(row));
         }
 
         if (c instanceof JComponent) {
             JComponent jc = (JComponent) c;
 
-            if (UIManager.getLookAndFeel().getClass().getName().contains("GTK") && c instanceof JCheckBox) {
+            if (isGtk() && c instanceof JCheckBox) {
                 // The Java 6 GTK LAF JCheckBox doesn't paint its background by default.
                 // Sun 5043225 says this is the intended behavior, though presumably not when it's being used as a table cell renderer.
                 jc.setOpaque(true);
-            } else if (System.getProperty("os.name").contains("Mac") && c instanceof JCheckBox) {
+            } else if (isMacOs() && c instanceof JCheckBox) {
                 // There's a similar situation on Mac OS.
                 jc.setOpaque(true);
                 // Mac OS 10.5 lets us use smaller checkboxes in table cells.
                 ((JCheckBox) jc).putClientProperty("JComponent.sizeVariant", "mini");
             }
 
-            if (getCellSelectionEnabled() == false && isEditing() == false) {
-                if (System.getProperty("os.name").contains("Mac")) {
-                    jc.setBorder(new AquaTableCellBorder(selected, focused, getShowVerticalLines()));
-                } else {
-                    // FIXME: doesn't Windows have row-wide selection focus?
-                    // Hide the cell focus.
-                    jc.setBorder(null);
-                }
+            if (getCellSelectionEnabled() == false) {
+                jc.setBorder(new AquaTableCellBorder(selected, focused, getShowVerticalLines()));
             }
         }
         return c;
@@ -276,7 +272,7 @@ public class ExtendedJTable extends JTable {
     protected void configureEnclosingScrollPane() {
         super.configureEnclosingScrollPane();
 
-        if (System.getProperty("os.name").contains("Mac") == false) {
+        if (isMacOs() == false) {
             return;
         }
 
@@ -294,7 +290,6 @@ public class ExtendedJTable extends JTable {
                 }
 
                 // JTable copy & paste above this point; our code below.
-
                 // Remove the scroll pane's focus ring.
                 scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
@@ -305,5 +300,19 @@ public class ExtendedJTable extends JTable {
                 scrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, panel);
             }
         }
+    }
+
+    /**
+     * Tests whether we're running on Mac OS. 
+     */
+    private static boolean isMacOs() {
+        return System.getProperty("os.name").contains("Mac");
+    }
+
+    /**
+     * Tests whether we're using the GTK+ LAF (and so are probably on Linux or Solaris).
+     */
+    private static boolean isGtk() {
+        return UIManager.getLookAndFeel().getClass().getName().contains("GTK");
     }
 }

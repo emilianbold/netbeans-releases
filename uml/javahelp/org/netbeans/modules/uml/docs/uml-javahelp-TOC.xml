@@ -15,6 +15,7 @@
 			<tocitem text="Design: UML Modeling Windows" target="uml_basics_design_windows">
 				<tocitem text="Diagram Editor" target="uml_basics_diagram_windows" />
 				<tocitem text="Modeling Palette" target="uml_basics_palette" />
+				<tocitem text="Context Palette" target="uml_basics_context_palette" />
 				<tocitem text="Properties Window" target="uml_basics_properties_window" />
 				<tocitem text="Documentation Window" target="uml_basics_documentation_window" />
 				<tocitem text="Source Editor" target="uml_basics_source_editor" />
@@ -30,7 +31,6 @@
 				<tocitem text="Setting UML Modeling Preferences" target="uml_prefs_using_preferences_editor" />
 				<tocitem text="UML Categories in the Options Window" target="uml_prefs_categories_in_preferences_editor" />
 				<tocitem text="Configuring Domain Templates Options" target="uml_prefs_configuring_templates_options" />
-				<tocitem text="Specifying Display and Drawing Preferences" target="uml_editors_windows_specifying_display_drawing_preferences" />
 			</tocitem>
 		</tocitem>
 		<tocitem text="Understanding Projects and Diagrams" target="uml_basics_understanding_projects_diagrams">
@@ -58,7 +58,6 @@
 			<tocitem text="Using the Diagram Editor" target="uml_editors_windows_using_diagram_windows">
 				<tocitem text="Zooming in Diagrams" target="uml_editors_windows_zooming_in_diagrams" />
 				<tocitem text="Stacking Diagram Elements" target="uml_editors_windows_stacking_diagram_elements" />
-				<tocitem text="Specifying Display and Drawing Preferences" target="uml_editors_windows_specifying_display_drawing_preferences" />
 				<tocitem text="Navigating Within Diagrams" target="uml_editors_windows_navigating_within_diagrams">
 					<tocitem text="Using the Overview Window" target="uml_editors_windows_using_overview_window" />
 					<tocitem text="Navigating Between Instances and Classifiers" target="uml_editors_windows_navigating_between_instances_classifiers" />
@@ -99,11 +98,12 @@
 				<tocitem text="Changing Diagram Element Size" target="uml_diagrams_editing_diagram_elements_changing_size" />
 				<tocitem text="Finding Diagram Elements in the Projects Window" target="uml_diagrams_editing_diagram_elements_finding" />
 				<tocitem text="Using the Redefine Dialog Box" target="uml_diagrams_editing_diagram_elements_using_redefine_db" />
+				<tocitem text="Deleting Diagram Elements" target="uml_diagrams_deleting_diagram_elements" />
+			    <tocitem text="Deleting Diagrams" target="uml_diagrams_deleting_diagrams" />
 			</tocitem>
-			<tocitem text="Deleting Diagram Elements" target="uml_diagrams_deleting_diagram_elements" />
-			<tocitem text="Deleting Diagrams" target="uml_diagrams_deleting_diagrams" />
+			
 			<tocitem text="Working With Activity Diagrams" target="uml_diagrams_activity_ww_diagram_elements">
-				<tocitem text="Working With Activity Groups" target="uml_diagrams_activity_ww_activity_groups">
+				<tocitem text="Working With Activity Groups" target="uml_diagrams_activity_ww_activity_groups">/>
 					<tocitem text="Selecting and Modifying an Activity Group Kind" target="uml_diagrams_activity_selecting_modifying_activity_group_kind" />
 					<tocitem text="Selecting and Modifying an Activity Group GroupKind" target="uml_diagrams_activity_selecting_modifying_activity_group_groupkind" />
 					<tocitem text="Adding or Modifying Activity Group Conditions" target="uml_diagrams_activity_adding_modifying_activity_group_conditions" />

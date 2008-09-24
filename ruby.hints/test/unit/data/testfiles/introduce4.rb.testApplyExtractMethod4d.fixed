@@ -2,7 +2,7 @@ def blocktest
   [4,5,6].each do |foo|
      x = 50
      y = 30
-     mymethod(x, y)
+     new_name(x, y)
   end #firstblock
   beforeblock = 50
   notusedinblock = 10
@@ -32,7 +32,7 @@ def blocktest
 end
 
 # TODO Comment
-def mymethod(x, y)
+def new_name(x, y)
   x = x+y
 end
 

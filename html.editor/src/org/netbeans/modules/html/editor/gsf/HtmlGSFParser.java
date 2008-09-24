@@ -86,8 +86,11 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 HtmlParserResult result = null;
 
                 CharSequence buffer = job.reader.read(file);
-                int caretOffset = job.reader.getCaretOffset(file);
-
+                if(buffer == null) {
+                    //likely invalid state, the source shouldn't be null I guess
+                    LOGGER.info("Job.reader.read(file) returned null for file " + file.getFile().getAbsolutePath());
+                    buffer = ""; //recover
+                }
                 List<SyntaxElement> elements = SyntaxParser.parseImmutableSource(buffer);
 
                 if (LOG) {

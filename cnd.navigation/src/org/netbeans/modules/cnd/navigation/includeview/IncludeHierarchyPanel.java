@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.navigation.includeview;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -53,13 +54,17 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.KeyStroke;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
@@ -141,7 +146,11 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private MyBeanTreeView getTreeView(){
         return (MyBeanTreeView)hierarchyPane;
     }
-    
+
+    private Color getBorderColor(){
+        return UIManager.getDefaults().getColor("SplitPane.shadow"); // NOI18N
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -264,7 +273,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         add(toolBar, gridBagConstraints);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("SplitPane.shadow")));
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(getBorderColor()));
         jPanel2.setFocusable(false);
         jPanel2.setMinimumSize(new java.awt.Dimension(1, 1));
         jPanel2.setPreferredSize(new java.awt.Dimension(1, 1));

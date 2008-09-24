@@ -101,7 +101,7 @@ public class FileSystemCapability extends Object {
             return;
         }
 
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
     }
 
     /** Basic operation that tests whether this object

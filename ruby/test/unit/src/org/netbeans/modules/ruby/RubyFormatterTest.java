@@ -74,7 +74,7 @@ public class RubyFormatterTest extends RubyTestBase {
     //    addAllRubyFiles(root, files);
     //    reformatAll(files);
     //}
-    
+
     private void addAllRubyFiles(FileObject file, List<FileObject> files) {
         if (file.isFolder()) {
             for (FileObject c : file.getChildren()) {
@@ -84,22 +84,22 @@ public class RubyFormatterTest extends RubyTestBase {
             files.add(file);
         }
     }
-    
+
     public void testReformatAll() {
         // Find ruby files
         List<FileObject> files = findJRubyRubyFiles();
         assertTrue(files.size() > 0);
-        
+
         reformatAll(files);
     }
-    
+
     private void reformatAll(List<FileObject> files) {
         IndentPrefs preferences = new IndentPrefs(2,2);
         RubyFormatter formatter = getFormatter(preferences);
-        
+
         int fileCount = files.size();
         int count = 0;
-        
+
         // indent each one
         for (FileObject fo : files) {
             count++;
@@ -108,12 +108,12 @@ public class RubyFormatterTest extends RubyTestBase {
                 // This file is okay and shouldn't end in column 0
                 continue;
             }
-            
+
 if (fo.getName().equals("delegating_attributes.rb")) {
     System.err.println("SKIPPING known bad file " + fo.getNameExt());
     continue;
 }
-            
+
 // This bug triggers #108889
 if (fo.getName().equals("action_controller_dispatcher") && fo.getParent().getName().equals("dispatcher")) {
     System.err.println("SKIPPING known bad file " + fo.getNameExt());
@@ -124,24 +124,25 @@ if (fo.getName().equals("parse_f95") && fo.getParent().getName().equals("parsers
     System.err.println("SKIPPING known bad file " + fo.getNameExt());
     continue;
 }
-// Tested by RubyLexerTest#testDefRegexp 
+// Tested by RubyLexerTest#testDefRegexp
 if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick")) {
     System.err.println("SKIPPING known bad file " + fo.getNameExt());
     continue;
 }
             System.err.println("Formatting file " + count + "/" + files.size() + " : " + FileUtil.getFileDisplayName(fo));
-            
+
             // check that we end up at indentation level 0
             BaseDocument doc = getDocument(fo);
-            
+
             try {
-                formatter.reindent(doc, 0, doc.getLength());
+
+                format(doc, formatter, null, 0, doc.getLength(), true);
             } catch (Exception ex) {
                 System.err.println("Exception processing " + FileUtil.getFileDisplayName(fo));
                 fail(ex.toString());
                 throw new RuntimeException(ex);
             }
-            
+
             // Make sure that we end up on column 0, as all balanced Ruby files typically do
             // (check for special exceptions, e.g. formatted strings and whatnot)
             try {
@@ -154,21 +155,21 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
                     }
 
                     int indentation = Utilities.getRowFirstNonWhite(doc, offset) - offset;
-                    
+
                     if (indentation != 0) {
                         // Make sure the file actually compiles - we might be picking up some testfiles in the
                         // JRuby tree which don't actually pass
                         ParserResult result = parse(fo);
                         RubyParseResult rpr = (RubyParseResult)result;
-                        
+
                         if (rpr.getRootNode() == null) {
                             System.err.println("WARNING - invalid formatting for " + FileUtil.getFileDisplayName(fo) + " " +
                                     "but it also doesn't parse with JRuby so ignoring");
                             break;
                         }
                     }
-                    
-                    
+
+
                     assertEquals("Failed formatting file " + count + "/" + fileCount + " \n" + fo.getNameExt() + "\n: Last line not at 0 indentation in " + FileUtil.getFileDisplayName(fo) + " indent=" + indentation + " line=" +
                             doc.getText(offset, Utilities.getRowEnd(doc, offset)-offset), 0, indentation);
                     break;
@@ -176,11 +177,11 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
             } catch (Exception ex) {
                 fail(ex.toString());
             }
-            
+
             // Also try re-lexing buffer incrementally and make sure it makes sense! (and handle bracket completion stuff)
         }
     }
-    
+
     public void testFormatApe() throws Exception {
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/ape.rb");
@@ -189,20 +190,20 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
     public void testFormatMephisto1() throws Exception {
         reformatFileContents("testfiles/mephisto-site.rb");
     }
-    
+
     public void testFormatMephisto2() throws Exception {
         reformatFileContents("testfiles/mephisto_controller.rb");
     }
-    
+
     public void testFormatMephisto3() throws Exception {
         reformatFileContents("testfiles/mephisto-articles-controller.rb");
     }
-    
+
     public void testFormat110332() throws Exception {
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/percent-expressions.rb");
     }
-    
+
     public void testFormatDate() throws Exception {
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/date.rb");
@@ -212,13 +213,13 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/resolv.rb");
     }
-        
+
     public void testFormatBegin() throws Exception {
         // Test for http://scripting.netbeans.org/issues/show_bug.cgi?id=112259
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/begin.rb");
     }
-        
+
     public void testFormatPostgres() throws Exception {
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/postgresql_adapter.rb");
@@ -229,37 +230,38 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
                "x =\n  1", null);
     }
 
-    public void testLineContinuation2() throws Exception {
-        format("x =\n1", 
-               "x =\n    1", new IndentPrefs(2,4));
-    }
-
-    public void testLineContinuation3() throws Exception {
-        format("x =\n1\ny = 5", 
-               "x =\n    1\ny = 5", new IndentPrefs(2,4));
-    }
+    // Separate setting for line continuations not yet supported
+    //public void testLineContinuation2() throws Exception {
+    //    format("x =\n1",
+    //           "x =\n    1", new IndentPrefs(2,4));
+    //}
+    //
+    //public void testLineContinuation3() throws Exception {
+    //    format("x =\n1\ny = 5",
+    //           "x =\n    1\ny = 5", new IndentPrefs(2,4));
+    //}
 
     public void testLineContinuation4() throws Exception {
-        format("def foo\nfoo\nif true\nx\nend\nend", 
+        format("def foo\nfoo\nif true\nx\nend\nend",
                "def foo\n  foo\n  if true\n    x\n  end\nend", null);
     }
 
     public void testLineContinuation5() throws Exception {
-        format("def foo\nfoo\nif true\nx\nend\nend", 
+        format("def foo\nfoo\nif true\nx\nend\nend",
                "def foo\n    foo\n    if true\n        x\n    end\nend", new IndentPrefs(4,4));
     }
 
     // Trigger lexer bug!
     //public void testLineContinuationBackslash() throws Exception {
-    //    format("x\\\n= 1", 
+    //    format("x\\\n= 1",
     //           "x\\\n  = 1", new IndentPrefs(2,4));
     //}
-    
+
     public void testLineContinuationComma() throws Exception {
         format("render foo,\nbar\nbaz",
                "render foo,\n  bar\nbaz", null);
     }
-    
+
     public void testQuestionmarkIndent1() throws Exception {
         format("j = t ?\n1 : 0\nx = 1",
                 "j = t ?\n  1 : 0\nx = 1", null);
@@ -273,12 +275,12 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
     public void testCommaIndent() throws Exception {
         insertNewline("puts foo,^", "puts foo,\n  ^", null);
     }
-    
+
     public void testQuestionmarkIndent3() throws Exception {
         insertNewline("j = t ?^",
                 "j = t ?\n  ^", null);
     }
-    
+
     public void testBackslashIndent() throws Exception {
         insertNewline("puts foo\\^", "puts foo\\\n  ^", null);
     }
@@ -301,19 +303,20 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         insertNewline("def foo\n=begin\nfoo^\n=end\nend",
                 "def foo\n=begin\nfoo\n^\n=end\nend", null);
     }
-    
+
     public void testLiterals3() throws Exception {
         insertNewline("def foo\nx = '\nfoo^\n'\nend",
                 "def foo\nx = '\nfoo\n^\n'\nend", null);
     }
-    
+
     public void testLineContinuationAlias() throws Exception {
         format("foo ==\ntrue",
                "foo ==\n  true", null);
         format("alias foo ==\ntrue",
                "alias foo ==\ntrue", null);
-        format("def ==\ntrue",
-               "def ==\n  true", new IndentPrefs(2,4));
+        // Different hangingindent not yet supported in the UI
+        //format("def ==\ntrue",
+        //       "def ==\n  true", new IndentPrefs(2,4));
     }
 
     public void testBrackets() throws Exception {
@@ -324,8 +327,9 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
     public void testBrackets2() throws Exception {
         format("x = [\n[5]\n]\ny",
                "x = [\n  [5]\n]\ny", null);
-        format("x = [\n[5]\n]\ny",
-               "x = [\n  [5]\n]\ny", new IndentPrefs(2,4));
+        // Different hangingindent not yet supported in the UI
+        //format("x = [\n[5]\n]\ny",
+        //       "x = [\n  [5]\n]\ny", new IndentPrefs(2,4));
     }
 
     public void testIndent1() throws Exception {
@@ -334,12 +338,12 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
 
     public void testIndent2() throws Exception {
         insertNewline("x = ^", "x = \n  ^", null);
-        insertNewline("x = ^", "x = \n    ^", new IndentPrefs(2,4));
-        insertNewline("x = ^ ", "x = \n^  ", null);
+        //insertNewline("x = ^", "x = \n    ^", new IndentPrefs(2,4));
+        insertNewline("x = ^ ", "x = \n  ^", null);
     }
 
     public void testIndent3() throws Exception {
-        insertNewline("      def foo^", "      def foo\n        ^", null);
+        insertNewline("      def foo^", "      def foo\n        ^\n      end", null);
     }
 
     public void testHeredoc1() throws Exception {
@@ -351,7 +355,7 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         format("def foo\n  s = <<-EOS\n  stuff\nEOS\nend",
                "def foo\n  s = <<-EOS\n  stuff\n  EOS\nend", null);
     }
-    
+
     public void testHeredoc3() throws Exception {
         format("def foo\n    s = <<EOS\nstuff\n  foo\nbar\nEOS\n  end",
                "def foo\n  s = <<EOS\nstuff\n  foo\nbar\nEOS\nend", null);
@@ -390,24 +394,24 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
             ")";
         format(unformatted, formatted, null);
     }
-    
+
     public void testDocumentRange1() throws Exception {
-        format("      def foo\n%<%foo%>%\n      end\n", 
+        format("      def foo\n%<%foo%>%\n      end\n",
                "      def foo\n        foo\n      end\n", null);
-        format("def foo\nfoo\nend\n", 
+        format("def foo\nfoo\nend\n",
                "def foo\n  foo\nend\n", null);
     }
 
     public void testDocumentRange2() throws Exception {
         format("def foo\n     if true\n           %<%xxx%>%\n     end\nend\n",
                 "def foo\n     if true\n       xxx\n     end\nend\n", null);
-    }    
+    }
 
     public void testDocumentRange3() throws Exception {
         format("class Foo\n  def bar\n  end\n\n\n%<%def test\nhello\nend%>%\nend\n",
                "class Foo\n  def bar\n  end\n\n\n  def test\n    hello\n  end\nend\n", null);
-    }    
-    
+    }
+
     public void testPercentWIndent110983a() throws Exception {
         insertNewline(
             "class Apple\n  def foo\n    snark %w[a b c]^\n    blah",
@@ -425,7 +429,7 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
             "class Apple\n  def foo\n    snark %w/a/^\n    blah",
             "class Apple\n  def foo\n    snark %w/a/\n    ^\n    blah", null);
     }
-    
+
     public void testPercentWIndent110983d() throws Exception {
         insertNewline(
             "class Apple\n  def foo\n    snark %W[a b c]^\n    blah",

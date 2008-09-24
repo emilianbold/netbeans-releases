@@ -53,7 +53,7 @@ import static org.netbeans.modules.servicetag.Util.*;
 /**
  * Service Tag Installer for Java SE.
  */
-public class Installer {
+class Installer {
     // System properties for testing
     private static String SVCTAG_DIR_PATH =
         "servicetag.dir.path";

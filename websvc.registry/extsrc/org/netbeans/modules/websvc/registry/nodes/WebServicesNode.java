@@ -53,17 +53,11 @@ import org.openide.nodes.PropertySupport.Reflection;
 import org.openide.nodes.Sheet.Set;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
-import org.openide.util.datatransfer.ExTransferable.Single;
-
-// FIXME CUT-PASTE FROM RAVE import org.netbeans.modules.websvc.registry.actions.AddToFormAction;
 import org.netbeans.modules.websvc.registry.actions.DeleteWebServiceAction;
 import org.netbeans.modules.websvc.registry.model.WebServiceData;
 import org.netbeans.modules.websvc.registry.model.WebServiceListModel;
-import java.awt.Image;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.io.IOException;
@@ -101,6 +95,7 @@ public class WebServicesNode extends AbstractNode implements WebServicesCookie {
         setIconBaseWithExtension("org/netbeans/modules/websvc/registry/resources/webservice.png");
         setShortDescription(wsData.getWSDescription());
 		getCookieSet().add(this);
+        setValue("wsdl-url", wsData.getURL());
     }
 
     // Create the popup menu:

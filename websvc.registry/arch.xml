@@ -156,9 +156,8 @@ this module at this time is websvc/core module.
  <answer id="arch-what">
   <p>
   <api name="WebServicesRegistry" category="friend" group="java" type="export" url="">
-This module provides an internal view of a web service plus actions on that view to the websvc/core
-module.  A corresponding UI for use by the user is also contained here.
-</api>
+    This module provides an information about web services available for use as a client in a project within the IDE.
+  </api>
   </p>
  </answer>
 

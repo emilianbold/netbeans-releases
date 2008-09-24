@@ -191,10 +191,10 @@ public class RunProfile implements ConfigurationAuxObject {
         if (isWindows()) {
             String term = getString("TerminalType_CommandWindow"); // NOI18N
             list.add(term);
-            termPaths.put(term, "start"); // NOI18N
-            termPaths.put(def, "start"); // NOI18N
-            termOptions.put(term, "sh \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + " \" -f \"{0}\" {1} {2}"); // NOI18N
-            termOptions.put(def,  "sh \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + " \" -f \"{0}\" {1} {2}"); // NOI18N
+            termPaths.put(term, "cmd.exe"); // NOI18N
+            termPaths.put(def, "cmd.exe"); // NOI18N
+            termOptions.put(term, "/c start sh \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + " \" -f \"{0}\" {1} {2}"); // NOI18N
+            termOptions.put(def,  "/c start sh \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + " \" -f \"{0}\" {1} {2}"); // NOI18N
         } else {
             // Start with the user's $PATH. Append various other directories and look
             // for gnome-terminal, konsole, and xterm.

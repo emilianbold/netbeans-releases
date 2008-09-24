@@ -110,6 +110,10 @@ public final class SourcesHelper {
             }
             return Collections.emptySet();
         }
+        @Override
+        public String toString() {
+            return "Root[" + location + "]";
+        }
     }
     
     private class SourceRoot extends Root {

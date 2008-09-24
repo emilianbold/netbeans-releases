@@ -280,9 +280,11 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         //headerSeparator.setVisible(!active);
         if (innerPanel!=null) innerPanel.setBackground(
                 active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
+        /* let all the header buttons remain enabled -- see #143118
         if (headerButtons!=null) {
             for (int i=0;i<headerButtons.length;i++) headerButtons[i].setEnabled(active);
         }
+        */
         if (active && !this.equals(sectionView.getActivePanel())) {
             sectionView.sectionSelected(true);
             sectionView.setActivePanel(this);
@@ -493,7 +495,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
             super(action);
             this.panel=panel;
             setMargin(new java.awt.Insets(0,14,0,14));
-            setEnabled(false);
+            // don't disable -- see #143118
+            //setEnabled(false);
         }
         public SectionPanel getSectionPanel() {
             return panel;

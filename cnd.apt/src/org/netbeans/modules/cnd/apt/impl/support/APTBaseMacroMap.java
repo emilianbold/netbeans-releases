@@ -163,11 +163,13 @@ public abstract class APTBaseMacroMap {
     } 
 
     protected APTMacro getMacro(Token token) {
-        return active.getMacro(token);
+        APTMacro res = active.getMacro(token);
+        return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
 
     protected APTMacro getMacro(CharSequence token) {
-        return active.getMacro(token.toString());
+        APTMacro res = active.getMacro(token.toString());
+        return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
     
     ////////////////////////////////////////////////////////////////////////////

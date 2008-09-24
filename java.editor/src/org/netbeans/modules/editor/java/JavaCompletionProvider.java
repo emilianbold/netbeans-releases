@@ -3789,18 +3789,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                         text = controller.getText().substring(pos, offset).trim();
                         if ("(".equals(text) || text.endsWith("{") || text.endsWith(",")) { //NOI18N
                             TypeElement el = (TypeElement)controller.getTrees().getElement(new TreePath(path, ann.getAnnotationType()));
-                            for (Element ee : el.getEnclosedElements()) {
-                                if (ee.getKind() == METHOD && "value".contentEquals(ee.getSimpleName())) {
-                                    type = ((ExecutableElement)ee).getReturnType();
-                                    while(dim-- > 0) {
+                            if (el != null) {
+                                for (Element ee : el.getEnclosedElements()) {
+                                    if (ee.getKind() == METHOD && "value".contentEquals(ee.getSimpleName())) {
+                                        type = ((ExecutableElement)ee).getReturnType();
+                                        while(dim-- > 0) {
+                                            if (type.getKind() == TypeKind.ARRAY)
+                                                type = ((ArrayType)type).getComponentType();
+                                            else
+                                                return null;
+                                        }
                                         if (type.getKind() == TypeKind.ARRAY)
                                             type = ((ArrayType)type).getComponentType();
-                                        else
-                                            return null;
+                                        return type != null ? Collections.singleton(type) : null;
                                     }
-                                    if (type.getKind() == TypeKind.ARRAY)
-                                        type = ((ArrayType)type).getComponentType();
-                                    return type != null ? Collections.singleton(type) : null;
                                 }
                             }
                         }
@@ -4101,10 +4103,29 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (i == argTypes.length) {
                             if (typeArgTypes != null && param.getKind() == TypeKind.DECLARED && typeArgTypes.length == meth.getTypeVariables().size())
                                 param = tu.substitute(param, meth.getTypeVariables(), Arrays.asList(typeArgTypes));
+                            TypeMirror toAdd = null;
                             if (i < parSize)
-                                ret.add(param);
+                                toAdd = param;
                             if (varArgs && !parIt.hasNext() && param.getKind() == TypeKind.ARRAY)
-                                ret.add(((ArrayType)param).getComponentType());
+                                toAdd = ((ArrayType)param).getComponentType();
+                            if (toAdd != null && ret.add(toAdd)) {
+                                TypeMirror toRemove = null;
+                                for (TypeMirror tm : ret) {
+                                    if (tm != toAdd) {
+                                        TypeMirror tmErasure = types.erasure(tm);
+                                        TypeMirror toAddErasure = types.erasure(toAdd);
+                                        if (types.isSubtype(toAddErasure, tmErasure)) {
+                                            toRemove = toAdd;
+                                            break;
+                                        } else if (types.isSubtype(tmErasure, toAddErasure)) {
+                                            toRemove = tm;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (toRemove != null)
+                                    ret.remove(toRemove);
+                            }
                             break;
                         }
                         if (argTypes[i] == null)

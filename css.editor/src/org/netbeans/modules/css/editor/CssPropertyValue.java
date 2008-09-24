@@ -116,7 +116,10 @@ public class CssPropertyValue {
     }
 
     public Set<Element> alternatives() {
-        return resolvedAlternatives;
+         if(resolvedAlternatives == null) {
+            initAlternatives();
+        }
+         return resolvedAlternatives;
     }
     
     
@@ -125,6 +128,9 @@ public class CssPropertyValue {
      * may be offered by the completion, e.g. not 'units'
      */
     public Set<Element> visibleAlternatives() {
+        if(resolvedAlternatives == null) {
+            initAlternatives();
+        }
         return visibleAlternatives;
     }
     
@@ -147,6 +153,9 @@ public class CssPropertyValue {
         fillStack(stack, text);
         originalStack = (Stack<String>) stack.clone();
         resolve(groupElement, stack, resolved);
+    }
+    
+    private void initAlternatives()  {
         resolvedAlternatives = resolveElement(groupElement, new ArrayList<ResolvedToken>(resolved)).alternatives();
         eliminateDuplicatedAlternatives();
         computeVisibleAlts();

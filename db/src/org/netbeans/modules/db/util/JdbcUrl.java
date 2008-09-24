@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.openide.util.NbBundle;
 
@@ -66,7 +65,7 @@ public class JdbcUrl extends HashMap<String, String> {
     
     private HashSet<String> supportedTokens = new HashSet<String>();
     private HashSet<String> requiredTokens = new HashSet<String>();
-    private final boolean parseUrl;
+    private boolean parseUrl;
         
     public static final String TOKEN_DB = "<DB>";
     public static final String TOKEN_HOST = "<HOST>";
@@ -93,13 +92,15 @@ public class JdbcUrl extends HashMap<String, String> {
         DB_HOST_PORT_TOKEN_SET.add(TOKEN_ADDITIONAL);        
     }
         
-    private final String name;
+    private String name;
+    private String displayName;
     private final String className;
-    private final String urlTemplate;
+    private String urlTemplate;
     private final String type;
         
-    public JdbcUrl(String name, String className, String type, String urlTemplate, boolean parseUrl) {
+    public JdbcUrl(String name, String displayName, String className, String type, String urlTemplate, boolean parseUrl) {
         this.name = name;
+        this.displayName = displayName;
         this.className = className;
         this.type = type;
         this.urlTemplate = urlTemplate;
@@ -110,12 +111,17 @@ public class JdbcUrl extends HashMap<String, String> {
         }
     }
     
-    public JdbcUrl(String name, String className, String type, String urlTemplate) {
-        this(name, className, type, urlTemplate, false);
+    public JdbcUrl(String name, String displayName, String className, String type, String urlTemplate) {
+        this(name, displayName, className, type, urlTemplate, false);
     }
         
     public JdbcUrl(JDBCDriver driver, String type, String urlTemplate) {
-        this(driver.getDisplayName(), driver.getClassName(), type, urlTemplate);
+        this(driver.getName(), driver.getDisplayName(), driver.getClassName(), type, urlTemplate);
+        this.driver = driver;
+    }
+
+    public JdbcUrl(JDBCDriver driver, String urlTemplate, boolean parseUrl) {
+        this(driver.getName(), driver.getDisplayName(), driver.getClassName(), null, urlTemplate, parseUrl);
         this.driver = driver;
     }
     
@@ -138,13 +144,15 @@ public class JdbcUrl extends HashMap<String, String> {
     public String getUrlTemplate() {
         return urlTemplate;
     }
-    
-    public boolean urlIsParsed() {
+
+    public boolean isParseUrl() {
         return this.parseUrl;
     }
 
     public void setDriver(JDBCDriver driver) {
         this.driver = driver;
+        this.name = driver.getName();
+        this.displayName = driver.getDisplayName();
     }
     
     public JDBCDriver getDriver() {
@@ -153,9 +161,9 @@ public class JdbcUrl extends HashMap<String, String> {
 
     public String getDisplayName() {
         if (isEmpty(getType())) {
-            return getName();
+            return displayName;
         } else {
-            return getName() + " (" + getType() + ")";
+            return displayName + " (" + getType() + ")";
         }
     }
     
@@ -166,7 +174,7 @@ public class JdbcUrl extends HashMap<String, String> {
     public boolean requiresToken(String token) {
         return requiredTokens.contains(token);
     }
-    
+
     private boolean hasAllRequiredTokens() {
         Set<String> keySet = keySet();
         for ( String token : requiredTokens ) {
@@ -242,7 +250,7 @@ public class JdbcUrl extends HashMap<String, String> {
      * @return the URL string
      */
     public String getUrl() {
-        if (! this.urlIsParsed()) {
+        if (! this.isParseUrl()) {
             return this.url;
         }
         
@@ -285,7 +293,7 @@ public class JdbcUrl extends HashMap<String, String> {
      * @param url The URL as entered by the user
      */
     public void setUrl(String url) throws MalformedURLException {
-        if (! this.urlIsParsed()) {
+        if (! this.isParseUrl()) {
             this.url = url;
             return;
         }

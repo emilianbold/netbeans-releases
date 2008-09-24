@@ -679,9 +679,11 @@ public class CasualDiff {
             if (hasModifiers(newT.mods)) {
                 localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
             } else {
-                int oldPos = getOldPos(oldT.mods);
-                copyTo(localPointer, oldPos);
-                localPointer = getOldPos(oldT.vartype);
+                if (hasModifiers(oldT.mods)) {
+                    int oldPos = getOldPos(oldT.mods);
+                    copyTo(localPointer, oldPos);
+                    localPointer = getOldPos(oldT.vartype);
+                }
             }
         }
         int[] vartypeBounds = getBounds(oldT.vartype);
@@ -1985,7 +1987,14 @@ public class CasualDiff {
         if (printParens && oldList.isEmpty()) {
             printer.print(makeAround[1].fixedText());
         }
-        return oldList.isEmpty() ? pos : endPos(oldList);
+        if (oldList.isEmpty()) {
+            return pos;
+        } else {
+            int endPos2 = endPos(oldList);
+            tokenSequence.move(endPos2);
+            moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+            return tokenSequence.offset();
+        }
     }
     
     /**

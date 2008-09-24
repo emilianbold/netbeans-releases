@@ -104,4 +104,4 @@ public abstract class ConfigurationDescriptor {
     public abstract boolean getModified();
     public abstract void setModified();
     public abstract void closed();
-}
+            }

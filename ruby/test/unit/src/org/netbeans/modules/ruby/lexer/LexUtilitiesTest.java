@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.ruby.lexer;
 
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.RubyTestBase;
 
@@ -191,5 +193,138 @@ public class LexUtilitiesTest extends RubyTestBase {
         assertEquals(2, LexUtilities.findSpaceBegin(doc, 2));
         assertEquals(3, LexUtilities.findSpaceBegin(doc, 3));
         assertEquals(4, LexUtilities.findSpaceBegin(doc, 4));
+    }
+
+    public void testGetStringAt() throws Exception {
+        BaseDocument doc = getDocument(getTestFile("testfiles/ape.rb"));
+        String text = doc.getText(0, doc.getLength());
+        int lineOffset = text.indexOf("require 'service'");
+        assertTrue(lineOffset != -1);
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        assertNotNull(th);
+        int caretOffset = text.indexOf("ervic", lineOffset);
+        String stringAt = LexUtilities.getStringAt(caretOffset, th);
+        assertEquals("service", stringAt);
+        int offset = LexUtilities.getRequireStringOffset(caretOffset, th);
+        assertEquals(lineOffset + "require '".length(), offset);
+
+        caretOffset = text.indexOf("service", lineOffset);
+        stringAt = LexUtilities.getStringAt(caretOffset, th);
+        assertEquals("service", stringAt);
+        offset = LexUtilities.getRequireStringOffset(caretOffset, th);
+        assertEquals(lineOffset + "require '".length(), offset);
+
+        caretOffset = text.indexOf("service", lineOffset) + "service".length();
+        stringAt = LexUtilities.getStringAt(caretOffset, th);
+        assertEquals("service", stringAt);
+        offset = LexUtilities.getRequireStringOffset(caretOffset, th);
+        assertEquals(lineOffset + "require '".length(), offset);
+
+        // Look for trouble - spot sample
+        for (int i = 0, length = doc.getLength(); i < length; i += length/100) {
+            LexUtilities.getStringAt(i, th);
+            LexUtilities.getRequireStringOffset(i, th);
+        }
+    }
+
+    public void testGetStringAt2() throws Exception {
+        BaseDocument doc = getDocument(getTestFile("testfiles/active_record.rb"));
+        String text = doc.getText(0, doc.getLength());
+        int lineOffset = text.indexOf("require \"active_record/connection_adapters");
+        assertTrue(lineOffset != -1);
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        assertNotNull(th);
+        int caretOffset = text.indexOf("ctive", lineOffset);
+        String stringAt = LexUtilities.getStringAt(caretOffset, th);
+        assertEquals("active_record/connection_adapters/", stringAt);
+        int offset = LexUtilities.getRequireStringOffset(caretOffset, th);
+        assertEquals(lineOffset + "require \"".length(), offset);
+    }
+
+    public void testQuotedLiteralString() throws Exception {
+        BaseDocument doc = getDocument(getTestFile("testfiles/ape.rb"));
+        String text = doc.getText(0, doc.getLength());
+        int lineOffset = text.indexOf("good \"Will use collection");
+        assertTrue(lineOffset != -1);
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        assertNotNull(th);
+        int caretOffset = text.indexOf("use", lineOffset);
+        int offset = LexUtilities.getDoubleQuotedStringOffset(caretOffset, th);
+        assertEquals(text.indexOf('"', lineOffset) + 1, offset);
+
+        caretOffset = text.indexOf("Will", lineOffset);
+        offset = LexUtilities.getDoubleQuotedStringOffset(caretOffset, th);
+        assertEquals(text.indexOf('"', lineOffset) + 1, offset);
+
+        caretOffset = text.indexOf("collection", lineOffset + "collection".length());
+        offset = LexUtilities.getDoubleQuotedStringOffset(caretOffset, th);
+        assertEquals(text.indexOf('"', lineOffset) + 1, offset);
+
+        caretOffset = text.indexOf("good", lineOffset);
+        offset = LexUtilities.getDoubleQuotedStringOffset(caretOffset, th);
+        assertEquals(-1, offset);
+
+        // Look for trouble - spot sample
+        for (int i = 0, length = doc.getLength(); i < length; i += length/100) {
+            LexUtilities.getDoubleQuotedStringOffset(i, th);
+        }
+    }
+
+    public void testSingleLiteralString() throws Exception {
+        BaseDocument doc = getDocument(getTestFile("testfiles/ape.rb"));
+        String text = doc.getText(0, doc.getLength());
+        int lineOffset = text.indexOf("Feed.read(coll.href, 'Pictures from multi-post'");
+        assertTrue(lineOffset != -1);
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        assertNotNull(th);
+        int caretOffset = text.indexOf("from", lineOffset);
+        int offset = LexUtilities.getSingleQuotedStringOffset(caretOffset, th);
+        assertEquals(text.indexOf('\'', lineOffset) + 1, offset);
+
+        caretOffset = text.indexOf("Pictures", lineOffset);
+        offset = LexUtilities.getSingleQuotedStringOffset(caretOffset, th);
+        assertEquals(text.indexOf('\'', lineOffset) + 1, offset);
+
+        caretOffset = text.indexOf("post", lineOffset + "post".length());
+        offset = LexUtilities.getSingleQuotedStringOffset(caretOffset, th);
+        assertEquals(text.indexOf('\'', lineOffset) + 1, offset);
+
+        caretOffset = text.indexOf("good", lineOffset);
+        offset = LexUtilities.getSingleQuotedStringOffset(caretOffset, th);
+        assertEquals(-1, offset);
+
+        // Look for trouble - spot sample
+        for (int i = 0, length = doc.getLength(); i < length; i += length/100) {
+            LexUtilities.getSingleQuotedStringOffset(i, th);
+        }
+    }
+
+    public void testRegexpLiteralString() throws Exception {
+        BaseDocument doc = getDocument(getTestFile("testfiles/ape.rb"));
+        String text = doc.getText(0, doc.getLength());
+        int lineOffset = text.indexOf("$!.to_s.gsub(/\\n/,");
+        assertTrue(lineOffset != -1);
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        assertNotNull(th);
+        int caretOffset = text.indexOf("\\n/", lineOffset);
+        int offset = LexUtilities.getRegexpOffset(caretOffset, th);
+        assertEquals(text.indexOf('/', lineOffset) + 1, offset);
+
+        caretOffset = text.indexOf("n/", lineOffset);
+        offset = LexUtilities.getRegexpOffset(caretOffset, th);
+        assertEquals(text.indexOf('/', lineOffset) + 1, offset);
+
+        caretOffset = text.indexOf("\\n/", lineOffset + "\\n".length());
+        offset = LexUtilities.getRegexpOffset(caretOffset, th);
+        assertEquals(text.indexOf('/', lineOffset) + 1, offset);
+
+        caretOffset = text.indexOf("good", lineOffset);
+        offset = LexUtilities.getRegexpOffset(caretOffset, th);
+        assertEquals(-1, offset);
+
+        // Look for trouble - spot sample
+        for (int i = 0, length = doc.getLength(); i < length; i += length/100) {
+            LexUtilities.getRegexpOffset(i, th);
+        }
     }
 }

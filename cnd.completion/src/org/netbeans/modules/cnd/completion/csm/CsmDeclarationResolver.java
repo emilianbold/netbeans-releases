@@ -122,10 +122,13 @@ public class CsmDeclarationResolver {
             fileContext.advance(offset);
             lastObject = fileContext.findInnerFileDeclaration(offset);
             if (lastObject == null) {
-                fileContext.advance(offset);
                 return fileContext.findInnerFileObject(offset);
             } else {
-                return findInnerDeclaration((CsmDeclaration)lastObject, context, offset);
+                if (CsmOffsetUtilities.isInObject(lastObject, offset)) {
+                    return findInnerDeclaration((CsmDeclaration)lastObject, context, offset);
+                }
+                // found old invalid object, so clear cache and use not cached algorithm.
+                fileContext.advance(offset-1);
             }
         }
         // check file declarations

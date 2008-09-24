@@ -260,4 +260,5 @@
 	<mapID target="using_declaration_16" url="images/using_declaration_16.png"/>
 	<mapID target="using_namespace_16" url="images/using_namespace_16.png"/>
 	<mapID target="template_parameter_16" url="images/template_parameter_16.png"/>
+	<mapID target="preprocessor-definitions" url="CandC++ProjectBasics/preprocessor-definitions.html"/>
 </map>

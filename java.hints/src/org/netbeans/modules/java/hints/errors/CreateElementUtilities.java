@@ -48,6 +48,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
@@ -276,10 +277,16 @@ public final class CreateElementUtilities {
             types.add(ElementKind.INTERFACE);
             types.add(ElementKind.ENUM);
         }
-	
-	if (mt.getThrows() != null && !mt.getThrows().isEmpty() && mt.getThrows().get(0) == error) {
-	    types.add(ElementKind.CLASS);
-	    typeParameterBound[0] = info.getElements().getTypeElement("java.lang.Exception").asType();
+
+        List<? extends ExpressionTree> throwList = mt.getThrows();
+	if (throwList != null && !throwList.isEmpty()) {
+            for (ExpressionTree t : throwList) {
+                if (t == error) {
+                    types.add(ElementKind.CLASS);
+                    typeParameterBound[0] = info.getElements().getTypeElement("java.lang.Exception").asType();
+                    break;
+                }
+            }
 	}
         
         if (mt.getBody() == null) {

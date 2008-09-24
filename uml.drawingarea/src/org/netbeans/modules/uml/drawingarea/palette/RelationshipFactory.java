@@ -42,7 +42,6 @@ package org.netbeans.modules.uml.drawingarea.palette;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
 
 /**
  *

@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 
 /**
  *
@@ -145,9 +146,6 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     @Override
     public Set<Modifier> getModifiers() {
-        
-        
-        
         return super.getModifiers();
     }
 
@@ -159,11 +157,16 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
         this.optionalArgs = optionalArgs;
     }
 
+    @CheckForNull
     public String getReturnType() {
         return returnType;
     }
 
-    public void setReturnType(String returnType) {
+    void setReturnType(String returnType) {
+        // empty string causes a serious performance problem
+        if (returnType != null && returnType.length() == 0){
+            throw new IllegalArgumentException("returnType cannot be empty string!");
+        }
         this.returnType = returnType;
     }
 }

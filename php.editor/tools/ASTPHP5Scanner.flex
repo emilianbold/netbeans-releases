@@ -102,9 +102,10 @@ import java_cup.runtime.*;
     protected int commentStartPosition;
     private PHPDocCommentParser docParser = new PHPDocCommentParser();
 
-    public ASTPHP5Scanner(java.io.Reader in, boolean aspTags) {
+    public ASTPHP5Scanner(java.io.Reader in, boolean short_tags_allowed, boolean asp_tags_allowed) {
         this(in);
-        asp_tags = aspTags;
+        this.asp_tags = asp_tags_allowed;
+        this.short_tags_allowed = short_tags_allowed;
     }
     //private AST ast;
 

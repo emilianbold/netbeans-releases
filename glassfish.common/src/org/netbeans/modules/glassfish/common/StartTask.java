@@ -44,6 +44,8 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -66,6 +68,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -132,7 +135,13 @@ public class StartTask extends BasicTask<OperationState> {
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
         }
         
-        Process serverProcess = createProcess();
+        Process serverProcess = null;
+        try {
+            serverProcess = createProcess();
+        } catch (IOException ex) {
+            fireOperationStateChanged(OperationState.FAILED, 
+                    "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
+        }
         if (serverProcess == null) {
             // failed event already sent...
             return OperationState.FAILED;
@@ -146,6 +155,8 @@ public class StartTask extends BasicTask<OperationState> {
         LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
         logger.readInputStreams(recognizers, serverProcess.getInputStream(), serverProcess.getErrorStream());
 
+        GlassfishInstance gi = new GlassfishInstance(ip);
+
         // Waiting for server to start
         while(System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
@@ -158,8 +169,14 @@ public class StartTask extends BasicTask<OperationState> {
                     Thread.sleep(3000);
                 } catch (InterruptedException ex) {
                 }
-                return fireOperationStateChanged(OperationState.COMPLETED, 
-                        "MSG_SERVER_STARTED", instanceName); // NOI18N
+                OperationState state = OperationState.COMPLETED;
+                String messageKey = "MSG_SERVER_STARTED";
+                if (!gi.getCommonSupport().isReallyRunning()) {
+                    state = OperationState.FAILED;
+                    messageKey = "MSG_START_SERVER_FAILED";
+                }
+                return fireOperationStateChanged(state,
+                        messageKey, instanceName); // NOI18N
             }
             
             // Sleep for a little so that we do not make our checks too often
@@ -227,7 +244,7 @@ public class StartTask extends BasicTask<OperationState> {
         return result;
     }
     
-    private NbProcessDescriptor createProcessDescriptor() {
+    private NbProcessDescriptor createProcessDescriptor() throws IOException {
         String startScript;
         if (null == jdkHome) {
            startScript = System.getProperty("java.home") +        
@@ -272,7 +289,7 @@ public class StartTask extends BasicTask<OperationState> {
         return path.indexOf(' ') == -1 ? path : "\"" + path + "\"";
     }
     
-    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf) {
+    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf) throws IOException {
         for(String option: optList) {
             argumentBuf.append(' ');
             argumentBuf.append(option);
@@ -280,9 +297,22 @@ public class StartTask extends BasicTask<OperationState> {
 
         if(GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
 //            javaOpts.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
-            argumentBuf.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=");
-            argumentBuf.append(ip.get(GlassfishModule.DEBUG_PORT));
-            argumentBuf.append(",server=y,suspend=n"); // NOI18N
+            try {
+                int debugPort = 8787;
+                // calculate the port and save it.
+                ServerSocket t = new ServerSocket(0);
+                debugPort = t.getLocalPort();
+                String debugPortString = Integer.toString(debugPort);
+                ip.put(GlassfishModule.DEBUG_PORT, debugPortString);
+                argumentBuf.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address="); // NOI18N
+                argumentBuf.append(debugPortString);
+                argumentBuf.append(",server=y,suspend=n"); // NOI18N
+                t.close();
+            } catch (IOException ioe) {
+                Logger.getLogger("glassfish").log(Level.FINE, "Could not get a socket for debugging",ioe);
+                fireOperationStateChanged(OperationState.FAILED,
+                    "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N                throw ioe;
+            }
         }
         return argumentBuf;
     }
@@ -313,7 +343,7 @@ public class StartTask extends BasicTask<OperationState> {
         return argumentBuf;
     }
     
-    private Process createProcess() {
+    private Process createProcess() throws IOException {
         Process process = null;
         NbProcessDescriptor pd = createProcessDescriptor();
         if(pd != null) {

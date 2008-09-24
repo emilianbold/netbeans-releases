@@ -261,8 +261,10 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         storeDefs(project, "../others.properties");
         contentlist.assertEventCount(0);
         liblist.assertEventCount(0);
-        // storeDefs() fires configurationXmlChanged twice - after put() and after save()
-        pplist.assertEventCount(2);
+        // [ storeDefs() fires configurationXmlChanged twice - after put() and after save() ]
+        // after fixing #146072 the previous statement doesn't hold - leaving it here for reference
+        // setting number of events to 1
+        pplist.assertEventCount(1);
         assertEquals(("{libs.jrcs.classpath=}").replace('/', File.separatorChar),
                 new TreeMap<String,String>(pp.getProperties()).toString());
     }

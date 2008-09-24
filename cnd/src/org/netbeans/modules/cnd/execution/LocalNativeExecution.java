@@ -53,11 +53,12 @@ import java.util.ResourceBundle;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.modules.InstalledFileLocator;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
 
 /**
@@ -65,15 +66,17 @@ import org.netbeans.modules.cnd.api.execution.NativeExecution;
  */
 public class LocalNativeExecution extends NativeExecution {
     /** Script file that merges stdout and stderr on Unix */
-    private static File stdOutErrFile = null;
-    private static boolean hasWarned = false;
+    //private static File stdOutErrFile = null;
+    //private static boolean hasWarned = false;
 
-    private File runDirFile;
+    //private File runDirFile;
     private static ResourceBundle bundle = NbBundle.getBundle(LocalNativeExecution.class);
     private OutputReaderThread outputReaderThread = null; // Thread for running process
     private InputReaderThread inputReaderThread = null; // Thread for running process
-    private Process executionProcess = null;
-    private PrintWriter out;
+    //private Process executionProcess = null;
+    //private PrintWriter out;
+
+    private static Logger execLog;
 
     /**
      * Execute an executable, a makefile, or a script
@@ -94,12 +97,10 @@ public class LocalNativeExecution extends NativeExecution {
             PrintWriter out,
             Reader in,
             boolean unbuffer) throws IOException, InterruptedException {
-        String commandInterpreter;
-        String commandLine;
         int rc = -1;
 
-        this.runDirFile = runDirFile;
-        this.out = out;
+        //this.runDirFile = runDirFile;
+        //this.out = out;
 
         if (!runDirFile.exists() || !runDirFile.isDirectory()) {
             String msg = MessageFormat.format(getString("NOT_A_VALID_BUILD_DIRECTORY"), new Object[] {runDirFile.getPath()}); // NOI18N
@@ -108,14 +109,8 @@ public class LocalNativeExecution extends NativeExecution {
             return -1;
         }
 
-        commandInterpreter = getStdOutErrFile().getPath();
-        commandLine = executable + " " + arguments; // NOI18N
-
-        // Start the build process and a build reader.
-        NbProcessDescriptor desc = new NbProcessDescriptor(commandInterpreter, commandLine);
-
-        executionProcess = desc.exec(null, envp, true, runDirFile);
-        outputReaderThread = new OutputReaderThread(executionProcess.getErrorStream(), out);
+        Process executionProcess = exec(executable, arguments, envp, runDirFile);
+        outputReaderThread = new OutputReaderThread(executionProcess.getInputStream(), out);
         outputReaderThread.start();
         if (in != null) {
             inputReaderThread = new InputReaderThread(executionProcess.getOutputStream(), in);
@@ -144,6 +139,51 @@ public class LocalNativeExecution extends NativeExecution {
         return rc;
     }
 
+    private static Logger getExecLog() {
+        if (execLog == null) {
+            execLog = Logger.getLogger(LocalNativeExecution.class.getName());
+        }
+        return execLog;
+    }
+
+    private static void logArgs(String[] args) {
+        getExecLog().fine("Running: " + Arrays.asList(args)); // NOI18N
+    }
+
+    // Copied from NbProcessDescriptor but with error stream redirection
+    private Process exec(String processName, String arguments, String[] envp, File cwd) throws IOException {
+        String[] args = Utilities.parseParameters(arguments);
+
+        // copy the call string
+        String[] call = new String[args.length + 1];
+        call[0] = processName;
+        System.arraycopy(args, 0, call, 1, args.length);
+
+        logArgs(call);
+
+        ProcessBuilder pb = new ProcessBuilder(call);
+        pb.redirectErrorStream(true);
+
+        if (envp != null) {
+            Map<String,String> e = pb.environment();
+            for (int i = 0; i < envp.length; i++) {
+                String nameval = envp[i];
+                int idx = nameval.indexOf('='); // NOI18N
+                // [PENDING] add localized annotation...
+                if (idx == -1) {
+                    throw new IOException ("No equal sign in name=value: " + nameval); // NOI18N
+                }
+                e.put(nameval.substring(0, idx), nameval.substring(idx + 1));
+            }
+        }
+
+        if (cwd != null) {
+            pb.directory(cwd);
+        }
+        
+        return pb.start();
+    }
+
     public void stop() {
         /*
         if (executionThread != null) {
@@ -154,11 +194,6 @@ public class LocalNativeExecution extends NativeExecution {
 //        if (executionProcess != null) {
 //            executionProcess.destroy();
 //        }
-    }
-
-    @Override
-    protected String getUnbufferPath(String host) {
-        return Unbuffer.getLocalPath();
     }
 
     /** Helper class to read the input from the build */
@@ -252,7 +287,7 @@ public class LocalNativeExecution extends NativeExecution {
      * Find the script stdouterr.sh somewhere in the installation tree. It is needed to merge stdout and stderr
      * for for instance makefile execution.
      */
-    private static File getStdOutErrFile() {
+    /*private static File getStdOutErrFile() {
         if (stdOutErrFile == null) {
             String stderrCmd;
 
@@ -271,7 +306,7 @@ public class LocalNativeExecution extends NativeExecution {
             }
         }
         return stdOutErrFile;
-    }
+    }*/
 
     private static String getString(String prop) {
         return bundle.getString(prop);

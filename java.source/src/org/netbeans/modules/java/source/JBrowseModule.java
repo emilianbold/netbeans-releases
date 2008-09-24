@@ -92,6 +92,13 @@ public class JBrowseModule extends ModuleInstall {
         if (ENABLE_MBEANS) {
             registerMBeans();
         }
+
+        //XXX:
+        //#143234: javac caches content of all jar files in a static map, which leads to memory leaks affecting the IDE
+        //when "internal" execution of javac is used
+        //the property below disables the caches
+        //java.project might be a better place (currently does not have a ModuleInstall)
+        System.setProperty("useJavaUtilZip", "true");
     }   
     
     public @Override boolean closing () {

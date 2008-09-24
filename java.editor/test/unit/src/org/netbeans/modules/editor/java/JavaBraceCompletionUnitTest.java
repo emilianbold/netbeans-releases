@@ -43,12 +43,15 @@ package org.netbeans.modules.editor.java;
 
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
+import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import junit.framework.TestCase;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
@@ -265,6 +268,29 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "             * |\n" +
                 "  */"
         );
+    }
+
+    public void testTypeAddRightBraceMultiLine() {
+        Context ctx = new Context(new JavaKit(),
+                "if (true) {| System.out.println(\n" +
+                "\"\");\n");
+
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "if (true) {\n" +
+                "    System.out.println(\n" +
+                "\"\");\n");
+    }
+
+    public void testTypeAddRightBraceSingleLine() {
+        Context ctx = new Context(new JavaKit(),
+                "if (true) {| System.out.println(\"\");\n");
+
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "if (true) {\n" +
+                "    System.out.println(\"\");\n" +
+                "}\n");
     }
     
     
@@ -702,8 +728,67 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals(
                 "// test line comment \'|\n"
         );
-    }    
+    }
+
+    public void testDisable147641() throws Exception {
+        boolean orig = BraceCompletion.completionSettingEnabled();
+        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+
+        try {
+            prefs.putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
+
+            Context ctx = new Context(new JavaKit(),
+                    "while |"
+            );
+            ctx.typeChar('(');
+            ctx.assertDocumentTextEquals(
+                    "while (|"
+            );
+        } finally {
+            prefs.putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, orig);
+        }
+    }
     
+    public void testDoNotSkipWhenNotBalanced147683a() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "System.err.println((true|);"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "System.err.println((true)|);"
+        );
+    }
+
+    public void testSkipWhenBalanced46517() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "if (a(|) )"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "if (a()| )"
+        );
+    }
+
+    public void testDoNotSkipWhenNotBalanced147683b() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "if (a(|) ; )"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "if (a()|) ; )"
+        );
+    }
+
+    public void testDoNotSkipWhenNotBalanced147683c() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "if (a(|) \n )"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "if (a()|) \n )"
+        );
+    }
+
     private static final class Context {
         
         private JEditorPane pane;

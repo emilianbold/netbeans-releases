@@ -39,6 +39,7 @@
 package org.openide.nodes;
 
 import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -58,6 +59,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.nodes.Children.Entry;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -110,7 +112,7 @@ abstract class EntrySupport {
     /** Abililty to create a snaphshot
      * @return immutable and unmodifiable list of Nodes that represent the children at current moment
      */
-    abstract List<Node> createSnapshot(boolean delayed);
+    abstract List<Node> createSnapshot();
 
     /** Refreshes content of one entry. Updates the state of children appropriately. */
     abstract void refreshEntry(Entry entry);
@@ -137,7 +139,7 @@ abstract class EntrySupport {
             return (arr != null) && arr.isInitialized();
         }
 
-        public List<Node> createSnapshot(boolean delayed) {
+        public List<Node> createSnapshot() {
             return new DefaultSnapshot(getNodes());
         }
         public final Node[] getNodes() {
@@ -991,7 +993,7 @@ abstract class EntrySupport {
 
         private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
 
-        private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerChildren.prefetchCount", 50), 0);  // NOI18N
+        private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerNode.prefetchCount", 50), 0);  // NOI18N
 
         public Lazy(Children ch) {
             super(ch);
@@ -1060,9 +1062,13 @@ abstract class EntrySupport {
                 try {
                     Children.PR.enterWriteAccess();
                     boolean zero = false;
+                    LAZY_LOG.fine("register node"); // NOI18N
                     synchronized (Lazy.this.LOCK) {
                         int cnt = 0;
                         boolean found = false;
+                        if (lastSnapshot != null && lastSnapshot.get() != null) {
+                            cnt++;
+                        }
                         for (Entry entry : visibleEntries) {
                             EntryInfo info = entryToInfo.get(entry);
                             if (info.currentNode() != null) {
@@ -1072,7 +1078,7 @@ abstract class EntrySupport {
                                 found = true;
                             }
                         }
-                        zero = cnt == 0 && found;
+                        zero = cnt == 0 && (found || who == null);
 
                         if (zero) {
                             inited = false;
@@ -1207,7 +1213,7 @@ abstract class EntrySupport {
             }
 
             Node oldNode = info.currentNode();
-            Node newNode = info.refreshNode();
+            Node newNode = info.getNode(true);
 
             boolean newIsDummy = isDummyNode(newNode);
             if (newIsDummy && info.isHidden()) {
@@ -1241,7 +1247,7 @@ abstract class EntrySupport {
                 arr.add(tmpEntry);
             }
             visibleEntries = arr;
-            fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, entry, createSnapshot(false), null);
+            fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, entry, createEventSnapshot(false), null);
         }
 
         private boolean mustNotifySetEnties = false;
@@ -1319,7 +1325,7 @@ abstract class EntrySupport {
                     }
                     idxs = tmp;
                 }
-                fireSubNodesChangeIdx(true, idxs, null, createSnapshot(false), null);
+                fireSubNodesChangeIdx(true, idxs, null, createEventSnapshot(false), null);
             }
         }
 
@@ -1441,49 +1447,73 @@ abstract class EntrySupport {
             /** Gets or computes the nodes. It holds them using weak reference
              * so they can get garbage collected.
              */
-            public final  Node getNode() {
-                synchronized (LOCK) {
-                    Node n = null;
-                    if (refNode != null) {
-                        n = refNode.get();
-                    }
-                    if (n == null) {
-                        n = refreshNode();
-                    }
-                    return n;
-                }
-            }
-
-            /** extract current node (if was already created) */
-            Node currentNode() {
-                synchronized (LOCK) {
-                    return refNode == null ? null : refNode.get();
-                }
+            public final Node getNode() {
+                return getNode(false);
             }
             
-
-
-            Node refreshNode() {
-                Collection<Node> nodes = entry.nodes();
-                if (nodes.size() != 1) {
-                    LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
-                    if (nodes.size() == 0) {
-                        Node dummyNode = new DummyNode();
-                        return useNode(dummyNode);
+            private boolean creatingNode = false;
+            public final Node getNode(boolean refresh) {
+                while (true) {
+                    Node node = null;
+                    boolean creating = false;
+                    synchronized (LOCK) {
+                        if (refresh) {
+                            refNode = null;
+                        }
+                        if (refNode != null) {
+                            node = refNode.get();
+                            if (node != null) {
+                                return node;
+                            }
+                        }
+                        if (creatingNode) {
+                            try {
+                                LOCK.wait();
+                            } catch (InterruptedException ex) {
+                            }
+                        } else {
+                            creatingNode = creating = true;
+                        }
                     }
-                }
-                return useNode(nodes.iterator().next());
-            }
-
-            /** Assignes new set of nodes to this entry. */
-            public final Node useNode(Node node) {
-                synchronized (LOCK) {
-                    refNode = new NodeRef(node, this);
-
+                    Collection<Node> nodes = creating ? entry.nodes() : null;
+                    synchronized (LOCK) {
+                        if (!creating) {
+                            if (refNode != null) {
+                                node = refNode.get();
+                                if (node != null) {
+                                    return node;
+                                }
+                            }
+                            // node created by other thread was GCed meanwhile, try once again
+                            continue;
+                        }
+                        if (nodes.size() != 1) {
+                            LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
+                            if (nodes.size() == 0) {
+                                node = new DummyNode();
+                            } else {
+                                node = nodes.iterator().next();
+                            }
+                        } else {
+                            node = nodes.iterator().next();
+                        }
+                        refNode = new NodeRef(node, this);
+                        if (creating) {
+                            creatingNode = false;
+                            LOCK.notifyAll();
+                        }
+                    }
                     // assign node to the new children
                     node.assignTo(children, -1);
                     node.fireParentNodeChange(null, children.parent);
                     return node;
+                }
+            }
+            
+            /** extract current node (if was already created) */
+            Node currentNode() {
+                synchronized (LOCK) {
+                    return refNode == null ? null : refNode.get();
                 }
             }
 
@@ -1518,6 +1548,17 @@ abstract class EntrySupport {
 
             public void run() {
                 info.lazy().registerNode(-1, info);
+            }
+        }
+        SnapshotRef lastSnapshot;
+        private final class SnapshotRef extends WeakReference<List<Node>> implements Runnable {
+
+            public SnapshotRef(List<Node> referent) {
+                super(referent, Utilities.activeReferenceQueue());
+            }
+
+            public void run() {
+                registerNode(-1, null);
             }
         }
 
@@ -1606,7 +1647,7 @@ abstract class EntrySupport {
             if (removedIdx < idxs.length) {
                 idxs = (int[]) resizeArray(idxs, removedIdx);
             }
-            fireSubNodesChangeIdx(false, idxs, entryToRemove, createSnapshot(delayed), new LazySnapshot(previousEntries, previousInfos));
+            fireSubNodesChangeIdx(false, idxs, entryToRemove, createEventSnapshot(delayed), new LazySnapshot(previousEntries, previousInfos));
 
             if (removedNodesIdx > 0) {
                 if (removedNodesIdx < removedNodes.length) {
@@ -1634,14 +1675,20 @@ abstract class EntrySupport {
         }
 
         @Override
-        List<Node> createSnapshot(boolean delayed) {
-            return delayed ? new DelayedLazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo)) : new LazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo));
+        List<Node> createSnapshot() {
+            return new LazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo));
+        }
+        
+        List<Node> createEventSnapshot(boolean delayed) {
+            List<Node> snapshot = delayed ? new DelayedLazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo)) : new LazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo));
+            lastSnapshot = new SnapshotRef(snapshot);
+            return snapshot;
         }
 
         class LazySnapshot extends AbstractList<Node> {
             private final List<Entry> entries;
             private final Map<Entry, EntryInfo> entryToInfo;
-
+            
             public LazySnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i) {
                 this.entries = entries;
                 this.entryToInfo = e2i != null ? e2i : Collections.<Entry, EntryInfo>emptyMap();

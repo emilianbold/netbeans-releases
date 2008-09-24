@@ -51,6 +51,8 @@ import org.netbeans.modules.gsf.api.*;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 
 
 /**
@@ -62,7 +64,10 @@ public class GSFPHPParser implements Parser {
     private PositionManager positionManager = null;
     
     private static final Logger LOGGER = Logger.getLogger(GSFPHPParser.class.getName());
-    
+
+    private boolean shortTags = true;
+    private boolean aspTags = false;
+
     public void parseFiles(Job request) {
         LOGGER.fine("parseFiles " + request.toString());
         ParseListener listener = request.listener;
@@ -72,6 +77,9 @@ public class GSFPHPParser implements Parser {
             ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
             request.listener.started(beginEvent);
             ParserResult result = null;
+            Properties languageProperties = PhpLanguageOptions.getProperties(file.getFileObject());
+            shortTags = languageProperties.areShortTagsEnabled();
+            aspTags = languageProperties.areAspTagsEnabled();
             try {
                 CharSequence buffer = reader.read(file);
                 String source = asString(buffer);
@@ -117,7 +125,7 @@ public class GSFPHPParser implements Parser {
 
         PHPParseResult result;
         // calling the php ast parser itself
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), false);
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags,  aspTags);
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
 
         if (!sanitizedSource) {
@@ -136,7 +144,7 @@ public class GSFPHPParser implements Parser {
 //                System.out.println(context.sanitizedSource);
 //                System.out.println("-----------------------");
                 source = context.source;
-                scanner = new ASTPHP5Scanner(new StringReader(source), false);
+                scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
                 parser = new ASTPHP5Parser(scanner);
                 rootSymbol = parser.parse();
             }
@@ -153,7 +161,7 @@ public class GSFPHPParser implements Parser {
                         // if there is an errot, try to sanitize only if there 
                         // is a class or function inside the error
                         String errorCode = "<?" + source.substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
-                        ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), false);
+                        ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), shortTags, aspTags);
                         Symbol token = fcScanner.next_token();
                         while (token.sym != ASTPHP5Symbols.EOF) {
                             if (token.sym == ASTPHP5Symbols.T_CLASS || token.sym == ASTPHP5Symbols.T_FUNCTION) {
@@ -284,7 +292,7 @@ public class GSFPHPParser implements Parser {
 
     protected boolean sanitizeCurly (Context context) {
         String source = context.getSource();
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), false);
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
         //keep index of last ?>
         Symbol lastPHPToken = null;
         Symbol token = null;

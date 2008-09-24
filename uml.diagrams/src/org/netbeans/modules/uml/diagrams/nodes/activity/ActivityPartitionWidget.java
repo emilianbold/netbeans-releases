@@ -53,6 +53,7 @@ import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
@@ -183,7 +184,7 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         }
         for (CompartmentWidget widget : compartmentWidgets)
         {
-            widget.updateOrientation(isHorizontalLayout());
+            widget.updateOrientation(orientation == SeparatorWidget.Orientation.HORIZONTAL);
         }
     }
 
@@ -252,7 +253,10 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         if (event.getSource() instanceof IActivityPartition)
         {
             nameWidget.propertyChange(event);
-        }   
+            getScene().validate();
+            setPreferredBounds(getBounds().union(calculateMinimumBounds()));
+            revalidate();
+        }
     }
 
     private void initializeSubPartitions(IActivityPartition parentPartition)
@@ -395,11 +399,6 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         return compartmentWidgets;
     }
 
-    public boolean isHorizontalLayout()
-    {
-        return getOrientation() == SeparatorWidget.Orientation.HORIZONTAL;
-    }
-
 
     @Override
     public String getContextPalettePath()
@@ -421,12 +420,5 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         SubPartitionWidget subPartWidget = createSubPartitionWidget(subPart);
         addSubPartition(subPartWidget);
         return subPartWidget;
-    }
-
-    @Override
-    public void clear()
-    {
-        compartmentWidgets.clear();
-        partitionPanel.removeChildren();
     }
 }

@@ -61,11 +61,11 @@ import org.netbeans.modules.project.ui.test.ProjectSupport;
  */
 public class WhitelistTest extends JellyTestCase {
 
-    private int stage;
+    private static int stage;
 
     private static boolean initBlacklistedClassesHandler() {        
         String whitelistFN = new WhitelistTest("Dummy").getDataDir()
-                + File.separator + "whitelist.txt";
+                + File.separator + "whitelist_" + stage + ".txt";
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
         
         System.out.println("BlacklistedClassesHandler will be initialized with " + whitelistFN);
@@ -86,7 +86,7 @@ public class WhitelistTest extends JellyTestCase {
     
     public static Test suite() {
         
-        int stage = Integer.getInteger("test.whitelist.stage", 1);
+        stage = Integer.getInteger("test.whitelist.stage", 1);
         
         initBlacklistedClassesHandler();
         
@@ -101,12 +101,14 @@ public class WhitelistTest extends JellyTestCase {
 
     public void testWhitelist1() throws Exception {
         stage = 1;
+        Thread.sleep(3000);
         testWhitelist();
     }
 
     public void testWhitelist2() throws Exception {
         stage = 2;
         try {
+            Thread.sleep(3000);
             testWhitelist();
         } finally {
             openLime6Project();

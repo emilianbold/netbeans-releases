@@ -46,9 +46,12 @@ import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.php.dbgp.DebugSession;
+import org.netbeans.modules.php.dbgp.DebugSession.IDESessionBridge;
 import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.netbeans.modules.php.dbgp.annotations.CallStackAnnotation;
+import org.netbeans.modules.php.dbgp.breakpoints.BreakpointModel;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
+import org.netbeans.modules.php.dbgp.models.CallStackModel;
 import org.openide.text.Line;
 import org.w3c.dom.Node;
 
@@ -98,7 +101,13 @@ public class StackGetResponse extends DbgpResponse {
 
     private void updateUIViews( DebugSession session, List<Stack> stacks ) {
         // update call stack view
-        session.getBridge().getCallStackModel().setCallStack(stacks);
+        IDESessionBridge bridge = session.getBridge();
+        if (bridge != null) {
+            CallStackModel callStackModel = bridge.getCallStackModel();
+            if (callStackModel != null) {
+                callStackModel.setCallStack(stacks);
+            }
+        }
         
         /*
          *  Send request for context names and request contexts.
@@ -117,8 +126,14 @@ public class StackGetResponse extends DbgpResponse {
         if ( stacks.size() == 0 ) {
             return;
         }
-        session.getBridge().getBreakpointModel().setCurrentStack(
-                stacks.get( 0 ) , session );
+        IDESessionBridge bridge = session.getBridge();
+        if (bridge != null) {
+            BreakpointModel breakpointModel = bridge.getBreakpointModel();
+            if (breakpointModel != null) {
+                breakpointModel.setCurrentStack(
+                        stacks.get( 0 ) , session );
+            }
+        }
     }
 
     public static void updateWatchView( DebugSession session ) {

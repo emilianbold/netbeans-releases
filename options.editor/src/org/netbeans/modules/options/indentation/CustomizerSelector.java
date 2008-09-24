@@ -83,9 +83,8 @@ public final class CustomizerSelector {
         if (selectedMimeType == null || !selectedMimeType.equals(mimeType)) {
             String old = selectedMimeType;
             selectedMimeType = mimeType;
-            pcs.firePropertyChange(PROP_MIMETYPE, old, mimeType);
-
             selectedCustomizerId = null;
+            pcs.firePropertyChange(PROP_MIMETYPE, old, mimeType);
         }
     }
 
@@ -102,9 +101,17 @@ public final class CustomizerSelector {
 
     public synchronized void setSelectedCustomizer(String id) {
         if (selectedCustomizerId == null || !selectedCustomizerId.equals(id)) {
-            String old = selectedCustomizerId;
-            selectedCustomizerId = id;
-            pcs.firePropertyChange(PROP_CUSTOMIZER, old, id);
+            // check that the id really exists
+            for(PreferencesCustomizer c : getCustomizersFor(selectedMimeType)) {
+                if (id.equals(c.getId())) {
+                    String old = selectedCustomizerId;
+                    selectedCustomizerId = id;
+                    pcs.firePropertyChange(PROP_CUSTOMIZER, old, id);
+                    break;
+                }
+            }
+
+            // incorrect ids are ignored
         }
     }
 
@@ -182,9 +189,9 @@ public final class CustomizerSelector {
     private List<? extends PreferencesCustomizer> loadCustomizers(String mimeType) {
         ArrayList<PreferencesCustomizer> list = new ArrayList<PreferencesCustomizer>();
         
+        Preferences prefs = pf.getPreferences(mimeType);
         if (mimeType.length() > 0) {
             Lookup l = Lookups.forPath(FOLDER + mimeType);
-            Preferences prefs = pf.getPreferences(mimeType);
             
             // collect factories
             Collection<? extends PreferencesCustomizer.Factory> factories = l.lookupAll(PreferencesCustomizer.Factory.class);
@@ -213,7 +220,6 @@ public final class CustomizerSelector {
                 }
             }
         } else {
-            Preferences prefs = pf.getPreferences(mimeType);
             PreferencesCustomizer c = new IndentationPanelController(prefs);
             list.add(c);
             c2p.put(c, prefs);

@@ -57,7 +57,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
 import org.netbeans.modules.xml.xam.Named;
 import org.openide.ErrorManager;
-import org.openide.nodes.Children;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -73,14 +73,22 @@ public abstract class WSDLNamedElementNode<T extends WSDLComponent> extends WSDL
     private NamedPropertyAdapter mPropertyAdapter;
     private String nameAttributeName;
     
-    public WSDLNamedElementNode(Children children, 
-            T element, 
+    public WSDLNamedElementNode(T element,
             NewTypesFactory newTypesFactory) {
-        super(children, element, newTypesFactory);
+        super(element, newTypesFactory);
     }
-    public WSDLNamedElementNode(Children children, 
-            T element) {
-        super(children, element);
+    
+    public WSDLNamedElementNode(T element) {
+        super(element);
+    }
+    
+    public WSDLNamedElementNode(ChildFactory factory, T element,
+            NewTypesFactory newTypesFactory) {
+        super(factory, element, newTypesFactory);
+    }
+
+    public WSDLNamedElementNode(ChildFactory factory, T element) {
+        super(factory, element);
     }
     
     

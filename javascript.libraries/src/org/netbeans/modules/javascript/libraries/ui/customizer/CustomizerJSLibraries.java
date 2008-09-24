@@ -214,11 +214,7 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     
     /* If it's a ruby project do not display the prototype js library, it's */
     /* included by default and not managed by the js library mananger. */
-    Project p = project.getLookup().lookup(Project.class);
-    if (p == null) {
-        p = project;
-    }
-    String projectClassName = p.getClass().getName();
+    String projectClassName = JSLibraryProjectUtils.getProjectClassName(project);
     if (projectClassName.equals(RUBY_PROJECT)) {
         currentLibs.add(manager.getLibrary(RUBY_DEFAULT_JS_LIB_NAME));
     }    

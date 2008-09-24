@@ -52,6 +52,7 @@ import org.netbeans.api.visual.widget.Widget;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -182,6 +183,14 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
                     else
                     {
                         provider.createConnection(source, curWidget);
+                        // fixed iz #146256
+                        Widget newWidget = scene.getFocusedWidget();
+                        if (newWidget instanceof ConnectionWidget)
+                        {
+                            Object obj = scene.findObject(newWidget);
+                            scene.setFocusedObject(obj);
+                            scene.userSelectionSuggested(Collections.singleton(obj), false);
+                        }
                     }
                 }
             }

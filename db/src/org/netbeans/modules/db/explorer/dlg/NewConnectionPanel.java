@@ -665,7 +665,7 @@ private void showUrl() {
             entry.getValue().getLabel().setVisible(jdbcurl.supportsToken(entry.getKey()));
         }
 
-        if (! jdbcurl.urlIsParsed()) {
+        if (! jdbcurl.isParseUrl()) {
             showUrlCheckBox.setEnabled(false);
             showUrlCheckBox.setSelected(true);
             urlField.setVisible(true);
@@ -718,7 +718,7 @@ private void showUrl() {
             return;
         }
 
-        if (jdbcurl.urlIsParsed()) {
+        if (jdbcurl.isParseUrl()) {
             updateUrlFromFields();
         } else {
             urlField.setText(jdbcurl.getUrlTemplate());
@@ -797,7 +797,7 @@ private void showUrl() {
     private void updateUrlFromFields() {
         
         JdbcUrl url = getSelectedJdbcUrl();
-        if (url == null || !url.urlIsParsed()) {
+        if (url == null || !url.isParseUrl()) {
             return;
         }
 
@@ -824,7 +824,7 @@ private void showUrl() {
         boolean requiredFieldMissing = false;
         if (url == null) {
             displayError(getMessage("NewConnection.MSG_SelectADriver"), false);
-        } else if (url != null && url.urlIsParsed()) {
+        } else if (url != null && url.isParseUrl()) {
             for (Entry<String,UrlField> entry : urlFields.entrySet()) {
                 if (url.requiresToken(entry.getKey()) && isEmpty(entry.getValue().getField().getText())) {
                     requiredFieldMissing = true;
@@ -869,7 +869,7 @@ private void showUrl() {
             return;
         }
 
-        if (url.urlIsParsed()) {
+        if (url.isParseUrl()) {
             // Setting this flag prevents the docment listener for the fields
             // from trying to update the URL, thus causing a circular even loop.
             updatingUrl = true;

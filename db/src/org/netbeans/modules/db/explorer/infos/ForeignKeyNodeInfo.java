@@ -55,6 +55,9 @@ public class ForeignKeyNodeInfo extends TableNodeInfo {
     @Override
     public void initChildren(Vector children) throws DatabaseException {
         try {
+            if (!ensureConnected()) {
+                return;
+            }
             String table = (String)get(DatabaseNode.TABLE);
             String fk_name = (String)get(DatabaseNode.IMPORTED_KEY);
             DriverSpecification drvSpec = getDriverSpecification();

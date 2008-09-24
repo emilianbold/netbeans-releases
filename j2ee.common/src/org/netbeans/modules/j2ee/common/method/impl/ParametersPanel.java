@@ -53,6 +53,8 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
@@ -72,9 +74,9 @@ public final class ParametersPanel extends javax.swing.JPanel {
     private static final int COL_FINAL_INDEX = 2;
     
     private static final String[] columnNames = {
-        NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Name"),
-        NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Type"),
-        NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Final"),
+        NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Name"),  // NOI18N
+        NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Type"),  // NOI18N
+        NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Final"),  // NOI18N
     };
     
     public static final String SELECTION = "selection"; // NOI18N
@@ -86,6 +88,11 @@ public final class ParametersPanel extends javax.swing.JPanel {
         
         tableModel = new ParamsTableModel(parameters);
         table.setModel(tableModel);
+        tableModel.addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                firePropertyChange("parameters", null, null); // NOI18N
+            }
+        });
         
         JComboBox typeCombo = new JComboBox();
         
@@ -101,11 +108,13 @@ public final class ParametersPanel extends javax.swing.JPanel {
         table.getColumnModel().getSelectionModel().addListSelectionListener(listSelectionListener);
 
         table.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
+            @Override
+            public void mousePressed(MouseEvent e) {
                 updateButtons();
             }
         });
         table.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyReleased(KeyEvent e) {
                 updateButtons();
             }
@@ -268,7 +277,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private void updateButtons() {
         int selIndex = table.getSelectedRow();
         boolean oneSelected = table.getSelectedRowCount() == 1;
-        
+
         removeButton.setEnabled(oneSelected);
         upButton.setEnabled(oneSelected && (selIndex > 0));
         downButton.setEnabled(oneSelected && (selIndex < tableModel.getRowCount() - 1));
@@ -288,8 +297,8 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
         
         public int addParameter() {
-            String name = generateUniqueName("parameter");
-            MethodModel.Variable parameter = MethodModel.Variable.create("java.lang.String", name, false);
+            String name = generateUniqueName("parameter");  // NOI18N
+            MethodModel.Variable parameter = MethodModel.Variable.create("java.lang.String", name, false);  // NOI18N
             int index = parameters.size();
             parameters.add(parameter);
             fireTableRowsInserted(index, index);
@@ -333,14 +342,17 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             return result;
         }
         
+        @Override
         public String getColumnName(int column) {
             return columnNames[column];
         }
         
+        @Override
         public boolean isCellEditable(int row, int column) {
             return true;
         }
         
+        @Override
         public void setValueAt(Object aValue, int row, int column) {
             // check if inserted name is valid Java identifier
             // if not, fall back to old value
@@ -363,6 +375,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         // JTable uses this method to determine the default renderer/editor for each cell.
         // If we didn't implement this method, then the last column would contain
         // text ("true"/"false"), rather than a check box.
+        @Override
         public Class getColumnClass(int c) {
             return getValueAt(0, c).getClass();
         }
@@ -401,10 +414,10 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private static String chooseType(Object aValue, String typeName) {
         if (!(aValue instanceof String)) {
-            return "Object";
+            return "Object";  // NOI18N
         }
         String aValueString = ((String)aValue).trim();
-        if (aValueString.equals("")) {
+        if (aValueString.equals("")) {  // NOI18N
             return typeName;
         }
         return aValueString;
@@ -412,7 +425,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private static String chooseName(Object aValue, String name) {
         String aValueString = ((String)aValue).trim();
-        if (aValueString.equals("")) {
+        if (aValueString.equals("")) {  // NOI18N
             return name;
         }
         return aValueString;

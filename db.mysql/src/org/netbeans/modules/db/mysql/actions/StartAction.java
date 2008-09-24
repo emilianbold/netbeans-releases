@@ -38,28 +38,20 @@
  */
 package org.netbeans.modules.db.mysql.actions;
 
-import java.beans.PropertyChangeListener;
+import org.netbeans.modules.db.mysql.impl.StartManager;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.CookieAction;
 
 /**
  * @author David Van Couvering
  */
 public class StartAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { DatabaseServer.class };
+    private static final Class[] COOKIE_CLASSES = new Class[] { DatabaseServer.class };
     
     public StartAction() {
         putValue("noIconInMenu", Boolean.TRUE);
@@ -86,7 +78,7 @@ public class StartAction extends CookieAction {
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
 
-        return server != null && !server.isConnected();
+        return server != null && !server.checkRunning(1000);
 
     }
 
@@ -111,14 +103,7 @@ public class StartAction extends CookieAction {
             path = server.getStartPath();
         }
 
-        try { 
-            server.start();
-        } catch ( DatabaseException dbe ) {
-            Utils.displayError(Utils.getMessage("MSG_UnableToStartServer"), dbe);
-            return;
-        }
-
-        waitForStartAndConnect(server);
+        StartManager.getDefault().start(server);
     }
 
     @Override
@@ -129,71 +114,5 @@ public class StartAction extends CookieAction {
     @Override
     protected Class<?>[] cookieClasses() {
         return COOKIE_CLASSES;
-    }
-
-    private void waitForStartAndConnect(final DatabaseServer server) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                ProgressHandle handle = ProgressHandleFactory.createHandle(
-                        NbBundle.getMessage(StartAction.class, "MSG_WaitingForServerToStart"));
-                handle.start();
-                handle.switchToIndeterminate();
-                try {
-                    waitForStart();
-                } finally {
-                    handle.finish();
-                }
-
-                // Reconnect if the user changes a connection parameter
-                PropertyChangeListener pcl = new ReconnectPropertyChangeListener(server);
-                server.addPropertyChangeListener(WeakListeners.propertyChange(pcl, server));
-
-                if (!server.isRunning()) {
-                    boolean editAdminProps = Utils.displayYesNoDialog(NbBundle.getMessage(StartAction.class, 
-                            "MSG_ServerDoesNotAppearToHaveStarted"));
-                    if (editAdminProps) {
-                        Mutex.EVENT.postReadRequest(new Runnable() {
-
-                            public void run() {
-                                PropertiesDialog dlg = new PropertiesDialog(server);
-                                dlg.displayDialog(PropertiesDialog.Tab.ADMIN);
-                            }
-                        });
-                    }
-                    return;
-                } else {
-                    try {
-                        server.reconnect();
-                    } catch (DatabaseException dbe) {
-                        boolean editProps = Utils.displayYesNoDialog(NbBundle.getMessage(StartAction.class, 
-                                "MSG_UnableToConnectToServerAfterStart", dbe.getMessage()));
-                        if (editProps) {
-                            Mutex.EVENT.postReadRequest(new Runnable() {
-
-                                public void run() {
-                                    PropertiesDialog dlg = new PropertiesDialog(server);
-                                    dlg.displayDialog();
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-
-            private void waitForStart() {
-                int tries = 0;
-                while (tries <= 3) {
-                    tries++;
-                    if (server.isRunning()) {
-                        return;
-                    }
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ie) {
-                        return;
-                    }
-                }
-            }
-        });
     }
 }

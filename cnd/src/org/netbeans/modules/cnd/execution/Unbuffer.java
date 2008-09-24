@@ -40,10 +40,14 @@
 package org.netbeans.modules.cnd.execution;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.dwarfdump.FileMagic;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -55,9 +59,29 @@ public class Unbuffer {
 
     private Unbuffer() {
     }
+
+    public static String getPath(String hkey, boolean is64bits) {
+        if (hkey == null || CompilerSetManager.LOCALHOST.equals(hkey)) {
+            return Unbuffer.getLocalPath(is64bits);
+        } else {
+            return Unbuffer.getRemotePath(hkey, is64bits);
+        }
+    }
+
+    public static boolean is64BitExecutable(String executable) {
+        try {
+            FileMagic magic = new FileMagic(executable);
+            ElfReader er = new ElfReader(executable, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
+            return er.is64Bit();
+        } catch (IOException e) {
+            log.warning("Executable " + executable + " not found"); // NOI18N
+            // something wrong - return false
+            return false;
+        }
+    }
     
-    public static String getLocalPath() {
-        String unbufferName = getLibName(PlatformInfo.localhost().getPlatform());
+    private static String getLocalPath(boolean is64bits) {
+        String unbufferName = getLibName(PlatformInfo.localhost().getPlatform(), is64bits);
         if (unbufferName == null) {
             return null;
         }
@@ -73,12 +97,12 @@ public class Unbuffer {
     /*
      * Not implemented yet
      */
-    public static String getRemotePath(String host) {
+    private static String getRemotePath(String host, boolean is64bits) {
         String path = HostInfoProvider.getDefault().getLibDir(host);
         if (path == null) {
             return null;
         }
-        String unbufferName = Unbuffer.getLibName(PlatformInfo.getDefault(host).getPlatform());
+        String unbufferName = getLibName(PlatformInfo.getDefault(host).getPlatform(), is64bits);
         if (unbufferName != null) {
             path += unbufferName;
             // check file existence
@@ -104,13 +128,14 @@ public class Unbuffer {
         return path;
     }
     
-    public static String getLibName(int platform) {
+    private static String getLibName(int platform, boolean is64bits) {
+        String bitnessSuffix = is64bits ? "_64" : ""; // NOI18N
         switch (platform) {
-            case PlatformTypes.PLATFORM_LINUX : return "unbuffer-Linux-x86.so"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC : return "unbuffer-SunOS-sparc.so"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL : return "unbuffer-SunOS-x86.so"; // NOI18N
-            case PlatformTypes.PLATFORM_WINDOWS : return "unbuffer-Windows_XP-x86.dll"; // NOI18N
-            case PlatformTypes.PLATFORM_MACOSX : return "unbuffer-Mac_OS_X-x86.dylib"; // NOI18N
+            case PlatformTypes.PLATFORM_LINUX : return "unbuffer-Linux-x86" + bitnessSuffix + ".so"; // NOI18N
+            case PlatformTypes.PLATFORM_SOLARIS_SPARC : return "unbuffer-SunOS-sparc" + bitnessSuffix + ".so"; // NOI18N
+            case PlatformTypes.PLATFORM_SOLARIS_INTEL : return "unbuffer-SunOS-x86" + bitnessSuffix + ".so"; // NOI18N
+            case PlatformTypes.PLATFORM_WINDOWS : return "unbuffer-Windows_XP-x86" + bitnessSuffix + ".dll"; // NOI18N
+            case PlatformTypes.PLATFORM_MACOSX : return "unbuffer-Mac_OS_X-x86" + bitnessSuffix + ".dylib"; // NOI18N
             default: log.warning("unbuffer search: unknown platform number " + platform); return null;
         }
     }

@@ -8,6 +8,8 @@ package org.netbeans.modules.db.mysql.ui;
 
 import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -16,6 +18,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -29,11 +33,11 @@ import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.Mutex.Action;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 
 /**
  *
@@ -44,10 +48,15 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private static final Logger LOGGER = Logger.getLogger(
             CreateDatabasePanel.class.getName());
 
-    DialogDescriptor descriptor;
-    final DatabaseServer server;
+    private DialogDescriptor descriptor;
+    private Dialog dialog;
+    private final DatabaseServer server;
+    private final DatabaseComboModel databaseComboModel;
+    private DatabaseConnection dbconn;
     private Color nbErrorForeground;
-
+    private JButton okButton;
+    private JButton cancelButton;
+    
     private void validatePanel(String databaseName) {
         if (descriptor == null) {
             return;
@@ -64,131 +73,181 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         if (error != null) {
             messageLabel.setText(error);
-            descriptor.setValid(false);
+            okButton.setEnabled(false);
         } else {
             messageLabel.setText(" "); // NOI18N
-            descriptor.setValid(true);
+            okButton.setEnabled(true);
         }
     }
-        
-    public static DatabaseConnection showCreateDatabaseDialog(DatabaseServer server) throws DatabaseException {
-        // DialogDescriptor handles running on a background thread
-        // assert SwingUtilities.isEventDispatchThread();
-        
-        CreateDatabasePanel panel = new CreateDatabasePanel(server);
-        String title = NbBundle.getMessage(CreateDatabasePanel.class, 
-                "CreateNewDatabasePanel.LBL_CreateDatabaseTitle");
 
-        DialogDescriptor desc = new DialogDescriptor(panel, title);
-        panel.setDialogDescriptor(desc);
+    private void startProgress() {
+        setProgress(true);
+    }
 
-        for (;;) {                    
-            Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
-            String acsd = NbBundle.getMessage(CreateDatabasePanel.class, 
-                    "CreateNewDatabasePanel.ACSD_CreateNewDatabasePanel");
-            dialog.getAccessibleContext().setAccessibleDescription(acsd);
-            dialog.setVisible(true);
-            dialog.dispose();
+    private void stopProgress() {
+        setProgress(false);
+    }
 
-            // The user cancelled
-            if (!DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
-                return null;
+    private void setProgress(final boolean start) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                comboDatabaseName.setEnabled(!start);
+                okButton.setEnabled(!start);
+                if (! start) {
+                    cancelButton.setEnabled(true);
+                }
+                progressBar.setVisible(start);
+                progressLabel.setVisible(start);
+                progressBar.setIndeterminate(start);
+                resize();
             }
-            
-            if ( Utils.isEmpty(panel.getDatabaseName())) {
-                Utils.displayErrorMessage(
-                    NbBundle.getMessage(CreateDatabasePanel.class,
-                    "CreateNewDatabasePanel.MSG_EmptyDatabaseName"));
-                continue;
+        });
+
+    }
+
+    public DatabaseConnection showCreateDatabaseDialog() throws DatabaseException {
+        assert SwingUtilities.isEventDispatchThread();
+        
+
+        okButton = new JButton(NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.CTL_OKButton")); // NOI18N
+        okButton.setEnabled(false);
+        cancelButton = new JButton(NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.CTL_CancelButton")); // NOI18N
+
+        ActionListener listener = new ActionListener() {
+            Task task;
+
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource().equals(okButton)) {
+                    if (task != null && !task.isFinished()) {
+                        // Don't start a new task if we're still running the old one
+                        return;
+                    }
+                    
+                    startProgress();
+
+                    task = RequestProcessor.getDefault().create(new Runnable() {
+                        public void run() {
+                            createDatabase();
+                        }
+                    });
+
+                    task.addTaskListener(new TaskListener() {
+                        public void taskFinished(org.openide.util.Task task) {
+                            stopProgress();
+                            dialog.dispose();
+                        }
+                    });
+                    
+                    task.schedule(0);
+
+                } else if (e.getSource().equals(cancelButton)) {
+                    dialog.dispose();
+                }
             }
-                        
-            return createDatabase(panel.getServer(), panel.getDatabaseName(),
-                        panel.getGrantUser());
-        }
+        };
+
+        okButton.addActionListener(listener);
+        cancelButton.addActionListener(listener);
+
+        String title = NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.LBL_CreateDatabaseTitle");
+
+        descriptor = new DialogDescriptor(this, title, true, new JButton[] {okButton, cancelButton},
+                okButton, DialogDescriptor.DEFAULT_ALIGN, HelpCtx.findHelp(CreateDatabasePanel.class), null);
+        descriptor.setClosingOptions(new Object[0]);
+
+        dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        
+        String acsd = NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.ACSD_CreateNewDatabasePanel");
+        dialog.getAccessibleContext().setAccessibleDescription(acsd);
+
+        // This needs to be done after the dialog is created because stopProgress()
+        // resizes the window to hide the progress bar, and the window
+        // isn't available until the dialog is created.
+        stopProgress();
+
+        dialog.setVisible(true);
+
+        return dbconn;
     }
 
     /**
-     * Create a database based on settings of the dialog
-     * 
-     * @param server the ServerInstance we are working with
-     * @param dbname the name of the database
-     * @param grantUser the user name to grant full access to or null if 
-     *      no grant is desired
-     * @param createConnection
-     *      set to true if the user wants to create and register a
-     *      DatabaseConnection for this database in the Database Explorer
-     * 
-     * @return the database connection to the newly created database or 
-     *         <code>null</code> if a connection to the database was not created.
+     * Create a database based on settings of the dialog.  Set the member
+     * variable dbconn to the resulting Database Connection.
      */
-    private static DatabaseConnection createDatabase(DatabaseServer server,
-            final String dbname, DatabaseUser grantUser) {
-        
+    private void createDatabase() {
+
+        dbconn = null;
+        String dbname = getDatabaseName();
         boolean dbCreated = false;
-        DatabaseConnection result = null;
+
         try {
-            if ( ! checkExistingDatabase(server, dbname) ) {
-                return null;
+            if (! ensureConnected()) {
+                return;
             }
-            
+
+            if ( ! checkExistingDatabase(server, getDatabaseName()) ) {
+                return;
+            }
+
             server.createDatabase(dbname);
             
             dbCreated = true;
-            
-            String user;
-            if ( grantUser != null ) {
-                server.grantFullDatabaseRights(dbname, grantUser);
-                user = grantUser.getUser();
-            } else {
-                user = server.getUser();
+                           
+            dbconn = createConnection(server, dbname);
+
+            if (dbconn == null) {
+                return;
             }
-               
-            result = createConnection(server, dbname, user);
 
-            if (result == null) {
-                boolean delete = Utils.displayConfirmDialog(NbBundle.getMessage(CreateDatabasePanel.class, 
-                        "CreateDatabasePanel.MSG_ConfirmDeleteDatabase", dbname));
+            boolean create = false;
 
-                if (delete) {
-                    server.dropDatabase(dbname);
+            if (SampleManager.isSample(dbname)) {
+                if (! databaseComboModel.isSelectedSample()) {
+                    // This is a sample name the user typed in - make sure they want to
+                    // actually create the sample tables, objects, etc.
+                    create = Utils.displayYesNoDialog(NbBundle.getMessage(CreateDatabasePanel.class,
+                            "CreateDatabasePanel.MSG_ConfirmCreateSample", dbname));
+                } else {
+                    create = true;
                 }
-
-                return null;
             }
-            
-            // Need a final variable for the anonymous class.
-            final DatabaseConnection dbconn = result;
 
-            if (result != null && SampleManager.isSample(dbname)) {
-                boolean create = Utils.displayConfirmDialog(NbBundle.getMessage(CreateDatabasePanel.class, 
-                        "CreateDatabasePanel.MSG_ConfirmCreateSample", dbname));
-
-                if (! create) {
-                    return dbconn;
-                }
-
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        try {
-                            SampleManager.createSample(dbname, dbconn);
-                        } catch (DatabaseException dbe) {
-                            LOGGER.log(Level.INFO, dbe.getMessage(), dbe);
-                            Utils.displayErrorMessage(dbe.getMessage());
-                        }
-                    }
-
-                });
+            if (create) {
+                // Disable cancel
+                // TODO - make it possible to cancel a long-running sample creation task
+                cancelButton.setEnabled(false);
+                SampleManager.createSample(dbname, dbconn);
             }
         } catch ( DatabaseException ex ) {
             displayCreateFailure(server, ex, dbname, dbCreated);
-            return null;
+            dbconn = null;
+        }
+    }
+
+    private boolean ensureConnected() throws DatabaseException {
+        if (! server.checkRunning()) {
+            return false;
         }
         
-        return result;
+        try {
+            server.validateConnection();
+        } catch (DatabaseException dbe) {
+            LOGGER.log(Level.FINE, null, dbe);
+        }
+        
+        if (server.isConnected()) {
+            return true;
+        }
+        
+        server.reconnect();
+
+        return server.isConnected();
     }
         
     private static void displayCreateFailure(DatabaseServer server,
             DatabaseException ex, String dbname, boolean dbCreated) {
+        LOGGER.log(Level.INFO, null, ex);
         Utils.displayError(NbBundle.getMessage(CreateDatabasePanel.class,
                 "CreateNewDatabasePanel.MSG_CreateFailed"), ex);
 
@@ -234,34 +293,21 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
        return false;
     }
     
-    private static DatabaseConnection createConnection(
-            DatabaseServer server, String dbname, String grantUser) {
+    private static DatabaseConnection createConnection(final DatabaseServer server, final String dbname) throws DatabaseException {
         
-        List<DatabaseConnection> conns = DatabaseUtils.
-                findDatabaseConnections(server.getURL(dbname));
+        List<DatabaseConnection> conns = DatabaseUtils.findDatabaseConnections(server.getURL(dbname));
         if ( ! conns.isEmpty() ) {
             // We already have a connection, no need to create one
             return conns.get(0);
         }
         
-        String user;
+        DatabaseConnection dbconn = DatabaseConnection.create(
+            DatabaseUtils.getJDBCDriver(), server.getURL(dbname), server.getUser(), null, server.getPassword(), false);
         
-        if ( grantUser == null || grantUser.equals("")) {
-            user = server.getUser();
-        } else {
-            user = grantUser;
-        }
-        
-        final String url = server.getURL(dbname);
-        final String finalUser = user;
+        ConnectionManager.getDefault().addConnection(dbconn);
+        ConnectionManager.getDefault().connect(dbconn);
 
-        return Mutex.EVENT.readAccess(new Action<DatabaseConnection>() {
-            public DatabaseConnection run() {
-                return ConnectionManager.getDefault().showAddConnectionDialogFromEventThread(
-                        DatabaseUtils.getJDBCDriver(), url, finalUser, null);
-            }
-
-        });
+        return dbconn;
     }
 
     
@@ -276,7 +322,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         initComponents();
 
-        comboDatabaseName.setModel(new DatabaseComboModel());
+        databaseComboModel = new DatabaseComboModel();
+        comboDatabaseName.setModel(databaseComboModel);
         
         comboDatabaseName.getEditor().getEditorComponent().addKeyListener(
             new KeyListener() {
@@ -315,9 +362,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 
         setBackground(getBackground());
         messageLabel.setBackground(getBackground());
-        messageLabel.setText(" ");        
+        messageLabel.setText(" ");
     }
-    
+
+    private void resize() {
+        revalidate();
+        if (dialog != null) {
+            dialog.pack();
+        }
+    }
+
+
     private String getDatabaseName() {
         String dbname = (String)comboDatabaseName.getSelectedItem();
         if ( dbname != null ) {
@@ -325,26 +380,14 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
         return dbname;
     }
-    
-    private DatabaseUser getGrantUser() {
-        return (DatabaseUser)comboUsers.getSelectedItem();
-    }
-    
-    private void setDialogDescriptor(DialogDescriptor desc) {
-        this.descriptor = desc;
-        validatePanel("");
-    }
-    
+        
     private void setGrantAccess(boolean grant) {
         this.chkGrantAccess.setSelected(grant);
+        comboUsers.setEnabled(grant);
     }
     
     private boolean isGrantAccess() {
         return chkGrantAccess.isSelected();
-    }
-        
-    private DatabaseServer getServer() {
-        return server;
     }
 
     /** This method is called from within the constructor to
@@ -357,10 +400,12 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private void initComponents() {
 
         nameLabel = new javax.swing.JLabel();
+        progressBar = new javax.swing.JProgressBar();
         chkGrantAccess = new javax.swing.JCheckBox();
         comboDatabaseName = new javax.swing.JComboBox();
         comboUsers = new javax.swing.JComboBox();
         messageLabel = new javax.swing.JLabel();
+        progressLabel = new javax.swing.JLabel();
 
         nameLabel.setLabelFor(comboDatabaseName);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.nameLabel.text")); // NOI18N
@@ -388,6 +433,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(progressLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.progressLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -395,7 +442,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, nameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -403,7 +449,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(comboUsers, 0, 323, Short.MAX_VALUE)
-                            .add(comboDatabaseName, 0, 323, Short.MAX_VALUE))))
+                            .add(comboDatabaseName, 0, 323, Short.MAX_VALUE)))
+                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
+                    .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
+                    .add(progressLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -417,9 +466,13 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(chkGrantAccess)
                     .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(messageLabel)
-                .addContainerGap(30, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(progressLabel)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         comboDatabaseName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboDatabaseName.AccessibleContext.accessibleName")); // NOI18N
@@ -442,7 +495,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
     private static class DatabaseComboModel implements ComboBoxModel {
         private final List<String> sampleNames = SampleManager.getSampleNames();
-        static final String samplePrefix =
+        static final String SAMPLE_PREFIX =
                 NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.STR_SampleDatabase") + ": ";
         
         String selected = null;
@@ -452,10 +505,14 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             selected = (String)item;
         }
 
+        public boolean isSelectedSample() {
+            return selected != null && selected.startsWith(SAMPLE_PREFIX);
+        }
+
         public Object getSelectedItem() {
-            if ( selected != null && selected.startsWith(samplePrefix)) {
+            if (isSelectedSample()) {
                 // trim off the "Sample database: " string
-                return selected.replace(samplePrefix, "");
+                return selected.replace(SAMPLE_PREFIX, "");
             } else if ( selected != null ) {
                 return selected; 
             } else {
@@ -471,7 +528,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             if (index < 0) {
                 return null;
             }
-            return samplePrefix + sampleNames.get(index).toString();
+            return SAMPLE_PREFIX + sampleNames.get(index).toString();
         }
 
         public void addListDataListener(ListDataListener listener) {
@@ -549,6 +606,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private javax.swing.JComboBox comboUsers;
     private javax.swing.JLabel messageLabel;
     private javax.swing.JLabel nameLabel;
+    private javax.swing.JProgressBar progressBar;
+    private javax.swing.JLabel progressLabel;
     // End of variables declaration//GEN-END:variables
     
 }

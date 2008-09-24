@@ -40,7 +40,7 @@
                   <Component id="textPane" alignment="0" min="-2" max="-2" attributes="1"/>
               </Group>
           </Group>
-          <Component id="jLabel1" alignment="0" pref="687" max="32767" attributes="2"/>
+          <Component id="jLabel1" alignment="0" pref="740" max="32767" attributes="2"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
               <Component id="forceGlobalCheckBox" min="-2" max="-2" attributes="0"/>
@@ -48,12 +48,12 @@
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="downloadRadioButton" pref="654" max="32767" attributes="2"/>
+              <Component id="downloadRadioButton" pref="707" max="32767" attributes="2"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="cliRadioButton" pref="654" max="32767" attributes="2"/>
+              <Component id="cliRadioButton" pref="707" max="32767" attributes="2"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>

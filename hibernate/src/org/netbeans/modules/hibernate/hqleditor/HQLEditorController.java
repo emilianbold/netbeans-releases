@@ -102,8 +102,7 @@ public class HQLEditorController {
                 localResourcesURLList.add(mappingFO.getURL());
             }
             final ClassLoader customClassLoader = env.getProjectClassLoader(
-                    localResourcesURLList.toArray(new URL[]{})
-                    );
+                    localResourcesURLList.toArray(new URL[]{}));
 
             Thread t = new Thread() {
 
@@ -174,30 +173,28 @@ public class HQLEditorController {
                 logger.fine("Removing mapping element ..  " + node);
                 node.getParent().remove(node);
             }
-            
+
             // Fix for 142899.  The actual exception generated while creating SessionFactory is not 
             // catchable so this pre-check ensures that there's no exception window comes up during 
             // query execution. 
             String sessionName = sessionFactoryElement.attributeValue("name");
-            if(sessionName != null && (!sessionName.trim().equals(""))) {
+            if (sessionName != null && (!sessionName.trim().equals(""))) {
                 java.util.Properties prop = new java.util.Properties();
                 Iterator propertyIterator = sessionFactoryElement.elementIterator("property");
-                while(propertyIterator.hasNext()) {
-                    org.dom4j.Element propNode = (org.dom4j.Element)propertyIterator.next();
-                    if(org.hibernate.cfg.Environment.JNDI_CLASS.equals(propNode.attributeValue("name"))) {
+                while (propertyIterator.hasNext()) {
+                    org.dom4j.Element propNode = (org.dom4j.Element) propertyIterator.next();
+                    if (org.hibernate.cfg.Environment.JNDI_CLASS.equals(propNode.attributeValue("name"))) {
                         prop.setProperty(
                                 javax.naming.Context.INITIAL_CONTEXT_FACTORY,
-                                propNode.getTextTrim()
-                                );
+                                propNode.getTextTrim());
                     }
-                    if(org.hibernate.cfg.Environment.JNDI_URL.equals(propNode.attributeValue("name"))) {
+                    if (org.hibernate.cfg.Environment.JNDI_URL.equals(propNode.attributeValue("name"))) {
                         prop.setProperty(
                                 javax.naming.Context.PROVIDER_URL,
-                                propNode.getTextTrim()
-                                );
+                                propNode.getTextTrim());
                     }
                 }
-                
+
                 try {
                     javax.naming.InitialContext context = new javax.naming.InitialContext(prop);
                     context.bind("dummy", new Object());
@@ -206,9 +203,9 @@ public class HQLEditorController {
                     logger.log(Level.INFO, "Incorrect JNDI properties", namingException);
                     throw namingException;
                 }
-                
+
             }
-            
+
             // End fix for 142899.
 
             //   add mappings
@@ -619,6 +616,9 @@ public class HQLEditorController {
     private Class processMatchingClass(String className, ClassLoader customClassLoader, Project project) {
         FileObject clazzFO = HibernateUtil.findJavaFileObjectInProject(className, project);
         FileObject buildFolderFO = HibernateUtil.getBuildFO(project);
+        if(buildFolderFO == null) {
+            return null; // Unable to find the build folder.
+        }
         return checkAndCompile(className, clazzFO, buildFolderFO, customClassLoader, project);
     }
 
@@ -671,6 +671,13 @@ public class HQLEditorController {
                 //TODO diagnostic listener - plugin log
                 Boolean b = javaCompiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
                 logger.info("b = " + b);
+                if (b == false) { // Compilation errors.
+                    FileObject classfileFO = buildFolderFO.getFileObject(className + ".class");
+                    if(classfileFO != null && classfileFO.isValid()) {
+                        classfileFO.delete();
+                    }
+                    return clazz;
+                }
                 try {
                     className = className.replace(File.separator, ".");
                     clazz = customClassLoader.loadClass(className);

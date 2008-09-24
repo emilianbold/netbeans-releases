@@ -43,12 +43,18 @@ import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.*;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 
 /**
@@ -102,31 +108,38 @@ public class ConnectAction extends CookieAction {
         Database model = activatedNodes[0].getCookie(Database.class);
         DatabaseServer server = model.getServer();
         
-        String dbname = model.getDbName();
+        final String dbname = model.getDbName();
 
-        List<DatabaseConnection> conns =
-                DatabaseUtils.findDatabaseConnections(
-                    server.getURL(dbname));
+        List<DatabaseConnection> conns = DatabaseUtils.findDatabaseConnections(server.getURL(dbname));
 
-        if ( conns.size() == 0 ) 
-        {
-            String pw = null;
-            if (server.isSavePassword())
+        try {
+            if ( conns.size() == 0 )
             {
-                pw = server.getPassword();
-            }
-            
-            ConnectionManager.getDefault().
-                showAddConnectionDialogFromEventThread(
-                    DatabaseUtils.getJDBCDriver(),
-                    server.getURL(dbname),
-                    server.getUser(),
-                    pw);
-        } else {
-            ConnectionManager.getDefault().showConnectionDialog(conns.get(0));
-        }
+                final DatabaseConnection dbconn = DatabaseConnection.create(DatabaseUtils.getJDBCDriver(),
+                        server.getURL(dbname), server.getUser(), null, 
+                        server.isSavePassword() ? server.getPassword() : null, server.isSavePassword());
 
-        // Refresh in case the state of the server changed... (e.g. the connection was lost)
-        server.refreshDatabaseList();
+                // Can't display the dialog until the connection has been succesfully added
+                // to the database explorer.
+                ConnectionManager.getDefault().addConnectionListener(new ConnectionListener() {
+                    public void connectionsChanged() {
+                        ConnectionManager.getDefault().showConnectionDialog(dbconn);
+                        ConnectionManager.getDefault().removeConnectionListener(this);
+                    }
+                });
+
+                ConnectionManager.getDefault().addConnection(dbconn);
+            } else {
+                ConnectionManager.getDefault().showConnectionDialog(conns.get(0));
+            }
+
+        } catch (DatabaseException dbe) {
+            LOGGER.log(Level.INFO, dbe.getMessage(), dbe);
+            Utils.displayErrorMessage(NbBundle.getMessage(ConnectAction.class,
+                    "MSG_FailureConnecting", dbname, dbe.getMessage()));
+        } finally {
+            // Refresh in case the state of the server changed... (e.g. the connection was lost)
+            server.refreshDatabaseList();
+        }
     }
 }

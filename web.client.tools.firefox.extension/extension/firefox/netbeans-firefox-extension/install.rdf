@@ -27,7 +27,7 @@
         <!-- Firebug -->
         <em:id>firebug@software.joehewitt.com</em:id>
         <em:minVersion>1.0.99</em:minVersion>
-        <em:maxVersion>1.2.*</em:maxVersion>
+        <em:maxVersion>1.9.*</em:maxVersion>
         <em:homepageURL>http://www.getfirebug.com/</em:homepageURL>
         <em:updateURL>http://www.getfirebug.com/releases/update.rdf</em:updateURL>
       </Description>

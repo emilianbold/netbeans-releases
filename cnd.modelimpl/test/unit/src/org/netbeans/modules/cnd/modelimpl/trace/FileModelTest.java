@@ -494,6 +494,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("forward_declarations.cc"); // NOI18N
     }
 
+    // #146966 : parser fails on recognizing some operator's definitions
+    public void testTemplateTypeCastOperators() throws Exception {        
+        performTest("template_type_cast_operators.cc"); // NOI18N        
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

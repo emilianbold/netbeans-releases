@@ -288,7 +288,7 @@ public class ConfigurationDescriptorProvider {
     private class ConfigurationXMLChangeListener implements FileChangeListener {
 
         private void resetConfiguration() {
-            if (projectDescriptor.getModified()) {
+            if (projectDescriptor != null && projectDescriptor.getModified()) {
                 // Don't reload if descriptor is modified in memory.
                 // This also prevents reloading when descriptor is being saved.
                 return;

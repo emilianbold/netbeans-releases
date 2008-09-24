@@ -72,6 +72,13 @@ int foo() {
 }
 
 
+// IZ 146030 : set of problems for declarations in Loki (usecase 4)
+static void write_five() {
+    global_int = 5;
+}
+function<void() > static_func2(write_five);
+
+
 //
 // Functions
 //

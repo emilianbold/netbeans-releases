@@ -56,7 +56,6 @@ import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -111,7 +110,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
@@ -1319,10 +1317,10 @@ public class JaxWsUtils {
         return false;
     }
 
-    public static boolean isRPCEncoded(URL wsdlURL) {
+    public static boolean isRPCEncoded(URI wsdlURI) {
         try {
-            FileObject wsdlFO = FileUtil.toFileObject(new File(wsdlURL.toURI()));
-            ;
+            FileObject wsdlFO = FileUtil.toFileObject(new File(wsdlURI));
+            
             WSDLModel wsdlModel = WSDLModelFactory.getDefault().
                     getModel(org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(wsdlFO, true));
             Definitions definitions = wsdlModel.getDefinitions();
@@ -1347,8 +1345,6 @@ public class JaxWsUtils {
                     }
                 }
             }
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (CatalogModelException ex) {
             Logger.global.log(Level.INFO, "", ex);
         }

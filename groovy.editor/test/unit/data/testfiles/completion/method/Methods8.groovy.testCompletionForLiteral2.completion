@@ -1,0 +1,19 @@
+Code completion result for source line:
+1.0.d|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     div(Character)                             Number
+METHOD     div(Number)                                Number
+METHOD     divide(BigDecimal)                         BigDecimal
+METHOD     divide(BigDecimal, MathContext             BigDecimal
+METHOD     divide(BigDecimal, RoundingMod             BigDecimal
+METHOD     divide(BigDecimal, int)                    BigDecimal
+METHOD     divide(BigDecimal, int, Roundi             BigDecimal
+METHOD     divide(BigDecimal, int, int)               BigDecimal
+METHOD     divideAndRemainder(BigDecimal)             BigDecimal
+METHOD     divideAndRemainder(BigDecimal,             BigDecimal
+METHOD     divideToIntegralValue(BigDecim             BigDecimal
+METHOD     divideToIntegralValue(BigDecim             BigDecimal
+METHOD     doubleValue()                              double
+METHOD     downto(Number, Closure)                    void
+METHOD     dump()                                     String

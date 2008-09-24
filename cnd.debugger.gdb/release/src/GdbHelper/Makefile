@@ -49,6 +49,10 @@ CFLAGS-Linux := -c -g -fPIC
 CFLAGS-SunOS := -c -g -fPIC
 CFLAGS-Mac_OS_X := -c -g -fPIC
 
+ifdef 64BITS
+    FLAG64 := -m64
+endif
+
 LDFLAGS-Windows_XP = -mno-cygwin -Wl,--out-implib,build/$(OSNAME)-$(PLATFORM)/libGdbHelper.import.a -shared
 LDFLAGS-Linux = -g -shared -fPIC
 LDFLAGS-SunOS = -g -shared -fPIC
@@ -70,12 +74,18 @@ ifeq (Darwin,$(UNAME_S))
 endif
 
 SOEXT := ${SOEXT-${OSNAME}}
-CFLAGS := ${CFLAGS-${OSNAME}}
-LDFLAGS = ${LDFLAGS-${OSNAME}}
+CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64}
+LDFLAGS = ${LDFLAGS-${OSNAME}} ${FLAG64}
 
-PLATFORM-i386  :=  x86
-PLATFORM-i686  :=  x86
-PLATFORM-sparc  :=  sparc
+ifdef 64BITS
+    PLATFORM_64 := _64
+else
+    PLATFORM_64 :=
+endif
+
+PLATFORM-i386  :=  x86${PLATFORM_64}
+PLATFORM-i686  :=  x86${PLATFORM_64}
+PLATFORM-sparc  :=  sparc${PLATFORM_64}
 ifeq (${UNAME_P}, unknown)
 	PLATFORM = ${PLATFORM-${UNAME_M}}
 else

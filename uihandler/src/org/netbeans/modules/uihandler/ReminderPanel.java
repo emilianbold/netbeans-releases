@@ -7,6 +7,7 @@
 package org.netbeans.modules.uihandler;
 
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -36,7 +37,6 @@ public class ReminderPanel extends javax.swing.JPanel {
         lblLearnMore.getAccessibleContext().setAccessibleDescription
         (NbBundle.getMessage(ReminderPanel.class, "ACSD_LearnMore"));
         Font controlFont = UIManager.getFont("controlFont");
-        System.out.println("- - - - controlFont:" + controlFont);
         if (controlFont != null) {
             jBottomLabel1.setFont(controlFont);
             jBottomLabel2.setFont(controlFont);
@@ -58,29 +58,21 @@ public class ReminderPanel extends javax.swing.JPanel {
         jBottomLabel3 = new javax.swing.JLabel();
         lblLearnMore = new javax.swing.JLabel();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setFocusable(false);
 
-        jBottomLabel1.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        jBottomLabel1.setText("Help us improve the NetBeans IDE by providing anonymous usage data."); // NOI18N
-        jBottomLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        jBottomLabel1.setText("<html>Help us improve the NetBeans IDE by providing anonymous usage data.</html>"); // NOI18N
         jBottomLabel1.setFocusable(false);
         jBottomLabel1.setRequestFocusEnabled(false);
 
-        jBottomLabel2.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        jBottomLabel2.setText("If you agree to participate, the IDE will send anonymous information about the high-level features that you use to a database at netbeans.org."); // NOI18N
-        jBottomLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        jBottomLabel2.setText("<html>If you agree to participate, the IDE will send anonymous information about the high-level features that you use to a database at netbeans.org.</html>"); // NOI18N
         jBottomLabel2.setFocusable(false);
         jBottomLabel2.setRequestFocusEnabled(false);
 
-        jBottomLabel3.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         jBottomLabel3.setText("<html>The usage statistics help us better understand user requirements and prioritize improvements in future releases. We will never reverse-engineer the collected data to find specific details about your projects.</html>"); // NOI18N
-        jBottomLabel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         jBottomLabel3.setFocusable(false);
         jBottomLabel3.setRequestFocusEnabled(false);
 
         lblLearnMore.setText("<html><font color=\"#0000FF\" <u>Learn more</u></font></html>"); // NOI18N
-        lblLearnMore.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         lblLearnMore.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 lblLearnMoreMouseEntered(evt);
@@ -95,25 +87,32 @@ public class ReminderPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jBottomLabel2, 0, 0, Short.MAX_VALUE)
-                    .add(jBottomLabel1)
-                    .add(jBottomLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 828, Short.MAX_VALUE)
-                    .add(lblLearnMore))
+                    .add(jBottomLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
+                    .add(jBottomLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
+                    .add(lblLearnMore, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
+                    .add(jBottomLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(jBottomLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jBottomLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jBottomLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jBottomLabel3)
                 .add(18, 18, 18)
                 .add(lblLearnMore)
-                .addContainerGap(43, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jBottomLabel1.getAccessibleContext().setAccessibleName(""); // NOI18N
+        jBottomLabel2.getAccessibleContext().setAccessibleName(""); // NOI18N
+        jBottomLabel3.getAccessibleContext().setAccessibleName(""); // NOI18N
+        lblLearnMore.getAccessibleContext().setAccessibleName(""); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void lblLearnMoreMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblLearnMoreMouseEntered

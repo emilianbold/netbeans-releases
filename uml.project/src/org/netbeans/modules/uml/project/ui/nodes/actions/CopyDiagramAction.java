@@ -250,4 +250,12 @@ public class CopyDiagramAction extends NodeAction
         }
         return buffer;
     }
+
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
+
+
 }

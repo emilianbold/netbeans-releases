@@ -216,21 +216,4 @@ public class Util {
         }
         return "";
     }
-
-    /**
-     * Convenience method to obtain the source root folder.
-     * @param project the Project object
-     * @return the FileObject of the source root folder
-     */
-    public static FileObject getSourceRoot(Project project) {
-        if (project == null) {
-            return null;
-        }
-
-        SourceGroup[] grp = SourceGroups.getJavaSourceGroups(project);
-        if (grp.length != 0) {
-            return grp[0].getRootFolder();
-        }
-        return null;
-    }
 }

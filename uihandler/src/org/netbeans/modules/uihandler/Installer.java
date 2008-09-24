@@ -42,8 +42,12 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -95,6 +99,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -319,8 +324,9 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     private void showDialog () {
+        final JPanel panel = new ReminderPanel();
         DialogDescriptor descriptor = new DialogDescriptor(
-            new ReminderPanel(),
+            panel,
             NbBundle.getMessage(Installer.class, "Metrics_title"),
             true,
                 new Object[] {metricsEnable, metricsCancel},
@@ -331,6 +337,21 @@ public class Installer extends ModuleInstall implements Runnable {
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            final Dialog d = dlg;
+            dlg.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowOpened(WindowEvent e) {
+                    BufferedImage offImg;
+                    offImg = (BufferedImage) panel.createImage(1000,1000);
+                    Graphics g = offImg.createGraphics();
+                    panel.paint(g);
+                    int height = d.getPreferredSize().height;
+                    Dimension size = d.getSize();
+                    size.height = height;
+                    d.setSize(size);
+                }
+
+            });
             dlg.setResizable(false);
             dlg.setVisible(true);
         } finally {
@@ -1474,6 +1495,7 @@ public class Installer extends ModuleInstall implements Runnable {
                             recs.add(thrownLog);//exception selected by user
                         }
                         recs.add(TimeToFailure.logFailure());
+                        recs.add(BuildInfo.logBuildInfoRec());
                         recs.add(userData);
                         if ((report) && !(reportPanel.asAGuest())) {
                             if (!checkUserName()) {
@@ -1847,11 +1869,6 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
                 } catch (IOException exc) {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
-                }
-                List<String> buildInfo = BuildInfo.logBuildInfo();
-                if (buildInfo != null) {
-                    Collection<? super String> c = params;
-                    c.addAll(buildInfo);
                 }
             }
         }

@@ -89,6 +89,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1800"/>
             </file>
         </folder>    
+        <!-- #147199: disabled for the time being
          <folder name="Window">
             <folder name="Output">
                 <file name="CallHierarchyAction.shadow">
@@ -97,6 +98,7 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        -->
     </folder>   
     <folder name="Editors">
         <folder name="text">

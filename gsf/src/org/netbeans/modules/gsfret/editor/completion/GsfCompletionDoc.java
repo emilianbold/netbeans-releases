@@ -102,7 +102,9 @@ public class GsfCompletionDoc implements CompletionDocumentation {
             }
         }
 
-        this.content = completer.document(controller, elementHandle);
+        if (completer != null) {
+            this.content = completer.document(controller, elementHandle);
+        }
 
         if (this.content == null) {
             Completion.get().hideDocumentation();

@@ -322,7 +322,17 @@ No.
         </question>
 -->
 <answer id="exec-component">
-No.
+    <api type="export" group="property" name="org.openide.explorer.VisualizerNode.prefetchCount" category="private">
+        Setting this property to integer number controls prefetching of nodes
+        when VisualizerChildren are constructed (prefetchCount = 0 disables
+        prefetching).
+        The prefetching should eliminate "bounce" effect (see #144718) in lazy 
+        implementation which is caused by the fact that there exist keys without
+        nodes. In such case "dummy" nodes are created and remove event is fired.
+        This undesirable effect is eliminated by prefetching selected number of 
+        nodes so "dummy" nodes are detected and removed in advance before any 
+        visualization occurs. 
+    </api>
 </answer>
 
 

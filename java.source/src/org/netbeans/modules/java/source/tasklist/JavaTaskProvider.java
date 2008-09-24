@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -277,6 +278,20 @@ public final class JavaTaskProvider extends PushTaskScanner {
             }
 
             FileObject root = cp.findOwnerRoot(file);
+
+            if (root == null) {
+                Project p = FileOwnerQuery.getOwner(file);
+                
+                LOG.log(Level.WARNING,
+                        "file: {0} is not on its own source classpath: {1}, project: {2}",
+                        new Object[] {
+                            FileUtil.getFileDisplayName(file),
+                            cp.toString(ClassPath.PathConversionMode.PRINT),
+                            p != null ? p.getClass() : "null"
+                        });
+
+                return ;
+            }
 
             if (file.isData()) {
                 List<? extends Task> tasks = TaskCache.getDefault().getErrors(file);

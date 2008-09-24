@@ -51,23 +51,23 @@ import static org.netbeans.modules.print.ui.UI.*;
  */
 public final class PageSetupAction extends CallableSystemAction {
 
-  @Override
-  public synchronized void performAction() {
-    Config.getDefault().showPageSetup();
-  }
+    @Override
+    public synchronized void performAction() {
+        Config.getDefault().showPageSetup();
+    }
 
-  @Override
-  protected boolean asynchronous() {
-    return false;
-  }
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 
-  @Override
-  public String getName() {
-    return i18n(PageSetupAction.class, "LBL_PageSetup_Action"); // NOI18N
-  }
-  
-  @Override
-  public HelpCtx getHelpCtx() {
-    return HelpCtx.DEFAULT_HELP;
-  }
+    @Override
+    public String getName() {
+        return i18n(PageSetupAction.class, "LBL_PageSetup_Action"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
 }

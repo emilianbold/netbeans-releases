@@ -85,6 +85,10 @@ public abstract class TestBase extends RubyTestBase {
 
     protected static boolean watchStepping = false;
     private RubyPlatform platform;
+    private String jvmArgs;
+    
+    private String origGemHome;
+    private String origGemPath;
 
     protected TestBase(final String name, final boolean verbose) {
         super(name);
@@ -115,10 +119,19 @@ public abstract class TestBase extends RubyTestBase {
         assertNull("fast debugger installed: " + problems, problems);
 
         doCleanUp();
+        assertTrue("no breakpoints set", RubyBreakpointManager.getBreakpoints().length == 0);
+
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        origGemHome = jruby.getInfo().getGemHome();
+        origGemPath = jruby.getInfo().getGemPath();
     }
 
     @Override
     protected void tearDown() throws Exception {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        jruby.getInfo().setGemHome(origGemHome);
+        jruby.getInfo().setGemPath(origGemPath);
+
         super.tearDown();
         if (verbose) {
             Util.LOGGER.removeHandler(testHandler);
@@ -141,6 +154,19 @@ public abstract class TestBase extends RubyTestBase {
         this(name, false);
     }
 
+    public void setJVMArgs(String jvmArgs) {
+        this.jvmArgs = jvmArgs;
+    }
+
+
+    protected Process startDebugging(final String[] rubyCode, final int... breakpoints) throws RubyDebuggerException, IOException, InterruptedException {
+        File testF = createScript(rubyCode);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        for (int breakpoint : breakpoints) {
+            addBreakpoint(testFO, breakpoint);
+        }
+        return startDebugging(testF);
+    }
 
     protected Process startDebugging(final File f) throws RubyDebuggerException, IOException, InterruptedException {
         return startDebugging(f, true);
@@ -159,6 +185,9 @@ public abstract class TestBase extends RubyTestBase {
                 toTest.getName(), toTest.getParentFile(), toTest.getAbsolutePath());
         assertTrue(platform.hasFastDebuggerInstalled());
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(toTest.getParentFile())));
+        if (this.jvmArgs != null) {
+            desc.jvmArguments(this.jvmArgs);
+        }
         RubySession session = RubyDebugger.startDebugging(desc);
         session.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
         Process process = session.getProxy().getDebugTarged().getProcess();

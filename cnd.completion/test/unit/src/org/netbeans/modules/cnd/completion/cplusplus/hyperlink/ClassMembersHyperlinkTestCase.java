@@ -50,6 +50,36 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testOperatorsInBaseClasses() throws Exception {
+        // IZ#147312: Code completion issue with operator-> and operator*
+        performTest("iz147312_operators_in_base_cls.cc", 85, 10, // o.myMethod1();
+                    "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 88, 20, // sp.get()->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 89, 15, // sp->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 90, 15, // (*sp).myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 93, 20, // tp.get()->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 94, 15, // tp->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 95, 15, // (*tp).myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 98, 20, // s2p.get()->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 99, 15, // s2p->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 100, 15, // (*s2p).myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 103, 20, // t2p.get()->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 104, 15, // t2p->myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+        performTest("iz147312_operators_in_base_cls.cc", 105, 15, // (*t2p).myMethod1();
+                "iz147312_operators_in_base_cls.cc", 7, 5);
+    }
+
     public void testTemplateParamsInNestedClasses() throws Exception {
         // IZ#144881: template parameter is not resolved in nested class
 
@@ -74,26 +104,26 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("accessMember.cc", 14, 32, "accessMember.cc", 5, 5);
         performTest("accessMember.cc", 15, 33, "accessMember.cc", 5, 5);
     }
-    
+
     public void testIZ146030_5() throws Exception {
         // IZ#146030: set of problems for declarations in Loki
         // usecase 5)
         performTest("useenumerators.cc", 55, 20, "useenumerators.cc", 52, 9);
         performTest("useenumerators.cc", 56, 20, "useenumerators.cc", 52, 9);
     }
-    
+
     public void testIZ138902() throws Exception {
         // IZ#138902: No completion and hyperl ink  to enumerator in structure init
         performTest("useenumerators.cc", 48, 35, "useenumerators.cc", 43, 19);
     }
-    
+
     public void testIZ145828() throws Exception {
         // IZ#145828: & breaks completion in some expressions
         performTest("main.cc", 91, 25, "main.cc", 83, 5);
         performTest("main.cc", 92, 16, "main.cc", 84, 5);
         performTest("main.cc", 93, 24, "main.cc", 85, 5);
     }
-    
+
     public void testIZ144880() throws Exception {
         // IZ#144880: enumerators in template arguments are not resolved
         performTest("useenumerators.cc", 33, 12, "useenumerators.cc", 32, 12);
@@ -103,7 +133,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#145617: IDE highlights code with 'sizeof' in array as wrong
         performTest("main.cc", 79, 70, "main.cc", 59, 5);
     }
-    
+
     public void testIZ145230() throws Exception {
         // IZ#145230:Various C++ expressions don't resolve
         // usage of enumerators
@@ -607,10 +637,19 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz145077.cc", 164, 30, "iz145077.cc", 143, 9);
         performTest("iz145077.cc", 173, 22, "iz145077.cc", 143, 9);
     }
-    
+
     public void testIZ145071() throws Exception {
         // IZ#145071 : forward declarations marked as error
         performTest("IZ145071.cc", 4, 23, "IZ145071.cc", 4, 5);
+    }
+
+    public void testIZ147795() throws Exception {
+        // IZ#147795 : Code completion issue when using '()'
+        performTest("IZ147795.cc", 10, 13, "IZ147795.cc", 5, 9);
+        performTest("IZ147795.cc", 11, 17, "IZ147795.cc", 5, 9);
+        performTest("IZ147795.cc", 12, 15, "IZ147795.cc", 5, 9);
+        performTest("IZ147795.cc", 13, 14, "IZ147795.cc", 5, 9);
+        performTest("IZ147795.cc", 13, 27, "IZ147795.cc", 5, 9);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

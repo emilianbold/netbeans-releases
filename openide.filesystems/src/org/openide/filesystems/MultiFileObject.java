@@ -91,6 +91,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
     /** Reference to lock or null */
     private Reference<MfLock> lock;
+    
+    /** Stack trace of locking thread. */
+    protected Throwable lockedBy;
 
     /** listener */
     private FileChangeListener weakL;
@@ -637,8 +640,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             FileLock f = (FileLock) lock.get();
 
             if (f != null) {
-                // [PENDING] construct localized message
-                throw new FileAlreadyLockedException(getPath());
+                FileAlreadyLockedException alreadyLockedException = new FileAlreadyLockedException(getPath());
+                alreadyLockedException.initCause(lockedBy);
+                throw alreadyLockedException;
             }
         }
 
@@ -647,8 +651,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
         lock = new WeakReference<MfLock>(l);
 
-        //    Thread.dumpStack ();
-        //    System.out.println ("Locking file: " + this); // NOI18N
+        assert (lockedBy = new Throwable("Locked by:")) != null;  //NOI18N
         return l;
     }
 

@@ -141,7 +141,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	region = new SyncDocumentRegion(doc, regions);
 	
         if (doc instanceof BaseDocument) {
-            ((BaseDocument) doc).setPostModificationDocumentListener(this);
+            ((BaseDocument) doc).addPostModificationDocumentListener(this);
         }
         
 	target.addKeyListener(this);
@@ -164,8 +164,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private boolean inSync;
     
     public synchronized void insertUpdate(DocumentEvent e) {
-	if (inSync)
-	    return ;
+	if (inSync) {
+            return;
+        }
 	
 	inSync = true;
 	region.sync(0);
@@ -174,8 +175,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     public synchronized void removeUpdate(DocumentEvent e) {
-	if (inSync)
-	    return ;
+	if (inSync) {
+            return;
+        }
 	
         //#89997: do not sync the regions for the "remove" part of replace selection,
         //as the consequent insert may use incorrect offset, and the regions will be synced
@@ -213,7 +215,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private void release() {
 	target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
-            ((BaseDocument) doc).setPostModificationDocumentListener(null);
+            ((BaseDocument) doc).removePostModificationDocumentListener(this);
         }
 	target.removeKeyListener(this);
 	target = null;

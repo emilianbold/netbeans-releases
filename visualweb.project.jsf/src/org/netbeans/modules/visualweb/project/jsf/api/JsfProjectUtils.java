@@ -64,7 +64,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.WeakHashMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
@@ -230,7 +232,8 @@ public class JsfProjectUtils {
         return wm != null;
     }
 
-    private static final Map<String,Boolean> JsfProjectDir = new HashMap();
+    // Cache for storing NetBeans Ant/Maven/... project root folder
+    private static final Map<String,Boolean> JsfProjectDir = new HashMap<String,Boolean>();
 
     public static Boolean isUnderJsfProjectDir(FileObject file) {
         String path = file.getPath();
@@ -251,6 +254,33 @@ public class JsfProjectUtils {
         JsfProjectDir.put(projDir.getPath() + "/", set); // NOI18N
     }
 
+    // Cache for storing visited folder
+    private static final Set<String> checkedDir = new HashSet<String>();
+
+    public static boolean isCheckedDir(FileObject file) {
+        String path = file.getPath();
+        if (!file.isFolder()) {
+            int last = path.lastIndexOf("/");
+            if (last != -1) {
+                path = path.substring(0, last);
+            }
+        }
+
+        for (String dir : checkedDir) {
+            if (path.equals(dir)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static void setCheckedDir(ArrayList<FileObject> folders) {
+        for (FileObject folder : folders) {
+            checkedDir.add(folder.getPath()); // NOI18N
+        }
+    }
+
     /**
      * Check for Creator project file. Note: For DataLoader only when 'Project' is not available.
      * @param fo FileObject to be checked
@@ -261,8 +291,17 @@ public class JsfProjectUtils {
             return ret.booleanValue();
         }
 
+        ArrayList<FileObject> folders = new ArrayList<FileObject>();
+
         while (fo != null) {
+            if (isCheckedDir(fo)) {
+                setCheckedDir(folders);
+                return false;
+            }
+
             if (fo.isFolder()) {
+                folders.add(fo);
+
                 FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
                 // Found the project root directory and got the project.xml file
                 if (projXml != null) {
@@ -296,6 +335,7 @@ public class JsfProjectUtils {
             fo = fo.getParent();
         }
 
+        setCheckedDir(folders);
         return false;
     }
 
@@ -566,6 +606,10 @@ public class JsfProjectUtils {
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
                 if (ddRoot != null) {
                     String facesMapping = getFacesURLPattern(ddRoot);
+                    if (facesMapping == null) {
+                        return newStartPage;
+                    }
+
                     if (oldStartPage != null) {
                         removeWelcomeFile(ddRoot, facesMapping, oldStartPage);
                     }

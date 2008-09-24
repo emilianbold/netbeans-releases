@@ -41,30 +41,62 @@
 
 package org.netbeans.modules.tasklist.impl;
 
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
 /**
  * A hack into Java Parser to get notifications when classpath scanning started/finished
  * so that we can pause task scanning at that time.
- * 
+ *
  * @author S. Aubrecht
  */
 class ScanMonitor {
 
     private static ScanMonitor INSTANCE;
-    
+
     private final Object LOCK = new Object();
     private boolean locked = false;
-    
+
     private ScanMonitor() {
-        
+        Logger logger = Logger.getLogger("org.netbeans.modules.java.source.usages.RepositoryUpdater.activity"); //NOI18N
+        logger.setLevel(Level.FINEST);
+        logger.setUseParentHandlers(false);
+        logger.addHandler( new Handler() { //NOI18N
+
+            @Override
+            public void publish(LogRecord record) {
+                if( Level.FINEST.equals( record.getLevel() )
+                        && "START".equals(record.getMessage()) ) { //NOI18N
+                    lock();
+                    return;
+                }
+
+                if( Level.FINEST.equals( record.getLevel() )
+                        && "FINISHED".equals(record.getMessage()) ) { //NOI18N
+                    unlock();
+                    return;
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
     }
-    
+
     public static ScanMonitor getDefault() {
         if( null == INSTANCE ) {
             INSTANCE = new ScanMonitor();
         }
         return INSTANCE;
     }
-    
+
     /**
      * The method is blocking as long as classpath scanning is in progress.
      */
@@ -79,13 +111,13 @@ class ScanMonitor {
             }
         }
     }
-    
+
     private void lock() {
         synchronized( LOCK ) {
             locked = true;
         }
     }
-    
+
     private void unlock() {
         synchronized( LOCK ) {
             locked = false;

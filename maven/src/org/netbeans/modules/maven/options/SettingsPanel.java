@@ -142,22 +142,27 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void initEmbeddedVersion()
     {
-        InputStream resourceAsStream;
-        try {
-            Properties properties = new Properties();
-            resourceAsStream = EmbedderFactory.class.getClassLoader().getResourceAsStream( "META-INF/maven/org.apache.maven/maven-core/pom.properties" ); //NOI18N
-            properties.load( resourceAsStream );
-
-            if ( properties.getProperty( "builtOn" ) != null ) { //NOI18N
-                lblEmbeddedVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_MavenVersion1", 
-                        properties.getProperty( "version", "unknown" ), properties.getProperty( "builtOn" )));
-            } else {
-                lblEmbeddedVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_MavenVersion2", properties.getProperty( "version", "unknown" )));
-            }
-        }
-        catch  ( IOException e ) {
-            lblEmbeddedVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_MavenVersion3"));
-        }
+        //there was a renumbering scheme for maven. current trunk is not 2.1 but 3.0
+        //http://blogs.sonatype.com/brian/2008/09/05/1220649145080.html
+        //XXX: just hardwire here to not confuse people with old style versions.
+          lblEmbeddedVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_MavenVersion2", "3.0-SNAPSHOT")); //NOI18N
+        
+//        InputStream resourceAsStream;
+//        try {
+//            Properties properties = new Properties();
+//            resourceAsStream = EmbedderFactory.class.getClassLoader().getResourceAsStream( "META-INF/maven/org.apache.maven/maven-core/pom.properties" ); //NOI18N
+//            properties.load( resourceAsStream );
+//
+//            if ( properties.getProperty( "builtOn" ) != null ) { //NOI18N
+//                lblEmbeddedVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_MavenVersion1", 
+//                        properties.getProperty( "version", "unknown" ), properties.getProperty( "builtOn" )));
+//            } else {
+//                lblEmbeddedVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_MavenVersion2", properties.getProperty( "version", "unknown" )));
+//            }
+//        }
+//        catch  ( IOException e ) {
+//            lblEmbeddedVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_MavenVersion3"));
+//        }
     }
 
     private void initExternalVersion()
