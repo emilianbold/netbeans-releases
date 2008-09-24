@@ -2,6 +2,5 @@ Other                   > Declaration           D
                           Javadoc               J
                           Application Actions   A
                           BPEL Mapper           M
-                          Ruby Shell            R
                           CSS Preview           S
                           CSS Style Builder     B

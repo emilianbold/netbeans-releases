@@ -317,10 +317,7 @@ public final class NbMavenProject {
     
     private void doFireReload() {
         FileUtil.refreshFor(FileUtil.toFile(project.getProjectDirectory()));
-        FileObject fo = FileUtil.toFileObject(MavenSettingsSingleton.getInstance().getM2UserDir());
-        if (fo != null) {
-            fo.refresh();
-        }
+        NbMavenProjectImpl.refreshLocalRepository(project);
         support.firePropertyChange(PROP_PROJECT, null, null);
     }
     
@@ -330,7 +327,6 @@ public final class NbMavenProject {
      * fire reload of the project, otherwise will do nothing.
      */ 
     
-    //TODO figure if needed to be public.. currently just nb-project uses it..
     public static void fireMavenProjectReload(Project prj) {
         if (prj != null) {
             NbMavenProject watcher = prj.getLookup().lookup(NbMavenProject.class);
@@ -339,7 +335,7 @@ public final class NbMavenProject {
             }
         }
     }
-    
+
     public static void addPropertyChangeListener(Project prj, PropertyChangeListener listener) {
         if (prj != null && prj instanceof NbMavenProjectImpl) {
             // cannot call getLookup() -> stackoverflow when called from NbMavenProjectImpl.createBasicLookup()..

@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.makeproject.ui.utils;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JButton;
@@ -642,12 +644,19 @@ public class ListEditorPanel extends javax.swing.JPanel {
 	addObjectAction(addAction());
     }
     public  void addObjectAction(Object newObject) {
-	if (newObject == null)
+        ArrayList<Object> listToAdd = new ArrayList<Object>();
+        listToAdd.add(newObject);
+        addObjectsAction(listToAdd);
+    }
+    public  void addObjectsAction(List listToAdd) {
+	if (listToAdd == null)
 	    return;
 	// Update gui
         this.isChanged = true;
 	int addAtIndex = listData.size(); //getSelectedIndex();
-	listData.add(addAtIndex, newObject);
+        for (Object newObject : listToAdd) {
+            listData.add(addAtIndex++, newObject);
+        }
 	setData(listData);
         setSelectedIndex(addAtIndex);
 	addButton.requestFocus();

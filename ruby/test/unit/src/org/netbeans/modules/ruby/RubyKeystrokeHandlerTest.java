@@ -71,7 +71,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     private void match(String original) throws BadLocationException {
         super.assertMatches(original);
     }
-    
+
     private void insertChar(String original, char insertText, String expected) throws Exception {
         insertChar(original, insertText, expected, null);
     }
@@ -90,7 +90,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         super.deleteWord(original+"::", expected+"::");
         super.deleteWord(original+"::", expected+"::");
     }
-    
+
     public void testInsertX() throws Exception {
         insertChar("c^ass", 'l', "cl^ass");
     }
@@ -117,7 +117,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         insertChar("x = \"\nf^\n\"", '(', "x = \"\nf(^\n\"");
         insertChar("x = '\nf^\n'", '"', "x = '\nf\"^\n'");
     }
-    
+
     public void testSingleQuotes1() throws Exception {
         insertChar("x = ^", '\'', "x = '^'");
     }
@@ -169,7 +169,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testInsertEnd2() throws Exception {
         insertBreak("class Foo^", "class Foo\n  ^\nend");
     }
-    
+
     public void testInsertEnd3() throws Exception {
         insertBreak("class Foo^\nend", "class Foo\n  ^\nend");
     }
@@ -182,8 +182,8 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testInsertEnd5() throws Exception {
         insertBreak("if a_condition ^thing()", "if a_condition \n  ^thing()\nend");
     }
-    
-    
+
+
     public void testInsertIf1() throws Exception {
         insertBreak("    if true^", "    if true\n      ^\n    end");
     }
@@ -210,7 +210,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         // "[]" and "[]=" are valid method names!
         insertChar("def [^]", ']', "def []^");
     }
-    
+
     public void testBrackets3() throws Exception {
         insertChar("x = [^]", 'a', "x = [a^]");
     }
@@ -262,7 +262,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testRegexp3() throws Exception {
         insertChar("x = /^/", 'a', "x = /a^/");
     }
-    
+
     public void testRegexp4() throws Exception {
         insertChar("x = /\\^/", '/', "x = /\\/^/");
     }
@@ -288,11 +288,11 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testRegexp9() throws Exception {
         insertChar("x = /^/\n", 'a', "x = /a^/\n");
     }
-    
+
     public void testRegexp10() throws Exception {
         insertChar("x = /\\^/\n", '/', "x = /\\/^/\n");
     }
-    
+
     public void testRegexp11() throws Exception {
         insertChar("/foo^", '/',
                 "/foo/^");
@@ -324,8 +324,8 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testRegexpPercent2() throws Exception {
         insertChar("x = %r(^)", ')', "x = %r()^");
     }
-    
-    
+
+
     public void testSinglePercent1() throws Exception {
         insertChar("x = %q^", '(', "x = %q(^)");
     }
@@ -333,7 +333,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testSinglePercent2() throws Exception {
         insertChar("x = %q(^)", ')', "x = %q()^");
     }
-    
+
     // Broken!!
     // I've gotta handle proper parenthesis nesting here... e.g.
     // %q(())
@@ -349,7 +349,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testSinglePercent5() throws Exception {
         insertChar("x = %q((^))", 'a', "x = %q((a^))");
     }
-    
+
     public void testSinglePercent6() throws Exception {
         insertChar("x = %q^", '-', "x = %q-^-");
     }
@@ -357,7 +357,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testSinglePercent7() throws Exception {
         insertChar("x = %q-^-", '-', "x = %q--^");
     }
-    
+
     public void testSinglePercent8() throws Exception {
         insertChar("x = %q^", ' ', "x = %q ^ ");
     }
@@ -366,7 +366,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
 //    public void testSinglePercent9() throws Exception {
 //        insertChar("x = %q ^ ", ' ', "x = %q  ^");
 //    }
-    
+
     public void testSinglePercent10() throws Exception {
         insertChar("x = %q ^ ", 'x', "x = %q x^ ");
     }
@@ -382,15 +382,15 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testHeredoc2() throws Exception {
         insertBreak("x=f(<<FOO,^\n", "x=f(<<FOO,\n^\nFOO\n");
     }
-    
+
     public void testFindMatching1() throws Exception {
         match("^if true\n^end");
     }
-    
+
     public void testFindMatching2() throws Exception {
         match("x=^(true^)\ny=5");
     }
-    
+
     public void testFindMatching3() throws Exception {
         match("x=^(true || (false)^)\ny=5");
     }
@@ -403,7 +403,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         // Test heredocs
         match("x=f(^<<ABC,\"hello\")\nfoo\nbar\n^ABC\n");
     }
-    
+
     public void testBackspace1() throws Exception {
         deleteChar("x^", "^");
     }
@@ -411,11 +411,11 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testBackspace2() throws Exception {
         deleteChar("x^y", "^y");
     }
-    
+
     public void testBackspace3() throws Exception {
         deleteChar("xy^z", "x^z");
     }
-    
+
     public void testBackspace4() throws Exception {
         deleteChar("xy^z", "x^z");
     }
@@ -423,11 +423,11 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testBackspace5() throws Exception {
         deleteChar("x=\"^\"", "x=^");
     }
-    
+
     public void testBackspace6() throws Exception {
         deleteChar("x='^'", "x=^");
     }
-    
+
     public void testBackspace7() throws Exception {
         deleteChar("x=(^)", "x=^");
     }
@@ -440,11 +440,11 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         // See bug 111534
         deleteChar("x={^}", "x=^");
     }
-    
+
     public void testBackspace9() throws Exception {
         deleteChar("x=/^/", "x=^");
     }
-    
+
 
     public void testPercentBackspace() throws Exception {
         deleteChar("x=\"#{^}\"", "x=\"#^\"");
@@ -457,7 +457,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testPercentBackspace3() throws Exception {
         deleteChar("x=\"a#{^}b\"", "x=\"a#^b\"");
     }
-    
+
     public void testPercentBackspace4() throws Exception {
         deleteChar("x=/#{^}/", "x=/#^/");
     }
@@ -469,7 +469,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testPercentBackspace6() throws Exception {
         deleteChar("x=/a#{^}b/", "x=/a#^b/");
     }
-    
+
     public void testContComment() throws Exception {
         if (RubyKeystrokeHandler.CONTINUE_COMMENTS) {
             insertBreak("# ^", "# \n# ^");
@@ -477,7 +477,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
             insertBreak("# ^", "# \n^");
         }
     }
-    
+
     public void testContComment2() throws Exception {
         // No auto-# on new lines
         if (RubyKeystrokeHandler.CONTINUE_COMMENTS) {
@@ -486,7 +486,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
             insertBreak("   #  ^", "   #  \n   ^");
         }
     }
-    
+
     public void testContComment3() throws Exception {
         // No auto-# on new lines
         if (RubyKeystrokeHandler.CONTINUE_COMMENTS) {
@@ -508,20 +508,20 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
             insertBreak("      # ^", "      # \n      ^");
         }
     }
-    
+
     public void testContComment6() throws Exception {
         insertBreak("   # foo^bar", "   # foo\n   # ^bar");
     }
-    
+
     public void testContComment7() throws Exception {
         insertBreak("   # foo^\n   # bar", "   # foo\n   # ^\n   # bar");
     }
-    
+
     public void testContComment8() throws Exception {
         insertBreak("   # foo^bar", "   # foo\n   # ^bar");
     }
 
-    
+
     public void testContComment9() throws Exception {
         insertBreak("^# foobar", "\n^# foobar");
     }
@@ -537,7 +537,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testContComment12() throws Exception {
         insertBreak("  code\n^# foobar", "  code\n\n  ^# foobar");
     }
-    
+
     public void testContComment14() throws Exception {
         insertBreak("def foo\n  code\n^# foobar\nend\n", "def foo\n  code\n\n  ^# foobar\nend\n");
     }
@@ -553,7 +553,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testContComment17() throws Exception {
         insertBreak("def foo\n  # cmnt1\n^  # cmnt2\nend\n", "def foo\n  # cmnt1\n  # ^\n  # cmnt2\nend\n");
     }
-    
+
     public void testNoContComment() throws Exception {
         // No auto-# on new lines
         insertBreak("foo # ^", "foo # \n^");
@@ -563,12 +563,12 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         deleteChar("# ^", "^");
         deleteChar("\n# ^", "\n^");
     }
-    
+
     public void testDeleteContComment2() throws Exception {
         deleteChar("# ^  ", "^  ");
         deleteChar("\n# ^  ", "\n^  ");
     }
-    
+
     public void testNoDeleteContComment() throws Exception {
         deleteChar("#  ^", "# ^");
         deleteChar("#^", "^");
@@ -590,7 +590,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
 //        String  after = "x = method_call(50, <<TOKEN1, \"arg3\", <<TOKEN2, /startofregexp^\nThis is part of the string\nTOKEN1\nrestofregexp/)";
 //        deleteChar(before, after);
 //    }
-//    
+//
 
 
     public void testInsertPercentInString() throws Exception {
@@ -625,7 +625,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testNoInsertPercentElsewhere() throws Exception {
         insertChar("x = ^", '#', "x = #^");
     }
-    
+
     public void testInsertPercentInRegexp() throws Exception {
         insertChar("x = /foo ^/", '#', "x = /foo #{^}/");
     }
@@ -662,7 +662,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testReplaceSelection3() throws Exception {
         insertChar("x = \"foo^bar\"", '#', "x = \"#{foo}^bar\"", "foo");
     }
-    
+
     public void testReplaceSelection4() throws Exception {
         insertChar("x = 'foo^bar'", '#', "x = '#^bar'", "foo");
     }
@@ -686,11 +686,11 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testReplaceSelectionNotInTemplateMode1() throws Exception {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
     }
-    
+
     public void testReplaceSelectionNotInTemplateMode2() throws Exception {
         insertChar("x = \"foo^bar\"", '#', "x = \"#{^}bar\"", "foo", true);
     }
-    
+
     public void testReplaceCommentSelectionBold() throws Exception {
         insertChar("# foo^", '*', "# *foo*^", "foo");
     }
@@ -712,7 +712,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         // No replacement if it's not one of the three chars
         insertChar("# foo^", 'x', "# x^", "foo");
     }
-    
+
     public void testdeleteWord() throws Exception {
         deleteWord("foo_bar_baz^", "foo_bar_^");
     }
@@ -735,7 +735,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testdeleteWord3() throws Exception {
         deleteWord("FooBarBaz^", "FooBar^");
     }
-    
+
     public void testDeleteWord4_110998() throws Exception {
         deleteWord("Blah::Set^Foo", "Blah::^Foo");
     }
@@ -754,7 +754,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         String after = "  ^\n";
         deleteWord(before, after);
     }
-    
+
     public void testDeleteWord4_110998b() throws Exception {
         String before = "" +
 "  snark(%w(a b c))\n" +
@@ -770,7 +770,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
 "  snark(%w(a b c))\n";
         deleteWord(before, after);
     }
-    
+
     public void testBackwardsDeletion() throws Exception {
         String s = "Foo::Bar = whatever('hello')  \n  nextline";
         RubyKeystrokeHandler bc = new RubyKeystrokeHandler();
@@ -786,20 +786,20 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
             if (begin == -1) {
                 begin = Utilities.getPreviousWord(ta, dot);
             }
-            
+
             assert begin != -1 && begin < i;
         }
     }
-    
+
     public void test108889() throws Exception {
         // Reproduce 108889: AIOOBE and AE during editing
-        // NOTE: While the test currently throws an exception, when the 
+        // NOTE: While the test currently throws an exception, when the
         // exception is fixed the test won't actually pass; that's an expected
         // fail I will deal with later
         insertChar("x = %q((^))", 'a', "x = %q((a^))");
     }
-    
-    
+
+
     public void test110332() throws Exception {
         String before = "args = {\n" +
             "      :name => args[:name],\n" +
@@ -823,7 +823,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
                             "";
         insertBreak(before, after);
     }
-    
+
     public void test110332b() throws Exception {
         String before = "args = {\n" +
             "      :name => args[:name],\n" +
@@ -847,7 +847,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
                             "";
         insertBreak(before, after);
     }
-    
+
     public void testLogicalRange1() throws Exception {
         String code = "if (true)\n  fo^o\nend";
         String next = "if (true)\n  %<%fo^o%>%\nend";
@@ -966,6 +966,53 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
+
+    public void testLogicalRange111941a() throws Exception {
+        String code = "foo.ba^r.snark";
+        String next = "foo.%<%ba^r%>%.snark";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+
+        code = "foo.%<%ba^r%>%.snark";
+        next = "%<%foo.ba^r%>%.snark";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+
+        code = "%<%foo.ba^r%>%.snark";
+        next = "%<%foo.ba^r.snark%>%";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRange111941b() throws Exception {
+        String code = "foo.bar.sn^ark";
+        String next = "foo.bar.%<%sn^ark%>%";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+
+        code = "foo.bar.%<%sn^ark%>%";
+        next = "%<%foo.bar.sn^ark%>%";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRange111941c() throws Exception {
+        String code = "foo().ba^r().snark()";
+        String next = "foo().%<%ba^r()%>%.snark()";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+
+        code = "foo().%<%ba^r()%>%.snark()";
+        next = "%<%foo().ba^r()%>%.snark()";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+
+        code = "%<%foo().ba^r()%>%.snark()";
+        next = "%<%foo().ba^r().snark()%>%";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
     
     public void testPipes1() throws Exception {
         insertChar("5.each { ^", '|', "5.each { |^|");
@@ -974,11 +1021,11 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testPipes2() throws Exception {
         insertChar("5.each { ^}", '|', "5.each { |^|}");
     }
-    
+
     public void testPipes3() throws Exception {
         insertChar("5.each { |^|}", '|', "5.each { ||^}");
     }
-    
+
     public void testPipes4() throws Exception {
         insertChar("5.each { |foo^|}", '|', "5.each { |foo|^}");
     }
@@ -1022,7 +1069,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testBackspacePipes2() throws Exception {
         deleteChar("x=|^x", "x=^x");
     }
-    
+
     public void testBackspacePipes3() throws Exception {
         deleteChar("x=|^", "x=^");
     }

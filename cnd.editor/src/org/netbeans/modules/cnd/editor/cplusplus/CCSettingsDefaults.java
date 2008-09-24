@@ -42,19 +42,41 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
+import org.netbeans.editor.TokenContext;
 
 /** Default settings values for C and C++ */
-public class CCSettingsDefaults extends ExtSettingsDefaults {
+public class CCSettingsDefaults {
 
-    public static final Boolean defaultCCDocAutoPopup = Boolean.FALSE;
-    public static final Boolean defaultPairCharactersCompletion = Boolean.TRUE;
-    public static final Acceptor defaultCCIdentifierAcceptor = AcceptorFactory.JAVA_IDENTIFIER;
+    public static Acceptor getDefaultAbbrevResetAcceptor() {
+        return AcceptorFactory.NON_JAVA_IDENTIFIER;
+    }
+
+    public static List<? extends TokenContext> getTokenContext() {
+        return Collections.singletonList(CCTokenContext.context);
+    }
+
+    public static Acceptor getDefaultIdentifierAcceptor() {
+        return AcceptorFactory.JAVA_IDENTIFIER;
+    }
+
+    public static Acceptor getDefaultIndentHotCharsAcceptor() {
+        return defaultIndentHotCharsAcceptor;
+    }
+
+    public static String getDefaultWordMatchStaticWords() {
+        return defaultWordMatchStaticWords;
+    }
     
-    // Code Folding
-    public static final Boolean defaultCCCodeFoldingEnable = Boolean.TRUE;
+    // DO WE NEED IT ?
+    public static final String defaultWordMatchStaticWords = 
+            "Exception IntrospectionException FileNotFoundException IOException" //NOI18N
+          + " ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException" //NOI18N
+          + " CloneNotSupportedException NullPointerException NumberFormatException" //NOI18N
+          + " SQLException IllegalAccessException IllegalArgumentException"; //NOI18N
 
     public static final Acceptor defaultIndentHotCharsAcceptor = new Acceptor() {
             public boolean accept(char ch) {
@@ -67,11 +89,4 @@ public class CCSettingsDefaults extends ExtSettingsDefaults {
                 return false;
             }
         };
-
-    // DO WE NEED IT ?
-    public static final String defaultWordMatchStaticWords = 
-            "Exception IntrospectionException FileNotFoundException IOException" //NOI18N
-          + " ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException" //NOI18N
-          + " CloneNotSupportedException NullPointerException NumberFormatException" //NOI18N
-          + " SQLException IllegalAccessException IllegalArgumentException"; //NOI18N
 }

@@ -124,7 +124,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                 switch( token.getType() ) {
 		    case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
 		    case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
-			if (!renderVariable(token, currentNamespace, container)){                            
+			if (!renderVariable(token, currentNamespace, container, false)){                            
                             AST ast = token;
                             token = token.getFirstChild();
                             if (token != null) {

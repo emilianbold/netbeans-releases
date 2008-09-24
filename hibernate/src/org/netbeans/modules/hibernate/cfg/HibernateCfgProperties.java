@@ -91,7 +91,7 @@ public class HibernateCfgProperties {
         "org.apache.derby.jdbc.ClientDriver", //NOI18N
         "org.firebirdsql.jdbc.FBDriver", //NOI18N
         "org.hsqldb.jdbcDriver", //NOI18N
-        "org.postgresql:Driver" //NOI18N
+        "org.postgresql.Driver" //NOI18N
     };
 
     public final static String[] jdbcProps = new String[] {

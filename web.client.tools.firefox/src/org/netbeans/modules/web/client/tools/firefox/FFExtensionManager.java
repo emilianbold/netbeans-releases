@@ -438,7 +438,18 @@ public class FFExtensionManager {
         while (tokens.hasMoreTokens()) {
             String nextToken = tokens.nextToken();
             try {
-                if (nextToken.contains("b")) {
+                if (nextToken.contains("a")) {
+                    int index = nextToken.indexOf("a");
+
+                    String first = nextToken.substring(0, index);
+                    String second = nextToken.substring(index + 1, nextToken.length());
+
+                    // version xxbyy is greater than any version xx-1 without a beta
+                    // but less than version xx without a beta
+                    result.add(new Integer(Integer.valueOf(first).intValue() - 1));
+                    result.add(Integer.valueOf(-1));
+                    result.add(Integer.valueOf(second));
+                } else if (nextToken.contains("b")) {
                     int index = nextToken.indexOf("b");
 
                     String first = nextToken.substring(0, index);

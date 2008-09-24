@@ -203,7 +203,7 @@ public abstract class FileObject extends Object implements Serializable {
     */
     @Deprecated
     public String getPackageNameExt(char separatorChar, char extSepChar) {
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
 
         StringBuilder sb = new StringBuilder();
 
@@ -232,7 +232,7 @@ public abstract class FileObject extends Object implements Serializable {
     */
     @Deprecated
     public String getPackageName(char separatorChar) {
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
 
         StringBuilder sb = new StringBuilder();
 

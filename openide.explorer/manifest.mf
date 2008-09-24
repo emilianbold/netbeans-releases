@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.openide.explorer
-OpenIDE-Module-Specification-Version: 6.15
+OpenIDE-Module-Specification-Version: 6.16
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/openide/explorer/Bundle.properties
 AutoUpdate-Essential-Module: true

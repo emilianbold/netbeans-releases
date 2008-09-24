@@ -83,6 +83,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     private String rightFileRevision = null;
 
     private final File file;
+    private static final String NESTED_CONFLICT = "NESTED_CONFLICT";
 
     public ResolveConflictsExecutor(File file) {
         super();
@@ -121,7 +122,14 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                 }
             });
         } catch (IOException ioex) {
-            Subversion.LOG.log(Level.SEVERE, null, ioex);;
+            if (NESTED_CONFLICT.equals(ioex.getMessage())) {
+                JOptionPane.showMessageDialog(null, NbBundle.getMessage(ResolveConflictsExecutor.class, "MSG_NestedConflicts"), 
+                                              NbBundle.getMessage(ResolveConflictsExecutor.class, "MSG_NestedConflicts_Title"), 
+                                              JOptionPane.WARNING_MESSAGE);
+                Utils.openFile(file);
+            } else {
+                Subversion.LOG.log(Level.SEVERE, null, ioex);;
+            }
         }
     }
     
@@ -212,6 +220,10 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             int i = 1, j = 1;
             while ((line = r.readLine()) != null) {
                 if (line.startsWith(CHANGE_LEFT)) {
+                    if (isChangeLeft || isChangeRight) {
+                        // nested conflicts are not supported
+                        throw new IOException(NESTED_CONFLICT);
+                    }
                     if (generateDiffs) {
                         if (leftFileRevision == null) {
                             leftFileRevision = line.substring(CHANGE_LEFT.length());

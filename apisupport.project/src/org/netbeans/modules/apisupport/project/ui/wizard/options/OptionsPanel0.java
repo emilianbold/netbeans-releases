@@ -57,6 +57,7 @@ import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.options.NewOptionsIterator.DataModel;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -143,8 +144,25 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     protected void readFromDataModel() {
         addListeners();
     }
+
+    private boolean smallerThan110(String version) {
+        String[] ver = version.split("\\.");
+        if (Integer.parseInt(ver[0]) <= 1 && Integer.parseInt(ver[1]) < 10) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     
     private void updateData() {
+        NbPlatform platform = LayerUtils.getPlatformForProject(data.getProject());
+
+        //do not allow platforms older then 6.5
+        if (smallerThan110(platform.getModule("org.netbeans.modules.options.api").getSpecificationVersion())) { // NOI18N
+            setError(NbBundle.getMessage(OptionsPanel0.class, "MSG_INVALID_PLATFORM")); // NOI18N
+            return;
+        }
+
         int retCode = 0;
         if (advancedButton.isSelected()) {
             assert !optionsCategoryButton.isSelected();

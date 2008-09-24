@@ -110,7 +110,15 @@ public class CssEditorSupport {
             //detach myself from the source so next UI changes are not propagated to the 
             //document until the parser finishes. Then new listener will be added
             if(selected != null) {
+                d("css style data listener - detachinf from rule content.");
                 selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
+            }
+            
+            //remove caret listener, new one will be added one the written test is parsed
+            if (caretListenerRegistered) {
+                editorPane.removeCaretListener(CARET_LISTENER);
+                d("removed caret listener");
+                caretListenerRegistered = false;
             }
             
             final NbEditorDocument doc = (NbEditorDocument) document;
@@ -272,6 +280,9 @@ public class CssEditorSupport {
         public void caretUpdate(CaretEvent ce) {
             Object source = ce.getSource();
             if (source instanceof JEditorPane) {
+                if(!caretListenerRegistered) {
+                    return ;
+                }
                 d("caret event; dot=" + ce.getDot());
                 RULE_UPDATE.setPane(((JEditorPane) source));
                 RULE_UPDATE_TASK.schedule(RULE_UPDATE_DELAY);

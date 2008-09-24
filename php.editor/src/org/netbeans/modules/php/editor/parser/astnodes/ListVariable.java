@@ -63,7 +63,7 @@ public class ListVariable extends VariableBase {
         }
     }
 
-    public ListVariable(int start, int end, List variables) {
+    public ListVariable(int start, int end, List<VariableBase> variables) {
         this(start, end, variables == null ? null : (VariableBase[]) variables.toArray(new VariableBase[variables.size()]));
     }
 

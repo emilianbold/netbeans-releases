@@ -49,9 +49,9 @@ import javax.swing.text.Document;
 
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.ruby.NbUtilities;
 import org.openide.filesystems.FileObject;
 
 
@@ -297,6 +297,16 @@ public abstract class IndexedElement extends RubyElement {
         }
         
         return sb.toString();
+    }
+
+    /**
+     * Returns whether this method pertains to the Module class, which is handle
+     * in a kind of special manner in Ruby.
+     *
+     * @return whether the element is declared in the Module
+     */
+    public boolean doesBelongToModule() {
+        return "Module".equals(getFqn()); // NOI18N
     }
 
 }

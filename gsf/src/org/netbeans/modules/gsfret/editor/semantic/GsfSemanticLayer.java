@@ -218,27 +218,32 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
      *
      * @author Tor Norbye
      */
-    private class GsfHighlightSequence implements HighlightsSequence {
+    private static final class GsfHighlightSequence implements HighlightsSequence {
         private Iterator<SequenceElement> iterator;
         private SequenceElement element;
-        private GsfSemanticLayer layer;
+        private final GsfSemanticLayer layer;
+        private final int endOffset;
 
         GsfHighlightSequence(GsfSemanticLayer layer, Document doc, 
                 int startOffset, int endOffset, 
                 SortedSet<SequenceElement> colorings) {
             this.layer = layer;
+            this.endOffset = endOffset;
 
             SequenceElement.ComparisonItem fromInclusive = new SequenceElement.ComparisonItem(startOffset);
-            int end = (endOffset == Integer.MAX_VALUE) ? Integer.MAX_VALUE : endOffset+1;
-            SequenceElement.ComparisonItem toExclusive = new SequenceElement.ComparisonItem(end);
-            SortedSet<SequenceElement> subMap = colorings.subSet(fromInclusive, toExclusive);
+            SortedSet<SequenceElement> subMap = colorings.tailSet(fromInclusive);
             iterator = subMap.iterator();
         }
 
         public boolean moveNext() {
-            if (iterator.hasNext()) {
+            if (iterator != null && iterator.hasNext()) {
                 element = iterator.next();
-                return true;
+                if (element.range.getStart() < endOffset) {
+                    return true;
+                } else {
+                    iterator = null;
+                    return false;
+                }
             } else {
                 return false;
             }

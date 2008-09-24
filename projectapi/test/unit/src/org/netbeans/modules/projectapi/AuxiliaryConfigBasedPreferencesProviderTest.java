@@ -58,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
@@ -232,7 +233,8 @@ public class AuxiliaryConfigBasedPreferencesProviderTest extends NbTestCase {
         
         assertEquals("somevalue2", origNode.get("somekey", null));
     }
-    
+
+    @RandomlyFails
     public void testReclaimable() throws IOException, BackingStoreException, InterruptedException {
         lookup.setDelegates(Lookups.fixed(new TestAuxiliaryConfigurationImpl()));
         
@@ -247,7 +249,7 @@ public class AuxiliaryConfigBasedPreferencesProviderTest extends NbTestCase {
         
         TestUtil.notifyDeleted(p);
         
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         
         p = null;
         pref = null;

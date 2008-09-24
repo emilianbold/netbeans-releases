@@ -58,7 +58,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -617,29 +617,6 @@ public class LexUtilities {
         return balance;
     }
 
-    public static int getLineIndent(BaseDocument doc, int offset) {
-        try {
-            return IndentUtils.lineIndent(doc, Utilities.getRowStart(doc, offset));
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-
-            return 0;
-        }
-    }
-
-    public static void indent(StringBuilder sb, int indent) {
-        for (int i = 0; i < indent; i++) {
-            sb.append(' ');
-        }
-    }
-
-    public static String getIndentString(int indent) {
-        StringBuilder sb = new StringBuilder(indent);
-        indent(sb, indent);
-
-        return sb.toString();
-    }
-
     /**
      * Return true iff the line for the given offset is a Ruby comment line.
      * This will return false for lines that contain comments (even when the
@@ -658,61 +635,6 @@ public class LexUtilities {
         }
 
         return doc.getText(begin, 1).equals("#");
-    }
-
-    public static void adjustLineIndentation(BaseDocument doc, int offset, int adjustment) {
-        try {
-            int lineBegin = Utilities.getRowStart(doc, offset);
-
-            if (adjustment > 0) {
-                doc.remove(lineBegin, adjustment);
-            } else if (adjustment < 0) {
-                doc.insertString(adjustment, LexUtilities.getIndentString(adjustment), null);
-            }
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-        }
-    }
-
-    /** Adjust the indentation of the line containing the given offset to the provided
-     * indentation, and return the new indent.
-     */
-    public static int setLineIndentation(BaseDocument doc, int offset, int indent) {
-        int currentIndent = getLineIndent(doc, offset);
-
-        try {
-            int lineBegin = Utilities.getRowStart(doc, offset);
-
-            if (lineBegin == -1) {
-                return currentIndent;
-            }
-
-            int adjust = currentIndent - indent;
-
-            if (adjust > 0) {
-                // Make sure that we are only removing spaces here
-                String text = doc.getText(lineBegin, adjust);
-
-                for (int i = 0; i < text.length(); i++) {
-                    if (!Character.isWhitespace(text.charAt(i))) {
-                        throw new RuntimeException(
-                            "Illegal indentation adjustment: Deleting non-whitespace chars: " +
-                            text);
-                    }
-                }
-
-                doc.remove(lineBegin, adjust);
-            } else if (adjust < 0) {
-                adjust = -adjust;
-                doc.insertString(lineBegin, getIndentString(adjust), null);
-            }
-
-            return indent;
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-
-            return currentIndent;
-        }
     }
 
     /**

@@ -50,7 +50,7 @@ import junit.framework.Assert;
 
 /**
  *
- * @author rmatous
+ * @author rmatous, Jiri Skrivanek
  */
 public class StatFiles extends SecurityManager {
 
@@ -102,7 +102,6 @@ public class StatFiles extends SecurityManager {
 
     @Override
     public void checkRead(String file) {
-        super.checkRead(file);
         File f = new File(file);
         if (!canBeSkipped()) {
             if (monitor != null) {
@@ -110,6 +109,7 @@ public class StatFiles extends SecurityManager {
                 monitor.checkAll(f);
             }
             results.forRead.put(f, results.statResult(f, READ) + 1);
+            putStackTrace(f, results.forReadStack);
         }
     }
 
@@ -125,26 +125,26 @@ public class StatFiles extends SecurityManager {
 
     @Override
     public void checkWrite(String file) {
-        super.checkWrite(file);
         File f = new File(file);
         if (!canBeSkipped()) {
             if (monitor != null) {
                 monitor.checkAll(f);
             }
             results.forWrite.put(f, results.statResult(f, WRITE) + 1);
+            putStackTrace(f, results.forWriteStack);
         }
 
     }
 
     @Override
     public void checkDelete(String file) {
-        super.checkDelete(file);
         File f = new File(file);
         if (!canBeSkipped()) {
             if (monitor != null) {
                 monitor.checkAll(f);
             }
             results.forDelete.put(f, results.statResult(f, DELETE) + 1);
+            putStackTrace(f, results.forDeleteStack);
         }
     }
 
@@ -163,6 +163,42 @@ public class StatFiles extends SecurityManager {
         return result;
     }
 
+    /** Add current stack trace to given map or increase count if the stack trace
+     * already added. */
+    private static void putStackTrace(File file, Map<File, Map<String, Integer>> fileStackMap) {
+        StringBuilder sb = new StringBuilder();
+        StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+        for (int i = 2; i < ste.length; i++) {
+            sb.append(ste[i].toString()).append('\n');
+        }
+        String stackTrace = sb.toString();
+        Map<String, Integer> stackMap = fileStackMap.get(file);
+        if (stackMap == null) {
+            stackMap = new HashMap<String, Integer>();
+            fileStackMap.put(file, stackMap);
+        }
+        if (stackMap.get(stackTrace) == null) {
+            stackMap.put(stackTrace, 1);
+        } else {
+            stackMap.put(stackTrace, stackMap.get(stackTrace) + 1);
+        }
+    }
+
+    /** Get all stack traces for given file. */
+    private static String getStackTraces(File file, Map<File, Map<String, Integer>> fileStackMap) {
+        Map<String, Integer> stackMap = fileStackMap.get(file);
+        if (stackMap == null) {
+            return "";
+        } else {
+            String allStackTraces = "";
+            for (String stackTrace : stackMap.keySet()) {
+                allStackTraces += "  Count: " + stackMap.get(stackTrace) + "\n";
+                allStackTraces += stackTrace + "\n";
+            }
+            return allStackTraces;
+        }
+    }
+
     public static interface Monitor {
 
         void checkRead(File file);
@@ -173,8 +209,11 @@ public class StatFiles extends SecurityManager {
     public static class Results {
 
         private Map<File, Integer> forRead = new HashMap<File, Integer>();
+        private Map<File, Map<String, Integer>> forReadStack = new HashMap<File, Map<String, Integer>>();
         private Map<File, Integer> forWrite = new HashMap<File, Integer>();
+        private Map<File, Map<String, Integer>> forWriteStack = new HashMap<File, Map<String, Integer>>();
         private Map<File, Integer> forDelete = new HashMap<File, Integer>();
+        private Map<File, Map<String, Integer>> forDeleteStack = new HashMap<File, Map<String, Integer>>();
         
         Results addResult(Results results) {
             if (results == this) {
@@ -186,10 +225,19 @@ public class StatFiles extends SecurityManager {
             return this;
         }
 
+        /** If real number of accesses is bigger than expected, it fails with
+         * message containing real numbers for all access types and list
+         * of stack traces.
+         * @param cnt expected count of accesses
+         * @param type type of access
+         */
         public void assertResult(int cnt, int type) {
             int real = statResult(type);
             if (cnt < real) {
-                Assert.fail("Expected " + cnt + " but was " + real + "\n  Read: " + forRead + "\n  Write: " + forWrite + "\n  Delete: " + forDelete);
+                Assert.fail("Expected " + cnt + " but was " + real + 
+                        "\n  Read: " + forRead + "\n  Write: " + forWrite +
+                        "\n  Delete: " + forDelete + "\n" +
+                        statResultStack(type));
             }
         }
 
@@ -229,6 +277,35 @@ public class StatFiles extends SecurityManager {
             }
             return -1;
         }
+
+        public String statResultStack(int type) {
+            String result = "";
+            for (File file : getFiles()) {
+                result += statResultStack(file, type);
+            }
+            return result;
+        }
+
+        public String statResultStack(File file, int type) {
+            switch (type) {
+                case READ:
+                    return "--------------- READ STACKS -----------------\n" +
+                            getStackTraces(file, forReadStack);
+                case WRITE:
+                    return "--------------- WRITE STACKS ----------------\n" +
+                            getStackTraces(file, forWriteStack);
+                case DELETE:
+                    return "--------------- DELETE STACKS ---------------\n" +
+                            getStackTraces(file, forDeleteStack);
+                case ALL:
+                    String all = statResultStack(file, READ);
+                    all += statResultStack(file, WRITE);
+                    all += statResultStack(file, DELETE);
+                    all += "---------------------------------------------\n";
+                    return all;
+            }
+            return null;
+        }
         
         /** Dump all files sorted by name with number of accesses. */
         public void dump() {
@@ -245,6 +322,17 @@ public class StatFiles extends SecurityManager {
             System.out.print(" WRITE=" + statResult(StatFiles.WRITE));
             System.out.print(" DELETE=" + statResult(StatFiles.DELETE));
             System.out.println(" ALL=" + statResult(StatFiles.ALL));
+        }
+
+        /** Dump all files sorted by name with stack traces. */
+        public void dumpStacks() {
+            File[] files = getFiles().toArray(new File[0]);
+            Arrays.sort(files);
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                System.out.println("FILE="+file);
+                System.out.println(statResultStack(file, StatFiles.ALL));
+            }
         }
     }
 }

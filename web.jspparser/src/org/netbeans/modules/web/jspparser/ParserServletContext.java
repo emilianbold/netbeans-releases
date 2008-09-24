@@ -237,7 +237,7 @@ public class ParserServletContext implements ServletContext {
         LOGGER.log(Level.FINE,  "getResourceAsObject({0})", path);
         FileObject fileObject = wmRoot.getFileObject(path);
         WebModule webModule = webModuleProvider.getWebModule();
-        if (fileObject == null && path != null && webModule != null) {
+        if (fileObject == null && path != null && webModule != null && webModule.getWebInf() != null) {
             int index = path.toLowerCase().indexOf("web-inf");
             if (index > -1) {
                 String newPath = path.substring(index + 7);

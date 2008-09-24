@@ -113,8 +113,10 @@ public class Issue141881 extends cc
     //Sleep( 1000 );
 
     // Check constructor
-    String sCode = "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n$aa ->";
+    String sCode = "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n$aa -";
     TypeCode( eoPHP, sCode );
+    Sleep( 10000 );
+    eoPHP.typeKey( '>' );
 
     // Check code completion list
 

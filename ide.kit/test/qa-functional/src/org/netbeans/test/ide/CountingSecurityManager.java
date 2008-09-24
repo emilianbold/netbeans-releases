@@ -51,7 +51,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import junit.framework.Assert;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -193,18 +192,19 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             return false;
         }
 
-        if (file.contains("config/Modules")) {
+        String f = file.substring(ud.length()).replace(File.separatorChar, '/');
+        if (f.contains("config/Modules")) {
             return false;
         }
-        if (file.contains("config/Windows2Local")) {
+        if (f.contains("config/Windows2Local")) {
             return false;
         }
-        if (file.endsWith(".hg")) {
+        if (f.endsWith(".hg")) {
             try {
                 Class<?> ref = Class.forName("org.netbeans.modules.versioning.util.Utils", true, Thread.currentThread().getContextClassLoader());
-                Field f = ref.getDeclaredField("unversionedFolders");
-                f.setAccessible(true);
-                f.set(null, new File[]{new File(ud).getParentFile()});
+                Field unver = ref.getDeclaredField("unversionedFolders");
+                unver.setAccessible(true);
+                unver.set(null, new File[]{new File(ud).getParentFile()});
                 return false;
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -212,7 +212,6 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         }
         
         if (file.startsWith(ud)) {
-            String f = file.substring(ud.length()).replace(File.separatorChar, '/');
             if (f.startsWith("/")) {
                 f = f.substring(1);
             }

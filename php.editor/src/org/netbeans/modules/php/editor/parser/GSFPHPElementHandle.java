@@ -307,6 +307,35 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
             return translateModifiers(declaration.getModifier());
         }    
     }
+
+    public static class FieldsFromTagProperty extends GSFPHPElementHandle {
+
+        private PHPDocPropertyTag declaration;
+
+        public FieldsFromTagProperty (CompilationInfo info, PHPDocPropertyTag declaration) {
+            super (info);
+            this.declaration = declaration;
+        }
+
+        @Override
+        public ASTNode getASTNode() {
+            return declaration;
+        }
+
+        public String getName() {
+            return "$" + declaration.getFieldName(); //NOI18N
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return translateModifiers(BodyDeclaration.Modifier.PUBLIC);
+        }
+
+
+    }
     
     private static Set<Modifier> translateModifiers (int modifier) {
             Set<Modifier> modifiers = new HashSet<Modifier> ();

@@ -79,10 +79,18 @@ public class BooleanInplaceEditor implements InplaceEditor {
             checkBox.setSelected(false);
     }
     
+    public void  cleanUp() {
+        checkBox = null;
+        model = null;
+        propertyEditor = null;
+    }
+
     public void connect(PropertyEditor propertyEditor, PropertyEnv env) {
     }
     
     public JComponent getComponent() {
+        if (checkBox == null)
+            return new JCheckBox();
         checkBox.setBorder(BorderFactory.createEmptyBorder(0,3,0,0));
         if (!propertyEditor.canWrite())
             checkBox.setEnabled(false);

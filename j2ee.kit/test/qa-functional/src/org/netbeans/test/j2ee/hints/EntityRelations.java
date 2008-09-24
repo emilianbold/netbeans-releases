@@ -194,17 +194,17 @@ public class EntityRelations extends J2eeTestCase {
 
     public void testAARelation() throws Exception {
         File f = new File(getDataDir(), "projects/EntityHintsApp/src/java/hints/CC.java");
-        hintTest(f, 3, "Create", 6);
+        hintTest(f, 3, "Create", 7);
     }
 
     public void testAARelation2() throws Exception {
         File f = new File(getDataDir(), "projects/EntityHintsApp/src/java/hints/CC.java");
-        hintTest(f, 4, "Create", 6);
+        hintTest(f, 4, "Create", 7);
     }
 
     public void testAARelation3() throws Exception {
         File f = new File(getDataDir(), "projects/EntityHintsApp/src/java/hints/CC.java");
-        hintTest(f, 5, null, 6);
+        hintTest(f, 5, null, 7);;
     }
 
     public void testCreateID() throws Exception {
@@ -248,12 +248,8 @@ public class EntityRelations extends J2eeTestCase {
             for (Fix fix : fixes) {
                 write(fix.getText());
             }
+            assertTrue("All fixes should be initialized", fixes.size() >= size);
             final Fix fix = fixes.get(fixOrder);
-            if (fix == null) {
-                System.out.println(fixOrder);
-                System.out.println(fixes.size());
-                assert (false);
-            }
             RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
