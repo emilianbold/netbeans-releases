@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.test.java.editor.codetemplates;
 
-
-package org.netbeans.test.java.editor.lib;
-
-import java.io.File;
-import java.io.FileWriter;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.junit.diff.LineDiff;
-import org.netbeans.test.java.editor.lib.EditorTestCase;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.java.editor.lib.JavaEditorTestCase;
 
 /**
  *
- * @author  mroskanin
+ * @author Jiri Prox Jiri.Prox@Sun.COM
  */
-public class JavaEditorTestCase extends EditorTestCase {
+public class CodeTemplatesTest extends JavaEditorTestCase {
 
-    public static final String PROJECT_NAME = "java_editor_test"; //NOI18N;
-
-    public JavaEditorTestCase(String testMethodName) {
+    public CodeTemplatesTest(String testMethodName) {
         super(testMethodName);
     }
 
-    protected String getDefaultProjectName() {
-        return PROJECT_NAME;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        openProject("java_editor_test");
+        //org.netbeans.junit.Log.enableInstances(Logger.getLogger("TIMER"),null, Level.FINEST);
     }
 
-    public void compareGoldenFile(EditorOperator oper) throws IOException {
-        File fGolden = null;
-        fGolden = getGoldenFile();
-        String refFileName = getName() + ".ref";
-        String diffFileName = getName() + ".diff";
-        File fRef = new File(getWorkDir(), refFileName);
-        FileWriter fw = new FileWriter(fRef);
-        fw.write(oper.getText());
-        fw.close();
-        LineDiff diff = new LineDiff(false);
-        File fDiff = new File(getWorkDir(), diffFileName);
-        if (diff.diff(fGolden, fRef, fDiff)) {
-            fail("Golden files differ");
-        }
+    @Override
+    protected void tearDown() throws Exception {
+        //org.netbeans.junit.Log.assertInstances("All instances are not removed");
+        super.tearDown();
+    }
+    EditorOperator oper;
+
+    public void testFor() throws IOException {
+        openSourceFile("org.netbeans.test.java.editor.codetemplates", "Main");
+        oper = new EditorOperator("Main");
+        JEditorPaneOperator txtOper = oper.txtEditorPane();
+        oper.setCaretPosition(6, 9);
+        txtOper.typeText("fori");
+        txtOper.pressKey(KeyEvent.VK_TAB);
+        compareGoldenFile(oper);
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CodeTemplatesTest.class).addTest("testFor").enableModules(".*").clusters(".*"));
     }
 }
