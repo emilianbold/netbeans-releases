@@ -189,7 +189,18 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             case FUNC:
             case CLASS:
             case VARIABLE:
+                int startOffest = -1;
                 n = writes.get(0);
+                for (Union2<ASTNode, IndexedElement> union2 : writes) {
+                    if (union2.hasFirst()) {
+                        ASTNode tmp = union2.first();
+                        if (tmp != null && (tmp.getStartOffset() < startOffest || startOffest == -1)) {
+                            n = union2;
+                            startOffest = tmp.getStartOffset();
+                        }
+                    }
+                }
+                
                 break;
             default:
                 n = writes.get(writes.size() - 1);

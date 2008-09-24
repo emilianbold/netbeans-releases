@@ -164,6 +164,12 @@ if [ -z "$BUILD_MYSQL" ] ; then
     BUILD_MYSQL=0
 fi
 
+if [ -z "$BUILD_JAVAFX" ] ; then
+    #do not build NetBeans/JavaFX bundles by default
+    BUILD_JAVAFX=0
+fi
+
+
 run() {
     ################################################################################
     # run the build
@@ -182,6 +188,7 @@ run() {
             \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \
             \"-Dportalpack.builds.host=${PORTALPACK_BUILDS_HOST}\" \
     	    \"-Dwtk.builds.host=${WTK_BUILDS_HOST}\" \
+            \"-Djavafx.builds.host=${JAVAFX_BUILDS_HOST}\" \
             \"-Djdk.home=${JDK_HOME}\" \
             \"-Dcvs.root=${CVS_ROOT}\" \
             \"-Dcvs.timestamp=${CVS_STAMP}\" \
@@ -191,6 +198,7 @@ run() {
             \"-Dbuild.jtb=${BUILD_JTB}\" \
             \"-Dbuild.mysql=${BUILD_MYSQL}\" \
             \"-Dbuild.netbeans.bundles=${BUILD_NETBEANS}\" \
+            \"-Dbuild.javafx=${BUILD_JAVAFX}\" \
             \"-Dglassfish.home=${GLASSFISH_HOME}\" \
             \"-Dglassfish.asadmin=${GLASSFISH_ASADMIN}\" \
             \"-Dglassfish.http.port=${GLASSFISH_HTTP_PORT}\" \

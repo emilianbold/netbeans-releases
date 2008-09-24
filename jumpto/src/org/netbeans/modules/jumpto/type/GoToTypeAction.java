@@ -445,11 +445,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                     return null;
                 }
                 current = provider;
+                long start = System.currentTimeMillis();
                 try {
                     provider.computeTypeNames(context, result);
                 } finally {
                     current = null;
                 }
+                long delta = System.currentTimeMillis() - start;
+                LOGGER.fine("Provider '" + provider.getDisplayName() + "' took " + delta + " ms.");
                 
             }
             if ( !isCanceled ) {   

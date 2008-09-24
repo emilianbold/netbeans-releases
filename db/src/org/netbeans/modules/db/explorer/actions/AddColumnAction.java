@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DbUtilities;
 
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
@@ -78,8 +78,21 @@ public class AddColumnAction extends DatabaseAction {
             AddTableColumnDialog dlg = new AddTableColumnDialog((Specification) nfo.getSpecification(), nfo);
             if (dlg.run()) {
                 nfo.addColumn(dlg.getColumnName());
+                RequestProcessor.getDefault().post(
+                    new Runnable() {
+                        public void run() {
+                            try {
+                                nfo.refreshChildren();
+                            } catch ( DatabaseException de ) {
+                                Logger.getLogger("global").log(Level.INFO, null, de);
+                                DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), de.getMessage()); // NOI18N
+                            }
+                        }
+                    }
+                );
             }
         } catch(Exception exc) {
+            Logger.getLogger("global").log(Level.INFO, null, exc);
             DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
         }
     }
