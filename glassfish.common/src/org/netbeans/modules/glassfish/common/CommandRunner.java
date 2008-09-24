@@ -280,7 +280,6 @@ public class CommandRunner extends BasicTask<OperationState> {
         try {
             commandUrl = constructCommandUrl(serverCmd.getCommand(), serverCmd.getQuery());
             commandUrl = commandUrl.replaceAll(ServerCommand.EQUAL_NONQUOTED, ServerCommand.EQUAL_QUOTED);
-            System.out.println("FINAL commandUrl   "+commandUrl);
         } catch (URISyntaxException ex) {
             return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdException",
                     serverCmd.toString(), instanceName, ex.getLocalizedMessage());
