@@ -458,8 +458,12 @@ class CompletionContextFinder {
                 } else if (id.equals(PHPTokenId.PHP_CURLY_CLOSE)) {
                     curly_close++;
                 } else if ((id.equals(PHPTokenId.PHP_FUNCTION) ||
-                        id.equals(PHPTokenId.PHP_WHILE) || id.equals(PHPTokenId.PHP_IF) ||
-                        id.equals(PHPTokenId.PHP_TRY) || id.equals(PHPTokenId.PHP_CATCH))
+                        id.equals(PHPTokenId.PHP_WHILE) ||
+                        id.equals(PHPTokenId.PHP_IF) ||
+                        id.equals(PHPTokenId.PHP_FOR) ||
+                        id.equals(PHPTokenId.PHP_FOREACH) ||
+                        id.equals(PHPTokenId.PHP_TRY) ||
+                        id.equals(PHPTokenId.PHP_CATCH))
                         && (curly_open > curly_close)) {
                     return false;
                 } else if (id.equals(PHPTokenId.PHP_CLASS) || id.equals(PHPTokenId.PHP_INTERFACE)) {
