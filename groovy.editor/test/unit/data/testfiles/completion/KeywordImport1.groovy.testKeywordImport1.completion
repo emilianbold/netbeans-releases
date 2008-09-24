@@ -3,4 +3,3 @@ import java.lang.Ab|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 CLASS      AbstractMethodError                        null
-CLASS      AbstractStringBuilder                      null

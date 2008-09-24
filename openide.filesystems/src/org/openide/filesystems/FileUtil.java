@@ -1855,12 +1855,6 @@ public final class FileUtil extends Object {
         return Ordering.affectsOrder(event);
     }
 
-    static boolean assertDeprecatedMethod() {
-        Thread.dumpStack();
-
-        return true;
-    }
-
     private static File wrapFileNoCanonicalize(File f) {
         if (f instanceof NonCanonicalizingFile) {
             return f;

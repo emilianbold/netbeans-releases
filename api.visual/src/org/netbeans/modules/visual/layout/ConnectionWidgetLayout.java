@@ -223,17 +223,15 @@ public final class ConnectionWidgetLayout implements Layout {
             }
             switch (adjustedAlignment) {
                 case CENTER_LEFT:
-                    yCursor += preferredBounds.height;
                     break;
                 case CENTER_RIGHT:
                     x += areaWidth - preferredBounds.width;
-                    yCursor += preferredBounds.height;
                     break;
                 case CENTER:
                     x += (areaWidth - preferredBounds.width) / 2;
-                    yCursor += preferredBounds.height;
                     break;
             }
+            yCursor += preferredBounds.height;
             childWidget.resolveBounds (new Point (x, y), preferredBounds);
         }
     }

@@ -145,6 +145,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger BUG_LOGGER = Logger.getLogger("ruby.indexerbug");
+    // Keep in sync with GsfTaskProvider
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
@@ -1319,10 +1320,10 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 final ClasspathInfo cpInfo;
                 if (!this.ignoreExcludes.contains(root)) {
                     entry = getClassPathEntry(sourcePath, root);
-                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath, filter, true,false);
+                    cpInfo = ClasspathInfoAccessor.getInstance().create(bootPath,compilePath,sourcePath, filter, true,false);
                 }
                 else {
-                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath, filter, true,true);
+                    cpInfo = ClasspathInfoAccessor.getInstance().create(bootPath,compilePath,sourcePath, filter, true,true);
                 }
                 
 //                Set<ElementHandle<TypeElement>> removed = isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
@@ -1439,12 +1440,18 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 List<File> seen = seenTimestampedFiles.get(language);
                 int seenCount = seen != null ? seen.size() : 0;
                 Map<String,String> stamps = timeStamps.get(language);
+                // TODO - do I really need to pull out the keySet() here?
                 int indexedCount = stamps != null ? stamps.keySet().size() : 0;
                 if (seenCount != indexedCount) {
                     // We only count files that we've timestamped, thus we can
                     // never get a greater seen count than the number of files in
                     // the index.
-                    assert seenCount < indexedCount;
+                    if (seenCount > indexedCount) {
+                        LOGGER.warning("Unexpectedly encountered more timestamped files (" + seenCount + ") than indexed (" + indexedCount + ")"); // NOI18N
+                        if (seenCount < 50) {
+                            LOGGER.warning(" Details: seen=" + seen + "; stamps=" + stamps);
+                        }
+                    }
 
                     // Now we have to figure out which files were deleted. Those
                     // are the files we have in the index that weren't encountered
@@ -1507,7 +1514,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             final File fileFile = FileUtil.toFile(fo);
             ParserFile active = FileObjects.fileFileObject(fileFile, rootFile, false, null/*filter*/);
             ParserFile[] activeList = new ParserFile[]{active};
-            ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (fo, null/*filter*/, true, false);
+            ClasspathInfo cpInfo = ClasspathInfoAccessor.getInstance().create (fo, null/*filter*/, true, false);
             ClassPath.Entry entry = getClassPathEntry (cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),root);
             boolean scan = (entry == null || entry.includes(fo));
             String sourceLevel = scan ? SourceLevelQuery.getSourceLevel(fo) : null;
@@ -1551,7 +1558,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 //                }
                 if (scan) {
                     final CompilerListener listener = new CompilerListener ();
-                    //final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);                
+                    //final JavaFileManager fm = ClasspathInfoAccessor.getInstance().getFileManager(cpInfo);                
                     //JavaFileObject active = FileObjects.fileFileObject(fileFile, rootFile, filter);
                     //JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
                     ParserTaskImpl jt = SourceAccessor.getINSTANCE().createParserTask(language, cpInfo, sourceLevel);
@@ -1944,7 +1951,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
         assert rootFo != null;
         assert cpInfo != null;
         ParserFile active = null;
-        //final JavaFileManager fileManager = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);
+        //final JavaFileManager fileManager = ClasspathInfoAccessor.getInstance().getFileManager(cpInfo);
         final CompilerListener listener = new CompilerListener ();        
 
         // Compute applicable indexers: Reduce the number of indexers to be queried during file interrogation

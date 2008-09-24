@@ -260,9 +260,9 @@ public class Folder {
         
         // Add item to the dataObject's lookup
         if (isProjectFiles() && notify) {
-            // item.getLastDataObject() should be inited in method item.setFolder(this);
-            if (item.getLastDataObject() instanceof CndDataObject) {
-                CndDataObject dataObject = (CndDataObject)item.getLastDataObject();
+            DataObject dao = item.getDataObject();
+            if (dao instanceof CndDataObject) {
+                CndDataObject dataObject = (CndDataObject) dao;
                 MyNativeFileItemSet myNativeFileItemSet = (MyNativeFileItemSet)dataObject.getCookie(MyNativeFileItemSet.class);
                 if (myNativeFileItemSet == null) {
                     myNativeFileItemSet = new MyNativeFileItemSet();

@@ -65,6 +65,7 @@ import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -217,7 +218,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
                 // TODO - embedding context?
                 try {
                     int offset = AstUtilities.getRange(node, (BaseDocument) element.getDocument()).getStart();
-                    NbUtilities.open(element.getFileObject(), offset, element.getName());
+                    GsfUtilities.open(element.getFileObject(), offset, element.getName());
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }

@@ -19,8 +19,8 @@ import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
-import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.Customer;
+import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.DiscountCode;
 import o.n.m.ws.qaf.rest.crud.converter.DiscountCodeConverter;
 
@@ -55,7 +55,9 @@ public class DiscountCodeResource {
     public DiscountCodeConverter get(@QueryParam("expandLevel")
     @DefaultValue("1")
     int expandLevel) {
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
+            persistenceSvc.beginTx();
             return new DiscountCodeConverter(getEntity(), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();

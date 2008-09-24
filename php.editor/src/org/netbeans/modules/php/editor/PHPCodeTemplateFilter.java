@@ -48,7 +48,7 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.php.editor.index.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
@@ -64,7 +64,7 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
 
     public PHPCodeTemplateFilter(JTextComponent component, int offset) {
         this.caretOffset = offset;
-        FileObject fo = NbUtilities.findFileObject(component);
+        FileObject fo = GsfUtilities.findFileObject(component);
         if (fo != null) {  // fo can be null, see issue #144856
             SourceModel model = SourceModelFactory.getInstance().getModel(fo);
 

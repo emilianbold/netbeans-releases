@@ -305,4 +305,9 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testCast4() throws Exception {
         super.performTest("cast.cc", 20, 33);
     }
+
+    // IZ#148011 : Unable to resolve identifier when strings are involved
+    public void testStringLiteral() throws Exception {
+        super.performTest("iz148011.cc", 12, 25);
+    }
 }

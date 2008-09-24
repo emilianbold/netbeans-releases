@@ -48,8 +48,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.TestBase;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -247,7 +247,7 @@ public class GeneratingBracketCompleterTest extends TestBase {
                 f.reformatUnlock();
             }
 
-            int indent = LexUtilities.getLineIndent(doc, insertOffset+1);
+            int indent = GsfUtilities.getLineIndent(doc, insertOffset+1);
 
             //bc.afterBreak(doc, insertOffset, caret);
             String formatted = doc.getText(0, doc.getLength());

@@ -41,6 +41,7 @@ public class ProductCodesConverter {
         this.entities = entities;
         this.uri = uri;
         this.expandLevel = expandLevel;
+        getProductCode();
     }
 
     /**

@@ -46,14 +46,12 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import javax.swing.tree.TreeModel;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.permanentUI.utils.Utilities;
 
 /**

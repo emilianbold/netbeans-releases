@@ -159,7 +159,7 @@ public class FmtOptions {
       
     public static class CategorySupport implements ActionListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
 
-        public static final String OPTION_ID = "org.netbeans.modules.editor.cnd.fortran.options.FormatingOptions.ID";
+        public static final String OPTION_ID = "org.netbeans.modules.editor.cnd.fortran.options.FormatingOptions.ID"; //NOI18N
                 
         private static final int LOAD = 0;
         private static final int STORE = 1;
@@ -526,7 +526,7 @@ public class FmtOptions {
         }
 
         protected void removeNodeSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         protected String[] keysSpi() throws BackingStoreException {
@@ -535,19 +535,19 @@ public class FmtOptions {
         }
 
         protected String[] childrenNamesSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         protected AbstractPreferences childSpi(String name) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         protected void syncSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         protected void flushSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
     }
 
@@ -562,7 +562,7 @@ public class FmtOptions {
         }
         
         protected void putSpi(String key, String value) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         protected String getSpi(String key) {
@@ -576,11 +576,11 @@ public class FmtOptions {
         }
 
         protected void removeSpi(String key) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         protected void removeNodeSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         protected String[] keysSpi() throws BackingStoreException {
@@ -592,19 +592,19 @@ public class FmtOptions {
         }
 
         protected String[] childrenNamesSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         protected AbstractPreferences childSpi(String name) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         protected void syncSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         protected void flushSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
     } // End of ProxyPreferences class
     

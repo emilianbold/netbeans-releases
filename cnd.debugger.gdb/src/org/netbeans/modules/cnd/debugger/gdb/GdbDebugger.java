@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.InputProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
@@ -201,6 +202,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private PathMap pathMap;
     private Map<String, ShareInfo> shareTab;
     private String sig = null;
+    private InputProxy inputProxy = null;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -380,8 +382,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    // TODO: put correct 64 bit flag here (see issue 147407)
-                    String unbuffer = Unbuffer.getPath(hkey, /*!*/false);
+                    String unbuffer = Unbuffer.getPath(hkey, Unbuffer.is64BitExecutable(pae.getExecutable()));
                     if (unbuffer != null) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX) {
                             gdb.gdb_set("environment", "DYLD_INSERT_LIBRARIES=" + unbuffer); // NOI18N
@@ -389,6 +390,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         } else {
                             gdb.gdb_set("environment", "LD_PRELOAD=" + unbuffer); // NOI18N
                         }
+                    }
+                    // disabled on windows because of the issue 148204
+                    if (platform != PlatformTypes.PLATFORM_WINDOWS) {
+                        inputProxy = InputProxy.create(hkey, iotab);
                     }
                 }
 
@@ -407,7 +412,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
                 gdb.data_list_register_names("");
                 try {
-                    gdb.exec_run(pae.getProfile().getArgsFlat());
+                    String inRedir = "";
+                    if (inputProxy != null) {
+                        String inFile = inputProxy.getFilename();
+                        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+                            inFile = win2UnixPath(inFile);
+                        }
+                        inRedir = " < " + inFile; // NOI18N
+                    }
+                    gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
                     ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
@@ -446,6 +459,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setExited();
             finish(false);
         }
+    }
+
+    private String win2UnixPath(String path) {
+        String res = path;
+        if (isCygwin()) {
+            res = "/cygdrive/" + path.charAt(0) + path.substring(2); // NOI18N
+        } else if (isMinGW()) {
+            res = "/" + path.charAt(0) + "/" + path.substring(2); // NOI18N
+        }
+        return res.replace('\\', '/');
     }
 
     public String getHostKey() {
@@ -850,6 +873,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 gah.executionFinished(0);
             }
             Disassembly.close();
+            if (inputProxy != null) {
+                inputProxy.stop();
+            }
+            iotab.getOut().close();
             GdbContext.getInstance().invalidate(true);
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }

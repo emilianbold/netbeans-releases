@@ -58,7 +58,10 @@ public interface PropertyEditorEventHandlerElement extends PropertyEditorElement
     int MODEL_TYPE_POINTS = 2;
     
     void createEventHandler(DesignComponent eventSource);
+
     void updateModel(List<DesignComponent> components, int modelType);
+
     void setElementEnabled(boolean enabled);
+    
     Collection<TypeID> getTypes();
 }

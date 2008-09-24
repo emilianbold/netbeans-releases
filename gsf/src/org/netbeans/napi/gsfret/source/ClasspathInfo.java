@@ -75,13 +75,13 @@ public final class ClasspathInfo {
     private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
     
     static {
-        ClasspathInfoAccessor.INSTANCE = new ClasspathInfoAccessorImpl ();
+        ClasspathInfoAccessor.setInstance(new ClasspathInfoAccessorImpl());
         try {
             Class.forName(ClassIndex.class.getName(), true, CompilationInfo.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {            
+        } catch (ClassNotFoundException ex) {
             ErrorManager.getDefault().notify (ex);
         }
-    }    
+    }
     
 //    private final CachingArchiveProvider archiveProvider;
     private final ClassPath srcClassPath;

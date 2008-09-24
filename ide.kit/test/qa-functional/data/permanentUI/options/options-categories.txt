@@ -3,7 +3,6 @@ Editor
 Fonts & Colors
 Keymap
 PHP
-Ruby
 C/C++
 Miscellaneous
     Ant
@@ -12,9 +11,10 @@ Miscellaneous
     Files
     Groovy
     GUI Builder
+    Java ME
     JavaScript
-    Mobility
     Profiler
+    Ruby
     SVG
     Tasks
     Versioning

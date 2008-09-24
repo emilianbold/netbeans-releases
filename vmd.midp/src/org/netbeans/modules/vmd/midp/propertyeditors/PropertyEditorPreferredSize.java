@@ -94,6 +94,18 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         return new PropertyEditorPreferredSize(label, ucLabel, parentTypeID);
     }
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        label = null;
+        radioButton = null;
+        parentTypeID = null;
+    }
+    
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, label);
@@ -242,6 +254,16 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         public CustomEditor() {
             radioButton.addFocusListener(this);
             initComponents();
+        }
+
+         void cleanUp() {
+            if (textField != null && textField.getDocument() != null) {
+                textField.getDocument().removeDocumentListener(this);
+            }
+            textField = null;
+            unlockedCheckBox.removeActionListener(this);
+            unlockedCheckBox = null;
+            this.removeAll();
         }
 
         private void initComponents() {
