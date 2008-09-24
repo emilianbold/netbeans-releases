@@ -382,13 +382,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    String unbuffer = Unbuffer.getPath(hkey, Unbuffer.is64BitExecutable(pae.getExecutable()));
+                    boolean is64bits = Unbuffer.is64BitExecutable(pae.getExecutable());
+                    String unbuffer = Unbuffer.getPath(hkey, is64bits);
                     if (unbuffer != null) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX) {
                             gdb.gdb_set("environment", "DYLD_INSERT_LIBRARIES=" + unbuffer); // NOI18N
                             gdb.gdb_set("environment", "DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
                         } else {
-                            gdb.gdb_set("environment", "LD_PRELOAD=" + unbuffer); // NOI18N
+                            String preload = is64bits ? "LD_PRELOAD_64=" : "LD_PRELOAD_32="; // NOI18N
+                            gdb.gdb_set("environment", preload + unbuffer); // NOI18N
                         }
                     }
                     // disabled on windows because of the issue 148204
