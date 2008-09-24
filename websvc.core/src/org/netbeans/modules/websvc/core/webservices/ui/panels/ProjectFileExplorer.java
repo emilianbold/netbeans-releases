@@ -123,17 +123,27 @@ public class ProjectFileExplorer extends JPanel implements ExplorerManager.Provi
         add(jLblTreeView, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+private String getTreeViewLabel(boolean dontCopy){
+    if(dontCopy){
+        return NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP");
+    }
+    return NbBundle.getMessage(ProjectFileExplorer.class, "LBL_SelectProjectLocation");
+}
+
 private void dontCopyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dontCopyCBActionPerformed
 if(dontCopyCB.isSelected()){
     descriptor.setValid(true);
     treeView.setEnabled(false);
+    jLblTreeView.setText(getTreeViewLabel(true));
 }else if (getSelectedFile() == null){
     descriptor.setValid(false);
     treeView.setEnabled(true);
+    jLblTreeView.setText(getTreeViewLabel(false));
 }
 else{
     descriptor.setValid(true);
     treeView.setEnabled(true);
+    jLblTreeView.setText(getTreeViewLabel(false));
 }
 }//GEN-LAST:event_dontCopyCBActionPerformed
 
@@ -157,6 +167,7 @@ else{
         jLblTreeView.setLabelFor(treeView.getViewport().getView());
         treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree"));
         treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree"));
+        dontCopyCB.setToolTipText(NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP"));
     }
 
     public ExplorerManager getExplorerManager() {

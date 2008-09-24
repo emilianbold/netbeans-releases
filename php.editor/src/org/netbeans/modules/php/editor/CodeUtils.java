@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor;
@@ -93,15 +93,6 @@ public class CodeUtils {
         return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
     }
 
-    public static String extractClassName(ClassInstanceCreation instanceCreation) {
-        Expression name = instanceCreation.getClassName().getName();
-        
-        assert name instanceof Identifier : 
-            "unsupported type of InstanceCreation.getClassName().getName(): "
-            + name.getClass().getName();
-
-        return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
-    }
     public static String extractClassName(ClassDeclaration clsDeclaration) {
         return clsDeclaration.getName().getName();
     }
@@ -126,19 +117,19 @@ public class CodeUtils {
             Variable name = (Variable) var.getName();
             return extractVariableName(name);
         }
-        
+
         return null;
     }
-    
+
     public static boolean isVariableTypeResolved(IndexedConstant var){
-        
+
         if (var.getTypeName() != null && var.getTypeName().startsWith("@")){
             return false;
         }
-        
+
         return true;
     }
-    
+
     private static String findClassNameEnclosingDeclaration(PHPParseResult context,
             IndexedConstant variable) {
         if (context.getFile().getFileObject().equals(variable.getFileObject())){
@@ -157,7 +148,7 @@ public class CodeUtils {
 
         return task.className;
     }
-    
+
     private static class ClassNameExtractor implements CancellableTask<CompilationInfo> {
         IndexedConstant variable;
         String className;
@@ -173,9 +164,9 @@ public class CodeUtils {
             className = findClassNameEnclosingDeclaration(program, variable);
         }
     }
-    
+
     private static String findClassNameEnclosingDeclaration(Program program,
-            IndexedConstant variable) {    
+            IndexedConstant variable) {
         ASTNode node = Utils.getNodeAtOffset(program,
                 variable.getOffset(), ClassDeclaration.class);
 
@@ -186,38 +177,38 @@ public class CodeUtils {
 
         return null;
     }
-    
+
     public static void resolveFunctionType(PHPParseResult context,
             PHPIndex index,
             Map<String, IndexedConstant> varStack,
             IndexedConstant variable){
-        
+
         String rawType = variable.getTypeName();
-        
-        if (!isVariableTypeResolved(variable)){ 
+
+        if (!isVariableTypeResolved(variable)){
             String varType = null;
             boolean unresolvedType = true;
-            
+
             if (rawType.startsWith(FUNCTION_TYPE_PREFIX)) {
 
                 String fname = rawType.substring(FUNCTION_TYPE_PREFIX.length());
-                
+
                 for (IndexedFunction func : index.getFunctions(context, fname, NameKind.EXACT_NAME)) {
                     varType = func.getReturnType();
                 }
             } else if (rawType.startsWith(STATIC_METHOD_TYPE_PREFIX)){
                 String parts[] = rawType.substring(STATIC_METHOD_TYPE_PREFIX.length()).split("\\.");
                 String className = parts[0];
-                
+
                 if ("self".equals(className) || "parent".equals(className)){ //NOI18N
                     className = findClassNameEnclosingDeclaration(context, variable);
                 }
-                
+
                 String methodName = parts[1];
-                
+
                 for (IndexedFunction func : index.getAllMethods(context, className,
                         methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
-                    
+
                     varType = func.getReturnType();
                 }
             } else if (rawType.startsWith(METHOD_TYPE_PREFIX)) {
@@ -249,7 +240,7 @@ public class CodeUtils {
             } else {
                 unresolvedType = false;
             }
-            
+
             if (unresolvedType){
                 variable.setTypeName(varType);
             }
@@ -285,21 +276,21 @@ public class CodeUtils {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) rightSideExpression;
             String className = staticMethodInvocation.getClassName().getName();
             String methodName = extractFunctionName(staticMethodInvocation.getMethod());
-            
+
             if (className != null && methodName != null){
                 return STATIC_METHOD_TYPE_PREFIX + className + '.' + methodName;
             }
         } else if (rightSideExpression instanceof MethodInvocation) {
             MethodInvocation methodInvocation = (MethodInvocation) rightSideExpression;
             String varName = null;
-            
+
             if (methodInvocation.getDispatcher() instanceof Variable) {
                 Variable var = (Variable) methodInvocation.getDispatcher();
                 varName = extractVariableName(var);
             }
-            
+
             String methodName = extractFunctionName(methodInvocation.getMethod());
-            
+
             if (varName != null && methodName != null){
                 return METHOD_TYPE_PREFIX + varName + '.' + methodName;
             }
@@ -307,11 +298,11 @@ public class CodeUtils {
 
         return null;
     }
-    
+
     public static String extractFunctionName(FunctionInvocation functionInvocation){
         return extractFunctionName(functionInvocation.getFunctionName());
     }
-    
+
     public static String extractFunctionName(FunctionDeclaration functionDeclaration){
         return functionDeclaration.getFunctionName().getName();
     }
@@ -319,21 +310,21 @@ public class CodeUtils {
     public static String extractMethodName(MethodDeclaration methodDeclaration){
         return methodDeclaration.getFunction().getFunctionName().getName();
     }
-    
+
     public static String extractFunctionName(FunctionName functionName){
         if (functionName.getName() instanceof Identifier) {
             Identifier id = (Identifier) functionName.getName();
             return id.getName();
         }
-        
+
         if (functionName.getName() instanceof Variable) {
             Variable var = (Variable) functionName.getName();
             return extractVariableName(var);
         }
-        
+
         return null;
     }
-    
+
     public static String getParamDisplayName(FormalParameter param) {
         Expression paramNameExpr = param.getParameterName();
         StringBuilder paramName = new StringBuilder();
@@ -345,7 +336,7 @@ public class CodeUtils {
             if (var.isDollared()) {
                 paramName.append("$"); //NOI18N
             }
-            
+
             paramName.append(id.getName());
         } else if (paramNameExpr instanceof Reference) {
             paramName.append("&");
@@ -353,16 +344,16 @@ public class CodeUtils {
 
             if (reference.getExpression() instanceof Variable) {
                 Variable var = (Variable) reference.getExpression();
-                
+
                 if (var.isDollared()) {
                     paramName.append("$"); //NOI18N
                 }
-                
+
                 Identifier id = (Identifier) var.getName();
                 paramName.append(id.getName());
             }
         }
-        
+
         return paramName.length() == 0 ? null : paramName.toString();
     }
 }

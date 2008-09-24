@@ -128,6 +128,12 @@ final class JavadocCompletionUtils {
 
         while (ts.moveNext()) {
             TokenId tid = ts.token().id();
+            if (tid == JavaTokenId.BLOCK_COMMENT) {
+                if ("/**/".contentEquals(ts.token().text())) { // NOI18N
+                    // see #147533
+                    return null;
+                }
+            }
             if (!IGNORE_TOKES.contains(tid)) {
                 offsetBehindJavadoc = ts.offset();
                 // it is magic for TreeUtilities.pathFor
@@ -200,6 +206,12 @@ final class JavadocCompletionUtils {
         Token<JavaTokenId> token = null;
         while (s.movePrevious()) {
             token = s.token();
+            if (token.id() == JavaTokenId.BLOCK_COMMENT) {
+                if ("/**/".contentEquals(token.text())) { // NOI18N
+                    // see #147533
+                    break;
+                }
+            }
             if (!IGNORE_TOKES.contains(token.id())) {
                 break;
             }
@@ -207,7 +219,7 @@ final class JavadocCompletionUtils {
         if (token == null || token.id() != JavaTokenId.JAVADOC_COMMENT) {
             return null;
         }
-        
+
         return s.embedded(JavadocTokenId.language());
     }
 

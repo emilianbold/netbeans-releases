@@ -49,8 +49,10 @@ import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -58,6 +60,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -161,6 +164,28 @@ public class NavUtils {
                 if (type != null && offset < type.getEndOffset()) {
                     return a.getElement(type);
                 }
+            } else if (leaf instanceof CatchClause) {
+                Identifier clsName = ((CatchClause)leaf).getClassName();
+                if (clsName != null && offset < clsName.getEndOffset()) {
+                    return a.getElement(clsName);
+                } else {
+                    Variable var = ((CatchClause)leaf).getVariable();
+                    if (var != null) {
+                        return a.getElement(var);
+                    }
+                }
+            } else if (leaf instanceof InstanceOfExpression) {
+                InstanceOfExpression instOf = (InstanceOfExpression)leaf;
+                ClassName className = instOf != null ? instOf.getClassName() : null;
+                Expression expression = instOf != null ? instOf.getExpression() : null;
+                Expression name = className.getName();
+                if (name != null && offset > name.getStartOffset() && (name instanceof Identifier)) {
+                    return a.getElement(name);
+                } else if (expression != null && offset < expression.getEndOffset()
+                        && (expression instanceof Variable)) {
+                    return a.getElement(expression);
+                }
+                return null;
             }
 
             if (leaf instanceof Variable && !(leaf instanceof ArrayAccess)) {

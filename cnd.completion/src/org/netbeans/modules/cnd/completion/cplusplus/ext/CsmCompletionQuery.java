@@ -295,7 +295,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         if (resolver != null) {
             CsmOffsetableDeclaration context = sup.getDefinition(offset, getFileReferencesContext());
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort);
-           ctx.resolveExp(exp);
+            ctx.resolveExp(exp);
             if (ctx.result != null) {
                 ctx.result.setSimpleVariableExpression(isSimpleVariableExpression(exp));
             }
@@ -1577,7 +1577,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 break;
 
             case CsmCompletionExpression.PARENTHESIS:
-                cont = resolveItem(item.getParameter(0), first, last, kind);
+                lastType = resolveType(item.getParameter(0));
                 break;
 
             case CsmCompletionExpression.CONSTRUCTOR: // constructor can be part of a DOT expression

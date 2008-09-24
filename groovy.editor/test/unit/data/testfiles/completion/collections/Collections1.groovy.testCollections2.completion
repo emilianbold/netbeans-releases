@@ -2,4 +2,4 @@ Code completion result for source line:
 [1:"one", 2:"two"].ent|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-METHOD     entrySet()                                 ClassReader$1
+METHOD     entrySet()                                 Entry<K,V>>

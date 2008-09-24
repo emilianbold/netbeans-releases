@@ -1412,6 +1412,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case METHOD:
                             case CONSTRUCTOR:
                             case PARENTHESIS:
+                            case CONVERSION:
                             case GENERIC_TYPE:
                             case MEMBER_POINTER:
                             {
@@ -1420,6 +1421,10 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                                 // create correspondent *_OPEN expression ID
                                 int openExpID = tokenID2OpenExpID(tokenID);
                                 CsmCompletionExpression opExp = createTokenExp(openExpID);
+                                if (topID == CONVERSION && tokenID != CppTokenId.SCOPE) {
+                                    // Now we know that previous exp is PARENTHESIS, not CONVERSION.
+                                    top.setExpID(PARENTHESIS);
+                                }
                                 opExp.addParameter(top);
                                 pushExp(opExp);
                                 break;

@@ -49,7 +49,9 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.Widget.Dependency;
 
 /**
  *
@@ -182,6 +184,19 @@ public class IterateSelectAction extends WidgetAction.Adapter
             {
                 retVal.addAll(selectables);
             }
+        }
+        //now get all node labels 
+        for (Dependency dep : widget.getDependencies())
+        {
+            if (dep instanceof LabelWidget)
+            {
+                List<Widget> nodeLabels = getAllSelectableWidgets((Widget) dep);
+                if (nodeLabels.size() > 0)
+                {
+                    retVal.addAll(nodeLabels);
+                }
+            }
+            
         }
         
         return retVal;

@@ -64,6 +64,7 @@ TOKEN:string:(
         )* 
     "\'"
 )
+TOKEN:number:( ['0'-'9']+ )
 TOKEN:comment: ( "#" [^"\n" "\r"]* ["\n" "\r"]+ )
 TOKEN:comment: ( "/#" - "#/")
 TOKEN:whitespace:( ["\n" "\r" " " "\t"]+ )
@@ -122,8 +123,10 @@ grammarRuleNT = <identifier>;
 grRightSide = grChoice grRightSide1;
 grRightSide1 = "|" grChoice grRightSide1;
 grRightSide1 = ;
-grChoice = grPart grChoice;
+grChoice = lookahead grPart grChoice1;
 grChoice = ;
+grChoice1 = grPart grChoice1;
+grChoice1 = ;
 grPart = ntRef grOperator;
 ntRef = <identifier>;
 grPart = tokenDef grOperator;
@@ -138,6 +141,9 @@ tokenDef = "<" tokenDefName tokenDef1 ">";
 tokenDefName = <identifier>;
 tokenDef1 = "," <string>;
 tokenDef1 = ;
+lookahead = "{" grRightSide "}";
+lookahead = "{" <number> "}";
+lookahead = ;
                     
 command = commandName command0;
 commandName = <identifier>;

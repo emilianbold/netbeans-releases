@@ -226,6 +226,36 @@ public class DeclarationFinderImplTest extends TestBase {
                 );
         performTestSimpleFindDeclaration(-1, gotoTypeTest);
     }
+    public void testGotoTypeClsIfaceCatch() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "class clsDeclaration implements ifaceDeclaration {}",
+                "^class clsDeclaration implements ifaceDeclaration {}",
+                "} catch (clsDeclaration $cex) {",
+                "} catch (clsDecla|ration $cex) {"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeClsIfaceInstanceof() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "class clsDeclaration implements ifaceDeclaration {}",
+                "^class clsDeclaration implements ifaceDeclaration {}",
+                "if ($cex instanceof clsDeclaration) {",
+                "if ($cex instanceof clsDecl|aration) {"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeClsIfaceInstanceof2() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoType.php",
+                "} catch (clsDeclaration $cex) {",
+                "} catch (clsDeclaration ^$cex) {",
+                "if ($cex instanceof clsDeclaration) {",
+                "if ($c|ex instanceof clsDeclaration) {"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
 
     /*TODO: in these animalTests is actually bug but not important I guess. Sometimes jumps:
      * 1/public static ^$count = 0, $animal;

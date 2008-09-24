@@ -329,6 +329,15 @@ public final class NbMavenProjectImpl implements Project {
         ACCESSOR.doFireReload(watcher);
         doBaseProblemChecks();
     }
+    
+    
+    public static void refreshLocalRepository(NbMavenProjectImpl project) {
+        String basedir = project.getEmbedder().getLocalRepository().getBasedir();
+        File file = FileUtil.normalizeFile(new File(basedir));
+        FileUtil.refreshFor(file);
+    }
+    
+    
 
     void doBaseProblemChecks() {
         problemReporter.doBaseProblemChecks(project);

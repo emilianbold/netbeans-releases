@@ -298,10 +298,11 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         if (null != props) {
             this.password = props.getProperty(InstanceProperties.PASSWORD_ATTR);
         }
-        if (password.equals("")){//it means we did not stored the password. Get it from the static in memory cache if available
+        if ("".equals(password)) { // NOI18N
+            //it means we did not stored the password. Get it from the static in memory cache if available
             password = (String) passwordForURI.get(uri+platformRoot);
             if (this.password==null) {
-                this.password="";
+                this.password=""; // NOI18N
             }
             
         }

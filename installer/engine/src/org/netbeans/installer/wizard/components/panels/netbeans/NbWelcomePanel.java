@@ -978,6 +978,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         RUBY("ruby"),
         CND("cnd"),
         PHP("php"),
+        JAVAFX("javafx"),
         CUSTOMIZE("customize"),
         JAVASE_JDK("javase.jdk"),
         JAVAEE_JDK("javaee.jdk"),
@@ -1016,6 +1017,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 return "NBEETOOLS";
             } else if(this.equals(MYSQL)) {
                 return "NBMYSQL";
+            } else if(this.equals(JAVAFX)) {
+                return "NBFX";
             } else {
                 return "NB";
             }

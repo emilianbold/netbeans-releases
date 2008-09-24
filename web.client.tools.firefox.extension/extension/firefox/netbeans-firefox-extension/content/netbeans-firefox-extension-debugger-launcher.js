@@ -111,13 +111,30 @@
                             "_blank",                               // new Browser window
                             "chrome,centerscreen,dialog=0,menubar=1,location=1,toolbar=1,directories=1,status=1,resizable=1,scrollbars=1",
                             href);
-                            window.getBrowser().removeCurrentTab();
+                            
+                            closeTabForURL(window.getBrowser(), href);
                         }
                     }
                 }
             }
         }
     }
+
+    // Based off example code in: http://developer.mozilla.org/en/Code_snippets/Tabbed_browser
+    function closeTabForURL(tabbrowser, url) {
+            var numTabs = tabbrowser.browsers.length;
+            for(var index=0; index<numTabs; index++) {
+                var currentBrowser = tabbrowser.getBrowserAtIndex(index);
+                if (url == currentBrowser.currentURI.spec) {
+                    var tabForURL = tabbrowser.mTabs[index];
+                    tabbrowser.removeTab(tabForURL);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
     
     // Listen on loading of chrome window
     window.addEventListener("load", onChromeLoad, false);

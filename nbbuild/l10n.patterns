@@ -17,7 +17,6 @@
 **/org-netbeans-modules-uml-tomsawyer.jar:org/netbeans/modules/uml/tomsawyer/LabelBundle.properties
 **/docs/syntaxref20.zip:
 **/docs/GUIExamplesDescription.html:
-**/docs/quickstart_jump.html:
 **/org-netbeans-modules-apisupport-ant.jar:org/netbeans/modules/apisupport/ant/TemplateNames.properties
 profiler*/**/config/Services/filtersets-default.xml:
 profiler*/**/config/Services/filters-default.xml:

@@ -59,12 +59,15 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ComponentOperator;
+//import org.netbeans.jemmy.util.Dumper;
+
 
 /**
  *
@@ -85,7 +88,6 @@ public class insert_0001 extends insert
     return NbModuleSuite.create(
       NbModuleSuite.createConfiguration( insert_0001.class ).addTest(
           "CreateApplication",
-          "InsertEmpty",
           "InsertConstructor"
         )
         .enableModules( ".*" )
@@ -103,26 +105,7 @@ public class insert_0001 extends insert
     endTest( );
   }
 
-    public class CComponentChooser implements ComponentChooser
-    {
-      String s;
-      public CComponentChooser( String _s )
-      {
-        super( );
-        s = _s;
-      }
-
-      public java.lang.String getDescription() { return "looking for happy"; }
-      public boolean checkComponent( java.awt.Component comp )
-      {
-        System.out.println( s + comp );
-        //if( !s.equals( ( ( JToggleButton )comp ).getText( ) ) )
-          return false;
-        //return true;
-      }
-    };
-
-  public void InsertEmpty( )
+  public void InsertConstructor( ) throws Exception
   {
     startTest( );
 
@@ -131,36 +114,33 @@ public class insert_0001 extends insert
 
     // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
     // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
-    // Add new line
-    eoPHP.insert( "\n" );
+    eoPHP.setCaretPosition( "// put your code here\n", false );
+    eoPHP.insert( "\nclass a\n{\n\n}" );
+    eoPHP.setCaretPosition( "{\n", false );
     Sleep( 1000 );
-
     InvokeInsert( eoPHP );
-
-    // Get list
-    //JComboBoxOperator jc = new JComboBoxOperator( MainWindowOperator.getDefault( ), 0 );
-    //jc.selectItem( 1 );
-
-    //new ComponentOperator( MainWindowOperator.getDefault( ), new CComponentChooser( "+++2+++" ) );
-
-    endTest( );
-  }
-
-  public void InsertConstructor( ) throws Exception
-  {
-    startTest( );
-
-    // Get editor
-    EditorOperator eoPHP = new EditorOperator( "index.php" );
     Sleep( 1000 );
-    // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
-    // Add new line
-    eoPHP.insert( "\n" );
-    Sleep( 1000 );
+
+    JDialogOperator jdInsetter = new JDialogOperator( );
+    JListOperator jlList = new JListOperator( jdInsetter );
+
+    ClickListItemNoBlock( jlList, 0, 1 );
+
+    JDialogOperator jdGenerator = new JDialogOperator( "Generate Constructor" );
+    JButtonOperator jbOk = new JButtonOperator( jdGenerator, "OK" );
+    jbOk.pushNoBlock( );
+    jdGenerator.waitClosed( );
+
+    // Check result
+    String[] asResult =
+    {
+      "class a",
+      "{",
+      "function __construct() {",
+      "}"
+    };
+    CheckResult( eoPHP, asResult, -4 );
 
     endTest( );
   }
