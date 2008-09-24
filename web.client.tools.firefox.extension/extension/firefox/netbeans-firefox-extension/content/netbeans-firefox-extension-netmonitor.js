@@ -217,6 +217,9 @@
                 }
 
                 if (DEBUG_METHOD) NetBeans.Logger.log("netmonitor.onModifyRequest: processing modifyRequest");
+                if (requestsId.getId(request)) {
+                    return;
+                }
                 var id = uuid();
                 var activity = createRequestActivity(request, id);
                 if ( activity ){
