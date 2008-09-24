@@ -1912,10 +1912,6 @@ public class CodeCompleter implements CodeCompletionHandler {
                 LOG.log(Level.FINEST, "packageElement is null");
             } else {
                 typelist = packageElement.getEnclosedElements();
-                for (Element elem : typelist) {
-                    System.out.println(elem.getSimpleName() + " " + elem.getModifiers().contains(Modifier.PUBLIC));
-                    
-                }
             }
 
         }
