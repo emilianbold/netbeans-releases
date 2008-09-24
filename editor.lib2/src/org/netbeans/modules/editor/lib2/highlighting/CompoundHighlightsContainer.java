@@ -48,6 +48,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import javax.swing.text.StyleConstants;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
@@ -269,6 +270,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
         synchronized (LOCK) {
             // XXX: Perhaps we could do something more efficient.
+            LOG.fine("Cache obsoleted by changes in " + layer);
             cacheObsolete = true;
             increaseVersion();
             
@@ -298,6 +300,9 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             try {
                 HighlightsSequence seq = layers[i].getHighlights(startOffset, endOffset);
                 bag.addAllHighlights(seq);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine(dumpLayerHighlights(layers[i], startOffset, endOffset));
+                }
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t) {
@@ -356,7 +361,28 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             return endOffset + expandBy;
         }
     }
-    
+
+    private static String dumpLayerHighlights(HighlightsContainer layer, int startOffset, int endOffset) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Highlights in " + layer + ": {\n"); //NOI18N
+        
+        for(HighlightsSequence seq = layer.getHighlights(startOffset, endOffset); seq.moveNext(); ) {
+            sb.append("  <"); //NOI18N
+            sb.append(seq.getStartOffset());
+            sb.append(", "); //NOI18N
+            sb.append(seq.getEndOffset());
+            sb.append(", "); //NOI18N
+            sb.append(seq.getAttributes().getAttribute(StyleConstants.NameAttribute));
+            sb.append(">\n"); //NOI18N
+        }
+        
+        sb.append("} End of Highlights in " + layer); //NOI18N
+        sb.append("\n"); //NOI18N
+        
+        return sb.toString();
+    }
+
     private static final class LayerListener implements HighlightsChangeListener {
         
         private WeakReference<CompoundHighlightsContainer> ref;
