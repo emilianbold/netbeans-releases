@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
@@ -98,6 +99,8 @@ import org.openide.windows.TopComponent;
  * @since 2.13
  */
 public final class EditorContextDispatcher {
+
+    private static final Logger logger = Logger.getLogger(EditorContextDispatcher.class.getName());
     
     /**
      * Name of property fired when the current file changes.
@@ -586,7 +589,18 @@ public final class EditorContextDispatcher {
                 if ((source == null || source == currentEditorCookie)) {
                     oldEditor = currentOpenedPane;
                     if (currentEditorCookie != null && activeComponnet != null) {
+                        if (currentEditorCookie.getDocument() == null &&  // !currentEditorCookie.prepareDocument().isFinished() &&
+                            (currentEditorCookie instanceof EditorCookie.Observable)) {
+                            // Document is not yet loaded, wait till we're notified that it is.
+                            // See issue #147988
+                            logger.fine("Document "+currentEditorCookie+" NOT yet loaded...");  // NOI18N
+                            return ;
+                        }
+                        logger.fine("Document "+currentEditorCookie+" loaded, updating...");  // NOI18N
+                        long t1 = System.nanoTime();
                         JEditorPane[] openedPanes = currentEditorCookie.getOpenedPanes();
+                        long t2 = System.nanoTime();
+                        logger.fine("Time to find opened panes = "+(t2 - t1)+" ns = "+(t2 - t1)/1000000+" ms.");  // NOI18N
                         if (openedPanes != null && openedPanes.length >= 1) {
                             for (JEditorPane openedPane : openedPanes) {
                                 if (activeComponnet.isAncestorOf(openedPane)) {
