@@ -81,23 +81,6 @@ public class ActionsTest extends JellyTestCase {
     public static void main(String[] args) {
         TestRunner.run(suite());
     }
-
-//    public static NbTestSuite suite() {
-//        NbTestSuite suite = new NbTestSuite();
-//        suite.addTest(new ActionsTest("testCheckEnabledActions"));
-//        suite.addTest(new ActionsTest("testCheckEnabledActionsDebugging"));
-//        suite.addTest(new ActionsTest("testToggleBreakpoints"));
-//        suite.addTest(new ActionsTest("testStartDebugging"));
-//        suite.addTest(new ActionsTest("testRemoveBreakpoint"));
-//        suite.addTest(new ActionsTest("testStepInto"));
-//        suite.addTest(new ActionsTest("testStepOver"));
-//        suite.addTest(new ActionsTest("testRunToCursor"));
-//        suite.addTest(new ActionsTest("testStepOut"));
-//        suite.addTest(new ActionsTest("testContinue"));
-//        suite.addTest(new ActionsTest("testStepOverExpression"));
-//        suite.addTest(new ActionsTest("testPause"));
-//        return suite;
-//    }
     
     public static Test suite() {
         return NbModuleSuite.create(
