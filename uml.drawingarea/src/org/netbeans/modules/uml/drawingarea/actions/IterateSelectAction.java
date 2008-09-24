@@ -52,6 +52,7 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.Widget.Dependency;
+import org.netbeans.modules.uml.drawingarea.view.CollapsibleWidgetManager;
 import org.openide.util.Lookup;
 
 /**
@@ -183,7 +184,13 @@ public class IterateSelectAction extends WidgetAction.Adapter
         
         for (Widget child : widget.getChildren())
         {
-            List<Widget> selectables = getAllSelectableWidgets(child);
+            // Do not process collapsed compartments
+            if (child instanceof CollapsibleWidgetManager &&
+                    ((CollapsibleWidgetManager)child).isCompartmentCollapsed())
+            {   
+                continue;
+            }
+            List<Widget> selectables = getAllSelectableWidgets(child); 
             if (selectables.size() > 0)
             {
                 retVal.addAll(selectables);
