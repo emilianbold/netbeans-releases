@@ -597,7 +597,11 @@ public class LexUtilities {
                 TokenId id = token.id();
 
                 if (id == up) {
-                    upCount++;
+                    if (lineBalance.equals(LineBalance.DOWN_FIRST)) {
+                        if (upCount > 0) {upCount++;}
+                    } else {
+                        upCount++;
+                    }
                 } else if (id == down) {
                     if (lineBalance.equals(LineBalance.UP_FIRST)) {
                         if (upCount > 0) {downCount++;}
