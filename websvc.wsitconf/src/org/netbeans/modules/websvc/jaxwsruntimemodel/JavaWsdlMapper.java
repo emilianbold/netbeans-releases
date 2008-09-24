@@ -68,7 +68,6 @@ import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
 
 /**
  * This class is compiled from:
@@ -187,7 +186,11 @@ public class JavaWsdlMapper {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return new QName(serviceNameQNameARR[1], serviceNameQNameARR[0]);
+        if (serviceNameQNameARR[0] == null) {
+            return null;
+        } else {
+            return new QName(serviceNameQNameARR[1], serviceNameQNameARR[0]);
+        }
     }
 
     /**

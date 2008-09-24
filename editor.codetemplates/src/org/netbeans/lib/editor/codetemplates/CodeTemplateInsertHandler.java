@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -85,6 +86,9 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
 
     // -J-Dorg.netbeans.lib.editor.codetemplates.CodeTemplateInsertHandler.level=FINE
     private static final Logger LOG = Logger.getLogger(CodeTemplateInsertHandler.class.getName());
+    /** logger for timers/counters */
+    private static final Logger TIMERS = Logger.getLogger("TIMER"); // NOI18N
+
     /**
      * Property used while nested template expanding.
      */
@@ -152,6 +156,11 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         setParametrizedText(codeTemplate.getParametrizedText());
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Created " + super.toString() + "\n"); // NOI18N
+        }
+        if (TIMERS.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "CodeTemplateInsertHandler"); // NOI18N
+            rec.setParameters(new Object[] { this });
+            TIMERS.log(rec);
         }
     }
     

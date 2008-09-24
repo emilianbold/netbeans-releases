@@ -1139,14 +1139,16 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
     
     private boolean isBlockDefinition(BaseDocument doc, int dotPos) throws BadLocationException {
         TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, dotPos);
-        int lineStart = Utilities.getRowStart(doc, dotPos);
-        ts.move(dotPos+1);
-        while (ts.movePrevious() && ts.offset() >= lineStart) {
-            TokenId tid = ts.token().id();
-            if (tid == PHPTokenId.PHP_DO || tid == PHPTokenId.PHP_CURLY_OPEN) {
-                return true;
-            } else if (tid == PHPTokenId.PHP_CURLY_CLOSE) {
-                break;
+        if (ts != null) {
+            int lineStart = Utilities.getRowStart(doc, dotPos);
+            ts.move(dotPos + 1);
+            while (ts.movePrevious() && ts.offset() >= lineStart) {
+                TokenId tid = ts.token().id();
+                if (tid == PHPTokenId.PHP_DO || tid == PHPTokenId.PHP_CURLY_OPEN) {
+                    return true;
+                } else if (tid == PHPTokenId.PHP_CURLY_CLOSE) {
+                    break;
+                }
             }
         }
         
@@ -1304,48 +1306,51 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
     */
     @SuppressWarnings("fallthrough")
     public boolean charBackspaced(Document document, int dotPos, JTextComponent target, char ch)
-        throws BadLocationException {
-        BaseDocument doc = (BaseDocument)document;
+            throws BadLocationException {
+        BaseDocument doc = (BaseDocument) document;
 
         switch (ch) {
-        case ' ': {
-        // Backspacing over "# " ? Delete the "#" too!
-            TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, dotPos);
-            ts.move(dotPos);
-            if ((ts.moveNext() || ts.movePrevious()) && (ts.offset() == dotPos-1 && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT)) {
-                doc.remove(dotPos-1, 1);
-                target.getCaret().setDot(dotPos-1);
-                
-                return true;
-            }
-            break;
-        }
+            case ' ': {
+                // Backspacing over "# " ? Delete the "#" too!
+                TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, dotPos);
 
-        case '{':
-        case '(':
-        case '[': {
-            char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
+                if (ts != null){
+                    ts.move(dotPos);
+                    if ((ts.moveNext() || ts.movePrevious()) && (ts.offset() == dotPos - 1 && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT)) {
+                        doc.remove(dotPos - 1, 1);
+                        target.getCaret().setDot(dotPos - 1);
 
-            if (((tokenAtDot == ']') &&
-                    (LexUtilities.getTokenBalance(doc, '[', ']', dotPos) != 0)) ||
-                    ((tokenAtDot == ')') &&
-                    (LexUtilities.getTokenBalance(doc, '(', ')', dotPos) != 0)) ||
-                    ((tokenAtDot == '}') &&
-                    (LexUtilities.getTokenBalance(doc, '{', '}', dotPos) != 0))) {
-                doc.remove(dotPos, 1);
+                        return true;
+                    }
+                }
+                break;
             }
-            break;
-        }
+
+            case '{':
+            case '(':
+            case '[': {
+                char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
+
+                if (((tokenAtDot == ']') &&
+                        (LexUtilities.getTokenBalance(doc, '[', ']', dotPos) != 0)) ||
+                        ((tokenAtDot == ')') &&
+                        (LexUtilities.getTokenBalance(doc, '(', ')', dotPos) != 0)) ||
+                        ((tokenAtDot == '}') &&
+                        (LexUtilities.getTokenBalance(doc, '{', '}', dotPos) != 0))) {
+                    doc.remove(dotPos, 1);
+                }
+                break;
+            }
 //        case '|':
 //        case '/': 
-        case '\"':
-        case '\'': {
-            char[] match = doc.getChars(dotPos, 1);
+            case '\"':
+            case '\'': {
+                char[] match = doc.getChars(dotPos, 1);
 
-            if ((match != null) && (match[0] == ch)) {
-                doc.remove(dotPos, 1);
+                if ((match != null) && (match[0] == ch)) {
+                    doc.remove(dotPos, 1);
+                }
             }
-        }
         }
         return true;
     }
