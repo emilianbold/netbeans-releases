@@ -698,12 +698,14 @@ public class SemiAttribute extends DefaultVisitor {
             }
             if (Kind.CLASS.equals(k) && fName.equals("parent")) {//NOI18N
                 Collection<AttributedElement> values = name2El.values();
-                for (AttributedElement ael : values) {
-                    if (ael instanceof ClassElement) {
-                        ClassElement ce = (ClassElement) ael;
-                        ClassElement superClass = ce.getSuperClass();
-                        if (superClass != null) {
-                            retval.add(superClass);
+                if (name2El != null) {
+                    for (AttributedElement ael : values) {
+                        if (ael instanceof ClassElement) {
+                            ClassElement ce = (ClassElement) ael;
+                            ClassElement superClass = ce.getSuperClass();
+                            if (superClass != null) {
+                                retval.add(superClass);
+                            }
                         }
                     }
                 }
