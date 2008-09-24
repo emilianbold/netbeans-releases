@@ -43,6 +43,7 @@ public class ProductCodeConverter {
         this.entity = entity;
         this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getProdCode() + "/").build() : uri;
         this.expandLevel = expandLevel;
+        getProductCollection();
     }
 
     /**

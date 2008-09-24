@@ -312,7 +312,7 @@ public class Utilities {
         setCaret(eo, line);
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new EventTool().waitNoEvent(3000);
+        new EventTool().waitNoEvent(500);
         return dialog;
     }
 

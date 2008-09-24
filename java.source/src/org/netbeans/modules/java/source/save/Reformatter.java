@@ -506,8 +506,8 @@ public class Reformatter implements ReformatTask {
                             space();
                     } else if (afterAnnotation) {
                         blankLines();
-                        afterAnnotation = false;
                     }
+                    afterAnnotation = false;
                 }
                 JavaTokenId id = accept(CLASS, INTERFACE, ENUM, AT);
                 if (indent == old)
@@ -724,8 +724,8 @@ public class Reformatter implements ReformatTask {
                     } else {
                         space();
                     }
-                    afterAnnotation = false;
                 }
+                afterAnnotation = false;
             }
             if (isEnumerator(node)) {
                 accept(IDENTIFIER);
@@ -797,6 +797,7 @@ public class Reformatter implements ReformatTask {
                 } else {
                     blankLines();
                 }
+                afterAnnotation = false;
             }
             List<? extends TypeParameterTree> tparams = node.getTypeParameters();
             if (tparams != null && !tparams.isEmpty()) {

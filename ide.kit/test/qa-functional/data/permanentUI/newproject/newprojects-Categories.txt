@@ -19,6 +19,7 @@ Samples
     Java ME (BD-J)
     PHP
     Ruby
+    Groovy
     C/C++
     SOA
     NetBeans Modules

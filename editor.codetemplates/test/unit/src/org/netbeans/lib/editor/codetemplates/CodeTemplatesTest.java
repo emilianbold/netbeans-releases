@@ -39,35 +39,62 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.vmd.midp.propertyeditors;
+package org.netbeans.lib.editor.codetemplates;
 
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.awt.EventQueue;
+import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
+import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.editor.NbEditorKit;
+
 
 /**
+ * Testing correctness of the code templates processing.
  *
- * @author Karol Harezlak
+ * @author mmetelka
  */
-public final class Bundle {
+public class CodeTemplatesTest extends NbTestCase {
 
-    private static final ResourceBundle bundle = NbBundle.getBundle (Bundle.class);
+    public CodeTemplatesTest(java.lang.String testName) {
+        super(testName);
+    }
 
-    public static String getMessage (String name) {
-        try {
-            return bundle.getString (name);
-        } catch (MissingResourceException e) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Missing Resource Bundle Message: Bundle: " // NOI18N
-                    + Bundle.class.getName() + " Resource: " + name); // NOI18N
-            return name;
-        }
+    @Override
+    protected boolean runInEQ() {
+        return true;
     }
-    
-    public static char getChar(String name) {
-        String text = getMessage(name);
-        assert (text != null) && (text.length() > 0);
-        return text.charAt(0);        
+
+    public void testMemoryRelease() throws Exception { // Issue #147984
+        org.netbeans.junit.Log.enableInstances(Logger.getLogger("TIMER"), "CodeTemplateInsertHandler", Level.FINEST);
+
+        JEditorPane pane = new JEditorPane();
+        NbEditorKit kit = new NbEditorKit();
+        pane.setEditorKit(kit);
+        Document doc = pane.getDocument();
+        assertTrue(doc instanceof BaseDocument);
+        CodeTemplateManager mgr = CodeTemplateManager.get(doc);
+        String templateText = "Test with parm ";
+        CodeTemplate ct = mgr.createTemporary(templateText + " ${a}");
+        ct.insert(pane);
+        assertEquals(templateText + " a", doc.getText(0, doc.getLength()));
+
+        // Send Enter to stop editing
+        KeyEvent enterKeyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
+                EventQueue.getMostRecentEventTime(),
+                0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED);
+
+        SwingUtilities.processKeyBindings(enterKeyEvent);
+        // CT editing should be finished
+
+        org.netbeans.junit.Log.assertInstances("CodeTemplateInsertHandler instances not GCed");
     }
+
 
 }
