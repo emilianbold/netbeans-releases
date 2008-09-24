@@ -695,6 +695,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         //TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(document, request.anchor);
+
+        if (tokenSequence == null){
+            return;
+        }
+
         tokenSequence.move(request.anchor);
         if (tokenSequence.movePrevious())
         {

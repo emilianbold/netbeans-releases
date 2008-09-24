@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.indent.PHPBracketCompleter.LineBalance;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -177,6 +178,7 @@ public class LexUtilities {
 //    }
 //    
     @SuppressWarnings("unchecked")
+    @CheckForNull
     public static TokenSequence<PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
         TokenSequence<PHPTokenId> ts = th == null ? null : th.tokenSequence(PHPTokenId.language());
