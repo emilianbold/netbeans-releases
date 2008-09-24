@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.awt.BorderLayout;
@@ -69,6 +68,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
@@ -85,7 +85,7 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class SVGImageEditorElement extends PropertyEditorResourceElement implements Runnable {
+public class SVGImageEditorElement extends PropertyEditorResourceElement implements Runnable, CleanUp {
 
     private static final String EXTENSION = "svg"; // NOI18N
     private long componentID;
@@ -98,6 +98,29 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     private final AtomicBoolean requiresModelUpdate = new AtomicBoolean(false);
     private DesignComponentWrapper wrapper;
     private PropertyEditorMessageAwareness messageAwareness;
+
+    public void clean(DesignComponent component) {
+        project = null;
+        imageView = null;
+        comboBoxModel = null;
+        if (paths != null ) {
+            paths.clear();
+            paths = null;
+        }
+        wrapper = null;
+        messageAwareness = null;
+        chooserButton = null;
+        heightLabel = null;
+        heightTextField = null;
+        pathLabel = null;
+        pathTextComboBox = null;
+        previewLabel = null;
+        previewPanel = null;
+        progressBar = null;
+        widthLabel = null;
+        widthTextField = null;
+        this.removeAll();
+    }
 
     public SVGImageEditorElement() {
         paths = new HashMap<String, FileObject>();
@@ -215,7 +238,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         if (parser == null) {
             return;
         }
-        
+
         InputStream inputStream = null;
         try {
             inputStream = imageFO.getInputStream();
@@ -234,7 +257,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
             }
         }
     }
-    
+
     private void setText(String text) {
         if (text == null) {
             text = ""; // NOI18N
@@ -373,7 +396,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
                 if (!fullPath.substring(i).startsWith("/")) { //NOI18N
                     relativePath = "/" + fullPath.substring(i); //NOI18N
                 } else {
-                    relativePath = fullPath.substring(i); 
+                    relativePath = fullPath.substring(i);
                 }
             } else if (needCopy) {
                 // somewhere outside sources - need to copy (export image)

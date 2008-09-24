@@ -77,6 +77,8 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     private TypeID parentTypeID;
     private String rbLabel;
 
+   
+
     private PropertyEditorBooleanUC(boolean supportsCustomEditor, TypeID parentTypeID, String rbLabel) {
         super(NbBundle.getMessage(PropertyEditorBooleanUC.class, "LBL_VALUE_BOOLEAN_UCLABEL")); // NOI18N
         this.supportsCustomEditor = supportsCustomEditor;
@@ -105,6 +107,20 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
     public static PropertyEditorBooleanUC createInstance(TypeID parentTypeID, String rbLabel) {
         return new PropertyEditorBooleanUC(true, parentTypeID, rbLabel);
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+        }
+        customEditor = null;
+        radioButton = null;
+        if (inplaceEditor != null) {
+            inplaceEditor.cleanUp();
+        }
+        parentTypeID = null;
     }
 
     @Override
@@ -286,6 +302,12 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
         public CustomEditor() {
             initComponents();
+        }
+
+        void cleanUp() {
+            checkBox.removeActionListener(this);
+            checkBox = null;
+            this.removeAll();
         }
 
         private void initComponents() {
