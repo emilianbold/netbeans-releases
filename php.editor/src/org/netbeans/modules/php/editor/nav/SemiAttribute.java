@@ -1156,7 +1156,7 @@ public class SemiAttribute extends DefaultVisitor {
                     enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
                 } break;
                 case VARIABLE:
-                for (IndexedConstant m : index.getAllProperties(null, getName(), name, NameKind.PREFIX, attrs)) {
+                for (IndexedConstant m : index.getAllFields(null, getName(), name, NameKind.PREFIX, attrs)) {
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.VARIABLE, m);
