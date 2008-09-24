@@ -153,14 +153,16 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
 
     @Override
     public String getAsText() {
-        String superText = super.getAsText();
-        if (superText != null) {
-            return superText;
-        }
         String databinding = MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0));
         if (databinding != null) {
             return databinding;
         }
+        
+        String superText = super.getAsText();
+        if (superText != null) {
+            return superText;
+        }
+        
         return getValueAsText((PropertyValue) super.getValue());
     }
 
