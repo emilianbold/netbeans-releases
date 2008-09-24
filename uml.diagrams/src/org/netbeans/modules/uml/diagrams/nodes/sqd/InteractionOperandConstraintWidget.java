@@ -55,6 +55,13 @@ import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 public class InteractionOperandConstraintWidget extends FeatureWidget implements PropertyChangeListener {
     private IInteractionConstraint constraint;
     private ExpressionWidget expression;
+
+    @Override
+    protected boolean canSelect()
+    {
+        return false;
+    }
+    
     public InteractionOperandConstraintWidget(Scene scene,IInteractionConstraint constraint)
     {
         super(scene);
