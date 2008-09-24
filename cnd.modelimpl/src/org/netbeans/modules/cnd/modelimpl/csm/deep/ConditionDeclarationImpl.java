@@ -78,7 +78,7 @@ public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondi
                 return declaration;
             }
         };
-        renderer.renderVariable(node, null, null);
+        renderer.renderVariable(node, null, null, false);
     }
 
     public CsmVariable getDeclaration() {
