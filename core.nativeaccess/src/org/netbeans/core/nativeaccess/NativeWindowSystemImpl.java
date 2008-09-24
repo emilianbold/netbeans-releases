@@ -56,6 +56,8 @@ import org.openide.util.Utilities;
  */
 public class NativeWindowSystemImpl extends NativeWindowSystem {
 
+    private static final Logger LOG = Logger.getLogger(NativeWindowSystemImpl.class.getName());
+
     public boolean isWindowAlphaSupported() {
         boolean res = false;
         try {
@@ -66,8 +68,12 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
             res = WindowUtils.isWindowAlphaSupported() && !isWin64;
         } catch( ThreadDeath td ) {
             throw td;
+        } catch (UnsatisfiedLinkError e) {
+            // E.g. "Unable to load library 'X11': libX11.so: cannot open shared object file: No such file or directory"
+            // on headless build machine (missing libx11-dev.deb)
+            LOG.log(Level.FINE, null, e);
         } catch( Throwable e ) {
-            Logger.getLogger(NativeWindowSystemImpl.class.getName()).log(Level.INFO, null, e);
+            LOG.log(Level.INFO, null, e);
         }
         return res;
     }
@@ -78,7 +84,7 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         } catch( ThreadDeath td ) {
             throw td;
         } catch( Throwable e ) {
-            Logger.getLogger(NativeWindowSystemImpl.class.getName()).log(Level.INFO, null, e);
+            LOG.log(Level.INFO, null, e);
         }
     }
 
@@ -88,7 +94,7 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         } catch( ThreadDeath td ) {
             throw td;
         } catch( Throwable e ) {
-            Logger.getLogger(NativeWindowSystemImpl.class.getName()).log(Level.INFO, null, e);
+            LOG.log(Level.INFO, null, e);
         }
     }
 
@@ -98,7 +104,7 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         } catch( ThreadDeath td ) {
             throw td;
         } catch( Throwable e ) {
-            Logger.getLogger(NativeWindowSystemImpl.class.getName()).log(Level.INFO, null, e);
+            LOG.log(Level.INFO, null, e);
         }
     }
 }
