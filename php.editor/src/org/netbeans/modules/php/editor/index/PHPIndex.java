@@ -415,8 +415,8 @@ public class PHPIndex {
     }
 
     /** returns all fields of a class or an interface. */
-    public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
-        Map<String, IndexedConstant> properties = new TreeMap<String, IndexedConstant>();
+    public Collection<IndexedConstant> getAllFields(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
+        Map<String, IndexedConstant> fields = new TreeMap<String, IndexedConstant>();
         
         // #147730 - prefer the current file
         File currentFile = getCurrentFile(context);
@@ -424,20 +424,20 @@ public class PHPIndex {
 
         for (String className : getClassAncestors(context, typeName)) {
             int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
-            for (IndexedConstant property : getProperties(context, className, name, kind, mask)) {
-                String propertyName = property.getName();
+            for (IndexedConstant field : getFields(context, className, name, kind, mask)) {
+                String fieldName = field.getName();
                 
-                if (!properties.containsKey(propertyName) || className.equals(typeName)){
-                    properties.put(propertyName, property);
+                if (!fields.containsKey(fieldName) || className.equals(typeName)){
+                    fields.put(fieldName, field);
                 }
                 
-                if (currentFile != null && property != null && currentFile.equals(property.getFile().getFile())) {
+                if (currentFile != null && field != null && currentFile.equals(field.getFile().getFile())) {
                     currentFileClasses.add(className);
                 }
             }
         }
 
-        Collection<IndexedConstant> result = properties.values();
+        Collection<IndexedConstant> result = fields.values();
         filterClassMembers(result, currentFileClasses, currentFile);
         return result;
     }
@@ -503,7 +503,7 @@ public class PHPIndex {
 
     /** returns local constnats of a class. */
     public Collection<IndexedConstant> getClassConstants(PHPParseResult context, String typeName, String name, NameKind kind) {
-        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
         Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CLASS_CONST, name, kind, ALL_SCOPE);
 
         for (String signature : signaturesMap.keySet()) {
@@ -515,11 +515,11 @@ public class PHPIndex {
             IndexedConstant prop = new IndexedConstant(propName, typeName,
                     this, signaturesMap.get(signature), offset, 0, null);
 
-            properties.add(prop);
+            constants.add(prop);
 
         }
 
-        return properties;
+        return constants;
     }
 
     /** returns methods of a class. */
@@ -558,8 +558,8 @@ public class PHPIndex {
     }
 
     /** returns fields of a class. */
-    public Collection<IndexedConstant> getProperties(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
-        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+    public Collection<IndexedConstant> getFields(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
+        Collection<IndexedConstant> fields = new ArrayList<IndexedConstant>();
         Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_FIELD, name, kind, ALL_SCOPE);
 
         for (String signature : signaturesMap.keySet()) {
@@ -582,11 +582,11 @@ public class PHPIndex {
                 IndexedConstant prop = new IndexedConstant(propName, typeName,
                         this, signaturesMap.get(signature), offset, flags, type,ElementKind.FIELD);
 
-                properties.add(prop);
+                fields.add(prop);
             }
         }
 
-        return properties;
+        return fields;
     }
 
     private Map<String, String> getTypeSpecificSignatures(String typeName, String fieldName, String name, NameKind kind, Set<SearchScope> scope) {
