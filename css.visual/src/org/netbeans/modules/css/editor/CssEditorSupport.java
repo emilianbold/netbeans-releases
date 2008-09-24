@@ -110,6 +110,7 @@ public class CssEditorSupport {
             //detach myself from the source so next UI changes are not propagated to the 
             //document until the parser finishes. Then new listener will be added
             if(selected != null) {
+                d("css style data listener - detachinf from rule content.");
                 selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
             }
             
