@@ -902,6 +902,9 @@ public class RemoteClient implements Cancellable {
                 io.getOut().print(message);
                 io.getOut().flush();
             }
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Command listener: " + message.trim());
+            }
         }
     }
 }
