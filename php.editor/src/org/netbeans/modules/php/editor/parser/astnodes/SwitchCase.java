@@ -73,7 +73,7 @@ public class SwitchCase extends Statement {
         this.isDefault = isDefault;
     }
 
-    public SwitchCase(int start, int end, Expression value, List actions, boolean isDefault) {
+    public SwitchCase(int start, int end, Expression value, List<Statement> actions, boolean isDefault) {
         this(start, end, value,
                 actions == null ? null : (Statement[]) actions.toArray(new Statement[actions.size()]),
                 isDefault);
