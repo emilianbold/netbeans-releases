@@ -486,6 +486,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test145835() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment2.php", "$cVarAdvancedTest->^", false);
     }
+    public void test148109() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue148109.php", "$v1480109->^", false);
+    }
     public void test147427() throws Exception {
         checkCompletion("testfiles/completion/lib/issue147427.php", "$currentUser = System147427::$userInfo->^", false);
     }
