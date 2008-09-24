@@ -154,11 +154,11 @@ public class StatFiles extends SecurityManager {
         StackTraceElement[] elems = th.getStackTrace();
         for (StackTraceElement stackTraceElement : elems) {
             if (stackTraceElement.getClassName().endsWith("ClassLoader") &&
-                    stackTraceElement.getMethodName().endsWith("loadClass")) {
+                    (stackTraceElement.getMethodName().endsWith("loadClass") ||
+                    stackTraceElement.getMethodName().endsWith("getResource"))) {
                 result = true;
                 break;
             }
-
         }
         return result;
     }
@@ -281,6 +281,7 @@ public class StatFiles extends SecurityManager {
         public String statResultStack(int type) {
             String result = "";
             for (File file : getFiles()) {
+                result += "FILE=" + file;
                 result += statResultStack(file, type);
             }
             return result;
