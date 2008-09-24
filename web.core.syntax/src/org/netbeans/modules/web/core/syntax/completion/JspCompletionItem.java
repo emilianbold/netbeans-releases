@@ -230,7 +230,7 @@ public class JspCompletionItem implements CompletionItem {
                 try {
                     //test whether we are trying to insert sg. what is already present in the text
                     String currentText = doc.getText(substitutionOffset, (doc.getLength() - substitutionOffset) < substituteText.length() ? (doc.getLength() - substitutionOffset) : substituteText.length());
-                    if (!substituteText.substring(0, substituteText.length() - 1).equals(currentText)) {
+                    if (!substituteText.equals(currentText)) {
                         //remove common part
                         doc.remove(substitutionOffset, len);
                         doc.insertString(substitutionOffset, substituteText, null);

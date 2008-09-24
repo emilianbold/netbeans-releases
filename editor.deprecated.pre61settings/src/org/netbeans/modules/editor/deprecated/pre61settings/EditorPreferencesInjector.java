@@ -54,13 +54,12 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Settings.Initializer;
 import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsChangeListener;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
@@ -93,18 +92,15 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
         
         Class kitClass = null;
         
-        if (mimePath.size() > 0) {
+        if (mimePath.size() == 0) {
+            kitClass = BaseKit.class;
+        } else if (mimePath.size() == 1) {
             ignoreInitializerChanges.set(true);
             try {
-                EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
-                if (kit != null) {
-                    kitClass = kit.getClass();
-                }
+                kitClass = KitsTracker.getInstance().findKitClass(mimePath.getPath());
             } finally {
                 ignoreInitializerChanges.remove();
             }
-        } else {
-            kitClass = BaseKit.class;
         }
 
         if (kitClass == null) {
