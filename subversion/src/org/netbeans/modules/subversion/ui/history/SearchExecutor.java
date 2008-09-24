@@ -76,8 +76,6 @@ class SearchExecutor implements Runnable {
     private Map<SVNUrl, Set<File>>      workFiles;
     private Map<String,File>            pathToRoot;
     private final SearchCriteriaPanel   criteria;
-    private boolean                     filterUsername;
-    private boolean                     filterMessage;
     
     private int                         completedSearches;
     private boolean                     searchCanceled;
@@ -86,8 +84,6 @@ class SearchExecutor implements Runnable {
     public SearchExecutor(SearchHistoryPanel master) {
         this.master = master;
         criteria = master.getCriteria();
-        filterUsername = criteria.getUsername() != null;
-        filterMessage = criteria.getCommitMessage() != null;
         
         pathToRoot = new HashMap<String, File>(); 
         try {
@@ -265,8 +261,12 @@ class SearchExecutor implements Runnable {
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             ISVNLogMessage logMessage = logMessages[i];
-            if (filterUsername && !criteria.getUsername().equals(logMessage.getAuthor())) continue;
-            if (filterMessage && logMessage.getMessage().indexOf(criteria.getCommitMessage()) == -1) continue;
+            if(logMessage == null) continue;
+            String username = criteria.getUsername();
+            String msg = criteria.getCommitMessage();
+            String logMsg = logMessage.getMessage();
+            if (username != null && !username.equals(logMessage.getAuthor())) continue;
+            if (msg != null && logMsg != null && logMsg.indexOf(msg) == -1) continue;
             RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl);
             for (RepositoryRevision.Event event : rev.getEvents()) {
                 if (event.getChangedPath().getAction() == 'A' && event.getChangedPath().getCopySrcPath() != null) {

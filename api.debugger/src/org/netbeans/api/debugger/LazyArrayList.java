@@ -43,10 +43,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -187,6 +190,35 @@ class LazyArrayList<T> extends ArrayList<T> {
         } else {
             return super.remove(index);
         }
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Itr();
+    }
+
+    private class Itr implements Iterator {
+
+        private int cursor = 0;
+        private int expectedModCount = modCount;
+
+        public boolean hasNext() {
+            return cursor < size();
+        }
+
+        public Object next() {
+            if (cursor >= size())
+                throw new NoSuchElementException();
+            if (modCount != expectedModCount) {
+                throw new ConcurrentModificationException();
+            }
+            return get(cursor++);
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
     }
 
     private void shiftLazyEntries(int from, final int by) {

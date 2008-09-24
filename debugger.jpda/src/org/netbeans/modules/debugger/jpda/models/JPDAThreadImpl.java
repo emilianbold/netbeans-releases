@@ -959,7 +959,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } catch (ObjectCollectedException ocex) {
             return new ObjectVariable [0];
         }
-        List l;
+        List<ObjectReference> l;
         synchronized (this) {
             if (!isSuspended()) return new ObjectVariable [0];
             if ("DestroyJavaVM".equals(threadReference.name())) {
@@ -968,6 +968,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
             try {
                 l = threadReference.ownedMonitors ();
+                if (l == null) l = Collections.emptyList();
             } catch (IllegalThreadStateException ex) {
                 // Thrown when thread has exited
                 return new ObjectVariable [0];
@@ -996,7 +997,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         int i, k = l.size ();
         ObjectVariable[] vs = new ObjectVariable [k];
         for (i = 0; i < k; i++) {
-            ObjectReference var = (ObjectReference) l.get (i);
+            ObjectReference var = l.get (i);
             vs [i] = new ThisVariable (debugger, var, ""+var.uniqueID());
         }
         return vs;
@@ -1046,7 +1047,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     if (canGetMonitorFrameInfo) {
                         java.lang.reflect.Method ownedMonitorsAndFramesMethod = threadReference.getClass().getMethod("ownedMonitorsAndFrames"); // NOI18N
                         List monitorInfos = (List) ownedMonitorsAndFramesMethod.invoke(threadReference, new java.lang.Object[]{});
-                        if (monitorInfos.size() > 0) {
+                        if (monitorInfos != null && monitorInfos.size() > 0) {
                             List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
                             for (Object monitorInfo : monitorInfos) {
                                 mis.add(createMonitorInfo(monitorInfo));
@@ -1187,8 +1188,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         Map<ObjectReference, ThreadReference> monitorMap = new HashMap<ObjectReference, ThreadReference>();
         for (ThreadReference t : tr.virtualMachine().allThreads()) {
             List<ObjectReference> monitors = t.ownedMonitors();
-            for (ObjectReference m : monitors) {
-                monitorMap.put(m, t);
+            if (monitors != null) {
+                for (ObjectReference m : monitors) {
+                    monitorMap.put(m, t);
+                }
             }
         }
         while (tr != null && waitingMonitor != null) {

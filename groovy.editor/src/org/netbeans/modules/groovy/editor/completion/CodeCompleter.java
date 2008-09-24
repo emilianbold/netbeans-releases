@@ -76,6 +76,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -984,6 +985,17 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (request.behindDot) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
 
+            PackageCompletionRequest packageRequest = getPackageRequest(request);
+
+            if (packageRequest.basePackage.length() > 0) {
+                ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
+
+                if (isValidPackage(pathInfo, packageRequest.basePackage)) {
+                    LOG.log(Level.FINEST, "The string before the dot seems to be a valid package"); // NOI18N
+                    return false;
+                }
+            }
+        
             declaringClass = getBeforeDotDeclaringClass(request);
 
             if (declaringClass == null) {
@@ -1426,7 +1438,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         // travel back on the token string till the token is neither a
         // DOT nor an IDENTIFIER
 
-        while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+        boolean remainingTokens = false;
+        while (ts.isValid() && (remainingTokens = ts.movePrevious()) && ts.offset() >= 0) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
             // LOG.log(Level.FINEST, "LexerToken(back): {0}", t.text().toString());
             if (!(t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER)) {
@@ -1441,6 +1454,19 @@ public class CodeCompleter implements CodeCompletionHandler {
         StringBuffer buf = new StringBuffer();
         Token<? extends GroovyTokenId> lastToken = null;
 
+        // if we reached the beginning in the previous iteration we have to get
+        // the first token too (without call to moveNext())
+        if (!remainingTokens && ts.isValid() && ts.offset() < position) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+
+            // LOG.log(Level.FINEST, "LexerToken(fwd): {0}", t.text().toString());
+            if (t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER) {
+                buf.append(t.text().toString());
+                lastToken = t;
+            }
+        }
+
+        // iterate the rest of the sequence
         while (ts.isValid() && ts.moveNext() && ts.offset() < position) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
 
@@ -1668,7 +1694,34 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "Completing only interfaces after implements keyword.");
             onlyInterfaces = true;
         }
-        
+
+        // This ModuleNode is used to retrieve the types defined here
+        // and the package name.
+
+        ModuleNode mn = null;
+        AstPath path = request.path;
+        if (path != null) {
+            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+                ASTNode current = it.next();
+                if (current instanceof ModuleNode) {
+                    LOG.log(Level.FINEST, "Found ModuleNode");
+                    mn = (ModuleNode) current;
+                }
+            }
+        }
+
+        // Get current package
+        String currentPackage = null;
+        if (mn != null) {
+            currentPackage = mn.getPackageName();
+        } else {
+            ClassNode node = getSurroundingClassNode(request);
+            if (node != null) {
+                currentPackage = node.getPackageName();
+            }
+        }
+
+
         // get the JavaSource for our file.
 
         final JavaSource javaSource = getJavaSourceFromRequest(request);
@@ -1677,8 +1730,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         if (packageRequest.basePackage.length() > 0 || request.behindImport) {
             if (!(request.behindImport && packageRequest.basePackage.length() == 0)) {
-                List<TypeHolder> stringTypelist;
-                stringTypelist = getElementListForPackageAsTypeHolder(javaSource, packageRequest.basePackage);
+
+                List<TypeHolder> stringTypelist =
+                        getElementListForPackageAsTypeHolder(javaSource, packageRequest.basePackage, currentPackage);
 
                 if (stringTypelist == null) {
                     LOG.log(Level.FINEST, "Typelist is null for package : {0}", packageRequest.basePackage);
@@ -1702,27 +1756,11 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
-        // This ModuleNode is used to retrieve the types defined here
-        // and the package name.
-
-        ModuleNode mn = null;
-        AstPath path = request.path;
-        if (path != null) {
-            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-                ASTNode current = it.next();
-                if (current instanceof ModuleNode) {
-                    LOG.log(Level.FINEST, "Found ModuleNode");
-                    mn = (ModuleNode) current;
-                }
-            }
-        }
-
         // Retrieve the package we are living in from AST and then
         // all classes from that package using the Groovy Index.
 
         if (mn != null) {
-            String packageName = mn.getPackageName();
-            LOG.log(Level.FINEST, "We are living in package : {0} ", packageName);
+            LOG.log(Level.FINEST, "We are living in package : {0} ", currentPackage);
 
             GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
@@ -1818,7 +1856,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         for (String singlePackage : defaultImports) {
             List<TypeHolder> typeList;
 
-            typeList = getElementListForPackageAsTypeHolder(javaSource, singlePackage);
+            typeList = getElementListForPackageAsTypeHolder(javaSource, singlePackage, currentPackage);
 
             if (typeList == null) {
                 LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
@@ -1917,7 +1955,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     
     
     
-    List<TypeHolder> getElementListForPackageAsTypeHolder(final JavaSource javaSource, final String pkg) {
+    List<TypeHolder> getElementListForPackageAsTypeHolder(final JavaSource javaSource, final String pkg, final String currentPackage) {
         LOG.log(Level.FINEST, "getElementListForPackageAsString(), Package :  {0}", pkg);
         
         final List<TypeHolder> result = new ArrayList<TypeHolder>();
@@ -1940,9 +1978,15 @@ public class CodeCompleter implements CodeCompletionHandler {
                                 LOG.log(Level.FINEST, "packageElement is null");
                             } else {
                                 typelist = packageElement.getEnclosedElements();
-                                
+                                boolean samePackage = pkg.equals(currentPackage);
+
                                 for (Element element : typelist) {
-                                    result.add(new TypeHolder(element.toString(), element.getKind()));
+                                    Set<Modifier> modifiers = element.getModifiers();
+                                    if (modifiers.contains(Modifier.PUBLIC)
+                                            || samePackage && (modifiers.contains(Modifier.PROTECTED)
+                                                || (!modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.PRIVATE)))) {
+                                        result.add(new TypeHolder(element.toString(), element.getKind()));
+                                    }
                                 }
                             }
 
@@ -2995,7 +3039,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     public String resolveTemplateVariable(String variable, CompilationInfo info, int caretOffset, String name, Map parameters) {
-        return "";
+        return null;
     }
 
     public Set<String> getApplicableTemplates(CompilationInfo info, int selectionBegin, int selectionEnd) {
@@ -3059,6 +3103,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     }
 
+    // FIXME make it ordinary class and/or split it
     static class CompletionRequest {
 
         CompilationInfo info;

@@ -87,7 +87,7 @@ public class FileElementsCollector {
         this.onlyInProject = onlyInProject;
     }
 
-    public void incrementOffset(int newOffset){
+    public synchronized void incrementOffset(int newOffset){
         if (mapsGathered) {
             startOffset = destOffset;
         }
@@ -126,12 +126,16 @@ public class FileElementsCollector {
     private Collection<CsmDeclaration> visibleUsedDeclarations = null;
     public Collection<CsmDeclaration> getUsedDeclarations() {
         initMaps();
-        synchronized (usingDeclarations) {
-            if (visibleUsedDeclarations == null) {
-                visibleUsedDeclarations = CsmUsingResolver.extractDeclarations(usingDeclarations);
-            }
+        return _getUsedDeclarations();
+    }
+
+    private synchronized Collection<CsmDeclaration> _getUsedDeclarations() {
+        Collection<CsmDeclaration> res = visibleUsedDeclarations;
+        if (res == null) {
+            res = CsmUsingResolver.extractDeclarations(usingDeclarations);
+            visibleUsedDeclarations = res;
         }
-        return Collections.unmodifiableCollection(visibleUsedDeclarations);
+        return Collections.unmodifiableCollection(res);
     }
 
     private Collection<CsmNamespace> visibleNamespaces = null;
@@ -141,12 +145,14 @@ public class FileElementsCollector {
     }
 
     public synchronized Collection<CsmNamespace> _getVisibleNamespaces() {
-        if (visibleNamespaces == null) {
-            visibleNamespaces = CsmUsingResolver.extractNamespaces(usingNamespaces);
+        Collection<CsmNamespace> res = visibleNamespaces;
+        if (res == null) {
+            res = CsmUsingResolver.extractNamespaces(usingNamespaces);
             // add scope's and unnamed visible namespaces
-            visibleNamespaces.addAll(directVisibleNamespaces);
+            res.addAll(directVisibleNamespaces);
+            visibleNamespaces = res;
         }
-        return Collections.unmodifiableCollection(visibleNamespaces);
+        return Collections.unmodifiableCollection(res);
     }
 
 //    public Collection<CsmNamespaceDefinition> getDirectVisibleNamespaceDefinitions() {

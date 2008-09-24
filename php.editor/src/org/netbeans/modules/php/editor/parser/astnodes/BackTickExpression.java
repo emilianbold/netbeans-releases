@@ -62,7 +62,7 @@ public class BackTickExpression extends Expression {
         }
     }
 
-    public BackTickExpression(int start, int end, List expressions) {
+    public BackTickExpression(int start, int end, List<Expression> expressions) {
         this(start, end, expressions == null ? null : (Expression[]) expressions.toArray(new Expression[expressions.size()]));
     }
 

@@ -65,6 +65,8 @@ import org.openide.util.lookup.Lookups;
  */
 public final class CustomizerSelector {
 
+    public static final String FORMATTING_CUSTOMIZERS_FOLDER = "OptionsDialog/Editor/Formatting/"; //NOI18N
+
     public static final String PROP_MIMETYPE = "CustomizerSelector.PROP_MIMETYPE"; //NOI18N
     public static final String PROP_CUSTOMIZER = "CustomizerSelector.PROP_CUSTOMIZER"; //NOI18N
 
@@ -128,7 +130,7 @@ public final class CustomizerSelector {
 
             // filter out mime types that don't supply customizers
             for(String mimeType : EditorSettings.getDefault().getAllMimeTypes()) {
-                Lookup l = Lookups.forPath(FOLDER + mimeType);
+                Lookup l = Lookups.forPath(FORMATTING_CUSTOMIZERS_FOLDER + mimeType);
                 Collection<? extends PreferencesCustomizer.Factory> factories = l.lookupAll(PreferencesCustomizer.Factory.class);
                 if (!factories.isEmpty()) {
                     mimeTypes.add(mimeType);
@@ -164,8 +166,6 @@ public final class CustomizerSelector {
     // private implementation
     // ------------------------------------------------------------------------
 
-    private static final String FOLDER = "OptionsDialog/Editor/Formatting/"; //NOI18N
-    
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final PreferencesFactory pf;
     private final boolean acceptOldControllers;
@@ -191,7 +191,7 @@ public final class CustomizerSelector {
         
         Preferences prefs = pf.getPreferences(mimeType);
         if (mimeType.length() > 0) {
-            Lookup l = Lookups.forPath(FOLDER + mimeType);
+            Lookup l = Lookups.forPath(FORMATTING_CUSTOMIZERS_FOLDER + mimeType);
             
             // collect factories
             Collection<? extends PreferencesCustomizer.Factory> factories = l.lookupAll(PreferencesCustomizer.Factory.class);

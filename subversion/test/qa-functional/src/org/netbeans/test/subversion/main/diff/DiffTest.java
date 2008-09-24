@@ -10,12 +10,12 @@ package org.netbeans.test.subversion.main.diff;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -28,6 +28,7 @@ import org.netbeans.test.subversion.operators.WorkDirStepOperator;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 import org.netbeans.test.subversion.operators.DiffOperator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 
 /**
  *
@@ -42,6 +43,7 @@ public class DiffTest extends JellyTestCase {
     public File projectPath;
     public PrintStream stream;
     String os_name;
+    static Logger log;
 
     /** Creates a new instance of DiffTest */
     public DiffTest(String name) {
@@ -50,9 +52,14 @@ public class DiffTest extends JellyTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
         System.out.println("### " + getName() + " ###");
-
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
 
     protected boolean isUnix() {
@@ -71,9 +78,11 @@ public class DiffTest extends JellyTestCase {
 
     public void testDiffFile() throws Exception {
         try {
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
+
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
-            OutputOperator.invoke();
             TestKit.showStatusLabels();
             CheckoutWizardOperator.invoke();
             RepositoryStepOperator rso = new RepositoryStepOperator();
@@ -93,6 +102,9 @@ public class DiffTest extends JellyTestCase {
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
+
+            TestKit.waitText(mh);
+
             //open project
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
@@ -108,7 +120,14 @@ public class DiffTest extends JellyTestCase {
             eo.insert(" insert", 5, 1);
             eo.insert("\tSystem.out.println(\"\");\n", 19, 1);
             eo.save();
+
+            mh = new MessageHandler("Refreshing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             node.performPopupAction("Subversion|Show Changes");
+            TestKit.waitText(mh);
+
             Thread.sleep(1000);
             vo = VersioningOperator.invoke();
             //Save action should change the file annotations
@@ -119,7 +138,13 @@ public class DiffTest extends JellyTestCase {
             assertEquals("Wrong annotation of node - file status should be new!!!", TestKit.MODIFIED_STATUS, status);
             assertEquals("Wrong number of records in Versioning view!!!", 1, vo.tabFiles().getRowCount());
 
+            mh = new MessageHandler("Diffing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
             node.performPopupAction("Subversion|Diff");
+
+//            TestKit.waitText(mh);
+
             System.out.println("DIFF action doesn't print information into OUTPUT!!!");
             Thread.sleep(2000);
 
@@ -151,6 +176,8 @@ public class DiffTest extends JellyTestCase {
             }
             stream.flush();
             stream.close();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }

@@ -75,6 +75,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementEvent;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementListener;
@@ -97,7 +98,7 @@ import org.openide.util.NbBundle;
  *
  * @author Karol Harezlak
  */
-public class SVGFormEditorElement extends PropertyEditorResourceElement implements Runnable, PropertyEditorResourceElementListener {
+public class SVGFormEditorElement extends PropertyEditorResourceElement implements Runnable, PropertyEditorResourceElementListener, CleanUp {
 
     private static final String EXTENSION = "svg"; // NOI18N
     private long componentID;
@@ -131,6 +132,42 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         jTable1.addMouseListener(new PopupListener());
         pathMap = new HashMap<String, String>();
         jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
+
+    public void clean(DesignComponent component) {
+        project = null;
+        imageView = null;
+        comboBoxModel = null;
+        if (paths != null) {
+            paths.clear();
+            paths = null;
+        }
+        wrapper = null;
+        messageAwareness = null;
+        documentReferences = null;
+        if (pathMap != null) {
+            pathMap.clear();
+            pathMap = null;
+        }
+        menu = null;
+        svgFormReferences = null;
+        chooserButton = null;
+        heightLabel = null;
+        heightTextField = null;
+        jButton1 = null;
+        jPanelImageFile = null;
+        jPanelSVGComponents = null;
+        jScrollPane1 = null;
+        jTabbedPane1 = null;
+        jTable1 = null;
+        pathLabel = null;
+        pathTextComboBox = null;
+        previewLabel = null;
+        previewPanel = null;
+        progressBar = null;
+        widthLabel = null;
+        widthTextField = null;
+        this.removeAll();
     }
 
     @Override
@@ -858,10 +895,12 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private javax.swing.JLabel widthLabel;
     private javax.swing.JTextField widthTextField;
     // End of variables declaration//GEN-END:variables
+
     private void updateSVGModelTable(InputStream inputStrem) {
         jTable1.setModel(new Model(inputStrem));
     }
     // End of variables declaration
+
     private class Model implements TableModel {
 
         private String COLUMN_NAME_I = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("SVG_Component_Type_Column"); //NOI18N

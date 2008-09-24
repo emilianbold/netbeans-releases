@@ -194,7 +194,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 			if( child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
                             addFriend(new FriendClassImpl(child, (FileImpl) getContainingFile(),ClassImpl.this));
                         } else {
-                            if( renderVariable(token, null, null) ) {
+                            if( renderVariable(token, null, null, false) ) {
                                 break;
                             }
                             typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this, null);

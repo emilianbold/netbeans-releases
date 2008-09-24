@@ -109,17 +109,25 @@ public final class DeployOnSaveUtils {
      * @since 1.30
      */
     public static void performCleanup(Project project, PropertyEvaluator evaluator,
-            UpdateHelper updateHelper, String classesPropertyName) {
+            UpdateHelper updateHelper, String classesPropertyName, boolean forceCleanup) {
 
         // Delete COS mark
-        FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(evaluator.getProperty("build.classes.dir")); // NOI18N
-        if (buildClasses != null) {
-            FileObject mark = buildClasses.getFileObject(COS_MARK);
-            if (mark != null) {
-                final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-                assert ap != null;
-                ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
+        FileObject mark = null;
+        String propertyValue = (classesPropertyName != null)
+                ? evaluator.getProperty(classesPropertyName)
+                : null;
+
+        if (propertyValue != null) {
+            FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(propertyValue);
+            if (buildClasses != null) {
+                mark = buildClasses.getFileObject(COS_MARK);
             }
+        }
+
+        if (mark != null || forceCleanup) {
+            final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+            assert ap != null;
+            ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
         }
     }
 

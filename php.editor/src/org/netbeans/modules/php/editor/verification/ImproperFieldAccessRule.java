@@ -189,7 +189,7 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
     private Collection<IndexedConstant> getFields(PHPIndex index, String clsName, Variable field, int modifiers) {
         Collection<IndexedConstant> retval = new ArrayList<IndexedConstant>();
         final String varName = extractVariableName(field);
-        Collection<IndexedConstant> flds = index.getProperties(null, clsName,varName, NameKind.PREFIX, modifiers);
+        Collection<IndexedConstant> flds = index.getFields(null, clsName,varName, NameKind.PREFIX, modifiers);
         for (IndexedConstant indexedConstant : flds) {
             String fldName = indexedConstant.getName();
             fldName = fldName.charAt(0) == '$' ? fldName.substring(1) : fldName;//NOI18N

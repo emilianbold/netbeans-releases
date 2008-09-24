@@ -69,7 +69,7 @@ public class FunctionDeclaration extends Statement {
         this.body = body;
     }
 
-    public FunctionDeclaration(int start, int end, Identifier functionName, List formalParameters, Block body, final boolean isReference) {
+    public FunctionDeclaration(int start, int end, Identifier functionName, List<FormalParameter> formalParameters, Block body, final boolean isReference) {
         this(start, end, functionName, (FormalParameter[]) formalParameters.toArray(new FormalParameter[formalParameters.size()]), body, isReference);
     }
 

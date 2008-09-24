@@ -243,6 +243,7 @@ public class FontStyleEditor extends StyleEditor {
         boolean thereIsDecoration = textDecoration != null;
         if(thereIsDecoration){
             textDecorationData.setDecoration(textDecoration);
+            currentFontDecoration = textDecorationData.toString();
         }
         boolean nodecoration = thereIsDecoration && textDecorationData.noDecorationEnabled();
 

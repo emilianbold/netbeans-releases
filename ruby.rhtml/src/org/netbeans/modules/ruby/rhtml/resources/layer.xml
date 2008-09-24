@@ -206,6 +206,25 @@
     </folder>
 
     <folder name="OptionsDialog">
+        <folder name="Editor">
+            <folder name="Formatting">
+                <folder name="application">
+                    <folder name="x-httpd-eruby">
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.editor.spi.CustomizerFactories.createDefaultTabsAndIndentsCustomizerFactory"/>
+                            <!-- Use the OptionsDialog/PreviewExamples/application/x-httpd-eruby file.
+                                 If something else is needed use the attribute below. Make sure that
+                                 the preview text file has correct mime type.
+                            <attr name="previewTextFile" stringvalue="file/with/preview/text"/>
+                            -->
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+
         <folder name="PreviewExamples">
             <folder name="application">
                 <file name="x-httpd-eruby" url="RhtmlExample"/>

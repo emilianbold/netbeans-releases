@@ -382,16 +382,21 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    String unbuffer = Unbuffer.getPath(hkey, Unbuffer.is64BitExecutable(pae.getExecutable()));
+                    boolean is64bits = Unbuffer.is64BitExecutable(pae.getExecutable());
+                    String unbuffer = Unbuffer.getPath(hkey, is64bits);
                     if (unbuffer != null) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX) {
                             gdb.gdb_set("environment", "DYLD_INSERT_LIBRARIES=" + unbuffer); // NOI18N
                             gdb.gdb_set("environment", "DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
                         } else {
-                            gdb.gdb_set("environment", "LD_PRELOAD=" + unbuffer); // NOI18N
+                            String preload = is64bits ? "LD_PRELOAD_64=" : "LD_PRELOAD_32="; // NOI18N
+                            gdb.gdb_set("environment", preload + unbuffer); // NOI18N
                         }
                     }
-                    inputProxy = InputProxy.create(hkey, iotab);
+                    // disabled on windows because of the issue 148204
+                    if (platform != PlatformTypes.PLATFORM_WINDOWS) {
+                        inputProxy = InputProxy.create(hkey, iotab);
+                    }
                 }
 
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
@@ -409,7 +414,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
                 gdb.data_list_register_names("");
                 try {
-                    String inRedir = inputProxy == null ? "" : " <" + inputProxy.getFilename(); // NOI18N
+                    String inRedir = "";
+                    if (inputProxy != null) {
+                        String inFile = inputProxy.getFilename();
+                        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+                            inFile = win2UnixPath(inFile);
+                        }
+                        inRedir = " < " + inFile; // NOI18N
+                    }
                     gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
@@ -449,6 +461,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setExited();
             finish(false);
         }
+    }
+
+    private String win2UnixPath(String path) {
+        String res = path;
+        if (isCygwin()) {
+            res = "/cygdrive/" + path.charAt(0) + path.substring(2); // NOI18N
+        } else if (isMinGW()) {
+            res = "/" + path.charAt(0) + "/" + path.substring(2); // NOI18N
+        }
+        return res.replace('\\', '/');
     }
 
     public String getHostKey() {

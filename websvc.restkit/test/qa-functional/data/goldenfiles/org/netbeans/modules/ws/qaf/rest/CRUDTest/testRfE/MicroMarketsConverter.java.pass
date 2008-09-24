@@ -41,6 +41,7 @@ public class MicroMarketsConverter {
         this.entities = entities;
         this.uri = uri;
         this.expandLevel = expandLevel;
+        getMicroMarket();
     }
 
     /**
