@@ -21,7 +21,6 @@ CLASS      FileNameMap                                null
 CLASS      FilenameFilter                             null
 CLASS      Flushable                                  null
 CLASS      Formattable                                null
-CLASS      InetAddressImpl                            null
 CLASS      Iterable                                   null
 CLASS      Iterator                                   null
 CLASS      List                                       null
@@ -40,7 +39,6 @@ CLASS      Serializable                               null
 CLASS      Set                                        null
 CLASS      SocketImplFactory                          null
 CLASS      SocketOptions                              null
-CLASS      SocksConsts                                null
 CLASS      SortedMap                                  null
 CLASS      SortedSet                                  null
 CLASS      URLStreamHandlerFactory                    null

@@ -112,7 +112,7 @@ public class TypesCompletionTest extends GroovyTestBase {
     // testing the various default imports
 
     public void testDefaultImport1() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "FileSys^", false);
+        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "FileRea^", false);
     }
 
     public void testDefaultImport2() throws Exception {

@@ -9,5 +9,4 @@ CLASS      AbstractMethodError                        null
 CLASS      AbstractQueue                              null
 CLASS      AbstractSequentialList                     null
 CLASS      AbstractSet                                null
-CLASS      AbstractStringBuilder                      null
 KEYWORD    abstract                                   null
