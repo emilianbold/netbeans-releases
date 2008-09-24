@@ -1,0 +1,16 @@
+Code completion result for source line:
+groovy.xml.|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      DOMBuilder                                 null
+CLASS      Entity                                     null
+CLASS      FactorySupport                             null
+CLASS      MarkupBuilder                              null
+CLASS      Namespace                                  null
+CLASS      NamespaceBuilder                           null
+CLASS      NamespaceBuilderSupport                    null
+CLASS      QName                                      null
+CLASS      SAXBuilder                                 null
+CLASS      StreamingDOMBuilder                        null
+CLASS      StreamingMarkupBuilder                     null
+CLASS      StreamingSAXBuilder                        null

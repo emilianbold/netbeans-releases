@@ -985,6 +985,17 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (request.behindDot) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
 
+            PackageCompletionRequest packageRequest = getPackageRequest(request);
+
+            if (packageRequest.basePackage.length() > 0) {
+                ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
+
+                if (isValidPackage(pathInfo, packageRequest.basePackage)) {
+                    LOG.log(Level.FINEST, "The string before the dot seems to be a valid package"); // NOI18N
+                    return false;
+                }
+            }
+        
             declaringClass = getBeforeDotDeclaringClass(request);
 
             if (declaringClass == null) {
@@ -3092,6 +3103,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     }
 
+    // FIXME make it ordinary class and/or split it
     static class CompletionRequest {
 
         CompilationInfo info;
