@@ -331,7 +331,7 @@ public class PHPIndex {
 
     /** returns constnats of a class. */
     public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String typeName, String name, NameKind kind) {
-        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        Map<String, IndexedConstant> constants = new TreeMap<String, IndexedConstant>();
        
         // #147730 - prefer the current file
         File currentFile = getCurrentFile(context);
@@ -340,9 +340,13 @@ public class PHPIndex {
         for (String className : getClassAncestors(context, typeName)) {
             //int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
             for (IndexedConstant const0 : getClassConstants(context, className, name, kind)) {
-                constants.add(const0);
-                if (currentFile != null && currentFile.equals(const0.getFile().getFile())) {
-                    currentFileClasses.add(className);
+                String constantName = const0.getName();
+                if (!constants.containsKey(constantName) || className.equals(typeName)){
+                    constants.put(constantName, const0);
+                    
+                    if (currentFile != null && currentFile.equals(const0.getFile().getFile())) {
+                        currentFileClasses.add(className);
+                    }
                 }
             }
         }
@@ -351,12 +355,19 @@ public class PHPIndex {
 
         if (interfaceTree != null){
             for (IndexedInterface iface : interfaceTree){
-                constants.addAll(getClassConstants(context, iface.getName(), name, kind));
+                for (IndexedConstant constant : getClassConstants(context, iface.getName(), name, kind)){
+                    String constantName = constant.getName();
+                    
+                    if (!constants.containsKey(constantName) || iface.getName().equals(typeName)){
+                        constants.put( constantName,constant);
+                    }
+                }
             }
         }
 
-        filterClassMembers(constants, currentFileClasses, currentFile);
-        return constants;
+        Collection<IndexedConstant> result = constants.values();
+        filterClassMembers(result, currentFileClasses, currentFile);
+        return result;
     }
 
     /** returns all methods of a class or an interface. */
@@ -405,7 +416,7 @@ public class PHPIndex {
 
     /** returns all fields of a class or an interface. */
     public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
-        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+        Map<String, IndexedConstant> properties = new TreeMap<String, IndexedConstant>();
         
         // #147730 - prefer the current file
         File currentFile = getCurrentFile(context);
@@ -414,15 +425,21 @@ public class PHPIndex {
         for (String className : getClassAncestors(context, typeName)) {
             int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
             for (IndexedConstant property : getProperties(context, className, name, kind, mask)) {
-                properties.add(property);
+                String propertyName = property.getName();
+                
+                if (!properties.containsKey(propertyName) || className.equals(typeName)){
+                    properties.put(propertyName, property);
+                }
+                
                 if (currentFile != null && property != null && currentFile.equals(property.getFile().getFile())) {
                     currentFileClasses.add(className);
                 }
             }
         }
 
-        filterClassMembers(properties, currentFileClasses, currentFile);
-        return properties;
+        Collection<IndexedConstant> result = properties.values();
+        filterClassMembers(result, currentFileClasses, currentFile);
+        return result;
     }
 
     /** Current file for the context or <code>null</code> */
