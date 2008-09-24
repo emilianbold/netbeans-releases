@@ -156,6 +156,19 @@
         } //else {  NetBeans.Logger.log("No need to do anything because it is already off.");}
     }
 
+    this.destroyAllMonitors = function(browser) {
+        if (!browser) {
+            browser = getBrowser();
+        }
+
+        for (var i = 0; i < contexts.length; i++) {
+            var nextContext = contexts[i];
+            unmonitorContext(nextContext, browser);
+        }
+
+        contexts = [];
+    }
+
     var NetObserver =
     {
         QueryInterface: function(iid)

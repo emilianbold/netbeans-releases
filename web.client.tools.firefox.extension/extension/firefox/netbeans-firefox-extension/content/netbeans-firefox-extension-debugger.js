@@ -618,7 +618,9 @@
         } else {
             disable(false);
         }
-        
+
+        NetBeans.NetMonitor.destroyAllMonitors(browser);
+
         if ( socket ) {
             socket.close();
             socket = null;
