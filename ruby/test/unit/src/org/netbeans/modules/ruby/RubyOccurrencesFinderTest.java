@@ -134,4 +134,21 @@ public class RubyOccurrencesFinderTest extends RubyTestBase {
     public void testEmpty1() throws Exception {
         checkOccurrences("testfiles/empty.rb", "^", true);
     }
+
+    public void testGlobalVariables1() throws Exception {
+        checkOccurrences("testfiles/global_vars.rb", "puts $^!", true);
+    }
+
+    public void testGlobalVariables2() throws Exception {
+        checkOccurrences("testfiles/global_vars.rb", "puts $^3", true);
+    }
+
+    public void testGlobalVariables3() throws Exception {
+        checkOccurrences("testfiles/global_vars.rb", "puts \"Second: #{^$+}\"", true);
+    }
+
+    public void testGlobalVariables4() throws Exception {
+        checkOccurrences("testfiles/global_vars.rb", "puts \"Second: #{$'^}\"", true);
+    }
+
 }

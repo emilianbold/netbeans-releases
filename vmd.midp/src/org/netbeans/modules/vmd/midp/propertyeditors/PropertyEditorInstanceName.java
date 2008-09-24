@@ -73,7 +73,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     private static final String INSTANCE_NAME_TEXT = NbBundle.getMessage(PropertyEditorInstanceName.class, "LBL_INSTANCE_NAME"); // NOI18N
 
     private TypeID typeID;
-    private final CustomEditor customEditor;
+    private CustomEditor customEditor;
     private WeakReference<DesignComponent> component;
 
     private PropertyEditorInstanceName(TypeID typeID) {
@@ -93,6 +93,18 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         }
         return customEditor;
     }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        typeID = null;
+    }
+
+
 
     @Override
     public String getAsText() {
@@ -173,6 +185,11 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
 
         public CustomEditor() {
             initComponents();
+        }
+
+        void cleanUp() {
+            textField = null;
+            this.removeAll();
         }
 
         private void initComponents() {

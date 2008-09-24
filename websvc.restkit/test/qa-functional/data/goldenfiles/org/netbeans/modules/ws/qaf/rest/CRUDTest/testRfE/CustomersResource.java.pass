@@ -20,8 +20,8 @@ import javax.ws.rs.core.UriInfo;
 import com.sun.jersey.api.core.ResourceContext;
 import javax.persistence.EntityManager;
 import o.n.m.ws.qaf.rest.crud.Customer;
-import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.DiscountCode;
+import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.converter.CustomersConverter;
 import o.n.m.ws.qaf.rest.crud.converter.CustomerConverter;
 
@@ -57,10 +57,13 @@ public class CustomersResource {
     int expandLevel, @QueryParam("query")
     @DefaultValue("SELECT e FROM Customer e")
     String query) {
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
+            persistenceSvc.beginTx();
             return new CustomersConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
-            PersistenceService.getInstance().close();
+            persistenceSvc.commitTx();
+            persistenceSvc.close();
         }
     }
 

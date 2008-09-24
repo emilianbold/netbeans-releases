@@ -356,37 +356,33 @@ public class ParserManagerImpl extends ParserManager {
     }
     
     private TokenInput createTokenInput () {
-        final TokenInput[] ret = new TokenInput[1];
-        document.render(new Runnable() {
-            public void run() {
+        final TokenInput[] result = new TokenInput [1];
+        document.render (new Runnable () {
+            public void run () {
                 if (tokenHierarchy == null) {
-                    ret[0] = TokenInputUtils.create(Collections.<ASTToken>emptyList());
+                    result [0] = TokenInputUtils.create (Collections.<ASTToken>emptyList ());
                     return;
                 }
-                TokenSequence ts = tokenHierarchy.tokenSequence();
-                if (ts == null) {
-                    ret [0] = TokenInputUtils.create(Collections.<ASTToken>emptyList());
-                    return;
-                }
-                List<ASTToken> tokens = getTokens(ts);
-                if (cancel[0]) {
+                TokenSequence ts = tokenHierarchy.tokenSequence ();
+                List<ASTToken> tokens = getTokens (ts);
+                if (cancel [0]) {
                     // Leave null in ret[0]
                     return;
                 }
-                ret[0] = TokenInputUtils.create(tokens);
+                result [0] = TokenInputUtils.create (tokens);
             }
         });
-        return ret[0];
+        return result [0];
     }
     
     private List<ASTToken> getTokens (TokenSequence ts) {
-        if (ts == null) return null;
+        List<ASTToken> tokens = new ArrayList<ASTToken> ();
+        if (ts == null) return tokens;
         Language language = null;
         try {
             language = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
         } catch (LanguageDefinitionNotFoundException ex) {
         }
-        List<ASTToken> tokens = new ArrayList<ASTToken> ();
         if (!ts.moveNext ()) return tokens;
         Token t = ts.token ();
         int type = t.id ().ordinal ();

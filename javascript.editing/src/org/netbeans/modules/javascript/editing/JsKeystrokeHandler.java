@@ -60,7 +60,9 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;
@@ -173,14 +175,12 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         TokenId id = token.id();
 
         // Insert an end statement? Insert a } marker?
-        boolean[] insertEndResult = new boolean[1];
         boolean[] insertRBraceResult = new boolean[1];
         int[] indentResult = new int[1];
         boolean insert = insertMatching &&
-            isEndMissing(doc, offset, false, insertEndResult, insertRBraceResult, null, indentResult);
+            isEndMissing(doc, offset, false, insertRBraceResult, null, indentResult);
 
         if (insert) {
-            boolean insertEnd = insertEndResult[0];
             boolean insertRBrace = insertRBraceResult[0];
             int indent = indentResult[0];
 
@@ -191,21 +191,18 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
                 sb.append("\n"); // XXX On Windows, do \r\n?
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
                 sb.append(restOfLine);
                 sb.append("\n");
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 doc.remove(offset, restOfLine.length());
             }
             
-            if (insertEnd) {
-                sb.append("end"); // NOI18N
-            } else {
-                assert insertRBrace;
+            if (insertRBrace) {
                 sb.append("}"); // NOI18N
             }
 
@@ -220,13 +217,13 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             // See if it's a block comment opener
             String text = token.text().toString();
             if (text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
-                int indent = LexUtilities.getLineIndent(doc, offset);
+                int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
-                sb.append(LexUtilities.getIndentString(indent));
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" * "); // NOI18N
                 int offsetDelta = sb.length()+1;
                 sb.append("\n"); // NOI18N
-                sb.append(LexUtilities.getIndentString(indent));
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" */"); // NOI18N
                 // TODO - possibly populate associated types in JS-doc style!
                 //if (text.startsWith("/**")) {
@@ -241,7 +238,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         if (id == JsTokenId.STRING_LITERAL || 
                 (id == JsTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
             // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-            //int indent = LexUtilities.getLineIndent(doc, offset);
+            //int indent = GsfUtilities.getLineIndent(doc, offset);
             //int delimiterOffset = id == JsTokenId.STRING_END ? ts.offset() : ts.offset()-1;
             //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
             //doc.insertString(offset, delimiter + " + " + delimiter, null);
@@ -258,7 +255,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         if (id == JsTokenId.REGEXP_LITERAL || 
                 (id == JsTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
             // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-            //int indent = LexUtilities.getLineIndent(doc, offset);
+            //int indent = GsfUtilities.getLineIndent(doc, offset);
             //doc.insertString(offset, "/ + /", null);
             //caret.setDot(offset+3);
             //return offset + 5 + indent;
@@ -287,11 +284,11 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                 JsTokenId prevTokenId = prevToken.id();
                 if (id == JsTokenId.RBRACE && prevTokenId == JsTokenId.LBRACE ||
                         id == JsTokenId.RBRACKET && prevTokenId == JsTokenId.LBRACKET) {
-                    int indent = LexUtilities.getLineIndent(doc, offset);
+                    int indent = GsfUtilities.getLineIndent(doc, offset);
                     StringBuilder sb = new StringBuilder();
                     // XXX On Windows, do \r\n?
                     sb.append("\n"); // NOI18N
-                    LexUtilities.indent(sb, indent);
+                    sb.append(IndentUtils.createIndentString(doc, indent));
 
                     int insertOffset = offset; // offset < length ? offset+1 : offset;
                     doc.insertString(insertOffset, sb.toString(), null);
@@ -316,19 +313,19 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             }
         }
         
-        if (id == JsTokenId.BLOCK_COMMENT && offset > ts.offset()) {
+        if (id == JsTokenId.BLOCK_COMMENT && offset > ts.offset() && offset < ts.offset()+ts.token().length()) {
             // Continue *'s
             int begin = Utilities.getRowFirstNonWhite(doc, offset);
             int end = Utilities.getRowEnd(doc, offset)+1;
             String line = doc.getText(begin, end-begin);
-            boolean isBlockStart = line.startsWith("/*");
+            boolean isBlockStart = line.startsWith("/*") || (begin != -1 && begin < ts.offset());
             if (isBlockStart || line.startsWith("*")) {
-                int indent = LexUtilities.getLineIndent(doc, offset);
+                int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
                 if (isBlockStart) {
                     indent++;
                 }
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("*"); // NOI18N
                 // Copy existing indentation
                 int afterStar = isBlockStart ? begin+2 : begin+1;
@@ -433,9 +430,9 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                 
             if (continueComment) {
                 // Line comments should continue
-                int indent = LexUtilities.getLineIndent(doc, offset);
+                int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("//"); // NOI18N
                 // Copy existing indentation
                 int afterSlash = begin+2;
@@ -477,9 +474,6 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
      * @param skipJunk If false, only consider the current line (of the offset)
      *   as the possible "block opener"; if true, look backwards across empty
      *   lines and comment lines as well.
-     * @param insertEndResult Null, or a boolean 1-element array whose first
-     *   element will be set to true iff this method determines that "end" should
-     *   be inserted
      * @param insertRBraceResult Null, or a boolean 1-element array whose first
      *   element will be set to true iff this method determines that "}" should
      *   be inserted
@@ -492,8 +486,8 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
      *   and identResult will provide the more specific return values in their
      *   first elements.
      */
-    static boolean isEndMissing(BaseDocument doc, int offset, boolean skipJunk,
-        boolean[] insertEndResult, boolean[] insertRBraceResult, int[] startOffsetResult,
+    private static boolean isEndMissing(BaseDocument doc, int offset, boolean skipJunk,
+        boolean[] insertRBraceResult, int[] startOffsetResult,
         int[] indentResult) throws BadLocationException {
         int length = doc.getLength();
 
@@ -508,18 +502,19 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             startOffsetResult[0] = Utilities.getRowFirstNonWhite(doc, offset);
         }
 
-        int beginEndBalance = LexUtilities.getBeginEndLineBalance(doc, offset, true);
         int braceBalance =
             LexUtilities.getLineBalance(doc, offset, JsTokenId.LBRACE, JsTokenId.RBRACE);
 
-        if ((beginEndBalance == 1) || (braceBalance == 1)) {
+        int parenBalance =
+            LexUtilities.getLineBalance(doc, offset, JsTokenId.LPAREN, JsTokenId.RPAREN);
+
+        if ((braceBalance == 1) && parenBalance >= 0) {
             // There is one more opening token on the line than a corresponding
             // closing token.  (If there's is more than one we don't try to help.)
-            int indent = LexUtilities.getLineIndent(doc, offset);
+            int indent = GsfUtilities.getLineIndent(doc, offset);
 
             // Look for the next nonempty line, and if its indent is > indent,
             // or if its line balance is -1 (e.g. it's an end) we're done
-            boolean insertEnd = beginEndBalance > 0;
             boolean insertRBrace = braceBalance > 0;
             int next = Utilities.getRowEnd(doc, offset) + 1;
 
@@ -529,30 +524,12 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                     continue;
                 }
 
-                int nextIndent = LexUtilities.getLineIndent(doc, next);
+                int nextIndent = GsfUtilities.getLineIndent(doc, next);
 
                 if (nextIndent > indent) {
-                    insertEnd = false;
                     insertRBrace = false;
                 } else if (nextIndent == indent) {
-                    if (insertEnd) {
-                        if (LexUtilities.getBeginEndLineBalance(doc, next, false) < 0) {
-                            insertEnd = false;
-                        } else {
-                            // See if I have a structure word like "else", "ensure", etc.
-                            // (These are indent words that are not also begin words)
-                            // and if so refrain from inserting the end
-                            int lineBegin = Utilities.getRowFirstNonWhite(doc, next);
-
-                            Token<?extends JsTokenId> token =
-                                LexUtilities.getToken(doc, lineBegin);
-
-                            if ((token != null) && LexUtilities.isIndentToken(token.id()) &&
-                                    !LexUtilities.isBeginToken(token.id(), doc, lineBegin)) {
-                                insertEnd = false;
-                            }
-                        }
-                    } else if (insertRBrace &&
+                    if (insertRBrace &&
                             (LexUtilities.getLineBalance(doc, next, JsTokenId.LBRACE,
                                 JsTokenId.RBRACE) < 0)) {
                         insertRBrace = false;
@@ -560,10 +537,6 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                 }
 
                 break;
-            }
-
-            if (insertEndResult != null) {
-                insertEndResult[0] = insertEnd;
             }
 
             if (insertRBraceResult != null) {
@@ -574,7 +547,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                 indentResult[0] = indent;
             }
 
-            return insertEnd || insertRBrace;
+            return insertRBrace;
         }
 
         return false;
@@ -593,7 +566,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         //dumpTokens(doc, caretOffset);
 
         if (target.getSelectionStart() != -1) {
-            if (NbUtilities.isCodeTemplateEditing(doc)) {
+            if (GsfUtilities.isCodeTemplateEditing(doc)) {
                 int start = target.getSelectionStart();
                 int end = target.getSelectionEnd();
                 if (start < end) {
@@ -655,7 +628,15 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         TokenId id = token.id();
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
-        
+
+        if (ch == '*' && id == JsTokenId.LINE_COMMENT && caretOffset == ts.offset()+1) {
+            // Just typed "*" inside a "//" -- the user has typed "/", which automatched to
+            // "//" and now they're typing "*" (e.g. to type "/*", but ended up with "/*/".
+            // Remove the auto-matched /.
+            doc.remove(caretOffset, 1);
+            return false; // false: continue to insert the "*"
+        }
+
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
         if (ch == '\"' || ch == '\'') {
             stringTokens = STRING_TOKENS;
@@ -774,7 +755,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                     ts.move(dotPos);
 
                     if (ts.moveNext() && (ts.offset() < dotPos)) {
-                        LexUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
+                        GsfUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
                     }
                 }
             }
@@ -945,21 +926,19 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
 //                    }
                 }
 
-                OffsetRange begin;
+                OffsetRange begin = OffsetRange.NONE;
 
                 if (id == JsTokenId.RBRACE) {
                     begin = LexUtilities.findBwd(doc, ts, JsTokenId.LBRACE, JsTokenId.RBRACE);
                 } else if (id == JsTokenId.RBRACKET) {
                     begin = LexUtilities.findBwd(doc, ts, JsTokenId.LBRACKET, JsTokenId.RBRACKET);
-                } else {
-                    begin = LexUtilities.findBegin(doc, ts);
                 }
 
                 if (begin != OffsetRange.NONE) {
                     int beginOffset = begin.getStart();
-                    int indent = LexUtilities.getLineIndent(doc, beginOffset);
-                    previousAdjustmentIndent = LexUtilities.getLineIndent(doc, offset);
-                    LexUtilities.setLineIndentation(doc, offset, indent);
+                    int indent = GsfUtilities.getLineIndent(doc, beginOffset);
+                    previousAdjustmentIndent = GsfUtilities.getLineIndent(doc, offset);
+                    GsfUtilities.setLineIndentation(doc, offset, indent);
                     previousAdjustmentOffset = caret.getDot();
                 }
             }

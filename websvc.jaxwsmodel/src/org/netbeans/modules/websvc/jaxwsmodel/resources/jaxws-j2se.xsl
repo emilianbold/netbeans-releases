@@ -83,7 +83,6 @@ made subject to such option by the copyright holder.
                     <property name="wsdl-{$wsname}" location="xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"/>
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <wsimport
-                            xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             destdir="${{build.generated.dir}}/wsimport/client"
                             package="{$package_name}"
@@ -131,10 +130,9 @@ made subject to such option by the copyright holder.
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
                         <wsimport
-                            xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             destdir="${{build.generated.dir}}/wsimport/client"
-                             wsdl="${{wsdl-{$wsname}}}"
+                            wsdl="${{wsdl-{$wsname}}}"
                             wsdlLocation="{$wsdl_url_actual}"
                             catalog="{$catalog}">
                             <xsl:if test="$wsimportoptions">

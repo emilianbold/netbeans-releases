@@ -65,6 +65,8 @@ import org.openide.util.lookup.Lookups;
  */
 public final class CustomizerSelector {
 
+    public static final String FORMATTING_CUSTOMIZERS_FOLDER = "OptionsDialog/Editor/Formatting/"; //NOI18N
+
     public static final String PROP_MIMETYPE = "CustomizerSelector.PROP_MIMETYPE"; //NOI18N
     public static final String PROP_CUSTOMIZER = "CustomizerSelector.PROP_CUSTOMIZER"; //NOI18N
 
@@ -83,9 +85,8 @@ public final class CustomizerSelector {
         if (selectedMimeType == null || !selectedMimeType.equals(mimeType)) {
             String old = selectedMimeType;
             selectedMimeType = mimeType;
-            pcs.firePropertyChange(PROP_MIMETYPE, old, mimeType);
-
             selectedCustomizerId = null;
+            pcs.firePropertyChange(PROP_MIMETYPE, old, mimeType);
         }
     }
 
@@ -102,9 +103,17 @@ public final class CustomizerSelector {
 
     public synchronized void setSelectedCustomizer(String id) {
         if (selectedCustomizerId == null || !selectedCustomizerId.equals(id)) {
-            String old = selectedCustomizerId;
-            selectedCustomizerId = id;
-            pcs.firePropertyChange(PROP_CUSTOMIZER, old, id);
+            // check that the id really exists
+            for(PreferencesCustomizer c : getCustomizersFor(selectedMimeType)) {
+                if (id.equals(c.getId())) {
+                    String old = selectedCustomizerId;
+                    selectedCustomizerId = id;
+                    pcs.firePropertyChange(PROP_CUSTOMIZER, old, id);
+                    break;
+                }
+            }
+
+            // incorrect ids are ignored
         }
     }
 
@@ -121,7 +130,7 @@ public final class CustomizerSelector {
 
             // filter out mime types that don't supply customizers
             for(String mimeType : EditorSettings.getDefault().getAllMimeTypes()) {
-                Lookup l = Lookups.forPath(FOLDER + mimeType);
+                Lookup l = Lookups.forPath(FORMATTING_CUSTOMIZERS_FOLDER + mimeType);
                 Collection<? extends PreferencesCustomizer.Factory> factories = l.lookupAll(PreferencesCustomizer.Factory.class);
                 if (!factories.isEmpty()) {
                     mimeTypes.add(mimeType);
@@ -157,8 +166,6 @@ public final class CustomizerSelector {
     // private implementation
     // ------------------------------------------------------------------------
 
-    private static final String FOLDER = "OptionsDialog/Editor/Formatting/"; //NOI18N
-    
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final PreferencesFactory pf;
     private final boolean acceptOldControllers;
@@ -182,9 +189,9 @@ public final class CustomizerSelector {
     private List<? extends PreferencesCustomizer> loadCustomizers(String mimeType) {
         ArrayList<PreferencesCustomizer> list = new ArrayList<PreferencesCustomizer>();
         
+        Preferences prefs = pf.getPreferences(mimeType);
         if (mimeType.length() > 0) {
-            Lookup l = Lookups.forPath(FOLDER + mimeType);
-            Preferences prefs = pf.getPreferences(mimeType);
+            Lookup l = Lookups.forPath(FORMATTING_CUSTOMIZERS_FOLDER + mimeType);
             
             // collect factories
             Collection<? extends PreferencesCustomizer.Factory> factories = l.lookupAll(PreferencesCustomizer.Factory.class);
@@ -213,7 +220,6 @@ public final class CustomizerSelector {
                 }
             }
         } else {
-            Preferences prefs = pf.getPreferences(mimeType);
             PreferencesCustomizer c = new IndentationPanelController(prefs);
             list.add(c);
             c2p.put(c, prefs);

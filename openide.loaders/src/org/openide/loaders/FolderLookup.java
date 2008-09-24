@@ -428,7 +428,7 @@ public class FolderLookup extends FolderInstance {
                             }
                         }
                     } catch (InterruptedException ex) {
-                        fl.err().log(Level.WARNING, null, ex);
+                        fl.err().log(Level.INFO, null, ex);
                     }
                 }
             } else {

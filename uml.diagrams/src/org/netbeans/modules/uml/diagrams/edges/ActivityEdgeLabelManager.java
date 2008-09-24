@@ -87,6 +87,23 @@ public class ActivityEdgeLabelManager extends BasicUMLLabelManager
         return retVal;
     }
 
+    public void createInitialLabels()
+    {
+        super.createInitialLabels();
+        
+        IElement pElement = getModelElement();
+
+        IActivityEdge pActivityEdge = pElement instanceof IActivityEdge ? (IActivityEdge) pElement : null;
+        if (pActivityEdge != null)
+        {
+            IValueSpecification pGuard = pActivityEdge.getGuard();
+            if(pGuard != null)
+            {
+                showLabel(GUARD_CONDITION);
+            }
+        }
+    }
+    
     public Widget createGuardLabel()
     {
         Widget retVal = null;

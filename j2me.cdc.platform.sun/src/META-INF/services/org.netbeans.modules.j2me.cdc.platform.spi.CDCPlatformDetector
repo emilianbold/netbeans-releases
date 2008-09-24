@@ -1,1 +1,2 @@
 org.netbeans.modules.j2me.cdc.platform.sun.SunPlatformDetector
+#position=1000

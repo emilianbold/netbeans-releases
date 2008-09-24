@@ -372,7 +372,7 @@ final public class EjbJarProjectProperties {
             ProjectManager.getDefault().saveProject(project);
             //Delete COS mark
             if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
-                DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir"); // NOI18N
+                DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir", false); // NOI18N
             }            
         } 
         catch (MutexException e) {

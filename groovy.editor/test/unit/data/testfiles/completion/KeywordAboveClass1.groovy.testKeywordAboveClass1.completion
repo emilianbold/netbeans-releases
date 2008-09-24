@@ -3,11 +3,11 @@ ab|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 CLASS      AbstractCollection                         null
+CLASS      AbstractFactory                            null
 CLASS      AbstractList                               null
 CLASS      AbstractMap                                null
 CLASS      AbstractMethodError                        null
 CLASS      AbstractQueue                              null
 CLASS      AbstractSequentialList                     null
 CLASS      AbstractSet                                null
-CLASS      AbstractStringBuilder                      null
 KEYWORD    abstract                                   null

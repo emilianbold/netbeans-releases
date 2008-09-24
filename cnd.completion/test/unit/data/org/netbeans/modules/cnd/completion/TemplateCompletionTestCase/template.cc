@@ -38,3 +38,9 @@ int main()
     
     return 0;
 }
+
+template <class T> class T4
+{
+public:
+    T t;
+};

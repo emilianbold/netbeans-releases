@@ -159,6 +159,7 @@ import org.openide.util.Utilities;
 public class RepositoryUpdater implements PropertyChangeListener, FileChangeListener, ClassPathRootsListener.ClassPathRootsChangedListener {
         
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
+    private static final Logger ACTIVITY_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName()+".activity");  //NOI18N
     private static final Set<String> warnedIgnoredRoots = Collections.synchronizedSet(new HashSet<String>());
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
@@ -1274,6 +1275,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         public void run (final CompilationInfo nullInfo) throws IOException {
+            ACTIVITY_LOGGER.finest("START");    //NOI18N
             try {
             ClassIndexManager.getDefault().writeLock (new ClassIndexManager.ExceptionAction<Void> () {
                 
@@ -1606,6 +1608,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             } catch (InterruptedException e) {
                 //Never thrown
                 Exceptions.printStackTrace(e);
+            }
+            finally {
+                ACTIVITY_LOGGER.finest("FINISHED");    //NOI18N
             }
         }
         

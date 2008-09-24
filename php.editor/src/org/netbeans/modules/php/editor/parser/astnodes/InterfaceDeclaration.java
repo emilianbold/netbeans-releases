@@ -56,7 +56,7 @@ public class InterfaceDeclaration extends TypeDeclaration {
         super(start, end, interfaceName, interfaces, body);
     }
 
-    public InterfaceDeclaration(int start, int end, Identifier interfaceName, List interfaces, Block body) {
+    public InterfaceDeclaration(int start, int end, Identifier interfaceName, List<Identifier> interfaces, Block body) {
         this(start, end, interfaceName, (Identifier[]) interfaces.toArray(new Identifier[interfaces.size()]), body);
     }
     

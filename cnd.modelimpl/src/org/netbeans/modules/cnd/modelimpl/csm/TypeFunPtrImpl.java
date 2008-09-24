@@ -72,8 +72,8 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 	super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
     }
 
-    void init(AST ast) {
-        initFunctionPointerParamList(ast, this);
+    void init(AST ast, boolean inFunctionParameters) {
+        initFunctionPointerParamList(ast, this, inFunctionParameters);
     }
 
     public Collection<CsmParameter> getParameters() {
@@ -129,37 +129,39 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         return true;
     }
 
-    public static boolean isFunctionPointerParamList(AST ast) {
-	return initFunctionPointerParamList(ast, null);
+    public static boolean isFunctionPointerParamList(AST ast, boolean inFunctionParameters) {
+	return initFunctionPointerParamList(ast, null, inFunctionParameters);
     }
     
-    private static boolean initFunctionPointerParamList(AST ast, TypeFunPtrImpl instance) {
-	
+    private static boolean initFunctionPointerParamList(AST ast, TypeFunPtrImpl instance, boolean inFunctionParams) {
+        AST next = null;
 	// find opening brace
 	AST brace = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LPAREN);
-	if( brace == null ) {
-	    return false;
-	}
-	
-	// check whether it's followed by asterisk
-	AST next = brace.getNextSibling();
-	if( next == null || next.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
-	    return false;
-	}
-	
-	// skip adjacent asterisks
-	do {
-	    next = next.getNextSibling();
-            if (instance != null) {
-                ++instance.functionPointerDepth;
+	if( brace != null ) {
+            // check whether it's followed by asterisk
+            next = brace.getNextSibling();
+            if (next == null || next.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
+                return false;
             }
-	}
-	while( next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR );
 
-	if( next == null) {
-	    return false;
-	}
-	
+            // skip adjacent asterisks
+            do {
+                next = next.getNextSibling();
+                if (instance != null) {
+                    ++instance.functionPointerDepth;
+                }
+            } 
+	    while( next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR );
+        }
+        
+        if (inFunctionParams && next == null) {
+            next = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        }
+
+        if( next == null) {
+            return false;
+        }
+        
         // check that it's followed by exprected token
         if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
             // fine. this could be variable of function type
@@ -168,6 +170,8 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
             if (lookahead != null && lookahead.getType() == CPPTokenTypes.RPAREN) {
                 // OK. This could be function type in typedef - in this case we get
                 // CSM_QUALIFIED_ID instead of CSM_VARIABLE_DECLARATION.
+            } else if(inFunctionParams && lookahead != null && lookahead.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                // OK. This could be function as a parameter
             } else {
                 next = lookahead;
                 // check function returns function
@@ -194,30 +198,35 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         }
         // last step: verify that it's followed with a closing brace
         next = next.getNextSibling();
-        if (next == null || next.getType() != CPPTokenTypes.RPAREN) {
-            return false;
-        }
-
-        next = next.getNextSibling();
-
-        // skip LPAREN (let's not assume it's obligatory)
-        if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
+        if (next != null && next.getType() == CPPTokenTypes.RPAREN) {
             next = next.getNextSibling();
-        }        
-        if (next == null) {
-            return false;
-        }
-        if (next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+            // skip LPAREN (let's not assume it's obligatory)
+            if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
+                next = next.getNextSibling();
+            }
+            if (next == null) {
+                return false;
+            }
+            if (next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                if (instance != null) {
+                    instance.functionParameters = RepositoryUtils.put(
+                            AstRenderer.renderParameters(next, instance.getContainingFile(), null));
+                }
+                return true;
+            } else if (next.getType() == CPPTokenTypes.RPAREN) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (inFunctionParams && next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
             if (instance != null) {
                 instance.functionParameters = RepositoryUtils.put(
                         AstRenderer.renderParameters(next, instance.getContainingFile(), null));
             }
             return true;
-        } else if (next.getType() == CPPTokenTypes.RPAREN) {
-            return true;
         } else {
             return false;
-        }         
+        }
     }
     
     // copy-pasted from TypeImpl. The difference us in one check: ast.getType() != CPPTokenTypes.STAR

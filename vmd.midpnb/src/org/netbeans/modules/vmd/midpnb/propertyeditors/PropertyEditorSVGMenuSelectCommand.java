@@ -78,8 +78,8 @@ import org.openide.util.NbBundle;
  */
 public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement {
 
-    private final List<String> tags = new ArrayList<String>();
-    private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
+    private List<String> tags = new ArrayList<String>();
+    private Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private TypeID typeID;
@@ -108,6 +108,22 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
                 radioButton.getText());
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
+        typeID = null;
+        if (values != null) {
+            values.clear();
+            values = null;
+        }
+        tags = null;
     }
 
     private void initComponents() {
@@ -294,6 +310,12 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
 
         public CustomEditor() {
             initComponents();
+        }
+
+        void cleanUp() {
+            combobox.removeActionListener(this);
+            combobox = null;
+            this.removeAll();
         }
 
         private void initComponents() {

@@ -67,7 +67,11 @@ var IMAGE_WARNING_WHITE = '<img src="' + WARNING_WHITE_SRC + '"/>';
 var IMAGE_CHECKED_BEIGE = '<img src="' + CHECKED_BEIGE_SRC + '"/>';
 var IMAGE_WARNING_BEIGE = '<img src="' + WARNING_BEIGE_SRC + '"/>';
 
+var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG_NUMBER = "1";
+
 var download_tabs_number = 0;
+var last_selected_lang = 0;
+var MORE_LANG_ID = "more";
 
 function handle_keyup(event) {
     //if (event.keyCode == 13) {
@@ -103,6 +107,9 @@ function initialize() {
 function write_languages() {
    for(var i=0; i < LANGUAGE_IDS.length; i++ ) {
    	document.write('<option value="' + LANGUAGE_IDS[i] + '">' + LANGUAGE_NAMES[i] + '</option>');
+   }
+   if(ADD_MORE_REDIRECT_VALUE == 1) {
+       document.write('<option value="' + MORE_LANG_ID + '">' + MORE_LANGUAGES + '</option>');
    }
 }
 
@@ -165,7 +172,7 @@ function write_table_header() {
     document.write('<td class="no_border no_padding" colspan="6">');    
     document.write('<table class="components_table">');
     document.write('<tr class="no_hover">');
-    document.write('	<td class="no_hover header" colspan="6">' + NETBEANS_DOWNLOAD_BUNDLES_MSG + '</td>');
+    document.write('	<td class="no_hover header" colspan="6">' + (COMMUNITY_BUILD == 1 ? (NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG + '<span class="community_note_number">' + NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG_NUMBER + '</span>') : NETBEANS_DOWNLOAD_BUNDLES_MSG) + '</td>');
     document.write('</tr></table>');
     document.write('</td>');
     document.write('</tr>');
@@ -344,9 +351,17 @@ function select_language() {
     for(var i=0;i<languageOptions.length;i++) {
         if(languageOptions[i].value == language) select.selectedIndex = i;
     }
+    last_selected_lang = select.selectedIndex;
 }
 
 function update() {
+    var langselect = document.getElementById("language_select");
+    if(langselect.options[langselect.selectedIndex].value == MORE_LANG_ID) {
+        langselect.selectedIndex = last_selected_lang;
+        window.location = MORE_LANGUAGES_REDIRECT_URL;
+    }
+    last_selected_lang = langselect.selectedIndex;
+
     var select = document.getElementById("platform_select");
     var platform = select.options[select.selectedIndex].value;
     var platform_display_name = select.options[select.selectedIndex].text;
@@ -568,6 +583,15 @@ function update() {
     }
     else {
         document.getElementById("jdk_note").innerHTML = JDK_NOTE_ALL.replace('{0}',JAVA_COM_LINK).replace('{1}',JDK_DOWNLOAD_LINK).replace('{2}',NBJDK_DOWNLOAD_LINK);
+    }
+
+    if (COMMUNITY_BUILD == 1) {
+	document.getElementById("community_number").innerHTML  = "<a class=\"special_message_number\">" + NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG_NUMBER + "</a>";
+	document.getElementById("community_message").innerHTML = "<a class=\"special_message_text\">" + COMMUNITY_MESSAGE + "</a>";
+    }
+    else {
+	document.getElementById("community_message").innerHTML = "";
+	document.getElementById("community_number").innerHTML  = "";
     }
 }
 

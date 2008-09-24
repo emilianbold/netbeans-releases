@@ -58,7 +58,6 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.AlignWithMoveDecorator;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.action.MoveProvider;
-import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.MoveStrategy;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.ReconnectDecorator;
@@ -102,6 +101,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
+import org.netbeans.modules.uml.diagrams.actions.NodeLabelIteratorAction;
 import org.netbeans.modules.uml.diagrams.actions.sqd.AddCarFprPresentationElementAction;
 import org.netbeans.modules.uml.diagrams.actions.sqd.AlignWithMoveStrategyProvider;
 import org.netbeans.modules.uml.diagrams.actions.sqd.ArrangeMoveWithBumping;
@@ -490,7 +490,8 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                 CombinedFragmentMoveProvider cfMoveProvider = new CombinedFragmentMoveProvider(provider);
                 selectTool.addAction(ActionFactory.createMoveAction(provider, cfMoveProvider));
                 selectTool.addAction(new MoveNodeKeyAction(provider, cfMoveProvider));
-            }
+                selectTool.addAction(new NodeLabelIteratorAction());
+            }            
         }
         else
         {
@@ -507,6 +508,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         readOnly.addAction(sceneSelectAction);
         readOnly.addAction(ActionFactory.createPopupMenuAction(menuProvider));
         readOnly.addAction(mouseHoverAction);
+        readOnly.addAction(new NodeLabelIteratorAction());
     }
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {
@@ -555,6 +557,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);      
         readOnly.addAction(sceneSelectAction);
         readOnly.addAction(ActionFactory.createPopupMenuAction(menuProvider));
+        readOnly.addAction(new EdgeLabelIteratorAction());
     }
     
     /**

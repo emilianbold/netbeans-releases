@@ -65,6 +65,13 @@ public class PropertyEditorGoToSource extends DesignPropertyEditor {
     }
 
     @Override
+    public void cleanUp(DesignComponent component) {
+        component = null;
+        customPropertyEditor.cleanUp();
+        customPropertyEditor = null;
+    }
+    
+    @Override
     public Boolean canEditAsText() {
         return false;
     }

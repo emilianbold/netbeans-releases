@@ -77,6 +77,7 @@ import javax.swing.event.AncestorListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement.DesignComponentWrapper;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementEvent;
@@ -89,7 +90,7 @@ import org.openide.util.Utilities;
  *
  * @author Anton Chechel
  */
-class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElementListener, ListSelectionListener, ActionListener, UserCodeAwareness {
+class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElementListener, ListSelectionListener, ActionListener, UserCodeAwareness, CleanUp {
 
     private static final String ACTION_ADD_RESOURCE = "addResource"; // NOI18N
     private static final String ACTION_REMOVE_RESOURCE = "removeResource"; // NOI18N
@@ -106,6 +107,8 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
     private JPanel ucPanel;
     private CardLayout ucCardLayout;
 
+    
+
     ResourceEditorPanel(PropertyEditorResourceElement element, String noneComponentAsText, JRadioButton radioButton) {
         if (noneComponentAsText == null || noneComponentAsText.length() == 0) {
             throw new IllegalArgumentException("Incorrect value of noneComponentAsText: " + noneComponentAsText); // NOI18N
@@ -117,13 +120,28 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
 
         if (radioButton == null) {
             throw new IllegalArgumentException("Null radioButton value"); // NOI18N
-        } 
+        }
         this.element = element;
         this.noneComponentAsText = noneComponentAsText;
         this.radioButton = radioButton;
         changedComponents = new HashSet<String>();
         initComponents(element.getJComponent());
 
+    }
+
+    public void clean(DesignComponent component) {
+        if (wrappersMap != null) {
+            wrappersMap.clear();
+        }
+        element = null;
+        wrappersMap = null;
+        changedComponents = null;
+        componentsList = null;
+        radioButton = null;
+        icon = null;
+        ucCardLayout = null;
+        ucPanel = null;
+        this.removeAll();
     }
 
     private void initComponents(JComponent component) {
@@ -135,9 +153,9 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         componentsList.setCellRenderer(new ComponentsListRenderer());
 
         componentsList.getAccessibleContext().setAccessibleName(
-                    NbBundle.getMessage( ResourceEditorPanel.class, "ASCN_ResourcesList"));
+                NbBundle.getMessage(ResourceEditorPanel.class, "ASCN_ResourcesList"));
         componentsList.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage( ResourceEditorPanel.class, "ASCD_ResourcesList"));
+                NbBundle.getMessage(ResourceEditorPanel.class, "ASCD_ResourcesList"));
         //componentsList.addListSelectionListener(this);
 //        componentsList.setPreferredSize(new Dimension(120, 140));
         JScrollPane scrollPane = new JScrollPane();
@@ -206,15 +224,14 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
             }
 
             public void focusLost(FocusEvent e) {
-
             }
         });
-        
+
         this.addAncestorListener(new AncestorListener() {
 
             public void ancestorAdded(AncestorEvent event) {
-                 componentsList.removeListSelectionListener(ResourceEditorPanel.this);
-                 componentsList.addListSelectionListener(ResourceEditorPanel.this);
+                componentsList.removeListSelectionListener(ResourceEditorPanel.this);
+                componentsList.addListSelectionListener(ResourceEditorPanel.this);
             }
 
             public void ancestorRemoved(AncestorEvent event) {
@@ -306,8 +323,9 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
     }
 
     public void valueChanged(ListSelectionEvent e) {
-        if (e.getValueIsAdjusting())
+        if (e.getValueIsAdjusting()) {
             return;
+        }
         Object selectedName = getSelectedComponentName();
         if (selectedName == null || noneComponentAsText.equals(selectedName)) {
             element.setDesignComponentWrapper(null);
@@ -461,5 +479,4 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
             return renderer;
         }
     }
- 
 }

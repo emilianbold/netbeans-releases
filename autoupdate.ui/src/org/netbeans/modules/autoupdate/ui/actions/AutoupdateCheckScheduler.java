@@ -518,7 +518,6 @@ public class AutoupdateCheckScheduler {
                         t = RP.post (new Runnable () {
                             public void run () {
                                 showBalloon.run ();
-                                BalloonManager.stopDismissSlowly ();
                             }
                         }, ToolTipManager.sharedInstance ().getInitialDelay ());
                     }
@@ -528,7 +527,7 @@ public class AutoupdateCheckScheduler {
                         if( null != t ) {
                             t.cancel ();
                             t = null;
-                            BalloonManager.dismissSlowly ();
+                            BalloonManager.dismissSlowly (ToolTipManager.sharedInstance ().getDismissDelay ());
                         }
                     }
             });

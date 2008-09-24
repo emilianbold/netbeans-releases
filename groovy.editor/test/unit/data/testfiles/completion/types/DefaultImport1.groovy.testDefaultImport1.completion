@@ -1,5 +1,5 @@
 Code completion result for source line:
-FileSys|       // java.io.FileSystem
+FileRea|       // java.io.FileReader
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-CLASS      FileSystem                                 null
+CLASS      FileReader                                 null

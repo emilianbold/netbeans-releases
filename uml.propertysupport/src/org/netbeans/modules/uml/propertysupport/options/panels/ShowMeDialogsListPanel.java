@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,6 +31,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.uml.propertysupport.options.panels;
@@ -191,25 +189,35 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
 
         mainLabel.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "mainLabel.text")); // NOI18N
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel1.text_3")); // NOI18N
+        jLabel1.setLabelFor(deleteFileCB);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel1.text_3")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel2.text_2")); // NOI18N
+        jLabel2.setLabelFor(filterWarningCB);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel2.text_2")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel3.text_2")); // NOI18N
+        jLabel3.setLabelFor(transformCB);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel3.text_2")); // NOI18N
 
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel5.text_2")); // NOI18N
+        jLabel5.setLabelFor(overwriteCB);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel5.text_2")); // NOI18N
 
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel6.text_2")); // NOI18N
+        jLabel6.setLabelFor(deleteConnectorCB);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel6.text_2")); // NOI18N
 
-        jLabel7.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel7.text_2")); // NOI18N
+        jLabel7.setLabelFor(autoCreateCB);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel7.text_2")); // NOI18N
 
-        jLabel8.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel8.text_2")); // NOI18N
+        jLabel8.setLabelFor(deleteCombFragCB);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel8.text_2")); // NOI18N
 
-        jLabel9.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel9.text_1")); // NOI18N
+        jLabel9.setLabelFor(moveInvokedCB);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel9.text_1")); // NOI18N
 
-        jLabel10.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel10.text_2")); // NOI18N
+        jLabel10.setLabelFor(allowLengthySearchesCB);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel10, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel10.text_2")); // NOI18N
 
-        jLabel20.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabe20.text_1")); // NOI18N
+        jLabel20.setLabelFor(convertOldDiagramsCB);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel20, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabe20.text_1")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -299,6 +307,17 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                     .add(jLabel20))
                 .addContainerGap(15, Short.MAX_VALUE))
         );
+
+        deleteFileCB.getAccessibleContext().setAccessibleDescription(jLabel1.getText());
+        filterWarningCB.getAccessibleContext().setAccessibleDescription(jLabel2.getText());
+        transformCB.getAccessibleContext().setAccessibleDescription(jLabel3.getText());
+        overwriteCB.getAccessibleContext().setAccessibleDescription(jLabel5.getText());
+        deleteConnectorCB.getAccessibleContext().setAccessibleDescription(jLabel6.getText());
+        autoCreateCB.getAccessibleContext().setAccessibleDescription(jLabel7.getText());
+        deleteCombFragCB.getAccessibleContext().setAccessibleDescription(jLabel8.getText());
+        moveInvokedCB.getAccessibleContext().setAccessibleDescription(jLabel9.getText());
+        allowLengthySearchesCB.getAccessibleContext().setAccessibleDescription(jLabel10.getText());
+        convertOldDiagramsCB.getAccessibleContext().setAccessibleDescription(jLabel20.getText());
     }// </editor-fold>//GEN-END:initComponents
 
     

@@ -1412,6 +1412,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case METHOD:
                             case CONSTRUCTOR:
                             case PARENTHESIS:
+                            case CONVERSION:
                             case GENERIC_TYPE:
                             case MEMBER_POINTER:
                             {
@@ -1420,6 +1421,10 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                                 // create correspondent *_OPEN expression ID
                                 int openExpID = tokenID2OpenExpID(tokenID);
                                 CsmCompletionExpression opExp = createTokenExp(openExpID);
+                                if (topID == CONVERSION && tokenID != CppTokenId.SCOPE) {
+                                    // Now we know that previous exp is PARENTHESIS, not CONVERSION.
+                                    top.setExpID(PARENTHESIS);
+                                }
                                 opExp.addParameter(top);
                                 pushExp(opExp);
                                 break;
@@ -1879,7 +1884,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType(CsmCompletion.CONST_STRING_TYPE.format(true)); // NOI18N
                         break;
-
+                        
                     case INT_LITERAL:
 //                    case HEX_LITERAL:
 //                    case OCTAL_LITERAL:
@@ -1947,6 +1952,15 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                 errorState = false;
                 break;
 
+            case CONSTANT:
+                if (CsmCompletion.CONST_STRING_TYPE.format(true).equals(top.getType()) &&
+                        CsmCompletion.CONST_STRING_TYPE.format(true).equals(constExp.getType())) {
+                    errorState = false;
+                } else {
+                    errorState = true;
+                }
+                break;
+                
             default:
                 errorState = true;
                 break;

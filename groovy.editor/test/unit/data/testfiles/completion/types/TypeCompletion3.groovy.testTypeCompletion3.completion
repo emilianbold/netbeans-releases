@@ -8,6 +8,11 @@ CLASS      ClassCircularityError                      null
 CLASS      ClassFormatError                           null
 CLASS      ClassLoader                                null
 CLASS      ClassNotFoundException                     null
+CLASS      CliBuilder                                 null
 CLASS      CloneNotSupportedException                 null
 CLASS      Cloneable                                  null
 CLASS      Closeable                                  null
+CLASS      Closure                                    null
+CLASS      ClosureComparator                          null
+CLASS      ClosureException                           null
+CLASS      ClosureInvokingMethod                      null
