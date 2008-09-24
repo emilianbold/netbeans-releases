@@ -16,7 +16,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.MenuElement;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -29,8 +32,11 @@ import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
+import org.netbeans.jemmy.operators.JMenuOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -47,6 +53,7 @@ public final class TestKit {
     public final static String CONFLICT_STATUS = "[Conflict ]";
     public final static String IGNORED_STATUS = "[Ignored ]";
     public final static String UPTODATE_STATUS = "";
+    public final static String LOGGER_NAME = "org.netbeans.modules.subversion.t9y";
     
     public static File prepareProject(String category, String project, String project_name) throws Exception {
         //create temporary folder for test
@@ -114,14 +121,14 @@ public final class TestKit {
     public static void closeProject(String projectName) {
         try {
             Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
-            rootNode.performPopupActionNoBlock("Close");
+            rootNode.performPopupActionNoBlock("Close ");
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
         } catch (Exception e) {
-            
+            e.printStackTrace();
         } finally {
             new ProjectsTabOperator().tree().clearSelection();
         }
@@ -263,5 +270,25 @@ public final class TestKit {
         JCheckBoxMenuItemOperator cbmio = new JCheckBoxMenuItemOperator((JCheckBoxMenuItem) mo.getSource());
         if (!cbmio.getState())
             cbmio.push();
+    }
+
+    public static boolean waitText(MessageHandler handler) {
+        while (!handler.isFinished()) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return true;
+    }
+
+    public static void removeHandlers(Logger log) {
+        if (log != null) {
+            Handler[] handlers = log.getHandlers();
+            for (int i = 0; i < handlers.length; i++) {
+                log.removeHandler(handlers[i]);
+            }
+        }
     }
 }

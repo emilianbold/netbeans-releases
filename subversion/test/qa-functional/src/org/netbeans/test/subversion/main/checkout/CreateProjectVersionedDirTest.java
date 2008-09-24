@@ -10,13 +10,13 @@
 package org.netbeans.test.subversion.main.checkout;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -26,6 +26,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 
@@ -43,6 +44,7 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
     String os_name;
     Operator.DefaultStringComparator comOperator; 
     Operator.DefaultStringComparator oldOperator;
+    static Logger log;
     
     /** Creates a new instance of CreateProjectVersionedDirTest */
     public CreateProjectVersionedDirTest(String name) {
@@ -51,8 +53,14 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {        
-        os_name = System.getProperty("os.name");
         System.out.println("### "+getName()+" ###");
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
         
     }
     
@@ -76,8 +84,8 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
     
     public void testCreateNewProject() throws Exception {
         try {
-            OutputTabOperator oto;
-            OutputOperator.invoke();
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Operator.setDefaultStringComparator(comOperator);
@@ -101,8 +109,8 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
             //open project
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.waitText("Checking out... finished.");
+            TestKit.waitText(mh);
+            
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
@@ -117,6 +125,8 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
             new JTextFieldOperator(npnlso, 0).setText(PROJECT_NAME); // NOI18N
             new NewProjectWizardOperator().finish();
             ProjectSupport.waitScanFinished();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    
