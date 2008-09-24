@@ -102,6 +102,7 @@
     var socket;
     var topWindow;
     var myContext;
+    var myBrowser;
     var contexts = [];
 
     function Requests() {
@@ -126,6 +127,7 @@
 
     this.initMonitor = function  (context, browser, _socket) {
         myContext = context;
+        myBrowser = browser;
         var index = contexts.indexOf(context);
         if (DEBUG) NetBeans.Logger.log("net.initMonitor Turning on Monitor");
         if(  index == -1 ){
@@ -239,7 +241,18 @@
             if (DEBUG_METHOD) { NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);}
             var id = requestsId.getId(request)
             if ( id ) {
-              var xhrRequest = request.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
+              var notificationCallbacks = request.notificationCallbacks;
+              if (!notificationCallbacks && request.loadGroup) {
+                  notificationCallbacks = request.loadGroup.notificationCallbacks;
+              }
+
+              var xhrRequest;
+              if (notificationCallbacks) {
+                  try {
+                    xhrRequest = notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
+                  } catch (exc) {}
+              }
+
               if( xhrRequest ){
                     xhrRequest.onreadystatechange = function () {
                       if (xhrRequest.readyState == 4) {
@@ -439,7 +452,7 @@
     }
 
     function getResponseText ( aRequest ) {
-        var DEBUG_METHOD = true & DEBUG;
+        var DEBUG_METHOD = false & DEBUG;
         var responseText;
         var category = getRequestCategory(aRequest);
 
@@ -448,7 +461,20 @@
         }
         
         //Initiates a Get Request to Determine Response Text
-        responseText = myContext.sourceCache.loadText(aRequest.URI.asciiSpec, aRequest.requestMethod);
+
+        // XXX create a context (before we get one) hack
+        if (myContext && !myContext.sourceCache) {
+            myContext.sourceCache = new SourceCache(myContext);
+            myContext.window = topWindow;
+            myContext.browser = myBrowser;
+        }
+        try {
+            responseText = myContext.sourceCache.loadText(aRequest.URI.asciiSpec, aRequest.requestMethod);
+        } catch (exc) {}
+
+        if (!responseText) {
+            responseText = "BINARY";
+        }
         if (DEBUG_METHOD){NetBeans.Logger.log("net.getResponseText - RESPONSE TEXT: " + responseText); }
         return responseText;
     }
@@ -458,7 +484,8 @@
     {
         try
         {
-            if (aRequest.notificationCallbacks && aRequest.notificationCallbacks instanceof XMLHttpRequest){
+            if ((aRequest.notificationCallbacks && aRequest.notificationCallbacks instanceof XMLHttpRequest) ||
+                (aRequest.loadGroup && aRequest.loadGroup.notificationCallbacks && aRequest.loadGroup.notificationCallbacks instanceof XMLHttpRequest)) {
                 return "xhr";
             }
         }
@@ -846,7 +873,7 @@
         netActivity.total = total;
         netActivity.maxTotal = maxTotal;
         loadXmlActivityResponse(netActivity, activity);
-        if( DEBUG ){
+        if( DEBUG_METHOD ){
             NetBeans.Logger.log(netActivity.toXMLString());
         }
         socket.send(netActivity);
@@ -897,10 +924,14 @@
                         }
                     });
                 }
-                if (!bypass){
-                    myInterface = notificationCallbacks.getInterface(NetBeans.Constants.WebProgressIF);
+                if (!bypass) {
+                    try {
+                        myInterface = notificationCallbacks.getInterface(NetBeans.Constants.WebProgressIF);
+                    } catch (exc) {}
                     if(myInterface && DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress - myInterface: "+ myInterface);
-                    return myInterface;
+                    if (myInterface) {
+                        return myInterface;
+                    }
                 }
 
             }
@@ -928,25 +959,29 @@
 
     function isURLEncodedFile(request, text, headers)
     {
-        if ( !request ) {
-            return false;
-        }
-        if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1){
-            return true;
-        }
-
-        var headerValue = null;
         try {
-            headerValue = request.contentType;
-        } catch(exc) {
-            if (DEBUG)NetBeans.Logger.log("netmonitor.isURLEncodedFile: request:" + request + " text:" + text + " Exception:" + exc);
+            if ( !request ) {
+                return false;
+            }
+            if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1){
+                return true;
+            }
+
+            var headerValue = null;
+            try {
+                headerValue = request.contentType;
+            } catch(exc) {
+                if (DEBUG)NetBeans.Logger.log("netmonitor.isURLEncodedFile: request:" + request + " text:" + text + " Exception:" + exc);
+            }
+            if ( !headerValue ){
+                headerValue = findHeader(headers, "Content-Type");
+            }
+            // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
+            // there can be even charset specified. So, use indexOf rather than just "==".
+            return (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0);
+        } catch (exc) {
+            return undefined;
         }
-        if ( !headerValue ){
-            headerValue = findHeader(headers, "Content-Type");
-        }
-        // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
-        // there can be even charset specified. So, use indexOf rather than just "==".
-        return (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0);
     }
 
     function findHeader(headers, name) {
