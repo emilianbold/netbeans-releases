@@ -44,6 +44,8 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -55,7 +57,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
@@ -85,6 +86,18 @@ public class StopManager {
 
     public PropertyChangeListener getStopListener() {
         return listener;
+    }
+
+    private void disconnectConnections() {
+        // Disconnect any connections that are for this database
+        DatabaseConnection[] connections = ConnectionManager.getDefault().getConnections();
+        String url = server.getURL();
+        for (DatabaseConnection dbconn : connections) {
+            if (MySQLOptions.getDriverClass().equals(dbconn.getDriverClass()) &&
+                   dbconn.getDatabaseURL().contains(url) ) {
+                ConnectionManager.getDefault().disconnect(dbconn);
+            }
+        }
     }
 
     private synchronized void setIsStopping(boolean isStopping) {
@@ -200,6 +213,7 @@ public class StopManager {
             tries++;
             if (! server.checkRunning()) {
                 server.disconnect();
+                disconnectConnections();
                 return true;
             }
             try {

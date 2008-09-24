@@ -257,70 +257,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         indexFileBrowseButton = new JButton();
         hintLabel = new JLabel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return argsTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return argsTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return argsTextField;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  indexFileTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return argsTextField;
-                }
-                if(aComponent ==  runAsCombo){
-                    return interpreterTextField;
-                }
-                if(aComponent ==  interpreterTextField){
-                    return interpreterBrowseButton;
-                }
-                if(aComponent ==  interpreterBrowseButton){
-                    return defaultInterpreterCheckBox;
-                }
-                if(aComponent ==  defaultInterpreterCheckBox){
-                    return configureButton;
-                }
-                if(aComponent ==  configureButton){
-                    return indexFileTextField;
-                }
-                return argsTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  indexFileBrowseButton){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  argsTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  interpreterTextField){
-                    return runAsCombo;
-                }
-                if(aComponent ==  interpreterBrowseButton){
-                    return interpreterTextField;
-                }
-                if(aComponent ==  defaultInterpreterCheckBox){
-                    return interpreterBrowseButton;
-                }
-                if(aComponent ==  configureButton){
-                    return defaultInterpreterCheckBox;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return configureButton;
-                }
-                return argsTextField;//end getComponentBefore
-
-            }}
-        
-        );
+        setFocusTraversalPolicy(null);
 
         interpreterLabel.setLabelFor(interpreterTextField);
 
@@ -420,7 +357,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                     .add(configureButton))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, 19, GroupLayout.PREFERRED_SIZE)
+                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(indexFileLabel)
                     .add(indexFileBrowseButton))
                 .addPreferredGap(LayoutStyle.RELATED)
