@@ -266,6 +266,11 @@ public final class VarTypeResolver {
                         String leftVarName = CodeUtils.extractVariableName((Variable) leftHandSide);
                         if (leftVarName != null) {
                             if (isValidBlock(path)) {
+                                if (rightHandSide instanceof Reference) {
+                                    while(rightHandSide instanceof Reference) {
+                                        rightHandSide = ((Reference)rightHandSide).getExpression();
+                                    }
+                                }
                                 if (rightHandSide instanceof Variable) {
                                     String rightVarName = CodeUtils.extractVariableName((Variable) rightHandSide);
                                     Union2<Variable, String> rAssignment = assignments.get(rightVarName);

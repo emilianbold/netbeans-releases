@@ -44,7 +44,7 @@
                           <Component id="progressBar" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="pathTextComboBox" pref="261" max="32767" attributes="0"/>
+                  <Component id="pathTextComboBox" pref="266" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="chooserButton" min="-2" max="-2" attributes="0"/>

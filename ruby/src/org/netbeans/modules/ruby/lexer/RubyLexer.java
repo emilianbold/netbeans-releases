@@ -389,6 +389,8 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
             return RubyTokenId.ERROR;
 
         case Tokens.tGVAR: // Global variable
+        case Tokens.tBACK_REF:
+        case Tokens.tNTH_REF:
             return RubyTokenId.GLOBAL_VAR;
 
         case Tokens.tIVAR: // Instance variable

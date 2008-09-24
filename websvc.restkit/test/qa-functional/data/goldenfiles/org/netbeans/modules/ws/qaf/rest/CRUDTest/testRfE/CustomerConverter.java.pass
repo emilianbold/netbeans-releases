@@ -13,9 +13,9 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.ws.rs.core.UriBuilder;
 import javax.persistence.EntityManager;
-import java.util.Collection;
-import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.DiscountCode;
+import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
+import java.util.Collection;
 
 /**
  *
@@ -44,6 +44,8 @@ public class CustomerConverter {
         this.entity = entity;
         this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getCustomerId() + "/").build() : uri;
         this.expandLevel = expandLevel;
+        getDiscountCode();
+        getPurchaseOrderCollection();
     }
 
     /**

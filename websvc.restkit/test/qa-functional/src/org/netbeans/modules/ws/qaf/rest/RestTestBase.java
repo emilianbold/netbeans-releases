@@ -65,6 +65,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Utilities;
 
 /**
  * Base class for REST tests
@@ -74,7 +75,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
 
     //don't try to (un)deploy REST apps on windows!!!
     //see: https://jersey.dev.java.net/issues/show_bug.cgi?id=45
-    private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows"); //NOI18N
+    private static final boolean isWindows = Utilities.isWindows(); //NOI18N
 
 
     private static final String HOSTNAME = "localhost"; //NOI18N

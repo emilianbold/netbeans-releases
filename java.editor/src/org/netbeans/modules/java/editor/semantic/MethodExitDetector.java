@@ -176,7 +176,7 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
     }
     
     private void addToExceptionsMap(TypeMirror key, Tree value) {
-        if (value == null)
+        if (key == null || value == null)
             return ;
         
         Map<TypeMirror, List<Tree>> map = exceptions2HighlightsStack.peek();

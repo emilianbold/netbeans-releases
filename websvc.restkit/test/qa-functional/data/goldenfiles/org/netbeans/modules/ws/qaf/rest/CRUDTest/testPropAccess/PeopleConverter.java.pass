@@ -41,6 +41,7 @@ public class PeopleConverter {
         this.entities = entities;
         this.uri = uri;
         this.expandLevel = expandLevel;
+        getPerson();
     }
 
     /**

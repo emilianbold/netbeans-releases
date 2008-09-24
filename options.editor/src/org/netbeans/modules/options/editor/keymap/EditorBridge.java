@@ -245,7 +245,7 @@ public final class EditorBridge extends KeymapManager {
         }
         if (editorKit == null) {
             if (LOG.isLoggable(Level.WARNING)) {
-                LOG.warning("EditorKit not found for: " + mimeType); //NOI18N
+                LOG.fine("EditorKit not found for: " + mimeType); //NOI18N
             }
             return;
         }
