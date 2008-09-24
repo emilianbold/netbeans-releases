@@ -352,8 +352,12 @@ public class ProjectUtilities {
         }
         
         // target directory should be writable
-        File targetDir = new File (FileUtil.toFile(targetFolder), folderName);
-        if (! targetDir.canWrite ()) {
+        File targetDir = folderName != null ? new File (FileUtil.toFile (targetFolder), folderName) : FileUtil.toFile (targetFolder);
+        if (targetDir != null) {
+            if (targetDir.exists () && ! targetDir.canWrite ()) {
+                return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
+            }
+        } else if (! targetFolder.canWrite ()) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
         }
 
