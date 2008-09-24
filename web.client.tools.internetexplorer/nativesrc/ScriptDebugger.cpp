@@ -843,41 +843,41 @@ void ScriptDebugger::setDebugApplication(IRemoteDebugApplication *pRemoteDebugAp
 }
 
 ScriptDebugger *ScriptDebugger::createScriptDebugger() {
-	HRESULT hr = E_FAIL;
-	CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
+    HRESULT hr = E_FAIL;
+    CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
     CComPtr<IMachineDebugManager> spMachineDebugManager;
-	hr = spMachineDebugManager.CoCreateInstance(CLSID_MachineDebugManager, NULL, CLSCTX_ALL); 
+    hr = spMachineDebugManager.CoCreateInstance(CLSID_MachineDebugManager, NULL, CLSCTX_ALL); 
     CComPtr<IEnumRemoteDebugApplications> spEnumDebugApps;
     ULONG count = 0;
-	hr = spMachineDebugManager->EnumApplications(&spEnumDebugApps);
+    hr = spMachineDebugManager->EnumApplications(&spEnumDebugApps);
     if(hr == S_OK) {
         do {
             CComPtr<IRemoteDebugApplication> spCurrentRemoteDebugApp;
             //Enumerate debuggable applications and select the one corresponding
             //to the current process
-   	        hr = spEnumDebugApps->Next(1, &spCurrentRemoteDebugApp, &count);
-	        if(hr == S_OK && count > 0) {
+            hr = spEnumDebugApps->Next(1, &spCurrentRemoteDebugApp, &count);
+            spRemoteDebugApp = spCurrentRemoteDebugApp;
+            if(hr == S_OK && count > 0) {
                 CComBSTR name;
                 spCurrentRemoteDebugApp->GetName(&name);
                 Utils::log(1, _T("Debuggable application - %s\n"), (TCHAR *)name);
                 if(name != NULL) {
-                    spRemoteDebugApp = spCurrentRemoteDebugApp;
                     CComPtr<IEnumRemoteDebugApplicationThreads> spThreads;
                     hr = spRemoteDebugApp->EnumThreads(&spThreads);
-				    if(spThreads != NULL) {
-					    CComPtr<IRemoteDebugApplicationThread> spRemoteDebugAppThreads;
-					    ULONG threadCount;
-					    hr = spThreads->Next(1, &spRemoteDebugAppThreads, &threadCount);
-					    if(hr == S_OK && threadCount > 0) {
+                    if(spThreads != NULL) {
+                        CComPtr<IRemoteDebugApplicationThread> spRemoteDebugAppThreads;
+                        ULONG threadCount;
+                        hr = spThreads->Next(1, &spRemoteDebugAppThreads, &threadCount);
+                        if(hr == S_OK && threadCount > 0) {
                             DWORD dwThreadID;
-						    hr = spRemoteDebugAppThreads->GetSystemThreadId(&dwThreadID);
+                            hr = spRemoteDebugAppThreads->GetSystemThreadId(&dwThreadID);
                             Utils::log(1, _T("Debuggable application thread - %d\n"), dwThreadID);
-						    if(hr == S_OK && isCurrentprocessThread(dwThreadID)) {
-							    break;
-						    }
-					    }else if(hr == S_FALSE) {
- 						    break;
-					    }
+                            if(hr == S_OK && isCurrentprocessThread(dwThreadID)) {
+                                break;
+                            }
+                        }else if(hr == S_FALSE) {
+                            break;
+                        }
                     }else {
                         Utils::log(1, _T("Threads enumeration completed, error code - %x\n"), hr);
                     }
