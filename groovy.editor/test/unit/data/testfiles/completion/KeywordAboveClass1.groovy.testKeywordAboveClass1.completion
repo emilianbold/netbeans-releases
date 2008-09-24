@@ -3,6 +3,7 @@ ab|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 CLASS      AbstractCollection                         null
+CLASS      AbstractFactory                            null
 CLASS      AbstractList                               null
 CLASS      AbstractMap                                null
 CLASS      AbstractMethodError                        null
