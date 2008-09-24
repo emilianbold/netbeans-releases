@@ -128,7 +128,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
 
             } else {
                 Project prj = Templates.getProject(wizardDescriptor);
-                
+
                 SourceGroup[] groups = ProjectUtils.getSources(prj).getSourceGroups(Sources.TYPE_GENERIC);
                 WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(prj, groups, nameLocationDescriptor);
 
@@ -305,8 +305,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             logger.info("Setting up classloader");
             HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
             ClassLoader ccl = env.getProjectClassLoader(
-                    env.getProjectClassPath(revengFile).toArray(new URL[]{})
-                    );
+                    env.getProjectClassPath(revengFile).toArray(new URL[]{}));
             oldClassLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(ccl);
 
@@ -314,7 +313,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             try {
 
                 cfg = new JDBCMetaDataConfiguration();
-                
+
                 DefaultReverseEngineeringStrategy defaultStrategy = new DefaultReverseEngineeringStrategy();
                 ReverseEngineeringStrategy revStrategy = defaultStrategy;
                 OverrideRepository or = new OverrideRepository();
@@ -329,7 +328,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
                 revStrategy.setSettings(settings);
 
                 cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
-                
+
                 cfg.readFromJDBC();
                 cfg.buildMappings();
             } catch (Exception e) {
@@ -348,7 +347,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
+
             // Generating Mappings
             try {
                 if (helper.getHbmGen()) {
@@ -371,7 +370,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
             SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
-            
+
             FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName(), false);
             if (pkg != null && pkg.isFolder()) {
                 // bugfix: 137052
@@ -431,22 +430,28 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
         try {
             HibernateRevengDataObject hro = (HibernateRevengDataObject) newOne;
             HibernateReverseEngineering hre = hro.getHibernateReverseEngineering();
+
+            // Add Schema Selection.
+            int jx = hre.addSchemaSelection(true);
+            if (helper.getCatalogName() != null && !"".equals(helper.getCatalogName())) {
+                hre.setAttributeValue(HibernateReverseEngineering.SCHEMA_SELECTION, jx, CATALOG_NAME, helper.getCatalogName());
+            } else {
+                hre.setAttributeValue(HibernateReverseEngineering.SCHEMA_SELECTION, jx, CATALOG_NAME, null);
+            }
+            if (helper.getSchemaName() != null && !"".equals(helper.getSchemaName())) {
+                hre.setAttributeValue(HibernateReverseEngineering.SCHEMA_SELECTION, jx, ATTRIBUTE_NAME, helper.getSchemaName());
+            } else {
+                hre.setAttributeValue(HibernateReverseEngineering.SCHEMA_SELECTION, jx, ATTRIBUTE_NAME, null);
+            }
+
+            // Add Table filters.
             ArrayList<Table> list = (ArrayList<Table>) helper.getSelectedTables().getTables();
             for (int i = 0; i < list.size(); i++) {
                 int ix = hre.addTableFilter(true);
-                if (helper.getCatalogName() != null && !"".equals(helper.getCatalogName())) {
-                    hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, CATALOG_NAME, helper.getCatalogName());
-                } else {
-                    hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, CATALOG_NAME, null);
-                }
-                if (helper.getSchemaName() != null && !"".equals(helper.getSchemaName())) {
-                    hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, ATTRIBUTE_NAME, helper.getSchemaName());
-                } else {
-                    hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, ATTRIBUTE_NAME, null);
-                }
+                hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, CATALOG_NAME, null);
+                hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, ATTRIBUTE_NAME, null);
                 hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, MATCH_NAME, list.get(i).getName());
                 hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, EXCLUDE_NAME, null);
-
             }
             hro.addReveng();
             hro.save();
