@@ -41,6 +41,7 @@ public class DiscountCodesConverter {
         this.entities = entities;
         this.uri = uri;
         this.expandLevel = expandLevel;
+        getDiscountCode();
     }
 
     /**
