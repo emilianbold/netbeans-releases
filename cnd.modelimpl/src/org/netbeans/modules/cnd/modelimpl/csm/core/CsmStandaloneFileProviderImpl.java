@@ -81,7 +81,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.standalone.trace"); //NOI18N
 
-    CsmModelListener listener = new CsmModelListener() {
+    private final CsmModelListener listener = new CsmModelListener() {
 
         public void projectOpened(CsmProject project) {
         }
@@ -99,7 +99,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
     };
 
-    CsmProgressListener progressListener = new CsmProgressAdapter() {
+    private final CsmProgressListener progressListener = new CsmProgressAdapter() {
 
         @Override
         public void projectLoaded(CsmProject project) {
@@ -113,6 +113,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     public CsmStandaloneFileProviderImpl() {
         CsmListeners.getDefault().addModelListener(listener);
+        CsmListeners.getDefault().addProgressListener(progressListener);
     }
 
     static CsmStandaloneFileProviderImpl getDefaultImpl() {
@@ -137,7 +138,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             if (TRACE) trace("adding project %s", name); //NOI18N
             project = ModelImpl.instance().addProject(platformProject, name, true);
         }
-        return project.getFile(javaIoFile);
+        if (project != null) {
+            return project.getFile(javaIoFile);
+        }
+        return null;
     }
 
     private void clean(ProjectBase projectOpened) {

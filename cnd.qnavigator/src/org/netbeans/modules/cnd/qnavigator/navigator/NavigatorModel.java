@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.loaders.DataObject;
@@ -74,7 +73,6 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     private static final int DEFAULT_PARSING_DELAY = 2000;
 
     private DataObject cdo;
-    private CsmUID<CsmFile> uid;
     private NavigatorPanelUI ui;
     private NavigatorComponent busyListener;
     private Action[] actions;
@@ -129,19 +127,8 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
     
     private CsmFile getCsmFile() {
-        CsmFile csmFile = null;
-        if (uid == null) {
-            if (cdo != null) {
-                csmFile = CsmUtilities.getCsmFile(cdo, false);
-            }
-            if (csmFile != null) {
-                uid = csmFile.getUID();
-            }
-        } else {
-            csmFile = uid.getObject();
-        }
+        CsmFile csmFile = CsmUtilities.getCsmFile(cdo, false);
         if (csmFile != null && !csmFile.isValid()) {
-            uid = null;
             csmFile = null;
         }
         return csmFile;
@@ -173,6 +160,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (busyListener != null) {
                 busyListener.busyStart();
             }
+            System.out.println("CppNavigator update:"+csmFile);
             synchronized(lock) {
                 if (fileModel.setFile(csmFile)){
                     final Children children = root.getChildren();
@@ -330,6 +318,10 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         if (file == null || file.getProject() == project) {
             stopTimers();
             update(null);
+            restartTimers();
+        } else {
+            stopTimers();
+            update(file);
             restartTimers();
         }
     }
