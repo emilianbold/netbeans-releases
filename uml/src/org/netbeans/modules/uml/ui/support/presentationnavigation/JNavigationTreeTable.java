@@ -44,6 +44,8 @@
 package org.netbeans.modules.uml.ui.support.presentationnavigation;
 
 import java.awt.Component;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
@@ -109,6 +111,7 @@ public class JNavigationTreeTable extends JTreeTable
 		colMod.getColumn(3).setCellRenderer(valueRenderer);
 
 		addMouseListener(new TreeMouseHandler());
+                addKeyListener(new NavigateKeyListener());
 		
 	}
 
@@ -240,6 +243,21 @@ public class JNavigationTreeTable extends JTreeTable
 	   
 	}
 	
+        public class NavigateKeyListener extends KeyAdapter
+        {
+
+            @Override
+            public void keyPressed(KeyEvent e)
+            {
+                if(e.getKeyCode() == KeyEvent.VK_ENTER)
+                {
+                    TreePath selPath = getTree().getSelectionPath();
+                    handleNavigation(selPath);
+                }
+            }
+            
+        }
+        
 	public class NavigationTreeCellRenderer extends TreeTableCellRenderer
 	{
 		public NavigationTreeCellRenderer(TreeTableCellRenderer renderer)

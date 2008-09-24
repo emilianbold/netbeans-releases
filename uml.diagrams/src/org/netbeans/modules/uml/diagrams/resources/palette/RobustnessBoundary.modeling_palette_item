@@ -4,8 +4,8 @@
   <element name="Class" />
   <stereotype value="boundary" />
 
-  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/boundary-class.png" />
-  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/boundary-class-32.png" />
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/boundry-class.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/boundry-class-32.png" />
 
   <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.palette.Bundle"
                display-name-key="NAME_RobustnessBoundary"
