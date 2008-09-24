@@ -238,13 +238,14 @@ public abstract class InputProxy {
         }
 
         private static String createNewFifo(String hkey) {
-            // TODO: need to create unique file!!!
-            String name = "/tmp/" + FILENAME_PREFIX; // NOI18N
+            // TODO: /tmp may not be accessible on remote host
+            // need to have a general way of getting temp files folder on remote host
+            String name = "/tmp/" + FILENAME_PREFIX + "$$" + FILENAME_EXTENSION; // NOI18N
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
-            if (cp != null) {
-                cp.run(hkey, "mkfifo " + name, null); // NOI18N
+            if (cp.run(hkey, "mkfifo " + name + ";echo " + name, null) == 0) { // NOI18N
+                return cp.getOutput().trim();
             }
-            return name;
+            return null;
         }
 
         @Override
