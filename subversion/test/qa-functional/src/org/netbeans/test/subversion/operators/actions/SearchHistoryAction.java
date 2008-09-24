@@ -21,10 +21,10 @@ public class SearchHistoryAction extends Action{
     public static final String SVN_ITEM = "Subversion";
             
     /** "SEARCH HISTORY" menu item. */
-    public static final String SEARCH_HISTORY_ITEM = "Search History";
+    public static final String SEARCH_HISTORY_ITEM = "Search History...";
     
     /** Creates a new instance of SEARCH HISTORY */
     public SearchHistoryAction() {
-        super(SVN_ITEM + "|" + SEARCH_HISTORY_ITEM, SVN_ITEM + "|" + SEARCH_HISTORY_ITEM);
+        super("Versioning" + "|" + SEARCH_HISTORY_ITEM, SVN_ITEM + "|" + SEARCH_HISTORY_ITEM);
     }
 }
