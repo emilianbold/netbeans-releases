@@ -49,6 +49,7 @@ import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -61,7 +62,7 @@ import org.openide.util.NbBundle;
  */
 public class PropertyEditorVersion extends DesignPropertyEditor {
     
-    private final CustomEditor customEditor;
+    private CustomEditor customEditor;
     
     private PropertyEditorVersion() {
         customEditor = new CustomEditor();
@@ -69,6 +70,15 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
     
     public static final PropertyEditorVersion createInstance() {
         return new PropertyEditorVersion();
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
     }
     
     @Override
@@ -134,6 +144,11 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
             initComponents();
         }
         
+        void cleanUp() {
+            textField = null;
+            this.removeAll();
+        }
+
         private void initComponents() {
             setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();

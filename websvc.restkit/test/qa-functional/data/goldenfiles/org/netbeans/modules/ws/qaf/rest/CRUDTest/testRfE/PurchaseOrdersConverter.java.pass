@@ -41,6 +41,7 @@ public class PurchaseOrdersConverter {
         this.entities = entities;
         this.uri = uri;
         this.expandLevel = expandLevel;
+        getPurchaseOrder();
     }
 
     /**

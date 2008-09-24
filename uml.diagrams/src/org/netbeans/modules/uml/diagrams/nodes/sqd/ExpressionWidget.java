@@ -102,7 +102,12 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
         
         setBorder(BorderFactory.createEmptyBorder(1));
     }
-    
+
+    @Override
+    protected boolean canSelect()
+    {
+        return false;
+    }    
     
 
     public void propertyChange(PropertyChangeEvent evt) {

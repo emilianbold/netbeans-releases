@@ -3,12 +3,16 @@ Code completion result for source line:
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 CLASS      AbstractCollection                         null
+CLASS      AbstractFactory                            null
 CLASS      AbstractList                               null
 CLASS      AbstractMap                                null
 CLASS      AbstractMethodError                        null
 CLASS      AbstractQueue                              null
 CLASS      AbstractSequentialList                     null
 CLASS      AbstractSet                                null
+CLASS      AdaptingMetaClass                          null
+CLASS      AllTestSuite                               null
+CLASS      AntBuilder                                 null
 CLASS      Appendable                                 null
 CLASS      ArithmeticException                        null
 CLASS      ArrayIndexOutOfBoundsException             null

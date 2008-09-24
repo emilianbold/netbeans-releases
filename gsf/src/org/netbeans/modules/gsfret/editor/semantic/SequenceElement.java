@@ -59,9 +59,7 @@ class SequenceElement implements Comparable<SequenceElement> {
     public final Coloring coloring;
     
     private SequenceElement() {
-        language = null;
-        range = null;
-        coloring = null;
+        this(null, null, null);
     }
 
     public SequenceElement(Language language, OffsetRange range, Coloring coloring) {
@@ -71,11 +69,12 @@ class SequenceElement implements Comparable<SequenceElement> {
     }
     
     public int compareTo(SequenceElement o) {
-        if (o.range == null) {
-            assert o instanceof ComparisonItem;
-            return range.getStart() - ((ComparisonItem)o).start;
+        if (o instanceof ComparisonItem) {
+            return -1 * ((ComparisonItem) o).compareTo(this);
+        } else {
+            assert o.range != null;
+            return range.compareTo(o.range);
         }
-        return range.compareTo(o.range);
     }
 
     @Override
@@ -95,23 +94,30 @@ class SequenceElement implements Comparable<SequenceElement> {
 
     @Override
     public String toString() {
-        return "SequenceElement(range=" + range + ", lang=" + language + ", color=" + coloring + ")";
+        return "SequenceElement(range=" + range + ", lang=" + language + ", color=" + coloring + ")"; //NOI18N
     }
     
     // This class is used only for key comparison when creating subsets
     static class ComparisonItem extends SequenceElement {
-        private int start;
+        private int offset;
         
-        ComparisonItem(int start) {
-            this.start = start;
+        ComparisonItem(int offset) {
+            this.offset = offset;
         }
 
         @Override
         public int compareTo(SequenceElement o) {
             if (o instanceof ComparisonItem) {
-                return start - ((ComparisonItem)o).start;
+                return offset - ((ComparisonItem)o).offset;
+            } else {
+                if (offset < o.range.getStart()) {
+                    return -1;
+                } else if (offset >= o.range.getEnd()) { // forward biased
+                    return 1;
+                } else {
+                    return 0;
+                }
             }
-            return start - o.range.getStart();
         }
     }
 }

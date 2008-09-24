@@ -231,7 +231,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 case VARIABLE:
                     if (el.isClassMember()) {
                         SemiAttribute.ClassMemberElement memberElement = (ClassMemberElement) el;
-                        fromIndex = index.getAllProperties(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX, PHPIndex.ANY_ATTR);
+                        fromIndex = index.getAllFields(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX, PHPIndex.ANY_ATTR);
                     } else if (n.hasSecond()) {
                         final IndexedElement indexed = n.second();
                         FileObject file = indexed.getFileObject();

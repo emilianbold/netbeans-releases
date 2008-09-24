@@ -198,6 +198,10 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertBreak("try {\n    \n} catch (Exception $exc) {^",
                 "try {\n    \n} catch (Exception $exc) {\n    ^\n}");
     }
+    public void testInsertBreakAfterTry() throws Exception {
+        insertBreak("try {^\n} catch (Exception $ex) {\n}",
+                "try {\n    ^\n} catch (Exception $ex) {\n}");
+    }
     public void testInsertBreakAfterForEach() throws Exception {
         insertBreak("foreach ($array_variable as $number_variable => $variable) {^",
                 "foreach ($array_variable as $number_variable => $variable) {\n    ^\n}");

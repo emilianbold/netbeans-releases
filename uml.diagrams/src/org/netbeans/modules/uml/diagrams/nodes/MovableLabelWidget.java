@@ -61,6 +61,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.diagrams.actions.NodeLabelIteratorAction;
 import org.netbeans.modules.uml.drawingarea.actions.MoveNodeKeyAction;
 import org.netbeans.modules.uml.drawingarea.actions.ObjectSelectable;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
@@ -128,6 +129,7 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             chain.addAction(ds.createSelectAction());
             chain.addAction(ActionFactory.createMoveAction(labelMoveSupport, labelMoveSupport));
             chain.addAction(new MoveNodeKeyAction(labelMoveSupport, labelMoveSupport));
+            chain.addAction(new NodeLabelIteratorAction());
         }
         if (element instanceof INamedElement)
         {
@@ -137,6 +139,11 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         lookupContent.add(new ObjectSelectable());
     }
 
+    public Widget getAttachedNodeWidget()
+    {
+        return nodeWidget;
+    }
+    
     @Override
     public void setLabel(String label)
     {

@@ -69,7 +69,7 @@ public class Program extends ASTNode {
 
     }
 
-    public Program(int start, int end, List statements, List<Comment> commentsList) {
+    public Program(int start, int end, List<Statement> statements, List<Comment> commentsList) {
         this(start, end, (Statement[]) statements.toArray(new Statement[statements.size()]), commentsList);
     }
 

@@ -55,21 +55,21 @@
                     <code-name-base>org.netbeans.modules.websvc.rest</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.9</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.rest.samples</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.9</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.restapi</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.9</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -78,7 +78,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.9</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

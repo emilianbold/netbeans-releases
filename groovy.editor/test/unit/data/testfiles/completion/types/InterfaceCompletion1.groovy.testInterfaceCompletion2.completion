@@ -3,5 +3,7 @@ class SpecialGroovyClass implements R|unnable, Serializable {
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 CLASS      RandomAccess                               null
+CLASS      Range                                      null
 CLASS      Readable                                   null
+CLASS      ResourceConnector                          null
 CLASS      Runnable                                   null

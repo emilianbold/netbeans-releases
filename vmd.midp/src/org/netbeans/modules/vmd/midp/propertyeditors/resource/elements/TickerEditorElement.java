@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
@@ -53,12 +52,13 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 
 /**
  *
  * @author Anton Chechel
  */
-public class TickerEditorElement extends PropertyEditorResourceElement implements DocumentListener {
+public class TickerEditorElement extends PropertyEditorResourceElement implements DocumentListener, CleanUp {
 
     private long componentID;
     private boolean doNotFireEvent;
@@ -66,6 +66,12 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
     public TickerEditorElement() {
         initComponents();
         tickerTextField.getDocument().addDocumentListener(this);
+    }
+
+    public void clean(DesignComponent component) {
+        tickerLabel = null;
+        tickerTextField = null;
+        this.removeAll();
     }
 
     public JComponent getJComponent() {
@@ -86,7 +92,10 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
             setText(null);
             setAllEnabled(false);
             return;
+
         }
+
+
 
         this.componentID = wrapper.getComponentID();
         final String[] _tickerText = new String[1];
@@ -106,6 +115,7 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
                     if (!isPropertyValueAUserCodeType(propertyValue)) {
                         _tickerText[0] = MidpTypes.getString(propertyValue);
                     }
+
                 }
             });
         }
@@ -117,6 +127,7 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
                 if (TickerCD.PROP_STRING.equals(propertyName)) {
                     _tickerText[0] = MidpTypes.getString(propertyValue);
                 }
+
             }
         }
 
@@ -128,7 +139,8 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
     private synchronized void setText(String text) {
         doNotFireEvent = true;
         tickerTextField.setText(text);
-        doNotFireEvent = false;
+        doNotFireEvent =
+                false;
     }
 
     private void setAllEnabled(boolean isEnabled) {
@@ -140,12 +152,14 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
         if (tickerTextField.hasFocus()) {
             textChanged();
         }
+
     }
 
     public void removeUpdate(DocumentEvent e) {
         if (tickerTextField.hasFocus()) {
             textChanged();
         }
+
     }
 
     public void changedUpdate(DocumentEvent e) {
@@ -156,6 +170,7 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
         if (!doNotFireEvent) {
             fireElementChanged(componentID, TickerCD.PROP_STRING, MidpTypes.createStringValue(tickerTextField.getText()));
         }
+
     }
 
     /** This method is called from within the constructor to

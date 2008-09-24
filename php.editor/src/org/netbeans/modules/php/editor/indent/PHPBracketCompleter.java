@@ -602,7 +602,8 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
     }
     public static enum LineBalance {
         PLAIN,
-        UP_FIRST// } keyword {
+        UP_FIRST,// } keyword {
+        DOWN_FIRST
     };
 
     /**
@@ -693,7 +694,7 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
                         }
                     } else if (insertRBrace &&
                             (LexUtilities.getLineBalance(doc, next, PHPTokenId.PHP_CURLY_OPEN,
-                                PHPTokenId.PHP_CURLY_CLOSE, LineBalance.PLAIN) < 0)) {
+                                PHPTokenId.PHP_CURLY_CLOSE, LineBalance.DOWN_FIRST) < 0)) {
                         insertRBrace = false;
                     }
                 }

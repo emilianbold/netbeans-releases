@@ -11,11 +11,11 @@ package org.netbeans.test.subversion.main.archeology;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -28,6 +28,7 @@ import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 
 /**
  *
@@ -43,7 +44,8 @@ public class SearchHistoryUITest extends JellyTestCase{
     public PrintStream stream;
     String os_name;
     Operator.DefaultStringComparator comOperator; 
-    Operator.DefaultStringComparator oldOperator; 
+    Operator.DefaultStringComparator oldOperator;
+    static Logger log;
     
     /** Creates a new instance of SearchHistoryUITest */
     public SearchHistoryUITest(String name) {
@@ -52,10 +54,14 @@ public class SearchHistoryUITest extends JellyTestCase{
     
     @Override
     protected void setUp() throws Exception {        
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
-        
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
     
     protected boolean isUnix() {
@@ -78,7 +84,9 @@ public class SearchHistoryUITest extends JellyTestCase{
     
     public void testInvokeSearch() throws Exception {
         try {
-            OutputOperator.invoke();
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
+
             TestKit.showStatusLabels();
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
@@ -104,23 +112,24 @@ public class SearchHistoryUITest extends JellyTestCase{
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //open project
-            oto.waitText("Checking out... finished.");
+
+            TestKit.waitText(mh);
+
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             TestKit.waitForScanFinishedAndQueueEmpty();
 
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+            mh = new MessageHandler("Searching History");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             SearchHistoryOperator.invoke(node);
-            oto.waitText("Searching History... finished.");
+            TestKit.waitText(mh);
             stream.flush();
             stream.close();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    
