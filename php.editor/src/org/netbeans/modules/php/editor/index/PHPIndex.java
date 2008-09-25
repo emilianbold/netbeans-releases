@@ -93,7 +93,7 @@ public class PHPIndex {
     private static final Set<String> TERMS_CONST = Collections.singleton(PHPIndexer.FIELD_CONST);
     private static final Set<String> TERMS_CLASS = Collections.singleton(PHPIndexer.FIELD_CLASS);
     private static final Set<String> TERMS_VAR = Collections.singleton(PHPIndexer.FIELD_VAR);
-    private static final Set<String> TERMS_ALL = new HashSet();
+    private static final Set<String> TERMS_ALL = new HashSet<String>();
 
     {
         TERMS_ALL.add(PHPIndexer.FIELD_BASE);
@@ -331,7 +331,7 @@ public class PHPIndex {
 
     /** returns constnats of a class. */
     public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String typeName, String name, NameKind kind) {
-        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        Map<String, IndexedConstant> constants = new TreeMap<String, IndexedConstant>();
        
         // #147730 - prefer the current file
         File currentFile = getCurrentFile(context);
@@ -340,9 +340,13 @@ public class PHPIndex {
         for (String className : getClassAncestors(context, typeName)) {
             //int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
             for (IndexedConstant const0 : getClassConstants(context, className, name, kind)) {
-                constants.add(const0);
-                if (currentFile != null && currentFile.equals(const0.getFile().getFile())) {
-                    currentFileClasses.add(className);
+                String constantName = const0.getName();
+                if (!constants.containsKey(constantName) || className.equals(typeName)){
+                    constants.put(constantName, const0);
+                    
+                    if (currentFile != null && currentFile.equals(const0.getFile().getFile())) {
+                        currentFileClasses.add(className);
+                    }
                 }
             }
         }
@@ -351,12 +355,19 @@ public class PHPIndex {
 
         if (interfaceTree != null){
             for (IndexedInterface iface : interfaceTree){
-                constants.addAll(getClassConstants(context, iface.getName(), name, kind));
+                for (IndexedConstant constant : getClassConstants(context, iface.getName(), name, kind)){
+                    String constantName = constant.getName();
+                    
+                    if (!constants.containsKey(constantName) || iface.getName().equals(typeName)){
+                        constants.put( constantName,constant);
+                    }
+                }
             }
         }
 
-        filterClassMembers(constants, currentFileClasses, currentFile);
-        return constants;
+        Collection<IndexedConstant> result = constants.values();
+        filterClassMembers(result, currentFileClasses, currentFile);
+        return result;
     }
 
     /** returns all methods of a class or an interface. */
@@ -404,8 +415,8 @@ public class PHPIndex {
     }
 
     /** returns all fields of a class or an interface. */
-    public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
-        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+    public Collection<IndexedConstant> getAllFields(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
+        Map<String, IndexedConstant> fields = new TreeMap<String, IndexedConstant>();
         
         // #147730 - prefer the current file
         File currentFile = getCurrentFile(context);
@@ -413,16 +424,22 @@ public class PHPIndex {
 
         for (String className : getClassAncestors(context, typeName)) {
             int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
-            for (IndexedConstant property : getProperties(context, className, name, kind, mask)) {
-                properties.add(property);
-                if (currentFile != null && property != null && currentFile.equals(property.getFile().getFile())) {
+            for (IndexedConstant field : getFields(context, className, name, kind, mask)) {
+                String fieldName = field.getName();
+                
+                if (!fields.containsKey(fieldName) || className.equals(typeName)){
+                    fields.put(fieldName, field);
+                }
+                
+                if (currentFile != null && field != null && currentFile.equals(field.getFile().getFile())) {
                     currentFileClasses.add(className);
                 }
             }
         }
 
-        filterClassMembers(properties, currentFileClasses, currentFile);
-        return properties;
+        Collection<IndexedConstant> result = fields.values();
+        filterClassMembers(result, currentFileClasses, currentFile);
+        return result;
     }
 
     /** Current file for the context or <code>null</code> */
@@ -486,7 +503,7 @@ public class PHPIndex {
 
     /** returns local constnats of a class. */
     public Collection<IndexedConstant> getClassConstants(PHPParseResult context, String typeName, String name, NameKind kind) {
-        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
         Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CLASS_CONST, name, kind, ALL_SCOPE);
 
         for (String signature : signaturesMap.keySet()) {
@@ -498,11 +515,11 @@ public class PHPIndex {
             IndexedConstant prop = new IndexedConstant(propName, typeName,
                     this, signaturesMap.get(signature), offset, 0, null);
 
-            properties.add(prop);
+            constants.add(prop);
 
         }
 
-        return properties;
+        return constants;
     }
 
     /** returns methods of a class. */
@@ -541,8 +558,8 @@ public class PHPIndex {
     }
 
     /** returns fields of a class. */
-    public Collection<IndexedConstant> getProperties(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
-        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+    public Collection<IndexedConstant> getFields(PHPParseResult context, String typeName, String name, NameKind kind, int attrMask) {
+        Collection<IndexedConstant> fields = new ArrayList<IndexedConstant>();
         Map<String, String> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_FIELD, name, kind, ALL_SCOPE);
 
         for (String signature : signaturesMap.keySet()) {
@@ -565,11 +582,11 @@ public class PHPIndex {
                 IndexedConstant prop = new IndexedConstant(propName, typeName,
                         this, signaturesMap.get(signature), offset, flags, type,ElementKind.FIELD);
 
-                properties.add(prop);
+                fields.add(prop);
             }
         }
 
-        return properties;
+        return fields;
     }
 
     private Map<String, String> getTypeSpecificSignatures(String typeName, String fieldName, String name, NameKind kind, Set<SearchScope> scope) {
@@ -827,7 +844,7 @@ public class PHPIndex {
 
     public Collection<String>getDirectIncludes(PHPParseResult context, String filePath){
         assert !filePath.startsWith("file:");
-        ArrayList includes = new ArrayList();
+        ArrayList<String> includes = new ArrayList<String>();
         final Set<SearchResult> result = new HashSet<SearchResult>();
         search("filename", "file:" + filePath, NameKind.EXACT_NAME, result, ALL_SCOPE, TERMS_BASE); //NOI18N
 

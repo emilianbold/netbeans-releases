@@ -211,7 +211,8 @@ public class NativeExecutor implements Runnable {
                     //try to resolve from the root
                     exeFile = new File(executable);
                 }
-                String unbufferPath = Unbuffer.getPath(hkey, Unbuffer.is64BitExecutable(exeFile.getAbsolutePath()));
+                boolean is64bits = Unbuffer.is64BitExecutable(exeFile.getAbsolutePath());
+                String unbufferPath = Unbuffer.getPath(hkey, is64bits);
                 if (unbufferPath != null) {
                     int platformType  = (hkey == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(hkey).getPlatform();
                     if (platformType == PlatformTypes.PLATFORM_MACOSX) {
@@ -220,7 +221,8 @@ public class NativeExecutor implements Runnable {
                     } else if (platformType == PlatformTypes.PLATFORM_WINDOWS) {
                         //TODO: issue #144106
                     } else {
-                        envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+                        String preload = is64bits ? "LD_PRELOAD_64=" : "LD_PRELOAD_32="; // NOI18N
+                        envpList.add(preload + unbufferPath); // NOI18N
                     }
                 }
             } catch (Exception ex) {

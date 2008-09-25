@@ -1,0 +1,3 @@
+    <target name="clean-sjmc" if="sjmc-platform.trigger">
+        <delete dir="${{dist.dir}}/lib"/>
+    </target>

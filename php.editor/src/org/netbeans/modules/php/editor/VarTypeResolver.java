@@ -394,7 +394,7 @@ public final class VarTypeResolver {
                     ? varName.substring(1) : varName;
 
             Collection<IndexedConstant> constants =
-                    index.getAllProperties(result, clsName, varName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
+                    index.getAllFields(result, clsName, varName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
 
             if (!constants.isEmpty()) {
                 IndexedConstant con = constants.iterator().next();

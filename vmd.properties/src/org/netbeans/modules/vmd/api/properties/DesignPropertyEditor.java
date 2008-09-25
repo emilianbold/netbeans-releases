@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.OOOO
  */
-
 package org.netbeans.modules.vmd.api.properties;
 
 import java.beans.PropertyChangeEvent;
@@ -67,13 +66,12 @@ import org.openide.nodes.PropertySupport;
  *
  * @author Karol Harezlak
  */
- 
 /**
  * 
  * This class represents custom property editor in the Properties Window.
  */
- public abstract class DesignPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, Factory {
-    
+public abstract class DesignPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, Factory {
+
     private List<String> propertyNames;
     private WeakReference<DesignComponent> component;
     private Object tempValue;
@@ -82,7 +80,18 @@ import org.openide.nodes.PropertySupport;
     private InplaceEditor inplaceEditor;
     private String propertyDisplayName;
     private String customEditorTitle;
-    
+
+    /**
+     * This method is invokes when Property Editor needs to be destroy.
+     */
+    public void cleanUp(DesignComponent component) {
+        propertyNames = null;
+        tempValue = null;
+        propertyValue = null;
+        propertySupport = null;
+        inplaceEditor = null;
+    }
+
     /**
      * Useful especially when passing value Boolean.FALSE - in this case disable
      * the possibility of editing the the value as text but allows getAsText to
@@ -93,6 +102,7 @@ import org.openide.nodes.PropertySupport;
     public Boolean canEditAsText() {
         return null;
     }
+
     /**
      * Test whether the property is writable.
      * @return true if the write of the value is supported
@@ -100,7 +110,7 @@ import org.openide.nodes.PropertySupport;
     public boolean canWrite() {
         return true;
     }
-    
+
     /**
      * This method indicates whether the current value is the same as the value
      * that would otherwise be restored by calling restoreDefaultValue()
@@ -115,31 +125,33 @@ import org.openide.nodes.PropertySupport;
         if (propertyNames == null || propertyNames.isEmpty()) {
             return true;
         }
-        
-        final boolean[] isDefaultValue = new boolean[] { true };
+
+        final boolean[] isDefaultValue = new boolean[]{true};
         component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+
             public void run() {
                 for (String propertyName : propertyNames) {
-                    if (! component.get().isDefaultValue(propertyName)) {
+                    if (!component.get().isDefaultValue(propertyName)) {
                         isDefaultValue[0] = false;
                         break;
                     }
                 }
             }
         });
-        
+
         return isDefaultValue[0];
     }
-    
+
     @Override
     public boolean supportsCustomEditor() {
         Collection components = ActiveDocumentSupport.getDefault().getActiveComponents();
-        if (components != null && components.size() == 1)
+        if (components != null && components.size() == 1) {
             return true;
-        
+        }
+
         return false;
     }
-    
+
     /**
      * Test whether the property had a default value.
      * @return true if it does (true by default)
@@ -148,43 +160,45 @@ import org.openide.nodes.PropertySupport;
         if (propertyNames == null || propertyNames.isEmpty()) {
             return false;
         }
-        
-        final boolean[] supportsDefaultValue = new boolean[] { true };
+
+        final boolean[] supportsDefaultValue = new boolean[]{true};
         component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+
             public void run() {
                 for (String propertyName : propertyNames) {
                     PropertyDescriptor propertyDescriptor = component.get().getComponentDescriptor().getPropertyDescriptor(propertyName);
-                    if(! (propertyDescriptor.getDefaultValue().getKind() != PropertyValue.Kind.NULL || propertyDescriptor.isAllowNull())) {
+                    if (!(propertyDescriptor.getDefaultValue().getKind() != PropertyValue.Kind.NULL || propertyDescriptor.isAllowNull())) {
                         supportsDefaultValue[0] = false;
                         break;
                     }
                 }
             }
         });
-        
+
         return supportsDefaultValue[0];
     }
-    
+
     /**
      * Returns value used to restore this property to its default value, if supported. In the default
      * implementation, returns defaultValue of PropertyValue.
      * @return default value specifed in the model for this property
      */
     public Object getDefaultValue() {
-        if (propertyNames == null || propertyNames.isEmpty())
+        if (propertyNames == null || propertyNames.isEmpty()) {
             throw new IllegalStateException("Unable to obtain default value for this property without property name"); //NOI18N
-        
-        if (! (tempValue instanceof GroupValue))
+        }
+        if (!(tempValue instanceof GroupValue)) {
             return readDefaultPropertyValue(propertyNames.iterator().next());
-        
+        }
+
         GroupValue newAdvancedValue = ((GroupValue) tempValue);
         for (String propertyName : newAdvancedValue.getPropertyNames()) {
             ((GroupValue) tempValue).putValue(propertyName, readDefaultPropertyValue(propertyName));
         }
-        
-        return  newAdvancedValue;
+
+        return newAdvancedValue;
     }
-    
+
     /**
      * This method is called by the property sheet to pass the environment to the property editor.
      * The typical use case is for the ExPropertyEditor to call env.getFeatureDescriptor().getValue
@@ -196,19 +210,20 @@ import org.openide.nodes.PropertySupport;
      */
     public void attachEnv(PropertyEnv env) {
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-        env.addVetoableChangeListener( new VetoableChangeListener() {
+        env.addVetoableChangeListener(new VetoableChangeListener() {
+
             public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
                 customEditorOKButtonPressed();
             }
         });
     }
-    
+
     public final void resolve(DesignComponent component,
-                              List<String> propertyNames,
-                              Object value,
-                              PropertySupport propertySupport,
-                              String propertyDisplayName) {
-        
+            List<String> propertyNames,
+            Object value,
+            PropertySupport propertySupport,
+            String propertyDisplayName) {
+
         this.component = new WeakReference<DesignComponent>(component);
         this.propertyNames = propertyNames;
         this.tempValue = value;
@@ -216,24 +231,26 @@ import org.openide.nodes.PropertySupport;
         this.propertySupport = propertySupport;
         this.propertyDisplayName = propertyDisplayName;
     }
-    
+
     public final void resolveInplaceEditor(InplaceEditor inplaceEditor) {
         this.inplaceEditor = inplaceEditor;
     }
-    
+
     public InplaceEditor getInplaceEditor() {
         return inplaceEditor;
     }
-    
+
     /**
      * Title of the custom property editor dialog.
      * @return custom property editor title
      */
     public String getCustomEditorTitle() {
-        if (component == null)
+        if (component == null) {
             return null;
-        
+        }
+
         component.get().getDocument().getTransactionManager().readAccess((new Runnable() {
+
             public void run() {
                 DesignDocument document = component.get().getDocument();
                 if (component.get().getParentComponent() == null && document.getRootComponent() != component.get()) {
@@ -245,20 +262,21 @@ import org.openide.nodes.PropertySupport;
         }));
         return customEditorTitle;
     }
-    
+
     /**
      * It's called when PropertyEditor is attached to the DesignComponent using PropertiesPresenter (notifyAttached)
      * @param DesignComponent attached to this PropertyEditor
      */
     public void init(DesignComponent component) {
     }
+
     /**
      * Its called according to the DesignEventFilterResolver(DesignEventFilter) passed into the PropertiesPresenter
      *
      */
     public void notifyDesignChanged(DesignEvent event) {
     }
-    
+
     /**
      * Describes if executeInsideWriteTransaction() will be executed inside write
      * transaction responsible for saving data from property editor into the model.
@@ -267,7 +285,7 @@ import org.openide.nodes.PropertySupport;
     public boolean isExecuteInsideWriteTransactionUsed() {
         return true;
     }
-    
+
     /**
      * This method is executed at the beginning of write transaction when data from property
      * editor is writes into the model
@@ -277,12 +295,13 @@ import org.openide.nodes.PropertySupport;
     public boolean executeInsideWriteTransaction() {
         return true;
     }
-    
+
     /**
      * Method is invoked after OK button is pressed in the custom editor.
      */
     public void customEditorOKButtonPressed() {
     }
+
     /**
      * This method gives support to chose how to handle reset To Defualt event inside of custom property editor.
      * When returns Boolean.True (on default) reset to default is handle automatically
@@ -295,6 +314,7 @@ import org.openide.nodes.PropertySupport;
     public boolean isResetToDefaultAutomatically() {
         return true;
     }
+
     /**
      * Method is invoked after Reset To Defaulat button is pressed in the custom property editor.
      * This method is executed only when isResetToDefaultAutomatically return Boolean.False.
@@ -302,7 +322,7 @@ import org.openide.nodes.PropertySupport;
      */
     public void customEditorResetToDefaultButtonPressed() {
     }
-    
+
     @SuppressWarnings("unchecked") // NOI18N
     public final void invokeSaveToModel() {
         try {
@@ -315,21 +335,22 @@ import org.openide.nodes.PropertySupport;
             ex.printStackTrace();
         }
     }
-    
+
     private PropertyValue readDefaultPropertyValue(final String propertyName) {
         component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+
             public void run() {
                 propertyValue = component.get().getComponentDescriptor().getPropertyDescriptor(propertyName).getDefaultValue();
             }
         });
-        
+
         return propertyValue;
     }
-    
+
     public String getPropertyDisplayName() {
         return propertyDisplayName;
     }
-    
+
     public List<String> getPropertyNames() {
         return propertyNames;
     }

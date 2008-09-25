@@ -43,6 +43,7 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
@@ -91,6 +92,14 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
         this.supportsCustomEditor = supportsCustomEditor;
         
         initElements(Collections.<PropertyEditorElement>singleton(this));
+    }
+
+     @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        customEditorElement = null;
+        radioButton = null;
+        inplaceEditor = null;
     }
 
     @Override

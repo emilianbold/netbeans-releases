@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.codehaus.groovy.ant.Groovyc;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.Formatter;
@@ -175,19 +176,26 @@ public class GroovyTestBase extends GsfTestBase {
         });
     }
 
+    private ClassPath createCompilePath() {
+        URL url = Groovyc.class.getProtectionDomain().getCodeSource().getLocation();
+        return ClassPathSupport.createClassPath(FileUtil.getArchiveRoot(url));
+    }
+
     private class DummyClassPathProvider implements ClassPathProvider {
+
         public ClassPath findClassPath(FileObject file, String type) {
-	    try {
-		if (type == ClassPath.SOURCE) {
-		    return createSourcePath();
-		}
-		else if (type == ClassPath.BOOT) {
-		    return createBootClassPath ();
-		}
-	    } catch (IOException ioe) {
-		//Skip it
-	    }
-	    return ClassPathSupport.createClassPath (Collections.<PathResourceImplementation>emptyList());
+            try {
+                if (type == ClassPath.SOURCE) {
+                    return createSourcePath();
+                } else if (type == ClassPath.BOOT) {
+                    return createBootClassPath();
+                } else if (type == ClassPath.COMPILE) {
+                    return createCompilePath();
+                }
+            } catch (IOException ioe) {
+                //Skip it
+            }
+            return ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
         }
     }
 

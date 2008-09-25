@@ -2,10 +2,13 @@ Code completion result for source line:
 class SpecialGroovyClass implements |Runnable, Serializable {
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
+CLASS      AdaptingMetaClass                          null
 CLASS      Appendable                                 null
+CLASS      Buildable                                  null
 CLASS      CharSequence                               null
 CLASS      Cloneable                                  null
 CLASS      Closeable                                  null
+CLASS      ClosureInvokingMethod                      null
 CLASS      Collection                                 null
 CLASS      Comparable                                 null
 CLASS      Comparator                                 null
@@ -16,24 +19,37 @@ CLASS      DatagramSocketImplFactory                  null
 CLASS      Enumeration                                null
 CLASS      EventListener                              null
 CLASS      Externalizable                             null
+CLASS      Factory                                    null
 CLASS      FileFilter                                 null
 CLASS      FileNameMap                                null
 CLASS      FilenameFilter                             null
 CLASS      Flushable                                  null
 CLASS      Formattable                                null
+CLASS      GroovyInterceptable                        null
+CLASS      GroovyObject                               null
+CLASS      GroovyResourceLoader                       null
+CLASS      IFileNameFinder                            null
+CLASS      Interceptor                                null
 CLASS      Iterable                                   null
 CLASS      Iterator                                   null
 CLASS      List                                       null
 CLASS      ListIterator                               null
 CLASS      Map                                        null
+CLASS      MetaClass                                  null
+CLASS      MetaClassRegistry                          null
+CLASS      MetaObjectProtocol                         null
+CLASS      MutableMetaClass                           null
 CLASS      ObjectInput                                null
 CLASS      ObjectInputValidation                      null
 CLASS      ObjectOutput                               null
 CLASS      ObjectStreamConstants                      null
 CLASS      Observer                                   null
+CLASS      PropertyAccessInterceptor                  null
 CLASS      Queue                                      null
 CLASS      RandomAccess                               null
+CLASS      Range                                      null
 CLASS      Readable                                   null
+CLASS      ResourceConnector                          null
 CLASS      Runnable                                   null
 CLASS      Serializable                               null
 CLASS      Set                                        null
@@ -42,6 +58,7 @@ CLASS      SocketOptions                              null
 CLASS      SortedMap                                  null
 CLASS      SortedSet                                  null
 CLASS      URLStreamHandlerFactory                    null
+CLASS      Writable                                   null
 FIELD      metaClass                                  MetaClass
 KEYWORD    boolean                                    null
 KEYWORD    byte                                       null

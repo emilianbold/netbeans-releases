@@ -96,12 +96,13 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     public void annotate (Line.Set set, Lookup lookup) {
         final FileObject fo = lookup.lookup(FileObject.class);
         if (fo != null) {
-            final DataObject dobj = lookup.lookup(DataObject.class);
+            DataObject dobj = lookup.lookup(DataObject.class);
             if (dobj != null) {
                 PropertyChangeListener pchl = new PropertyChangeListener() {
                     /** annotate renamed files. */
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                            DataObject dobj = (DataObject) evt.getSource();
                             FileObject newFO = dobj.getPrimaryFile();
                             annotate(newFO);
                         }

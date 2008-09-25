@@ -68,11 +68,11 @@ public class Block extends Statement {
         }
     }
 
-    public Block(int start, int end, List statements, boolean isCurly) {
+    public Block(int start, int end, List<Statement> statements, boolean isCurly) {
         this(start, end, statements == null ? null : (Statement[]) statements.toArray(new Statement[statements.size()]), isCurly);
     }
 
-    public Block(int start, int end, List statements) {
+    public Block(int start, int end, List<Statement> statements) {
         this(start, end, statements, true);
     }
 

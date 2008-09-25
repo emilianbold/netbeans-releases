@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.uml.drawingarea.view;
 
-import java.awt.Color;
-import java.awt.Paint;
 import java.util.HashMap;
 import javax.accessibility.AccessibleRole;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -180,10 +178,12 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
             super(w);
         }
 
+        @Override
         public AccessibleRole getAccessibleRole () {
             return AccessibleRole.LABEL;
         }
 
+        @Override
         public String getAccessibleName() {
             if (getLabel() != null) 
             {

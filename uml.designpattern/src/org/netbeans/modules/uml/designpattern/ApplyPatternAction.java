@@ -47,6 +47,7 @@
 
 package org.netbeans.modules.uml.designpattern;
 
+import java.awt.EventQueue;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -172,25 +173,25 @@ public class ApplyPatternAction extends CookieAction
     private void applyPattern(final IDesignPatternManager manager,
                               final IDesignPatternDetails pDetails)
     {
-        new Thread()
-        {
-            Runnable runnable = new Runnable() 
+        try {
+            if(EventQueue.isDispatchThread())
+            {
+                manager.applyPattern(pDetails);
+            }
+            else 
+            {
+                Runnable runnable = new Runnable() 
                 {
                     public void run() 
                     {
                         manager.applyPattern(pDetails);
                     }
                 };
-            @Override
-            public void run() 
-            {
-                try {
-                    SwingUtilities.invokeAndWait(runnable);
-                } catch (Exception iex) {
-                    iex.printStackTrace();
-                } 
+                SwingUtilities.invokeAndWait(runnable);
             }
-        }.start();//need to start new thread to avoid invokeAndWait invocation from even dispatcher thread
+        } catch (Exception iex) {
+            iex.printStackTrace();
+        } 
     }
 
     @Override

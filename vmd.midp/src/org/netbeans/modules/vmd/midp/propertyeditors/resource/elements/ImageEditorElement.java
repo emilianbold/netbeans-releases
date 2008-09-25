@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
@@ -75,6 +74,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -85,7 +85,7 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class ImageEditorElement extends PropertyEditorResourceElement implements Runnable {
+public class ImageEditorElement extends PropertyEditorResourceElement implements Runnable, CleanUp {
 
     private static final String[] EXTENSIONS = {"png", "gif", "jpg", "jpeg"}; // NOI18N
     private long componentID;
@@ -99,6 +99,20 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     private final AtomicBoolean requiresModelUpdate = new AtomicBoolean(false);
     private DesignComponentWrapper wrapper;
     private WeakReference<DesignDocument> documentReferences;
+
+    public void clean(DesignComponent component) {
+        project = null;
+        imagePreview = null;
+        image = null;
+        comboBoxModel = null;
+        if (paths != null) {
+            paths.clear();
+            paths = null;
+        }
+        wrapper = null;
+        documentReferences = null;
+        this.removeAll();
+    }
 
     public ImageEditorElement() {
         paths = new HashMap<String, FileObject>();
@@ -129,14 +143,14 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
 
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         this.wrapper = wrapper;
-        
+
         if (documentReferences == null || documentReferences.get() == null) {
             return;
         }
         final DesignDocument document = documentReferences.get();
-        
+
         project = ProjectUtils.getProject(document);
-  
+
         if (wrapper == null) {
             // UI stuff
             setText(null);
@@ -324,7 +338,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                 if (!fullPath.substring(i).startsWith("/")) { //NOI18N
                     relativePath = "/" + fullPath.substring(i); //NOI18N
                 } else {
-                    relativePath = fullPath.substring(i); 
+                    relativePath = fullPath.substring(i);
                 }
             } else if (needCopy) {
                 // somewhere outside sources - need to copy (export image)
@@ -333,7 +347,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                     // file exists, do not convert
                     return null;
                 }
-                
+
                 try {
                     fo = fo.copy(sourceFolder, fo.getName(), fo.getExt());
                 } catch (IOException ex) {
@@ -349,18 +363,18 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
 
         return relativePath;
     }
-    
+
     public void init(DesignDocument document) {
         documentReferences = new WeakReference<DesignDocument>(document);
     }
-    
+
     public void run() {
         if (documentReferences == null || documentReferences.get() == null) {
             return;
         }
-        
+
         final DesignDocument document = documentReferences.get();
-        
+
         if (document != null) {
             updateModel(document);
         }
@@ -637,22 +651,22 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             } else {
                 String message = NbBundle.getMessage(ImageEditorElement.class, "MSG_FILE_EXIST"); // NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
-            }                                             
+            }
         }
-    }                                             
+    }
 
     private void pathTextComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pathTextComboBoxActionPerformed
 //        if (isShowing() && !doNotFireEvent) {//GEN-LAST:event_pathTextComboBoxActionPerformed
         if (!doNotFireEvent) {
             String text = (String) pathTextComboBox.getSelectedItem();
             fireElementChanged(componentID, ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
-            updatePreview();                                                
+            updatePreview();
         }
-    }                                                
+    }
 
     private void previewPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_previewPanelComponentResized
         updatePreview();//GEN-LAST:event_previewPanelComponentResized
-    }                                             
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooserButton;
     private javax.swing.JLabel heightLabel;

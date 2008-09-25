@@ -159,8 +159,11 @@ public class EdgeLabelIteratorAction extends WidgetAction.Adapter {
                     }
                 }
             }
-            mgr.selectLabel((String) values[0], (LabelManager.LabelType) values[1]);
-            return true;
+            if (mgr != null && values[0] != null && values[1] != null)
+            {
+                mgr.selectLabel((String) values[0], (LabelManager.LabelType) values[1]);
+                return true;
+            }            
         }
         return false;
     }

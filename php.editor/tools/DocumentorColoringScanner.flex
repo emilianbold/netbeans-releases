@@ -59,6 +59,14 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state ST_IN_TAG
 %state ST_NO_TAG
 
+%eofval{
+          if(input.readLength() > 0) {
+              return PHPDocCommentTokenId.PHPDOC_COMMENT;
+          }
+          else {
+              return null;
+          }
+%eofval}
 
 %{
         private LexerInput input;

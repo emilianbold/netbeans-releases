@@ -9,5 +9,10 @@ CLASS      NoSuchFieldError                           null
 CLASS      NoSuchFieldException                       null
 CLASS      NoSuchMethodError                          null
 CLASS      NoSuchMethodException                      null
+CLASS      Node                                       null
+CLASS      NodeBuilder                                null
+CLASS      NodeList                                   null
+CLASS      NodePrinter                                null
+CLASS      NonEmptySequence                           null
 CLASS      NotActiveException                         null
 CLASS      NotSerializableException                   null

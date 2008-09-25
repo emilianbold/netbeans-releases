@@ -1,10 +1,10 @@
 Name: JMUnit
-Version: 1.0.1
-OSR: 9385 
+Version: 1.2.1
+OSR: 9385
 Description: http://sourceforge.net/projects/jmunit/
 Origin: http://sourceforge.net/projects/jmunit/
 License: Apache-2.0
-Files: jmunit4cldc10-1.1.0.jar, jmunit-1.1.0.api.zip
+Files: jmunit4cldc11-1.2.1.jar, jmunit-1.2.1-api.zip
 
                                  Apache License
                            Version 2.0, January 2004

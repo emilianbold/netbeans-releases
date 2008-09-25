@@ -4477,6 +4477,7 @@ org.netbeans.spi.project.ui.RecommendedTemplates
 org.netbeans.spi.project.ui.support.FileSensitiveActions
 org.netbeans.spi.project.ui.support.MainProjectSensitiveActions
 org.netbeans.spi.project.ui.support.ProjectActionPerformer
+org.netbeans.spi.project.ui.support.ProjectSensitiveActions
 org.netbeans.spi.project.ui.support.UILookupMergerSupport
 org.netbeans.spi.project.ui.support.UILookupMergerSupport$OpenHookImpl
 org.netbeans.spi.project.ui.support.UILookupMergerSupport$OpenMerger

@@ -66,5 +66,6 @@ int main(int argc, char**argv) {
             std::cout << i << ": " << argv[i] << std::endl;
         }
     }
+    wait(0);
     return 0;
 }
