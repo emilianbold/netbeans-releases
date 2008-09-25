@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackageDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -542,7 +543,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(PACK_TYPE_ELEMENT)) {
             if (currentPackagingConfiguration != null) {
-                int type = new Integer(currentText).intValue();
+                int type;
+                if (descriptorVersion <= 50) {
+                    type = new Integer(currentText).intValue();
+                }
+                else {
+                    type = PackageDescriptor.getTypeFromName(currentText);
+                }
                 currentPackagingConfiguration.getType().setValue(type);
             }
         } else if (element.equals(PREPROCESSOR_ELEMENT)) {

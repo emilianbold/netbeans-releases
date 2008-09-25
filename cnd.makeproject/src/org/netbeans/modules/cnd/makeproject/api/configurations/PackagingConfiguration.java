@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackageDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,7 +66,7 @@ import org.openide.util.NbBundle;
 public class PackagingConfiguration {
 
     private MakeConfiguration makeConfiguration;    // Types
-    private static String[] TYPE_NAMES = {
+    private static String[] TYPE_DISPLAY_NAMES = {
         getString("Tar"),
         getString("Zip"),
         getString("SCR4Package"),
@@ -90,7 +91,7 @@ public class PackagingConfiguration {
     // Constructors
     public PackagingConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
-        type = new IntConfiguration(null, TYPE_TAR, TYPE_NAMES, null);
+        type = new IntConfiguration(null, TYPE_TAR, TYPE_DISPLAY_NAMES, null);
         verbose = new BooleanConfiguration(null, true);
         svr4Header = new VectorConfiguration(null); // NOI18N
         rpmHeader = new VectorConfiguration(null); // NOI18N
@@ -547,11 +548,15 @@ public class PackagingConfiguration {
     }
 
     public String[] getDisplayNames() {
-        return TYPE_NAMES;
+        return TYPE_DISPLAY_NAMES;
     }
 
     public String getDisplayName() {
-        return TYPE_NAMES[getType().getValue()];
+        return TYPE_DISPLAY_NAMES[getType().getValue()];
+    }
+    
+    public String getName() {
+        return PackageDescriptor.NAMES[getType().getValue()];
     }
     
     public String expandMacros(String s) {
