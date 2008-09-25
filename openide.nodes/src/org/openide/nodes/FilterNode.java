@@ -43,6 +43,7 @@ package org.openide.nodes;
 import java.lang.ref.Reference;
 import java.lang.reflect.Method;
 import org.openide.nodes.Children.Entry;
+import org.openide.nodes.EntrySupport.Lazy;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -439,7 +440,7 @@ public class FilterNode extends Node {
                 } else if (!original.isLeaf() && (getChildren() == Children.LEAF)) {
                     setChildren(new Children(original));
                 } else if (!original.isLeaf() && (getChildren() != Children.LEAF)) {
-                    if (original.getChildren().isLazy() != getChildren().isLazy()) {
+                    if (getChildren().isLazy() || original.getChildren().isLazy() != getChildren().isLazy()) {
                         setChildren(new Children(original));
                     } else {
                         ((FilterNode.Children) getChildren()).changeOriginal(original);
@@ -1307,7 +1308,7 @@ public class FilterNode extends Node {
         private Children(Node or, boolean lazy) {
             super(lazy);
             original = or;
-            support = lazy ? new LazySupport() : new DefaultSupport();            
+            support = lazy ? new LazySupport() : new DefaultSupport();
         }
 
         /** Sets the original children for this children. 
@@ -1495,6 +1496,40 @@ public class FilterNode extends Node {
         @Override
         Entry createEntryForKey(Node key) {
             return support.createEntryForKey(key);
+        }
+        
+        @Override
+        EntrySupport createEntrySource() {
+            return isLazy() ? new LazyEntrySupport(this) : new DefaultEntrySupport(this);
+        }
+        
+        private class DefaultEntrySupport extends EntrySupport.Default {
+
+            public DefaultEntrySupport(org.openide.nodes.Children ch) {
+                super(ch);
+            }
+
+            @Override
+            protected List<Node> createSnapshot() {
+                DefaultSnapshot snapshot = (DefaultSnapshot) super.createSnapshot();
+                Object[] newHolder = new Object[] {snapshot.holder, original.getChildren().snapshot()};
+                snapshot.holder = newHolder;
+                return snapshot;
+            }
+        }
+
+        private class LazyEntrySupport extends EntrySupport.Lazy {
+
+            public LazyEntrySupport(org.openide.nodes.Children ch) {
+                super(ch);
+            }
+
+            @Override
+            protected List<Node> createSnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i, boolean delayed) {
+                LazySnapshot snapshot = (LazySnapshot) super.createSnapshot(entries, e2i, delayed);
+                snapshot.holder = original.getChildren().snapshot();
+                return snapshot;
+            }
         }
 
         abstract private class ChildrenSupport {

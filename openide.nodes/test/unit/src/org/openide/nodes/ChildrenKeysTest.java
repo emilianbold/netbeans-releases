@@ -1600,6 +1600,116 @@ public class ChildrenKeysTest extends NbTestCase {
         Node n = listener.snapshot.get(0);
         assertEquals("1st is c", "c", n.getName());
     }
+
+    public void testOldSnapshotIsUpdated() throws InterruptedException {
+
+        class K extends Keys {
+
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+
+            @Override
+            protected void removeNotify() {
+                super.removeNotify();
+            }
+            
+        }
+        
+        class Listener extends NodeAdapter {
+            int cnt;
+            @Override
+            public void childrenAdded(final NodeMemberEvent ev) {
+                cnt++;
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                cnt++;
+            }
+        }
+
+        K ch = new K();
+        Node root = createNode(ch);
+        root.getChildren().getNodesCount();
+        List<Node> snapshot = root.getChildren().snapshot();
+        ch.keys("a", "-a", "b");
+        Node[] nodes = root.getChildren().getNodes();
+
+        Listener listener = new Listener();
+        root.addNodeListener(listener);
+
+        WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
+        nodes = null;
+        try {
+            assertGC("", ref);
+        } catch (Error ex) {
+            if (lazy()) {
+                fail("Lazy node should be GCed");
+            }
+            // OK, default (eager) are GCed only before removeNotify()
+        }
+        ch.keys("b");
+        assertEquals(1, listener.cnt);
+    }
+    
+    public void testOriginalSnapshotIsHeldByFilterNode() throws InterruptedException {
+
+        class K extends Keys {
+            boolean removeNot;
+
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+
+            @Override
+            protected void removeNotify() {
+                removeNot = true;
+                super.removeNotify();
+            }
+            
+        }
+
+        K ch = new K();
+        Node root = new FilterNode(createNode(ch));
+        root.getChildren().getNodesCount();
+        List<Node> snapshot = root.getChildren().snapshot();
+        List<Node> origSnapshot = ch.snapshot();
+        ch.keys("a", "-a", "b");
+
+        origSnapshot = null;
+        Node[] nodes = root.getChildren().getNodes();
+        WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
+        nodes = null;
+        try {
+            assertGC("", ref);
+        } catch (Error ex) {
+            if (lazy()) {
+                fail("Lazy node should be GCed");
+            }
+            // OK, default (eager) are GCed only before removeNotify()
+        }
+        if (ch.removeNot) {
+            fail("Original snapshot should be held by FilterNode to prevent removeNotify");
+        }
+    }
+
     
     @RandomlyFails // assumed to suffer from same random problem as testGetNodesFromTwoThreads57769; see Thread.sleep
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
