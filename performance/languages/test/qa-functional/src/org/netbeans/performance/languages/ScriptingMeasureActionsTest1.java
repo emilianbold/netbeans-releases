@@ -51,13 +51,12 @@ import org.netbeans.performance.languages.actions.*;
  *
  * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
-public class ScriptingMeasureActionsTest {
+public class ScriptingMeasureActionsTest1 {
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
         System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureActionsTest");
-
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
                 .addTest(CreatePHPProject.class)
@@ -69,21 +68,6 @@ public class ScriptingMeasureActionsTest {
                 .addTest(PHPNavigatorTest.class)
                 .addTest(GoToSourceTest.class)
                 .addTest(NavigateGoToSourceTest.class)
-                .addTest(EditorMenuPopup.class)
-                .addTest(FormatFileTest.class)
-                .addTest(CloseProjectTest.class)
-                .addTest(CloseScriptingFiles.class)
-                .addTest(TypingInScriptingEditor.class)
-                .addTest(ScriptingCodeCompletionInEditor.class)
-
-                // Saving modified document
-                .addTest(SaveModifiedScriptingFiles.class)
-
-                // Page Up and Down in scripting editor
-                .addTest(PageUpPageDownScriptingEditor.class)
-
-                // Can cause RubyProject to be closed in case of failure
-                .addTest(OpenRubyProject.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;        
