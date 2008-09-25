@@ -878,7 +878,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (inputProxy != null) {
                 inputProxy.stop();
             }
-            iotab.getOut().close();
+            if (iotab != null) {
+                iotab.getOut().close();
+            }
             GdbContext.getInstance().invalidate(true);
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }
