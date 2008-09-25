@@ -70,7 +70,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     //private Map<Token, Coloring> colorings;
     private SortedSet<SequenceElement> colorings;
     private List<Edit> edits;
-    private Map<Coloring, AttributeSet> CACHE = new HashMap<Coloring, AttributeSet>();
+    private Map<Language,Map<Coloring, AttributeSet>> CACHE = new HashMap<Language,Map<Coloring, AttributeSet>>();
     private Document doc;
 
     public static GsfSemanticLayer getLayer(Class id, Document doc) {
@@ -138,13 +138,20 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     }
     
     synchronized AttributeSet getColoring(Coloring c, Language language) {
-        AttributeSet a = CACHE.get(c);
-        
-        if (a == null) {
-            CACHE.put(c, a = language.getColoringManager().getColoringImpl(c));
+        Map<Coloring,AttributeSet> map = CACHE.get(language);
+        if (map == null) {
+            AttributeSet a = language.getColoringManager().getColoringImpl(c);
+            map = new HashMap<Coloring,AttributeSet>();
+            map.put(c, a);
+            CACHE.put(language, map);
+            return a;
+        } else {
+            AttributeSet a = map.get(c);
+            if (a == null) {
+                map.put(c, a = language.getColoringManager().getColoringImpl(c));
+            }
+            return a;
         }
-        
-        return a;
     }
 
     public void insertUpdate(DocumentEvent e) {
