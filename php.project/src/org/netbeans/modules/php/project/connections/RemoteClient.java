@@ -566,7 +566,7 @@ public class RemoteClient implements Cancellable {
             } else if (parent.isFile()) {
                 transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_DirFileCollision", file));
                 return;
-            } else if (!localFile.canWrite()) {
+            } else if (localFile.exists() && !localFile.canWrite()) {
                 transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FileNotWritable", localFile));
                 return;
             }
