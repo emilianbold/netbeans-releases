@@ -41,12 +41,17 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.PositionManager;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -65,6 +70,7 @@ public class JsPositionManagerTest extends JsTestBase {
         assertNotNull(root);
 
         List<Node> nodes = new ArrayList<Node>();
+        addAll(root, nodes);
         for (Node node : nodes) {
             AstElement element = AstElement.getElement(info, node);
             if (element != null) {
@@ -98,6 +104,71 @@ public class JsPositionManagerTest extends JsTestBase {
             }
         }
         assertTrue(found);
+    }
+
+    public void testGetPosition2() throws Exception {
+        JsPositionManager jpm = new JsPositionManager();
+        ElementHandle handle = new ElementHandle() {
+
+            public FileObject getFileObject() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public String getMimeType() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public String getName() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public String getIn() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public ElementKind getKind() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public Set<Modifier> getModifiers() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public boolean signatureEquals(ElementHandle handle) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+        };
+        OffsetRange r = jpm.getOffsetRange(null, handle);
+        assertNotNull(r);
+    }
+
+    public void testGetPosition3() throws Exception {
+        JsPositionManager jpm = new JsPositionManager();
+        OffsetRange r = jpm.getOffsetRange(null, null);
+        assertNotNull(r);
+    }
+
+    public void testGetPosition4() throws Exception {
+        JsPositionManager jpm = new JsPositionManager();
+        ElementHandle handle = new JsElement() {
+
+            @Override
+            public String getName() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public ElementKind getKind() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public String getFqn() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        OffsetRange r = jpm.getOffsetRange(null, handle);
+        assertNotNull(r);
     }
 
     private void addAll(Node node, List<Node> list) {

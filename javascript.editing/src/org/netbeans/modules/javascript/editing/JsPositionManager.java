@@ -41,6 +41,8 @@
 package org.netbeans.modules.javascript.editing;
 
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -64,11 +66,11 @@ public class JsPositionManager implements PositionManager {
             if (target != null) {
                 return LexUtilities.getLexerOffsets(info, new OffsetRange(target.getSourceStart(), target.getSourceEnd()));
             }
-
             return OffsetRange.NONE;
-        } else {
-            throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
-                object) != null) ? object.getClass().getName() : "null");
+        } else if (object != null) {
+            Logger.global.log(Level.WARNING, "Foreign element: " + object + " of type " +
+                ((object != null) ? object.getClass().getName() : "null"));
         }
+        return OffsetRange.NONE;
     }
 }
