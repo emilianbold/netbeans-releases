@@ -1443,6 +1443,20 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 // TODO - do I really need to pull out the keySet() here?
                 int indexedCount = stamps != null ? stamps.keySet().size() : 0;
                 if (seenCount != indexedCount) {
+                    // Special case: We generate some extra index entries for things
+                    // in jar files -- those shouldn't count
+                    int jarFileCount = 0;
+                    for (String url : stamps.keySet()) {
+                        if (url.startsWith("jar:")) { // NOI18N
+                            jarFileCount++;
+                        }
+                    }
+
+                    if (seenCount+jarFileCount == indexedCount) {
+                        // Yes, the discrepancy was just because of files in jar files
+                        continue;
+                    }
+
                     // We only count files that we've timestamped, thus we can
                     // never get a greater seen count than the number of files in
                     // the index.
@@ -1477,6 +1491,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 
                     for (String url : removed) {
                         try {
+                            if (url.startsWith("jar:")) { // NOI18N
+                                continue;
+                            }
                             cachingIndexer.remove(language, url);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
