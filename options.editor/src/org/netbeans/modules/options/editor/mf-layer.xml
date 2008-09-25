@@ -143,7 +143,6 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="GoTo">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
-                <file name="goto"/>
                 <file name="goto-declaration"/>
                 <file name="goto-source"/>
                 <file name="goto-super-implementation"/>
