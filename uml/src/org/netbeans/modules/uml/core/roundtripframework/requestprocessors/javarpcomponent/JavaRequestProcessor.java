@@ -2326,7 +2326,7 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
         return retval;
     }
     
-    protected boolean invalidClass(String name)
+    public boolean invalidClass(String name)
     {
         boolean retval = false;
         retval = invalidIdentifier(name);
@@ -2340,7 +2340,7 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
         return retval;
     }
     
-    protected boolean invalidPackage(String name)
+    public boolean invalidPackage(String name)
     {
         boolean retval = false;
         retval = invalidIdentifier(name);
@@ -2561,7 +2561,7 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
         sendErrorMessage(message, title);
     }
     
-    protected boolean checkIfCorrectLanguage(IElement pElement)
+    public boolean checkIfCorrectLanguage(IElement pElement)
     {
         boolean retVal = false;
         
