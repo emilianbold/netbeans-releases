@@ -31,7 +31,7 @@
                           <Component id="internetExplorerRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="firefoxRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="debugURLTextField" pref="312" max="32767" attributes="0"/>
+                              <Component id="debugURLTextField" pref="344" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="browseButton" min="-2" max="-2" attributes="0"/>
                           </Group>
