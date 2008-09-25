@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints;
 
+import org.netbeans.modules.web.client.javascript.debugger.api.NbJSContextProviderWrapper;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSFileObjectLocation;
 import org.netbeans.modules.web.client.tools.api.JSAbstractLocation;
 import org.openide.filesystems.FileObject;
@@ -123,11 +124,14 @@ public final class NbJSFileObjectBreakpoint extends NbJSBreakpoint {
     
     @Override
     public void notifyUpdated(Object source) {
-        super.notifyUpdated(source);
         if(source instanceof Line) {
             //firePropertyChange(PROP_LINE_NUMBER, getLineNumber(), getLineNumber((Line)source));
-            lineNumber = getLineNumber((Line)source);
+            line = (Line)source;
+            lineNumber = getLineNumber(line);
+            location = createNbJSAbstactLocation(line);
         }
+
+        super.notifyUpdated(source);
     }
 
 }
