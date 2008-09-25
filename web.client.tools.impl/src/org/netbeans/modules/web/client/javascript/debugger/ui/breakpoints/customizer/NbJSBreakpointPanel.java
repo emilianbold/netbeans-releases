@@ -387,12 +387,7 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
         if (lineNum < 0) {
             return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec");
         }
-        
-        File file = new File(sourceName);
-        if(file == null || !file.exists() || file.isDirectory()) {
-            return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_Invalid_File");
-        }
-        
+                
         if (breakpoint != null ){
             if ( breakpoint instanceof NbJSURIBreakpoint)
                 return validateURIMsg( sourceName, lineNum);
@@ -432,10 +427,14 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
     private String validateFileNameMsg(String fileName, int lineNum) {
         if (fileName == null || fileName.equals("")){
             return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_NotAFILE");
+            
+        }
+        File file = new File(fileName);
+        if(file == null || !file.exists() || file.isDirectory()) {
+            return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_NotAFILE");
         }
 
-        FileObject fileObject = (breakpoint != null ) ? breakpoint.getFileObject() : null;
-        
+        FileObject fileObject = (breakpoint != null ) ? breakpoint.getFileObject() : null;        
         if (fileObject == null ){
             try {
                 fileObject = URLMapper.findFileObject(new URL("file:" + fileName));
