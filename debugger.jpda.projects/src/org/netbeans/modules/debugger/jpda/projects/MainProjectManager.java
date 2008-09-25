@@ -62,6 +62,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 
 /**
  * Provies access to the main or currently selected project.
@@ -163,10 +164,18 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
             URL root;
             try {
                 root = sg.getRootFolder().getURL();
+                projectRoots.add(root);
             } catch (FileStateInvalidException fsiex) {
                 continue;
+            } catch (NullPointerException npe) {
+                // http://www.netbeans.org/issues/show_bug.cgi?id=148076
+                if (sg == null) {
+                    npe = Exceptions.attachMessage(npe, "Null source group returned from "+sources+" of class "+sources.getClass());
+                } else if (sg.getRootFolder() == null) {
+                    npe = Exceptions.attachMessage(npe, "Null root folder returned from "+sg+" of class "+sg.getClass());
+                }
+                Exceptions.printStackTrace(npe);
             }
-            projectRoots.add(root);
         }
         return projectRoots;
     }
