@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 
@@ -176,7 +177,7 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
     public void setServerInstanceID(String string) {
         String oldone = null;
         if (serverInstanceID != null) {
-            oldone = Deployment.getDefault().getServerID(serverInstanceID);
+            oldone = POHImpl.privateGetServerId(serverInstanceID);
         }
         serverInstanceID = string;
         if (oldone != null) {
@@ -186,7 +187,7 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
     
     @Override
     public String getServerInstanceID() {
-        if (serverInstanceID != null && Deployment.getDefault().getServerID(serverInstanceID) != null) {
+        if (serverInstanceID != null && POHImpl.privateGetServerId(serverInstanceID) != null) {
             return serverInstanceID;
         }
         return ExecutionChecker.DEV_NULL;
@@ -195,7 +196,7 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
     @Override
     public String getServerID() {
         if (serverInstanceID != null) {
-            String tr = Deployment.getDefault().getServerID(serverInstanceID);
+            String tr = POHImpl.privateGetServerId(serverInstanceID);
             if (tr != null) {
                 return tr;
             }
