@@ -48,7 +48,7 @@ import java.awt.event.FocusListener;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
 import org.openide.windows.WindowManager;

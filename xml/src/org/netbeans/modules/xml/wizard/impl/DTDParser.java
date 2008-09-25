@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.xml.wizard.impl;
 
 import java.io.*;
 import java.util.*;
@@ -52,7 +52,7 @@ import org.openide.xml.*;
 
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.api.xml.parsers.SAXEntityParser;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 
 /**
  * Silently produces Set<String> of roots from passed SAX declaration handler events.

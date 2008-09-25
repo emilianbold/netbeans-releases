@@ -39,74 +39,50 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.xml.wizard.impl;
 
-
-import java.util.HashMap;
-import java.util.Map;
-import org.openide.loaders.DataObject;
+import java.util.Collection;
+import java.util.Collections;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
- * An ExternalReferenceDecorator is used to control the appearance of the
- * nodes in the ExternalReferenceCustomizer.
+ * A placeholder node that displays a "please wait" message while the
+ * task to generate the final node is performed.
  *
  * @author  Nathan Fiedler
  */
-public class ExternalReferenceDecorator {
-
-    private SchemaImportGUI panel;
-    private static String SCHEMA = "xsd";    
-    private static int counter = 0;
-    /** Prefix for the namespace prefix values (e.g. "ns"). */
-    private static final String PREFIX_PREFIX = "ns"; // NOI18N
-   /** Hashmap to keep track of prefixes */
-    private Map prefixMap = new HashMap();
-   
-    public ExternalReferenceDecorator(SchemaImportGUI panel){
-       this.panel = panel;
-    }
-    /**
-     * Create an ExternalReferenceNode with the given delegate node.
-     * Implementors may wish to delegate to the customizer.
-     *
-     * @param  node  delegate Node.
-     * @return  new ExternalReferenceNode.
-     */
-    ExternalReferenceDataNode createExternalReferenceNode(Node original){
-        return panel.createExternalReferenceNode(original);
-    }
-    
+public class WaitNode extends AbstractNode {
+    /** A child key for this node, to be used with Children.Key.setKeys(). */
+    public static final Object WAIT_KEY = new Object();
 
     /**
-     * Generate a unique prefix value for the document containing the
-     * customized component. The selected node is provided, which permits
-     * customizing the prefix based on the model represented by the node.
-     *
-     * @param  prefix   the desired prefix for the namespace prefix;
-     *                  if null, a default of "ns" will be used.
-     * @param  dobj    DataObject for which to find unique prefix.
-     * @return  unique prefix value (e.g. "ns1"); must not be null.
+     * Creates a new instance of WaitNode.
      */
-    String generatePrefix(String prefix, DataObject dobj){
-       String prefixStr = prefix == null ? PREFIX_PREFIX : prefix;
-       String existPrefix = (String)prefixMap.get(dobj);
-       if(existPrefix != null)
-           return existPrefix;
-       
-       String generated = prefixStr + counter++;
-       prefixMap.put(dobj, generated);
-       return generated;
+    public WaitNode() {
+        super(Children.LEAF);
+        setName(NbBundle.getMessage(WaitNode.class, "LBL_WaitNode_Wait"));
+        setIconBaseWithExtension("org/netbeans/modules/xml/xam/ui/resources/wait.gif");
     }
 
     /**
-     * Return the document type that this decorator wants to show in the
-     * file chooser.
+     * Convenience method that creates an array with a single WaitNode.
      *
-     * @return  the desired document type.
+     * @return  array with a WaitNode.
      */
-    String getDocumentType(){
-        return SCHEMA;
+    public static Node[] createNode() {
+        return new Node[] { new WaitNode() };
     }
-    
- }
+
+    /**
+     * Convenience method that creates a collection with a single child key
+     * entry, that being the WAIT_KEY value.
+     *
+     * @return  collection with WAIT_KEY.
+     */
+    public static Collection getKeys() {
+        return Collections.singletonList(WaitNode.WAIT_KEY);
+    }
+}

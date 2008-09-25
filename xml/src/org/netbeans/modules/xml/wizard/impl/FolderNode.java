@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.xml.wizard.impl;
 
 import java.awt.Image;
 import org.openide.filesystems.FileObject;

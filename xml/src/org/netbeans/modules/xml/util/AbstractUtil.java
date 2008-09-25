@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.lib;
+package org.netbeans.modules.xml.util;
 
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;

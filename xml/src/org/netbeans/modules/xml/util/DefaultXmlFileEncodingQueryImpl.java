@@ -25,7 +25,7 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.xml;
+package org.netbeans.modules.xml.util;
 
 import java.nio.charset.Charset;
 import java.util.logging.Level;

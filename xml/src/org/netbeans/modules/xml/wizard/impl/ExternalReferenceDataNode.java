@@ -39,12 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.xml.wizard.impl;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.wizard.SchemaParser;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -230,7 +230,7 @@ public class ExternalReferenceDataNode extends FilterNode {
         DataObject dobj = (DataObject) getLookup().lookup(DataObject.class);
         if (dobj != null) {
              FileObject fobj = dobj.getPrimaryFile();
-             return Util.getNamespace(fobj);
+             return SchemaParser.getNamespace(fobj);
         }
         return null;
     }

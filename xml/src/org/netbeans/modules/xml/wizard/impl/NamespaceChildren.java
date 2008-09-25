@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.xml.wizard.impl;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
