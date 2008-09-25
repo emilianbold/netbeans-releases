@@ -188,6 +188,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         switch (el.getKind()) {
             case FUNC:
             case CLASS:
+                n = writes.get(0);
+                break;
             case VARIABLE:
                 int startOffest = -1;
                 n = writes.get(0);

@@ -505,7 +505,15 @@ public class SemiAttribute extends DefaultVisitor {
         if (ce != null && name != null) {
             AttributedElement thisEl = ce.lookup(name, Kind.VARIABLE);
             node2Element.put(node, thisEl);
-            node2Element.put(node.getField(), thisEl);
+            Variable field = node.getField();
+            node2Element.put(field, thisEl);
+            if (field instanceof ArrayAccess) {
+                Expression exprName = field.getName();
+                if (exprName instanceof Variable) {
+                    node2Element.put(exprName, thisEl);
+                }
+                super.visit(node);
+            }
         } else {
             scan(node.getField());
         }
@@ -578,9 +586,16 @@ public class SemiAttribute extends DefaultVisitor {
                     if (name != null) {
                         AttributedElement thisEl = ce.lookup(name, Kind.VARIABLE);
                         if (thisEl != null) {
+                            Variable field = node.getField();
                             node2Element.put(node.getClassName(), ce);
                             node2Element.put(node, thisEl);
-                            node2Element.put(node.getField(), thisEl);
+                            node2Element.put(field, thisEl);
+                            if (field instanceof ArrayAccess) {
+                                Expression expr = field.getName();
+                                if (expr instanceof Variable) {
+                                    node2Element.put(expr, thisEl);
+                                }
+                            }
                             break;
                         }
                     }
@@ -614,7 +629,7 @@ public class SemiAttribute extends DefaultVisitor {
                 if (v.getScalarType() == Type.STRING) {
                     String value = v.getStringValue();
                     if (NavUtils.isQuoted(value)) {
-                        node2Element.put(node, enterGlobalVariable(NavUtils.dequote(value)));
+                        node2Element.put(v, enterGlobalVariable(NavUtils.dequote(value)));
                     }
                 }
             }

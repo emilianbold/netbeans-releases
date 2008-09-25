@@ -256,6 +256,156 @@ public class DeclarationFinderImplTest extends TestBase {
                 );
         performTestSimpleFindDeclaration(-1, gotoTypeTest);
     }
+    public void testGotoTypeArrays() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "private static $static_array = array('', 'thousand ', 'million ', 'billion ');",
+                "^private static $static_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$result .= self::$static_array[$idx++];",
+                "$result .= self::$static_a|rray[$idx++];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays2() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "private static $static_array = array('', 'thousand ', 'million ', 'billion ');",
+                "^private static $static_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$result .= self::$static_array[$instance_array[$idx]];",
+                "$result .= self::$static|_array[$instance_array[$idx]];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays3() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "private $field_array = array('', 'thousand ', 'million ', 'billion ');",
+                "^private $field_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$result .= $this->field_array[$idx++];",
+                "$result .= $this->field_a|rray[$idx++];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays4() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "private $field_array = array('', 'thousand ', 'million ', 'billion ');",
+                "^private $field_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$result .= $this->field_array[$instance_array[$idx]];",
+                "$result .= $this->field_|array[$instance_array[$idx]];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays5() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "^$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$instance_array[$idx];",
+                "$instan|ce_array[$idx];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays6() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "^$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$result .= self::$static_array[$instance_array[$idx]];",
+                "$result .= self::$static_array[$instance_|array[$idx]];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays7() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "^$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$result .= $this->field_array[$instance_array[$idx]];",
+                "$result .= $this->field_array[$instan|ce_array[$idx]];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays8() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx = 1;",
+                "^$idx = 1;",
+                "$result .= self::$static_array[$idx++];",
+                "$result .= self::$static_array[$id|x++];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays9() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx = 1;",
+                "^$idx = 1;",
+                "$result .= $this->field_array[$idx++];",
+                "$result .= $this->field_array[$i|dx++];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays10() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx = 1;",
+                "^$idx = 1;",
+                "$result .= self::$static_array[$instance_array[$idx]];",
+                "$result .= self::$static_array[$instance_array[$id|x]];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays11() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx = 1;",
+                "^$idx = 1;",
+                "$result .= $this->field_array[$instance_array[$idx]];",
+                "$result .= $this->field_array[$instance_array[$id|x]];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays12() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx2 = 1;",
+                "^$idx2 = 1;",
+                "$instance_array2[$idx2];",
+                "$instance_array2[$idx|2];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays13() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array2 = array('', 'thousand ', 'million ', 'billion ');",
+                "^$instance_array2 = array('', 'thousand ', 'million ', 'billion ');",
+                "$instance_array2[$idx2];",
+                "$instance_a|rray2[$idx2];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays14() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx3 = 1;",
+                "^$idx3 = 1;",
+                "$instance_array3[$idx3];",
+                "$instance_array3[$id|x3];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
+    public void testGotoTypeArrays15() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array3 = array('', 'thousand ', 'million ', 'billion ');",
+                "^$instance_array3 = array('', 'thousand ', 'million ', 'billion ');",
+                "$instance_array3[$idx3];",
+                "$instance_ar|ray3[$idx3];"
+                );
+        performTestSimpleFindDeclaration(-1, gotoTypeTest);
+    }
 
     /*TODO: in these animalTests is actually bug but not important I guess. Sometimes jumps:
      * 1/public static ^$count = 0, $animal;
