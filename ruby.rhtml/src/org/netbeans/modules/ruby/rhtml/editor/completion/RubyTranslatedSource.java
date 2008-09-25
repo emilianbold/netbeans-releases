@@ -41,7 +41,6 @@ package org.netbeans.modules.ruby.rhtml.editor.completion;
 
 
 import org.netbeans.modules.gsf.api.EditHistory;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 
@@ -49,12 +48,11 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  *
  * @author Tor Norbye
  */
-public class RubyTranslatedSource implements TranslatedSource {
+public class RubyTranslatedSource extends TranslatedSource {
     private RhtmlModel model;
-    private RubyEmbeddingModel embeddingModel;
 
     public RubyTranslatedSource(RubyEmbeddingModel embeddingModel, RhtmlModel model) {
-        this.embeddingModel = embeddingModel;
+        super(embeddingModel);
         this.model = model;
     }
 
@@ -68,10 +66,6 @@ public class RubyTranslatedSource implements TranslatedSource {
 
     public String getSource() {
         return model.getRubyCode();
-    }
-
-    public EmbeddingModel getModel() {
-        return embeddingModel;
     }
 
     public int getSourceStartOffset() {

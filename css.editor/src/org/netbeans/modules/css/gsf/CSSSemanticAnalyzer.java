@@ -104,9 +104,9 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
             
             public void visit(SimpleNode node) {
                 if (node.kind() == CSSParserTreeConstants.JJTELEMENTNAME || node.kind() == CSSParserTreeConstants.JJT_CLASS || node.kind() == CSSParserTreeConstants.JJTPSEUDO || node.kind() == CSSParserTreeConstants.JJTHASH || node.kind() == CSSParserTreeConstants.JJTATTRIB) {
-                    OffsetRange range = getOffsetRange(node.startOffset(), node.endOffset(), source);
                     int dso = AstUtils.documentPosition(node.startOffset(), source);
                     int deo = AstUtils.documentPosition(node.endOffset(), source);
+                    OffsetRange range = new OffsetRange(dso, deo);
                     //filter out generated and inlined style definitions - they have just virtual selector which
                     //is mapped to empty string
                     if (!range.isEmpty() && deo > dso) {

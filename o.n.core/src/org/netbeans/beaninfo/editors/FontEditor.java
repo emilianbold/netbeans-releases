@@ -231,12 +231,12 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
         JTextField tfFont, tfStyle, tfSize;
         JList lFont, lStyle, lSize;
-        boolean escaped = false;
+        boolean dontSetValue = false;
 
         static final long serialVersionUID =8377025140456676594L;
 
         FontPanel () {
-            escaped = false;
+            dontSetValue = false;
             setLayout (new BorderLayout ());
             setBorder(new EmptyBorder(12, 12, 0, 11));
             
@@ -311,10 +311,9 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             tfSize.addKeyListener( new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
+                    dontSetValue = true;
                     if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
                         setValue ();
-                    } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                        escaped = true;
                     }
                 }
             });
@@ -322,7 +321,8 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             tfSize.addFocusListener (new FocusAdapter () {
                 @Override
                  public void focusLost (FocusEvent evt) {
-                    if (escaped) {
+                    if (dontSetValue) {
+                        dontSetValue = false;
                         return ;
                     }
                     Component c = evt.getOppositeComponent ();

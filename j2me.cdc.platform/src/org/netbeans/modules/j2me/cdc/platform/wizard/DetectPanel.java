@@ -362,6 +362,7 @@ public class DetectPanel extends javax.swing.JPanel {
     }
 
     void setSources (String sources) {
+        ((DefaultListModel)sourcesList.getModel()).removeAllElements();
         if (sources == null){
             return;
         }
@@ -370,6 +371,19 @@ public class DetectPanel extends javax.swing.JPanel {
             ((DefaultListModel)sourcesList.getModel()).addElement(st.nextToken());
         }
         removeSourceButton.setEnabled(sourcesList.getModel().getSize() != 0);
+    }
+
+    void setSources (ClassPath sources) {
+        String srcPath = null;
+        if (sources.entries().size()>0) {
+            URL folderRoot = ((ClassPath.Entry)sources.entries().get(0)).getURL();
+            if ("jar".equals(folderRoot.getProtocol())) {   //NOI18N
+                folderRoot = FileUtil.getArchiveFile (folderRoot);
+            }
+            srcPath = new File(URI.create(folderRoot.toExternalForm())).getAbsolutePath();
+        }
+
+        setSources (srcPath);
     }
 
     String getJavadoc () {
@@ -386,6 +400,7 @@ public class DetectPanel extends javax.swing.JPanel {
     }
 
     void setJavadoc (String jdoc) {
+        ((DefaultListModel)javadocList.getModel()).removeAllElements();
         if (jdoc == null){
             return;
         }
@@ -397,6 +412,7 @@ public class DetectPanel extends javax.swing.JPanel {
     }
 
     void setJavadoc (List jdocFolders) {
+        ((DefaultListModel)javadocList.getModel()).removeAllElements();
         if (jdocFolders == null){
             return;
         }
@@ -713,6 +729,7 @@ public class DetectPanel extends javax.swing.JPanel {
                     if (detected)
                     {
                         component.setJavadoc (platform.getJavadocFolders());
+                        component.setSources(platform.getSourceFolders());
                         component.updateData (platform.getDisplayName());
                         component.jdkName.setEditable(true);
 

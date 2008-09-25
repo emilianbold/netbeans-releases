@@ -10,11 +10,11 @@
 package org.netbeans.test.subversion.main.checkout;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -22,6 +22,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 
@@ -39,6 +40,7 @@ public class CheckoutContentTest extends JellyTestCase {
     String os_name;
     Operator.DefaultStringComparator comOperator; 
     Operator.DefaultStringComparator oldOperator;
+    static Logger log;
     
     /**
      * Creates a new instance of CheckoutContentTest
@@ -48,10 +50,15 @@ public class CheckoutContentTest extends JellyTestCase {
     }
     
     @Override
-    protected void setUp() throws Exception {        
-        os_name = System.getProperty("os.name");
+    protected void setUp() throws Exception {
         System.out.println("### "+getName()+" ###");
-        
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
     
     protected boolean isUnix() {
@@ -75,8 +82,8 @@ public class CheckoutContentTest extends JellyTestCase {
     
     public void testCheckoutProject() throws Exception {
         try {
-            OutputTabOperator oto;
-            OutputOperator.invoke();
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
             
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -100,14 +107,16 @@ public class CheckoutContentTest extends JellyTestCase {
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
+
             //open project
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.waitText("Checking out... finished.");
+            TestKit.waitText(mh);
+            
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             TestKit.waitForScanFinishedAndQueueEmpty();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME); 
         }    
@@ -115,6 +124,9 @@ public class CheckoutContentTest extends JellyTestCase {
     
     public void testCheckoutContent() throws Exception {
         try {
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
+
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Operator.setDefaultStringComparator(comOperator);
@@ -137,13 +149,15 @@ public class CheckoutContentTest extends JellyTestCase {
             wdso.checkCheckoutContentOnly(true);
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.finish();
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.waitText("Checking out... finished.");
+
+            TestKit.waitText(mh);
+            
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             new JButtonOperator(nbdialog, "Create Project...");
             JButtonOperator close = new JButtonOperator(nbdialog, "Close");
             close.push();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    

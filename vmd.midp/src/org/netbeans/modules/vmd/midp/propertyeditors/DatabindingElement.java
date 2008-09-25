@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  *
  * @author karolharezlak
  */
-public final class DatabindingElement implements PropertyEditorElement {
+public final class DatabindingElement implements PropertyEditorElement, CleanUp {
 
     private static final String DATABINDING_LABEL = "DatabindingElement.radioButton"; // NOI18N
     private static final String ASCN_DATABINDING = "ASCN_Databinding";
@@ -62,6 +62,14 @@ public final class DatabindingElement implements PropertyEditorElement {
     private DatabindingElementUI customEditor;
     private WeakReference<DesignComponent> component;
     private DesignPropertyEditor propertyEditor;
+
+    public void clean(DesignComponent component) {
+       customEditor.clean(component);
+       customEditor = null;
+       radioButton = null;
+       this.component = null;
+       propertyEditor = null;
+    }
 
     public DatabindingElement(DesignPropertyEditor propertyEditor) {
         assert propertyEditor != null;
@@ -122,4 +130,6 @@ public final class DatabindingElement implements PropertyEditorElement {
     public boolean isVerticallyResizable() {
         return true;
     }
+
+
 }

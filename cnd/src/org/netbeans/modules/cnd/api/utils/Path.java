@@ -106,55 +106,6 @@ public final class Path {
     public static ArrayList<String> getPath() {
         return list;
     }
-
-    public static ArrayList<String> getPathWithDefaultCompilerLocations() {
-        ArrayList<String> alist = (ArrayList<String>) list.clone();
-        String dir;
-
-        if (Utilities.isWindows()) {
-            dir = CppUtils.getCygwinBase();
-            if (dir != null) {
-                alist.add(dir + "\\bin"); // NOI18N
-            }
-            dir = CppUtils.getMinGWBase();
-            if (dir != null) {
-                alist.add(dir + "\\bin"); // NOI18N
-            }
-            dir = CppUtils.getMSysBase();
-            if (dir != null) {
-                alist.add(dir + "\\bin"); // NOI18N
-            }
-        } else if (Utilities.isUnix()) {
-            if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-                if (isOpenSolaris()) {
-                    alist.add("/opt/SunStudioExpress/bin"); // NOI18N
-                }
-                alist.add("/opt/SUNWspro/bin"); // NOI18N
-                alist.add("/usr/sfw/bin"); // NOI18N
-                alist.add("/opt/sfw/bin"); // NOI18N
-            }
-        }
-        return alist;
-    }
-
-    private static boolean isOpenSolaris() {
-        File release = new File("/etc/release"); // NOI18N
-        if (release.exists()) {
-            try {
-                BufferedReader in = new BufferedReader(new FileReader(release));
-                Pattern p = Pattern.compile("OpenSolaris.*"); // NOI18N
-                String line;
-                while ((line = in.readLine()) != null) {
-                    if (p.matcher(line.trim()).matches()) {
-                        return true;
-                    }
-                }
-            } catch (Exception ex) {
-                return false;
-            }
-        }
-        return false;
-    }
     
     /**
      * Return the path with the correct path separator character.

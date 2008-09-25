@@ -44,9 +44,11 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 import java.text.NumberFormat;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
+import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import javax.swing.*;
+import org.netbeans.modules.websvc.wsitconf.spi.SaveablePanel;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMDeliveryAssurance;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSequenceBinding;
@@ -55,7 +57,7 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSequenceBinding;
  *
  * @author Martin Grebac
  */
-public class AdvancedRMPanel extends JPanel {
+public class AdvancedRMPanel extends JPanel implements SaveablePanel {
 
     private Binding binding;
     private boolean inSync = false;
@@ -66,6 +68,7 @@ public class AdvancedRMPanel extends JPanel {
     private ConfigVersion cfgVersion = null;
     
     public AdvancedRMPanel(Binding binding, ConfigVersion cfgVersion) {
+        super();
         this.binding = binding;
         this.cfgVersion = cfgVersion;
 
@@ -98,6 +101,7 @@ public class AdvancedRMPanel extends JPanel {
         inSync = false;
         
         sync();
+        refresh();
     }
 
     private void sync() {
@@ -274,6 +278,58 @@ public class AdvancedRMPanel extends JPanel {
         maxBufTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "TXT_AdvancedRM_MaxBuf_ACSN")); // NOI18N
         maxBufTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "TXT_AdvancedRM_MaxBuf_ACSD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void refresh() {
+        org.jdesktop.layout.GroupLayout layout = (GroupLayout) this.getLayout();
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(flowControlChBox)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(maxBufLabel)
+                            .add(inactivityTimeoutLabel)
+                            .add(deliveryAssuranceLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(deliveryAssuranceCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(inactivityTimeoutTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                            .add(maxBufTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(deliveryAssuranceLabel)
+                    .add(deliveryAssuranceCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(flowControlChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(maxBufLabel)
+                    .add(maxBufTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(inactivityTimeoutLabel)
+                    .add(inactivityTimeoutTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        layout.linkSize(new java.awt.Component[] {deliveryAssuranceCombo, inactivityTimeoutTextfield, maxBufTextField}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        flowControlChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_FlowControl_ACSD")); // NOI18N
+        maxBufLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_MaxFlowBufSize_ACSD")); // NOI18N
+        inactivityTimeoutLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_InactTimeout_ACSD")); // NOI18N
+        inactivityTimeoutTextfield.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "TXT_AdvancedRM_InactTimeout_ACSN")); // NOI18N
+        inactivityTimeoutTextfield.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "TXT_AdvancedRM_InactTimeout_ACSD")); // NOI18N
+        maxBufTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "TXT_AdvancedRM_MaxBuf_ACSN")); // NOI18N
+        maxBufTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "TXT_AdvancedRM_MaxBuf_ACSD")); // NOI18N
+        validate();
+    }
 
     private void flowControlChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_flowControlChBoxActionPerformed
         enableDisable();

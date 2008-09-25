@@ -68,6 +68,18 @@ public class FmtBlankLines extends javax.swing.JPanel {
         bMethodsField.putClientProperty(OPTION_ID, blankLinesBeforeMethods );
         aMethodsField.putClientProperty(OPTION_ID, blankLinesAfterMethods);
         
+        bPackageField.addKeyListener(new NumericKeyListener());
+        aPackageField.addKeyListener(new NumericKeyListener());
+        bImportsField.addKeyListener(new NumericKeyListener());
+        aImportsField.addKeyListener(new NumericKeyListener());
+        bClassField.addKeyListener(new NumericKeyListener());
+        aClassField.addKeyListener(new NumericKeyListener());
+        aClassHeaderField.addKeyListener(new NumericKeyListener());
+        bFieldsField.addKeyListener(new NumericKeyListener());
+        aFieldsField.addKeyListener(new NumericKeyListener());
+        bMethodsField.addKeyListener(new NumericKeyListener());
+        aMethodsField.addKeyListener(new NumericKeyListener());
+        
     }
     
     public static PreferencesCustomizer.Factory getController() {

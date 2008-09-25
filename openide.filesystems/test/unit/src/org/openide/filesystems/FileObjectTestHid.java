@@ -1040,8 +1040,7 @@ public class FileObjectTestHid extends TestBaseHid {
             assertNotNull("MIMEResolver not accessed at all.", MR.tested);
         }
         accessCounter.unregister();
-        int count = accessCounter.getResults().statResult(FileUtil.toFile(fo), StatFiles.READ);
-        assertTrue("Too many read disk accesses while getting MIME type (should be cached). Expected "+count+" < 5.", count < 5);
+        accessCounter.getResults().assertResult(2, StatFiles.READ);
         
         if(fo.canWrite()) {
             String beforeRename = fo.getMIMEType();

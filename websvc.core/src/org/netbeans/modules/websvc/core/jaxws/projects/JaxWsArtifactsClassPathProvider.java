@@ -75,7 +75,7 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
     private Project project;
-    private ClassPath sourceCP, compileCP, bootCP;
+    private ClassPath sourceCP, compileCP, bootCP, executeCP;
     
     private static final Logger LOG = Logger.getLogger(JaxWsArtifactsClassPathProvider.class.getName());
     
@@ -103,7 +103,12 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
                     bootCP = getBootClassPath();
                 }
                 return bootCP;
-            }               
+            } else if (ClassPath.EXECUTE.equals(type)) {
+                if (executeCP == null) {
+                    executeCP = getClassPath(ClassPath.EXECUTE);
+                }
+                return executeCP;
+            }
         } else {
             FileObject serviceArtifactsFolder = 
             project.getProjectDirectory().getFileObject("build/generated/wsimport/service"); //NOI18N
@@ -124,6 +129,11 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
                         bootCP = getBootClassPath();
                     }
                     return bootCP;
+                } else if (ClassPath.EXECUTE.equals(type)) {
+                    if (executeCP == null) {
+                        executeCP = getClassPath(ClassPath.EXECUTE);
+                    }
+                    return executeCP;
                 }
             }
         }

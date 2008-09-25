@@ -52,7 +52,6 @@ package org.netbeans.test.subversion.main.checkout;
 import java.io.File;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
@@ -118,13 +117,11 @@ public class CheckoutUITest extends JellyTestCase{
     
     public void testInvokeClose() throws Exception {
         TestKit.showStatusLabels();
-        OutputOperator.invoke();
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         co.btCancel().pushNoBlock();
     }
     
     public void testChangeAccessTypes() throws Exception {
-        OutputOperator.invoke();
         TestKit.showStatusLabels();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();

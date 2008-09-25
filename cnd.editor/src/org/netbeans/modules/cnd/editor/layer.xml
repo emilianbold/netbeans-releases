@@ -55,7 +55,11 @@
                 </folder>
             </folder>
             <folder name="x-c++">
-                <file name="Settings.settings" url="resources/CCOptions.settings"/>
+                 <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="cpp-preferences.xml" url="cpp-preferences.xml"/>
+                    </folder>
+                </folder>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
@@ -137,7 +141,11 @@
             </folder>
 
             <folder name="x-c">
-                 <file name="Settings.settings" url="resources/COptions.settings"/>
+                 <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="c-preferences.xml" url="c-preferences.xml"/>
+                    </folder>
+                </folder>
                  <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CKit"/>

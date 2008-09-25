@@ -499,6 +499,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("template_type_cast_operators.cc"); // NOI18N        
     }
     
+    // IZ#136731 : No hyper link on local extern function
+    public void testFunctionDeclarationAsParameter() throws Exception {      
+        performTest("function_declaration_as_parameter.cc"); // NOI18N        
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

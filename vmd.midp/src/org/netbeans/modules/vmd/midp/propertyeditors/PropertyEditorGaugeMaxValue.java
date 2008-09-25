@@ -82,12 +82,21 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
     private PropertyEditorGaugeMaxValue() {
         super(NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_GAUGE_MAX_VALUE_UCLABEL")); // NOI18N
         initComponents();
-
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static final PropertyEditorGaugeMaxValue createInstance() {
         return new PropertyEditorGaugeMaxValue();
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
     }
 
     private void initComponents() {
@@ -206,6 +215,13 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         public CustomEditor() {
             radioButton.addFocusListener(this);
             initComponents();
+        }
+
+         void cleanUp() {
+            radioButton.removeActionListener(this);
+            textField = null;
+            foreverCheckBox = null;
+            this.removeAll();
         }
 
         private void initComponents() {

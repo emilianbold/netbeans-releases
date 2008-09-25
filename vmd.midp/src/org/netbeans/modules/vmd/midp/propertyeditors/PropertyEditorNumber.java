@@ -58,6 +58,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
@@ -94,6 +95,16 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         initComponents(useSpinner);
         this.positiveNumersOnly = positiveNumbersOnly;
         initElements(Collections.<PropertyEditorElement>singleton(this));
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
     }
 
     /**
@@ -491,6 +502,15 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             });
         }
         
+        void cleanUp() {
+            if (textField != null && textField.getDocument() != null) {
+                textField.getDocument().removeDocumentListener(this);
+            }
+            textField = null;
+            spinner = null;
+            this.removeAll();
+        }
+
         private JDialog getDialog(){
             Component comp = this;
             while ( true ) {

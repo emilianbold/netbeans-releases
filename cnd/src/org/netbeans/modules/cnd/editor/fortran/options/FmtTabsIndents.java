@@ -72,17 +72,9 @@ public class FmtTabsIndents extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jTextField3 = new javax.swing.JTextField();
-        jCheckBox3 = new javax.swing.JCheckBox();
         freeFormatCheckBox = new javax.swing.JCheckBox();
 
-        jTextField3.setText("jTextField3");
-
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox3, "jCheckBox3");
-        jCheckBox3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jCheckBox3.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        setName("null");
+        setName(null);
         setOpaque(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(freeFormatCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_Free_Format")); // NOI18N
@@ -108,8 +100,6 @@ public class FmtTabsIndents extends JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox freeFormatCheckBox;
-    private javax.swing.JCheckBox jCheckBox3;
-    private javax.swing.JTextField jTextField3;
     // End of variables declaration//GEN-END:variables
     
 }

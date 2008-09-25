@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
@@ -56,13 +55,14 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 
 /**
  *
  * @author Anton Chechel
  */
-public class FontEditorElement extends PropertyEditorResourceElement {
+public class FontEditorElement extends PropertyEditorResourceElement implements CleanUp {
 
     private FontStub currentStub;
     private Font defaultFont;
@@ -72,6 +72,36 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         attachListeners();
 
         this.defaultFont = sampleLabel.getFont();
+    }
+
+    public void clean(DesignComponent component) {
+        currentStub = null;
+        defaultFont = null;
+        boldCheckBox = null;
+        customRadioButton = null;
+        defaultRadioButton = null;
+        faceButtonGroup = null;
+        faceLabel = null;
+        inputRadioButton = null;
+        italicCheckBox = null;
+        jPanel1 = null;
+        jPanel2 = null;
+        kindButtonGroup = null;
+        kindLabel = null;
+        largeRadioButton = null;
+        mediumRadioButton = null;
+        monospaceRadioButton = null;
+        plainCheckBox = null;
+        proportionalRadioButton = null;
+        sampleLabel = null;
+        sizeButtonGroup = null;
+        sizeLabel = null;
+        smallRadioButton = null;
+        staticRadioButton = null;
+        styleLabel = null;
+        systemRadioButton = null;
+        underlinedCheckBox = null;
+        this.removeAll();
     }
 
     public JComponent getJComponent() {
@@ -85,7 +115,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     public List<String> getPropertyValueNames() {
         return Arrays.asList(FontCD.PROP_FONT_KIND, FontCD.PROP_FACE, FontCD.PROP_STYLE, FontCD.PROP_SIZE);
     }
-    
+
     private void attachListeners() {
         ActionListener kindActionListener = new KindActionListener();
         defaultRadioButton.addActionListener(kindActionListener);
@@ -260,10 +290,10 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         }
 
         long componentID = wrapper.getComponentID();
-        final int[] kindCode = new int[] {FontCD.VALUE_KIND_DEFAULT};
-        final int[] faceCode = new int[] {FontCD.VALUE_FACE_SYSTEM};
-        final int[] styleCode = new int[] {FontCD.VALUE_STYLE_PLAIN};
-        final int[] sizeCode = new int[] {FontCD.VALUE_SIZE_MEDIUM};
+        final int[] kindCode = new int[]{FontCD.VALUE_KIND_DEFAULT};
+        final int[] faceCode = new int[]{FontCD.VALUE_FACE_SYSTEM};
+        final int[] styleCode = new int[]{FontCD.VALUE_STYLE_PLAIN};
+        final int[] sizeCode = new int[]{FontCD.VALUE_SIZE_MEDIUM};
 
         final DesignComponent component = wrapper.getComponent();
         if (component != null) { // existing component
@@ -273,6 +303,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
 
             componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
                 public void run() {
                     PropertyValue propertyValue = component.readProperty(FontCD.PROP_FONT_KIND);
                     if (!isPropertyValueAUserCodeType(propertyValue)) {
@@ -320,6 +351,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private static class FontStub {
+
         private long componentID;
         private int kind;
         private int face;
@@ -398,6 +430,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private class KindActionListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
             int code = FontCD.VALUE_KIND_DEFAULT;
@@ -423,6 +456,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private class SizeActionListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
             int code = FontCD.VALUE_SIZE_MEDIUM;
@@ -431,7 +465,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                 code = FontCD.VALUE_SIZE_SMALL;
             } else if (src == largeRadioButton) {
                 code = FontCD.VALUE_SIZE_LARGE;
-            } 
+            }
 
             currentStub.setSize(code);
             setSampleFont(false);
@@ -440,6 +474,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private class FaceActionListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
             int code = FontCD.VALUE_FACE_SYSTEM;
@@ -448,7 +483,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                 code = FontCD.VALUE_FACE_MONOSPACE;
             } else if (src == proportionalRadioButton) {
                 code = FontCD.VALUE_FACE_PROPORTIONAL;
-            } 
+            }
 
             currentStub.setFace(code);
             setSampleFont(false);
@@ -457,6 +492,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private class StyleActionListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
             int code = FontCD.VALUE_STYLE_PLAIN;
@@ -468,7 +504,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                 }
             } else {
                 plainCheckBox.setSelected(!(boldCheckBox.isSelected() || italicCheckBox.isSelected() || underlinedCheckBox.isSelected()));
-                
+
                 if (boldCheckBox.isSelected()) {
                     code |= FontCD.VALUE_STYLE_BOLD;
                 }
@@ -479,13 +515,13 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                     code |= FontCD.VALUE_STYLE_UNDERLINED;
                 }
             }
-            
+
             currentStub.setStyle(code);
             setSampleFont(false);
             fireElementChanged(currentStub.getComponentID(), FontCD.PROP_STYLE, MidpTypes.createIntegerValue(code));
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

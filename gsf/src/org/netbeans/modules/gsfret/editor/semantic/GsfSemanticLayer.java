@@ -69,8 +69,9 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     
     //private Map<Token, Coloring> colorings;
     private SortedSet<SequenceElement> colorings;
+    private int version;
     private List<Edit> edits;
-    private Map<Coloring, AttributeSet> CACHE = new HashMap<Coloring, AttributeSet>();
+    private Map<Language,Map<Coloring, AttributeSet>> CACHE = new HashMap<Language,Map<Coloring, AttributeSet>>();
     private Document doc;
 
     public static GsfSemanticLayer getLayer(Class id, Document doc) {
@@ -88,10 +89,11 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     private GsfSemanticLayer(Document doc) {
         this.doc = doc;
         this.colorings = EMPTY_TREE_SET;
+        this.version = -1;
     }
     
     //public void setColorings(final SortedMap<OffsetRange, Coloring> colorings/*, final Set<OffsetRange> addedTokens, final Set<OffsetRange> removedTokens*/) {
-    public void setColorings(final SortedSet<SequenceElement> colorings/*, final Set<OffsetRange> addedTokens, final Set<OffsetRange> removedTokens*/) {
+    void setColorings(final SortedSet<SequenceElement> colorings, final int version /*, final Set<OffsetRange> addedTokens, final Set<OffsetRange> removedTokens*/) {
         NbDocument.runAtomic((StyledDocument) doc, 
 //        SwingUtilities.invokeLater(
         /*doc.render(*/new Runnable() {
@@ -99,6 +101,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
                 synchronized (GsfSemanticLayer.this) {
                     GsfSemanticLayer.this.colorings = colorings;
                     GsfSemanticLayer.this.edits = new ArrayList<Edit>();
+                    GsfSemanticLayer.this.version = version;
                     
                     // I am not accurately computing it here
                     //if (addedTokens.isEmpty()) {
@@ -121,8 +124,12 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
         });
     }
     
-    public synchronized SortedSet<SequenceElement> getColorings() {
+    synchronized SortedSet<SequenceElement> getColorings() {
         return colorings;
+    }
+
+    synchronized int getVersion() {
+        return version;
     }
     
     public synchronized HighlightsSequence getHighlights(int startOffset, int endOffset) {
@@ -138,13 +145,20 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     }
     
     synchronized AttributeSet getColoring(Coloring c, Language language) {
-        AttributeSet a = CACHE.get(c);
-        
-        if (a == null) {
-            CACHE.put(c, a = language.getColoringManager().getColoringImpl(c));
+        Map<Coloring,AttributeSet> map = CACHE.get(language);
+        if (map == null) {
+            AttributeSet a = language.getColoringManager().getColoringImpl(c);
+            map = new HashMap<Coloring,AttributeSet>();
+            map.put(c, a);
+            CACHE.put(language, map);
+            return a;
+        } else {
+            AttributeSet a = map.get(c);
+            if (a == null) {
+                map.put(c, a = language.getColoringManager().getColoringImpl(c));
+            }
+            return a;
         }
-        
-        return a;
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -218,27 +232,32 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
      *
      * @author Tor Norbye
      */
-    private class GsfHighlightSequence implements HighlightsSequence {
+    private static final class GsfHighlightSequence implements HighlightsSequence {
         private Iterator<SequenceElement> iterator;
         private SequenceElement element;
-        private GsfSemanticLayer layer;
+        private final GsfSemanticLayer layer;
+        private final int endOffset;
 
         GsfHighlightSequence(GsfSemanticLayer layer, Document doc, 
                 int startOffset, int endOffset, 
                 SortedSet<SequenceElement> colorings) {
             this.layer = layer;
+            this.endOffset = endOffset;
 
             SequenceElement.ComparisonItem fromInclusive = new SequenceElement.ComparisonItem(startOffset);
-            int end = (endOffset == Integer.MAX_VALUE) ? Integer.MAX_VALUE : endOffset+1;
-            SequenceElement.ComparisonItem toExclusive = new SequenceElement.ComparisonItem(end);
-            SortedSet<SequenceElement> subMap = colorings.subSet(fromInclusive, toExclusive);
+            SortedSet<SequenceElement> subMap = colorings.tailSet(fromInclusive);
             iterator = subMap.iterator();
         }
 
         public boolean moveNext() {
-            if (iterator.hasNext()) {
+            if (iterator != null && iterator.hasNext()) {
                 element = iterator.next();
-                return true;
+                if (element.range.getStart() < endOffset) {
+                    return true;
+                } else {
+                    iterator = null;
+                    return false;
+                }
             } else {
                 return false;
             }

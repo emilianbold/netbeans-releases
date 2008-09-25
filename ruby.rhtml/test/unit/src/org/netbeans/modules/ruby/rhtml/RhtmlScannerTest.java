@@ -59,4 +59,8 @@ public class RhtmlScannerTest extends RhtmlTestBase {
     public void testAnalysis3() throws Exception {
         checkStructure("testfiles/quotes.rhtml");
     }
+
+    public void testAnalysis4() throws Exception {
+        checkStructure("testfiles/hs.erb");
+    }
 }

@@ -52,11 +52,11 @@ import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 
 /**
- * Creates a Ruby model for an RHTML file. Simulates ERB to generate Ruby from
- * the RHTML.
+ * Creates a Ruby model for a YAML file. Simulates ERB to generate Ruby from
+ * the YAML.
  *
  * This class attaches itself to a document, and listens on changes. When
- * a client asks for the Ruby source of the RHTML file, it lazily generates it
+ * a client asks for the Ruby source of the Yaml file, it lazily generates it
  * if and only if the document has been modified.
  *
  * @author Marek Fukala
@@ -66,7 +66,7 @@ public class RubyModel {
     private final Document doc;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
     private String rubyCode;
-    //private String rhtmlCode; // For debugging purposes
+    //private String yamlCode; // For debugging purposes
     private boolean documentDirty = true;
     
     /** Caching */
@@ -103,7 +103,7 @@ public class RubyModel {
             
             // Debugging
             //try {
-            //    rhtmlCode = doc.getText(0, doc.getLength());
+            //    yamlCode = doc.getText(0, doc.getLength());
             //} catch (Exception e) {
             //    e.printStackTrace();
             //}
@@ -128,8 +128,8 @@ public class RubyModel {
     
     /** Perform eruby translation 
      * @param outputBuffer The buffer to emit the translation to
-     * @param tokenHierarchy The token hierarchy for the RHTML code
-     * @param tokenSequence  The token sequence for the RHTML code
+     * @param tokenHierarchy The token hierarchy for the yaml code
+     * @param tokenSequence  The token sequence for the yaml code
      */
     void eruby(StringBuilder outputBuffer,
             TokenHierarchy<Document> tokenHierarchy,            
@@ -335,10 +335,10 @@ public class RubyModel {
         boolean codeOverlaps = false;
         for (CodeBlockData codeBlock : codeBlocks) {
             // Block not affected by move
-            if (codeBlock.sourceEnd <= offset) {
+            if (codeBlock.sourceEnd < offset) {
                 continue;
             }
-            if (codeBlock.sourceStart >= limit) {
+            if (codeBlock.sourceStart > limit) {
                 codeBlock.sourceStart += delta;
                 codeBlock.sourceEnd += delta;
                 continue;
@@ -355,9 +355,9 @@ public class RubyModel {
     }
 
     private class CodeBlockData {
-        /** Start of section in RHTML file */
+        /** Start of section in yaml file */
         private int sourceStart;
-        /** End of section in RHTML file */
+        /** End of section in yaml file */
         private int sourceEnd;
         /** Start of section in generated Ruby */
         private int generatedStart;
@@ -375,9 +375,9 @@ public class RubyModel {
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("CodeBlockData[");
-            sb.append("\n  RHTML(" + sourceStart+","+sourceEnd+")");
+            sb.append("\n  yaml(" + sourceStart+","+sourceEnd+")");
             //sb.append("=\"");
-            //sb.append(rhtmlCode.substring(sourceStart, sourceEnd));
+            //sb.append(yamlCode.substring(sourceStart, sourceEnd));
             //sb.append("\"");
             sb.append(",\n  RUBY(" + generatedStart + "," + generatedEnd + ")");
             //sb.append("=\"");
@@ -389,7 +389,7 @@ public class RubyModel {
         }
     }
 
-    // For debugging only; pass in "rubyCode" or "rhtmlCode" in RhtmlModel to print
+    // For debugging only; pass in "rubyCode" or "yamlCode" in yamlModel to print
     //private String debugPos(String code, int pos) {
     //    if (pos == -1) {
     //        return "<-1:notfound>";

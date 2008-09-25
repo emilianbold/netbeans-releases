@@ -51,6 +51,7 @@ import javax.swing.text.BadLocationException;
 import org.jruby.nb.ast.AliasNode;
 import org.jruby.nb.ast.ArgsNode;
 import org.jruby.nb.ast.ArgumentNode;
+import org.jruby.nb.ast.BackRefNode;
 import org.jruby.nb.ast.BlockArgNode;
 import org.jruby.nb.ast.CallNode;
 import org.jruby.nb.ast.ClassNode;
@@ -75,6 +76,7 @@ import org.jruby.nb.ast.ModuleNode;
 import org.jruby.nb.ast.NewlineNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.NthRefNode;
 import org.jruby.nb.ast.ReturnNode;
 import org.jruby.nb.ast.SClassNode;
 import org.jruby.nb.ast.SymbolNode;
@@ -288,6 +290,14 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
             } else if (closest instanceof GlobalVarNode) {
                 // A global variable read
                 String name = ((GlobalVarNode)closest).getName(); // GlobalVarNode does not implement INameNode
+                highlightGlobal(root, name, highlights);
+            } else if (closest instanceof BackRefNode) {
+                // A global variable read
+                String name = "" + ((BackRefNode)closest).getType(); // BackRefNode does not implement INameNode
+                highlightGlobal(root, name, highlights);
+            } else if (closest instanceof NthRefNode) {
+                // A global variable read
+                String name = "" + ((NthRefNode)closest).getMatchNumber(); // NthRefNode does not implement INameNode
                 highlightGlobal(root, name, highlights);
             } else if (closest instanceof GlobalAsgnNode) {
                 // A global variable assignment
@@ -857,6 +867,18 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
         if (node instanceof GlobalVarNode) {
             //if (((INameNode)node).getName().equals(name)) { // GlobalVarNode does not implement INameNode
             if (((GlobalVarNode)node).getName().equals(name)) {
+                OffsetRange range = AstUtilities.getRange(node);
+                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
+        } else if (node instanceof BackRefNode) {
+            //if (((INameNode)node).getName().equals(name)) { // BackRefNode does not implement INameNode
+            if (("" + ((BackRefNode)node).getType() + "").equals(name)) {
+                OffsetRange range = AstUtilities.getRange(node);
+                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
+        } else if (node instanceof NthRefNode) {
+            //if (((INameNode)node).getName().equals(name)) { // NthRefNode does not implement INameNode
+            if (("" + ((NthRefNode)node).getMatchNumber()).equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }

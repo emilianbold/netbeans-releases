@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
@@ -71,6 +72,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@RandomlyFails // e.g. if Thread.sleep calls commented out
 public class ProjectsRootNodePreferredFromPopupTest extends NbTestCase {
     CountDownLatch first;
     CountDownLatch middle;
@@ -145,10 +147,9 @@ public class ProjectsRootNodePreferredFromPopupTest extends NbTestCase {
         // make a file of some project selected, that 
         // shall trigger OpenProjectList.preferredProject(lazyP);
         Action[] arr = midNode.getActions(true);
-        assertEquals("Three: " + Arrays.asList(arr), 3, arr.length);
+        assertEquals("Two: " + Arrays.asList(arr), 2, arr.length);
         assertAction("Initializ", arr[0], false, midNode);
         assertAction("Close", arr[1], true, midNode);
-        assertAction("Custom", arr[2], false, midNode);
         
         first.countDown();
         

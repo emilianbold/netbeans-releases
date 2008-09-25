@@ -8,7 +8,7 @@ function foo() {
 } 
 
 function foo() {
-    var = bar2
+    myvar = bar2
 } 
 
 function foo() {

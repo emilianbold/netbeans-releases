@@ -83,5 +83,11 @@ public class CollectionsTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[1:\"one\", 2:\"two\"].ent^", false);
     }
 
+    public void testCollections3() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    (1..10).a^", false);
+    }
 
+    public void testCollections4() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    1..10.d^", false);
+    }    
 }

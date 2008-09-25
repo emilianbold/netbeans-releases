@@ -264,7 +264,12 @@ private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
         if (WebClientToolsSessionStarterService.isAvailable()) {
             try {
-                URI uri = new URI(debugURLTextField.getText().trim());
+                String text = debugURLTextField.getText().trim();
+                if (text.length() == 0) {
+                    return false;
+                }
+
+                URI uri = new URI(text);
                 try {
                     Factory htmlBrowserFactory = null;
                     if (internetExplorerRadioButton.isSelected()) {

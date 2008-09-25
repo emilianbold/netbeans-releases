@@ -356,7 +356,7 @@ public final class DerbyDatabases {
      * Registers in the Database Explorer the specified database
      * on the local Derby server.
      */
-    private static DatabaseConnection registerDatabase(String databaseName, String user, String schema, String password, boolean rememberPassword) throws DatabaseException {
+    private static synchronized DatabaseConnection registerDatabase(String databaseName, String user, String schema, String password, boolean rememberPassword) throws DatabaseException {
         JDBCDriver drivers[] = JDBCDriverManager.getDefault().getDrivers(DerbyOptions.DRIVER_CLASS_NET);
         if (drivers.length == 0) {
             throw new IllegalStateException("The " + DerbyOptions.DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N

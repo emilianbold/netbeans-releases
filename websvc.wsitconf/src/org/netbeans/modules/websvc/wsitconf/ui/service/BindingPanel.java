@@ -303,6 +303,7 @@ public class BindingPanel extends SectionInnerPanel {
         } finally {
             inSync = false; doNotSync = false;
         }
+        refresh();
     }
 
     @Override
@@ -825,7 +826,7 @@ public class BindingPanel extends SectionInnerPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(profileCombo, 0, 234, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(profConfigButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 98, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                                .add(profConfigButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 98, Short.MAX_VALUE))))
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(devDefaultsChBox))
@@ -952,6 +953,172 @@ public class BindingPanel extends SectionInnerPanel {
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "Panel_ACSD")); // NOI18N
         getAccessibleContext().setAccessibleParent(this);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void refresh() {
+
+       org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(addrChBox)
+                    .add(jSeparator4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(cfgVersionLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cfgVersionCombo, 0, 344, Short.MAX_VALUE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+                    .add(mtomChBox)
+                    .add(rmChBox)
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(rmAdvanced)
+                            .add(orderedChBox))
+                        .add(79, 79, 79))
+                    .add(securityChBox)
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(12, 12, 12)
+                                .add(jScrollPane1))
+                            .add(layout.createSequentialGroup()
+                                .add(profileComboLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(profileCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(profConfigButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 98, Short.MAX_VALUE))))
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(devDefaultsChBox))
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(validatorsButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(secAdvancedButton))
+                            .add(layout.createSequentialGroup()
+                                .add(keyButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(trustButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(kerberosCfgButton)))
+                        .add(109, 109, 109))
+                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+                    .add(tcpChBox)
+                    .add(layout.createSequentialGroup()
+                        .add(stsChBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(stsConfigButton))
+                    .add(fiChBox)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+
+        layout.linkSize(new java.awt.Component[] {kerberosCfgButton, keyButton, secAdvancedButton, trustButton, validatorsButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(cfgVersionLabel)
+                    .add(cfgVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(mtomChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rmChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(orderedChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rmAdvanced)
+                .add(8, 8, 8)
+                .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(securityChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(profileComboLabel)
+                    .add(profileCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(profConfigButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(devDefaultsChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(trustButton)
+                    .add(keyButton)
+                    .add(kerberosCfgButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(secAdvancedButton)
+                    .add(validatorsButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(stsChBox)
+                    .add(stsConfigButton))
+                .add(11, 11, 11)
+                .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(8, 8, 8)
+                .add(tcpChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(fiChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(addrChBox)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        layout.linkSize(new java.awt.Component[] {kerberosCfgButton, keyButton, secAdvancedButton, trustButton, validatorsButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        mtomChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_mtomChBox_ACSN")); // NOI18N
+        mtomChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_mtomChBox_ACSD")); // NOI18N
+        rmChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_rmChBox_ACSN")); // NOI18N
+        rmChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_rmChBox_ACSD")); // NOI18N
+        securityChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_securityChBox_ACSN")); // NOI18N
+        securityChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_securityChBox_ACSD")); // NOI18N
+        orderedChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_OrderedChBox_ACSN")); // NOI18N
+        orderedChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_OrderedChBox_ACSD")); // NOI18N
+        profileComboLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_profileComboLabel_ACSN")); // NOI18N
+        profileComboLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_profileComboLabel_ACSD")); // NOI18N
+        rmAdvanced.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_Advanced_ACSN")); // NOI18N
+        rmAdvanced.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_Advanced_ACSD")); // NOI18N
+        stsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_stsChBox_ACSN")); // NOI18N
+        stsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_stsChBox_ACSD")); // NOI18N
+        tcpChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_tcpChBox_ACSN")); // NOI18N
+        tcpChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_tcpChBox_ACSD")); // NOI18N
+        keyButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_keystoreButton_ACSN")); // NOI18N
+        keyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_keystoreButton_ACSD")); // NOI18N
+        trustButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_truststoreButton_ACSN")); // NOI18N
+        trustButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_truststoreButton_ACSD")); // NOI18N
+        stsConfigButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_stsConfigButton_ACSN")); // NOI18N
+        stsConfigButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_stsConfigButton_ACSD")); // NOI18N
+        profConfigButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_keyConfigButton_ACSN")); // NOI18N
+        profConfigButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_keyConfigButton_ACSD")); // NOI18N
+        fiChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_fiChBox_ACSN")); // NOI18N
+        fiChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_fiChBox_ACSD")); // NOI18N
+        validatorsButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_validatorsButton_ACSN")); // NOI18N
+        validatorsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_validatorsButton_ACSD")); // NOI18N
+        devDefaultsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_Defaults_ACSN")); // NOI18N
+        devDefaultsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_Defaults_ACSD")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "Panel_ACSN")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "Panel_ACSD")); // NOI18N
+        getAccessibleContext().setAccessibleParent(this);
+        
+    }
 
 private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
         enableDisable();

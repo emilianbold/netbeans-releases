@@ -207,6 +207,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue144830.php", "$this->^", false);
     }
     
+    public void test147883() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147883.php", "echo $a->^", false);
+    }
+    
     public void test142919() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142919.php", "echo $param^", false);
     }
@@ -399,6 +403,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test140758_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue140758.php", "echo $_SERVER[\"^", false);
     }
+    public void test148213() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue148213.php", "$oldguy148213 = $newguy^", false);
+    }
 
     public void testSanitizedCode() throws Exception {
         checkCompletion("testfiles/sanitize/curly04.php", "$baba = $param^", false);
@@ -481,6 +488,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void test145835() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment2.php", "$cVarAdvancedTest->^", false);
+    }
+    public void test148109() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue148109.php", "$v1480109->^", false);
     }
     public void test147427() throws Exception {
         checkCompletion("testfiles/completion/lib/issue147427.php", "$currentUser = System147427::$userInfo->^", false);

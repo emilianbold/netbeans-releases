@@ -138,6 +138,10 @@ public class TypeFactory {
     }
     
     private static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope) {
+        return createType(ast, file, ptrOperator, arrayDepth, parent, scope, false);
+    }
+
+    public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters) {
         boolean refence = false;
         int pointerDepth = 0;
         while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
@@ -175,9 +179,9 @@ public class TypeFactory {
 
         if (parent != null) {
             type = new NestedType(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
-        } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast)) {
+        } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters)) {
             type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
-            ((TypeFunPtrImpl)type).init(ast);
+            ((TypeFunPtrImpl)type).init(ast, inFunctionParameters);
         } else {
             type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
         }

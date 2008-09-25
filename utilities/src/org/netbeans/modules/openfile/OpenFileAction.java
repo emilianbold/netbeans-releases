@@ -41,16 +41,15 @@
 
 package org.netbeans.modules.openfile;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.utilities.Manager;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -61,23 +60,13 @@ import org.openide.windows.WindowManager;
  * @author Jesse Glick
  * @author Marian Petras
  */
-public class OpenFileAction extends CallableSystemAction {
+public class OpenFileAction implements ActionListener {
 
     public OpenFileAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
-    
-    public String getName() {
-        return NbBundle.getMessage(OpenFileAction.class, "LBL_openFile");
     }
 
-    public HelpCtx getHelpCtx() {
+    private HelpCtx getHelpCtx() {
         return new HelpCtx(OpenFileAction.class);
-    }
-
-    @Override
-    protected String iconResource() {
-        return "org/netbeans/modules/openfile/openFile.png"; // NOI18N
     }
 
     /**
@@ -116,16 +105,18 @@ public class OpenFileAction extends CallableSystemAction {
         } while (files.length == 0);
         return files;
     }
-    
+
+    private static boolean running;
     /**
      * {@inheritDoc} Displays a file chooser dialog
      * and opens the selected files.
      */
-    public void performAction() {
-        if (!Manager.actionActivated(this)) {
+    public void actionPerformed(ActionEvent e) {
+        if (running) {
             return;
         }
         try {
+            running = true;
             JFileChooser chooser = prepareFileChooser();
             File[] files;
             try {
@@ -137,15 +128,10 @@ public class OpenFileAction extends CallableSystemAction {
                 OpenFile.openFile(files[i], -1);
             }
         } finally {
-            Manager.actionFinished(this);
+            running = false;
         }
     }
     
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
     /**
      * Try to find a directory to open the chooser open.
      * If there is a file among selected nodes (e.g. open editor windows),

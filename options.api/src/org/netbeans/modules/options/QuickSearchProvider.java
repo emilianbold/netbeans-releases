@@ -112,8 +112,11 @@ public class QuickSearchProvider implements SearchProvider {
         }
 
         public void run() {
-            OptionsDisplayer.getDefault().open(path);
+            if(!OptionsDisplayer.getDefault().open(path)) {
+                // If Options dialog already opened, select category. When
+                // the dialog is not opened, it is selected automatically.
+                OptionsDisplayerImpl.selectCategory(path);
+            }
         }
-        
     }
 }

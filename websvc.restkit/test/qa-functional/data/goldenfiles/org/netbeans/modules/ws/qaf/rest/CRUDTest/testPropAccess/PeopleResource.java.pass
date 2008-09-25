@@ -55,10 +55,13 @@ public class PeopleResource {
     int expandLevel, @QueryParam("query")
     @DefaultValue("SELECT e FROM Person e")
     String query) {
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
+            persistenceSvc.beginTx();
             return new PeopleConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
-            PersistenceService.getInstance().close();
+            persistenceSvc.commitTx();
+            persistenceSvc.close();
         }
     }
 

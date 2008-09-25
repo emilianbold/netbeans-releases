@@ -123,9 +123,50 @@ public class GeneralPHP extends JellyTestCase {
   }
 
   // All defaults including name
-  protected void CreatePHPApplicationInternal( )
+  protected String CreatePHPApplicationInternal( )
   {
-    CreatePHPApplicationInternal( null );
+    // Create PHP application
+
+    // Workaround for MacOS platform
+    // TODO : check platform
+    // TODO : remove after normal issue fix
+    NewProjectWizardOperator.invoke().cancel( );
+
+    NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke( );
+    opNewProjectWizard.selectCategory( PHP_CATEGORY_NAME );
+    opNewProjectWizard.selectProject( PHP_PROJECT_NAME );
+
+    opNewProjectWizard.next( );
+
+    JDialogOperator jdNew = new JDialogOperator( "New PHP Project" );
+
+    JTextComponentOperator jtName = new JTextComponentOperator( jdNew, 0 );
+
+    String sResult = jtName.getText( );
+
+    String sProjectPath = GetWorkDir( ) + File.separator + sResult;
+
+    JComboBoxOperator jcPath = new JComboBoxOperator( jdNew, 0 );
+
+    Timeouts t =  jcPath.getTimeouts( );
+    long lBack = t.getTimeout( "JTextComponentOperator.TypeTextTimeout" );
+    t.setTimeout( "JTextComponentOperator.TypeTextTimeout", 30000 );
+    jcPath.setTimeouts( t );
+
+    jcPath.enterText( sProjectPath );
+
+    t.setTimeout( "JTextComponentOperator.TypeTextTimeout", lBack );
+    jcPath.setTimeouts( t );
+
+    //NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
+    //opNewProjectNameLocationStep.txtProjectLocation( ).setText( GetWorkDir( ) );
+
+    //opNewProjectWizard.next( );
+
+    //opNewProjectNameLocationStep.txtProjectName( ).setText( sName );
+    opNewProjectWizard.finish( );
+
+    return sResult;
   }
 
   // All defaults including name
@@ -244,5 +285,11 @@ public class GeneralPHP extends JellyTestCase {
   {
     TypeCode( eoPHP, sType );
     CheckResultRegex( eoPHP, sCheck );
+  }
+
+  protected void CheckResult( EditorOperator eoCode, String[] asCode, int iOffset )
+  {
+    for( int i = 0; i < asCode.length; i++ )
+      CheckResult( eoCode, asCode[ i ], iOffset + i );
   }
 }

@@ -79,6 +79,19 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     private JRadioButton radioButton;
     private static String[] USERCODE_TAGS =  new String[]{(PropertyEditorUserCode.USER_CODE_TEXT)};
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        typeID = null;
+        tags = null;
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
+        enableTypeID = null;
+    }
+    
     private PropertyEditorComboBox(Map<String, PropertyValue> values, TypeID typeID,
             TypeID enableTypeID, String valueLabel, String userCodeLabel) {
         super(userCodeLabel);
@@ -238,6 +251,12 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     private class CustomEditor extends JPanel implements ActionListener {
 
         private JComboBox combobox;
+
+        void cleanUp() {
+            combobox.removeActionListener(this);
+            combobox = null;
+            this.removeAll();
+        }
 
         public CustomEditor() {
             initComponents();

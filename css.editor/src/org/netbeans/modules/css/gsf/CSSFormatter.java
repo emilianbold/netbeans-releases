@@ -219,7 +219,11 @@ public class CSSFormatter implements Formatter {
                     for (int line = firstLineWithinFormattingRange; line <= lastLineWithinFormattingRange; line++) {
                         if (formattableLines[line]) {
                             int lStart = Utilities.getRowStartFromLineOffset(bdoc, line);
-                            context.modifyIndent(lStart, indents[line] + indentShift[line]);
+                            int newIndent = indents[line] + indentShift[line];
+                            if(newIndent < 0) {
+                                newIndent = 0; //hack - quick fix
+                            }
+                            context.modifyIndent(lStart, newIndent);
                         }
                     }
 

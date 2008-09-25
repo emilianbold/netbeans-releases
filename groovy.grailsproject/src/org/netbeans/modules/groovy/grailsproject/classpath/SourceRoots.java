@@ -42,6 +42,7 @@ package org.netbeans.modules.groovy.grailsproject.classpath;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.groovy.grailsproject.GrailsSources;
@@ -64,31 +65,12 @@ public class SourceRoots {
 
     public FileObject[] getRoots() {
         List<FileObject> result = new ArrayList<FileObject>();
-        
-        addRoot(SourceCategory.GRAILSAPP_CONF, result);
-        addRoot(SourceCategory.GRAILSAPP_CONTROLLERS, result);
-        addRoot(SourceCategory.GRAILSAPP_DOMAIN, result);
-        addRoot(SourceCategory.GRAILSAPP_SERVICES, result);
-        addRoot(SourceCategory.GRAILSAPP_TAGLIB, result);
-        addRoot(SourceCategory.GRAILSAPP_UTILS, result);
-        addRoot(SourceCategory.SCRIPTS, result);
-        addRoot(SourceCategory.SRC_GROOVY, result);
-        addRoot(SourceCategory.SRC_JAVA, result);
-        addRoot(SourceCategory.TEST_INTEGRATION, result);
-        addRoot(SourceCategory.TEST_UNIT, result);
-        for (FileObject child : projectRoot.getChildren()) {
-            if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) &&
-                    !GrailsSources.KNOWN_FOLDERS.contains(child.getName())) {
-                result.add(child);
-            }
-        }
-        FileObject grailsAppFo = projectRoot.getFileObject("grails-app"); // NOI18N
-        if (grailsAppFo != null) {
-            for (FileObject child : grailsAppFo.getChildren()) {
-                if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) &&
-                        !GrailsSources.KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
-                    result.add(child);
-                }
+        addGrailsSourceRoots(projectRoot, result);
+        FileObject pluginsDir = projectRoot.getFileObject("plugins");
+        if (pluginsDir != null) {
+            Enumeration<? extends FileObject> subfolders = pluginsDir.getFolders(false);
+            while (subfolders.hasMoreElements()) {
+                addGrailsSourceRoots(subfolders.nextElement(), result);
             }
         }
 
@@ -107,7 +89,36 @@ public class SourceRoots {
         return urls;
     }
 
-    private void addRoot(SourceCategory category, List<FileObject> roots) {
+    private static void addGrailsSourceRoots(FileObject projectRoot, List<FileObject> result) {
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_CONF, result);
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_CONTROLLERS, result);
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_DOMAIN, result);
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_SERVICES, result);
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_TAGLIB, result);
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_UTILS, result);
+        addRoot(projectRoot, SourceCategory.SCRIPTS, result);
+        addRoot(projectRoot, SourceCategory.SRC_GROOVY, result);
+        addRoot(projectRoot, SourceCategory.SRC_JAVA, result);
+        addRoot(projectRoot, SourceCategory.TEST_INTEGRATION, result);
+        addRoot(projectRoot, SourceCategory.TEST_UNIT, result);
+        for (FileObject child : projectRoot.getChildren()) {
+            if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) &&
+                    !GrailsSources.KNOWN_FOLDERS.contains(child.getName())) {
+                result.add(child);
+            }
+        }
+        FileObject grailsAppFo = projectRoot.getFileObject("grails-app"); // NOI18N
+        if (grailsAppFo != null) {
+            for (FileObject child : grailsAppFo.getChildren()) {
+                if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) &&
+                        !GrailsSources.KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
+                    result.add(child);
+                }
+            }
+        }
+    }
+
+    private static void addRoot(FileObject projectRoot, SourceCategory category, List<FileObject> roots) {
         FileObject root = projectRoot.getFileObject(category.getRelativePath());
         if (root != null) {
             roots.add(root);

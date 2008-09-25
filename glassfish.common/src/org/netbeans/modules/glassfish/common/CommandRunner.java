@@ -279,6 +279,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         
         try {
             commandUrl = constructCommandUrl(serverCmd.getCommand(), serverCmd.getQuery());
+            commandUrl = commandUrl.replaceAll(ServerCommand.EQUAL_NONQUOTED, ServerCommand.EQUAL_QUOTED);
         } catch (URISyntaxException ex) {
             return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdException",
                     serverCmd.toString(), instanceName, ex.getLocalizedMessage());
@@ -292,7 +293,6 @@ public class CommandRunner extends BasicTask<OperationState> {
         // Create a connection for this command
         try {
             urlToConnectTo = new URL(commandUrl);
-
             while(!httpSucceeded && retries-- > 0) {
                 try {
                     Logger.getLogger("glassfish").log(Level.FINE, "V3 HTTP Command: " + commandUrl );

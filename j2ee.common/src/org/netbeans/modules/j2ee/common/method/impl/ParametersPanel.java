@@ -109,7 +109,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
 
         table.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
                 updateButtons();
             }
         });
@@ -277,7 +277,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private void updateButtons() {
         int selIndex = table.getSelectedRow();
         boolean oneSelected = table.getSelectedRowCount() == 1;
-        
+
         removeButton.setEnabled(oneSelected);
         upButton.setEnabled(oneSelected && (selIndex > 0));
         downButton.setEnabled(oneSelected && (selIndex < tableModel.getRowCount() - 1));
