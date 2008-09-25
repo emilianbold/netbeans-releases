@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -70,9 +71,23 @@ public final class CustomizerSelector {
     public static final String PROP_MIMETYPE = "CustomizerSelector.PROP_MIMETYPE"; //NOI18N
     public static final String PROP_CUSTOMIZER = "CustomizerSelector.PROP_CUSTOMIZER"; //NOI18N
 
-    public CustomizerSelector(PreferencesFactory pf, boolean acceptOldControllers) {
+    public CustomizerSelector(PreferencesFactory pf, boolean acceptOldControllers, String allowedMimeTypes) {
         this.pf = pf;
         this.acceptOldControllers = acceptOldControllers;
+
+        if (allowedMimeTypes != null) {
+            this.allowedMimeTypes = new HashSet<String>();
+            for(String mimeType : allowedMimeTypes.split(",")) { //NOI18N
+                mimeType = mimeType.trim();
+                if (MimePath.validate(mimeType)) {
+                    this.allowedMimeTypes.add(mimeType);
+                } else {
+                    LOG.warning("Ignoring invalid mimetype '" + mimeType + "'"); //NOI18N
+                }
+            }
+        } else {
+            this.allowedMimeTypes = null;
+        }
     }
     
     public synchronized String getSelectedMimeType() {
@@ -133,11 +148,15 @@ public final class CustomizerSelector {
                 Lookup l = Lookups.forPath(FORMATTING_CUSTOMIZERS_FOLDER + mimeType);
                 Collection<? extends PreferencesCustomizer.Factory> factories = l.lookupAll(PreferencesCustomizer.Factory.class);
                 if (!factories.isEmpty()) {
-                    mimeTypes.add(mimeType);
+                    if (allowedMimeTypes == null || allowedMimeTypes.contains(mimeType)) {
+                        mimeTypes.add(mimeType);
+                    }
                 } else if (acceptOldControllers) {
                     Collection<? extends OptionsPanelController> controllers = l.lookupAll(OptionsPanelController.class);
                     if (!controllers.isEmpty()) {
-                        mimeTypes.add(mimeType);
+                        if (allowedMimeTypes == null || allowedMimeTypes.contains(mimeType)) {
+                            mimeTypes.add(mimeType);
+                        }
                     }
                 }
             }
@@ -166,9 +185,12 @@ public final class CustomizerSelector {
     // private implementation
     // ------------------------------------------------------------------------
 
+    private static final Logger LOG = Logger.getLogger(CustomizerSelector.class.getName());
+    
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final PreferencesFactory pf;
     private final boolean acceptOldControllers;
+    private final Set<String> allowedMimeTypes;
 
     private String selectedMimeType;
     private String selectedCustomizerId;

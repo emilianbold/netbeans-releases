@@ -97,7 +97,7 @@ public final class FormattingPanelController extends OptionsPanelController {
                     return null;
                 }
             });
-            selector = new CustomizerSelector(pf, true);
+            selector = new CustomizerSelector(pf, true, null);
             panel.setSelector(selector);
             fire = changed;
             changed = false;
