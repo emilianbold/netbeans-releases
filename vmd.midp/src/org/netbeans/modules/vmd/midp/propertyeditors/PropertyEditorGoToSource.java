@@ -67,7 +67,9 @@ public class PropertyEditorGoToSource extends DesignPropertyEditor {
     @Override
     public void cleanUp(DesignComponent component) {
         component = null;
-        customPropertyEditor.cleanUp();
+        if (customPropertyEditor != null) {
+            customPropertyEditor.cleanUp();
+        }
         customPropertyEditor = null;
     }
     
