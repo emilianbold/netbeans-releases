@@ -69,6 +69,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     
     //private Map<Token, Coloring> colorings;
     private SortedSet<SequenceElement> colorings;
+    private int version;
     private List<Edit> edits;
     private Map<Language,Map<Coloring, AttributeSet>> CACHE = new HashMap<Language,Map<Coloring, AttributeSet>>();
     private Document doc;
@@ -88,10 +89,11 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     private GsfSemanticLayer(Document doc) {
         this.doc = doc;
         this.colorings = EMPTY_TREE_SET;
+        this.version = -1;
     }
     
     //public void setColorings(final SortedMap<OffsetRange, Coloring> colorings/*, final Set<OffsetRange> addedTokens, final Set<OffsetRange> removedTokens*/) {
-    public void setColorings(final SortedSet<SequenceElement> colorings/*, final Set<OffsetRange> addedTokens, final Set<OffsetRange> removedTokens*/) {
+    void setColorings(final SortedSet<SequenceElement> colorings, final int version /*, final Set<OffsetRange> addedTokens, final Set<OffsetRange> removedTokens*/) {
         NbDocument.runAtomic((StyledDocument) doc, 
 //        SwingUtilities.invokeLater(
         /*doc.render(*/new Runnable() {
@@ -99,6 +101,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
                 synchronized (GsfSemanticLayer.this) {
                     GsfSemanticLayer.this.colorings = colorings;
                     GsfSemanticLayer.this.edits = new ArrayList<Edit>();
+                    GsfSemanticLayer.this.version = version;
                     
                     // I am not accurately computing it here
                     //if (addedTokens.isEmpty()) {
@@ -121,8 +124,12 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
         });
     }
     
-    public synchronized SortedSet<SequenceElement> getColorings() {
+    synchronized SortedSet<SequenceElement> getColorings() {
         return colorings;
+    }
+
+    synchronized int getVersion() {
+        return version;
     }
     
     public synchronized HighlightsSequence getHighlights(int startOffset, int endOffset) {

@@ -68,6 +68,10 @@ public abstract class ParserResult {
     @NonNull private CompilationInfo info;
     @NonNull protected UpdateState updateState = UpdateState.NOT_SUPPORTED;
     /**
+     * Edit version corresponding to the version of the file the parser result was run against
+     */
+    private int editVersion = -1;
+    /**
      * Flag, whether the parser result is valid. If is not valid, then index, codefolding
      * and semantic coloring will not be refreshed.
      */
@@ -184,6 +188,24 @@ public abstract class ParserResult {
 
     public void setInfo(@NonNull CompilationInfo info) {
         this.info = info;
+    }
+
+    /**
+     * Get the edit version for this parser result. Used along
+     * with {@link EditHistory#getCombinedEdits(int,EditHistory)} to
+     * produce a edit history delta between two parser results.
+     * @return the edit version this parser result was seen with
+     */
+    public int getEditVersion() {
+        return editVersion;
+    }
+
+    /**
+     * Set the edit version. This is normally called by the infrastructure.
+     * @param editVersion The editVersion this parser result is associated with.
+     */
+    public void setEditVersion(int editVersion) {
+        this.editVersion = editVersion;
     }
 
     @NonNull

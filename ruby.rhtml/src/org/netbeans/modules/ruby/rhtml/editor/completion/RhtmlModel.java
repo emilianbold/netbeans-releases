@@ -85,7 +85,7 @@ public class RhtmlModel {
         return model;
     }
     
-    RhtmlModel(Document doc) {
+    private RhtmlModel(Document doc) {
         this.doc = doc;
 
         if (doc != null) { // null in some unit tests
@@ -132,7 +132,7 @@ public class RhtmlModel {
      * @param tokenHierarchy The token hierarchy for the RHTML code
      * @param tokenSequence  The token sequence for the RHTML code
      */
-    void eruby(StringBuilder outputBuffer,
+    private void eruby(StringBuilder outputBuffer,
             TokenHierarchy<Document> tokenHierarchy,            
             TokenSequence<RhtmlTokenId> tokenSequence) {
         StringBuilder buffer = outputBuffer;
@@ -343,10 +343,10 @@ public class RhtmlModel {
         boolean codeOverlaps = false;
         for (CodeBlockData codeBlock : codeBlocks) {
             // Block not affected by move
-            if (codeBlock.sourceEnd <= offset) {
+            if (codeBlock.sourceEnd < offset) {
                 continue;
             }
-            if (codeBlock.sourceStart >= limit) {
+            if (codeBlock.sourceStart > limit) {
                 codeBlock.sourceStart += delta;
                 codeBlock.sourceEnd += delta;
                 continue;

@@ -119,10 +119,16 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         long start = System.currentTimeMillis();        
         Set<String> mimeTypes = info.getEmbeddedMimeTypes();
 
+        EditHistory currentHistory = info.getHistory();
+        final int version = currentHistory.getVersion();
+
+
         // Attempt to do less work in embedded scenarios: Only recompute hints for regions
         // that have changed
         LanguageRegistry registry = LanguageRegistry.getInstance();
-        SortedSet<SequenceElement> colorings = GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).getColorings();
+        final GsfSemanticLayer layer = GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc);
+        SortedSet<SequenceElement> colorings = layer.getColorings();
+        int previousVersion = layer.getVersion();
         if (mimeTypes.size() > 1 && info.hasUnchangedResults() && colorings.size() > 0) {
 
             // Sort elements into buckets per language
@@ -146,7 +152,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             }
 
             // Recompute lists for languages that have changed
-            EditHistory history = info.getHistory();
+            EditHistory history = EditHistory.getCombinedEdits(previousVersion, currentHistory);
+            if (history != null) {
             int offset = history.getStart();
             for (String mimeType : mimeTypes) {
                 if (isCancelled()) {
@@ -216,8 +223,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 }
             }
                 
-            GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).setColorings(newColoring/*, addedTokens, removedTokens*/);
+            layer.setColorings(newColoring, version);
             return true;
+            }
         }
         
         for (String mimeType : mimeTypes) {
@@ -272,7 +280,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 
         SwingUtilities.invokeLater(new Runnable () {
             public void run() {
-                GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).setColorings(newColoring/*, addedTokens, removedTokens*/);
+                layer.setColorings(newColoring, version);
             }                
         });            
         
