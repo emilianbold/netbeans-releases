@@ -54,9 +54,6 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
  * @author Tor Norbye
  */
 public class JsPositionManager implements PositionManager {
-    /**
-     * Creates a new instance of JRubyPositionManager
-     */
     public JsPositionManager() {
     }
 
@@ -64,7 +61,11 @@ public class JsPositionManager implements PositionManager {
         Element object = JsParser.resolveHandle(info, objectHandle);
         if (object instanceof AstElement) {
             Node target = ((AstElement)object).getNode();
-            return LexUtilities.getLexerOffsets(info, new OffsetRange(target.getSourceStart(), target.getSourceEnd()));
+            if (target != null) {
+                return LexUtilities.getLexerOffsets(info, new OffsetRange(target.getSourceStart(), target.getSourceEnd()));
+            }
+
+            return OffsetRange.NONE;
         } else {
             throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
                 object) != null) ? object.getClass().getName() : "null");
