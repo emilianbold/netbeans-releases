@@ -107,7 +107,6 @@ public final class SlidingButton extends JToggleButton {
 //        setMargin(new Insets(1,1,1,1));
         if ("Nimbus".equals(UIManager.getLookAndFeel().getID())) {
             Insets insets = UIManager.getInsets("Button.contentMargins");
-            System.out.println("Button.contentMargins:" + insets);
             if (insets != null) {
                 setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right));
             } else {
