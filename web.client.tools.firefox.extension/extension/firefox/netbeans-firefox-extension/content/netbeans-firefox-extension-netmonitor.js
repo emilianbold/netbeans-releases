@@ -253,16 +253,34 @@
                   } catch (exc) {}
               }
 
-              if( xhrRequest ){
-                    xhrRequest.onreadystatechange = function () {
-                      if (xhrRequest.readyState == 4) {
-                         if(xhrRequest.status == 200) {
-                            if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - id:" + id);}
-                            if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - request:" + request);}
-                            processExamineResponse(request, id, xhrRequest);
-                         } else {if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - failure to load responseText \n");}}
-                       }
-                   };
+              if( xhrRequest ) {
+                    var old_listener = xhrRequest.onreadystatechange;
+                    if (DEBUG_METHOD) NetBeans.Logger.logMessage("netmonitor.onExamineResponse: onReadyStateChange was previously set for this xhr Request: " + old_listener);
+
+                    xhrRequest.onreadystatechange = function (event) {
+                        if (old_listener && old_listener.handleEvent) {
+                            if (DEBUG_METHOD) NetBeans.Logger.logMessage("netmonitor.onExamineResponse: Called old onreadystatechange handleEvent()");
+                            old_listener.handleEvent(event);
+                        } else if (old_listener && typeof old_listener == 'function') {
+                            if (DEBUG_METHOD) NetBeans.Logger.logMessage("netmonitor.onExamineResponse: Called old onreadystatechange function");
+                            old_listener.apply(xhrRequest, event);
+                        }
+                        if (xhrRequest.readyState == 4) {
+                            if(xhrRequest.status == 200) {
+                                if ( DEBUG_METHOD ) {
+                                    NetBeans.Logger.log("net.onExamineResponse - id:" + id);
+                                }
+                                if ( DEBUG_METHOD ) {
+                                    NetBeans.Logger.log("net.onExamineResponse - request:" + request);
+                                }
+                                processExamineResponse(request, id, xhrRequest);
+                            } else {
+                                if ( DEBUG_METHOD ) {
+                                    NetBeans.Logger.log("net.onExamineResponse - failure to load responseText \n");
+                                }
+                                }
+                        }
+                    };
               } else {
                   processExamineResponse(request, id, null);
               }
@@ -329,12 +347,20 @@
         activity.size = request.contentLength;
         if( xhrRequest){
             activity.category = "xhr"; // Temporary using this string since getRequestCategory returns html if called a second time.  Still not sure why.
-            activity.responseText = xhrRequest.responseText;
+
+            if (xhrRequest.responseText) {
+                activity.responseText = xhrRequest.responseText;
+            } else if (request.requestMethod == "POST" || request.requestMethod == "post") {
+                activity.responseText = "No POST response available";
+            } else if (request.requestMethod == "GET" || request.requestMethod == "get"){
+                activity.responseText = getResponseText(request);
+            }
+            
             activity.status = request.responseStatus;
             if (DEBUG_METHOD){
-                NetBeans.Logger.log("net.createResponseActivity: xhrRequest:" + xhrRequest.responseText);
+                NetBeans.Logger.log("net.createResponseActivity: xhrRequest:" + activity.responseText);
                 NetBeans.Logger.log("net.createResponseActivity: responseStatus:" + request.responseStatus);
-                NetBeans.Logger.log("net.createResponseActivity: xhrRequest.status:" + xhrRequest.status);
+                NetBeans.Logger.log("net.createResponseActivity: xhrRequest.status:" + activity.status);
             }
         } else {
             activity.category = getRequestCategory(request);
