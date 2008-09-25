@@ -137,7 +137,7 @@ public class DependenciesNode extends AbstractNode {
         toRet.add(new ResolveDepsAction(project));
         toRet.add(new DownloadJavadocSrcAction(true));
         toRet.add(new DownloadJavadocSrcAction(false));
-        MavenProjectNode.loadLayerActions("Projects/org-netbeans-modules-maven/DependenciesActions", toRet); //NOI18N
+        toRet.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-maven/DependenciesActions")); //NOI18N
         toRet.add(null);
         toRet.add(new ShowClasspathDepsAction());
         return toRet.toArray(new Action[toRet.size()]);
