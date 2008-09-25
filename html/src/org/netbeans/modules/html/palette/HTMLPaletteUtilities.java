@@ -59,6 +59,7 @@ import org.netbeans.editor.Formatter;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -182,8 +183,8 @@ public final class HTMLPaletteUtilities {
         }
 
         BaseDocument doc = (BaseDocument) _doc;
-        final Indent indent = Indent.get(doc);
-        indent.lock();
+        final Reformat reformatter = Reformat.get(doc);
+        reformatter.lock();
         try {
             doc.runAtomic(new Runnable() {
 
@@ -194,7 +195,7 @@ public final class HTMLPaletteUtilities {
                         if (reformat && start >= 0 && _doc instanceof BaseDocument) {
                             // format the inserted text
                             int end = start + s2.length();
-                            indent.reindent(start, end);
+                            reformatter.reformat(start, end);
                         }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
@@ -203,7 +204,7 @@ public final class HTMLPaletteUtilities {
             });
 
         } finally {
-            indent.unlock();
+            reformatter.unlock();
         }
 
     }
