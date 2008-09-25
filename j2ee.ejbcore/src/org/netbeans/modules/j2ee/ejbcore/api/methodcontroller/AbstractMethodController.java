@@ -442,7 +442,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         if (!impls.isEmpty()) {
             for (MethodModel impl : impls) {
                 if (impl != null) { // could be null here if the method is missing
-                    ClassMethodPair classMethodPair = getInterface(impl, !local);
+                    ClassMethodPair classMethodPair = getInterface(impl, local);
                     if (((checkOther &&  classMethodPair == null)) || !checkOther) {
                         try {
                             removeMethodFromClass(classMethodPair.getClassName(), classMethodPair.getMethodModel());
@@ -572,41 +572,40 @@ public abstract class AbstractMethodController extends EjbMethodController {
     // -------------------------------------------------------------------------
     
     protected boolean findInClass(final String clazz, final MethodModel methodModel) {
+        if (clazz == null) {
+            return false;
+        }
         try {
-            return methodFindInClass(clazz, methodModel);
+            FileObject ejbClassFO = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+                public FileObject run(EjbJarMetadata metadata) throws Exception {
+                    return metadata.findResource(Utils.toResourceName(ejbClass));
+                }
+            });
+            final boolean[] result = new boolean[] {false};
+            JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    result[0] = methodFindInClass(controller, clazz, methodModel) != null;
+                }
+            }, true);
+            return result[0];
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
             return false;
         }
-
     }
 
-    private boolean methodFindInClass(final String clazz, final MethodModel methodModel) throws IOException {
-        if (clazz == null) {
-            return false;
-        }
-        FileObject ejbClassFO = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
-            public FileObject run(EjbJarMetadata metadata) throws Exception {
-                return metadata.findResource(Utils.toResourceName(ejbClass));
-            }
-        });
-        JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
-        final boolean [] result = new boolean[] {false};
-        javaSource.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = controller.getElements().getTypeElement(clazz);
-                if (typeElement != null) {
-                    for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-                        if (MethodModelSupport.isSameMethod(controller, method, methodModel)) {
-                            result[0] = true;
-                            return;
-                        }
-                    }
+    private ExecutableElement methodFindInClass(CompilationController controller, final String clazz, final MethodModel methodModel) throws IOException {
+        TypeElement typeElement = controller.getElements().getTypeElement(clazz);
+        if (typeElement != null) {
+            for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                if (MethodModelSupport.isSameMethod(controller, method, methodModel)) {
+                    return method;
                 }
             }
-        }, true);
-        return result[0];
+        }
+        return null;
     }
     
     protected void addMethodToClass(final String className, final MethodModel method) throws IOException {
@@ -639,11 +638,12 @@ public abstract class AbstractMethodController extends EjbMethodController {
         javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                if (methodFindInClass(className, methodModel)) {
+                ExecutableElement method = methodFindInClass(workingCopy, className, methodModel);
+                if (method != null) {
                     TypeElement foundClass = workingCopy.getElements().getTypeElement(className);
                     Trees trees = workingCopy.getTrees();
                     ClassTree classTree = trees.getTree(foundClass);
-                    MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
+                    MethodTree methodTree = trees.getTree(method);
                     ClassTree modifiedClassTree = workingCopy.getTreeMaker().removeClassMember(classTree, methodTree);
                     workingCopy.rewrite(classTree, modifiedClassTree);
                 }
