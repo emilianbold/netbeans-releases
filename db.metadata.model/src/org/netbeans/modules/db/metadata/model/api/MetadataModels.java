@@ -47,6 +47,9 @@ import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.openide.util.RequestProcessor;
 
 /**
+ * Provides access to the database model for DB Explorer database connections.
+ * This class is temporary, as such acess should be provided directly by
+ * the DB Explorer through a {@code DatabaseConnection.getMetadataModel()} method.
  *
  * @author Andrei Badea
  */

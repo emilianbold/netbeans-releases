@@ -54,26 +54,40 @@ public class Table extends MetadataObject {
         this.impl = impl;
     }
 
+    /**
+     * Returns the schema containing this table.
+     *
+     * @return the parent schema.
+     */
     public Schema getParent() {
         return impl.getParent();
     }
 
+    /**
+     * Returns the name of this table; never {@code null}.
+     *
+     * @return the name.
+     */
     public String getName() {
         return impl.getName();
     }
 
     /**
+     * Returns the columns in this table.
+     *
      * @return the columns.
-     * @throws MetadataException.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
      */
     public Collection<Column> getColumns() {
         return impl.getColumns();
     }
 
     /**
+     * Returns the column with the given name.
+     *
      * @param name a column name.
-     * @return a column named {@code name} or null.
-     * @throws MetadataException.
+     * @return a column named {@code name} or {@code null} if there is no such column.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
      */
     public Column getColumn(String name) {
         return impl.getColumn(name);
