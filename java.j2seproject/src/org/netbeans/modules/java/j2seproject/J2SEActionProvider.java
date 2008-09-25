@@ -126,6 +126,7 @@ import org.openide.util.TaskListener;
  * strange things to J2SE actions. E.g. compile-single.
  */
 class J2SEActionProvider implements ActionProvider {
+    public static final String AUTOMATIC_BUILD_TAG = ".netbeans_automatic_build";
 
     // Commands available from J2SE project
     private static final String[] supportedActions = {
@@ -379,7 +380,7 @@ class J2SEActionProvider implements ActionProvider {
                     return;
                 }
                 if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
-                    if (COMMAND_BUILD.equals(command)) {
+                    if (COMMAND_BUILD.equals(command) && !allowAntBuild()) {
                         showBuildActionWarning(context);
                         return ;
                     }
@@ -749,7 +750,7 @@ class J2SEActionProvider implements ActionProvider {
                 // (If you make an edit and press F11, the save event happens *after* Ant is launched.)
                 modification(d.getPrimaryFile());
             }
-            boolean wasBuiltAutomatically = new File(buildClassesDir, ".netbeans_automatic_build").canRead(); //NOI18N
+            boolean wasBuiltAutomatically = new File(buildClassesDir,AUTOMATIC_BUILD_TAG).canRead(); //NOI18N
             if (!"true".equalsIgnoreCase(doDepend) && !(isExplicitBuildTarget && dirty.isEmpty()) && !wasBuiltAutomatically) { // NOI18N
                 // #104508: if not using <depend>, try to compile just those files known to have been touched since the last build.
                 // (In case there are none such, yet the user invoked build anyway, probably they know what they are doing.)
@@ -869,13 +870,21 @@ class J2SEActionProvider implements ActionProvider {
         return (compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty)) && J2SEProjectUtil.isCompileOnSaveSupported(project);
     }
 
+    private boolean allowAntBuild() {
+        String buildClasses = project.evaluator().getProperty(J2SEProjectProperties.BUILD_CLASSES_DIR);
+        File buildClassesFile = this.updateHelper.getAntProjectHelper().resolveFile(buildClasses);
+
+        return !new File(buildClassesFile, AUTOMATIC_BUILD_TAG).exists();
+    }
+
     public boolean isActionEnabled( String command, Lookup context ) {
         FileObject buildXml = findBuildXml();
         if (  buildXml == null || !buildXml.isValid()) {
             return false;
         }
         if (   Arrays.asList(actionsDisabledForQuickRun).contains(command)
-            && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+            && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)
+            && !allowAntBuild()) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
