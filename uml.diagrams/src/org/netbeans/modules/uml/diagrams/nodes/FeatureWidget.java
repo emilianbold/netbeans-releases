@@ -119,8 +119,10 @@ public abstract class FeatureWidget extends CustomizableWidget
             WidgetAction.Chain readonly = createActions(DesignerTools.READ_ONLY);
             readonly.addAction(objScene.createSelectAction());
             readonly.addAction(DefaultDiagramEngine.POPUP_ACTION);
-            
-            addToLookup(new ObjectSelectable());
+            if (canSelect())
+            {
+                addToLookup(new ObjectSelectable());
+            }
         }
     }
     
@@ -146,6 +148,11 @@ public abstract class FeatureWidget extends CustomizableWidget
     public void setAlignment(Alignment alignment)
     {
         this.myAlignment = alignment;
+    }
+    
+    protected boolean canSelect()
+    {
+        return true;
     }
     
     @Override

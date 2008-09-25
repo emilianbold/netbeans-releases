@@ -1,0 +1,9 @@
+Code completion result for source line:
+puts Module.class_variable|s
+(QueryType=COMPLETION, NameKind=PREFIX)
+CALL       puts(obj)                                  Kernel
+------------------------------------
+METHOD     class_variable_defined?(symbol             Module
+METHOD     class_variable_get(symbol)                 Module
+METHOD     class_variable_set(symbol, obj             Module
+METHOD     class_variables                            Module

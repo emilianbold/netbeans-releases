@@ -2,35 +2,35 @@ Code completion result for source line:
 y = /re|g/
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-KEYWORD    $                                          End of line
-KEYWORD    ()                                         Grouping
-KEYWORD    *                                          Zero or more repetitions of the preceding
-KEYWORD    +                                          One or more repetitions of the preceding
-KEYWORD    ?                                          At most one repetition of the preceding; same as {0,1}
-KEYWORD    [:alnum:]                                  Alphanumeric character class
-KEYWORD    [:alpha:]                                  Uppercase or lowercase letter
-KEYWORD    [:blank:]                                  Blank and tab
-KEYWORD    [:cntrl:]                                  Control characters (at least 0x00-0x1f,0x7f)
-KEYWORD    [:digit:]                                  Digit
-KEYWORD    [:graph:]                                  Printable character excluding space
-KEYWORD    [:lower:]                                  Lowecase letter
-KEYWORD    [:print:]                                  Any printable letter (including space)
-KEYWORD    [:punct:]                                  Printable character excluding space and alphanumeric
-KEYWORD    [:space:]                                  Whitespace (same as \s)
-KEYWORD    [:upper:]                                  Uppercase letter
-KEYWORD    [:xdigit:]                                 Hex digit (0-9, a-f, A-F)
-KEYWORD    \A                                         Beginning of string
-KEYWORD    \B                                         Non-word boundary
-KEYWORD    \D                                         Non-digit character
-KEYWORD    \S                                         Non-space character
-KEYWORD    \W                                         Neither letter or digit
-KEYWORD    \Z                                         End of string (except \n)
-KEYWORD    \b                                         Backspace (0x08) (only if in a range specification)
-KEYWORD    \b                                         Word boundary (if not in a range specification)
-KEYWORD    \d                                         Digit character; same as [0-9]
-KEYWORD    \s                                         Space character; same as [ \t\n\r\f]
-KEYWORD    \w                                         Letter or digit; same as [0-9A-Za-z]
-KEYWORD    \z                                         End of string
-KEYWORD    ^                                          Start of line
-KEYWORD    {m,n}                                      At least m and at most n repetitions of the preceding
-KEYWORD    |                                          Either preceding or next expression may match
+KEYWORD    $ End of line                              null
+KEYWORD    () Grouping                                null
+KEYWORD    * Zero or more repetitions of              null
+KEYWORD    + One or more repetitions of t             null
+KEYWORD    ? At most one repetition of th             null
+KEYWORD    [:alnum:] Alphanumeric charact             null
+KEYWORD    [:alpha:] Uppercase or lowerca             null
+KEYWORD    [:blank:] Blank and tab                    null
+KEYWORD    [:cntrl:] Control characters (             null
+KEYWORD    [:digit:] Digit                            null
+KEYWORD    [:graph:] Printable character              null
+KEYWORD    [:lower:] Lowecase letter                  null
+KEYWORD    [:print:] Any printable letter             null
+KEYWORD    [:punct:] Printable character              null
+KEYWORD    [:space:] Whitespace (same as              null
+KEYWORD    [:upper:] Uppercase letter                 null
+KEYWORD    [:xdigit:] Hex digit (0-9, a-f             null
+KEYWORD    \A Beginning of string                     null
+KEYWORD    \B Non-word boundary                       null
+KEYWORD    \D Non-digit character                     null
+KEYWORD    \S Non-space character                     null
+KEYWORD    \W Neither letter or digit                 null
+KEYWORD    \Z End of string (except \n)               null
+KEYWORD    \b Backspace (0x08) (only if i             null
+KEYWORD    \b Word boundary (if not in a              null
+KEYWORD    \d Digit character; same as [0             null
+KEYWORD    \s Space character; same as [              null
+KEYWORD    \w Letter or digit; same as [0             null
+KEYWORD    \z End of string                           null
+KEYWORD    ^ Start of line                            null
+KEYWORD    {m,n} At least m and at most n             null
+KEYWORD    | Either preceding or next exp             null

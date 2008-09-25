@@ -323,7 +323,7 @@
                 if (this.terminated) {
                     return;
                 }
-                
+
                 if ( !topWindow ) {
                     topWindow = win;
                     browser = NetBeans.Utils.getBrowserByWindow(win);
@@ -618,7 +618,9 @@
         } else {
             disable(false);
         }
-        
+
+        NetBeans.NetMonitor.destroyAllMonitors(browser);
+
         if ( socket ) {
             socket.close();
             socket = null;
@@ -802,6 +804,19 @@
                 NetBeans.NetMonitor.initMonitor(currentFirebugContext, browser, socket);
             } else {
                 NetBeans.NetMonitor.destroyMonitor(currentFirebugContext, browser);
+            }
+        } else {
+            var context = {};
+            var cBrowser;
+            if (browser) {
+                cBrowser = browser;
+            } else {
+                cBrowser = getBrowser();
+            }
+            if ( isEnabled == 'true' ){  //looking for the string "true"
+                NetBeans.NetMonitor.initMonitor(context, cBrowser, socket);
+            } else {
+                NetBeans.NetMonitor.destroyMonitor(context, cBrowser);
             }
         }
     }

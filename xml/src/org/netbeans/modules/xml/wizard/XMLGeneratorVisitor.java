@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml.wizard;
 
+import org.netbeans.modules.xml.wizard.XMLContentAttributes;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;

@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.xml.text;
 
+import org.netbeans.modules.xml.util.Util;
+import org.netbeans.modules.xml.util.Convertors;
 import java.io.Reader;
 import java.io.StringReader;
 

@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ClientAlreadyExistsExeption;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -88,7 +89,8 @@ import org.openide.windows.WindowManager;
  */
 public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImpl {
     
-    private static String[] defaultWsimportOptions = {"extension", "verbose"};  //NOI18N
+    private static final String[] DEFAULT_WSIMPORT_OPTIONS = {"extension", "verbose"};  //NOI18N
+    private static final String XNOCOMPILE_OPTION = "xnocompile"; //NOI18N
     
     Project project;
     private FileObject clientArtifactsFolder;
@@ -201,9 +203,15 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                 
                 WsimportOptions wsimportOptions = client.getWsImportOptions();
                 if (wsimportOptions != null) {
-                    for (String option:defaultWsimportOptions) {
+                    for (String option:DEFAULT_WSIMPORT_OPTIONS) {
                         WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
                         wsimportOption.setWsimportOptionName(option);
+                        wsimportOption.setWsimportOptionValue("true"); //NOI18N
+                        wsimportOptions.addWsimportOption(wsimportOption);
+                    }
+                    if (isXnocompile(project)) {
+                        WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
+                        wsimportOption.setWsimportOptionName(XNOCOMPILE_OPTION);
                         wsimportOption.setWsimportOptionValue("true"); //NOI18N
                         wsimportOptions.addWsimportOption(wsimportOption);
                     }
@@ -412,6 +420,33 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         FileObject clientWsdlFolder = globalWsdlFolder.getFileObject("client"); //NOI18N
         if (clientWsdlFolder==null) clientWsdlFolder = globalWsdlFolder.createFolder("client"); //NOI18N
         return clientWsdlFolder.createFolder(name);
+    }
+    
+    private static boolean isXnocompile(Project project){
+        JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
+        if (jvp != null) {
+            String version = jvp.getJAXWSVersion();
+            if (version != null) {
+                return isVersionSatisfied(version, "2.1.3");
+            }
+        }
+        // Defaultly return true
+        return true;
+    }
+    
+    private static boolean isVersionSatisfied(String version, String requiredVersion) {
+        int len1 = version.length();
+        int len2 = requiredVersion.length();
+        for (int i=0;i<Math.min(len1, len2);i++) {
+            if (version.charAt(i) < requiredVersion.charAt(i)) {
+                return false;
+            } else if (version.charAt(i) > requiredVersion.charAt(i)) {
+                return true;
+            }
+        }
+        if (len1 > len2) return true;
+        else if (len1 < len2) return false;
+        return true;
     }
     
 }

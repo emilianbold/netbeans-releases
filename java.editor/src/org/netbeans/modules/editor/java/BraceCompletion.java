@@ -313,7 +313,7 @@ class BraceCompletion {
      * till the end of caret row. If there is no such element, position after the last non-white
      * character on the caret row is returned.
      */
-    static int getRowOrBlockEnd(BaseDocument doc, int caretOffset) throws BadLocationException {
+    static int getRowOrBlockEnd(BaseDocument doc, int caretOffset, boolean[] insert) throws BadLocationException {
         int rowEnd = Utilities.getRowLastNonWhite(doc, caretOffset);
         if (rowEnd == -1 || caretOffset >= rowEnd) {
             return caretOffset;
@@ -328,6 +328,8 @@ class BraceCompletion {
         }
         while (ts.offset() < rowEnd) {
             switch (ts.token().id()) {
+                case SEMICOLON:
+                    return ts.offset() + 1;
                 case LPAREN:
                     parenBalance++;
                     break;
@@ -353,6 +355,8 @@ class BraceCompletion {
             if (!ts.moveNext())
                 break;
         }
+
+        insert[0] = false;
         return rowEnd;
     }
 

@@ -60,6 +60,13 @@ made subject to such option by the copyright holder.
                     <attr name='iconBase' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myIconResource'/>
                     <attr name='noIconInMenu' boolvalue="true"/>
                 </file>
+                <file name="testContextDelegate.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myContextAction'/>
+                    <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                </file>
             </folder>
         </folder>
     </folder> 

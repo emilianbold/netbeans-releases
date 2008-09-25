@@ -540,6 +540,8 @@ made subject to such option by the copyright holder.
                 <classpath refid="test.@{test.type}.run.cp"/>
                 <syspropertyset refid="test.@{test.type}.properties"/>
                 <jvmarg line="${test.run.args}"/>
+                <!--needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
+                <sysproperty key="apple.awt.UIElement" value="true"/>
                 <formatter type="brief" usefile="false"/>
                 <formatter type="xml"/>
             </junit>

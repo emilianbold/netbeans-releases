@@ -1,0 +1,6 @@
+Code completion result for source line:
+puts 'Hello'.class|
+(QueryType=COMPLETION, NameKind=PREFIX)
+CALL       puts(obj)                                  Kernel
+------------------------------------
+METHOD     class                                      Object

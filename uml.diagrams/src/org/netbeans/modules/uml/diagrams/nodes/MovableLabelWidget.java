@@ -61,6 +61,9 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.diagrams.actions.NodeLabelIteratorAction;
+import org.netbeans.modules.uml.drawingarea.actions.MoveNodeKeyAction;
+import org.netbeans.modules.uml.drawingarea.actions.ObjectSelectable;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
@@ -68,6 +71,9 @@ import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -91,6 +97,8 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
     private Point grandParentLoc = null;
     private UMLNodeWidget grandParent;
     private Point origLoc;
+    private InstanceContent lookupContent = new InstanceContent();
+    private Lookup lookup = new AbstractLookup(lookupContent);
 
     public MovableLabelWidget(Scene scene, Widget nodeWidget, IElement element, String widgetID, String displayName)
     {
@@ -120,19 +128,33 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             WidgetAction.Chain chain = createActions(DesignerTools.SELECT);
             chain.addAction(ds.createSelectAction());
             chain.addAction(ActionFactory.createMoveAction(labelMoveSupport, labelMoveSupport));
+            chain.addAction(new MoveNodeKeyAction(labelMoveSupport, labelMoveSupport));
+            chain.addAction(new NodeLabelIteratorAction());
         }
         if (element instanceof INamedElement)
         {
             setLabel(((INamedElement)element).getNameWithAlias());
         }
         addPresentation(element);
+        lookupContent.add(new ObjectSelectable());
     }
 
+    public Widget getAttachedNodeWidget()
+    {
+        return nodeWidget;
+    }
+    
     @Override
     public void setLabel(String label)
     {
         super.setLabel(label);
         updateLocation = true;
+    }
+
+    @Override
+    public Lookup getLookup()
+    {
+        return lookup;
     }
 
     @Override

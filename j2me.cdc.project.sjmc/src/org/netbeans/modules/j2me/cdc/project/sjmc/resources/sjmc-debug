@@ -1,0 +1,17 @@
+<xsl:comment>sjmc-debug</xsl:comment>
+
+    <target name="sjmc-debug" if="sjmc-platform.trigger">
+         <taskdef name="sjmcEmulatorExec" classname="org.netbeans.modules.j2me.cdc.project.sjmc.SJMCToolkitEmulatorExecTask" classpath="${{libs.sjmc-ant-utils.classpath}}"/>
+         <parallel>
+            <sjmcEmulatorExec home="${{platform.home}}" mainclass="${{main.class}}" args="${{application.args}}" jvmargs="${{run.jvmargs}}" device="${{platform.device}}" profile="${{platform.profile}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}" debug="true" debuggeraddressproperty="jpda.port">
+                <fileset dir="${{dist.dir}}">
+                    <exclude name="javadoc/**"/>
+                </fileset>
+            </sjmcEmulatorExec>
+            <sequential>
+                <sleep seconds="1"/>
+                <antcall target="nbdebug"/>
+            </sequential>
+         </parallel>
+    </target>
+

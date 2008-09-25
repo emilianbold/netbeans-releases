@@ -363,10 +363,12 @@ made subject to such option by the copyright holder.
             <file name="SunStudioExpress.xml" url="toolchain/SunStudioExpress.xml">
                 <attr name="position" intvalue="1600"/>
             </file>
+            <!-- This doesn't exist!
             <file name="SunStudio_13.xml" url="toolchain/SunStudio_13.xml">
                 <attr name="position" intvalue="1700"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
             </file>
+            -->
             <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
                 <attr name="position" intvalue="2000"/>
             </file>

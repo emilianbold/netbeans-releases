@@ -52,9 +52,9 @@ import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.Action;
-import javax.swing.KeyStroke;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
@@ -198,7 +198,7 @@ public class GotoDialogSupport implements ActionListener {
      * @return whether the dialog should be made invisible or not
      */
     protected boolean performGoto() {
-        JTextComponent c = Utilities.getLastActiveComponent();
+        JTextComponent c = EditorRegistry.lastFocusedComponent();
         if (c != null) {
             try {
                 int line = Integer.parseInt(

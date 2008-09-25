@@ -112,7 +112,6 @@ import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -923,21 +922,30 @@ long vsStart = System.currentTimeMillis();
                             IncrementalEmbeddingModel incrementalModel = (IncrementalEmbeddingModel)model;
                             translations = source.recentEmbeddingTranslations.get(model);
                             if (translations != null) {
-                                IncrementalEmbeddingModel.UpdateState updated = incrementalModel.update(source.editHistory, translations);
-                                if (updated == IncrementalEmbeddingModel.UpdateState.COMPLETED) {
-                                    // No need to parse - nothing else to be done for this mime type
-                                    ParserResult result = source.recentParseResult.get(language.getMimeType());
-                                    if (result != null) {
-                                        currentInfo.addEmbeddingResult(language.getMimeType(), result);
-                                        result.setUpdateState(ParserResult.UpdateState.NO_CHANGE);
-                                        continue;
+                                EditHistory history = source.editHistory;
+                                if (translations.size() > 0) {
+                                    history = EditHistory.getCombinedEdits(translations.iterator().next().getEditVersion(), source.editHistory);
+                                }
+                                if (history != null) {
+                                    IncrementalEmbeddingModel.UpdateState updated = incrementalModel.update(history, translations);
+                                    if (updated == IncrementalEmbeddingModel.UpdateState.COMPLETED) {
+                                        // No need to parse - nothing else to be done for this mime type
+                                        ParserResult result = source.recentParseResult.get(language.getMimeType());
+                                        if (result != null) {
+                                            currentInfo.addEmbeddingResult(language.getMimeType(), result);
+                                            result.setUpdateState(ParserResult.UpdateState.NO_CHANGE);
+                                            continue;
+                                        }
+                                    } else if (updated == IncrementalEmbeddingModel.UpdateState.FAILED) {
+                                        // Force update!
+                                        translations = null;
+                                    } else {
+                                        assert updated == IncrementalEmbeddingModel.UpdateState.UPDATED;
+                                        // Continue to parse below
                                     }
-                                } else if (updated == IncrementalEmbeddingModel.UpdateState.FAILED) {
-                                    // Force update!
-                                    translations = null;
                                 } else {
-                                    assert updated == IncrementalEmbeddingModel.UpdateState.UPDATED;
-                                    // Continue to parse below
+                                    // Force update
+                                    translations = null;
                                 }
                             }
                         }
@@ -947,6 +955,9 @@ long vsStart = System.currentTimeMillis();
                             translations = model.translate(document);
                             if (incremental) {
                                 source.recentEmbeddingTranslations.put(model, translations);
+                                for (TranslatedSource translated : translations) {
+                                    translated.setEditVersion(source.editHistory.getVersion());
+                                }
                             }
                         }
 if (cancellable && currentRequest.isCanceled()) {
@@ -972,11 +983,14 @@ long parseStart = System.currentTimeMillis();
                             if (incrementalParser != null && (source.files == null || source.files.size() <= 1)) {
                                 ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                                 if (previousResult != null) {
-                                    ParserResult ir = incrementalParser.parse(file, reader, null, source.editHistory, previousResult);
-                                    if (ir != null) {
-                                        ParserResult.UpdateState state = ir.getUpdateState();
-                                        if (state != ParserResult.UpdateState.FAILED) {
-                                            result = ir;
+                                    EditHistory history = EditHistory.getCombinedEdits(previousResult.getEditVersion(), source.editHistory);
+                                    if (history != null) {
+                                        ParserResult ir = incrementalParser.parse(file, reader, translatedSource, history, previousResult);
+                                        if (ir != null) {
+                                            ParserResult.UpdateState state = ir.getUpdateState();
+                                            if (state != ParserResult.UpdateState.FAILED) {
+                                                result = ir;
+                                            }
                                         }
                                     }
                                 }
@@ -989,6 +1003,7 @@ long parseStart = System.currentTimeMillis();
                             if (incrementalParser != null) {
                                 // Hmm, this will only work correctly for the FIRST element if the collections are > 1
                                 source.recentParseResult.put(language.getMimeType(), result);
+                                result.setEditVersion(source.editHistory.getVersion());
                             }
 // <editor-fold defaultstate="collapsed" desc="Peformance">                                                 
 parseTime += System.currentTimeMillis() - parseStart;     
@@ -1013,11 +1028,14 @@ long parseStart = System.currentTimeMillis();
                         if (incrementalParser != null && (source.files == null || source.files.size() <= 1)) {
                             ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                             if (previousResult != null) {
-                                result = incrementalParser.parse(file, reader, null, source.editHistory, previousResult);
-                                if (result != null) {
-                                    ParserResult.UpdateState state = result.getUpdateState();
-                                    if (state == ParserResult.UpdateState.FAILED) {
-                                        result = null;
+                                EditHistory history = EditHistory.getCombinedEdits(previousResult.getEditVersion(), source.editHistory);
+                                if (history != null) {
+                                    result = incrementalParser.parse(file, reader, null, history, previousResult);
+                                    if (result != null) {
+                                        ParserResult.UpdateState state = result.getUpdateState();
+                                        if (state == ParserResult.UpdateState.FAILED) {
+                                            result = null;
+                                        }
                                     }
                                 }
                             }
@@ -1029,6 +1047,7 @@ long parseStart = System.currentTimeMillis();
                         }
                         if (incrementalParser != null) {
                             source.recentParseResult.put(language.getMimeType(), result);
+                            result.setEditVersion(source.editHistory.getVersion());
                         }
 // <editor-fold defaultstate="collapsed" desc="Peformance">                     
 parseTime = System.currentTimeMillis() - parseStart;
@@ -1055,7 +1074,9 @@ if(parseTime > 0) {
 // </editor-fold>
             }
                 currentPhase = Phase.PARSED;
+                EditHistory oldHistory = source.editHistory;
                 source.editHistory = new EditHistory();
+                oldHistory.add(source.editHistory);
 
 //                long end = System.currentTimeMillis();
 //                FileObject file = currentInfo.getFileObject();

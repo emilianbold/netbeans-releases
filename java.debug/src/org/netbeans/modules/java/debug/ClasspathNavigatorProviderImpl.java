@@ -110,15 +110,16 @@ public class ClasspathNavigatorProviderImpl implements NavigatorPanel {
 
     public void panelActivated(Lookup context) {
         FileObject file = context.lookup(FileObject.class);
-        
-        try {
-            ClasspathNodeImpl node = new ClasspathNodeImpl(file);
-            manager.setRootContext(node);
-            manager.setSelectedNodes(new Node[] {node});
-        } catch (PropertyVetoException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+        if (file != null) {
+            try {
+                ClasspathNodeImpl node = new ClasspathNodeImpl(file);
+                manager.setRootContext(node);
+                manager.setSelectedNodes(new Node[] {node});
+            } catch (PropertyVetoException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 

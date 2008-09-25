@@ -547,11 +547,11 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
 //            return true;
 //        }
 
-        Coordinates coords = new Coordinates(node);
-        int beginLine = coords.getBeginLine();
-        int beginColumn = coords.getBeginColumn();
-        int endLine = coords.getEndLine();
-        int endColumn = coords.getEndColumn();
+        fixCoordinates(node);
+        int beginLine = node.getLineNumber();
+        int beginColumn = node.getColumnNumber();
+        int endLine = node.getLastLineNumber();
+        int endColumn = node.getLastColumnNumber();
         
         LOG.finest("isInside: " + node + " - " + beginLine + ", " + beginColumn + ", " + endLine + ", " + endColumn);
         
@@ -591,55 +591,40 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         return addToPath ? true : result;
     }
 
-    private static class Coordinates {
-
-        private int beginLine;
-
-        private int endLine;
-
-        private int beginColumn;
-
-        private int endColumn;
-
-        public Coordinates(ASTNode node) {
-            this.beginLine = node.getLineNumber();
-            this.endLine = node.getLastLineNumber();
-            this.beginColumn = node.getColumnNumber();
-            this.endColumn = node.getLastColumnNumber();
-
-            // see http://jira.codehaus.org/browse/GROOVY-3049
-            if (node instanceof PropertyExpression) {
-                // bit suspucious, try to fix the data
-                if (beginLine == endLine && beginColumn == endColumn) {
-                    PropertyExpression propertyExpression = (PropertyExpression) node;
-                    Expression expression = propertyExpression.getProperty();
-                    if (expression.getLastLineNumber() == 0 && expression.getLastColumnNumber() == 0) {
-                        if (expression.getLineNumber() > 0 && expression.getColumnNumber() > 0) {
-                            endColumn = endColumn + expression.getText().length();
-                        }
-                    } else {
-                        endLine = expression.getLastLineNumber();
-                        endColumn = expression.getLastColumnNumber();
+    private void fixCoordinates(ASTNode node) {
+        // see http://jira.codehaus.org/browse/GROOVY-3052
+        if (node instanceof RangeExpression) {
+            RangeExpression range = (RangeExpression) node;
+            Expression from = range.getFrom();
+            Expression to = range.getTo();
+            if (to.getLastLineNumber() == 0 && to.getLastColumnNumber() == 0
+                    || to.getLastLineNumber() > range.getLastLineNumber()
+                    || to.getLastColumnNumber() > range.getLastColumnNumber()) {
+                if (from.getLastLineNumber() == to.getLineNumber()
+                        && from.getLastColumnNumber() == to.getColumnNumber()) {
+                    // we need to do our best to fix it
+                    from.setLastColumnNumber(from.getColumnNumber() + from.getText().length());
+                    to.setLastColumnNumber(to.getColumnNumber() + to.getText().length());
+                    to.setLastLineNumber(to.getLineNumber());
+                }
+            }
+        // see http://jira.codehaus.org/browse/GROOVY-3049
+        } else if (node instanceof PropertyExpression) {
+            // bit suspucious, try to fix the data
+            if (node.getLineNumber() == node.getLastLineNumber()
+                    && node.getColumnNumber() == node.getLastColumnNumber()) {
+                PropertyExpression propertyExpression = (PropertyExpression) node;
+                Expression expression = propertyExpression.getProperty();
+                if (expression.getLastLineNumber() == 0 && expression.getLastColumnNumber() == 0) {
+                    if (expression.getLineNumber() > 0 && expression.getColumnNumber() > 0) {
+                        node.setLastColumnNumber(node.getLastColumnNumber() + expression.getText().length());
                     }
+                } else {
+                    node.setLastLineNumber(expression.getLastLineNumber());
+                    node.setLastColumnNumber(expression.getLastColumnNumber());
                 }
             }
         }
-
-        public int getBeginColumn() {
-            return beginColumn;
-        }
-
-        public int getBeginLine() {
-            return beginLine;
-        }
-
-        public int getEndColumn() {
-            return endColumn;
-        }
-
-        public int getEndLine() {
-            return endLine;
-        }
-        
     }
+
 }

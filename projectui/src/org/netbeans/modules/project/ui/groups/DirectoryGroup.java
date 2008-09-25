@@ -91,7 +91,7 @@ public class DirectoryGroup extends Group {
         try {
             fo = URLMapper.findFileObject(new URL(dir));
         } catch (MalformedURLException x) {
-            LOG.log(Level.WARNING, null, x);
+            LOG.log(Level.WARNING, "MalformedURLException: {0}", dir);
         }
         if (fo != null && fo.isFolder()) {
             try {

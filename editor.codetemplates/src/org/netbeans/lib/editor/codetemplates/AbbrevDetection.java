@@ -210,7 +210,7 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
             }
             
             if (resetAcceptor == null) {
-                resetAcceptor = AcceptorFactory.TRUE;
+                resetAcceptor = AcceptorFactory.WHITESPACE;
             }
         }
     }

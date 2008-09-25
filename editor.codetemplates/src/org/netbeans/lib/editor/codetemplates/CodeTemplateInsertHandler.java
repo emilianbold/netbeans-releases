@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -55,6 +56,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
@@ -84,6 +86,9 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
 
     // -J-Dorg.netbeans.lib.editor.codetemplates.CodeTemplateInsertHandler.level=FINE
     private static final Logger LOG = Logger.getLogger(CodeTemplateInsertHandler.class.getName());
+    /** logger for timers/counters */
+    private static final Logger TIMERS = Logger.getLogger("TIMER"); // NOI18N
+
     /**
      * Property used while nested template expanding.
      */
@@ -151,6 +156,11 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         setParametrizedText(codeTemplate.getParametrizedText());
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Created " + super.toString() + "\n"); // NOI18N
+        }
+        if (TIMERS.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "CodeTemplateInsertHandler"); // NOI18N
+            rec.setParameters(new Object[] { this });
+            TIMERS.log(rec);
         }
     }
     
@@ -305,7 +315,7 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
             // #132615
             // Insert a special undoable-edit marker that - once undone will release CT editing.
             if (bdoc != null) {
-                bdoc.addUndoableEdit(new TemplateInsertUndoEdit());
+                bdoc.addUndoableEdit(new TemplateInsertUndoEdit(doc));
             }
             
             TextRegion<?> caretTextRegion = null;
@@ -518,12 +528,22 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         return sb.toString();
     }
 
-    private final class TemplateInsertUndoEdit extends AbstractUndoableEdit {
+    private static final class TemplateInsertUndoEdit extends AbstractUndoableEdit {
+        
+        private Document doc;
+        
+        TemplateInsertUndoEdit(Document doc) {
+            assert (doc != null);
+            this.doc = doc;
+        }
 
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            release();
+            CodeTemplateInsertHandler handler = (CodeTemplateInsertHandler) doc.getProperty(CT_HANDLER_DOC_PROPERTY);
+            if (handler != null) {
+                handler.release();
+            }
         }
 
     }

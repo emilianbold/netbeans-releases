@@ -59,7 +59,6 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Properties
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
 import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
-import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.JdbcListCellRenderer;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -135,6 +134,9 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private void registerModifiers(){
         if (isContainerManaged){
             addImmediateModifier(dsCombo);
+            if(dsCombo.isEditable()) {
+                addImmediateModifier((JTextComponent)dsCombo.getEditor().getEditorComponent());
+            }
             addImmediateModifier(providerCombo);
             addImmediateModifier(jtaCheckBox);
             
@@ -160,7 +162,10 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     }
     
     private void initDataSource(){
-        jtaCheckBox.setEnabled(!Util.isJavaSE(project));
+        // Fixed enable/disable JTA checkbox based on isContainerManaged, 
+        // instead of project environment (SE or not). See issue 147628
+        jtaCheckBox.setEnabled(isContainerManaged);
+        
         if (isContainerManaged && ProviderUtil.isValidServerInstanceOrNone(project)) {
             String jtaDataSource = persistenceUnit.getJtaDataSource();
             String nonJtaDataSource = persistenceUnit.getNonJtaDataSource();
@@ -426,6 +431,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         
     }
     
+    @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
         if (nameTextField == source) {
             nameTextField.setText(persistenceUnit.getName());
@@ -459,6 +465,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         return jndiName;
     }
     
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
     }
@@ -477,7 +484,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         boolean isCm = isContainerManaged;
         datasourceLabel.setEnabled(isCm);
         dsCombo.setEnabled(isCm);
-        jtaCheckBox.setEnabled(isCm && !Util.isJavaSE(project));
+        jtaCheckBox.setEnabled(isCm);
         libraryLabel.setEnabled(!isCm);
         libraryComboBox.setEnabled(!isCm);
         jdbcLabel.setEnabled(!isCm);

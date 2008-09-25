@@ -40,11 +40,16 @@
 package org.netbeans.modules.cnd.execution;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.dwarfdump.FileMagic;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -53,15 +58,56 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class Unbuffer {
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
+    private static final boolean disabled = Boolean.getBoolean("cnd.unbuffer.disable"); // NOI18N
 
     private Unbuffer() {
     }
 
-    public static String getPath(String hkey, boolean is64bits) {
+    public static Collection<String> getUnbufferEnvironment(String hkey, String executable) {
+        ArrayList<String> res = new ArrayList<String>(2);
+        boolean is64bits = Unbuffer.is64BitExecutable(executable);
+        String unbufferPath = Unbuffer.getPath(hkey, is64bits);
+        if (unbufferPath != null) {
+            int platformType  = (hkey == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(hkey).getPlatform();
+            switch (platformType) {
+                case PlatformTypes.PLATFORM_MACOSX:
+                    res.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
+                    res.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
+                    break;
+                case PlatformTypes.PLATFORM_WINDOWS:
+                    //TODO: issue #144106
+                    break;
+                case PlatformTypes.PLATFORM_LINUX:
+                    res.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+                    break;
+                default:
+                    String preload = is64bits ? "LD_PRELOAD_64=" : "LD_PRELOAD_32="; // NOI18N
+                    res.add(preload + unbufferPath); // NOI18N
+            }
+        }
+        return res;
+    }
+
+    private static String getPath(String hkey, boolean is64bits) {
+        if (disabled) {
+            return null;
+        }
         if (hkey == null || CompilerSetManager.LOCALHOST.equals(hkey)) {
             return Unbuffer.getLocalPath(is64bits);
         } else {
             return Unbuffer.getRemotePath(hkey, is64bits);
+        }
+    }
+
+    private static boolean is64BitExecutable(String executable) {
+        try {
+            FileMagic magic = new FileMagic(executable);
+            ElfReader er = new ElfReader(executable, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
+            return er.is64Bit();
+        } catch (IOException e) {
+            log.warning("Executable " + executable + " not found"); // NOI18N
+            // something wrong - return false
+            return false;
         }
     }
     
@@ -114,7 +160,7 @@ public class Unbuffer {
     }
     
     private static String getLibName(int platform, boolean is64bits) {
-        String bitnessSuffix = is64bits ? "_64" : "";
+        String bitnessSuffix = is64bits ? "_64" : ""; // NOI18N
         switch (platform) {
             case PlatformTypes.PLATFORM_LINUX : return "unbuffer-Linux-x86" + bitnessSuffix + ".so"; // NOI18N
             case PlatformTypes.PLATFORM_SOLARIS_SPARC : return "unbuffer-SunOS-sparc" + bitnessSuffix + ".so"; // NOI18N

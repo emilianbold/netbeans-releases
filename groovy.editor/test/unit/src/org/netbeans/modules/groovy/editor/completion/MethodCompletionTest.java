@@ -130,6 +130,10 @@ public class MethodCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Methods9.groovy", "if (new File(new Date().get^", false);
     }
     
+    public void testCompletionInsideFor1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for(new Date().get^", false);
+    }
+    
 //    Disabled for now, since this tests undetermingly oscillates between pass and fail. 
 //    public void testMethods5() throws Exception {
 //        checkCompletion(TEST_BASE + "" + "Methods2.groovy", "        new Byte().^", false);

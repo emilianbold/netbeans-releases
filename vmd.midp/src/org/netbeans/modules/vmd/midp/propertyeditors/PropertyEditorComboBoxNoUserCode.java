@@ -38,10 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.util.Map;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -53,13 +53,11 @@ import org.openide.util.NbBundle;
  */
 public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor {
 
-    private final Map<String, PropertyValue> values;
+    private Map<String, PropertyValue> values;
     private String[] tags;
-
     private TypeID enableTypeID;
 
     //private CustomEditor customEditor;
-
     private PropertyEditorComboBoxNoUserCode(Map<String, PropertyValue> values, TypeID enableTypeID) {
         this.values = values;
         this.enableTypeID = enableTypeID;
@@ -67,7 +65,7 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
     }
 
     public static PropertyEditorComboBoxNoUserCode createInstance(Map<String, PropertyValue> values, TypeID typeID) {
-        
+
         if (values == null) {
             throw new IllegalArgumentException("Argument values can't be null"); // NOI18N
         }
@@ -77,8 +75,17 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
                 throw new IllegalArgumentException("PropertyValue for " + key + " key can't be null"); // NOI18N
             }
         }
-        
+
         return new PropertyEditorComboBoxNoUserCode(values, typeID);
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        tags = null;
+        enableTypeID = null;
+        values.clear();
+        values = null;
     }
 
     @Override
@@ -87,7 +94,7 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
             saveValue(text);
         }
     }
-    
+
     private void saveValue(String text) {
         if (text.length() > 0) {
             PropertyValue value = values.get(text);
@@ -97,14 +104,11 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
         }
     }
 
-
-
 //    private void initComponents() {
 //        
 //        customEditor = new CustomEditor();
 //        customEditor.updateModel();
 //    }
-
     @Override
     public boolean supportsCustomEditor() {
         return false;
@@ -116,8 +120,6 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
 //            initComponents();
 //        return customEditor;
 //    }
-
- 
     @Override
     public String getAsText() {
         PropertyValue value = (PropertyValue) super.getValue();
@@ -145,13 +147,10 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
 //        saveValue(customEditor.getText());
 //        
 //    }
-
     @Override
     public String[] getTags() {
         return tags;
     }
-    
-    
 
     private void createTags() {
         int i = 0;
@@ -165,7 +164,6 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
     public Boolean canEditAsText() {
         return null;
     }
-    
 //    private class CustomEditor extends JPanel  {
 //
 //        private JComboBox combobox;

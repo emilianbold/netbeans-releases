@@ -348,10 +348,10 @@ public class HtmlModel {
         boolean codeOverlaps = false;
         for (CodeBlockData codeBlock : codeBlocks) {
             // Block not affected by move
-            if (codeBlock.sourceEnd <= offset) {
+            if (codeBlock.sourceEnd < offset) {
                 continue;
             }
-            if (codeBlock.sourceStart >= limit) {
+            if (codeBlock.sourceStart > limit) {
                 codeBlock.sourceStart += delta;
                 codeBlock.sourceEnd += delta;
                 continue;

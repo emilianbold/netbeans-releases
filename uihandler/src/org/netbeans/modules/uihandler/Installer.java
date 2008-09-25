@@ -1172,6 +1172,7 @@ public class Installer extends ModuleInstall implements Runnable {
         LOG.log(Level.FINE, "uploadLogs, flushing"); // NOI18N
         data.flush();
         gzip.finish();
+        os.println();
         os.println("----------konec<>bloku--");
         os.close();
         
@@ -1495,6 +1496,7 @@ public class Installer extends ModuleInstall implements Runnable {
                             recs.add(thrownLog);//exception selected by user
                         }
                         recs.add(TimeToFailure.logFailure());
+                        recs.add(BuildInfo.logBuildInfoRec());
                         recs.add(userData);
                         if ((report) && !(reportPanel.asAGuest())) {
                             if (!checkUserName()) {
@@ -1868,11 +1870,6 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
                 } catch (IOException exc) {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
-                }
-                List<String> buildInfo = BuildInfo.logBuildInfo();
-                if (buildInfo != null) {
-                    Collection<? super String> c = params;
-                    c.addAll(buildInfo);
                 }
             }
         }

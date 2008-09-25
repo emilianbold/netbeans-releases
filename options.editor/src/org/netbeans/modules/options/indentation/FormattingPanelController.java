@@ -45,6 +45,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -70,7 +72,7 @@ import org.openide.util.WeakListeners;
  * 
  * @author Dusan Balek
  */
-public final class FormattingPanelController extends OptionsPanelController implements CustomizerSelector.PreferencesFactory, PreferenceChangeListener, NodeChangeListener {
+public final class FormattingPanelController extends OptionsPanelController {
 
     public static final String OVERRIDE_GLOBAL_FORMATTING_OPTIONS = "FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS"; //NOI18N
 
@@ -86,8 +88,16 @@ public final class FormattingPanelController extends OptionsPanelController impl
         
         synchronized (this) {
             LOG.fine("update"); //NOI18N
-            destroyPreferences();
-            selector = new CustomizerSelector(this, true);
+            if (pf != null) {
+                pf.destroy();
+            }
+            pf = new MimeLookupPreferencesFactory(new Callable() {
+                public Object call() {
+                    notifyChanged(true);
+                    return null;
+                }
+            });
+            selector = new CustomizerSelector(pf, true, null);
             panel.setSelector(selector);
             fire = changed;
             changed = false;
@@ -103,44 +113,20 @@ public final class FormattingPanelController extends OptionsPanelController impl
         
         synchronized (this) {
             LOG.fine("applyChanges"); //NOI18N
-            for(String mimeType : mimeTypePreferences.keySet()) {
-                ProxyPreferences pp = mimeTypePreferences.get(mimeType);
 
-                pp.silence();
-
-                if (mimeType.length() > 0) {
-                    // there can be no tabs-and-indents customizer
-                    //assert pp.get(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) != null;
-
-                    if (!pp.getBoolean(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false)) {
-                        // remove the basic settings if a language is not overriding the 'all languages' values
-                        pp.remove(SimpleValueNames.EXPAND_TABS);
-                        pp.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
-                        pp.remove(SimpleValueNames.SPACES_PER_TAB);
-                        pp.remove(SimpleValueNames.TAB_SIZE);
-                        pp.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
-                    }
-                    pp.remove(OVERRIDE_GLOBAL_FORMATTING_OPTIONS);
-                } else {
-                    assert pp.get(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) == null;
-                }
-                
-                try {
-                    LOG.fine("    flushing pp for '" + mimeType + "'"); //NOI18N
-                    pp.flush();
-                } catch (BackingStoreException ex) {
-                    LOG.log(Level.WARNING, "Can't flush preferences for '" + mimeType + "'", ex); //NOI18N
-                }
-                
+            pf.applyChanges();
+            for(String mimeType : pf.getAccessedMimeTypes()) {
                 for(PreferencesCustomizer c : selector.getCustomizers(mimeType)) {
                     if (c instanceof CustomizerSelector.WrapperCustomizer) {
                         ((CustomizerSelector.WrapperCustomizer) c).applyChanges();
                     }
                 }
             }
-            
-            destroyPreferences();
+
+            pf.destroy();
+            pf = null;
             panel.setSelector(null);
+            selector = null;
             
             fire = changed;
             changed = false;
@@ -157,7 +143,7 @@ public final class FormattingPanelController extends OptionsPanelController impl
         synchronized (this) {
             LOG.fine("cancel"); //NOI18N
 
-            for(String mimeType : mimeTypePreferences.keySet()) {
+            for(String mimeType : pf.getAccessedMimeTypes()) {
                 for(PreferencesCustomizer c : selector.getCustomizers(mimeType)) {
                     if (c instanceof CustomizerSelector.WrapperCustomizer) {
                         ((CustomizerSelector.WrapperCustomizer) c).cancel();
@@ -165,8 +151,11 @@ public final class FormattingPanelController extends OptionsPanelController impl
                 }
             }
                 
-            destroyPreferences();
+            pf.destroy();
+            pf = null;
             panel.setSelector(null);
+            selector = null;
+            
             fire = changed;
             changed = false;
         }
@@ -208,64 +197,14 @@ public final class FormattingPanelController extends OptionsPanelController impl
     }
 
     // ------------------------------------------------------------------------
-    // CustomizerSelector.PreferencesFactory implementation
-    // ------------------------------------------------------------------------
-
-    public synchronized Preferences getPreferences(String mimeType) {
-        ProxyPreferences pp = mimeTypePreferences.get(mimeType);
-        if (pp == null) {
-            Preferences p = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
-            pp = ProxyPreferences.get(p);
-            pp.addPreferenceChangeListener(weakPrefL);
-            pp.addNodeChangeListener(weakNodeL);
-            mimeTypePreferences.put(mimeType, pp);
-            LOG.fine("getPreferences(" + mimeType + ")"); //NOI18N
-        }
-        return pp;
-    }
-
-    public boolean isKeyOverridenForMimeType(String key, String mimeType) {
-        EditorSettingsStorage<String, TypedValue> storage = EditorSettingsStorage.<String, TypedValue>get("Preferences"); //NOI18N
-        try {
-            Map<String, TypedValue> mimePathLocalPrefs = storage.load(MimePath.parse(mimeType), null, false);
-            return mimePathLocalPrefs.containsKey(key);
-        } catch (IOException ioe) {
-            LOG.log(Level.WARNING, null, ioe);
-            return false;
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // PreferenceChangeListener implementation
-    // ------------------------------------------------------------------------
-
-    public void preferenceChange(PreferenceChangeEvent evt) {
-        notifyChanged(true);
-    }
-
-    // ------------------------------------------------------------------------
-    // NodeChangeListener implementation
-    // ------------------------------------------------------------------------
-
-    public void childAdded(NodeChangeEvent evt) {
-        notifyChanged(true);
-    }
-
-    public void childRemoved(NodeChangeEvent evt) {
-        notifyChanged(true);
-    }
-
-    // ------------------------------------------------------------------------
     // private implementation
     // ------------------------------------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(FormattingPanelController.class.getName());
     
-    private final Map<String, ProxyPreferences> mimeTypePreferences = new HashMap<String, ProxyPreferences>();
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private final PreferenceChangeListener weakPrefL = WeakListeners.create(PreferenceChangeListener.class, this, null);
-    private final NodeChangeListener weakNodeL = WeakListeners.create(NodeChangeListener.class, this, null);
 
+    private MimeLookupPreferencesFactory pf;
     private CustomizerSelector selector;
     private FormattingPanel panel;
     private boolean changed = false;
@@ -287,17 +226,128 @@ public final class FormattingPanelController extends OptionsPanelController impl
         }
     }
 
-    private void destroyPreferences() {
-        // destroy all proxy preferences
-        for(String mimeType : mimeTypePreferences.keySet()) {
-            ProxyPreferences pp = mimeTypePreferences.get(mimeType);
-            pp.removeNodeChangeListener(weakNodeL);
-            pp.removePreferenceChangeListener(weakPrefL);
-            pp.destroy();
-            LOG.fine("destroying pp for '" + mimeType + "'"); //NOI18N
+    private static final class MimeLookupPreferencesFactory implements CustomizerSelector.PreferencesFactory, PreferenceChangeListener, NodeChangeListener {
+
+        public MimeLookupPreferencesFactory(Callable callback) {
+            this.callback = callback;
+        }
+        
+        public Set<? extends String> getAccessedMimeTypes() {
+            return mimeTypePreferences.keySet();
         }
 
-        // reset the cache
-        mimeTypePreferences.clear();
-    }
+        public void applyChanges() {
+            for(String mimeType : mimeTypePreferences.keySet()) {
+                ProxyPreferences pp = mimeTypePreferences.get(mimeType);
+
+                pp.silence();
+
+                if (mimeType.length() > 0) {
+                    // there can be no tabs-and-indents customizer
+                    //assert pp.get(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) != null;
+
+                    if (!pp.getBoolean(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false)) {
+                        // remove the basic settings if a language is not overriding the 'all languages' values
+                        pp.remove(SimpleValueNames.EXPAND_TABS);
+                        pp.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
+                        pp.remove(SimpleValueNames.SPACES_PER_TAB);
+                        pp.remove(SimpleValueNames.TAB_SIZE);
+                        pp.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                    }
+                    pp.remove(OVERRIDE_GLOBAL_FORMATTING_OPTIONS);
+                } else {
+                    assert pp.get(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) == null;
+                }
+
+                try {
+                    LOG.fine("    flushing pp for '" + mimeType + "'"); //NOI18N
+                    pp.flush();
+                } catch (BackingStoreException ex) {
+                    LOG.log(Level.WARNING, "Can't flush preferences for '" + mimeType + "'", ex); //NOI18N
+                }
+            }
+        }
+
+        public void destroy() {
+            // destroy all proxy preferences
+            for(String mimeType : mimeTypePreferences.keySet()) {
+                ProxyPreferences pp = mimeTypePreferences.get(mimeType);
+                pp.removeNodeChangeListener(weakNodeL);
+                pp.removePreferenceChangeListener(weakPrefL);
+                pp.destroy();
+                LOG.fine("destroying pp for '" + mimeType + "'"); //NOI18N
+            }
+
+            // reset the cache
+            mimeTypePreferences.clear();
+        }
+
+        // ------------------------------------------------------------------------
+        // CustomizerSelector.PreferencesFactory implementation
+        // ------------------------------------------------------------------------
+
+        public Preferences getPreferences(String mimeType) {
+            ProxyPreferences pp = mimeTypePreferences.get(mimeType);
+            try {
+                // clean up the cached ProxyPreferences instance that has been removed in the meantime
+                if (pp != null && !pp.nodeExists("")) { //NOI18N
+                    pp = null;
+                }
+            } catch (BackingStoreException bse) {
+                // ignore
+            }
+
+            if (pp == null) {
+                Preferences p = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+                pp = ProxyPreferences.getProxyPreferences(this, p);
+                pp.addPreferenceChangeListener(weakPrefL);
+                pp.addNodeChangeListener(weakNodeL);
+                mimeTypePreferences.put(mimeType, pp);
+                LOG.fine("getPreferences(" + mimeType + ")"); //NOI18N
+            }
+            
+            return pp;
+        }
+
+        public boolean isKeyOverridenForMimeType(String key, String mimeType) {
+            EditorSettingsStorage<String, TypedValue> storage = EditorSettingsStorage.<String, TypedValue>get("Preferences"); //NOI18N
+            try {
+                Map<String, TypedValue> mimePathLocalPrefs = storage.load(MimePath.parse(mimeType), null, false);
+                return mimePathLocalPrefs.containsKey(key);
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+                return false;
+            }
+        }
+
+        // ------------------------------------------------------------------------
+        // PreferenceChangeListener implementation
+        // ------------------------------------------------------------------------
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            try { callback.call(); } catch (Exception e) { /* ignore */ }
+        }
+
+        // ------------------------------------------------------------------------
+        // NodeChangeListener implementation
+        // ------------------------------------------------------------------------
+
+        public void childAdded(NodeChangeEvent evt) {
+            try { callback.call(); } catch (Exception e) { /* ignore */ }
+        }
+
+        public void childRemoved(NodeChangeEvent evt) {
+            try { callback.call(); } catch (Exception e) { /* ignore */ }
+        }
+
+        // ------------------------------------------------------------------------
+        // private implementation
+        // ------------------------------------------------------------------------
+
+        private final Map<String, ProxyPreferences> mimeTypePreferences = new HashMap<String, ProxyPreferences>();
+        private final PreferenceChangeListener weakPrefL = WeakListeners.create(PreferenceChangeListener.class, this, null);
+        private final NodeChangeListener weakNodeL = WeakListeners.create(NodeChangeListener.class, this, null);
+        private final Callable callback;
+
+    } // End of MimeLookupPreferencesFactory class
 }

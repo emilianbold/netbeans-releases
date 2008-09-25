@@ -55,8 +55,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.javascript.editing.JsAnalyzer;
-import org.netbeans.modules.javascript.editing.JsUtils;
-import org.openide.filesystems.FileObject;
 
 /**
  * Creates a JavaScript model for a set of HTML fragments.
@@ -86,8 +84,8 @@ public class JsModel {
     
     private final Document doc;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
-    private String rubyCode;
-    //private String rhtmlCode; // For debugging purposes
+    private String jsCode;
+    //private String sourceCode; // For debugging purposes
     private boolean documentDirty = true;
     /** Caching */
     private int prevAstOffset; // Don't need to initialize: the map 0 => 0 is correct
@@ -104,7 +102,7 @@ public class JsModel {
         return model;
     }
 
-    JsModel(Document doc) {
+    private JsModel(Document doc) {
         this.doc = doc;
 
         if (doc != null) { // null in some unit tests
@@ -123,11 +121,11 @@ public class JsModel {
             documentDirty = false;
 
             // Debugging
-//            try {
-//                rhtmlCode = doc.getText(0, doc.getLength());
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
+            //try {
+            //    sourceCode = doc.getText(0, doc.getLength());
+            //} catch (Exception e) {
+            //    e.printStackTrace();
+            //}
             codeBlocks.clear();
             StringBuilder buffer = new StringBuilder();
 
@@ -157,16 +155,16 @@ public class JsModel {
             } finally {
                 d.readUnlock();
             }
-            rubyCode = buffer.toString();
+            jsCode = buffer.toString();
         }
 
         if (LOG) {
             LOGGER.log(Level.FINE, "===== VIRTUAL JavaScript SOURCE =====");
-            LOGGER.log(Level.FINE, rubyCode);
+            LOGGER.log(Level.FINE, jsCode);
             LOGGER.log(Level.FINE, "=====================================");
         }
 
-        return rubyCode;
+        return jsCode;
     }
 
 //    static Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
@@ -197,7 +195,7 @@ public class JsModel {
      * @param tokenHierarchy The token hierarchy for the RHTML code
      * @param tokenSequence  The token sequence for the RHTML code
      */
-    void extractJavaScriptFromJsp(TokenSequence<? extends TokenId> tokenSequence, StringBuilder outputBuffer) {
+    private void extractJavaScriptFromJsp(TokenSequence<? extends TokenId> tokenSequence, StringBuilder outputBuffer) {
         StringBuilder buffer = outputBuffer;
 
         //TODO - implement the "classpath" import for other projects
@@ -245,7 +243,7 @@ public class JsModel {
 
     }
 
-    void extractJavaScriptFromPHP(TokenSequence<? extends TokenId> tokenSequence, StringBuilder outputBuffer) {
+    private void extractJavaScriptFromPHP(TokenSequence<? extends TokenId> tokenSequence, StringBuilder outputBuffer) {
         StringBuilder buffer = outputBuffer;
 
         //TODO - implement the "classpath" import for other projects
@@ -297,7 +295,7 @@ public class JsModel {
      * @param tokenHierarchy The token hierarchy for the RHTML code
      * @param tokenSequence  The token sequence for the RHTML code
      */
-    void extractJavaScriptFromRhtml(TokenSequence<? extends TokenId> tokenSequence,
+    private void extractJavaScriptFromRhtml(TokenSequence<? extends TokenId> tokenSequence,
             StringBuilder outputBuffer) {
         StringBuilder buffer = outputBuffer;
         // Add a super class such that code completion, goto declaration etc.
@@ -313,7 +311,7 @@ public class JsModel {
 //        buffer.append("_buf='';"); // NOI18N
 //        codeBlocks.add(new CodeBlockData(0, 0, 0, buffer.length()));
 /* This could be a huge bottleneck - see http://www.netbeans.org/issues/show_bug.cgi?id=134329
-        FileObject fo = NbUtilities.findFileObject(doc);
+        FileObject fo = GsfUtilities.findFileObject(doc);
         if (fo != null) {
             Project project = FileOwnerQuery.getOwner(fo);
             if (project != null) {
@@ -417,7 +415,7 @@ public class JsModel {
 
     
     /** @return True iff we're still in the middle of an embedded token */
-    void extractJavaScriptFromHtml(TokenSequence<? extends HTMLTokenId> ts,
+    private void extractJavaScriptFromHtml(TokenSequence<? extends HTMLTokenId> ts,
             StringBuilder buffer, JsAnalyzerState state) {
         // NOI18N
         // Process the HTML content: look for embedded script blocks,
@@ -558,7 +556,7 @@ public class JsModel {
                         state.opening_quotation_stripped = true;
                         value = value.substring(1);
                         sourceStart++; //skip the quotation
-                        sourceEnd -= 2; //skip the quotation
+                        sourceEnd--; //skip the quotation
                     }
                 }
                 
@@ -670,7 +668,6 @@ public class JsModel {
                 state.in_javascript = false;
             }
         }
-
     }
 
     public int sourceToGeneratedPos(int sourceOffset) {
@@ -745,10 +742,10 @@ public class JsModel {
         boolean codeOverlaps = false;
         for (CodeBlockData codeBlock : codeBlocks) {
             // Block not affected by move
-            if (codeBlock.sourceEnd <= offset) {
+            if (codeBlock.sourceEnd < offset) {
                 continue;
             }
-            if (codeBlock.sourceStart >= limit) {
+            if (codeBlock.sourceStart > limit) {
                 codeBlock.sourceStart += delta;
                 codeBlock.sourceEnd += delta;
                 continue;
@@ -764,21 +761,21 @@ public class JsModel {
         return codeOverlaps ? IncrementalEmbeddingModel.UpdateState.UPDATED : IncrementalEmbeddingModel.UpdateState.COMPLETED;
     }
 
-    private void addJavaScriptFiles(FileObject file, StringBuilder sb) {
-        if (file.isFolder()) {
-            for (FileObject child : file.getChildren()) {
-                addJavaScriptFiles(child, sb);
-            }
-        } else if (JsUtils.isJsFile(file)) {
-            if (sb.length() > 0) {
-                sb.append(","); // NOI18N
-            }
-            sb.append("\""); // NOI18N
-            String src = file.getNameExt(); // TODO - fuller path?
-            sb.append(src);
-            sb.append("\""); // NOI18N
-        }
-    }
+    //private void addJavaScriptFiles(FileObject file, StringBuilder sb) {
+    //    if (file.isFolder()) {
+    //        for (FileObject child : file.getChildren()) {
+    //            addJavaScriptFiles(child, sb);
+    //        }
+    //    } else if (JsUtils.isJsFile(file)) {
+    //        if (sb.length() > 0) {
+    //            sb.append(","); // NOI18N
+    //        }
+    //        sb.append("\""); // NOI18N
+    //        String src = file.getNameExt(); // TODO - fuller path?
+    //        sb.append(src);
+    //        sb.append("\""); // NOI18N
+    //    }
+    //}
 
     private CodeBlockData getCodeBlockAtSourceOffset(int offset) {
         for (CodeBlockData codeBlock : codeBlocks) {
@@ -835,11 +832,11 @@ public class JsModel {
             sb.append("CodeBlockData[");
             sb.append("\n  SOURCE(" + sourceStart + "," + sourceEnd + ")");
             //sb.append("=\"");
-            //sb.append(rhtmlCode.substring(sourceStart, sourceEnd));
+            //sb.append(sourceCode.substring(sourceStart, sourceEnd));
             //sb.append("\"");
             sb.append(",\n  JAVASCRIPT(" + generatedStart + "," + generatedEnd + ")");
             //sb.append("=\"");
-            //sb.append(rubyCode.substring(generatedStart,generatedEnd));
+            //sb.append(jsCode.substring(generatedStart,generatedEnd));
             //sb.append("\"");
             sb.append("]");
 
@@ -860,7 +857,7 @@ public class JsModel {
     //    int end = pos+15;
     //    if (end > code.length()) {
     //        end = code.length();
-    //    } 
+    //    }
     //
     //    return code.substring(start, pos) + "^" + code.substring(pos, end);
     //}

@@ -175,13 +175,6 @@ METHOD     undef_method(symbol)                       Module
 METHOD     untaint                                    Object
 METHOD     untrace_var(symbol, cmd)                   Kernel
 METHOD     warn(msg)                                  Kernel
-KEYWORD    $DEBUG                                     null
-KEYWORD    $FILENAME                                  null
-KEYWORD    $LOAD_PATH                                 null
-KEYWORD    $VERBOSE                                   null
-KEYWORD    $stderr                                    null
-KEYWORD    $stdin                                     null
-KEYWORD    $stdout                                    null
 KEYWORD    ARGF                                       null
 KEYWORD    ARGV                                       null
 KEYWORD    BEGIN                                      null

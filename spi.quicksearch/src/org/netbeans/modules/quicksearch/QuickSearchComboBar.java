@@ -225,6 +225,9 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-LAST:event_fo
     } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
         returnFocus();
         displayer.clearModel();
+    } else if (evt.getKeyCode() == KeyEvent.VK_F10 &&
+            evt.isShiftDown()) {
+        maybeShowPopup(null);
     }
 }//GEN-LAST:event_commandKeyPressed
 
@@ -286,7 +289,7 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
 }//GEN-LAST:event_commandFocusGained
 
     private void maybeShowPopup (MouseEvent evt) {
-        if (!SwingUtilities.isLeftMouseButton(evt)) {
+        if (evt != null && !SwingUtilities.isLeftMouseButton(evt)) {
             return;
         }
 

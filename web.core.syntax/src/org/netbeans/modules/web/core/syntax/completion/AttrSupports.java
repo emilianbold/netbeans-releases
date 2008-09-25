@@ -190,7 +190,7 @@ public class AttrSupports {
             delegate.create(component.getDocument(), fakedClassBody);
             List<? extends CompletionItem> items =  delegate.getCompletionItems();
             result.addAllItems(items);
-            result.setAnchorOffset(offset + (valuePart.lastIndexOf('.') + 1));
+            result.setAnchorOffset(offset - (valuePart.length() - valuePart.lastIndexOf('.')) + 1);
         }
    
     }
