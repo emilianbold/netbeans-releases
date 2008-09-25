@@ -52,9 +52,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
 import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.openide.ErrorManager;
@@ -206,24 +204,14 @@ public class NativeExecutor implements Runnable {
 
         if (unbuffer) {
             try {
+                // TODO: resolve remote path correctly!
                 File exeFile = new File(runDir, executable);
                 if (!exeFile.exists()) {
                     //try to resolve from the root
                     exeFile = new File(executable);
                 }
-                boolean is64bits = Unbuffer.is64BitExecutable(exeFile.getAbsolutePath());
-                String unbufferPath = Unbuffer.getPath(hkey, is64bits);
-                if (unbufferPath != null) {
-                    int platformType  = (hkey == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(hkey).getPlatform();
-                    if (platformType == PlatformTypes.PLATFORM_MACOSX) {
-                        envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
-                        envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
-                    } else if (platformType == PlatformTypes.PLATFORM_WINDOWS) {
-                        //TODO: issue #144106
-                    } else {
-                        String preload = is64bits ? "LD_PRELOAD_64=" : "LD_PRELOAD_32="; // NOI18N
-                        envpList.add(preload + unbufferPath); // NOI18N
-                    }
+                for (String envEntry : Unbuffer.getUnbufferEnvironment(hkey, exeFile.getAbsolutePath())) {
+                    envpList.add(envEntry);
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
