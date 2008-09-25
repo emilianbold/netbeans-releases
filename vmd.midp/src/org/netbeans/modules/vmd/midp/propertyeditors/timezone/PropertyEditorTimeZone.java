@@ -76,8 +76,10 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
     @Override
     public void cleanUp(DesignComponent component) {
         super.cleanUp(component);
-        timeZoneEditor.cleanUp();
-        timeZoneEditor = null;
+        if (timeZoneEditor != null) {
+            timeZoneEditor.cleanUp();
+            timeZoneEditor = null;
+        }
     }
     
     @Override
@@ -121,8 +123,10 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
         void cleanUp() {
             radioButton = null;
             model = null;
-            combobox.removeActionListener(this);
-            combobox = null;
+            if (combobox != null) {
+                combobox.removeActionListener(this);
+                combobox = null;
+            }
         }
         
         public void updateState(PropertyValue value) {
