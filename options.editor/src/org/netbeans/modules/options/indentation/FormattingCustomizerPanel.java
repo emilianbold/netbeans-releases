@@ -88,9 +88,38 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
     // ProjectCustomizer.CompositeCategoryProvider implementation
     // ------------------------------------------------------------------------
 
+    /**
+     * Creates an instance of the 'Formatting' category in the project properties dialog.
+     * This method is meant to be used from XML layers by modules that wish to add
+     * the 'Formatting' category to their project type's properties dialog.
+     *
+     * <p>The method recognizes 'allowedMimeTypes' XML layer attribute, which should
+     * contain the comma separated list of mime types, which formatting settings
+     * customizers should be made available for the project. If the attribute is
+     * not specified all registered customizers are shown. If the attribute specifies
+     * an empty list only the 'All Languages' customizer is shown.
+     *
+     * @param attrs The map of <code>FileObject</code> attributes
+     *
+     * @return A new 'Formatting' category provider.
+     * @since 1.10
+     */
+    public static ProjectCustomizer.CompositeCategoryProvider createCategoryProvider(Map attrs) {
+        return new Factory((String)attrs.get("allowedMimeTypes")); //NOI18N
+    }
+
     public static class Factory implements ProjectCustomizer.CompositeCategoryProvider {
  
         private static final String CATEGORY_FORMATTING = "Formatting"; // NOI18N
+        private final String allowedMimeTypes;
+
+        public Factory() {
+            this(null);
+        }
+
+        public Factory(String allowedMimeTypes) {
+            this.allowedMimeTypes = allowedMimeTypes;
+        }
 
         public ProjectCustomizer.Category createCategory(Lookup context) {
             return context.lookup(Project.class) == null ? null : ProjectCustomizer.Category.create(
@@ -100,7 +129,7 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
         }
 
         public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-            FormattingCustomizerPanel customizerPanel = new FormattingCustomizerPanel(context);
+            FormattingCustomizerPanel customizerPanel = new FormattingCustomizerPanel(context, allowedMimeTypes);
             category.setStoreListener(customizerPanel);
             return customizerPanel;
         }
@@ -305,7 +334,7 @@ private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
                 pf.destroy();
                 pf = (ProjectPreferencesFactory) ret;
-                selector = new CustomizerSelector(pf, false);
+                selector = new CustomizerSelector(pf, false, allowedMimeTypes);
                 panel.setSelector(selector);
 
                 if (selectedMimeType != null) {
@@ -362,16 +391,18 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     private static final String PROJECT_PROFILE = "project"; // NOI18N
     private static final String USED_PROFILE = "usedProfile"; // NOI18N
-    
+
+    private final String allowedMimeTypes;
     private ProjectPreferencesFactory pf;
     private CustomizerSelector selector;
     private final FormattingPanel panel;
     private boolean copyOnFork;
     
     /** Creates new form CodeStyleCustomizerPanel */
-    private FormattingCustomizerPanel(Lookup context) {
+    private FormattingCustomizerPanel(Lookup context, String allowedMimeTypes) {
+        this.allowedMimeTypes = allowedMimeTypes;
         this.pf = new ProjectPreferencesFactory(context.lookup(Project.class));
-        this.selector = new CustomizerSelector(pf, false);
+        this.selector = new CustomizerSelector(pf, false, allowedMimeTypes);
         this.panel = new FormattingPanel();
         this.panel.setSelector(selector);
 
