@@ -475,11 +475,13 @@ class LuceneIndex extends Index {
                     String filename = entry.getFilename();
                     List<IndexDocumentImpl> documents = entry.getDocuments();
                     if (documents != null && documents.size() > 0) {
+                        String createEmptyUrl = null;
                         for (IndexDocumentImpl document : documents) {
                             Document newDoc = new Document();
                             newDoc.add(new Field (DocumentUtil.FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO));
                             if (document.overrideUrl != null) {
                                 newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, document.overrideUrl, Field.Store.YES, Field.Index.UN_TOKENIZED));
+                                createEmptyUrl = filename;
                             } else if (filename != null) {
                                 newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, filename, Field.Store.YES, Field.Index.UN_TOKENIZED));
                             }
@@ -500,6 +502,15 @@ class LuceneIndex extends Index {
                                 newDoc.add(field);
                             }
 
+                            activeOut.addDocument(newDoc);
+                        }
+
+                        if (createEmptyUrl != null) {
+                            // For timestamp analysis
+
+                            Document newDoc = new Document();
+                            newDoc.add(new Field (DocumentUtil.FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO));
+                            newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, createEmptyUrl, Field.Store.YES, Field.Index.UN_TOKENIZED));
                             activeOut.addDocument(newDoc);
                         }
                     } else if (filename != null && documents != null) { // documents == null: delete
