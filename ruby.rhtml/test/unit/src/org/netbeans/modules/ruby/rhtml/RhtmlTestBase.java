@@ -57,6 +57,7 @@ import org.openide.filesystems.Repository;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.RubyLanguage;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 /**
  *
@@ -86,6 +87,11 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         super.setUp();
         try {
             TestLanguageProvider.register(RhtmlTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Already registered?
+        }
+        try {
+            TestLanguageProvider.register(RubyTokenId.language());
         } catch (IllegalStateException ise) {
             // Already registered?
         }

@@ -167,7 +167,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         if (!classes.isEmpty()) {
             MethodChooser chooser = new MethodChooser(debugger, url, classes.get(0), methodLine, methodOffset);
             boolean success = chooser.run();
-            if (success) {
+            if (success && chooser.isInSelectMode()) {
                 synchronized (this) {
                     currentMethodChooser = chooser;
                     chooser.setReleaseListener(new ActionListener() {

@@ -47,13 +47,51 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
  * 
  * @author Tor Norbye
  */
-public interface TranslatedSource {
-    @NonNull EmbeddingModel getModel();
-    @NonNull String getSource();
-    int getAstOffset(int lexicalOffset);
-    int getLexicalOffset(int astOffset);
+public abstract class TranslatedSource {
+    @NonNull public abstract String getSource();
+
+    public abstract int getAstOffset(int lexicalOffset);
+    public abstract int getLexicalOffset(int astOffset);
     /** The start of the translation section in the source document. Usually 0. */
-    int getSourceStartOffset();
+    public abstract int getSourceStartOffset();
     /** The end of the translation section in the source document. Usually doc.getLength() */
-    int getSourceEndOffset();
+    public abstract int getSourceEndOffset();
+
+    /**
+     * Create a new TranslatedSource
+     * @param embeddingModel The embedding model responsible for creating this translated source
+     */
+    protected TranslatedSource(EmbeddingModel embeddingModel) {
+        this.embeddingModel = embeddingModel;
+    }
+
+    /**
+     * Return the embedding model associated with this translated source
+     * @return the embedding model which created this translated source
+     */
+    @NonNull
+    public EmbeddingModel getModel() {
+        return embeddingModel;
+    }
+
+    /**
+     * Get the edit version for this parser result. Used along
+     * with {@link EditHistory#getCombinedEdits(int,EditHistory)} to
+     * produce a edit history delta between two parser results.
+     * @return the edit version this parser result was seen with
+     */
+    public int getEditVersion() {
+        return editVersion;
+    }
+
+    /**
+     * Set the edit version. This is normally called by the infrastructure.
+     * @param editVersion The editVersion this parser result is associated with.
+     */
+    public void setEditVersion(int editVersion) {
+        this.editVersion = editVersion;
+    }
+
+    private int editVersion = -1;
+    private EmbeddingModel embeddingModel;
 }

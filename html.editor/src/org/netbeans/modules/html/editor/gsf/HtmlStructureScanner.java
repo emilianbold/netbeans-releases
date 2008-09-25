@@ -126,6 +126,12 @@ public class HtmlStructureScanner implements StructureScanner {
                     try {
                         int so = documentPosition(node.startOffset(), source);
                         int eo = documentPosition(node.endOffset(), source);
+                        if (eo > doc.getLength()) {
+                            eo = doc.getLength();
+                            if (so > eo) {
+                                so = eo;
+                            }
+                        }
 
                         if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
                             //do not creare one line folds

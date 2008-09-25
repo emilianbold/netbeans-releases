@@ -41,16 +41,19 @@ package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
@@ -78,6 +81,7 @@ public final class ToolchainManager {
     private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
     private static final ToolchainManager instance = new ToolchainManager();
     private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
+    private Logger log = Logger.getLogger("cnd.toolchain.logger");
     
     static final ToolchainManager getInstance(){
         return instance;
@@ -134,7 +138,7 @@ public final class ToolchainManager {
         return new ArrayList<ToolchainDescriptor>(descriptors);
     }
 
-    List<ToolchainDescriptor> getToolchains(int platform){
+        List<ToolchainDescriptor> getToolchains(int platform){
         List<ToolchainDescriptor> res = new ArrayList<ToolchainDescriptor>();
         for(ToolchainDescriptor d : descriptors){
             if (isPlatforSupported(platform, d)) {
@@ -145,6 +149,9 @@ public final class ToolchainManager {
     }
 
     boolean isPlatforSupported(int platform, ToolchainDescriptor d) {
+        if (!releaseFileMatch(d)) {
+            return false;
+        }
         switch (platform) {
             case PlatformTypes.PLATFORM_SOLARIS_SPARC:
                 for(String p : d.getPlatforms()){
@@ -197,6 +204,41 @@ public final class ToolchainManager {
                 break;
         }
         return false;
+    }
+
+    /**
+     * Check a file for a file for a specified pattern. This is typically used to search /etc/release on
+     * Unix systems (many Unix' have an /etc/release* file). This lets us fine tune a toolchain for a
+     * specific version of a Unix distribution.
+     *
+     * This method was written specifically to ensure that /opt/SunStudioExpress is <b>only</b> used on
+     * OpenSolaris systems.
+     */
+    private boolean releaseFileMatch(ToolchainDescriptor d) {
+        String releaseFile = d.getReleaseFile();
+        String releasePattern = d.getReleasePattern();
+        String line;
+
+        if (releaseFile != null && releasePattern != null) {
+            File file = new File(releaseFile);
+            if (file.exists()) {
+                Pattern pattern = Pattern.compile(releasePattern);
+                try {
+                    BufferedReader in = new BufferedReader(new FileReader(releaseFile));
+
+                    while ((line = in.readLine()) != null) {
+                        if (pattern.matcher(line).find()) {
+                            return true;
+                        }
+                    }
+                    in.close();
+                } catch (Exception ex) {
+                    log.warning("Excetpiont reading releae file [" + releaseFile + "] for " + d.getName());
+                }
+            }
+            return false;
+        }
+        return true;
     }
     
     boolean isMyFolder(String path, ToolchainDescriptor d, int platform){
@@ -286,7 +328,7 @@ public final class ToolchainManager {
             pattern = d.getCommandFolderPathPattern();
             if (pattern != null && pattern.length() > 0 ) {
                 Pattern p = Pattern.compile(pattern);
-                for (String dir : Path.getPathWithDefaultCompilerLocations()) {
+                for (String dir : Path.getPath()) {
                     if (p.matcher(dir).find()) {
                         base = dir;
                         break;
@@ -981,6 +1023,8 @@ public final class ToolchainManager {
         String getFileName();
         String getName();
         String getDisplayName();
+        String getReleaseFile();
+        String getReleasePattern();
         String[] getFamily();
         String[] getPlatforms();
         String getDriveLetterPrefix();
@@ -998,6 +1042,7 @@ public final class ToolchainManager {
         ScannerDescriptor getScanner();
         LinkerDescriptor getLinker();
         MakeDescriptor getMake();
+        Map<String, String> getDefaultLocations();
         DebuggerDescriptor getDebugger();
     }
 
@@ -1069,8 +1114,11 @@ public final class ToolchainManager {
         private final String toolChainFileName;
         private String toolChainName;
         private String toolChainDisplay;
+        private Map<String, String> default_locations;
         private String family;
         private String platforms;
+        private String release_file;
+        private String release_pattern;
         private String driveLetterPrefix;
         private String baseFolderKey;
         private String baseFolderPattern;
@@ -1464,6 +1512,8 @@ public final class ToolchainManager {
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = attributes.getValue("stringvalue"); // NOI18N
+                v.release_file = attributes.getValue("release_file"); // NOI18N
+                v.release_pattern = attributes.getValue("release_pattern"); // NOI18N
                 return;
             } else if (path.endsWith(".drive_letter_prefix")) { // NOI18N
                 v.driveLetterPrefix = attributes.getValue("stringvalue"); // NOI18N
@@ -1479,6 +1529,18 @@ public final class ToolchainManager {
                 v.commandFolderPattern = attributes.getValue("pattern"); // NOI18N
                 v.commandFolderSuffix = attributes.getValue("suffix"); // NOI18N
                 v.commandFolderPathPattern = attributes.getValue("path_patern"); // NOI18N
+                return;
+            } else if (path.indexOf(".default_locations.") > 0) { // NOI18N
+                if (path.endsWith(".platform")) { // NOI18N
+                    String os_attr = attributes.getValue("os"); // NOI18N
+                    String dir_attr = attributes.getValue("directory"); // NOI18N
+                    if (os_attr != null && dir_attr != null) {
+                        if (v.default_locations == null) {
+                            v.default_locations = new HashMap<String, String>();
+                        }
+                        v.default_locations.put(os_attr, dir_attr);
+                    }
+                }
                 return;
             }
             if (path.indexOf(".linker.")>0) { // NOI18N
@@ -1737,6 +1799,8 @@ public final class ToolchainManager {
         public String getFileName() { return v.toolChainFileName; }
         public String getName() { return v.toolChainName; }
         public String getDisplayName() { return v.toolChainDisplay; }
+        public String getReleaseFile() { return v.release_file; }
+        public String getReleasePattern() { return v.release_pattern; }
         public String[] getFamily() {
             if (v.family != null && v.family.length() > 0) {
                 return v.family.split(","); // NOI18N
@@ -1793,6 +1857,9 @@ public final class ToolchainManager {
                 make = new MakeDescriptorImpl(v.make);
             }
             return make;
+        }
+        public Map<String, String> getDefaultLocations() {
+            return v.default_locations;
         }
         public DebuggerDescriptor getDebugger() {
             if (debugger == null) {

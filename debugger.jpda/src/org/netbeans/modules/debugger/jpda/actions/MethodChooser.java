@@ -135,6 +135,7 @@ public class MethodChooser implements KeyListener, MouseListener,
     private int selectedIndex = -1;
     private int mousedIndex = -1;
     private ActionListener releaseListener;
+    private boolean isInSelectMode = false;
 
     MethodChooser(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine, int methodOffset) {
         this.debugger = debugger;
@@ -216,6 +217,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         Coloring coloring = new Coloring(null, 0, null, Color.CYAN);
         Utilities.setStatusText(editorPane, " " + NbBundle.getMessage(
                 MethodChooser.class, "MSG_RunIntoMethod_Status_Line_Help"), coloring);
+        isInSelectMode = true;
         return true;
     }
 
@@ -245,6 +247,11 @@ public class MethodChooser implements KeyListener, MouseListener,
         }
         releaseListener.actionPerformed(null);
         releaseListener = null;
+        isInSelectMode = false;
+    }
+
+    boolean isInSelectMode() {
+        return isInSelectMode;
     }
 
     void doStepIntoCurrentSelection() {

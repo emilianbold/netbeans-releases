@@ -95,14 +95,7 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
             filterCB.addItem(item);
         }
         filterCB.setSelectedItem(selectedFilter);
-        
-        // last column should be the command column and needs to be enlarged
-        try {
-            TableColumn tc = processTable.getColumn(procList.getArgsHeader());
-            tc.setPreferredWidth(300);
-            tc.setMinWidth(75);
-        } finally {
-        }
+        setupCommandColumn();
         
         // Fill the Projects combo box
         Project main = OpenProjects.getDefault().getMainProject();
@@ -122,19 +115,27 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
             processModel.addColumn(hdr);
         }
     }
+
+    private void setupCommandColumn() {
+        // last column should be the command column and needs to be enlarged
+        //TableColumn tc = processTable.getColumn(procList.getArgsHeader());
+        //tc.setPreferredWidth(300);
+        //tc.setMinWidth(75);
+        int size = processTable.getColumnModel().getColumnCount();
+        for (int i = 0; i < size; i++) {
+            TableColumn column = processTable.getColumnModel().getColumn(i);
+            if (column.getIdentifier() != null && column.getIdentifier().equals(procList.getArgsHeader())) {
+                column.setPreferredWidth(300);
+                column.setMinWidth(75);
+                break;
+            }
+        }
+    }
     
     private void updateProcessList() {
         initProcessModel();
         processTable.setModel(processModel);
-        
-        // last column should be the command column and needs to be enlarged
-        try {
-            TableColumn tc = processTable.getColumn(procList.getArgsHeader());
-            tc.setPreferredWidth(300);
-            tc.setMinWidth(75);
-        } finally {
-        }
-        
+        setupCommandColumn();
         // Now get the process list
         procList = new ProcessList(this);
     }
