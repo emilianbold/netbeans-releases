@@ -42,6 +42,8 @@
 package org.netbeans.modules.uml.ui.controls.newdialog;
 
 import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -70,7 +72,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 public final class AddElementVisualPanel1 extends JPanel 
-      implements DocumentListener, ListSelectionListener, INewUMLFileTemplates {
+      implements DocumentListener, ListSelectionListener, ItemListener, INewUMLFileTemplates {
     
     private AddElementWizardPanel1 panel;
     private INewDialogElementDetails mDetails = null;
@@ -92,6 +94,7 @@ public final class AddElementVisualPanel1 extends JPanel
         getElementListFromConfigFile();
         initComponents();
         elementTypeList.addListSelectionListener(this);
+        nameSpaceComboBox.addItemListener(this);
         // Register listener on the textFields to validate entered text
         elementNameTextField.getDocument().addDocumentListener(this);
     }
@@ -387,6 +390,14 @@ public final class AddElementVisualPanel1 extends JPanel
     }
     
     
+    public void itemStateChanged(ItemEvent e)
+    {
+        validateElementName();
+        if (panel != null) {
+            panel.fireChangeEvent();
+        }
+    }
+    
     private void validateElementName()
     {
         valid = true;
@@ -411,24 +422,26 @@ public final class AddElementVisualPanel1 extends JPanel
                 {
                     errorType = INVALID_NAME;
                     valid = false;
+                    return;
                 }
-            } else  // check for naming collision              
+            }  
+            // check for naming collision              
+            
+            INamespace selectedNamespace = NewDialogUtilities.getNamespace(
+                    (String) getSelectedNamespace());
+
+            if (selectedNamespace != null)
             {
-                INamespace selectedNamespace = NewDialogUtilities.getNamespace(
-                        (String) getSelectedNamespace());
+                String selectedElem = (String) getSelectedListElement();
+                String elemType = (String) elementTypeNameMap.get(selectedElem);
 
-                if (selectedNamespace != null)
+                if (Util.hasNameCollision(selectedNamespace, getElementName(), elemType, null))
                 {
-                    String selectedElem = (String) getSelectedListElement();
-                    String elemType = (String) elementTypeNameMap.get(selectedElem);
-
-                    if (Util.hasNameCollision(selectedNamespace, getElementName(), elemType, null))
-                    {
-                        errorType = NAME_CONFLICT;
-                        valid = false;
-                    }
+                    errorType = NAME_CONFLICT;
+                    valid = false;
                 }
             }
+            
         }
     }
 
