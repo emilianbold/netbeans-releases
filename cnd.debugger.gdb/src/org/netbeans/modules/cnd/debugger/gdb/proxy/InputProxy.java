@@ -48,8 +48,10 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
+import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -165,7 +167,20 @@ public abstract class InputProxy {
                 // TODO : implement more correct way of generating unique filename
                 File file = File.createTempFile(FILENAME_PREFIX, FILENAME_EXTENSION); // NOI18N
                 file.delete();
-                ProcessBuilder pb = new ProcessBuilder("mkfifo", file.getAbsolutePath()); // NOI18N
+                String tool = "mkfifo"; // NOI18N
+                if (Utilities.isWindows()) {
+                    tool += ".exe"; // NOI18N
+                    File toolFile = new File(CppUtils.getCygwinBase() + "/bin", tool); // NOI18N
+                    if (toolFile.exists()) {
+                        tool = toolFile.getAbsolutePath();
+                    } else {
+                        toolFile = new File(CppUtils.getMSysBase() + "/bin", tool); // NOI18N
+                        if (toolFile.exists()) {
+                            tool = toolFile.getAbsolutePath();
+                        }
+                    }
+                }
+                ProcessBuilder pb = new ProcessBuilder(tool, file.getAbsolutePath()); // NOI18N
                 try {
                     Process p = pb.start();
                     // We need to wait for the end of this command, otherwise file may not be initialized
@@ -223,13 +238,14 @@ public abstract class InputProxy {
         }
 
         private static String createNewFifo(String hkey) {
-            // TODO: need to create unique file!!!
-            String name = "/tmp/" + FILENAME_PREFIX; // NOI18N
+            // TODO: /tmp may not be accessible on remote host
+            // need to have a general way of getting temp files folder on remote host
+            String name = "/tmp/" + FILENAME_PREFIX + "$$" + FILENAME_EXTENSION; // NOI18N
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
-            if (cp != null) {
-                cp.run(hkey, "mkfifo " + name, null); // NOI18N
+            if (cp.run(hkey, "mkfifo " + name + ";echo " + name, null) == 0) { // NOI18N
+                return cp.getOutput().trim();
             }
-            return name;
+            return null;
         }
 
         @Override

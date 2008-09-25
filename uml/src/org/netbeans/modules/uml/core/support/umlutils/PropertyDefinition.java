@@ -752,7 +752,7 @@ public IStrings getValidValue(IPropertyElement elem){
 				}
 				else
 				{
-					retStr = "DataType Class Interface Enumeration ParameterableElement";
+					retStr = "DataType Class Interface Enumeration ParameterableElement DerivationClassifier";
 				}
 			}
 		}

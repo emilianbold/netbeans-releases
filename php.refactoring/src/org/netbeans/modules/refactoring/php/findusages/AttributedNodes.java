@@ -1019,7 +1019,7 @@ public class AttributedNodes extends DefaultVisitor {
                     enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
                 } break;
                 case VARIABLE:
-                for (IndexedConstant m : index.getProperties(null, getName(), name, NameKind.PREFIX, attrs)) {
+                for (IndexedConstant m : index.getFields(null, getName(), name, NameKind.PREFIX, attrs)) {
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.VARIABLE, m);

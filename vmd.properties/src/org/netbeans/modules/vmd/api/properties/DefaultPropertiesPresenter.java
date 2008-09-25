@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -164,7 +165,15 @@ public class DefaultPropertiesPresenter extends PropertiesPresenter {
         }
     }
 
-    protected void notifyDetached(DesignComponent component) {
+    protected void notifyDetached(final DesignComponent component) {
+        for (final DesignPropertyDescriptor descriptor: this.descriptors) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    descriptor.getPropertyEditor().cleanUp(component);
+                }
+            });
+            
+        }
         descriptors = null;
         categories = null;
         category = null;

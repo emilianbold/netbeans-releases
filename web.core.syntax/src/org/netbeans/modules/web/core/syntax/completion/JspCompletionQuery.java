@@ -318,7 +318,10 @@ public class JspCompletionQuery {
         }
         
         TokenID id = item.getTokenID();
-        String tokenPart = item.getImage().substring(0, offset - item.getOffset());
+        String image = item.getImage();
+        int tokenPartLen = offset - item.getOffset();
+        String tokenPart = item.getImage().substring(0, tokenPartLen <= image.length() ? tokenPartLen : image.length());
+        
         
         if(id == JspTagTokenContext.SYMBOL2 && tokenPart.startsWith("<%")) {
             addDelimiterItems(result, offset - tokenPart.length(), tokenPart); // NOI18N
@@ -332,8 +335,9 @@ public class JspCompletionQuery {
             return;
         }
         
-        TokenID id = item.getTokenID();
-        String tokenPart = item.getImage().substring(0, offset - item.getOffset());
+        String image = item.getImage();
+        int tokenPartLen = offset - item.getOffset();
+        String tokenPart = item.getImage().substring(0, tokenPartLen <= image.length() ? tokenPartLen : image.length());
         
         if(tokenPart.startsWith("<")) {
             addDelimiterItems(result, offset - tokenPart.length(), tokenPart); // NOI18N

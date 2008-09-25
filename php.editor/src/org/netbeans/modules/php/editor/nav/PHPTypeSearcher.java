@@ -110,7 +110,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 for (IndexedFunction func : index.getMethods(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR)) {
                     result.add(new PHPTypeDescriptor(func, clz, helper));
                 }
-                for (IndexedConstant constanst : index.getAllProperties(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR)) {
+                for (IndexedConstant constanst : index.getAllFields(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR)) {
                     result.add(new PHPTypeDescriptor(constanst, clz, helper));
                 }
                 for (IndexedConstant constanst : index.getAllClassConstants(null, clz.getName(), query, kind)) {

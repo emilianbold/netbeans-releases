@@ -69,7 +69,7 @@ public class TryStatement extends Statement {
         }
     }
 
-    public TryStatement(int start, int end, Block tryStatement, List catchClauses) {
+    public TryStatement(int start, int end, Block tryStatement, List<CatchClause> catchClauses) {
         this(start, end, tryStatement, catchClauses == null ? null : (CatchClause[]) catchClauses.toArray(new CatchClause[catchClauses.size()]));
     }
 

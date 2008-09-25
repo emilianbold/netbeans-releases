@@ -44,6 +44,8 @@ package org.netbeans.modules.debugger.jpda.projects;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -60,7 +62,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.URLMapper;
 
 /**
  * Provies access to the main or currently selected project.
@@ -80,7 +81,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
     
     private Action a;
     private Project currentProject;
-    private Project lastSelectedProject;
+    private Reference<Project> lastSelectedProjectRef = new WeakReference(null);
     private boolean isMainProject;
     private PropertyChangeSupport pcs;
 
@@ -102,6 +103,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
     }
 
     public synchronized Project getMainProject () {
+        Project lastSelectedProject = lastSelectedProjectRef.get();
         if (isMainProject && lastSelectedProject != null &&
             !isDependent(lastSelectedProject, currentProject)) {
             // If there's a main project set, but the current project has no
@@ -118,7 +120,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
     public boolean enable (Project p) {
         Project old = p;
         synchronized (this) {
-            lastSelectedProject = p;
+            lastSelectedProjectRef = new WeakReference(p);
             if (!isMainProject) {
                 if (currentProject != p) {
                     old = currentProject;
@@ -187,7 +189,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
                 if (isMainProject) {
                     currentProject = theMainProject;
                 } else {
-                    currentProject = lastSelectedProject;
+                    currentProject = lastSelectedProjectRef.get();
                 }
             }
             if (old != theMainProject) {

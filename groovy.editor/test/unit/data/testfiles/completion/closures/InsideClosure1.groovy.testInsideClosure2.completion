@@ -2,6 +2,7 @@ Code completion result for source line:
 [3,4,5].each {println i|}
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
+CLASS      IFileNameFinder                            null
 CLASS      IOException                                null
 CLASS      IdentityHashMap                            null
 CLASS      IllegalAccessError                         null
@@ -14,9 +15,12 @@ CLASS      IllegalFormatFlagsException                null
 CLASS      IllegalFormatPrecisionExceptio             null
 CLASS      IllegalFormatWidthException                null
 CLASS      IllegalMonitorStateException               null
+CLASS      IllegalPropertyAccessException             null
 CLASS      IllegalStateException                      null
 CLASS      IllegalThreadStateException                null
 CLASS      IncompatibleClassChangeError               null
+CLASS      IncorrectClosureArgumentsExcep             null
+CLASS      IndentPrinter                              null
 CLASS      IndexOutOfBoundsException                  null
 CLASS      Inet4Address                               null
 CLASS      Inet6Address                               null
@@ -29,7 +33,9 @@ CLASS      InputStreamReader                          null
 CLASS      InsideClosure1                             null
 CLASS      InstantiationError                         null
 CLASS      InstantiationException                     null
+CLASS      IntRange                                   null
 CLASS      Integer                                    null
+CLASS      Interceptor                                null
 CLASS      InternalError                              null
 CLASS      InterruptedException                       null
 CLASS      InterruptedIOException                     null

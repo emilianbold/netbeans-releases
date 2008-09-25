@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.reglib</code-name-base>
             <module-dependencies/>
             <friend-packages>
+                <friend>com.sun.tools.swdev.sunstudio.registration</friend>
                 <friend>org.netbeans.modules.registration</friend>
                 <package>org.netbeans.modules.reglib</package>
                 <package>org.netbeans.modules.servicetag</package>

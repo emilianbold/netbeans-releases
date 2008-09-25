@@ -618,7 +618,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 fieldName = fieldName.substring(1);
             }
 
-            for (IndexedConstant field : request.index.getAllProperties(request.result, preceedingType,
+            for (IndexedConstant field : request.index.getAllFields(request.result, preceedingType,
                     fieldName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
 
                 type = field.getTypeName();
@@ -791,8 +791,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 String prefix = (staticContext && request.prefix.startsWith("$")) //NOI18N
                         ? request.prefix.substring(1) : request.prefix;
                 Collection<IndexedConstant> properties = includeInherited ?
-                    request.index.getAllProperties(request.result, typeName, prefix, nameKind, attrMask) :
-                    request.index.getProperties(request.result, typeName, prefix, nameKind, attrMask);
+                    request.index.getAllFields(request.result, typeName, prefix, nameKind, attrMask) :
+                    request.index.getFields(request.result, typeName, prefix, nameKind, attrMask);
 
                 for (IndexedConstant prop : properties){
                     if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {

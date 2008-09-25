@@ -21,11 +21,11 @@ public class SwitchAction extends ActionNoBlock {
     public static final String SVN_ITEM = "Subversion";
             
     /** "Switch" menu item. */
-    public static final String SWITCH_ITEM = "Switch";
+    public static final String SWITCH_ITEM = "Switch to Copy...";
     
     /** Creates a new instance of SwitchAction */
     public SwitchAction() {
-        super(SVN_ITEM + "|" + SWITCH_ITEM, SVN_ITEM + "|" + SWITCH_ITEM);
+        super("Versioning" + "|" + SWITCH_ITEM, SVN_ITEM + "|" + SWITCH_ITEM);
     }
     
 }

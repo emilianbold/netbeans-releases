@@ -652,6 +652,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ147795.cc", 13, 27, "IZ147795.cc", 5, 9);
     }
 
+    public void testIZ148022() throws Exception {
+        // IZ#148022 : Unable to resolve outside definition of a private member class
+        performTest("IZ148022.cc", 10, 14, "IZ148022.cc", 5, 9);
+        performTest("IZ148022.cc", 11, 14, "IZ148022.cc", 7, 9);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

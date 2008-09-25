@@ -674,9 +674,8 @@ class LuceneIndex extends Index {
                 else {
                     hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
                 }
-
-                assert hits.length() <= 1;
-                if (hits.length() == 0) {
+                
+                if (hits.length() != 1) {   //0 = not present, 1 = present and has timestamp, >1 means broken index, probably killed IDE, treat it as not up to date and store will fix it.
                     return false;
                 }
                 else {                    

@@ -83,6 +83,13 @@ public class PropertyEditorArrayInteger extends GroupPropertyEditor implements E
     }
 
     @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        this.component = null;
+        parentTypeID = null;
+    }
+
+    @Override
     public boolean supportsCustomEditor() {
         return false;
     }

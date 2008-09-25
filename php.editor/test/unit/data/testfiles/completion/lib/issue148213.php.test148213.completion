@@ -1,0 +1,4 @@
+Code completion result for source line:
+$oldguy148213 = $newguy|148213;
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   Person148213 $newguy148213                 issue148213.php

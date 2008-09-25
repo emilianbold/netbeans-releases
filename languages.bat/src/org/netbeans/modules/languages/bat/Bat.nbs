@@ -118,7 +118,7 @@ TOKEN:number: (["0"-"9"] ["0"-"9" "."]*)
 
 TOKEN:whitespace: ([" " "\t" "\n" "\r"]+)
 
-TOKEN:identifier:( ["a"-"z" "A"-"Z"] ["-" "_" "0"-"9" "a"-"z" "A"-"Z"]* )
+TOKEN:identifier:( ["a"-"z" "A"-"Z"] ["-" "_" "~" "0"-"9" "a"-"z" "A"-"Z"]* )
 
 TOKEN:string: (
     "\""

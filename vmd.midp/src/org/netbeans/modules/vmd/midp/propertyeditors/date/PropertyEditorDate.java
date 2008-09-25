@@ -115,6 +115,22 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         return new PropertyEditorDate(true);
     }
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
+        if (databindingElement != null) {
+            databindingElement.clean(component);
+            databindingElement = null;
+        }
+    }
+    
+    
+
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorDate.class, "LBL_DATE_STR")); // NOI18N
@@ -280,6 +296,14 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
 
         public CustomEditor() {
             initComponents();
+        }
+        
+         void cleanUp() {
+            if (textField != null && textField.getDocument() != null) {
+                textField.getDocument().removeDocumentListener(this);
+            }
+            textField = null;
+            this.removeAll();
         }
 
         private void initComponents() {
