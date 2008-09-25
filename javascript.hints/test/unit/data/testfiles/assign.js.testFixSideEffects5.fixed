@@ -23,6 +23,6 @@ function foo() {
 } 
 
 function foo() {
-    var = 3+4
+    myvar = 3+4
     return;
 } 
