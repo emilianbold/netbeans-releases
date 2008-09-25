@@ -69,6 +69,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
@@ -194,9 +195,14 @@ public class NavUtils {
                 continue;
             }
 
-            if (leaf instanceof ArrayAccess) {
-                if (result == null) {
-                    return a.getElement(leaf);
+            if (result == null && leaf instanceof ArrayAccess) {
+                ArrayAccess arrayAccess = (ArrayAccess) leaf;
+                VariableBase name = arrayAccess.getName();
+                Expression index = arrayAccess.getIndex();
+                if (index != null && offset >= index.getStartOffset()) {
+                    return a.getElement(index);
+                } else if (name != null && offset <= name.getEndOffset()) {
+                    return a.getElement(name);
                 } else {
                     continue;
                 }
