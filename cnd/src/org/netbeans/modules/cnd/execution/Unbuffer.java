@@ -56,11 +56,15 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class Unbuffer {
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
+    private static final boolean disabled = Boolean.getBoolean("cnd.unbuffer.disable"); // NOI18N
 
     private Unbuffer() {
     }
 
     public static String getPath(String hkey, boolean is64bits) {
+        if (disabled) {
+            return null;
+        }
         if (hkey == null || CompilerSetManager.LOCALHOST.equals(hkey)) {
             return Unbuffer.getLocalPath(is64bits);
         } else {
