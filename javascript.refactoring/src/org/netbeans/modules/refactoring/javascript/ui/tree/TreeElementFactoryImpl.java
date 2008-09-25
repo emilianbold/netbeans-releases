@@ -73,11 +73,12 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
         if (o instanceof FileObject) {
             FileObject fo = (FileObject) o;
             if (fo.isFolder()) {
-                SourceGroup sg = FolderTreeElement.getSourceGroup(fo);
-                if (sg!=null && fo.equals(sg.getRootFolder())) 
-                    result = new SourceGroupTreeElement(sg);
-                else 
-                    result = new FolderTreeElement(fo);
+// No package/directory related refactoring for Ruby
+//                SourceGroup sg = FolderTreeElement.getSourceGroup(fo);
+//                if (sg!=null && fo.equals(sg.getRootFolder()))
+//                    result = new SourceGroupTreeElement(sg);
+//                else
+//                    result = new FolderTreeElement(fo);
             } else {
                 result = new FileTreeElement(fo);
             }
