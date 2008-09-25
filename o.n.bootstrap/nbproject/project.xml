@@ -86,6 +86,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.core.execution</friend>
                 <friend>org.netbeans.core.startup</friend>
                 <friend>org.netbeans.modules.autoupdate.services</friend>
+                <friend>org.netbeans.modules.modulemanager</friend>
                 <friend>org.netbeans.modules.sendopts</friend>
                 <package>org.netbeans</package>
             </friend-packages>

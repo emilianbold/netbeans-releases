@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,78 +37,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.packaging;
+package org.netbeans.performance.languages;
+
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.actions.*;
+
 
 /**
  *
- * @author thp
+ * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
-public class InfoElement {
-    private int type;
-    private String name;
-    private String value;
-    private boolean mandatory;
-    private boolean defaultValue;
-    
-    public InfoElement(int type, String name, String value) {
-        this.type = type;
-        this.name = name;
-        this.value = value;
-        this.mandatory = false;
-        this.defaultValue = false;
-    }
-    
-    public InfoElement(int type, String name, String value, boolean mandatory, boolean defaultValue) {
-        this.type = type;
-        this.name = name;
-        this.value = value;
-        this.mandatory = mandatory;
-        this.defaultValue = defaultValue;
-    }
+public class ScriptingMeasureActionsTest2 {
+    public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
 
-    public int getType() {
-        return type;
-    }
+        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
+        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureActionsTest");
 
-    public void setType(int type) {
-        this.type = type;
-    }
-    
-    public String getName() {
-        return name;
-    }
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EditorMenuPopup.class)
+                .addTest(FormatFileTest.class)
+                .addTest(CloseProjectTest.class)
+                .addTest(CloseScriptingFiles.class)
+                .addTest(TypingInScriptingEditor.class)
+                .addTest(ScriptingCodeCompletionInEditor.class)
+                .addTest(OpenScriptingFiles.class)
 
-    public void setName(String name) {
-        this.name = name;
-    }
+                // Saving modified document
+                .addTest(SaveModifiedScriptingFiles.class)
 
-    public String getValue() {
-        return value;
-    }
+                // Page Up and Down in scripting editor
+                .addTest(PageUpPageDownScriptingEditor.class)
 
-    public void setValue(String value) {
-        this.value = value;
-    }
+                // Can cause RubyProject to be closed in case of failure
+                .addTest(OpenRubyProject.class)
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
-    public boolean isMandatory() {
-        return mandatory;
-    }
-
-    public void setMandatory(boolean mandatory) {
-        this.mandatory = mandatory;
-    }
-
-    public boolean isDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(boolean defaultValue) {
-        this.defaultValue = defaultValue;
+        return suite;        
     }
 }

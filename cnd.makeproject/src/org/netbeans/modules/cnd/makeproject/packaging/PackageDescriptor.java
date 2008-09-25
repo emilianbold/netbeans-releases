@@ -43,66 +43,23 @@ package org.netbeans.modules.cnd.makeproject.packaging;
  *
  * @author thp
  */
-public class InfoElement {
-    private int type;
-    private String name;
-    private String value;
-    private boolean mandatory;
-    private boolean defaultValue;
+public class PackageDescriptor {
+    public static String[] NAMES = {
+        "Tar", // NOI18N
+        "Zip", // NOI18N
+        "SVR4", // NOI18N
+        "RPM", // NOI18N
+        "Debian" // NOI18N
+    };
     
-    public InfoElement(int type, String name, String value) {
-        this.type = type;
-        this.name = name;
-        this.value = value;
-        this.mandatory = false;
-        this.defaultValue = false;
-    }
-    
-    public InfoElement(int type, String name, String value, boolean mandatory, boolean defaultValue) {
-        this.type = type;
-        this.name = name;
-        this.value = value;
-        this.mandatory = mandatory;
-        this.defaultValue = defaultValue;
-    }
-
-    public int getType() {
+    public static int getTypeFromName(String name) {
+        int type = 0;
+        for (int i = 0; i < NAMES.length; i++) {
+            if (NAMES[i].equals(name)) {
+                type = i;
+                break;
+            }
+        }
         return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-    
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public boolean isMandatory() {
-        return mandatory;
-    }
-
-    public void setMandatory(boolean mandatory) {
-        this.mandatory = mandatory;
-    }
-
-    public boolean isDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(boolean defaultValue) {
-        this.defaultValue = defaultValue;
     }
 }

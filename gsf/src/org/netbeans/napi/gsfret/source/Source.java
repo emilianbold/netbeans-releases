@@ -931,6 +931,9 @@ long vsStart = System.currentTimeMillis();
                                     if (updated == IncrementalEmbeddingModel.UpdateState.COMPLETED) {
                                         // No need to parse - nothing else to be done for this mime type
                                         ParserResult result = source.recentParseResult.get(language.getMimeType());
+                                        for (TranslatedSource translated : translations) {
+                                            translated.setEditVersion(source.editHistory.getVersion());
+                                        }
                                         if (result != null) {
                                             currentInfo.addEmbeddingResult(language.getMimeType(), result);
                                             result.setUpdateState(ParserResult.UpdateState.NO_CHANGE);
@@ -942,6 +945,9 @@ long vsStart = System.currentTimeMillis();
                                     } else {
                                         assert updated == IncrementalEmbeddingModel.UpdateState.UPDATED;
                                         // Continue to parse below
+                                        for (TranslatedSource translated : translations) {
+                                            translated.setEditVersion(source.editHistory.getVersion());
+                                        }
                                     }
                                 } else {
                                     // Force update
@@ -1000,7 +1006,7 @@ long parseStart = System.currentTimeMillis();
                                 parser.parseFiles(job);
                                 result = resultHolder[0];
                             }
-                            if (incrementalParser != null) {
+                            if (incrementalParser != null || (incremental && translations != null)) {
                                 // Hmm, this will only work correctly for the FIRST element if the collections are > 1
                                 source.recentParseResult.put(language.getMimeType(), result);
                                 result.setEditVersion(source.editHistory.getVersion());
