@@ -150,8 +150,9 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="300"/>
                 </file>
                 <file name="Formatting.instance">
-                    <attr name="instanceClass"
-stringvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel$Factory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-php5"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
             </folder>

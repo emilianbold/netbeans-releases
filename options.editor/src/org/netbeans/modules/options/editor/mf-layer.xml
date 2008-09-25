@@ -246,7 +246,9 @@ made subject to such option by the copyright holder.
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
                 <file name="Formatting.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel$Factory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-java"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
             </folder>
@@ -254,7 +256,9 @@ made subject to such option by the copyright holder.
         <folder name="org-netbeans-modules-ant-freeform">
             <folder name="Customizer">
                 <file name="Formatting.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel$Factory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-java"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
             </folder>
@@ -262,7 +266,8 @@ made subject to such option by the copyright holder.
         <folder name="org-netbeans-modules-maven">
             <folder name="Customizer">
                 <file name="Formatting.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel$Factory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
             </folder>
