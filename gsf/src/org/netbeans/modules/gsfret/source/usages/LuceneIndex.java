@@ -119,7 +119,6 @@ class LuceneIndex extends Index {
     private Long rootTimeStamp;
     
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
-    private Set<String> rootPkgCache;   //Cache, do not use this dirrectly
     
     // For debugging purposes only
     private ClassIndexImpl classIndex;
@@ -229,8 +228,7 @@ class LuceneIndex extends Index {
                     hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
                 }
 
-                assert hits.length() <= 1;
-                if (hits.length() == 0) {
+                if (hits.length() != 1) {   //0 = not present, 1 = present and has timestamp, >1 means broken index, probably killed IDE, treat it as not up to date and store will fix it.
                     return false;
                 }
                 else {                    
@@ -320,8 +318,43 @@ class LuceneIndex extends Index {
     public synchronized void clear () throws IOException {
         this.close ();
         final String[] content = this.directory.list();
+        boolean dirty = false;
         for (String file : content) {
-            directory.deleteFile(file);
+            try {
+                directory.deleteFile(file);
+            } catch (IOException e) {
+                //Some temporary files
+                if (directory.fileExists(file)) {
+                    dirty = true;
+                }
+            }
+        }
+        if (dirty) {
+            //Try to delete dirty files and log what's wrong
+            final File cacheDir = ((FSDirectory)this.directory).getFile();
+            final File[] children = cacheDir.listFiles();
+            if (children != null) {
+                for (final File child : children) {
+                    if (!child.delete()) {
+                        final Class c = this.directory.getClass();
+                        int refCount = -1;
+                        try {
+                            final java.lang.reflect.Field field = c.getDeclaredField("refCount");
+                            field.setAccessible(true);
+                            refCount = field.getInt(this.directory);
+                        } catch (NoSuchFieldException e) {/*Not important*/}
+                          catch (IllegalAccessException e) {/*Not important*/}
+
+                        throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
+                                child.exists()  +","+                                               //NOI18N
+                                child.canRead() +","+                                               //NOI18N
+                                child.canWrite() +","+                                              //NOI18N
+                                cacheDir.canRead() +","+                                            //NOI18N
+                                cacheDir.canWrite() +","+                                           //NOI18N
+                                refCount+")");                                                      //NOI18N
+                    }
+                }
+            }
         }
     }
     
@@ -382,7 +415,6 @@ class LuceneIndex extends Index {
         if (!create) {
             assert ClassIndexManager.holdsWriteLock();
             IndexReader in = getReader();
-            this.rootPkgCache = null;
 
             String prevUrl = "";
             for (IndexBatchEntry entry : list) {
@@ -503,7 +535,6 @@ class LuceneIndex extends Index {
     
     public void store(String fileUrl, List<IndexDocument> documents) throws IOException {
         assert ClassIndexManager.holdsWriteLock();
-        this.rootPkgCache = null;
         boolean create = !isValid(false);
         if (!create) {
             IndexReader in = getReader();
