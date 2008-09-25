@@ -49,6 +49,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaRequestProcessor;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
@@ -66,6 +67,7 @@ public final class AddPackageVisualPanel1 extends JPanel
     static final int INVALID_PACKAGE_NAME = 0;
     static final int PACKAGE_NAME_CONFLICT = 1;
     static final int INVALID_DIAGRAME_NAME = 2;
+    static final int ENTER_PACKAGE_NAME = 4;
     
     
     /** Creates new form AddPackageVisualPanel1 */
@@ -397,30 +399,42 @@ public final class AddPackageVisualPanel1 extends JPanel
         
         if (getPackageName().length() == 0)
         {
-            errorType = INVALID_PACKAGE_NAME;
+            errorType = ENTER_PACKAGE_NAME;
             valid = false;
         }
-        else  // check if package name already exist in the current namespace
-        {
-            IElementLocator pElementLocator = new ElementLocator();
-            String ns = (String)getPackageNamespace();
-            INamespace namespace = NewDialogUtilities.getNamespace(ns);
-            ETList<INamedElement> pFoundElements =
-                    pElementLocator.findByName(namespace, getPackageName());
-            
-            if (pFoundElements != null)
+        else
+        {        
+            JavaRequestProcessor p = new JavaRequestProcessor();
+            if (!p.checkIfCorrectLanguage(mDetails.getNamespace()))
+                return;
+
+            if ( p.invalidPackage(getPackageName()) )
             {
-                int count = pFoundElements.getCount();
-                for (int i = 0 ; i < count ; i++)
+                errorType = INVALID_PACKAGE_NAME;
+                valid = false;
+            }
+            else  // check if package name already exist in the current namespace
+            {
+                IElementLocator pElementLocator = new ElementLocator();
+                String ns = (String)getPackageNamespace();
+                INamespace namespace = NewDialogUtilities.getNamespace(ns);
+                ETList<INamedElement> pFoundElements =
+                        pElementLocator.findByName(namespace, getPackageName());
+
+                if (pFoundElements != null)
                 {
-                    INamedElement pFoundElement = pFoundElements.get(i);
-                    
-                    if (pFoundElement != null)
+                    int count = pFoundElements.getCount();
+                    for (int i = 0 ; i < count ; i++)
                     {
-                        if (pFoundElement.getElementType().equals("Package"))
+                        INamedElement pFoundElement = pFoundElements.get(i);
+
+                        if (pFoundElement != null)
                         {
-                            errorType = PACKAGE_NAME_CONFLICT;
-                            valid = false;
+                            if (pFoundElement.getElementType().equals("Package"))
+                            {
+                                errorType = PACKAGE_NAME_CONFLICT;
+                                valid = false;
+                            }
                         }
                     }
                 }
@@ -445,28 +459,34 @@ public final class AddPackageVisualPanel1 extends JPanel
     
     public boolean isValid(WizardDescriptor descriptor)
     {
-       String errorMsg = "";
-       
-       if (!valid)
-       {
-          switch(errorType)
-          {
-          case INVALID_PACKAGE_NAME:
-             errorMsg = NbBundle.getMessage(AddPackageVisualPanel1.class,
-                   "MSG_Invalid_Package_Name");
-             break;
-          case PACKAGE_NAME_CONFLICT:
-             errorMsg = NbBundle.getMessage(
-                   NewElementUI.class, "IDS_NAMESPACECOLLISION");
-             break;
-          case INVALID_DIAGRAME_NAME:
-             errorMsg = NbBundle.getMessage(AddPackageVisualPanel1.class,
-                   "MSG_Invalid_Diagram_Name", getScopedDiagramName());
-             break;
-          }
-       }
-       descriptor.putProperty(PROP_WIZARD_ERROR_MESSAGE, errorMsg);
-       return valid;
+        String msg = "";
+        String msg_type = WizardDescriptor.PROP_ERROR_MESSAGE;
+
+        if (!valid)
+        {
+            switch (errorType)
+            {
+                case ENTER_PACKAGE_NAME:
+                    msg = NbBundle.getMessage(AddPackageVisualPanel1.class,
+                            "MSG_Enter_Package_Name");
+                    msg_type = WizardDescriptor.PROP_INFO_MESSAGE;
+                    break;
+                case INVALID_PACKAGE_NAME:
+                    msg = NbBundle.getMessage(AddPackageVisualPanel1.class,
+                            "MSG_Invalid_Package_Name");
+                    break;
+                case PACKAGE_NAME_CONFLICT:
+                    msg = NbBundle.getMessage(
+                            NewElementUI.class, "IDS_NAMESPACECOLLISION");
+                    break;
+                case INVALID_DIAGRAME_NAME:
+                    msg = NbBundle.getMessage(AddPackageVisualPanel1.class,
+                            "MSG_Invalid_Diagram_Name", getScopedDiagramName());
+                    break;
+            }
+        }
+        descriptor.putProperty(msg_type, msg);
+        return valid;
     }
     
    // Variables declaration - do not modify//GEN-BEGIN:variables
