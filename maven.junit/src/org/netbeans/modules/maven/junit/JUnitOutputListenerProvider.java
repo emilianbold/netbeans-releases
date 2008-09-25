@@ -204,7 +204,7 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
             
             logText("Testsuite: " + testSuite.getAttributeValue("name"), AntEvent.LOG_INFO); //NOI18N
             
-            
+            @SuppressWarnings("unchecked")
             List<Element> testcases = testSuite.getChildren("testcase"); //NOI18N
             
             logText("junit.framework.TestListener: tests to run: " + testcases.size(), AntEvent.LOG_VERBOSE); //NOI18N
