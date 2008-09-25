@@ -55,6 +55,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
@@ -198,7 +199,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText().trim();
 
-        String err = RunAsValidator.validateScriptFields(phpInterpreter, FileUtil.toFile(project.getProjectDirectory()), indexFile, args);
+        String err = RunAsValidator.validateScriptFields(phpInterpreter,
+                FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)), indexFile, args);
         category.setErrorMessage(err);
         category.setValid(err == null);
     }
