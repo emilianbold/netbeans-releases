@@ -57,18 +57,19 @@ public final class DatabindingElement implements PropertyEditorElement, CleanUp 
     private static final String DATABINDING_LABEL = "DatabindingElement.radioButton"; // NOI18N
     private static final String ASCN_DATABINDING = "ASCN_Databinding";
     private static final String ASCD_DATABINDING = "ASCD_Databinding";
-
     private JRadioButton radioButton;
     private DatabindingElementUI customEditor;
     private WeakReference<DesignComponent> component;
     private DesignPropertyEditor propertyEditor;
 
     public void clean(DesignComponent component) {
-       customEditor.clean(component);
-       customEditor = null;
-       radioButton = null;
-       this.component = null;
-       propertyEditor = null;
+        if (customEditor != null) {
+            customEditor.clean(component);
+            customEditor = null;
+        }
+        radioButton = null;
+        this.component = null;
+        propertyEditor = null;
     }
 
     public DatabindingElement(DesignPropertyEditor propertyEditor) {
@@ -77,15 +78,16 @@ public final class DatabindingElement implements PropertyEditorElement, CleanUp 
     }
 
     public void updateState(PropertyValue value) {
-        if (component == null)
+        if (component == null) {
             return;
+        }
         final DesignComponent c = component.get();
         if (c == null) {
             return;
         }
         customEditor.updateComponent(c);
     }
-    
+
     public void updateDesignComponent(DesignComponent component) {
         this.component = new WeakReference(component);
     }
@@ -94,7 +96,7 @@ public final class DatabindingElement implements PropertyEditorElement, CleanUp 
     }
 
     public String getTextForPropertyValue() {
-        return null; 
+        return null;
     }
 
     public JComponent getCustomEditorComponent() {
@@ -107,18 +109,16 @@ public final class DatabindingElement implements PropertyEditorElement, CleanUp 
         }
         return customEditor;
     }
-    
-    
 
     public JRadioButton getRadioButton() {
         if (radioButton == null) {
             radioButton = new JRadioButton();
-            Mnemonics.setLocalizedText(radioButton,NbBundle.getMessage(
-                    DatabindingElement.class , DATABINDING_LABEL));
+            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(
+                    DatabindingElement.class, DATABINDING_LABEL));
             radioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
-                    DatabindingElement.class , ASCN_DATABINDING));
+                    DatabindingElement.class, ASCN_DATABINDING));
             radioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
-                    DatabindingElement.class , ASCD_DATABINDING));
+                    DatabindingElement.class, ASCD_DATABINDING));
         }
         return radioButton;
     }
@@ -130,6 +130,4 @@ public final class DatabindingElement implements PropertyEditorElement, CleanUp 
     public boolean isVerticallyResizable() {
         return true;
     }
-
-
 }

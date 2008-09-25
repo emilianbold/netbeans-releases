@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import org.netbeans.modules.css.gsf.api.CssEmbeddingModelUtils;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.editor.CssPropertyValue;
@@ -97,26 +98,31 @@ public class CssAnalyser {
                         //check value
                         if (valueNode != null && property != null) {
                             String valueImage = valueNode.image().trim();
-                            CssPropertyValue pv = new CssPropertyValue(property, valueImage);
-                            if (!pv.success()) {
-                                String errorMsg = null;
-                                if(pv instanceof CustomErrorMessageProvider) {
-                                    errorMsg = ((CustomErrorMessageProvider)pv).customErrorMessage();
-                                }
-                                
-                                //error in property 
-                                String unexpectedToken = pv.left().get(pv.left().size() - 1);
+                            
+                            //do not check values which contains generated code
+                            //we are no able to identify the templating semantic
+                            if (!CssEmbeddingModelUtils.containsGeneratedCode(valueImage)) {
+                                CssPropertyValue pv = new CssPropertyValue(property, valueImage);
+                                if (!pv.success()) {
+                                    String errorMsg = null;
+                                    if (pv instanceof CustomErrorMessageProvider) {
+                                        errorMsg = ((CustomErrorMessageProvider) pv).customErrorMessage();
+                                    }
 
-                                if(errorMsg == null) {
-                                    errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
+                                    //error in property 
+                                    String unexpectedToken = pv.left().get(pv.left().size() - 1);
+
+                                    if (errorMsg == null) {
+                                        errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
+                                    }
+
+                                    Error error =
+                                            new DefaultError(INVALID_PROPERTY_VALUE,
+                                            errorMsg,
+                                            null, result.getFile().getFileObject(),
+                                            valueNode.startOffset(), valueNode.endOffset(), Severity.WARNING);
+                                    errors.add(error);
                                 }
-                                
-                                Error error =
-                                        new DefaultError(INVALID_PROPERTY_VALUE,
-                                        errorMsg,
-                                        null, result.getFile().getFileObject(),
-                                        valueNode.startOffset(), valueNode.endOffset(), Severity.WARNING);
-                                errors.add(error);
                             }
                         }
 

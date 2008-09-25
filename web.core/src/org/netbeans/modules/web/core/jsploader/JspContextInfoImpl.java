@@ -87,7 +87,10 @@ public class JspContextInfoImpl extends JspContextInfo {
                 Logger.getLogger("global").log(Level.INFO, null, new NullPointerException());
             }
             else {
-                return parser.getTaglibMap(WebModule.getWebModule(fo));
+                WebModule webModule = WebModule.getWebModule(fo);
+                if (webModule != null) {
+                    return parser.getTaglibMap(webModule);
+                }
             }
         }
         catch (IOException e) {

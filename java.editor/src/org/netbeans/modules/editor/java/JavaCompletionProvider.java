@@ -1095,7 +1095,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (e.getKind() == METHOD) {
                         String name = e.getSimpleName().toString();
                         if (hasOnlyValue < 2)
-                            hasOnlyValue += "value".equals(name) ? 1 : 2; //NOI18N
+                            hasOnlyValue += "value".equals(name) ? 1 : ((ExecutableElement)e).getDefaultValue() == null ? 2 : 0; //NOI18N
                         if (!names.contains(name) && startsWith(env, name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
                             results.add(JavaCompletionItem.createAttributeItem((ExecutableElement)e, (ExecutableType)e.asType(), anchorOffset, elements.isDeprecated(e)));
                     }

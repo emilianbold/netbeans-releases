@@ -292,7 +292,7 @@ public class FilePreprocessorConditionState
         if (state == null) {
             return "null"; // NOI18N
         }
-        StringBuilder sb = new StringBuilder(/*state.isCpp ? "c++ " : "c   "*/);
+        StringBuilder sb = new StringBuilder(/*state.isCpp ? "c++ " : "c   "*/); // NOI18N
         sb.append("["); // NOI18N
         for (int i = 0; i < state.size; i++) {
             if (i > 0) {

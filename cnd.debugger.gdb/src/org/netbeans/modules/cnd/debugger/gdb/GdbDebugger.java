@@ -382,16 +382,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    boolean is64bits = Unbuffer.is64BitExecutable(pae.getExecutable());
-                    String unbuffer = Unbuffer.getPath(hkey, is64bits);
-                    if (unbuffer != null) {
-                        if (platform == PlatformTypes.PLATFORM_MACOSX) {
-                            gdb.gdb_set("environment", "DYLD_INSERT_LIBRARIES=" + unbuffer); // NOI18N
-                            gdb.gdb_set("environment", "DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
-                        } else {
-                            String preload = is64bits ? "LD_PRELOAD_64=" : "LD_PRELOAD_32="; // NOI18N
-                            gdb.gdb_set("environment", preload + unbuffer); // NOI18N
-                        }
+                    for (String envEntry : Unbuffer.getUnbufferEnvironment(hkey, pae.getExecutable())) {
+                        gdb.gdb_set("environment", envEntry); // NOI18N
                     }
                     // disabled on windows because of the issue 148204
                     if (platform != PlatformTypes.PLATFORM_WINDOWS) {
@@ -878,7 +870,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (inputProxy != null) {
                 inputProxy.stop();
             }
-            iotab.getOut().close();
+            if (iotab != null) {
+                iotab.getOut().close();
+            }
             GdbContext.getInstance().invalidate(true);
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }

@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.xml.cookies;
 
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.nodes.*;
 import org.openide.loaders.*;
 import org.openide.cookies.*;

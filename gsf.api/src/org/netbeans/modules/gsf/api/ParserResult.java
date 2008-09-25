@@ -67,12 +67,26 @@ public abstract class ParserResult {
     @NonNull private String mimeType;
     @NonNull private CompilationInfo info;
     @NonNull protected UpdateState updateState = UpdateState.NOT_SUPPORTED;
+    /**
+     * Edit version corresponding to the version of the file the parser result was run against
+     */
+    private int editVersion = -1;
+    /**
+     * Flag, whether the parser result is valid. If is not valid, then index, codefolding
+     * and semantic coloring will not be refreshed.
+     */
+    private final boolean valid;
 
     /** Creates a new instance of ParserResult */
     public ParserResult(@NonNull Parser parser, @NonNull ParserFile file, @NonNull String mimeType) {
+        this(parser, file, mimeType, true);
+    }
+
+    public ParserResult(@NonNull Parser parser, @NonNull ParserFile file, @NonNull String mimeType, boolean isValid) {
         this.parser = parser;
         this.file = file;
         this.mimeType = mimeType;
+        this.valid = isValid;
     }
 
     @NonNull
@@ -94,7 +108,17 @@ public abstract class ParserResult {
     public TranslatedSource getTranslatedSource() {
         return translatedSource;
     }
-    
+
+    /**
+     * Return true iff this is a valid parser result.
+     * A parser result is valid if it did not contain fatal errors.
+     * 
+     * @return
+     */
+    public boolean isValid() {
+        return valid;
+    }
+
     /**
      * Returns the errors in the file represented by the {@link CompilationInfo}
      * for one particular mime type.
@@ -164,6 +188,24 @@ public abstract class ParserResult {
 
     public void setInfo(@NonNull CompilationInfo info) {
         this.info = info;
+    }
+
+    /**
+     * Get the edit version for this parser result. Used along
+     * with {@link EditHistory#getCombinedEdits(int,EditHistory)} to
+     * produce a edit history delta between two parser results.
+     * @return the edit version this parser result was seen with
+     */
+    public int getEditVersion() {
+        return editVersion;
+    }
+
+    /**
+     * Set the edit version. This is normally called by the infrastructure.
+     * @param editVersion The editVersion this parser result is associated with.
+     */
+    public void setEditVersion(int editVersion) {
+        this.editVersion = editVersion;
     }
 
     @NonNull

@@ -75,6 +75,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         this.parent = parent;
         initComponents();
         searchInComments.setEnabled(false);
+        searchInComments.setVisible(false);
     }
     private boolean initialized = false;
     private String methodDeclaringSuperClass = null;
@@ -336,24 +337,24 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         // used for change default value for searchInComments check-box.
         // The value is persisted and then used as default in next IDE run.
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
-        NbPreferences.forModule(WhereUsedPanel.class).putBoolean("searchInComments.whereUsed", b);
-    }//GEN-LAST:event_searchInCommentsItemStateChanged
+        NbPreferences.forModule(WhereUsedPanel.class).putBoolean("searchInComments.whereUsed", b);//GEN-LAST:event_searchInCommentsItemStateChanged
+    }                                                 
 
     private void m_isBaseClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_isBaseClassActionPerformed
-        parent.stateChanged(null);
-    }//GEN-LAST:event_m_isBaseClassActionPerformed
+        parent.stateChanged(null);//GEN-LAST:event_m_isBaseClassActionPerformed
+    }                                             
 
     private void m_overridersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_overridersActionPerformed
-        parent.stateChanged(null);
-    }//GEN-LAST:event_m_overridersActionPerformed
+        parent.stateChanged(null);//GEN-LAST:event_m_overridersActionPerformed
+    }                                            
 
     private void m_usagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_usagesActionPerformed
-        parent.stateChanged(null);
-    }//GEN-LAST:event_m_usagesActionPerformed
+        parent.stateChanged(null);//GEN-LAST:event_m_usagesActionPerformed
+    }                                        
 
 private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInCommentsActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_searchInCommentsActionPerformed
+// TODO add your handling code here://GEN-LAST:event_searchInCommentsActionPerformed
+}                                                
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup;

@@ -92,7 +92,6 @@ public class RestWrapperForSoapGenerator {
     public static final String APP_XML_MIME = "application/xml";
     public static final String TEXT_PLAIN_MIME = "text/plain";
     public static final String APP_JSON_MIMI = "application/json";
-
     private String[] ANNOTATIONS_GET = new String[]{
         RestConstants.GET,
         RestConstants.PRODUCE_MIME,
@@ -110,31 +109,35 @@ public class RestWrapperForSoapGenerator {
         RestConstants.CONSUME_MIME,
         RestConstants.PATH
     };
-    private static final String JAVA_TRY =
+    static final String JAVA_TRY =
             "\ntry '{' // Call Web Service Operation\n"; //NOI18N
-    private static final String JAVA_SERVICE_DEF =
+    static final String JAVA_SERVICE_DEF =
             "   {0} {5} = new {0}();\n"; //NOI18N
-    private static final String JAVA_PORT_DEF =
-            "   {1} port = {5}.{2}();\n"; //NOI18N
-    private static final String JAVA_RESULT =
+    static final String JAVA_PORT_DEF =
+            "   {1} p = {5}.{2}();\n"; //NOI18N
+    static final String JAVA_RESULT =
             // "   {3}" + //NOI18N
             // "   // TODO process result here\n" + //NOI18N
             "   {3} result = port.{4}({6});\n"; //NOI18N
-    private static final String JAVA_VOID =
-            "   {3}" + //NOI18N
+    static final String JAVA_VOID =
+            // "   {3}" + //NOI18N
             "   port.{4}({6});\n"; //NOI18N
-    private static final String JAVA_CATCH =
+    static final String JAVA_CATCH =
             "'}' catch (Exception ex) '{'\n" + //NOI18N
             "   // TODO handle custom exceptions here\n" + //NOI18N
             "'}'\n"; //NOI18N
+    static final String IF_PORT_NOT_NULL = "\nif(port != null)'{'\n"; //NOI18N
+    static final String CLOSE_IF_PORT = "\n'}'\n";//NOI18N
+    private String wsdlUrl;
 
     public RestWrapperForSoapGenerator(WSService service, WSPort port,
-            WSOperation operation, Project project, FileObject targetFile) {
+            WSOperation operation, Project project, FileObject targetFile, String wsdlUrl) {
         this.service = service;
         this.port = port;
         this.operation = operation;
         this.targetFile = targetFile;
         this.project = project;
+        this.wsdlUrl = wsdlUrl;
     }
 
     public Set<FileObject> generate() throws IOException {
@@ -143,7 +146,7 @@ public class RestWrapperForSoapGenerator {
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
-                workingCopy.toPhase(Phase.RESOLVED);
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
                 TypeElement classElement = SourceUtils.getPublicTopLevelElement(workingCopy);
                 List<? extends AnnotationMirror> anns = classElement.getAnnotationMirrors();
@@ -155,8 +158,8 @@ public class RestWrapperForSoapGenerator {
                 if (getPrimitiveType(returnType) == null) {
                     addQNameImport(workingCopy);
                 }
-                ClassTree modifiedJavaClass = addHttpMethod(returnType, workingCopy, javaClass);
-                workingCopy.rewrite(javaClass, modifiedJavaClass);
+                ClassTree finalJavaClass = addHttpMethod(returnType, workingCopy, javaClass);
+                workingCopy.rewrite(javaClass, finalJavaClass);
             }
 
             public void cancel() {
@@ -227,8 +230,10 @@ public class RestWrapperForSoapGenerator {
         for (String param : parameters) {
             comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);
         }
-        comment += "@return an instance of " + retType;
-        int index  = methodAnnotations[0].lastIndexOf(".");
+        if (!retType.equals("void")) {
+            comment += "@return an instance of " + retType;
+        }
+        int index = methodAnnotations[0].lastIndexOf(".");
         String methodPrefix = methodAnnotations[0].substring(index + 1).toLowerCase();
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, methodAnnotations, methodAnnotationAttrs,
@@ -407,7 +412,7 @@ public class RestWrapperForSoapGenerator {
 
     private String getMethodName(String prefix) {
         String methodName = camelize(operation.getName(), true);
-        if (methodName.startsWith(prefix) ){
+        if (methodName.startsWith(prefix)) {
             return methodName;
         }
         return prefix + camelize(methodName, false);
@@ -523,18 +528,18 @@ public class RestWrapperForSoapGenerator {
         if ("void".equals(returnTypeName)) { //NOI18N
             String body =
                     JAVA_TRY +
-                    JAVA_SERVICE_DEF +
-                    JAVA_PORT_DEF +
+                    IF_PORT_NOT_NULL +
                     JAVA_VOID +
+                    CLOSE_IF_PORT +
                     JAVA_CATCH;
             invocationBody = MessageFormat.format(body, args);
         } else {
             String body =
                     JAVA_TRY +
-                    JAVA_SERVICE_DEF +
-                    JAVA_PORT_DEF +
+                    IF_PORT_NOT_NULL +
                     JAVA_RESULT +
                     getReturnStatement(operation) +
+                    CLOSE_IF_PORT +
                     JAVA_CATCH;
             invocationBody = MessageFormat.format(body, args);
         }
