@@ -695,16 +695,28 @@ public class RemoteClient implements Cancellable {
     }
 
     private void transferFailed(TransferInfo transferInfo, TransferFile file, String reason) {
-        transferInfo.addFailed(file, reason);
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Failed: " + file + ", reason: " + reason);
+        if (!transferInfo.isFailed(file)) {
+            transferInfo.addFailed(file, reason);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Failed: " + file + ", reason: " + reason);
+            }
+        } else {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Failed: " + file + ", reason: " + reason + " [ignored, failed already]");
+            }
         }
     }
 
     private void transferIgnored(TransferInfo transferInfo, TransferFile file, String reason) {
-        transferInfo.addIgnored(file, reason);
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Ignored: " + file + ", reason: " + reason);
+        if (!transferInfo.isIgnored(file)) {
+            transferInfo.addIgnored(file, reason);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Ignored: " + file + ", reason: " + reason);
+            }
+        } else {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Ignored: " + file + ", reason: " + reason + " [ignored, ignored already]");
+            }
         }
     }
 
