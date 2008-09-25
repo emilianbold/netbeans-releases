@@ -73,6 +73,8 @@ import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 
 /**
  * Change History:
+ * V51
+ *   Now storing package type as name and not int
  * V50 - 09.10.08 - NB 6.5
  *   Moved source encoding (SOURCE_ENCODING_ELEMENT) to project.xml
  * V49 - 09.02.08 - NB 6.5
@@ -140,7 +142,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 50;
+    public final static int CURRENT_VERSION = 51;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -616,7 +618,7 @@ public abstract class CommonConfigurationXMLCodec
             return;
         }
 	xes.elementOpen(PACK_ELEMENT);
-        xes.element(PACK_TYPE_ELEMENT, "" + packagingConfiguration.getType().getValue()); // NOI18N
+        xes.element(PACK_TYPE_ELEMENT, "" + packagingConfiguration.getName()); // NOI18N
 	if (packagingConfiguration.getVerbose().getModified())
 	    xes.element(VERBOSE_ELEMENT, "" + packagingConfiguration.getVerbose().getValue()); // NOI18N
 	if (packagingConfiguration.getOutput().getModified())
