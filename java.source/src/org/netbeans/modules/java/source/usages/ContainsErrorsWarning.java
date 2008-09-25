@@ -62,9 +62,9 @@ public class ContainsErrorsWarning extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         doNotAskAgain = new javax.swing.JCheckBox();
 
-        jLabel1.setText(org.openide.util.NbBundle.getBundle(ContainsErrorsWarning.class).getString("ContainsErrorsWarning.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(ContainsErrorsWarning.class).getString("ContainsErrorsWarning.jLabel1.text")); // NOI18N
 
-        doNotAskAgain.setText(org.openide.util.NbBundle.getBundle(ContainsErrorsWarning.class).getString("ContainsErrorsWarning.doNotAskAgain.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(doNotAskAgain, org.openide.util.NbBundle.getBundle(ContainsErrorsWarning.class).getString("ContainsErrorsWarning.doNotAskAgain.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
