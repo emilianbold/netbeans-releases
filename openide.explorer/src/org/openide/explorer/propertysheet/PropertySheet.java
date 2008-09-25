@@ -664,7 +664,8 @@ public class PropertySheet extends JPanel {
 
             psheet.setTabbedContainerItems(info.sets, info.titles);
             psheet.manager().setCurrentNodeName(node.getName());
-            psm.setPropertySets(info.getSets(0));
+            if( info.sets.length > 0 )
+                psm.setPropertySets(info.getSets(0));
         } else {
             psm.setPropertySets(ps);
             psheet.setState(

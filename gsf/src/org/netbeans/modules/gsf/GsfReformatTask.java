@@ -93,16 +93,23 @@ public class GsfReformatTask implements ReformatTask {
                 } catch (IOException ioe) {
                     //SourceAccessor.getINSTANCE().unlockJavaCompiler();
                 }
-                if (controller == null)
+                if (controller == null) {
                     return;
+                }
             }
             
-            f.reformat(context.document(), context.startOffset(), context.endOffset(), controller);
+            f.reformat(context, controller);
         }
     }
 
     public ExtraLock reformatLock() {
-        return new Lock();
+        Formatter f = getFormatter();
+
+        if (f != null && f.needsParserResult()) {
+            return new Lock();
+        }
+
+        return null;
     }
         
     private class Lock implements ExtraLock {

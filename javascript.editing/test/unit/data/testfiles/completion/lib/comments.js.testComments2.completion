@@ -3,6 +3,5 @@ Code completion result for source line:
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 KEYWORD    @param                                     null
-KEYWORD    @param                                     null
 KEYWORD    @private                                   null
 KEYWORD    @property                                  null

@@ -278,6 +278,9 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
                     getBean().getHeaderParameters(), Constants.HEADER_PARAMS, false, httpMethod);
         }
         
+        //Insert the sleep call to avoid service throttling
+        methodBody += INDENT_2 + "sleep(1000);\n";
+        
         //Insert the method call
         methodBody += INDENT_2 + "return conn." + httpMethod.prefix() + "(" + headerUsage;
         if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {

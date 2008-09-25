@@ -50,6 +50,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -170,7 +171,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 // as modified before the project customizer is shown. 
 //            assert !ProjectManager.getDefault().isModified(project) : 
 //                "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
-            
+
+            //Show warning when modified
+            uiProperties.checkModified ();
             // Close & dispose the the dialog
             Dialog dialog = (Dialog)project2Dialog.get( project );
             if ( dialog != null ) {

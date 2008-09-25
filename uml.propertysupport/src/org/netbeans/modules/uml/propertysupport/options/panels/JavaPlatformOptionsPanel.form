@@ -66,10 +66,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jTextField1" min="-2" max="-2" attributes="2"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="collectionsUseGenCB" min="-2" max="-2" attributes="2"/>
-                              <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="collectionsUseGenCB" alignment="0" min="-2" max="-2" attributes="2"/>
                       </Group>
                       <EmptySpace pref="157" max="32767" attributes="0"/>
                   </Group>
@@ -170,7 +167,6 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="removePrefixCB">
       <Properties>
-        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="JavaPlatformOptionsPanel.removePrefixCB.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

@@ -81,11 +81,6 @@ public class MoveClassPerfTest extends RefactoringTestCase implements NbPerforma
         suite.addTest(new MoveClassPerfTest("testMoveIt"));
         return suite;
     }
-
-    @Override
-    public void prepareProject() {
-        classPathWorkDir = new File("/home/pflaska/NetBeansProjects", "jEdit41.src".replace('.', File.separatorChar));
-    }
     
     public void testMoveIt() throws Exception {
         Logger timer = Logger.getLogger("TIMER.RefactoringSession");
@@ -121,17 +116,6 @@ public class MoveClassPerfTest extends RefactoringTestCase implements NbPerforma
         System.err.println("do refactoring: " + doIt);
     }
     
-    @Override
-    public FileObject openProject(String projectName) throws IOException {
-        File projectsDir = FileUtil.normalizeFile(new File("/home/pflaska/NetBeansProjects"));
-        FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
-        FileObject projdir = projectsDirFO.getFileObject(projectName);
-        Project p = ProjectManager.getDefault().findProject(projdir);
-        OpenProjects.getDefault().open(new Project[]{p}, false);
-        assertNotNull("Project is not opened", p);
-        return projdir;
-    }
-
     public PerformanceData[] getPerformanceData() {
         return data.toArray(new PerformanceData[0]);
     }

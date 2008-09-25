@@ -134,6 +134,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         this.threadReference = threadReference;
         this.debugger = debugger;
         boolean initFailed = false;
+        threadName = "";
         try {
             threadName = threadReference.name();
             suspended = threadReference.isSuspended();
@@ -148,7 +149,6 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         if (initFailed) {
             suspended = false;
             suspendCount = 0;
-            threadName = "";
         }
     }
 

@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -52,6 +55,8 @@ import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
@@ -61,6 +66,12 @@ import org.openide.windows.WindowManager;
 public final class Util {
 
     private static final String LAST_PLATFORM_ID = "projectPanelLastPlatformID"; // NOI18N
+    
+    /**
+     * Logger used by statistics.<br/>
+     * See: http://wiki.netbeans.org/UsageLoggingSpecification
+     */
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.ruby"); // NOI18N
 
     private Util() {
     }
@@ -163,5 +174,25 @@ public final class Util {
         // XXX provide non-hack solution - Project API anywhere for this?
         // dashes are OK and usual in the project's directory name
         return RubyUtils.getIdentifierWarning(projectNameTextField.replace('-', '_'), 0);
+    }
+
+    /**
+     * Logs usage data.
+     *
+     * @param srcClass source class
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUsage(Class srcClass, String message, Object... params) {
+        Parameters.notNull("message", message); // NOI18N
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
     }
 }

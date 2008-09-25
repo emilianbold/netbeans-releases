@@ -417,8 +417,9 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
         }
         
-        // target filesystem should be writable
-        if (!targetFolder.canWrite ()) {
+        // target package should be writable
+        File targetPackage = new File (FileUtil.toFile(targetFolder), folderName);
+        if (! targetPackage.canWrite ()) {
             return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_is_readonly"); // NOI18N
         }
         

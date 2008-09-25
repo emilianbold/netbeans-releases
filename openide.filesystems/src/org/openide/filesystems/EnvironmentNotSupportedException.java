@@ -62,7 +62,7 @@ public class EnvironmentNotSupportedException extends IOException {
     */
     public EnvironmentNotSupportedException(FileSystem fs) {
         this.fs = fs;
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
     }
 
     /**
@@ -72,7 +72,7 @@ public class EnvironmentNotSupportedException extends IOException {
     public EnvironmentNotSupportedException(FileSystem fs, String reason) {
         super(reason);
         this.fs = fs;
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
     }
 
     /** Getter for the filesystem that does not support environment operations.

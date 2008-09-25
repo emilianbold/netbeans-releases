@@ -128,7 +128,7 @@ public abstract class OperationNode<T extends Operation> extends WSDLExtensibili
     };
 
     public OperationNode(T wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<Operation>(wsdlConstruct), wsdlConstruct, new OperationNewTypesFactory());
+        super(wsdlConstruct, new OperationNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         

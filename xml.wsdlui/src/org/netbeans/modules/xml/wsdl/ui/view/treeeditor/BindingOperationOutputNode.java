@@ -86,7 +86,7 @@ public class BindingOperationOutputNode extends WSDLExtensibilityElementNode<Bin
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindingoutput.png");
     
     public BindingOperationOutputNode(BindingOutput wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<BindingOutput>(wsdlConstruct), wsdlConstruct, new BindingOperationOutputNewTypesFactory());
+        super(wsdlConstruct, new BindingOperationOutputNewTypesFactory());
         
     }
     

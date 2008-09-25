@@ -107,7 +107,6 @@ public abstract class J2eePlatformImpl {
      *
      * @param  toolName tool name, for example {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform#TOOL_APP_CLIENT_RUNTIME}.
      * @return classpath for the specified tool.
-     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public abstract File[] getToolClasspathEntries(String toolName);
     

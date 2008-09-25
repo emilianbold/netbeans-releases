@@ -40,10 +40,13 @@ package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.util.Set;
 import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.MoveStrategy;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.GraphScene;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.openide.util.Utilities;
@@ -61,7 +64,10 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
     private Point dragSceneLocation = null;
     private Point originalSceneLocation = null;
     private Point initialWidgetLocation = null;
-    private boolean multiplePressed = false;
+    
+    // Debugging Properties
+    private boolean debugging = false;
+    private Widget debugMarker = null;
 
     public MoveNodeKeyAction(MoveStrategy strategy, MoveProvider provider)
     {
@@ -81,7 +87,7 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
             boolean state = move(event);
             return state ? State.createLocked(widget, this) : State.REJECTED;
         }
-        
+
         boolean controlKeyPressed = event.isControlDown();
         if(Utilities.isMac() == true)
         {
@@ -105,18 +111,17 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
                     originalSceneLocation = new Point();
                 }
 
-                // TODO: I do not think I need the dragSceneLocation any longer
-                dragSceneLocation = initialWidgetLocation;
+                dragSceneLocation = originalSceneLocation;
                 provider.movementStarted(movingWidget);
                 
                 move(event);
                 return State.createLocked(widget, this);
             }
         }
+        
         return State.REJECTED;
     }
 
-    boolean releasedAgain = false;
     public State keyReleased (Widget widget, WidgetKeyEvent event)
     {   
         State retVal = State.REJECTED;
@@ -148,9 +153,61 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
                 initialWidgetLocation = null;
 
                 retVal = State.CONSUMED;
+
+                if(debugMarker != null)
+                {
+                    debugMarker.removeFromParent();
+                    debugMarker = null;
+                }
             }
         }
         
+        return retVal;
+    }
+
+    /**
+     * Checks if an parent widget is also selected.  If the parent widget is
+     * also selected the parent will be returned.
+     *
+     * @param movingWidget The widget that is being checked.
+     * @return The correct widget that should be the moves target widget.
+     */
+    private Widget getTopmostWidget(Widget movingWidget)
+    {
+        Widget retVal = null;
+
+        if(movingWidget != null)
+        {
+            if (movingWidget.getScene() instanceof ObjectScene)
+            {
+                ObjectScene scene = (ObjectScene) movingWidget.getScene();
+                Set selected = scene.getSelectedObjects();
+                Object data = scene.findObject(movingWidget);
+                if(movingWidget == scene.findWidget(data))
+                {
+                    if((selected != null) && (selected.contains(data) == true))
+                    {
+                        retVal = movingWidget;
+                    }
+                }
+            }
+            else
+            {
+                if(movingWidget.getState().isSelected() == true)
+                {
+                    retVal = movingWidget;
+                }
+            }
+
+            if(movingWidget.getParentWidget() != null)
+            {
+                Widget newWidget = getTopmostWidget(movingWidget.getParentWidget());
+                if(newWidget != null)
+                {
+                    retVal = newWidget;
+                }
+            }
+        }
         return retVal;
     }
 
@@ -177,7 +234,7 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
     
     private Point getNewLocation (Widget widget, WidgetKeyEvent event)
     {
-        Point location = getWidgetLocation(widget);
+        Point location = new Point(0, 0);
         if(event.getKeyCode() == KeyEvent.VK_UP)
         {
             location.y -= 10;
@@ -243,17 +300,22 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
                             retVal = scene.findWidget(select);
                             break;
                         }
-//                        else
-//                        {
-//                            //we have an edge label selected here..
-//                            retVal = scene.findWidget(select);
-//                        }
+                        else
+                        {
+                            //we have an edge label selected here..
+                            retVal = scene.findWidget(select);
+                            if (retVal instanceof ConnectionWidget)
+                            {
+                                // The only widget that is selected is an edge.
+                                retVal = null;
+                            }
+                        }
                     }
                 }
             }
         }
         
-        return retVal;
+        return getTopmostWidget(retVal);
     }
 
     private Point getWidgetLocation(Widget widget)
@@ -267,7 +329,7 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
 
         return retVal;
     }
-    
+
     private boolean move(Widget widget, Point newLocation)
     {
         if ((movingWidget != widget) || (widget == null))
@@ -275,8 +337,32 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
             return false;
         }
         initialWidgetLocation = null;
+        
+        Point sceneLocation = widget.getParentWidget().convertLocalToScene(widget.getPreferredLocation());
+        
+        if(debugging == true)
+        {
+            if(debugMarker == null)
+            {
+                debugMarker = new Widget(widget.getScene());
+                debugMarker.setPreferredSize(new java.awt.Dimension(10, 10));
+                debugMarker.setBackground(java.awt.Color.BLUE);
+                debugMarker.setOpaque(true);
+                debugMarker.setBorder(BorderFactory.createLineBorder());
+            }
 
-        Point location = new Point(originalSceneLocation.x + newLocation.x - dragSceneLocation.x, originalSceneLocation.y + newLocation.y - dragSceneLocation.y);
+            // Make sure that the widget has not switched parents.
+            if(debugMarker.getParentWidget() != null)
+            {
+                debugMarker.removeFromParent();
+            }
+            widget.getParentWidget().addChild(debugMarker);
+            debugMarker.setPreferredLocation(new Point(sceneLocation.x - 5, sceneLocation.y - 5));
+        }
+
+        newLocation.x += sceneLocation.x;
+        newLocation.y += sceneLocation.y;
+        Point location = newLocation;
         provider.setNewLocation(widget, strategy.locationSuggested(widget, originalSceneLocation, location));
         return true;
     }

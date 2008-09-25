@@ -6,8 +6,8 @@ when 1:
 end
 def call(*foo)
 end
-myvar = x<y
-call( (myvar) && true, 2)
+new_name = x<y
+call( (new_name) && true, 2)
 if (x < y) 
   puts "yes"
 else 

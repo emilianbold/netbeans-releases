@@ -45,6 +45,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
@@ -53,6 +54,8 @@ import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.rubyproject.Util;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
@@ -229,6 +232,9 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
     
     boolean valid(WizardDescriptor settings) {
+        if (warCheckBox.isSelected() && !isJdk()) {
+            settings.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoJDK"));
+        }
         if (PlatformComponentFactory.getPlatform(platforms) == null) {
             return false;
         }
@@ -262,5 +268,13 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     private void fireChangeEvent() {
         this.panel.fireChangeEvent();
     }
-    
+
+    private boolean isJdk() {
+        String jdkHome = System.getProperty("jdk.home"); //NOI18N
+        if (Utilities.isMac()) {
+            return true; // AFAIK Macs can't have a JRE only
+        }
+        File jreDir = new File(jdkHome, "jre"); //NOI18N
+        return jreDir.exists() && jreDir.isDirectory();
+    }
 }

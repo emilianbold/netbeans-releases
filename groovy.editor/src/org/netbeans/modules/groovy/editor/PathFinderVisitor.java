@@ -546,7 +546,8 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
 //            // and so it was preventing me from visiting expression deeper
 //            return true;
 //        }
-        
+
+        fixCoordinates(node);
         int beginLine = node.getLineNumber();
         int beginColumn = node.getColumnNumber();
         int endLine = node.getLastLineNumber();
@@ -588,6 +589,42 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         // if addToPath is false, return result, we want to know real state of affairs
         // and not to continue traversing
         return addToPath ? true : result;
+    }
+
+    private void fixCoordinates(ASTNode node) {
+        // see http://jira.codehaus.org/browse/GROOVY-3052
+        if (node instanceof RangeExpression) {
+            RangeExpression range = (RangeExpression) node;
+            Expression from = range.getFrom();
+            Expression to = range.getTo();
+            if (to.getLastLineNumber() == 0 && to.getLastColumnNumber() == 0
+                    || to.getLastLineNumber() > range.getLastLineNumber()
+                    || to.getLastColumnNumber() > range.getLastColumnNumber()) {
+                if (from.getLastLineNumber() == to.getLineNumber()
+                        && from.getLastColumnNumber() == to.getColumnNumber()) {
+                    // we need to do our best to fix it
+                    from.setLastColumnNumber(from.getColumnNumber() + from.getText().length());
+                    to.setLastColumnNumber(to.getColumnNumber() + to.getText().length());
+                    to.setLastLineNumber(to.getLineNumber());
+                }
+            }
+        // see http://jira.codehaus.org/browse/GROOVY-3049
+        } else if (node instanceof PropertyExpression) {
+            // bit suspucious, try to fix the data
+            if (node.getLineNumber() == node.getLastLineNumber()
+                    && node.getColumnNumber() == node.getLastColumnNumber()) {
+                PropertyExpression propertyExpression = (PropertyExpression) node;
+                Expression expression = propertyExpression.getProperty();
+                if (expression.getLastLineNumber() == 0 && expression.getLastColumnNumber() == 0) {
+                    if (expression.getLineNumber() > 0 && expression.getColumnNumber() > 0) {
+                        node.setLastColumnNumber(node.getLastColumnNumber() + expression.getText().length());
+                    }
+                } else {
+                    node.setLastLineNumber(expression.getLastLineNumber());
+                    node.setLastColumnNumber(expression.getLastColumnNumber());
+                }
+            }
+        }
     }
 
 }

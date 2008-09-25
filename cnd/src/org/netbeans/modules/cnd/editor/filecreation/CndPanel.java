@@ -269,7 +269,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
     }
     
     // if user would request support of wider array of symbols we can allow it by improving escaping symbols during Makefiles generation 
-    private static final String PROHIBITED = "\"$#\'*{}[]()";
+    private static final String PROHIBITED = "\"$#\'*{}[]()"; // NOI18N
     
     /* package */ static boolean isValidName(String name) {
 	int len = name.length();

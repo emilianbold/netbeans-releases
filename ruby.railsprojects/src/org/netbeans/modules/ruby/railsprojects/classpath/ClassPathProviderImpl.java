@@ -121,6 +121,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return cp;
         }
     }
+ 
+    private ClassPath getJavascriptsWebClassPath() {
+        ClassPath cp = cache[8];
+        if (cp == null) {
+            cp = ClassPathFactory.createClassPath(new JavascriptsClassPathImplementation(projectDirectory));
+            cache[8] = cp;
+            
+            return cp;
+        } else {
+            return cp;
+        }
+    }
     
     private FileObject[] getTestSrcDir() {
         return this.testSourceRoots.getRoots();
@@ -201,7 +213,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             // Bogus
             return getBootClassPath();
         } else if (type.equals("js/library")) { // NOI18N
-            return getPublicWebClassPath();
+            return getJavascriptsWebClassPath();
         } else {
             return null;
         }

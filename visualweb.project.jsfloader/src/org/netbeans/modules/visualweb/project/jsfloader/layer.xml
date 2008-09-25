@@ -45,9 +45,52 @@ made subject to such option by the copyright holder.
     <folder name="CreatorJspPalette">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
         
+        <file name="HTML.shadow">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+            <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            <attr name="position" intvalue="100"/>
+        </file>
+
+        <file name="HTML_Forms.shadow">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+            <attr name="originalFile" stringvalue="HTMLPalette/HTML_Forms"/>
+            <attr name="isExpanded" boolvalue="false"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            <attr name="position" intvalue="200"/>
+        </file>
+
+<!-- XXX #147511 Do not work well with Visual web
+        <file name="JSP.shadow">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+            <attr name="originalFile" stringvalue="JSPPalette/JSP"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            <attr name="position" intvalue="300"/>
+        </file>
+
+        <file name="JSF.shadow">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+            <attr name="originalFile" stringvalue="JSPPalette/JSF"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            <attr name="position" intvalue="400"/>
+        </file>
+
+        <file name="Database.shadow">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+            <attr name="originalFile" stringvalue="JSPPalette/Database"/>
+            <attr name="isExpanded" boolvalue="false"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            <attr name="position" intvalue="500"/>
+        </file>
+-->
+
         <folder name="JavaScript">            
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
-            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="position" intvalue="600"/>
+            <attr name="isExpanded" boolvalue="false"/>
             <attr name="isReadonly" boolvalue="true"/>
             <file name="CurrentDate.xml" url="codeclips/CurrentDate.xml">
                 <attr name="position" intvalue="300"/>

@@ -49,7 +49,7 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -71,7 +71,7 @@ public class GotoActionView extends AbstractAction {
             NbBundle.getBundle(GotoActionView.class).getString("editor-popup-goto-action-view")); // NOI18N
     }
     
-    // TODO - move to NbUtilities - and use the editor registry!
+    // TODO - move to GsfUtilities - and use the editor registry!
     private FileObject getCurrentFile() {
         Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
         if (activatedNodes == null || activatedNodes.length != 1) {
@@ -125,7 +125,7 @@ public class GotoActionView extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        JTextComponent pane = NbUtilities.getOpenPane();
+        JTextComponent pane = GsfUtilities.getOpenPane();
         FileObject fo = getCurrentFile();
         if (fo != null && pane != null) {
             actionPerformed(pane, fo);
@@ -191,7 +191,7 @@ public class GotoActionView extends AbstractAction {
         if (viewFile == null) {
             notFound(target);
         } else {
-            NbUtilities.open(viewFile, 0, null);
+            GsfUtilities.open(viewFile, 0, null);
         }
     }
         
@@ -226,6 +226,6 @@ public class GotoActionView extends AbstractAction {
         // TODO: Find the position of the #view method
         int offset = AstUtilities.findOffset(controllerFile, action);
 
-        NbUtilities.open(controllerFile, offset, "def " + action); // NOI18N
+        GsfUtilities.open(controllerFile, offset, "def " + action); // NOI18N
     }
 }

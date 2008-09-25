@@ -119,7 +119,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>1.6.0</specification-version>
+                        <specification-version>1.7.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -277,9 +277,14 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                         <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.editor</code-name-base>
+                        <recursive/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.plain</code-name-base>
@@ -333,6 +338,8 @@
             <friend-packages>
                 <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
+                <friend>org.netbeans.modules.php.prado</friend>
+                <friend>org.netbeans.modules.php.symfony</friend>
                 <package>org.netbeans.modules.php.editor.index</package>
                 <package>org.netbeans.modules.php.editor.lexer</package>
                 <package>org.netbeans.modules.php.editor.parser</package>

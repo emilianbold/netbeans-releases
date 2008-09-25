@@ -321,9 +321,6 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.diff</code-name-base>
                     </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.libs.xerces</code-name-base>
-                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>

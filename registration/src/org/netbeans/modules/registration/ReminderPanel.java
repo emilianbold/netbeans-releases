@@ -6,8 +6,10 @@
 
 package org.netbeans.modules.registration;
 
+import java.awt.Font;
 import java.awt.Image;
 import javax.swing.ImageIcon;
+import javax.swing.UIManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -53,6 +55,18 @@ public class ReminderPanel extends javax.swing.JPanel {
         jBottomLabel4.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_BottomText4"));
         jBottomLabel5.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_BottomText5"));
         jBottomLabel6.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_BottomText6"));
+        Font controlFont = UIManager.getFont("controlFont");
+        if (controlFont != null) {
+            jTopLabel1.setFont(controlFont);
+            Font bold = controlFont.deriveFont(Font.BOLD);
+            jTopLabel2.setFont(bold);
+            jBottomLabel1.setFont(controlFont);
+            jBottomLabel2.setFont(controlFont);
+            jBottomLabel3.setFont(controlFont);
+            jBottomLabel4.setFont(controlFont);
+            jBottomLabel5.setFont(controlFont);
+            jBottomLabel6.setFont(controlFont);
+        }
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -99,13 +113,13 @@ public class ReminderPanel extends javax.swing.JPanel {
         jInnerPanel.setFocusable(false);
         jInnerPanel.setLayout(new javax.swing.BoxLayout(jInnerPanel, javax.swing.BoxLayout.Y_AXIS));
 
-        jTopLabel1.setFont(new java.awt.Font("Dialog", 0, 12));
+        jTopLabel1.setText("Take Control"); // NOI18N
         jTopLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         jTopLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
         jTopLabel1.setFocusable(false);
         jInnerPanel.add(jTopLabel1);
 
-        jTopLabel2.setFont(new java.awt.Font("Dialog", 1, 12));
+        jTopLabel2.setText("Register Your NetBeans IDE"); // NOI18N
         jTopLabel2.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         jTopLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 0, 0, 0));
         jTopLabel2.setFocusable(false);
@@ -117,35 +131,35 @@ public class ReminderPanel extends javax.swing.JPanel {
 
         jBottomPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         jBottomPanel.setFocusable(false);
-        jBottomPanel.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomPanel.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         jBottomPanel.setLayout(new javax.swing.BoxLayout(jBottomPanel, javax.swing.BoxLayout.Y_AXIS));
 
-        jBottomLabel1.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel1.setText("<html>Register the NetBeans IDE to get the following benefits:</html>"); // NOI18N
         jBottomLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         jBottomLabel1.setFocusable(false);
         jBottomPanel.add(jBottomLabel1);
 
-        jBottomLabel2.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel2.setText("<html>Notifications of new versions, patches and updates</html>"); // NOI18N
         jBottomLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 30, 1, 10));
         jBottomLabel2.setFocusable(false);
         jBottomPanel.add(jBottomLabel2);
 
-        jBottomLabel3.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel3.setText("<html>Special offers on Sun developer products, services and training</html>"); // NOI18N
         jBottomLabel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 30, 1, 10));
         jBottomLabel3.setFocusable(false);
         jBottomPanel.add(jBottomLabel3);
 
-        jBottomLabel4.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel4.setText("<html>Access to early releases and documentation</html>"); // NOI18N
         jBottomLabel4.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 30, 1, 10));
         jBottomLabel4.setFocusable(false);
         jBottomPanel.add(jBottomLabel4);
 
-        jBottomLabel5.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel5.setText("<html>Ability to track and manage your registered products on the SunConnection Inventory site</html>"); // NOI18N
         jBottomLabel5.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 30, 1, 10));
         jBottomLabel5.setFocusable(false);
         jBottomPanel.add(jBottomLabel5);
 
-        jBottomLabel6.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel6.setText("<html>Registration is FREE.</html>"); // NOI18N
         jBottomLabel6.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         jBottomLabel6.setFocusable(false);
         jBottomPanel.add(jBottomLabel6);

@@ -56,6 +56,7 @@ import org.openide.awt.HtmlBrowser;
 public interface JSDebugger {
     String PROPERTY_SOURCES = "sources";
     String PROPERTY_WINDOWS = "windows";
+    String PROPERTY_RELOADSOURCES = "reloadsources";
 
     void addPropertyChangeListener(PropertyChangeListener l);
     void removePropertyChangeListener(PropertyChangeListener l);

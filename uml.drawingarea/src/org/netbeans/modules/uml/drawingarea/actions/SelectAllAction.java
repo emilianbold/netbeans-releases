@@ -101,4 +101,10 @@ public final class SelectAllAction extends NodeAction
     {
         return null;
     }
+
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
 }

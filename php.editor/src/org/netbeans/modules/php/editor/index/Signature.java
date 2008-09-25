@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.editor.index;
 
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+
 /**
  *
  * @author Marek Fukala
@@ -64,6 +66,7 @@ public class Signature {
             this.positions = parseSignature(signature);
         }
 
+        @NonNull
         public String string(int index) {
             assert index >= 0 && index < positions.length;
 

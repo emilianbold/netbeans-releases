@@ -136,9 +136,9 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
     /** Unregister the listener. */
     void removePropertyChangeListener(PropertyChangeListener l);
     
-    boolean grabInnerDM(boolean returnInsteadOfWaiting);
+    boolean grabInnerDM(Thread h, boolean returnInsteadOfWaiting);
     
-    void releaseInnerDM();
+    void releaseInnerDM(Thread h);
     
     int getAppserverVersion(); 
 }

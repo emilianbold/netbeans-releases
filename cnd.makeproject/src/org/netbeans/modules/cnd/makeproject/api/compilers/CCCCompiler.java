@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
@@ -116,8 +117,9 @@ public abstract class CCCCompiler extends BasicCompiler {
                     env.put(pi.getPathName(), newPath);
 
                     provider.run(getHostKey(), remote_command(command, stdout), env);
-                    reader = new BufferedReader(new StringReader(provider.toString()));
+                    reader = new BufferedReader(new StringReader(provider.getOutput()));
                 } else {
+                    Logger.getLogger("cnd.remote.logger").warning("CommandProvider for remote run is not found"); //NOI18N
                     return;
                 }
             } else {

@@ -43,6 +43,11 @@
           <ResourceString bundle="org/netbeans/modules/uml/project/ui/nodes/actions/Bundle.properties" key="ImportedElementDeletePanel.MSG_ConfirmDeleteObject" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/uml/project/ui/nodes/actions/Bundle.properties" key="ImportedElementDeletePanel.jLabel1.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="jCheckBox1">
       <Properties>
@@ -53,6 +58,11 @@
           <Border info="null"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/uml/project/ui/nodes/actions/Bundle.properties" key="ImportedElementDeletePanel.jCheckBox1.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>

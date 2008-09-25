@@ -151,7 +151,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         descriptor = new HibernateMappingWizardDescriptor(project);
         if (Templates.getTargetFolder(wizard) == null) {
             HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
-            FileObject location = provider != null ? provider.getLocation() : null;
+            FileObject location = provider != null ? provider.getSourceLocation() : null;
             if (location != null) {
                 Templates.setTargetFolder(wizard, location);
             }
@@ -198,6 +198,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         String targetName = Templates.getTargetName(wizard);
         FileObject templateFileObject = Templates.getTemplate(wizard);
         DataObject templateDataObject = DataObject.find(templateFileObject);
+        HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
 
         DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
         FileObject confFile = null;
@@ -211,7 +212,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
             SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
             int mappingIndex = sf.addMapping(true);
             sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr,
-                    HibernateUtil.getRelativeSourcePath(newOne.getPrimaryFile(), Util.getSourceRoot(project)));
+                    HibernateUtil.getRelativeSourcePath(newOne.getPrimaryFile(), hibernateEnv.getSourceLocation()));
             hco.modelUpdatedFromUI();
             hco.save();
         }

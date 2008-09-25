@@ -343,8 +343,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         fileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndClassPanelGUI.class).getString("AD_fileTextField")); // NOI18N
 
         jLabel6.setLabelFor(headerTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, "Header File:");
-        jLabel6.setDisplayedMnemonicIndex(0);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_HeaderFile_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);

@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
@@ -69,7 +70,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
@@ -257,7 +257,7 @@ public class AppClientProjectGenerator {
                 serverInstanceID, projectDir, serverLibraryName != null);
         
         final AntProjectHelper h = setupProject(projectDir, name, null, null,
-                confFolder.getAbsolutePath(), (libFolder == null ? null : libFolder.getAbsolutePath()),
+                confFolder, (libFolder == null ? null : libFolder),
                 null, null, j2eeLevel, serverInstanceID, librariesDefinition, realServerLibraryName);
         
         final AppClientProject p = (AppClientProject) ProjectManager.getDefault().findProject(projectDir);
@@ -365,9 +365,7 @@ public class AppClientProjectGenerator {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
-            rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-        }
+        ClassPathSupport.makeSureProjectHasCopyLibsLibrary(h, rh);
     }
     
     private static String configureServerLibrary(final String librariesDefinition,
@@ -420,7 +418,7 @@ public class AppClientProjectGenerator {
     }
     
     private static AntProjectHelper setupProject(FileObject dirFO, String name,
-            String srcRoot, String testRoot, String configFiles, String libraries,
+            String srcRoot, String testRoot, File configFiles, File libraries,
             String resources, String mainClass, String j2eeLevel,
             String serverInstanceID, String librariesDefinition, String serverLibraryName) throws IOException {
 
@@ -428,6 +426,8 @@ public class AppClientProjectGenerator {
                 new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
 
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, AppClientProjectType.TYPE, librariesDefinition);
+        final AppClientProject prj = (AppClientProject)ProjectManager.getDefault().findProject(h.getProjectDirectory());
+        final ReferenceHelper referenceHelper = prj.getReferenceHelper();
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -463,10 +463,12 @@ public class AppClientProjectGenerator {
         h.putPrimaryConfigurationData(data, true);
         
         if (configFiles != null) {
-            ep.setProperty(AppClientProjectProperties.META_INF, configFiles);
+            String ref = createFileReference(referenceHelper, dirFO, FileUtil.toFileObject(configFiles));
+            ep.setProperty(AppClientProjectProperties.META_INF, ref);
         }
         if (libraries != null) {
-            ep.setProperty(AppClientProjectProperties.LIBRARIES_DIR, libraries);
+            String ref = createFileReference(referenceHelper, dirFO, FileUtil.toFileObject(libraries));
+            ep.setProperty(AppClientProjectProperties.LIBRARIES_DIR, ref);
         }
         
         if (resources != null) {
@@ -669,6 +671,15 @@ public class AppClientProjectGenerator {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         
         return h;
+    }
+    
+    private static String createFileReference(ReferenceHelper refHelper, FileObject projectFO, FileObject referencedFO) {
+        String relPath = FileUtil.getRelativePath(projectFO, referencedFO);
+        if (relPath != null) {
+            return relPath;
+        } else {
+            return refHelper.createForeignFileReference(FileUtil.toFile(referencedFO), null);
+        }
     }
     
     private static void createMainClass( String mainClassName, FileObject srcFolder ) throws IOException {

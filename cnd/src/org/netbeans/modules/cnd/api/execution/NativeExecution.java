@@ -43,13 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.LocalNativeExecution;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.openide.util.Lookup;
@@ -121,35 +116,6 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
             boolean unbuffer) throws IOException, InterruptedException;
     
     public abstract void stop();
-    
-    public final String[] prepareEnvironment(String[] envp, boolean unbuffer) {
-        List<String> envpList = new ArrayList<String>();
-        if (envp != null) {
-            envpList.addAll(Arrays.asList(envp));
-        }
-        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
-
-        if (unbuffer) {
-            int platformType  = (host == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(host).getPlatform();
-            String unbufferPath = getUnbufferPath(host);
-            if (unbufferPath != null) {
-                if (platformType == PlatformTypes.PLATFORM_MACOSX) {
-                    envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
-                    envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
-                } else if (platformType == PlatformTypes.PLATFORM_WINDOWS) {
-                    //TODO: issue #144106
-                } else {
-                    envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
-                }
-            }
-        }
-        return envpList.toArray(new String[envpList.size()]);
-    }
-
-    // override in descendants
-    protected String getUnbufferPath(String host) {
-        return null;
-    }
 
     /**
      * Simple class whose sole purpose is to let us instantiate a NativeExecution so we can
@@ -159,12 +125,12 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
         
         @Override
         public int executeCommand(File runDirFile, String executable, String arguments, String[] envp, PrintWriter out, Reader in, boolean unbuffer) throws IOException, InterruptedException {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public void stop() {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
     }
 }

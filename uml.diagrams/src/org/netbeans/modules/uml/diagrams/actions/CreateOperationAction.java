@@ -45,13 +45,16 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
+import org.netbeans.modules.uml.diagrams.nodes.ICommonFeature;
 import org.netbeans.modules.uml.diagrams.nodes.UMLClassWidget;
 import org.netbeans.modules.uml.drawingarea.actions.SceneCookieAction;
-import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.util.Util;
+import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -68,34 +71,39 @@ public final class CreateOperationAction extends SceneCookieAction
         if(classifier == null)
         {
             IOperation op = activatedNodes[0].getLookup().lookup(IOperation.class);
-            if(op != null)
+            if(op != null)          // activated node is operation node
             {
                 classifier = op.getFeaturingClassifier();
+            } else  
+            {
+                // Fix iz#145341
+                IAttribute attr = activatedNodes[0].getLookup().lookup(IAttribute.class);
+                if (attr != null)    // activated node is attribute node
+                {
+                    classifier = attr.getFeaturingClassifier();
+                }
             }
         }
         
-        if(classifier != null)
+        if (classifier != null)
         {
             IOperation op = classifier.createOperation3();
             classifier.addOperation(op);
-            Widget nW=scene.findWidget(pe);
-            UMLClassWidget cW=null;
-            if(nW instanceof UMLClassWidget)
+            Widget nW = scene.findWidget(pe);
+            SwitchableWidget cW = null;
+            
+            if (nW instanceof SwitchableWidget)
             {
-                cW=(UMLClassWidget) nW;
-            }
-            else if(nW instanceof FeatureWidget)
+                cW = (SwitchableWidget) nW;
+            } else if (nW instanceof FeatureWidget)
             {
-               for(Widget par=nW.getParentWidget();par!=null;par=par.getParentWidget())
-                {
-                    if(par instanceof UMLClassWidget)
-                    {
-                        cW=               (UMLClassWidget) par;
-                        break;
-                    }
-                }
+                cW = (SwitchableWidget) Util.getParentWidgetByClass(nW, SwitchableWidget.class);
             }
-            if(cW!=null)cW.selectOperationAfterCreation(op);
+            
+             if (cW != null && cW instanceof ICommonFeature)
+            {
+                ((ICommonFeature)cW).setSelectedOperation(op);
+            }
         }
     }
 
@@ -111,7 +119,8 @@ public final class CreateOperationAction extends SceneCookieAction
 
     protected Class[] cookieClasses()
     {
-        return new Class[]{IClass.class, IInterface.class, IEnumeration.class, IOperation.class};
+        // Added IAttribute.class to Fix iz#145341
+        return new Class[]{IClass.class, IInterface.class, IEnumeration.class, IOperation.class, IAttribute.class};
     }
 
     @Override

@@ -117,7 +117,7 @@ public class PortTypeNode extends WSDLNamedElementNode<PortType> {
     };
     
     public PortTypeNode(PortType wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<PortType>(wsdlConstruct), wsdlConstruct, new PortTypeNewTypesFactory());
+        super(wsdlConstruct, new PortTypeNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         this.mPropertyAdapter = new PortTypePropertyAdapter();

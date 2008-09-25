@@ -201,6 +201,7 @@ public class IDEValidation extends JellyTestCase {
      * - wait classpath scanning finished
      */
     public void testNewProject() {
+        NewProjectWizardOperator.invoke().cancel();
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         // "Standard"
         String standardLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
@@ -1430,6 +1431,10 @@ public class IDEValidation extends JellyTestCase {
     
     public void testGCProjects() throws Exception {
         WatchProjects.assertProjects();
+    }
+
+    public void testReflectionUsage() throws Exception {
+        CountingSecurityManager.assertReflection(0, "allowed-reflection.txt");
     }
     
     public void testBlacklistedClassesHandler() throws Exception {

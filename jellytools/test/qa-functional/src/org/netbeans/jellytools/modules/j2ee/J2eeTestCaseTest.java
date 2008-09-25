@@ -71,6 +71,20 @@ public class J2eeTestCaseTest extends JellyTestCase {
         System.clearProperty("testA");
     }
 
+    public void testSetUp() throws Exception{
+        String tmpDirPath = System.getProperty("java.io.tmpdir");
+        File tmpDir = new File(tmpDirPath);
+        new J2eeTestCase("test").setUp();
+        String[] files = tmpDir.list();
+        int count = 0;
+        for (String file : files) {
+            if (file.startsWith("J2EE_TEST_CASE_PID_FILE")){
+                count++;
+            }
+        }
+        assertEquals("just one file", 1, count);
+    }
+
     public void testNoServer() {
         Configuration conf = NbModuleSuite.createConfiguration(TD.class);
         conf = J2eeTestCase.addServerTests(conf).gui(false);

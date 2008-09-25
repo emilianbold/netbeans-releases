@@ -67,44 +67,17 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     void init(VersioningManager versioningManager) {
         assert master == null;
         master = versioningManager;
-        Set filesystems = getRootFilesystems();
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            fileSystem.addFileChangeListener(this);
-        }
+        FileSystem fileSystem = Utils.getRootFilesystem();
+        fileSystem.addFileChangeListener(this);
     }
 
     /**
      * Unregisters listeners from all disk filesystems.
      */
     void shutdown() {
-        Set filesystems = getRootFilesystems();
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            fileSystem.removeFileChangeListener(this);
-        }
-    }
-
-    /**
-     * Retrieves all filesystems.
-     *
-     * @return Set<FileSystem> set of filesystems
-     */
-    private Set<FileSystem> getRootFilesystems() {
-        Set<FileSystem> filesystems = new HashSet<FileSystem>();
-        File [] roots = File.listRoots();
-        for (int i = 0; i < roots.length; i++) {
-            File root = roots[i];
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(root));
-            if (fo == null) continue;
-            try {
-                filesystems.add(fo.getFileSystem());
-            } catch (FileStateInvalidException e) {
-                // ignore invalid filesystems
-            }
-        }
-        return filesystems;
-    }
+        FileSystem fileSystem = Utils.getRootFilesystem();
+        fileSystem.removeFileChangeListener(this);
+    }    
 
     // ==================================================================================================
     // QUERIES

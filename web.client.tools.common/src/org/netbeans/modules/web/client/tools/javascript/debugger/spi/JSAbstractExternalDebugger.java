@@ -61,6 +61,7 @@ import org.netbeans.modules.web.client.tools.common.dbgp.DebuggerServer;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
 import org.netbeans.modules.web.client.tools.common.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Message;
+import org.netbeans.modules.web.client.tools.common.dbgp.ReloadSourcesMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.SourcesMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.StatusResponse;
@@ -75,6 +76,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerS
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
@@ -342,6 +344,11 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         setWindows(JSFactory.getJSWindows(windowsMessage.getWindows()));
     }
 
+    private void handleReloadSourcesMessage(ReloadSourcesMessage reloadSourcesMessage) {
+        propertyChangeSupport.firePropertyChange(PROPERTY_RELOADSOURCES, getSources(),
+                JSFactory.getJSSources(reloadSourcesMessage.getSources()));
+    }
+    
     private void handleStreamMessage(StreamMessage streamMessage) {
         JSDebuggerConsoleEvent consoleEvent = null;
         try {
@@ -396,7 +403,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
                     stopped = true;
                 }
             } else {
-                Logger.getLogger(this.getName()).info("Something Seems Wrong");
+                Logger.getLogger(this.getName()).info("Unexpected message in HTTP Message Handler queue");
             }
         }
 
@@ -431,7 +438,10 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
 
         private void handle(Message message) {
             // Spontaneous messages
-            if (message instanceof SourcesMessage) {
+            if (message instanceof ReloadSourcesMessage) {
+                handleReloadSourcesMessage((ReloadSourcesMessage) message);
+                return;
+            }else if (message instanceof SourcesMessage) {
                 handleSourcesMessage((SourcesMessage) message);
                 return;
             } else if (message instanceof WindowsMessage) {
@@ -447,7 +457,12 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             }
             
             // State oriented
-            JSDebuggerState messageDebuggerState = DbgpUtils.getDebuggerState(message);
+            JSDebuggerState messageDebuggerState;
+            try {
+                messageDebuggerState = DbgpUtils.getDebuggerState(message);
+            } catch (Exception ex) {
+                messageDebuggerState = null;
+            }
             if(messageDebuggerState != null) {
                 setDebuggerState(messageDebuggerState);
                 if (messageDebuggerState.getReason().equals(JSDebuggerState.Reason.INIT)) {

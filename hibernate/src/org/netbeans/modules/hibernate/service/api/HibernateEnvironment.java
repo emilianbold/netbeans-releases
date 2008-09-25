@@ -164,7 +164,7 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
 
     List<String> getDatabaseTables(FileObject mappingFile);
 
-    FileObject getLocation();
+    FileObject getSourceLocation();
     
     /**
      * Prepares and returns a custom classloader for this project.
@@ -190,6 +190,14 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
      * @return List of java.io.File objects representing each entry on the classpath.
      */
     List<URL> getProjectClassPath(FileObject projectFile);
+    
+    /**
+     * Returns the project classpath including project build paths.
+     * Can be used to set classpath for custom classloader.
+     * 
+     * @return List of java.io.File objects representing each entry on the classpath.
+     */
+    List<URL> getProjectClassPath();
 
     /**
      * Tries to load the JDBC driver read from the configuration.The classpath

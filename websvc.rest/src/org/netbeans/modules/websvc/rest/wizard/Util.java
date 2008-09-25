@@ -59,6 +59,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
 import org.netbeans.modules.websvc.rest.support.Inflector;
@@ -288,7 +289,7 @@ public class Util {
         String pluralName = Inflector.getInstance().pluralize(name);
         
         if (name.equals(pluralName)) {
-            return name + "Collection";         //NOI18N
+            return name + Constants.COLLECTION;         //NOI18N
         } else {
             return pluralName;
         }

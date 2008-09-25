@@ -935,13 +935,8 @@ public final class WebProject implements Project, AntProjectListener {
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
 
             // #134642 - use Ant task from copylibs library
-            if (helper.isSharableProject() && refHelper.getProjectLibraryManager().getLibrary("CopyLibs") == null) { // NOI18N
-                try {
-                    refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            ClassPathSupport.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
+
             ProjectProperties.removeObsoleteLibraryLocations(ep);
             ProjectProperties.removeObsoleteLibraryLocations(props);
 
@@ -1127,6 +1122,7 @@ public final class WebProject implements Project, AntProjectListener {
     private static final String[] TYPES = new String[] { 
         "java-classes",         // NOI18N
         "java-main-class",      // NOI18N
+        "java-forms",           // NOI18N
         "java-beans",           // NOI18N
         "persistence",          // NOI18N
         "oasis-XML-catalogs",   // NOI18N

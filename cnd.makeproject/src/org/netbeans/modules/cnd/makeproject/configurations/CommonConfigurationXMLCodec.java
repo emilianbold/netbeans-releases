@@ -73,6 +73,8 @@ import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 
 /**
  * Change History:
+ * V50 - 09.10.08 - NB 6.5
+ *   Moved source encoding (SOURCE_ENCODING_ELEMENT) to project.xml
  * V49 - 09.02.08 - NB 6.5
  *   RPM package
  * V48 - 08.08.22 - NB 6.5
@@ -138,7 +140,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 49;
+    public final static int CURRENT_VERSION = 50;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -293,7 +295,7 @@ public abstract class CommonConfigurationXMLCodec
 	    if (publicLocation) {
 		writeLogicalFolders(xes);
                 writeSourceRoots(xes);
-                writeSourceEncoding(xes);
+                //writeSourceEncoding(xes);
 	    }
 	    xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getProjectMakefileName());
 	    if (!publicLocation) {
@@ -435,9 +437,9 @@ public abstract class CommonConfigurationXMLCodec
         }
     }
     
-    private void writeSourceEncoding(XMLEncoderStream xes) {
-        xes.element(SOURCE_ENCODING_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getSourceEncoding());
-    }
+//    private void writeSourceEncoding(XMLEncoderStream xes) {
+//        xes.element(SOURCE_ENCODING_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getSourceEncoding());
+//    }
     
     public static void writeCCompilerConfiguration(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration) {
         if (!cCompilerConfiguration.getModified())
@@ -666,7 +668,17 @@ public abstract class CommonConfigurationXMLCodec
             xes.elementClose(PACK_INFOS_LIST_ELEMENT);
         }
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-            // FIXUP
+            xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
+            List<InfoElement> infoList = packagingConfiguration.getDebianHeader().getValue();
+            for (InfoElement elem : infoList) {
+                xes.element(PACK_INFO_LIST_ELEMENT,
+                        new AttrValuePair[] {
+                            new AttrValuePair(NAME_ATTR, "" + elem.getName()), // NOI18N
+                            new AttrValuePair(VALUE_ATTR, "" + elem.getValue()), // NOI18N
+                            new AttrValuePair(MANDATORY_ATTR, "" + elem.isMandatory()), // NOI18N
+                });
+            }
+            xes.elementClose(PACK_INFOS_LIST_ELEMENT);
         }
 	xes.elementClose(PACK_ELEMENT);
     }

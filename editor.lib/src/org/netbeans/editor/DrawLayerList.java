@@ -87,7 +87,7 @@ class DrawLayerList {
             String layerId = layer.getClass().getName() + layer.getName();
             if (!ISSUED_WARNINGS.contains(layerId)) {
                 ISSUED_WARNINGS.add(layerId);
-                LOG.log(Level.WARNING, "Using deprecated DrawLayer: " + layer.getName() + //NOI18N
+                LOG.log(Level.FINE, "Using deprecated DrawLayer: " + layer.getName() + //NOI18N
                     " z-order: " + visibility + //NOI18N
                     " class: " + layer.getClass().getName() + " " + layer); //NOI18N
             }

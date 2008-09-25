@@ -136,7 +136,7 @@ public class DiagramInputkeyMapper implements DiagramKeyMapConstants{
                     KeyStroke keystroke = (KeyStroke)action.getValue(Action.ACCELERATOR_KEY);
                     inputMap.put(keystroke, actionName);
                     actionMap.put(actionName, action);
-                    
+                    button.getAccessibleContext().setAccessibleName((String) action.getValue(action.SHORT_DESCRIPTION));
                     button.setToolTipText(buildTooltip(action));
                 }
                 

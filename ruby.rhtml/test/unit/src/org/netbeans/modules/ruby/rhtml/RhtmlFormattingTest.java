@@ -44,35 +44,35 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         super(testName);
     }
 
-    @SuppressWarnings("unchecked")
-    public String format(BaseDocument doc, int startPos, int endPos, IndentPrefs preferences) throws Exception {
-        
-        String text = doc.getText(0, doc.getLength());
-        JEditorPane pane = getPane(text, startPos, endPos);
-        assertEquals(RubyInstallation.RHTML_MIME_TYPE, pane.getDocument().getProperty("mimeType"));
-        
-        runKitAction(pane, BaseKit.formatAction, "");
-        
-        BaseDocument bdoc = (BaseDocument) pane.getDocument();
-
-        RubyFormatter formatter = getFormatter(preferences);
-        String formatted = bdoc.getText(0, bdoc.getLength());
-        
-        doc.remove(0, doc.getLength());
-        doc.insertString(0, formatted, null);
-       
-        // Apply Ruby formatting separately; can't get the indent task factory to
-        // work (see RhtmlTestBase) because GsfIndentTask needs to find the RubyLanguage
-        // and the system file system doesn't seem to include it
-
-        //CompilationInfo info = getInfo(fileObject);
-        CompilationInfo info = null;
-        formatter.reformat(doc, startPos, endPos, info);
-
-        formatted = doc.getText(0, doc.getLength());
-        
-        return formatted;
-    }
+//    @SuppressWarnings("unchecked")
+//    public String format(BaseDocument doc, int startPos, int endPos, IndentPrefs preferences) throws Exception {
+//
+//        String text = doc.getText(0, doc.getLength());
+//        JEditorPane pane = getPane(text, startPos, endPos);
+//        assertEquals(RubyInstallation.RHTML_MIME_TYPE, pane.getDocument().getProperty("mimeType"));
+//
+//        runKitAction(pane, BaseKit.formatAction, "");
+//
+//        BaseDocument bdoc = (BaseDocument) pane.getDocument();
+//
+//        RubyFormatter formatter = getFormatter(preferences);
+//        String formatted = bdoc.getText(0, bdoc.getLength());
+//
+//        doc.remove(0, doc.getLength());
+//        doc.insertString(0, formatted, null);
+//
+//        // Apply Ruby formatting separately; can't get the indent task factory to
+//        // work (see RhtmlTestBase) because GsfIndentTask needs to find the RubyLanguage
+//        // and the system file system doesn't seem to include it
+//
+//        //CompilationInfo info = getInfo(fileObject);
+//        CompilationInfo info = null;
+//        formatter.reformat(doc, startPos, endPos, info);
+//
+//        formatted = doc.getText(0, doc.getLength());
+//
+//        return formatted;
+//    }
     
     @Override
     protected boolean runInEQ() {
@@ -107,17 +107,21 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
 //        assertEquals(reformatted, formatted);
 //    }
 //    
-//    public void reformatFileContents(String file) throws Exception {
-//        FileObject fo = getTestFile(file);
-//        assertNotNull(fo);
-//        BaseDocument doc = getDocument(fo);
-//        assertNotNull(doc);
-//
-//        IndentPrefs preferences = new IndentPrefs(2,2);
-//        String formatted = format(doc, 0, doc.getLength(), preferences);
-//        assertDescriptionMatches(file, formatted, false, ".formatted");
-//    }
-//    
+    public void reformatFileContents(String file) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+        BaseDocument doc = getDocument(fo);
+        assertNotNull(doc);
+
+        //IndentPrefs preferences = new IndentPrefs(2,2);
+
+        format(doc, new RubyFormatter(), null, 0, doc.getLength(), false);
+        
+        String formatted = doc.getText(0, doc.getLength());
+        
+        assertDescriptionMatches(file, formatted, false, ".formatted");
+    }
+    
 
     public void testDummy() throws Exception {
     }

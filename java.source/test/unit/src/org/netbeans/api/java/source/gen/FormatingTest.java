@@ -93,7 +93,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
-        preferences.putInt("rightMargin", 30);
+        preferences.putInt("text-limit-width", 30);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -338,7 +338,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "}\n";
         preferences.put("wrapExtendsImplementsKeyword", CodeStyle.WrapStyle.WRAP_NEVER.name());
         preferences.put("wrapExtendsImplementsList", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
-        preferences.putInt("rightMargin", 50);
+        preferences.putInt("text-limit-width", 50);
         reformat(doc, content, golden);
 
         golden =
@@ -352,7 +352,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.putBoolean("alignMultilineImplements", false);
         reformat(doc, content, golden);
         preferences.put("wrapExtendsImplementsList", CodeStyle.WrapStyle.WRAP_NEVER.name());
-        preferences.putInt("rightMargin", 120);
+        preferences.putInt("text-limit-width", 80);
     }
     
     public void testEnum() throws Exception {
@@ -366,7 +366,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
-        preferences.putInt("rightMargin", 20);
+        preferences.putInt("text-limit-width", 20);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -531,7 +531,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
         reformat(doc, content, golden);
         preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_NEVER.name());
-        preferences.putInt("rightMargin", 120);
+        preferences.putInt("text-limit-width", 80);
      }
     
     public void testMethod() throws Exception {
@@ -850,6 +850,14 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
         preferences.put("wrapForStatement", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
 
+        preferences.put("wrapFor", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.putBoolean("alignMultilineFor", true);
+        testSource.runModificationTask(task).commit();
+        preferences.put("wrapFor", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineFor", false);
+
         ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
@@ -879,6 +887,16 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "        for (int i = 0; i < 10; i++)\n" +
             "            System.out.println(\"TRUE\");\n" +
             "        for (int i = 0; i < 10; i++) System.out.println(\"TRUE\");\n" +
+            "        for (int i = 0;\n" +
+            "                i < 10;\n" +
+            "                i++) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "        for (int i = 0;\n" +
+            "             i < 10;\n" +
+            "             i++) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
@@ -982,6 +1000,36 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         reformat(doc, content, golden);
         preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
         preferences.put("wrapForStatement", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for (int i = 0;\n" +
+            "                i < 10;\n" +
+            "                i++) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapFor", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for (int i = 0;\n" +
+            "             i < 10;\n" +
+            "             i++) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("alignMultilineFor", true);
+        reformat(doc, content, golden);
+        preferences.put("wrapFor", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineFor", false);
     }
     
     public void testForEach() throws Exception {
@@ -2542,6 +2590,23 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("spaceAroundAssignOps", true);
 
+        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.putBoolean("alignMultilineAssignment", true);
+        testSource.runModificationTask(task).commit();
+        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineAssignment", false);
+
+        preferences.put("wrapBinaryOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.putBoolean("alignMultilineBinaryOp", true);
+        testSource.runModificationTask(task).commit();
+        preferences.put("wrapBinaryOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineBinaryOp", false);
+
         ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
@@ -2564,6 +2629,28 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "        }\n" +
             "        for (int i=0; i < x; i++) {\n" +
             "            y+=(y ^ 123) << 2;\n" +
+            "        }\n" +
+            "        for (int i =\n" +
+            "                0; i < x; i++) {\n" +
+            "            y +=\n" +
+            "                    (y ^ 123) << 2;\n" +
+            "        }\n" +
+            "        for (int i =\n" +
+            "                 0; i < x; i++) {\n" +
+            "            y +=\n" +
+            "            (y ^ 123) << 2;\n" +
+            "        }\n" +
+            "        for (int i = 0; i <\n" +
+            "                x; i++) {\n" +
+            "            y += (y ^\n" +
+            "                    123) <<\n" +
+            "                    2;\n" +
+            "        }\n" +
+            "        for (int i = 0; i <\n" +
+            "                        x; i++) {\n" +
+            "            y += (y ^\n" +
+            "                  123) <<\n" +
+            "                 2;\n" +
             "        }\n" +
             "    }\n" +
             "}\n";
@@ -2641,6 +2728,67 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         reformat(doc, content, golden);
         preferences.putBoolean("spaceAroundAssignOps", true);
 
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i =\n" +
+            "                0; i < x; i++) {\n" +
+            "            y +=\n" +
+            "                    (y ^ 123) << 2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i =\n" +
+            "                 0; i < x; i++) {\n" +
+            "            y +=\n" +
+            "            (y ^ 123) << 2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("alignMultilineAssignment", true);
+        reformat(doc, content, golden);
+        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineAssignment", false);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i = 0; i <\n" +
+            "                x; i++) {\n" +
+            "            y += (y ^\n" +
+            "                    123) <<\n" +
+            "                    2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapBinaryOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i = 0; i <\n" +
+            "                        x; i++) {\n" +
+            "            y += (y ^\n" +
+            "                  123) <<\n" +
+            "                 2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("alignMultilineBinaryOp", true);
+        reformat(doc, content, golden);
+        preferences.put("wrapBinaryOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineBinaryOp", false);
     }
     
     public void testTypeCast() throws Exception {
@@ -3075,7 +3223,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    /**\n" +
             "     *\n" +
             "     *\n" +
-            "}\n";
+            "    }\n";
         reformat(doc, content, golden);
     }
 

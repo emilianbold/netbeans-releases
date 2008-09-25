@@ -114,7 +114,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         }
 
         // php cli
-        initPhpInterpreterFields();
         defaultInterpreterCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 boolean selected = defaultInterpreterCheckBox.isSelected();
@@ -150,12 +149,16 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         composeHint();
     }
 
-    private void initPhpInterpreterFields() {
+    private String initPhpInterpreterFields() {
         String phpInterpreter = getValue(PhpProjectProperties.INTERPRETER);
         boolean def = phpInterpreter == null || phpInterpreter.length() == 0;
         defaultInterpreterCheckBox.setSelected(def);
         interpreterBrowseButton.setEnabled(!def);
         interpreterTextField.setEditable(!def);
+        if (def) {
+            return PhpOptions.getInstance().getPhpInterpreter();
+        }
+        return phpInterpreter;
     }
 
     @Override
@@ -182,7 +185,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         for (int i = 0; i < textFields.length; i++) {
             String val = getValue(propertyNames[i]);
             if (PhpProjectProperties.INTERPRETER.equals(propertyNames[i])) {
-                val = ProjectPropertiesSupport.getPhpInterpreter(project).getFullCommand();
+                val = initPhpInterpreterFields();
             }
             textFields[i].setText(val);
         }

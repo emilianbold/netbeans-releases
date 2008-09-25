@@ -54,8 +54,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="text" default="default"/>
     <fontcolor name="value" default="markup-attribute-value"/>
     <fontcolor name="ws" default="whitespace"/>
-    <fontcolor name="css-embedded" bgColor="ffd0e8Ca" default="default"/>
-    <fontcolor name="javascript-embedded" bgColor="ffd0e8Ca" default="default"/>
+    <fontcolor name="css-embedded" bgColor="FFE3F2E1" default="default"/>
+    <fontcolor name="javascript-embedded" bgColor="FFE3F2E1" default="default"/>
     
      <!--"semantic" highlighting:-->
     <fontcolor name="mod-method">

@@ -73,7 +73,6 @@ import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathExtender;
 import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathModifier;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
@@ -82,7 +81,6 @@ import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -181,6 +179,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         return helper.getProjectDirectory();
     }
 
+    @Override
     public String toString() {
         return "J2SEProject[" + FileUtil.getFileDisplayName(getProjectDirectory()) + "]"; // NOI18N
     }
@@ -255,7 +254,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             final J2SEActionProvider actionProvider) {
         final SubprojectProvider spp = refHelper.createSubprojectProvider();        
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
-        final Lookup base = Lookups.fixed(new Object[] {
+        @SuppressWarnings("deprecation") Object cpe = new org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathExtender(cpMod);
+        final Lookup base = Lookups.fixed(
             J2SEProject.this,
             new Info(),
             aux,
@@ -278,7 +278,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new RecommendedTemplatesImpl (this.updateHelper),
-            new J2SEProjectClassPathExtender(cpMod),
+            cpe,
             buildExtender,
             cpMod,
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
@@ -296,7 +296,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             new BinaryForSourceQueryImpl(this.sourceRoots, this.testRoots, this.helper, this.eval) //Does not use APH to get/put properties/cfgdata
-        });
+        );
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
     }
     
@@ -755,9 +755,10 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
     
     private static String getJaxWsApiDir() {
-        File file = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
-        if (file!=null) {
-            return file.getParent();
+        File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+        if (jaxwsApi!=null) {
+            File jaxbApi =  InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
+            return jaxwsApi.getParent()+(jaxbApi != null? ":"+jaxbApi.getParent() : ""); //NOI18N
         }
         return null;
     }

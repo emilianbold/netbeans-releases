@@ -81,6 +81,11 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/semantic8.js", "new^");
     }
 
+    public void testSemantic9() throws Exception {
+        // Based on issue 147450
+        checkSemantic("testfiles/semantic9.js");
+    }
+
     public void testSemanticE4x() throws Exception {
         checkSemantic("testfiles/e4x.js", "order^");
     }

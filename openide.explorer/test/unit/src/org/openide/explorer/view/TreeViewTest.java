@@ -60,6 +60,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -584,11 +585,13 @@ public final class TreeViewTest extends NbTestCase {
             fail();
         }      
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1404
     public void testPartialNodeSelectionEager() throws Exception {
         doTestPartialNodeSelection(false);
     }
 
+    @RandomlyFails // just guessing based on ...Eager failure and use of Thread.sleep
     public void testPartialNodeSelectionLazy() throws Exception {
         doTestPartialNodeSelection(true);
     }

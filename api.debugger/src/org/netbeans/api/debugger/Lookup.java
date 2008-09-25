@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -69,8 +69,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.openide.ErrorManager;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.LookupEvent;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -213,17 +213,17 @@ abstract class Lookup implements ContextProvider {
         private static final String HIDDEN = "-hidden"; // NOI18N
         
         private String rootFolder;
-        private Map<String,List<String>> registrationCache = new HashMap<String,List<String>>();
-        private HashMap<String, Object> instanceCache = new HashMap<String, Object>();
+        private final Map<String,List<String>> registrationCache = new HashMap<String,List<String>>();
+        private final HashMap<String, Object> instanceCache = new HashMap<String, Object>();
         private Lookup context;
         private org.openide.util.Lookup.Result<ModuleInfo> moduleLookupResult;
         private ModuleChangeListener modulesChangeListener;
-        private Map<ClassLoader, ModuleChangeListener> moduleChangeListeners
+        private final Map<ClassLoader, ModuleChangeListener> moduleChangeListeners
                 = new HashMap<ClassLoader, ModuleChangeListener>();
-        private Map<ModuleInfo, ModuleChangeListener> disabledModuleChangeListeners
+        private final Map<ModuleInfo, ModuleChangeListener> disabledModuleChangeListeners
                 = new HashMap<ModuleInfo, ModuleChangeListener>();
-        private Set<MetaInfLookupList> lookupLists = new WeakSet<MetaInfLookupList>();
-        private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final Set<MetaInfLookupList> lookupLists = new WeakSet<MetaInfLookupList>();
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
         
         MetaInf (String rootFolder) {
@@ -326,8 +326,9 @@ abstract class Lookup implements ContextProvider {
                 if (service.endsWith("()")) {
                     int lastdot = service.lastIndexOf('.');
                     if (lastdot < 0) {
-                        ErrorManager.getDefault().log("Bad service - dot before method name is missing: " +
-                                "'" + service + "'.");
+                        Exceptions.printStackTrace(
+                                new IllegalStateException("Bad service - dot before method name is missing: " +
+                                "'" + service + "'."));
                         return null;
                     }
                     method = service.substring(lastdot + 1, service.length() - 2).trim();
@@ -381,35 +382,30 @@ abstract class Lookup implements ContextProvider {
                         " created");
                 return o;
             } catch (ClassNotFoundException e) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(
+                Exceptions.printStackTrace(
+                        Exceptions.attachMessage(
                             e,
-                            "The service "+service+" is not found.")
-                        );
+                            "The service "+service+" not found."));
             } catch (InstantiationException e) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(
-                            e,
-                            "The service "+service+" can not be instantiated.")
-                        );
+                Exceptions.printStackTrace(
+                        Exceptions.attachMessage(
+                        e,
+                        "The service "+service+" can not be instantiated."));
             } catch (IllegalAccessException e) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(
-                            e,
-                            "The service "+service+" can not be accessed.")
-                        );
+                Exceptions.printStackTrace(
+                        Exceptions.attachMessage(
+                        e,
+                        "The service "+service+" can not be accessed."));
             } catch (InvocationTargetException ex) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(
-                            ex,
-                            "The service "+service+" can not be created.")
-                        );
+                Exceptions.printStackTrace(
+                        Exceptions.attachMessage(
+                        ex,
+                        "The service "+service+" can not be created."));
             } catch (ExceptionInInitializerError ex) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(
-                            ex,
-                            "The service "+service+" can not be initialized.")
-                        );
+                Exceptions.printStackTrace(
+                        Exceptions.attachMessage(
+                        ex,
+                        "The service "+service+" can not be initialized."));
             }
             return null;
         }
@@ -607,10 +603,6 @@ abstract class Lookup implements ContextProvider {
                     Object instance = null;
                     synchronized(instanceCache) {
                         instance = instanceCache.get (className);
-                        if (instance == null) {
-                            instance = createInstance (className);
-                            instanceCache.put (className, instance);
-                        }
                     }
                     if (instance != null) {
                         try {
@@ -619,8 +611,33 @@ abstract class Lookup implements ContextProvider {
                             Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
                         }
                         listenOn(instance.getClass().getClassLoader());
+                    } else if (checkClassName(className)) {
+                        add(new LazyInstance<T>(service, className), className);
                     }
                 }
+            }
+
+            private boolean checkClassName(String service) {
+                String method = null;
+                if (service.endsWith("()")) {
+                    int lastdot = service.lastIndexOf('.');
+                    if (lastdot < 0) {
+                        Exceptions.printStackTrace(
+                                new IllegalStateException("Bad service - dot before method name is missing: " +
+                                "'" + service + "'."));
+                        return false;
+                    }
+                    method = service.substring(lastdot + 1, service.length() - 2).trim();
+                    service = service.substring(0, lastdot);
+                }
+                ClassLoader cl = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+                URL resource = cl.getResource(service.replace('.', '/')+".class");
+                if (resource == null) {
+                    Exceptions.printStackTrace(
+                            new IllegalStateException("The service "+service+" not found."));
+                    return false;
+                }
+                return true;
             }
             
             private synchronized void refreshContent() {
@@ -685,6 +702,38 @@ abstract class Lookup implements ContextProvider {
                     l.propertyChange(evt);
                 }
             }
+
+            private class LazyInstance<T> extends LookupLazyEntry<T> {
+                private String className;
+                private Class<T> service;
+                public LazyInstance(Class<T> service, String className) {
+                    this.service = service;
+                    this.className = className;
+                }
+
+                protected T getEntry() {
+                    Object instance = null;
+                    synchronized(instanceCache) {
+                        instance = instanceCache.get (className);
+                        if (instance == null) {
+                            instance = createInstance (className);
+                            instanceCache.put (className, instance);
+                        }
+                    }
+                    if (instance != null) {
+                        try {
+                            return service.cast(instance);
+                        } catch (ClassCastException cce) {
+                            Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
+                            return null;
+                        } finally {
+                            listenOn(instance.getClass().getClassLoader());
+                        }
+                    } else {
+                        return null;
+                    }
+                }
+            }
             
         }
     }
@@ -693,10 +742,10 @@ abstract class Lookup implements ContextProvider {
      * A special List implementation, which ensures that hidden elements
      * are removed when adding items into the list.
      */
-    private static class LookupList<T> extends ArrayList<T> {
+    private static class LookupList<T> extends LazyArrayList<T> {
 
         protected Set<String> hiddenClassNames;
-        private LinkedHashMap<T, String> instanceClassNames = new LinkedHashMap<T, String>();
+        private LinkedHashMap<Object, String> instanceClassNames = new LinkedHashMap<Object, String>();
 
         public LookupList(Set<String> hiddenClassNames) {
             this.hiddenClassNames = hiddenClassNames;
@@ -707,6 +756,11 @@ abstract class Lookup implements ContextProvider {
             instanceClassNames.put(instance, className);
         }
         
+        void add(LazyArrayList.LazyEntry instance, String className) {
+            super.add(instance);
+            instanceClassNames.put(instance, className);
+        }
+
         @Override
         public boolean addAll(Collection<? extends T> c) {
             if (c instanceof LookupList) {
@@ -739,10 +793,15 @@ abstract class Lookup implements ContextProvider {
                     }
                     ensureCapacity(size() + ll.size());
                     boolean addedAnything = false;
-                    for (T instance : ll) {
-                        String className = ll.instanceClassNames.get(instance);
+                    for (int i = 0; i < ll.size(); i++) {
+                        Object entry = ll.getEntry(i);
+                        String className = ll.instanceClassNames.get(entry);
                         if (hiddenClassNames == null || !hiddenClassNames.contains(className)) {
-                            add(instance, className);
+                            if (entry instanceof LazyEntry) {
+                                add((LazyEntry) entry, className);
+                            } else {
+                                add((T) entry, className);
+                            }
                             addedAnything = true;
                         }
                     }
@@ -758,6 +817,21 @@ abstract class Lookup implements ContextProvider {
         public void clear() {
             super.clear();
             instanceClassNames.clear();
+        }
+
+        protected abstract class LookupLazyEntry<T> extends LazyEntry<T> {
+            protected final T get() {
+                T e = getEntry();
+                synchronized (LookupList.this) {
+                    String className = instanceClassNames.remove(this);
+                    if (className != null) {
+                        instanceClassNames.put(e, className);
+                    }
+                }
+                return e;
+            }
+
+            protected abstract T getEntry();
         }
         
     }

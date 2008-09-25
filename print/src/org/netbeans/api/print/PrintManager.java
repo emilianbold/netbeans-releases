@@ -146,61 +146,59 @@ import org.netbeans.spi.print.PrintProvider;
  */
 public final class PrintManager {
 
-  /**
-   * This key indicates the name of the component being printed.
-   * By default, the name is shown in the left part of the header.
-   */
-  public static final String PRINT_NAME = "print.name"; // NOI18N
+    /**
+     * This key indicates the name of the component being printed.
+     * By default, the name is shown in the left part of the header.
+     */
+    public static final String PRINT_NAME = "print.name"; // NOI18N
+    /**
+     * This key indicates the order of the component being printed.
+     * The value of the key must be {@link Integer}. All visible and printable
+     * components are ordered and shown in the Print Preview
+     * dialog from the left to right.
+     */
+    public static final String PRINT_ORDER = "print.order"; // NOI18N
+    /**
+     * This key indicates the size of the component being printed.
+     * The value of the key must be {@link Dimension}.
+     */
+    public static final String PRINT_SIZE = "print.size"; // NOI18N
+    /**
+     * This key indicates whether the component is printable. To be printable
+     * the value {@link Boolean#TRUE} must be set as a client property of the component.
+     */
+    public static final String PRINT_PRINTABLE = "print.printable"; // NOI18N
 
-  /**
-   * This key indicates the order of the component being printed.
-   * The value of the key must be {@link Integer}. All visible and printable
-   * components are ordered and shown in the Print Preview
-   * dialog from the left to right.
-   */
-  public static final String PRINT_ORDER = "print.order"; // NOI18N
+    /**
+     * Creates a new instance of <code>PrintManager</code>.
+     */
+    private PrintManager() {
+    }
 
-  /**
-   * This key indicates the size of the component being printed.
-   * The value of the key must be {@link Dimension}.
-   */
-  public static final String PRINT_SIZE = "print.size"; // NOI18N
+    /**
+     * Returns the Print action for a component.
+     * All {@linkplain #PRINT_PRINTABLE printable} components are obtained among
+     * the {@linkplain Container#getComponents descendants} of the given component.
+     * All found printable components are passed into the Print Preview dialog.
+     *
+     * @param component is the component being printed
+     * @return the Print action
+     * @see PrintProvider
+     */
+    public static Action printAction(JComponent component) {
+        return new org.netbeans.modules.print.action.PrintAction(component);
+    }
 
-  /**
-   * This key indicates whether the component is printable. To be printable
-   * the value {@link Boolean#TRUE} must be set as a client property of the component.
-   */
-  public static final String PRINT_PRINTABLE = "print.printable"; // NOI18N
-
-  /**
-   * Creates a new instance of <code>PrintManager</code>.
-   */
-  private PrintManager() {}
-
-  /**
-   * Returns the Print action for a component.
-   * All {@linkplain #PRINT_PRINTABLE printable} components are obtained among
-   * the {@linkplain Container#getComponents descendants} of the given component.
-   * All found printable components are passed into the Print Preview dialog.
-   *
-   * @param component is the component being printed
-   * @return the Print action
-   * @see PrintProvider
-   */
-  public static Action printAction(JComponent component) {
-    return new org.netbeans.modules.print.action.PrintAction(component);
-  }
-
-  /**
-   * Returns the Print action for given {@linkplain PrintProvider print providers}.
-   * All {@link PrintPage}s returned by the providers are shown in
-   * the Print Preview dialog.
-   *
-   * @param providers is the array of print providers
-   * @return the Print action
-   * @see PrintProvider
-   */
-  public static Action printAction(PrintProvider [] providers) {
-    return new org.netbeans.modules.print.action.PrintAction(providers);
-  }
+    /**
+     * Returns the Print action for given {@linkplain PrintProvider print providers}.
+     * All {@link PrintPage}s returned by the providers are shown in
+     * the Print Preview dialog.
+     *
+     * @param providers is the array of print providers
+     * @return the Print action
+     * @see PrintProvider
+     */
+    public static Action printAction(PrintProvider[] providers) {
+        return new org.netbeans.modules.print.action.PrintAction(providers);
+    }
 }

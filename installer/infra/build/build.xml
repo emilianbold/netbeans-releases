@@ -324,6 +324,10 @@
 	     <equals arg1="${build.mysql}" arg2="1"/>
         </condition>
 
+        <condition property="do.build.javafx">
+	     <equals arg1="${build.javafx}" arg2="1"/>
+        </condition>
+
         <condition property="nb.locales.isset">
  	     <not>
  	     	<equals arg1="${nb.locales}" arg2=""/>
@@ -365,7 +369,7 @@
 	</if>
 
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/prelude/b20/bundles"
+            src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/prelude/latest/bundles"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
@@ -434,7 +438,20 @@
 	    </loadfile>            
             <property name="javaeesdk-javadocs.build.number" value="20070814"/>
         </if>
-        
+
+        <if property="do.build.javafx">
+             <get
+            	src="${javafx.builds.host}/lastSuccessfulBuild/buildNumber"
+            	dest="${temp.file}"/>
+             <loadfile property="javafx.build.number"
+          	    srcFile="${temp.file}">
+	        <filterchain>
+        	    <striplinebreaks/>
+    	        </filterchain>
+	     </loadfile>
+	     <property name="javafx.full.version"
+		       value="1.0.0.0.${javafx.build.number}"/>
+         </if>
         <delete file="${temp.file}" failonerror="false"/>
     </target>
     
@@ -588,6 +605,13 @@ sjsas.image.token.hostname.macosx=${sjsas.image.token.hostname.macosx}
         </echo>
         </if>
 
+        <if property="do.build.javafx">
+ 	<echo file="${environment.properties}" append="true">
+javafx.full.version=${javafx.full.version}
+javafx.build.number=${javafx.build.number}
+ 	 </echo>
+
+         </if>
         <!-- Jar singing properties -->
 	<if property="jarsigner.enabled" value="true">
 	    <echo file="${environment.properties}" append="true">
@@ -608,6 +632,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<include name="**/nb*"/>
                 <exclude name="**/nb*${build.number}*"/>
                 <exclude name="**/nb-portalpack*"/>
+                <exclude name="**/nb-javafx*"/>
 
                 <!-- glassfish -->
                 <include name="**/glassfish*"/>
@@ -660,7 +685,15 @@ jarsigner.storepass=${jarsigner.storepass}
 
 			<include name="**/nb-portalpack*"/>
 			<exclude name="**/nb-portalpack*${portalpack.build.number}*"/>
-                	
+        	    </fileset>
+	        </delete>
+	</if>
+
+        <if property="do.build.javafx">
+		<delete failonerror="false">
+        	    <fileset dir="${nbi.cache.dir}/packaged">        
+			<include name="**/nb-javafx*"/>
+			<exclude name="**/nb-javafx*${javafx.full.version}*"/>                	
         	    </fileset>
 	        </delete>
 	</if>
@@ -700,6 +733,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="build-nbmysql-components"/>
         <antcall target="build-javatools-components"/>
         <antcall target="build-nbjdk-components"/>
+        <antcall target="build-javafx-components"/>
 
         <!--<antcall target="export-temp-registry"/>-->
         
@@ -743,6 +777,14 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
+    <target name="build-javafx-components" if="do.build.javafx">
+	<set property="netbeans.group.uid" value=""/>
+        <antcall target="build-list">
+	     <param name="build.list" value="nb-base nb-javase nb-javafx"/>
+        </antcall>
+    </target>
+
+
     <target name="build-javatools-components" if="do.build.jtb">
 	<set property="netbeans.group.uid" value="nb-ide-group"/>
         <antcall target="build-list">
@@ -766,6 +808,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="generate-mysql-bundles"/>
         <antcall target="generate-jdk-bundles"/>
         <antcall target="generate-javatoolsbundle-bundles"/>
+        <antcall target="generate-javafx-bundles"/>
     </target>
 
     <target name="generate-jdk-bundles" depends="init-jdk-bundles,init-bundled-jvms" if="do.build.jdk">	
@@ -997,6 +1040,12 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-php">	
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-php"/>
+        </antcall>
+    </target>
+
+    <target name="build-nb-javafx">	
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-javafx"/>
         </antcall>
     </target>
 
@@ -1578,6 +1627,31 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
 
+    <target name="generate-javafx-bundles" if="do.build.javafx">
+	<antcall target="generate-javafx-bundle">
+               <param name="bundle.platform"  value="windows"/>
+               <param name="bundle.extension" value="exe"/>
+        </antcall>
+    </target>
+
+    <target name="generate-javafx-bundle">
+	<!-- JavaFX bundles --> 	
+        <mkdir dir="${nb.bundles.output.dir}"/>
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javafx-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javafx" version="${javafx.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="javafx"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.javafx.resource}"/>
+        </create-bundle>
+
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
 
     <target name="generate-javatoolsbundle-bundle">
 	<property name="bundle.prefix" 

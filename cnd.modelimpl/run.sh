@@ -66,6 +66,10 @@ do
                 echo "Redirecting cache to $1"
                 PARAMS="${PARAMS} -J-Dcnd.repository.cache.path="$1""
                 ;;
+        --nopersist)
+                echo "Setting persistence OFF"
+                PARAMS="${PARAMS} -J-Dcnd.modelimpl.persistent=false"
+                ;;
         --nb)
 		shift
                 echo "Using NB from $1"
@@ -172,6 +176,7 @@ DEFS="${DEFS} -J-Dtest.xref.action=true"
 DEFS="${DEFS} -J-Dcnd.classview.sys-includes=true"
 DEFS="${DEFS} -J-Dcnd.callgraph.showgraph=true"
 DEFS="${DEFS} -J-Dcnd.trace.includes=true"
+DEFS="${DEFS} -J-Dcnd.standalone.trace=true"
 ##DEFS="${DEFS} -J-Dcnd.parser.queue.trace=true"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.parser.threads=2"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.no.reparse.include=true"

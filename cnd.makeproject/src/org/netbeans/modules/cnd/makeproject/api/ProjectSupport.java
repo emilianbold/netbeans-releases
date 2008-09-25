@@ -85,19 +85,20 @@ public class ProjectSupport {
             return;
         MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
-        
+
         MakeActionProvider ap = (MakeActionProvider)project.getLookup().lookup(MakeActionProvider.class );
         if (ap == null)
             return;
-        
+
         ProjectInformation info = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class );
         String projectName = info.getDisplayName();
-        
-        ArrayList actionEvents = new ArrayList();
-        ap.addAction(actionEvents, projectName, projectDescriptor, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null);
-	ActionEvent ae = new ActionEvent((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]), 0, null);
-        DefaultProjectActionHandler defaultProjectActionHandler = new DefaultProjectActionHandler();
-        defaultProjectActionHandler.setCustomActionHandlerProvider(customProjectActionHandler);
-        defaultProjectActionHandler.actionPerformed(ae);
+
+        ap.invokeCustomAction(projectName, projectDescriptor, conf, customProjectActionHandler);
+//        ArrayList actionEvents = new ArrayList();
+//        ap.addAction(actionEvents, projectName, projectDescriptor, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null);
+//	ActionEvent ae = new ActionEvent((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]), 0, null);
+//        DefaultProjectActionHandler defaultProjectActionHandler = new DefaultProjectActionHandler();
+//        defaultProjectActionHandler.setCustomActionHandlerProvider(customProjectActionHandler);
+//        defaultProjectActionHandler.actionPerformed(ae);
     }
 }

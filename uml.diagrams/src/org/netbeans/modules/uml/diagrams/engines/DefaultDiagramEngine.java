@@ -100,7 +100,6 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     
     private final static PopupMenuProvider CONTEXT_MENU_PROVIDER = new DiagramPopupMenuProvider();
     public final static WidgetAction POPUP_ACTION = ActionFactory.createPopupMenuAction(CONTEXT_MENU_PROVIDER);
-    //public final static MoveNodeKeyAction MOVE_NODE_KEY_ACTION = new MoveNodeKeyAction();
     
     private RelationshipDiscovery relDiscovery = null;
     

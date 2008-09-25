@@ -83,7 +83,7 @@ public class RemoteServerSetup {
         
         // Script setup map
         scriptSetupMap = new HashMap<String, Double>();
-        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.8)); // NOI18N
+        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.9)); // NOI18N
         for (SetupProvider provider : providers) {
             Map<String, Double> map = provider.getScriptFiles();
             if (map != null) {
@@ -199,7 +199,7 @@ public class RemoteServerSetup {
         if (!support.isFailed()) {
             log.fine("RSS.needsSetupOrUpdate: GET_SCRIPT_INFO returned " + support.getExitStatus());
             if (support.getExitStatus() == 0) {
-                String val = support.toString();
+                String val = support.getOutput();
                 for (String line : val.split("\n")) { // NOI18N
                     try {
                         int pos = line.indexOf(':');
@@ -246,7 +246,7 @@ public class RemoteServerSetup {
             if (support.isCancelled()) {
                 cancelled = true;
             } else {
-                String val = support.toString();
+                String val = support.getOutput();
                 int count = 0;
                 for (String line : val.split("\n")) { // NOI18N
                     int pos1 = line.indexOf(':');

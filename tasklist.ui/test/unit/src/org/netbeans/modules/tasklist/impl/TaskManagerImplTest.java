@@ -118,7 +118,7 @@ public class TaskManagerImplTest extends NbTestCase {
             }
         }, TaskFilter.EMPTY);
 
-        impl.waitFinished();
+        impl._waitFinished();
         
         assertEquals(1, impl.getTasks().getTasks().size());
     }
@@ -162,7 +162,7 @@ public class TaskManagerImplTest extends NbTestCase {
             }
         }, TaskFilter.EMPTY);
         
-        impl.waitFinished();
+        impl._waitFinished();
         
         assertEquals(1, impl.getTasks().getTasks().size());
         

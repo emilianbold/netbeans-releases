@@ -63,7 +63,7 @@ import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyFormatter;
-import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
@@ -123,20 +123,19 @@ class IntroduceFix implements PreviewableFix {
     }
 
     public void implement() throws Exception {
-        String name = IntroduceHint.testName;
+        String name = null;
         EditList edits = createEdits(name);
         if (edits == null) {
             // Some kind of error
             return;
         }
 
-        Position commentPosition = null;
-        
-        commentPosition = edits.apply(commentOffset);
+        Position  commentPosition = edits.createPosition(commentOffset);
+        edits.apply();
 
         // Warp to the inserted method and show the comment
-        if (commentPosition != null) {
-            JTextComponent target = NbUtilities.getPaneFor(info.getFileObject());
+        if (commentPosition != null && commentPosition.getOffset() != -1) {
+            JTextComponent target = GsfUtilities.getPaneFor(info.getFileObject());
             if (target != null) {
                 int offset = commentPosition.getOffset();
                 String commentText = getCommentText();
@@ -328,7 +327,7 @@ class IntroduceFix implements PreviewableFix {
         }
         
         EditList edits = new EditList(doc);
-        edits.setFormatter(new RubyFormatter(), false);
+        edits.setFormatAll(false);
 
         edits.replace(lexStart, lexEnd-lexStart, name, true, 1);
         edits.replace(begin, 0, sb.toString(), true, 2);
@@ -386,7 +385,7 @@ class IntroduceFix implements PreviewableFix {
 
         StringBuilder sb = new StringBuilder();
         EditList edits = new EditList(doc);
-        edits.setFormatter(new RubyFormatter(), false);
+        edits.setFormatAll(false);
         boolean isAbove = prevEnd < astRange.getStart();
         sb.append("\n");
         if (!isAbove) {

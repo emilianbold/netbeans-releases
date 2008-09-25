@@ -735,7 +735,7 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { String s; K_and_R = false; boolean ctrName=false;}
+external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition;}
 	:      
 		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
@@ -801,6 +801,17 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                         (template_head)?   // :)
 			ctor_definition
 			{ #external_declaration_template = #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
+                |  
+                        // User-defined type cast
+                        {isCPlusPlus()}?
+                        ((template_head)? (literal_inline)? scope_override conversion_function_decl_or_def)=>
+                        {if (statementTrace>=1) 
+                                printf("external_declaration_6[%d]: Operator function\n",
+                                        LT(1).getLine());
+                        }
+                        (template_head)? (literal_inline)? s = scope_override definition = conversion_function_decl_or_def 
+                        { if( definition ) #external_declaration_template = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration_template);
+                            else	   #external_declaration_template = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #external_declaration_template); }
 		|
 			// Templated function declaration
 			(declaration_specifiers[false, false] function_declarator[false, false] SEMICOLON)=> 
@@ -1334,6 +1345,24 @@ member_declaration
 		}
 		(LITERAL_static)? function_declarator[true, false] compound_statement //{endFunctionDefinition();}
 		{ #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
+        |       
+                // function declaration with function as return type
+		((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[false] (EOF|SEMICOLON))=> 
+		{if (statementTrace>=1) 
+			printf("external_declaration_7a[%d]: Function prototype with function as return type\n",
+				LT(1).getLine());
+		}
+		function_declaration_with_fun_as_ret_type
+		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DECLARATION, "CSM_FUNCTION_RET_FUN_DECLARATION"], #member_declaration); }
+                
+        |       // function definition with function as return type
+                ((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[true] LCURLY)=> 
+		{if (statementTrace>=1) 
+			printf("external_declaration_8b[%d]: Function definition with function as return type\n",
+				LT(1).getLine());
+		}
+		function_definition_with_fun_as_ret_type
+		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #member_declaration); }
 	|  
 		// User-defined type cast
 		((literal_inline)? conversion_function_decl_or_def)=>

@@ -116,6 +116,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     private Configuration[] configurationItems;
     private Configuration[] selectedConfigurations;
     private int lastComboboxIndex = -1;
+    private ProjectPropPanel projectPropPanel = null;
     
     /** Creates new form MakeCustomizer */
     public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, Item item, Folder folder, Vector controls) {
@@ -332,6 +333,12 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             categoryPanel.add(currentCategoryView, fillConstraints );
             if (selectedNodeName != null)
                 currentCategoryView.selectNode(selectedNodeName);
+        }
+    }
+    
+    public void save() {
+        if (projectPropPanel != null) {
+            projectPropPanel.save();
         }
     }
     
@@ -778,7 +785,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null );
     }
     
-    private JPanel projectPropPanel = null;
     class GeneralCustomizerNode extends CustomizerNode {
         public GeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);

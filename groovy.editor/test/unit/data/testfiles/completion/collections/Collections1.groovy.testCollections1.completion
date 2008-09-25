@@ -2,6 +2,5 @@ Code completion result for source line:
 ["one","two"].listIter|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-CLASS      ListIterator                               null
-METHOD     listIterator()                             ClassReader$1
-METHOD     listIterator(int)                          ClassReader$1
+METHOD     listIterator()                             ListIterator<E>
+METHOD     listIterator(int)                          ListIterator<E>

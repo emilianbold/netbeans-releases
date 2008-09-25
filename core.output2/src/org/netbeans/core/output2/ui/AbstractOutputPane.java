@@ -766,5 +766,12 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         public void focusLost(FocusEvent e) {
             getCaret().setVisible(false);
         }
+
+        @Override
+        public void setSelectionVisible(boolean vis) {
+            if (vis) {
+                super.setSelectionVisible(vis);
+            }
+        }
     }
 }

@@ -241,18 +241,16 @@ public class ForkedJavaOverride extends Java {
 
         private synchronized void maybeFlush() {
             try {
-                if (currentLine.size() > 0) {
-                    String str = currentLine.toString(encoding);
-                    ow.write(str);
-                    ow.flush();
-                    log(str, logLevel);
-                    currentLine.reset();
-                }
+                currentLine.writeTo(out);
+                out.flush();
+                String str = currentLine.toString(encoding);
+                ow.write(str);
             } catch (IOException x) {
                 // probably safe to ignore
             } catch (ThreadDeath d) {
                 // OK, build just stopped.
             }
+            currentLine.reset();
         }
 
     }

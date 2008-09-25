@@ -56,14 +56,12 @@ import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
@@ -192,7 +190,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                     }
 
                     while (sequence.moveNext() && sequence.offset() < endOffset) {
-                        if (sequence.token().id() == JspTokenId.SCRIPTLET) {
+                        if (javascripletBackground != null && sequence.token().id() == JspTokenId.SCRIPTLET) {
                             sectionStart = sequence.offset();
                             sectionEnd = sequence.offset() + sequence.token().length();
 
@@ -235,7 +233,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                             }
                             
                             
-                        } else if (sequence.token().id() == JspTokenId.EL) {
+                        } else if (expressionLanguageBackground != null && sequence.token().id() == JspTokenId.EL) {
                             sectionStart = sequence.offset();
                             sectionEnd = sequence.offset() + sequence.token().length();
                             attributeSet = expressionLanguageBackground;

@@ -1,0 +1,19 @@
+Code completion result for source line:
+if (new File(new Date().get|)) {}
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     getAt(String)                              Object
+METHOD     getAt(int)                                 int
+METHOD     getClass()                                 Class
+METHOD     getDate()                                  int
+METHOD     getDay()                                   int
+METHOD     getHours()                                 int
+METHOD     getMetaClass()                             MetaClass
+METHOD     getMetaPropertyValues()                    List
+METHOD     getMinutes()                               int
+METHOD     getMonth()                                 int
+METHOD     getProperties()                            Map
+METHOD     getSeconds()                               int
+METHOD     getTime()                                  long
+METHOD     getTimezoneOffset()                        int
+METHOD     getYear()                                  int

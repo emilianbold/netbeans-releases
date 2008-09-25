@@ -43,14 +43,15 @@ package org.openide.loaders;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.openide.cookies.OpenCookie;
-
 import org.openide.filesystems.*;
 import org.netbeans.junit.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
-import org.openide.*;
+import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 
 /**
@@ -61,7 +62,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
     DataObject one;
     DataFolder from;
     DataFolder to;
-    ErrorManager err;
+    Logger err;
     
     
     /** Creates new DataObjectTest */
@@ -76,7 +77,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 15000;
+        return 60000;
     }
 
     @Override
@@ -87,7 +88,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         
         MockServices.setServices(Pool.class);
         
-        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
+        err = Logger.getLogger("TEST." + getName());
         
         LocalFileSystem lfs = new LocalFileSystem();
         lfs.setRootDirectory(getWorkDir());
@@ -104,89 +105,16 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         
         assertEquals("Nothing there", 0, to.getPrimaryFile().getChildren().length);
     }
-    
-    public void testTheSetOfSecondaryEntriesIsSaidToGetInconsistent() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            err.log(i + " getting children of to");
-            DataObject[] to1 = to.getChildren();
-            err.log(i + " getting children of from");
-            DataObject[] from1 = from.getChildren();
-            err.log(i + " getting files of object1");
-            Object[] arr1 = one.files().toArray();
-            err.log(i + " moving the object");
-            one.move(to);
-            err.log(i + " 2nd children of to");
-            DataObject[] to2 = to.getChildren();
-            err.log(i + " 2nd children of from");
-            DataObject[] from2 = from.getChildren();
-            err.log(i + " 2nd  files of object1");
-            Object[] arr2 = one.files().toArray();
-            err.log(i + " checking results");
-            
-            assertEquals("Round " + i + " To is empty: " + Arrays.asList(to1), 0, to1.length);
-            assertEquals("Round " + i + " From has one:" + Arrays.asList(from1), 1, from1.length);
-            assertEquals("Round " + i + " One has two files" + Arrays.asList(arr1), 2, arr1.length);
-            
-            assertEquals("Round " + i + " From is empty after move: " + Arrays.asList(from2), 0, from2.length);
-            assertEquals("Round " + i + " To has one:" + Arrays.asList(to2), 1, to2.length);
-            assertEquals("Round " + i + " One still has two files" + Arrays.asList(arr1), 2, arr1.length);
-            
-            err.log(i + " moving back");
-            one.move(from);
-            err.log(i + " end of cycle");
-        }
-    }
-
-    public void testConsistencyWithABitOfAsynchronicity() throws Exception {
-        err.log(" getting children of to");
-        DataObject[] to1 = to.getChildren();
-        err.log(" getting children of from");
-        DataObject[] from1 = from.getChildren();
         
-        
-        for (int i = 0; i < 10; i++) {
-            err.log(i + " getting files of object1");
-            Object[] arr1 = one.files().toArray();
-            err.log(i + " moving the object");
-            one.move(to);
-            Object[] arr2 = one.files().toArray();
-            err.log(i + " checking results");
-            
-            assertEquals("Round " + i + " One has two files" + Arrays.asList(arr1), 2, arr1.length);
-            
-            assertEquals("Round " + i + " One still has two files" + Arrays.asList(arr1), 2, arr1.length);
-            
-            err.log(i + " moving back");
-            one.move(from);
-            err.log(i + " end of cycle");
-        }
-    }
-
-    public void testConsistencyWithABitOfAsynchronicityAndNoObservationsThatWouldMangeTheState() throws Exception {
-        err.log(" getting children of to");
-        DataObject[] to1 = to.getChildren();
-        err.log(" getting children of from");
-        DataObject[] from1 = from.getChildren();
-        
-        
-        for (int i = 0; i < 10; i++) {
-            err.log(i + " moving the object");
-            one.move(to);
-            err.log(i + " moving back");
-            one.move(from);
-            err.log(i + " end of cycle");
-        }
-    }
-    
     public void testConsistencyWithContinuousQueryingForDeletedFiles() throws Exception {
-        err.log(" getting children of to");
+        err.info(" getting children of to");
         DataObject[] to1 = to.getChildren();
-        err.log(" getting children of from");
+        err.info(" getting children of from");
         DataObject[] from1 = from.getChildren();
         
         class Queri extends Thread 
         implements FileChangeListener, DataLoader.RecognizedFiles, PropertyChangeListener {
-            public boolean stop;
+            public volatile boolean stop;
             private List deleted = Collections.synchronizedList(new ArrayList());
             public Exception problem;
             
@@ -219,12 +147,12 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
                 while(!stop) {
                     FileObject[] arr = (FileObject[]) deleted.toArray(new FileObject[0]);
                     DataLoader loader = SimpleLoader.getLoader(SimpleLoader.class);
-                    err.log("Next round");
+                    err.info("Next round, for " + arr.length);
                     for (int i = 0; i < arr.length; i++) {
                         try {
-                            err.log("Checking " + arr[i]);
+                            err.info("Checking " + arr[i]);
                             DataObject x = loader.findDataObject(arr[i], this);
-                            err.log("  has dobj: " + x);
+                            err.info("  has dobj: " + x);
                         } catch (IOException ex) {
                             if (problem == null) {
                                 problem = ex;
@@ -252,17 +180,20 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         que.start();
         try {
             for (int i = 0; i < 10; i++) {
-                err.log(i + " moving the object");
+                err.info(i + " moving the object");
                 one.move(to);
-                err.log(i + " moving back");
+                err.info(i + " moving back");
                 one.move(from);
-                err.log(i + " end of cycle");
+                err.info(i + " end of cycle");
             }
         } finally {
             que.stop = true;
+            err.info("stopping the que");
         }
         
-        que.join();
+        err.info("waiting for join");
+        que.join(10000);
+        err.info("joined");
         if (que.problem != null) {
             throw que.problem;
         }
@@ -270,23 +201,6 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         assertEquals("Fourty deleted files:" + que.deleted, 40, que.deleted.size());
     }
 
-    public void testAdditionsToCookieSetAreVisibleInLookup() throws Exception {
-        assertTrue(this.one instanceof SimpleObject);
-        SimpleObject s = (SimpleObject)this.one;
-        
-        class Open implements OpenCookie {
-            public void open() {
-            }
-        }
-        Open openCookie = new Open();
-        
-        
-        s.getCookieSet().add(openCookie);
-        
-        assertSame("Cookie is in the lookup", openCookie, one.getLookup().lookup(OpenCookie.class));
-    }
-
-    
     public static final class Pool extends DataLoaderPool {
         protected Enumeration loaders() {
             return Enumerations.singleton(SimpleLoader.getLoader(SimpleLoader.class));

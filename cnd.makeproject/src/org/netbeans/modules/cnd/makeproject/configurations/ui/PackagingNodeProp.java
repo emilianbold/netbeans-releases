@@ -75,7 +75,9 @@ public class PackagingNodeProp extends PropertySupport {
     }
     
     public void setValue(Object v) {
-        packagingConfiguration = (PackagingConfiguration) v; // FIXUP
+        if (v != null) {
+            packagingConfiguration = (PackagingConfiguration) v; // FIXUP
+        }
     }
     
 //    public void restoreDefaultValue() {

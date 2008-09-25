@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -18,7 +20,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="expressionsPane" pref="506" max="32767" attributes="2"/>
+                          <Component id="expressionsPane" pref="508" max="32767" attributes="2"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="tableLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="270" max="-2" attributes="0"/>
@@ -37,7 +39,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="resetButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="warningLabel" pref="499" max="32767" attributes="0"/>
+                      <Component id="warningLabel" pref="501" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -64,7 +66,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="downButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="expressionsPane" alignment="0" pref="204" max="32767" attributes="2"/>
+                  <Component id="expressionsPane" alignment="0" pref="220" max="32767" attributes="2"/>
               </Group>
               <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
@@ -162,11 +164,6 @@
       </AuxValues>
     </Component>
     <Container class="javax.swing.JScrollPane" name="expressionsPane">
-      <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
-      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>

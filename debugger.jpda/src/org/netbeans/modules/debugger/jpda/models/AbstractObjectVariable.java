@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.CharValue;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.IntegerValue;
 import com.sun.jdi.Method;
@@ -224,7 +225,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         if (to != 0) {
             to = Math.min(staticFields.length, to);
             from = Math.min(staticFields.length, from);
-            FieldVariable[] fv = new FieldVariable [to - from];
+            Field[] fv = new Field[to - from];
             System.arraycopy (staticFields, from, fv, 0, to - from);
             return fv;
         }
@@ -247,7 +248,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         if (to != 0) {
             to = Math.min(inheritedFields.length, to);
             from = Math.min(inheritedFields.length, from);
-            FieldVariable[] fv = new FieldVariable [to - from];
+            Field[] fv = new Field[to - from];
             System.arraycopy (inheritedFields, from, fv, 0, to - from);
             return fv;
         }
@@ -583,14 +584,14 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         Type type;
         if (value != null) {
             try {
-                type = getInnerValue ().type ();
+                type = value.type ();
             } catch (ObjectCollectedException ocex) {
                 type = null;
             }
         } else {
             type = null;
         }
-        if ( !(getInnerValue() instanceof ObjectReference) || 
+        if ( !(value instanceof ObjectReference) ||
              !(type instanceof ReferenceType)
         ) {
             this.fields = new Field [0];
@@ -598,7 +599,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             this.inheritedFields = new Field [0];
         } else {
             try {
-                ObjectReference or = (ObjectReference) this.getInnerValue();
+                ObjectReference or = (ObjectReference) value;
                 ReferenceType rt = (ReferenceType) type;
                 if (or instanceof ArrayReference) {
                     this.fields = getFieldsOfArray (
@@ -737,7 +738,12 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 return new AbstractList<ObjectVariable>() {
                     public ObjectVariable get(int i) {
                         ObjectReference obj = referrers.get(i);
-                        return new AbstractObjectVariable(getDebugger(), obj, name+" referrer "+i);
+                        if (obj instanceof ClassObjectReference) {
+                            ClassObjectReference clobj = (ClassObjectReference) obj;
+                            return new ClassVariableImpl(getDebugger(), clobj, name+" referrer "+i);
+                        } else {
+                            return new AbstractObjectVariable(getDebugger(), obj, name+" referrer "+i);
+                        }
                     }
 
                     public int size() {

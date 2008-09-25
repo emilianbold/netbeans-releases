@@ -33,7 +33,7 @@
     <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
 
     <loadresource property="glassfish.v3.build.number">
-          <url url="${glassfish.v3.location.prefix}/prelude/b20/bundles"/>
+          <url url="${glassfish.v3.location.prefix}/prelude/latest/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
@@ -54,6 +54,10 @@
     <property name="openesb.version" value="v2"/>
     <property name="openesb_location" value="${openesb_builds_host}/kits/ojc/openesb_as9_ur2/latest/installers/jbi_components_installer.jar"/>
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
+
+    <!-- JavaFX Properties -->
+    <property name="javafx_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/main/contrib/zips/javafx-cluster-mac.zip"/>
+
 
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 

@@ -223,6 +223,22 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#145148: forward class declaration is not replaced by real declaration in some cases
         performTest("child_ns.cc", 18, 16, "child_ns.cc", 15, 20);
     }
+    
+    
+    public void testChildNamespaces3() throws Exception {
+        // IZ 145142 : unable to resolve declaration imported from child namespace
+        performTest("child_ns.cc", 38, 17, "child_ns.cc", 30, 5);
+        performTest("child_ns.cc", 39, 17, "child_ns.cc", 30, 5);
+        performTest("child_ns.cc", 40, 17, "child_ns.cc", 25, 5);
+        performTest("child_ns.cc", 41, 17, "child_ns.cc", 25, 5);
+
+        performTest("child_ns.cc", 55, 23, "child_ns.cc", 50, 9);
+    }
+    
+    public void testIZ145071() throws Exception {
+        // IZ#145071 : forward declarations marked as error
+        performTest("IZ145071.cc", 3, 21, "IZ145071.cc", 3, 5);
+    }
 
     public static class Failed extends HyperlinkBaseTestCase {
 

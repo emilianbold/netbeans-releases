@@ -77,7 +77,7 @@ public class TypesNode extends WSDLElementNode<Types> {
     protected Types mWSDLConstruct;
 
     public TypesNode(Types wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<Types>(wsdlConstruct), wsdlConstruct, new TypesNewTypesFactory());
+        super(wsdlConstruct, new TypesNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
 
         this.setDisplayName(NbBundle.getMessage(TypesNode.class, "TYPES_NODE_NAME"));

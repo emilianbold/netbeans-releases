@@ -39,19 +39,36 @@
     <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">                
 	<!-- Do not change the order of the scripts-->
-        <script type="text/javascript" src="js/common.js"></script>
-	<script type="text/javascript" src="js/languages.js"></script>
-	<script type="text/javascript">load_js_locale("js/common_strings",".js")</script>
-        <script type="text/javascript">load_js_locale("js/download_strings",".js")</script>
-        <script type="text/javascript" src="js/files.js"></script>
-        <script type="text/javascript" src="js/download.js"></script>
-        <script type="text/javascript" src="js/build_info.js"></script>
-        <script type="text/javascript">load_js_locale("js/components",".js")</script>
+	<script type="text/javascript">
+
+		var PAGE_ARTIFACTS_LOCATION = "";
+
+	</script>
+
+	<script type="text/javascript">
+
+		var JS_LOCATION  = PAGE_ARTIFACTS_LOCATION + "js/";
+		var IMG_LOCATION = PAGE_ARTIFACTS_LOCATION + "img/";
+		var CSS_LOCATION = PAGE_ARTIFACTS_LOCATION + "css/";
+
+		function load_page_js(script_filename) {
+		    document.write('<' + 'script ' + 'language="javascript" type="text/javascript" src="' + JS_LOCATION + script_filename + '"><' + '/' + 'script' + '>');
+		}
+	</script>
+
+        <script type="text/javascript">load_page_js("common.js")</script>
+	<script type="text/javascript">load_page_js("languages.js")</script>
+	<script type="text/javascript">load_page_js_locale("common_strings",".js")</script>
+        <script type="text/javascript">load_page_js_locale("download_strings",".js")</script>
+        <script type="text/javascript">load_page_js("files.js")</script>
+        <script type="text/javascript">load_page_js("download.js")</script>
+        <script type="text/javascript">load_page_js("build_info.js")</script>
+        <script type="text/javascript">load_page_js_locale("components",".js")</script>
         <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_PAGE_TITLE.replace('{0}',BUILD_DISPLAY_VERSION))</script>
         <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_PAGE_DESCRIPTION.replace('{0}',BUILD_DISPLAY_VERSION))</script>
 
         <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
-        <link rel="stylesheet" type="text/css" href="css/download.css" media="screen"/>
+        <script type="text/javascript">load_page_css("download.css")</script>
 	<link rel="shortcut icon" href="http://www.netbeans.org/favicon.ico" type="image/x-icon"/>
     </head>
     
@@ -203,11 +220,19 @@
 							</span>
                           		            </p>
 			                            <p style="width: 95%">							                                
-                                          		<script type="text/javascript">message(SOURCE_BINARY_LABEL.replace("{0}",BINARIES_LOCATION))</script>
+                                          		<script type="text/javascript">message(SOURCE_BINARY_LABEL.replace("{0}",SOURCES_AND_BINARIES_URL))</script>
 							<script type="text/javascript">message(BUILD_WIKI_LABEL.replace("{0}",INSTALL_NOTES_LINK))</script>                                
                           		            </p>
                           	        	</div>
 					</td>
+				    </tr>
+				    <tr>
+						<td width="10px" style="vertical-align:top;">
+							<div id="community_number"><br></div>
+						</td>
+						<td>
+							<div id="community_message"></div>
+						</td>
 				    </tr>
 				    </table>
 				</td>

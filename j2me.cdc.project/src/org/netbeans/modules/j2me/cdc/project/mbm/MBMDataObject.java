@@ -68,6 +68,7 @@ import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -115,6 +116,10 @@ public class MBMDataObject extends MultiDataObject implements CookieSet.Factory 
         return new ImageNode(this);
     }
     
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
     
     /** Node representing <code>ImageDataObject</code>. */
     private static final class ImageNode extends DataNode {

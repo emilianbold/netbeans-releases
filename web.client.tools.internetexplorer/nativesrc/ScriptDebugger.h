@@ -43,6 +43,7 @@
 #include "NetBeansExtension.h"
 #include "Breakpoint.h"
 #include "DbgpConnection.h"
+#include "DebugDocument.h"
 #include <map>
 
 using namespace std;
@@ -50,6 +51,7 @@ using namespace std;
 class DbgpConnection;
 class BreakpointManager;
 class Breakpoint;
+class DebugDocument;
 
 struct StackFrame {
     tstring fileName;
@@ -138,6 +140,7 @@ static const unsigned int SUSPEND_ON_FIRSTLINE = STEP_FILTERS_ENABLED << 1;
 static const unsigned int SUSPEND_ON_EXCEPTIONS = SUSPEND_ON_FIRSTLINE << 1;
 static const unsigned int SUSPEND_ON_ERRORS = SUSPEND_ON_EXCEPTIONS << 1;
 static const unsigned int SUSPEND_ON_DEBUGGER_KEYWORD = SUSPEND_ON_ERRORS << 1;
+static const unsigned int IGNORE_QUERY_STRINGS = SUSPEND_ON_DEBUGGER_KEYWORD << 1;
 
 // ScriptDebugger
 class ATL_NO_VTABLE ScriptDebugger :
@@ -211,6 +214,9 @@ public:
     BOOL setBreakpoint(Breakpoint *pBreakpoint) {
         return setBreakpoint(pBreakpoint, false);
     }
+   BOOL setBreakpoint(Breakpoint *pBreakpoint, tstring fileURI) {
+        return setBreakpoint(pBreakpoint, fileURI, false);
+    }
     BOOL removeBreakpoint(Breakpoint *pBreakpoint) {
         return setBreakpoint(pBreakpoint, true);
     }
@@ -277,7 +283,7 @@ private:
     //CComPtr<IConnectionPoint> m_spDebugAppNodeEventsConnectionPoint;
     DWORD m_dwDebugAppNodeEventsCookie;
     BreakpointManager *m_pBreakpointMgr;
-    map<tstring, DWORD> debugDocumentsMap;
+    map<tstring, DebugDocument *> debugDocumentsMap;
     BOOL isDocumentReady(IDebugDocument *pDebugDocument);
     DbgpConnection *m_pDbgpConnection;
     void getTopStackFrame(IRemoteDebugApplicationThread *pDebugAppThread, StackFrame *pStackFrame);
@@ -295,6 +301,7 @@ private:
     IDebugExpression *getDebugExpression(tstring expression, int stackDepth);
     tstring getObjectType(tstring fullName, int stackDepth);
     BOOL setBreakpoint(Breakpoint *pBreakpoint, BOOL remove);
+    BOOL setBreakpoint(Breakpoint *pBreakpoint, tstring fileURI, BOOL remove);
     BOOL handleBreakpoint(StackFrame frame);
     BOOL breakRequested;
     BOOL documentLoaded;
@@ -302,5 +309,7 @@ private:
     Breakpoint *m_pCurrentBreakpoint;
     unsigned int featureSet;
     static BOOL alreadyStoppedOnFirstLine;
+    DWORD registerForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, CComObject<DebugDocument> *pDebugDoc);
+    void unregisterForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, DWORD cookie);
 };
 

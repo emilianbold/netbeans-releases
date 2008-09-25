@@ -89,7 +89,7 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
         descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
         descTextArea.setForeground(new java.awt.Color(102, 102, 153));
         descTextArea.setLineWrap(true);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/tools/generator/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/tools/java/generator/Bundle"); // NOI18N
         descTextArea.setText(bundle.getString("DESC_saxw_versions")); // NOI18N
         descTextArea.setWrapStyleWord(true);
         descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));

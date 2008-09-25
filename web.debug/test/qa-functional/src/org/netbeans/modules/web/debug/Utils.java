@@ -347,7 +347,7 @@ public class Utils {
         long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
         // increase time to wait to 240 second
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
-        String title = "Client Side Debugging";
+        String title = "Client Side JavaScript Debugging";
         long time = System.currentTimeMillis();
         JDialog dialog = null;
         while ((System.currentTimeMillis() - 120000 < time) && dialog == null) {
@@ -362,7 +362,7 @@ public class Utils {
             // wait for dialog
             NbDialogOperator dialogOperator = new NbDialogOperator(dialog);
             // turn of client-side debugging
-            new JCheckBoxOperator(dialogOperator, "Enable Client-Side Debugging").setSelected(false);
+            new JCheckBoxOperator(dialogOperator, "Enable Client-Side JavaScript Debugging").setSelected(false);
             String doNotShowTitle = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.client.tools.impl.Bundle", "DO_NOT_SHOW_AGAIN");
             // choose don't display this message again
             new JCheckBoxOperator(dialogOperator, doNotShowTitle).setSelected(true);

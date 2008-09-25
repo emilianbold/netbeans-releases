@@ -123,8 +123,9 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             return false;
         }
         Node n = nodes.iterator().next();
-        if (n.getLookup().lookup(TreePathHandle.class) != null) {
-            return true;
+        TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
@@ -190,8 +191,9 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             return false;
         }
         Node n = nodes.iterator().next();
-        if (n.getLookup().lookup(TreePathHandle.class) != null) {
-            return true;
+        TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
@@ -261,8 +263,9 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             return false;
         }
         Node n = nodes.iterator().next();
-        if (n.getLookup().lookup(TreePathHandle.class) != null) {
-            return true;
+        TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
@@ -331,8 +334,9 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             return false;
         }
         Node n = nodes.iterator().next();
-        if (n.getLookup().lookup(TreePathHandle.class) != null) {
-            return true;
+        TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
@@ -351,8 +355,9 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         if(nodes.size() != 1)
             return false;
         Node node = nodes.iterator().next();
-        if (node.getLookup().lookup(TreePathHandle.class) != null) {
-            return true;
+        TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
@@ -392,8 +397,9 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         if(nodes.size() != 1)
             return false;
         Node node = nodes.iterator().next();
-        if (node.getLookup().lookup(TreePathHandle.class) != null) {
-            return true;
+        TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
@@ -448,8 +454,9 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         if(nodes.size() != 1)
             return false;
         Node node = nodes.iterator().next();
-        if (node.getLookup().lookup(TreePathHandle.class) != null) {
-            return true;
+        TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
@@ -515,8 +522,9 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             return false;
         }
         Node n = nodes.iterator().next();
-        if (n.getLookup().lookup(TreePathHandle.class) != null) {
-            return true;
+        TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {

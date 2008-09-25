@@ -178,13 +178,10 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
         }
         if (event.isSuspensionType() || event.isExceptionType()) {
             String path = event.getFilePath();
-            // HACK, do not try to step into the 'eval-code'. Cf. #106115.
+            // HACK, do not try to trace the 'eval-code'. Cf. #106115, #146894
             if ("(eval)".equals(path)) { // NOI18N
-                try {
-                    event.getRubyThread().stepReturn();
-                } catch (RubyDebuggerException e) {
-                    Util.severe(e);
-                }
+                rubySession.stepOver(true);
+                ContextProviderWrapper.getSessionsModel().fireChanges();
                 backEndSemaphore.release();
                 return;
             }

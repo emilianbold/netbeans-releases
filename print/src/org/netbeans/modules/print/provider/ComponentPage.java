@@ -53,36 +53,33 @@ import org.netbeans.spi.print.PrintPage;
  */
 final class ComponentPage implements PrintPage {
 
-  ComponentPage (JComponent component, Rectangle piece, double zoom, int row, int column) {
-    myComponent = component;
-    myPiece = piece;
-    myZoom = zoom;
-    myRow = row;
-    myColumn = column;
-  }
+    ComponentPage(JComponent component, Rectangle piece, double zoom, int row, int column) {
+        myComponent = component;
+        myPiece = piece;
+        myZoom = zoom;
+        myRow = row;
+        myColumn = column;
+    }
 
-  int getRow() {
-    return myRow;
-  }
+    int getRow() {
+        return myRow;
+    }
 
-  int getColumn() {
-    return myColumn;
-  }
+    int getColumn() {
+        return myColumn;
+    }
 
-  public void print(Graphics graphics) {
-    Graphics2D g = (Graphics2D)graphics.create(0, 0, myPiece.width, myPiece.height);
+    public void print(Graphics graphics) {
+        Graphics2D g = (Graphics2D) graphics.create(0, 0, myPiece.width, myPiece.height);
+        g.translate(-myPiece.x, -myPiece.y);
+        g.scale(myZoom, myZoom);
+        myComponent.print(g);
+        g.dispose();
+    }
 
-    g.translate(-myPiece.x, -myPiece.y);
-    g.scale(myZoom, myZoom);
-
-    myComponent.print(g);
-
-    g.dispose();
-  }
-
-  private int myRow;
-  private int myColumn;
-  private double myZoom;
-  private JComponent myComponent;
-  private Rectangle myPiece;
+    private int myRow;
+    private int myColumn;
+    private double myZoom;
+    private Rectangle myPiece;
+    private JComponent myComponent;
 }

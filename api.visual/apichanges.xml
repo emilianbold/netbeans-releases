@@ -712,12 +712,32 @@ made subject to such option by the copyright holder.
             <author login="dkaspar"/>
             <compatibility addition="yes"/>
             <description>
-                 <a href="@TOP@/org/netbeans/api/visual/action/InplaceEditorProvider.TypedEditorController.html">InplaceEditorProvider.TypedEditorController</a>
+                 <a href="@TOP@/org/netbeans/api/visual/action/InplaceEditorProvider.TypedEditorController.html"><code>InplaceEditorProvider.TypedEditorController</code></a>
                 contains <code>getEditorInvocationType()</code> which returns <a href="@TOP@/org/netbeans/api/visual/action/InplaceEditorProvider.EditorInvocationType.html">invocation type</a>  
                 (<code>MOUSE</code>, <code>KEY</code>, <code>CODE</code>).
             </description>
             <class package="org.netbeans.api.visual.action" name="InplaceEditorProvider" link="yes"/>
             <issue number="144123"/>
+        </change>
+        <change>
+            <api name="general"/>
+            <summary>Support for contiguous selection action added (factory method+provider+event)</summary>
+            <version major="2" minor="17"/>
+            <date day="7" month="9" year="2008"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                <a href="@TOP@/org/netbeans/api/visual/action/ActionFactory.html#createContiguousSelectAction(org.netbeans.api.visual.action.ContiguousSelectProvider)">
+                    <code>ActionFactory.createContiguousSelectAction</code></a> creates contiguous selection action.
+                <a href="@TOP@/org/netbeans/api/visual/action/ContiguousSelectProvider.html"><code>ContiguousSelectProvider</code></a>
+                provides logic for selection action. 
+                <a href="@TOP@/org/netbeans/api/visual/action/ContiguousSelectEvent.html"><code>ContiguousSelectEvent</code></a>
+                is an event for <code>ContiguousSelectProvider</code>.
+            </description>
+            <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
+            <class package="org.netbeans.api.visual.action" name="ContiguousSelectProvider" link="yes"/>
+            <class package="org.netbeans.api.visual.action" name="ContiguousSelectEvent" link="yes"/>
+            <issue number="144139"/>
         </change>
     </changes>
 

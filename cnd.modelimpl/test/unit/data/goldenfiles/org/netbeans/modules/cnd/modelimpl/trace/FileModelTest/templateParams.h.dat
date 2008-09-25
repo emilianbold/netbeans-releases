@@ -93,6 +93,19 @@ FUNCTION DEFINITION parse_dot  [54:1/1361-58:2/1508] FunctionDDImpl SCOPE: $Glob
         STATEMENT RETURN  [57:5/1477-57:34/1506] SCOPE: Stmt  [56:27/1471-58:2/1508] text: 'return ch_p('.').parse(scan);'
 TYPEDEF null_tl  [60:1/1510-60:40/1549] TYPE: $unresolved$::MakeTypelist::Result TEXT=MakeTypelist::Result  [60:9/1518-60:31/1540] SCOPE: $Global$ 
 TYPEDEF ClassList  [62:1/1551-66:19/1612] TYPE: $unresolved$::Loki::Seq::Type TEXT=Loki::Seq::Type  [62:9/1559-66:8/1601] SCOPE: $Global$ 
+ENUM level_type [69:1/1675-71:2/1707] SCOPE: $Global$ 
+    ONE
+    TWO
+FUNCTION DEFINITION compr  [73:1/1710-77:2/1816] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE compr<class,class>(T,level_type)
+    UNIQUE NAME f:compr<class,class>(T,level_type)
+    DECLARATION: compr  [73:1/1710-77:2/1816]
+    PARAMETERS:
+        t [74:19/1765-74:22/1768]  TYPE: compr::T TEXT=T  [74:19/1765-74:20/1766]  INIT: null  SCOPE: compr 
+        l [74:24/1770-74:41/1787]  TYPE: level_type TEXT=level_type  [74:29/1775-74:39/1785]  INIT: null  SCOPE: compr 
+    RETURNS bool TEXT=bool  [74:8/1754-74:12/1758]
+    STATEMENT COMPOUND  [75:1/1789-77:2/1816] SCOPE: compr 
+        STATEMENT RETURN  [76:5/1795-76:24/1814] SCOPE: Stmt  [75:1/1789-77:2/1816] text: 'return t >= (int)l;'
 
 ========== Dumping model of PROJECT DummyProject
 CLASS OrderedStatic<class,class,Loki::NullType> (OrderedStatic<class,class,Loki::NullType> ) [1:1/0-19:6/625] lcurly=148 SCOPE: $Global$ 
@@ -175,4 +188,17 @@ FUNCTION DEFINITION parse_dot  [54:1/1361-58:2/1508] FunctionDDImpl SCOPE: $Glob
         STATEMENT RETURN  [57:5/1477-57:34/1506] SCOPE: Stmt  [56:27/1471-58:2/1508] text: 'return ch_p('.').parse(scan);'
 TYPEDEF null_tl  [60:1/1510-60:40/1549] TYPE: $unresolved$::MakeTypelist::Result TEXT=MakeTypelist::Result  [60:9/1518-60:31/1540] SCOPE: $Global$ 
 TYPEDEF ClassList  [62:1/1551-66:19/1612] TYPE: $unresolved$::Loki::Seq::Type TEXT=Loki::Seq::Type  [62:9/1559-66:8/1601] SCOPE: $Global$ 
+ENUM level_type [69:1/1675-71:2/1707] SCOPE: $Global$ 
+    ONE
+    TWO
+FUNCTION DEFINITION compr  [73:1/1710-77:2/1816] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE compr<class,class>(T,level_type)
+    UNIQUE NAME f:compr<class,class>(T,level_type)
+    DECLARATION: compr  [73:1/1710-77:2/1816]
+    PARAMETERS:
+        t [74:19/1765-74:22/1768]  TYPE: compr::T TEXT=T  [74:19/1765-74:20/1766]  INIT: null  SCOPE: compr 
+        l [74:24/1770-74:41/1787]  TYPE: level_type TEXT=level_type  [74:29/1775-74:39/1785]  INIT: null  SCOPE: compr 
+    RETURNS bool TEXT=bool  [74:8/1754-74:12/1758]
+    STATEMENT COMPOUND  [75:1/1789-77:2/1816] SCOPE: compr 
+        STATEMENT RETURN  [76:5/1795-76:24/1814] SCOPE: Stmt  [75:1/1789-77:2/1816] text: 'return t >= (int)l;'
 

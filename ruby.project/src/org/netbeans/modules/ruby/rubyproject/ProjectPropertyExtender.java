@@ -58,6 +58,7 @@ import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
  * This shoudl be renamed ClassPathSupport again
  */
 public class ProjectPropertyExtender {
+    
     private PropertyEvaluator evaluator;
     private ReferenceHelper referenceHelper;
     private RakeProjectHelper antProjectHelper;
@@ -407,12 +408,11 @@ public class ProjectPropertyExtender {
 
         }
 
-        String[] items = new String[ result.size() ];
-        for( int i = 0; i < result.size(); i++) {
-            if ( i < result.size() - 1 ) {
-                items[i] = result.get( i ) + ":";
-            }
-            else  {       
+        String[] items = new String[result.size()];
+        for (int i = 0; i < result.size(); i++) {
+            if (i < result.size() - 1) {
+                items[i] = result.get(i) + System.getProperty("path.separator"); // NOI18N
+            } else {
                 items[i] = result.get(i);
             }
         }

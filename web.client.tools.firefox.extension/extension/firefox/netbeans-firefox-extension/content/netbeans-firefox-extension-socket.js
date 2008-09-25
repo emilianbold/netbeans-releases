@@ -67,6 +67,7 @@
         socket.transport = transport;
         socket.output = outstream;
         socket.input = stream;
+        socket.consoleService = NetBeans.Logger.getLogger();
 
         socket.close = function() {
             if (this.closed) {
@@ -179,8 +180,21 @@
                     } catch(exc) {
                         // TODO Use Components.results.NS_BASE_STREAM_CLOSED
                         if ( exc.result != 0x80470002) {
+                            try {
+                                NetBeans.Logger.logMessage("Unexpected socket failure:");
+                                NetBeans.Logger.logException(exc);
+                            } catch (exc) {
+                                if (socket && socket.consoleService && socket.consoleService.logStringMessage) {
+                                    socket.consoleService.logStringMessage("Unexpected socket failure:");
+                                    socket.consoleService.logStringMessage(exc.toString());
+                                    if (exc.stack) {
+                                        socket.consoleService.logStringMessage(exc.stack);
+                                    }
+                                }
+                            }
                             astream.closeWithStatus(exc.result);
                         }
+                        
                         this.onStopRequest();
                         return;
                     }

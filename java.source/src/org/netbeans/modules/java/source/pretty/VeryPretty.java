@@ -495,6 +495,7 @@ public final class VeryPretty extends JCTree.Visitor {
                                     break;
                                 }
                             case WRAP_ALWAYS:
+                                newline();
                                 toColExactly(out.leftMargin);
                                 break;
                             case WRAP_NEVER:
@@ -625,6 +626,9 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public void printVarInit(JCVariableDecl tree) {
+        int col = out.col;
+        if (!ERROR.contentEquals(tree.name))
+            col -= tree.name.len;
         if (cs.spaceAroundAssignOps())
             print(' ');
         print('=');
@@ -637,7 +641,8 @@ public final class VeryPretty extends JCTree.Visitor {
                 break;
             }
         case WRAP_ALWAYS:
-            toColExactly(out.leftMargin + cs.getContinuationIndentSize());
+            newline();
+            toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
             break;
         case WRAP_NEVER:
             if(cs.spaceAroundAssignOps())
@@ -721,6 +726,7 @@ public final class VeryPretty extends JCTree.Visitor {
                     break;
                 }
             case WRAP_ALWAYS:
+                newline();
                 toColExactly(cs.alignMultilineFor() ? col : out.leftMargin + cs.getContinuationIndentSize());
                 break;
             case WRAP_NEVER:
@@ -741,6 +747,7 @@ public final class VeryPretty extends JCTree.Visitor {
                     break;
                 }
             case WRAP_ALWAYS:
+                newline();
                 toColExactly(cs.alignMultilineFor() ? col : out.leftMargin + cs.getContinuationIndentSize());
                 break;
             case WRAP_NEVER:
@@ -877,6 +884,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 break;
             }
         case WRAP_ALWAYS:
+            newline();
             toColExactly(out.leftMargin + cs.getContinuationIndentSize());
             break;
         case WRAP_NEVER:
@@ -895,6 +903,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 break;
             }
         case WRAP_ALWAYS:
+            newline();
             toColExactly(out.leftMargin + cs.getContinuationIndentSize());
             break;
         case WRAP_NEVER:
@@ -995,6 +1004,7 @@ public final class VeryPretty extends JCTree.Visitor {
                     break;
                 }
             case WRAP_ALWAYS:
+                newline();
                 toColExactly(out.leftMargin + cs.getContinuationIndentSize());
                 break;
             case WRAP_NEVER:
@@ -1026,6 +1036,7 @@ public final class VeryPretty extends JCTree.Visitor {
                     if (estWidth + out.col <= rm)
                         break;
                 case WRAP_ALWAYS:
+                    newline();
                     toColExactly(out.leftMargin + cs.getContinuationIndentSize());
                     break;
                 }
@@ -1135,6 +1146,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 break;
             }
         case WRAP_ALWAYS:
+            newline();
             toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
             break;
         case WRAP_NEVER:
@@ -1162,6 +1174,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 break;
             }
         case WRAP_ALWAYS:
+            newline();
             toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
             break;
         case WRAP_NEVER:
@@ -1215,6 +1228,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 break;
             }
         case WRAP_ALWAYS:
+            newline();
             toColExactly(cs.alignMultilineBinaryOp() ? col : out.leftMargin + cs.getContinuationIndentSize());
             break;
         case WRAP_NEVER:
@@ -1489,6 +1503,7 @@ public final class VeryPretty extends JCTree.Visitor {
                         break;
                     }
                 case WRAP_ALWAYS:
+                    newline();
                     toColExactly(out.leftMargin);
                     break;
                 case WRAP_NEVER:
@@ -2039,11 +2054,12 @@ public final class VeryPretty extends JCTree.Visitor {
     private void wrap(String s, WrapStyle wrapStyle) {
         switch(wrapStyle) {
         case WRAP_IF_LONG:
-            if (s.length() + out.col + 1 <= cs.getRightMargin()) {
+            if (s.length() + out.col <= cs.getRightMargin()) {
                 print(' ');
                 break;
             }
         case WRAP_ALWAYS:
+            newline();
             toColExactly(out.leftMargin + cs.getContinuationIndentSize());
             break;
         case WRAP_NEVER:
@@ -2067,6 +2083,7 @@ public final class VeryPretty extends JCTree.Visitor {
                         break;
                     }
                 case WRAP_ALWAYS:
+                    newline();
                     toColExactly(wrapIndent);
                     break;
                 case WRAP_NEVER:

@@ -166,15 +166,12 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             final JPDADebugger fDebugger = debugger;
             Task t = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    final HeapFragmentWalker hfw;
-                    synchronized (this) {
-                        Heap heap = new HeapImpl(fDebugger);
-                        hfw = new DebuggerHeapFragmentWalker(heap);
-                    }
+                    Heap heap = new HeapImpl(fDebugger);
+                    final HeapFragmentWalker hfw = new DebuggerHeapFragmentWalker(heap);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             ClassesController cc;
-                            synchronized (this) {
+                            synchronized (ClassesCountsView.this) {
                                 ClassesCountsView.this.hfw = hfw;
                                 cc = hfw.getClassesController();
                                 content = cc.getPanel();

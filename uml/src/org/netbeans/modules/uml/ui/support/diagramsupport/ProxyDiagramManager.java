@@ -221,6 +221,12 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                         FileObject parentFolder = diagFO.getParent(); 
                         String fileNameWithoutExt = diagFO.getName(); 
                         FileObject destFolderFO = FileUtil.createFolder(parentFolder, "DiagramBackup");
+
+                        FileObject destFO = destFolderFO.getFileObject(fileNameWithoutExt, diagFO.getExt());
+                        if (destFO != null) 
+                        {
+                            destFO.delete();
+                        }
                         
                         //move diagram file to backupp folder
                         FileUtil.copyFile(diagFO, destFolderFO, fileNameWithoutExt);

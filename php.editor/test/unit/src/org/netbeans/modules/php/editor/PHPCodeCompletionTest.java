@@ -162,6 +162,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test145692() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145692.php", "echo $test145692Instance->tst->t^", false);
     }
+    
+    public void test147055() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147055.php", "$test147055->^", false);
+    }
 
     public void test145206_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145206.php", "echo TestIssue145206 :: ^", false);
@@ -180,6 +184,11 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue145206.php",
                 "echo TestIssue145206 :: createStatic()->create() ->create() -> c^", false);
     }
+    
+    public void test146187() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue146187.php",
+                "echo $tst->^", false);
+    }
 
     /* TEMPORARILY DISABLED
     public void test136744_1() throws Exception {
@@ -196,6 +205,14 @@ public class PHPCodeCompletionTest extends PHPTestBase {
 
     public void test144830() throws Exception {
         checkCompletion("testfiles/completion/lib/issue144830.php", "$this->^", false);
+    }
+    
+    public void test147883() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147883.php", "echo $a->^", false);
+    }
+    
+    public void test142919() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142919.php", "echo $param^", false);
     }
 
     public void test136744_4() throws Exception {
@@ -351,6 +368,15 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testInsideClass_8() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass.php", "InsideClass::^", false);
     }
+    public void testInsideClass_9() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass3.php", "func^", false);
+    }
+    public void testInsideClass_10() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass3.php", "privat^", false);
+    }
+    public void testInsideClass_11() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass3.php", "cons^", false);
+    }
     public void testInsideClassAdv() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass2.php", "$this->^", false);
     }
@@ -448,11 +474,20 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testVarAssignment_22() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$self1->^", false);
     }
+    public void testVarAssignment_23() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$aParam4->^", false);
+    }
+    public void testVarAssignment_24() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$cParam5->^", false);
+    }
     public void testUnknown() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$unknown->aCreate^", false);
     }
     public void test145835() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment2.php", "$cVarAdvancedTest->^", false);
+    }
+    public void test147427() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147427.php", "$currentUser = System147427::$userInfo->^", false);
     }
     public void testTypeInCatch() throws Exception {
         checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vCatch->^", false);

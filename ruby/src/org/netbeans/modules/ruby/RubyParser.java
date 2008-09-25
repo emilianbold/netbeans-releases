@@ -69,6 +69,7 @@ import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
 import org.openide.filesystems.FileObject;
@@ -186,7 +187,7 @@ public final class RubyParser implements Parser {
 
         if (sanitizing == Sanitize.BLOCK_START) {
             try {
-                int start = RubyUtils.getRowFirstNonWhite(doc, offset);
+                int start = GsfUtilities.getRowFirstNonWhite(doc, offset);
                 if (start != -1 && 
                         start+2 < doc.length() &&
                         doc.regionMatches(start, "if", 0, 2)) {
@@ -223,21 +224,21 @@ public final class RubyParser implements Parser {
         
         try {
             // Sometimes the offset shows up on the next line
-            if (RubyUtils.isRowEmpty(doc, offset) || RubyUtils.isRowWhite(doc, offset)) {
-                offset = RubyUtils.getRowStart(doc, offset)-1;
+            if (GsfUtilities.isRowEmpty(doc, offset) || GsfUtilities.isRowWhite(doc, offset)) {
+                offset = GsfUtilities.getRowStart(doc, offset)-1;
                 if (offset < 0) {
                     offset = 0;
                 }
             }
 
-            if (!(RubyUtils.isRowEmpty(doc, offset) || RubyUtils.isRowWhite(doc, offset))) {
+            if (!(GsfUtilities.isRowEmpty(doc, offset) || GsfUtilities.isRowWhite(doc, offset))) {
                 if ((sanitizing == Sanitize.EDITED_LINE) || (sanitizing == Sanitize.ERROR_LINE)) {
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineEnd = RubyUtils.getRowLastNonWhite(doc, offset);
+                    int lineEnd = GsfUtilities.getRowLastNonWhite(doc, offset);
 
                     if (lineEnd != -1) {
                         StringBuilder sb = new StringBuilder(doc.length());
-                        int lineStart = RubyUtils.getRowStart(doc, offset);
+                        int lineStart = GsfUtilities.getRowStart(doc, offset);
                         int rest = lineStart + 1;
 
                         sb.append(doc.substring(0, lineStart));
@@ -257,7 +258,7 @@ public final class RubyParser implements Parser {
                     assert sanitizing == Sanitize.ERROR_DOT || sanitizing == Sanitize.EDITED_DOT;
                     // Try nuking dots/colons from this line
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineStart = RubyUtils.getRowStart(doc, offset);
+                    int lineStart = GsfUtilities.getRowStart(doc, offset);
                     int lineEnd = offset-1;
                     while (lineEnd >= lineStart && lineEnd < doc.length()) {
                         if (!Character.isWhitespace(doc.charAt(lineEnd))) {

@@ -624,6 +624,11 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         
         isTest = true;
      }
+
+    @Override
+    public Preferences getPreferences(UserConfigurableRule rule) {
+        return HintsSettings.getPreferences(this, rule, null);
+    }
     
     public static class HintsManagerFactory extends HintsProvider.Factory {
         public HintsManagerFactory() {

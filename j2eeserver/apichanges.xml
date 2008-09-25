@@ -113,6 +113,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="undeploy">
+	    <api name="devmodules"/>
+	    <summary>
+                Programmatic undeploy for the project.
+	    </summary>
+	    <version major="1" minor="52"/>
+	    <date day="15" month="9" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    Provides a way to programmatic undeploy of the deployed app
+                    (project represented by J2eeModuleProvider).
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="Deployment"/>
+            <issue number="83122"/>
+	 </change>        
         <change id="finishServerInitialization">
 	    <api name="plugins"/>
 	    <summary>

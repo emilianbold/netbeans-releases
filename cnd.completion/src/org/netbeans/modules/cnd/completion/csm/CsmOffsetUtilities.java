@@ -53,6 +53,9 @@ import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 
 /**
  * utilities method for working with offsets of Csm objects
@@ -79,7 +82,7 @@ public class CsmOffsetUtilities {
                     CsmType type = (CsmType)obj;
                     // we do not accept type if offset is after '*', '&' or '[]'
                     return !type.isPointer() && !type.isReference() && (type.getArrayDepth() == 0);
-                } else if (CsmKindUtilities.isScope(obj)) {
+                } else if (endsWithBrace(offs)) {
                     // if we right after closed "}" it means we are out of scope object
                     return false;
                 }
@@ -89,7 +92,36 @@ public class CsmOffsetUtilities {
             return false;
         }
     }
-    
+
+    private static boolean endsWithBrace(CsmOffsetable obj) {
+        if (!CsmKindUtilities.isScope(obj)) {
+            // only scopes can end with '}'
+            return false;
+        }
+        if (!CsmKindUtilities.isStatement(obj) || CsmKindUtilities.isCompoundStatement(obj)) {
+            // non-statement scope always ends with '}'
+            return true;
+        }
+        // special care is needed for scope statements
+        CsmStatement stmt = (CsmStatement) obj;
+        switch (stmt.getKind()) {
+            case IF:
+                // 'if' statement ends with '}' if its last branch ends with '}'
+                CsmStatement elseBranch = ((CsmIfStatement)stmt).getElse();
+                if (elseBranch != null) {
+                    return CsmKindUtilities.isCompoundStatement(elseBranch);
+                } else {
+                    return CsmKindUtilities.isCompoundStatement(((CsmIfStatement)stmt).getThen());
+                }
+            case FOR:
+            case WHILE:
+                // loop statement ends with '}' if its body ends with '}'
+                return CsmKindUtilities.isCompoundStatement(((CsmLoopStatement)stmt).getBody());
+            default:
+                return false;
+        }
+    }
+
     public static boolean isBeforeObject(CsmObject obj, int offset) {
         if (!CsmKindUtilities.isOffsetable(obj)) {
             return false;

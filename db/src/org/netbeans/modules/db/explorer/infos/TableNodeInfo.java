@@ -80,6 +80,9 @@ public class TableNodeInfo extends DatabaseNodeInfo {
 
     private void initChildren(Vector children, String columnname) throws DatabaseException {
         try {
+            if (!ensureConnected()) {
+                return;
+            }
             String table = (String)get(DatabaseNode.TABLE);
             DriverSpecification drvSpec = getDriverSpecification();
 
@@ -163,9 +166,10 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                 }
                 rs.close();
             }            
+        } catch (DatabaseException dbe) {
+            throw dbe;
         } catch (Exception e) {
-            DatabaseException dbe = new DatabaseException(e.getMessage());
-            dbe.initCause(e);
+            DatabaseException dbe = new DatabaseException(e);
             throw dbe;
         }
     }

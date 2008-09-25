@@ -59,7 +59,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
-import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ResizeProvider;
@@ -93,6 +92,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget.SwitchableViewManger;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerNode;
 import org.netbeans.modules.uml.drawingarea.widgets.NameFontHandler;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.Exceptions;
@@ -981,15 +981,28 @@ public abstract class UMLNodeWidget extends Widget
     
     public void remove()
     {
+        //Before we remove, we need see if this widget is contained in a container widget
+        UMLNodeWidget parent = PersistenceUtil.getParentUMLNodeWidget(this);
+
         // remove all node object that are associated with child widget 
-        for (Object o : Util.getAllNodeChildren(this))
+        for (Object o : Util.getAllNodeChildren(this)) 
         {
-            if (scene.isNode(o))
+            if (scene.isNode(o)) 
+            {
                 scene.removeNodeWithEdges(o);
+            }
+        }
+        //notify the container
+        if (parent != null && parent instanceof ContainerNode) {
+            parent.notifyElementDeleted();
         }
     }
     
-   
+    protected void notifyElementDeleted()
+    {
+        //Interested subclasses need to implement the logic
+    }
+    
     protected String getResourcePath()
     {
         return getWidgetID() + "." + DEFAULT;

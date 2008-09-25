@@ -71,6 +71,7 @@ public:
     void sendBreakpointMessage(StackFrame *pStackFrame, tstring breakPointID, tstring reason);
     void sendStatusMessage(tstring status, tstring reason);
     void sendErrorMessage(tstring message);
+    void sendReloadSourcesMessage(tstring docName);
 
 private:
     SOCKET m_socket;

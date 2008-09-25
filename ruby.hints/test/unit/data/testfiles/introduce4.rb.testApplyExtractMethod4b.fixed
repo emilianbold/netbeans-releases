@@ -10,7 +10,7 @@ def blocktest
   [10,11,12].each do |bar|
     z = 50
     q = 60
-    usedinblock, z = mymethod(beforeblock, q, z)
+    usedinblock, z = new_name(beforeblock, q, z)
     puts z
   end #outerblock
   puts y # calls a method, y is not seen from the block
@@ -22,7 +22,7 @@ def blocktest
 end
 
 # TODO Comment
-def mymethod(beforeblock, q, z)
+def new_name(beforeblock, q, z)
   [1,2,3].each do |foo|
     x = 51
     y = 30

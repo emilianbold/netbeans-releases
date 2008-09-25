@@ -184,7 +184,7 @@ public class UnicodeConvert extends JsAstRule {
         }
 
         public boolean isInteractive() {
-            return true;
+            return false;
         }
     }
 }

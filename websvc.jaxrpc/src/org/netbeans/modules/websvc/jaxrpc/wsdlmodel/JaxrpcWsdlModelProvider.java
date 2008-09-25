@@ -67,7 +67,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class JaxrpcWsdlModelProvider implements WsdlModelProvider {
      private String packageName;
-    public org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModel getWsdlModel(URL url, String packageName) {
+    public org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModel getWsdlModel(URL url, String packageName, URL catalog) {
         this.packageName = packageName;
         WsdlModeler modeler = new WsdlModeler(url, packageName);
         WsdlModel model = modeler.getAndWaitForWsdlModel();

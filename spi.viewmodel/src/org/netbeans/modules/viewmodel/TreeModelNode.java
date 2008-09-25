@@ -71,6 +71,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -328,9 +329,10 @@ public class TreeModelNode extends AbstractNode {
                             "Model: " + model + ".getDisplayName (" + object + 
                             ") = null!"
                         );
-                    ErrorManager.getDefault().notify(t);
+                    Exceptions.printStackTrace(t);
+                } else {
+                    setName (name, false);
                 }
-                setName (name, false);
             } catch (UnknownTypeException e) {
                 Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);

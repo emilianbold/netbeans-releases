@@ -94,6 +94,7 @@ public class MergeUiTest extends JellyTestCase {
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             MergeOperator mo = MergeOperator.invoke(projNode);
 
+            Thread.sleep(3000);
             //0. one repository operator
             mo.cboMergeFrom().selectItem(0);
             MergeOneRepoOperator moro = new MergeOneRepoOperator();

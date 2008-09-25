@@ -85,6 +85,7 @@ public class JPDABreakpoint extends Breakpoint {
     private int                         suspend;
     private String                      printText;
     private Collection<JPDABreakpointListener>  breakpointListeners = new HashSet<JPDABreakpointListener>();
+    private JPDADebugger                session;
     
    
     JPDABreakpoint () {
@@ -190,6 +191,28 @@ public class JPDABreakpoint extends Breakpoint {
         enabled = true;
         firePropertyChange 
             (PROP_ENABLED, Boolean.FALSE, Boolean.TRUE);
+    }
+
+    /**
+     * Set the specific session where this breakpoint belongs to.
+     *
+     * @param session the specific session
+     */
+    // TODO: make this public API
+    synchronized void setSession(JPDADebugger session) {
+        this.session = session;
+    }
+
+    /**
+     * Get the specific session where this breakpoint belongs to.
+     * If not <code>null</code>, the breakpoint is considered in this session only
+     * and is discarted after this session finishes.
+     *
+     * @return the specific session or <code>null</code>.
+     */
+    // TODO: make this public API
+    synchronized JPDADebugger getSession() {
+        return session;
     }
     
     /** 

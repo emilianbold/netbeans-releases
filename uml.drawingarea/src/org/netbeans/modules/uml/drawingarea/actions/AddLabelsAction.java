@@ -83,7 +83,7 @@ public class AddLabelsAction extends SceneNodeAction
         
         type = LabelManager.LabelType.EDGE;
         model.reset();
-        lastManager = null;
+        lastManager = actionContext.lookup(LabelManager.class);
         
         if (context == null)
         {
@@ -118,33 +118,7 @@ public class AddLabelsAction extends SceneNodeAction
      */
     protected boolean enable(Node[] activatedNodes)
     {
-        boolean retVal = false;
-//        if (context == null)
-//            return false;
-        
-        if(super.enable(activatedNodes) == true && activatedNodes.length == 1)
-        {
-            Lookup lookup = activatedNodes[0].getLookup();
-            IPresentationElement presentation = lookup.lookup(IPresentationElement.class);
-            DesignerScene scene=activatedNodes[0].getLookup().lookup(DesignerScene.class);
-            
-            if(scene != null)
-            {
-                Widget widget = scene.findWidget(presentation);
-
-                if((widget != null) && (widget.getLookup() != null))
-                {
-                    Lookup widgetLookup = widget.getLookup();
-                    lastManager = widgetLookup.lookup(LabelManager.class);
-                    if(lastManager != null)
-                    {
-                        retVal = true;
-                    }
-                }
-            }
-        }
-        
-        return retVal;
+        return lastManager != null;
     }
 
     /**

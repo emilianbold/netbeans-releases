@@ -699,6 +699,7 @@ the ${netbeans.dest}/bin/ directory.
   </target>
   
   <target name="build-platform" description="Build the NetBeans Platform (platform and harness clusters).">
+      <mkdir dir="${netbeans.dest.dir}"/>
       <ant dir="." target="-build-platform" inheritAll="false">
           <property name="cluster.config" value="platform"/>
       </ant>

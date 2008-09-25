@@ -1,7 +1,9 @@
 def rangeTest() {
     // "groovy.lang.Range"
-    //(1..10).
-    // (1..10).getFr
+    // this is buggy in test case
+    (1..10).a
+    // this should offer cc for integer
+    1..10.d
 }
 
 def listTest() {

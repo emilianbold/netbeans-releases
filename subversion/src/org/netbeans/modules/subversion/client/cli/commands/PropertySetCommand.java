@@ -100,7 +100,11 @@ public class PropertySetCommand extends SvnCommand {
         switch (type) {
             case string: 
                 arguments.add(propName);
-                arguments.add(propValue);		
+                if(propValue != null && propValue.trim().equals("")){
+                    arguments.add("'" + propValue + "'");
+                } else {
+                    arguments.add(propValue);
+                }
                 arguments.add(file);
                 break;
             case file:     

@@ -158,7 +158,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         List messages = exc.getValidationResult().getMessages();
         if (messages != null && messages.size() > 0) {
             ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                    org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_Project_validation."), exc.getValidationResult().render("\n"), new OpenPomAction(nbproject)); //NOI18N
+                    NbBundle.getMessage(ProblemReporterImpl.class, "ERR_Project_validation"), exc.getValidationResult().render("\n"), new OpenPomAction(nbproject)); //NOI18N
             addReport(report);
         }
     }

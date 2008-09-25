@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.ParseEvent;
@@ -154,16 +155,41 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
     
     @Override
     public ParserResult getEmbeddedResult(String embeddedMimeType, int offset) {
-        String mimeType = getPreferredMimeType();
-        GsfTestBase.assertEquals(mimeType, embeddedMimeType);
-
         if (embeddedResults.size() == 0) {
+            String mimeType = getPreferredMimeType();
+
+
+            Collection<? extends TranslatedSource> translatedSources = null;
+            TranslatedSource translatedSource = null;
+
+            if (!embeddedMimeType.equals(mimeType)) {
+                // Embedding model?
+                EmbeddingModel model = LanguageRegistry.getInstance().getEmbedding(embeddedMimeType, mimeType);
+                if (model != null) {
+                    translatedSources = model.translate(doc);
+                    if (translatedSources.size() > 0) {
+                        translatedSource = translatedSources.iterator().next();
+                        text = translatedSource.getSource();
+                    }
+                }
+            }
+
+            if (translatedSource == null) {
+                GsfTestBase.assertEquals(mimeType, embeddedMimeType);
+            }
+
             GsfTestParseListener listener = new GsfTestParseListener();
             List<ParserFile> sourceFiles = new ArrayList<ParserFile>(1);
             ParserFile file = new DefaultParserFile(getFileObject(), null, false);
             sourceFiles.add(file);
 
-            Parser parser = test.getParser();
+            Parser parser;
+            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(embeddedMimeType);
+            if (language != null) {
+                parser = language.getParser();
+            } else {
+                parser = test.getParser();
+            }
             GsfTestBase.assertNotNull(parser);
 
             SourceFileReader reader = new SourceFileReader() {
@@ -176,7 +202,6 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
                     return caretOffset;
                 }
             };
-            TranslatedSource translatedSource = null;
 
             ParserResult parserResult = null;
             if (editHistory != null && previousResult != null && parser instanceof IncrementalParser) {
@@ -194,8 +219,9 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
                 for (Error error : listener.getErrors()) {
                     parserResult.addError(error);
                 }
-                embeddedResults.put(mimeType, parserResult);
+                embeddedResults.put(embeddedMimeType, parserResult);
                 parserResult.setInfo(this);
+                parserResult.setTranslatedSource(translatedSource);
             }
             test.validateParserResult(parserResult);
         }

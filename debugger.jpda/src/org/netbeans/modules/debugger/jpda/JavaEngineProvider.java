@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda;
 
 import java.awt.Component;
+import java.beans.DesignMode;
 import java.beans.beancontext.BeanContextChildComponentProxy;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
@@ -82,22 +83,35 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
     
     static Object[] getUIComponentProxies() {
         
-        class ComponentProxy implements BeanContextChildComponentProxy {
+        class ComponentProxy implements BeanContextChildComponentProxy, DesignMode {
             private String name;
-            ComponentProxy(String name) {
+            private boolean openByDefault;
+            ComponentProxy(String name, boolean openByDefault) {
                 this.name = name;
+                this.openByDefault = openByDefault;
             }
             public Component getComponent() {
                 return WindowManager.getDefault().findTopComponent(name);
             }
-            
+            public boolean isDesignTime() {
+                return openByDefault;
+            }
+            public void setDesignTime(boolean designTime) {
+                throw new UnsupportedOperationException("Not supported.");
+            }
         }
         
         return new Object [] {
-            new ComponentProxy("localsView"),
-            new ComponentProxy("watchesView"),
-            new ComponentProxy("breakpointsView"),
-            new ComponentProxy("debugging")
+            new ComponentProxy("localsView", true),
+            new ComponentProxy("watchesView", true),
+            new ComponentProxy("breakpointsView", true),
+            new ComponentProxy("debugging", true),
+            // Initially closed components
+            new ComponentProxy("callstackView", false),
+            new ComponentProxy("sessionsView", false),
+            new ComponentProxy("sources", false),
+            new ComponentProxy("threadsView", false),
+            new ComponentProxy("classes", false),
         };
     }
     

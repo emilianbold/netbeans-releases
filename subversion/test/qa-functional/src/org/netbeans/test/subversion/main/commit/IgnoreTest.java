@@ -142,6 +142,7 @@ public class IgnoreTest extends JellyTestCase {
             assertNotNull("Ingnore action should be disabled!!!", tee);
             
             //unignore file
+            Thread.sleep(2000);
             oto = new OutputTabOperator("file:///tmp/repo");
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
             node.performPopupAction("Subversion|Unignore");
@@ -327,8 +328,6 @@ public class IgnoreTest extends JellyTestCase {
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node.performPopupAction("Subversion|Unignore");
             Thread.sleep(2000);
-            oto.waitText("finished.");
-            oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node2 = new Node(new SourcePackagesNode(PROJECT_NAME), "xx|NewClass");
             nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();

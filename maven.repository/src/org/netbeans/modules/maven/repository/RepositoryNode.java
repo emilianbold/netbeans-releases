@@ -145,47 +145,33 @@ public class RepositoryNode extends AbstractNode {
         try {
             PropertySupport.Reflection id = new PropertySupport.Reflection<String>(info, String.class, "getId", null); //NOI18N
             id.setName("Id"); //NOI18N
-            id.setDisplayName("Id");
+            id.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Id"));
             id.setShortDescription(""); //NOI18N
             PropertySupport.Reflection name = new PropertySupport.Reflection<String>(info, String.class, "getName", null); //NOI18N
             name.setName("name"); //NOI18N
-            name.setDisplayName("Name");
+            name.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Name"));
             name.setShortDescription(""); //NOI18N
             PropertySupport.Reflection type = new PropertySupport.Reflection<String>(info, String.class, "getType", null); //NOI18N
             type.setName("type"); //NOI18N
-            type.setDisplayName("Repository Manager Type");
+            type.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Repository_Type"));
             PropertySupport.Reflection local = new PropertySupport.Reflection<Boolean>(info, Boolean.TYPE, "isLocal", null); //NOI18N
             local.setName("local"); //NOI18N
-            local.setDisplayName("Local");
+            local.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Local"));
             local.setShortDescription("");
             PropertySupport.Reflection localRepoLocation = new PropertySupport.Reflection<String>(info, String.class, "getRepositoryPath", null); //NOI18N
             localRepoLocation.setName("repositoryPath"); //NOI18N
-            localRepoLocation.setDisplayName("Local repository path");
+            localRepoLocation.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Local_repository_path"));
             PropertySupport.Reflection remoteDownloadable = new PropertySupport.Reflection<Boolean>(info, Boolean.TYPE, "isRemoteDownloadable", null); //NOI18N
             remoteDownloadable.setName("remoteDownloadable"); //NOI18N
-            remoteDownloadable.setDisplayName("Remote Index Downloadable");
+            remoteDownloadable.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_Index"));
             PropertySupport.Reflection repoURL = new PropertySupport.Reflection<String>(info, String.class, "getRepositoryUrl", null); //NOI18N
             repoURL.setName("repositoryUrl"); //NOI18N
-            repoURL.setDisplayName("Remote Repository URL");
+            repoURL.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_URL"));
             PropertySupport.Reflection indexURL = new PropertySupport.Reflection<String>(info, String.class, "getIndexUpdateUrl", null); //NOI18N
             indexURL.setName("indexUpdateUrl"); //NOI18N
-            indexURL.setDisplayName("Remote Index URL");
+            indexURL.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_Index_URL"));
             basicProps.put(new Node.Property[] {
                 id, name, type, local, localRepoLocation, remoteDownloadable, repoURL, indexURL
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
             
             });
         } catch (NoSuchMethodException exc) {
@@ -193,7 +179,6 @@ public class RepositoryNode extends AbstractNode {
         }
         return sheet;
     }
-    
 
     public class RefreshIndexAction extends AbstractAction {
 
@@ -207,7 +192,6 @@ public class RepositoryNode extends AbstractNode {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     RepositoryIndexer.indexRepo(info);
-                    ((GroupListChildren)getChildren()).refreshGroups();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             RefreshIndexAction.this.setEnabled(true);
@@ -220,13 +204,13 @@ public class RepositoryNode extends AbstractNode {
     
     private class EditAction extends AbstractAction {
         public EditAction() {
-            putValue(NAME, "Edit...");
+            putValue(NAME, NbBundle.getMessage(RepositoryNode.class, "ACT_Edit..."));
         }
 
         public void actionPerformed(ActionEvent e) {
             final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
             rrui.modify(RepositoryNode.this.info);
-            DialogDescriptor dd = new DialogDescriptor(rrui, NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_ADD"));
+            DialogDescriptor dd = new DialogDescriptor(rrui, NbBundle.getMessage(RepositoryNode.class, "LBL_Add_Repo"));
             dd.setClosingOptions(new Object[]{
                         rrui.getButton(),
                         DialogDescriptor.CANCEL_OPTION

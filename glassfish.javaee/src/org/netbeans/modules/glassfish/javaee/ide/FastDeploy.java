@@ -228,7 +228,7 @@ public class FastDeploy extends IncrementalDeployment {
 
     @Override
     public boolean isDeployOnSaveSupported() {
-        return true;
+        return !"false".equals(System.getProperty("glassfish.javaee.deployonsave"));
     }
 
 
