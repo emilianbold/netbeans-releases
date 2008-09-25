@@ -355,7 +355,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                         if(id != null && id.length() > 0) {
                             int port = Integer.parseInt(attributes.getValue("port"));
                             boolean secure = "true".equals(attributes.getValue("security-enabled"));
-                            boolean enabled = "true".equals(attributes.getValue("enabled"));
+                            boolean enabled = !"false".equals(attributes.getValue("enabled"));
                             if(enabled) {
                                 HttpData data = new HttpData(id, port, secure);
                                 Logger.getLogger("glassfish").log(Level.FINER, " Adding " + data);
