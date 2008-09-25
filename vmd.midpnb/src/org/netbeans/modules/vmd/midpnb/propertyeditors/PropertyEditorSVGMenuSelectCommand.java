@@ -313,8 +313,10 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         }
 
         void cleanUp() {
-            combobox.removeActionListener(this);
-            combobox = null;
+            if (combobox != null) {
+                combobox.removeActionListener(this);
+                combobox = null;
+            }
             this.removeAll();
         }
 
