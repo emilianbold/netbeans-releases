@@ -1217,7 +1217,12 @@ public class Installer extends ModuleInstall implements Runnable {
 
     private static String findIdentity() {
         Preferences p = NbPreferences.root().node("org/netbeans/modules/autoupdate"); // NOI18N
-        String id = p.get("ideIdentity", null);
+        String id = p.get("qualifiedId", null);
+        //Strip id prefix
+        int ind = id.indexOf("0");
+        if (ind != -1) {
+            id = id.substring(ind + 1);
+        }
         LOG.log(Level.INFO, "findIdentity: {0}", id);
         return id;
     }
