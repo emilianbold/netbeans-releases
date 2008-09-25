@@ -926,21 +926,26 @@ long vsStart = System.currentTimeMillis();
                                 if (translations.size() > 0) {
                                     history = EditHistory.getCombinedEdits(translations.iterator().next().getEditVersion(), source.editHistory);
                                 }
-                                IncrementalEmbeddingModel.UpdateState updated = incrementalModel.update(history, translations);
-                                if (updated == IncrementalEmbeddingModel.UpdateState.COMPLETED) {
-                                    // No need to parse - nothing else to be done for this mime type
-                                    ParserResult result = source.recentParseResult.get(language.getMimeType());
-                                    if (result != null) {
-                                        currentInfo.addEmbeddingResult(language.getMimeType(), result);
-                                        result.setUpdateState(ParserResult.UpdateState.NO_CHANGE);
-                                        continue;
+                                if (history != null) {
+                                    IncrementalEmbeddingModel.UpdateState updated = incrementalModel.update(history, translations);
+                                    if (updated == IncrementalEmbeddingModel.UpdateState.COMPLETED) {
+                                        // No need to parse - nothing else to be done for this mime type
+                                        ParserResult result = source.recentParseResult.get(language.getMimeType());
+                                        if (result != null) {
+                                            currentInfo.addEmbeddingResult(language.getMimeType(), result);
+                                            result.setUpdateState(ParserResult.UpdateState.NO_CHANGE);
+                                            continue;
+                                        }
+                                    } else if (updated == IncrementalEmbeddingModel.UpdateState.FAILED) {
+                                        // Force update!
+                                        translations = null;
+                                    } else {
+                                        assert updated == IncrementalEmbeddingModel.UpdateState.UPDATED;
+                                        // Continue to parse below
                                     }
-                                } else if (updated == IncrementalEmbeddingModel.UpdateState.FAILED) {
-                                    // Force update!
-                                    translations = null;
                                 } else {
-                                    assert updated == IncrementalEmbeddingModel.UpdateState.UPDATED;
-                                    // Continue to parse below
+                                    // Force update
+                                    translations = null;
                                 }
                             }
                         }
@@ -979,11 +984,13 @@ long parseStart = System.currentTimeMillis();
                                 ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                                 if (previousResult != null) {
                                     EditHistory history = EditHistory.getCombinedEdits(previousResult.getEditVersion(), source.editHistory);
-                                    ParserResult ir = incrementalParser.parse(file, reader, translatedSource, history, previousResult);
-                                    if (ir != null) {
-                                        ParserResult.UpdateState state = ir.getUpdateState();
-                                        if (state != ParserResult.UpdateState.FAILED) {
-                                            result = ir;
+                                    if (history != null) {
+                                        ParserResult ir = incrementalParser.parse(file, reader, translatedSource, history, previousResult);
+                                        if (ir != null) {
+                                            ParserResult.UpdateState state = ir.getUpdateState();
+                                            if (state != ParserResult.UpdateState.FAILED) {
+                                                result = ir;
+                                            }
                                         }
                                     }
                                 }
@@ -1022,11 +1029,13 @@ long parseStart = System.currentTimeMillis();
                             ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                             if (previousResult != null) {
                                 EditHistory history = EditHistory.getCombinedEdits(previousResult.getEditVersion(), source.editHistory);
-                                result = incrementalParser.parse(file, reader, null, history, previousResult);
-                                if (result != null) {
-                                    ParserResult.UpdateState state = result.getUpdateState();
-                                    if (state == ParserResult.UpdateState.FAILED) {
-                                        result = null;
+                                if (history != null) {
+                                    result = incrementalParser.parse(file, reader, null, history, previousResult);
+                                    if (result != null) {
+                                        ParserResult.UpdateState state = result.getUpdateState();
+                                        if (state == ParserResult.UpdateState.FAILED) {
+                                            result = null;
+                                        }
                                     }
                                 }
                             }
