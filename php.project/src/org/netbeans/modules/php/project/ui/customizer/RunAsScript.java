@@ -39,8 +39,6 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -57,7 +55,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
@@ -121,7 +118,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                 interpreterTextField.setEditable(!selected);
                 String newValue = null;
                 if (selected) {
-                    newValue = PhpOptions.getInstance().getPhpInterpreter();
+                    newValue = getDefaultPhpInterpreter();
                 } else {
                     newValue = interpreterTextField.getText();
                 }
@@ -136,7 +133,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                         // #143315
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+                                interpreterTextField.setText(getDefaultPhpInterpreter());
                                 composeHint();
                             }
                         });
@@ -149,6 +146,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         composeHint();
     }
 
+    private String getDefaultPhpInterpreter() {
+        String phpInterpreter = PhpOptions.getInstance().getPhpInterpreter();
+        return phpInterpreter != null ? phpInterpreter : ""; //NOI18N
+    }
+
     private String initPhpInterpreterFields() {
         String phpInterpreter = getValue(PhpProjectProperties.INTERPRETER);
         boolean def = phpInterpreter == null || phpInterpreter.length() == 0;
@@ -156,7 +158,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         interpreterBrowseButton.setEnabled(!def);
         interpreterTextField.setEditable(!def);
         if (def) {
-            return PhpOptions.getInstance().getPhpInterpreter();
+            return getDefaultPhpInterpreter();
         }
         return phpInterpreter;
     }
