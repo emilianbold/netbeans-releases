@@ -40,9 +40,12 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  * <p>The EditHistory object contains information about a set of edits that
@@ -110,12 +113,15 @@ import javax.swing.event.DocumentListener;
  *
  * @author Tor Norbye
  */
-public class EditHistory implements DocumentListener {
+public final class EditHistory implements DocumentListener {
     private int start = -1;
     private int originalEnd = -1;
     private int editedEnd = -1;
     private List<Edit> edits = new ArrayList<Edit>(4);
     private int delta = 0;
+
+    EditHistory previous; // package protected only for tests
+    private int version;
 
     /**
      * The beginning position of the damaged region.
@@ -187,6 +193,14 @@ public class EditHistory implements DocumentListener {
      */
     public int getOriginalSize() {
         return originalEnd - start;
+    }
+
+    /**
+     * Return the version id of this edit history
+     * @return The version number of this edit history
+     */
+    public int getVersion() {
+        return version;
     }
 
     /**
@@ -274,10 +288,12 @@ public class EditHistory implements DocumentListener {
      * Notify the EditHistory of a document edit (insert).
      */
     public void insertUpdate(DocumentEvent e) {
-
         int pos = e.getOffset();
         int length = e.getLength();
+        insertUpdate(pos, length);
+    }
 
+    private void insertUpdate(int pos, int length) {
         // TODO - synchronize?
         edits.add(new Edit(pos, length, true));
 
@@ -311,6 +327,10 @@ public class EditHistory implements DocumentListener {
         int pos = e.getOffset();
         int length = e.getLength();
 
+        removeUpdate(pos, length);
+    }
+
+    private void removeUpdate(int pos, int length) {
         // TODO - synchronize?
         edits.add(new Edit(pos, length, false));
         
@@ -348,7 +368,82 @@ public class EditHistory implements DocumentListener {
 
     @Override
     public String toString() {
-        return "EditHistory(offset=" + start + ", originalSize=" + getOriginalSize() + ", editedSize=" + getEditedSize() + ", delta=" + delta + ")"; // NOI18N
+        return "EditHistory(version=" + version + ", offset=" + start + ", originalSize=" + getOriginalSize() + ", editedSize=" + getEditedSize() + ", delta=" + delta + ")"; // NOI18N
+    }
+
+    /** Maximum number of previous edit histories to keep */
+    private static final int MAX_KEEP = 20;
+
+    public void add(@NonNull EditHistory history) {
+        history.previous = this;
+        history.version = version+1;
+
+        // Chop off old history. We only need the most recent versions. Typically
+        // we only need the most recent history, but in some cases (e.g. when documents
+        // are edited during a parse job, the job gets split in two so we need to combine
+        // the edit histories)
+        if (history.version % MAX_KEEP == 0) {
+            EditHistory curr = history;
+            for (int i = 0; i < MAX_KEEP; i++) {
+                curr = curr.previous;
+                if (curr == null) {
+                    return;
+                }
+            }
+            curr.previous = null;
+        }
+    }
+
+    @CheckForNull
+    public static EditHistory getCombinedEdits(int lastVersion, @NonNull EditHistory mostRecent) {
+        if (mostRecent.previous == null || mostRecent.version == lastVersion) {
+            return null;
+        }
+        if (mostRecent.previous.version == lastVersion) {
+            return mostRecent;
+        }
+
+        // Combine edit histories back as far as the version calls for
+
+        EditHistory current = mostRecent;
+        List<EditHistory> histories = new ArrayList<EditHistory>();
+        while (current.version != lastVersion) {
+            histories.add(current);
+            if (current.version == lastVersion) {
+                break;
+            }
+
+            current = current.previous;
+            if (current == null) {
+                if (lastVersion == -1) {
+                    // We're looking for history since the beginning
+                    break;
+                } else {
+                    // Version not found!
+                    return null;
+                }
+            }
+        }
+
+        // Process history from the beginning
+        EditHistory result = new EditHistory();
+        Collections.reverse(histories);
+        for (EditHistory history : histories) {
+            // TODO - I should be able to do this more intelligently!
+            // I should be able to just merge the start/originalEnd/editedEnd
+            // regions directly! On the other hand, edits here are typically going
+            // to be small
+            for (Edit edit : history.edits) {
+                if (edit.insert) {
+                    result.insertUpdate(edit.offset, edit.len);
+                } else {
+                    result.removeUpdate(edit.offset, edit.len);
+                }
+            }
+
+        }
+
+        return result;
     }
 
     /**

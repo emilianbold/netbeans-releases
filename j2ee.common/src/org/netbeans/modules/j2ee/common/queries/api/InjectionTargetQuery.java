@@ -88,12 +88,14 @@ public class InjectionTargetQuery {
     
     public static boolean isInjectionTarget(FileObject fileObject, final String className) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final boolean[] result = new boolean[1];
+        final boolean[] result = new boolean[] { false };
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(className);
-                result[0] = isInjectionTarget(controller, typeElement);
+                if (typeElement != null) {
+                    result[0] = isInjectionTarget(controller, typeElement);
+                }
             }
         }, true);
         return result[0];
@@ -123,12 +125,14 @@ public class InjectionTargetQuery {
     
     public static boolean isStaticReferenceRequired(FileObject fileObject, final String className) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final boolean[] result = new boolean[1];
+        final boolean[] result = new boolean[] { false };
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(className);
-                result[0] = isStaticReferenceRequired(controller, typeElement);
+                if (typeElement != null) {
+                    result[0] = isStaticReferenceRequired(controller, typeElement);
+                }
             }
         }, true);
         return result[0];

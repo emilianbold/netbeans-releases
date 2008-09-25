@@ -102,28 +102,41 @@
     var socket;
     var topWindow;
     var myContext;
+    var myBrowser;
     var contexts = [];
-    var or_requestsId =  {
-        getId :function( element ) {
-            for ( var i in requestsId ){
-                if( requestsId[i] instanceof NetBeans.Constants.HttpChannelIF) {
-                  if ( requestsId[i] == element ){
+
+    function Requests() {
+        this.ids = {};
+        this.getId = function( element ) {
+            for ( var i in this.ids ){
+                if( this.ids[i] instanceof NetBeans.Constants.HttpChannelIF) {
+                  if ( this.ids[i] == element ){
                       return i;
                   }
                 }
             }
             return null;
         }
-    };
-    var requestsId = new Object(or_requestsId);
+
+        this.setId = function(i, element) {
+            this.ids[i] = element;
+        }
+    }
+    
+    var requestsId = new Requests();
 
     this.initMonitor = function  (context, browser, _socket) {
         myContext = context;
+        myBrowser = browser;
         var index = contexts.indexOf(context);
         if (DEBUG) NetBeans.Logger.log("net.initMonitor Turning on Monitor");
         if(  index == -1 ){
             contexts.push(context);
-            topWindow = context.window;
+            if (context.window) {
+                topWindow = context.window;
+            } else {
+                topWindow = getBrowser().contentWindow;
+            }
             monitorContext(context, browser);
             if( !_socket )
                 NetBeans.Logger.log("net.initMonitor - Socket is null");
@@ -143,6 +156,19 @@
             topWindow = null;
             if (DEBUG) NetBeans.Logger.log("net.initMonitor Monitor turned off.");
         } //else {  NetBeans.Logger.log("No need to do anything because it is already off.");}
+    }
+
+    this.destroyAllMonitors = function(browser) {
+        if (!browser) {
+            browser = getBrowser();
+        }
+
+        for (var i = 0; i < contexts.length; i++) {
+            var nextContext = contexts[i];
+            unmonitorContext(nextContext, browser);
+        }
+
+        contexts = [];
     }
 
     var NetObserver =
@@ -180,25 +206,26 @@
          * @type {NetActivity} activity
          */
         onModifyRequest: function (aNsISupport) {
-            var DEBUG_METHOD = (false & DEBUG);
+            var DEBUG_METHOD = (true & DEBUG);
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
 
             if ( isRelevantWindow(request) ){
                 if (DEBUG_METHOD) {
-                    NetBeans.Logger.log("netmonitor.onModifyRequest: push" + request.URI.asciiSpec);
+                    NetBeans.Logger.log("netmonitor.onModifyRequest: push " + request.URI.asciiSpec);
                 }
                 if ( request.loadFlags & request.LOAD_INITIAL_DOCUMENT_URI ){
-                    requestsId = new Object(or_requestsId);
-                    for ( var i in requestsId ){
-                        if( requestsId[i] instanceof NetBeans.Constants.HttpChannelIF) {
-                              return i;
-                        }
-                    }
+                    if (DEBUG_METHOD) NetBeans.Logger.log("netmonitor.onModifyRequest: reset on request.loadFlags");
+                    requestsId = new Requests();
+                }
+
+                if (DEBUG_METHOD) NetBeans.Logger.log("netmonitor.onModifyRequest: processing modifyRequest");
+                if (requestsId.getId(request)) {
+                    return;
                 }
                 var id = uuid();
                 var activity = createRequestActivity(request, id);
                 if ( activity ){
-                  requestsId[id] = request;
+                  requestsId.setId(id, request);
                   sendNetActivity(activity);
                 } else if( DEBUG_METHOD ){
                     NetBeans.Logger.log("net.onModifyRequest - activity is null");
@@ -209,22 +236,51 @@
 
 
         onExamineResponse: function( aNsISupport ){
-            var DEBUG_METHOD = (false & DEBUG);
+            var DEBUG_METHOD = (true & DEBUG);
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
             if (DEBUG_METHOD) { NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);}
             var id = requestsId.getId(request)
             if ( id ) {
-              var xhrRequest = request.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
-              if( xhrRequest ){
-                    xhrRequest.onreadystatechange = function () {
-                      if (xhrRequest.readyState == 4) {
-                         if(xhrRequest.status == 200) {
-                            if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - id:" + id);}
-                            if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - request:" + request);}
-                            processExamineResponse(request, id, xhrRequest);
-                         } else {if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - failure to load responseText \n");}}
-                       }
-                   };
+              var notificationCallbacks = request.notificationCallbacks;
+              if (!notificationCallbacks && request.loadGroup) {
+                  notificationCallbacks = request.loadGroup.notificationCallbacks;
+              }
+
+              var xhrRequest;
+              if (notificationCallbacks) {
+                  try {
+                    xhrRequest = notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
+                  } catch (exc) {}
+              }
+
+              if( xhrRequest ) {
+                    var old_listener = xhrRequest.onreadystatechange;
+                    if (DEBUG_METHOD) NetBeans.Logger.logMessage("netmonitor.onExamineResponse: onReadyStateChange was previously set for this xhr Request: " + old_listener);
+
+                    xhrRequest.onreadystatechange = function (event) {
+                        if (old_listener && old_listener.handleEvent) {
+                            if (DEBUG_METHOD) NetBeans.Logger.logMessage("netmonitor.onExamineResponse: Called old onreadystatechange handleEvent()");
+                            old_listener.handleEvent(event);
+                        } else if (old_listener && typeof old_listener == 'function') {
+                            if (DEBUG_METHOD) NetBeans.Logger.logMessage("netmonitor.onExamineResponse: Called old onreadystatechange function");
+                            old_listener.apply(xhrRequest, event);
+                        }
+                        if (xhrRequest.readyState == 4) {
+                            if(xhrRequest.status == 200) {
+                                if ( DEBUG_METHOD ) {
+                                    NetBeans.Logger.log("net.onExamineResponse - id:" + id);
+                                }
+                                if ( DEBUG_METHOD ) {
+                                    NetBeans.Logger.log("net.onExamineResponse - request:" + request);
+                                }
+                                processExamineResponse(request, id, xhrRequest);
+                            } else {
+                                if ( DEBUG_METHOD ) {
+                                    NetBeans.Logger.log("net.onExamineResponse - failure to load responseText \n");
+                                }
+                                }
+                        }
+                    };
               } else {
                   processExamineResponse(request, id, null);
               }
@@ -237,7 +293,7 @@
     }
         
     function processExamineResponse( request, id, xhrRequest){
-          var DEBUG_METHOD = (false & DEBUG);
+          var DEBUG_METHOD = (true & DEBUG);
           if (DEBUG_METHOD){ NetBeans.Logger.log("net.processExaminResponse: ");}
           var activity = createResponseActivity(request, id, xhrRequest);
           if (DEBUG_METHOD){ NetBeans.Logger.log("net.processExaminResponse: activity created");}
@@ -248,7 +304,8 @@
     }
 
     function createRequestActivity(request, id){
-        var DEBUG_METHOD = (false & DEBUG);
+        var DEBUG_METHOD = (true & DEBUG);
+        if (DEBUG_METHOD) NetBeans.Logger.log("netmonitor.createRequestActivity: Start");
         var activity = new NetActivity();
         activity.uuid = id;
         activity.name = request.name;
@@ -271,7 +328,7 @@
     }
 
     function createResponseActivity (request, id, xhrRequest) {
-        var DEBUG_METHOD = (false & DEBUG);
+        var DEBUG_METHOD = (true & DEBUG);
 
         if( !request || !id){
             throw new Error("net.createResponseActivity - Something is null request:" + request + " id:" + id);
@@ -290,12 +347,20 @@
         activity.size = request.contentLength;
         if( xhrRequest){
             activity.category = "xhr"; // Temporary using this string since getRequestCategory returns html if called a second time.  Still not sure why.
-            activity.responseText = xhrRequest.responseText;
+
+            if (xhrRequest.responseText) {
+                activity.responseText = xhrRequest.responseText;
+            } else if (request.requestMethod == "POST" || request.requestMethod == "post") {
+                activity.responseText = "No POST response available";
+            } else if (request.requestMethod == "GET" || request.requestMethod == "get"){
+                activity.responseText = getResponseText(request);
+            }
+            
             activity.status = request.responseStatus;
             if (DEBUG_METHOD){
-                NetBeans.Logger.log("net.createResponseActivity: xhrRequest:" + xhrRequest.responseText);
+                NetBeans.Logger.log("net.createResponseActivity: xhrRequest:" + activity.responseText);
                 NetBeans.Logger.log("net.createResponseActivity: responseStatus:" + request.responseStatus);
-                NetBeans.Logger.log("net.createResponseActivity: xhrRequest.status:" + xhrRequest.status);
+                NetBeans.Logger.log("net.createResponseActivity: xhrRequest.status:" + activity.status);
             }
         } else {
             activity.category = getRequestCategory(request);
@@ -422,7 +487,20 @@
         }
         
         //Initiates a Get Request to Determine Response Text
-        responseText = myContext.sourceCache.loadText(aRequest.URI.asciiSpec, aRequest.requestMethod);
+
+        // XXX create a context (before we get one) hack
+        if (myContext && !myContext.sourceCache) {
+            myContext.sourceCache = new SourceCache(myContext);
+            myContext.window = topWindow;
+            myContext.browser = myBrowser;
+        }
+        try {
+            responseText = myContext.sourceCache.loadText(aRequest.URI.asciiSpec, aRequest.requestMethod);
+        } catch (exc) {}
+
+        if (!responseText) {
+            responseText = "BINARY";
+        }
         if (DEBUG_METHOD){NetBeans.Logger.log("net.getResponseText - RESPONSE TEXT: " + responseText); }
         return responseText;
     }
@@ -432,7 +510,8 @@
     {
         try
         {
-            if (aRequest.notificationCallbacks && aRequest.notificationCallbacks instanceof XMLHttpRequest){
+            if ((aRequest.notificationCallbacks && aRequest.notificationCallbacks instanceof XMLHttpRequest) ||
+                (aRequest.loadGroup && aRequest.loadGroup.notificationCallbacks && aRequest.loadGroup.notificationCallbacks instanceof XMLHttpRequest)) {
                 return "xhr";
             }
         }
@@ -442,7 +521,7 @@
     }
 
     function getRequestCategoryFromMime(mimeType){
-        var DEBUG_METHOD = false & DEBUG;
+        var DEBUG_METHOD = true & DEBUG;
         var category = mimeCategoryMap[mimeType];
         if (DEBUG_METHOD){ NetBeans.Logger.log("net.getRequestCategoryFromMime.category: " + category);}
         return category;
@@ -456,7 +535,7 @@
      * @return {bool}
      */
     function isRelevantWindow(aRequest) {
-        var DEBUG_METHOD = (false & DEBUG);
+        var DEBUG_METHOD = (true & DEBUG);
 
         var webProgress = getRequestWebProgress(aRequest);
         var win = null;
@@ -472,17 +551,58 @@
             return false;
         }
 
+        var result = isContainedWindow(win, topWindow);
+        if (DEBUG_METHOD) NetBeans.Logger.logMessage("net.isRelevantWindow: isContainedWindow()=" + result);
+        return result;
+    }
 
-        if ( topWindow == win){
-            return true;
-        } else if ( !win.parent ) {
-            if( DEBUG_METHOD ) NetBeans.Logger.log("net.isRelevantWindow - No parent to check.");
-            return false;
+    function isContainedWindow(win, top)
+    {
+        var currentTabId = getTabIdForWindow(win);
+        var topTabId = getTabIdForWindow(top);
+        if (!currentTabId) {
+            if (DEBUG) NetBeans.Logger.logMessage("no currentTabId");
         }
-        if( DEBUG_METHOD ) NetBeans.Logger.log("net.isRelevantWindow - Checking if relevant to parent.");
-        return isRelevantWindow(win.parent);
 
-    //return ( topWindow == win || win.top == topWindow )
+        if (!topTabId) {
+            if (DEBUG) NetBeans.Logger.logMessage("no tabId for topWindow");
+        }
+
+        return currentTabId && (!top || currentTabId == topTabId);
+    }
+
+    function getRootWindow(win)
+    {
+        for (; win; win = win.parent)
+        {
+            if (!win.parent || win == win.parent || !(win.parent instanceof Window) )
+                return win;
+        }
+        return null;
+    }
+
+    function getTabIdForWindow(aWindow)
+    {
+        var topBrowser = window.getBrowser();
+        aWindow = getRootWindow(aWindow);
+
+        if (!aWindow || !topBrowser.getBrowserIndexForDocument)
+            return null;
+
+        try {
+            var targetDoc = aWindow.document;
+
+            var tab = null;
+            var targetBrowserIndex = topBrowser.getBrowserIndexForDocument(targetDoc);
+
+            if (targetBrowserIndex != -1)
+            {
+                tab = topBrowser.tabContainer.childNodes[targetBrowserIndex];
+                return tab.linkedPanel;
+            }
+        } catch (ex) {}
+
+        return null;
     }
 
     function NetProgressListener(context)
@@ -643,7 +763,7 @@
 //    function getMimeType(aRequest)
     function getMimeType(aRequest)
     {
-        var DEBUG_METHOD = (false & DEBUG);
+        var DEBUG_METHOD = (true & DEBUG);
         if( DEBUG_METHOD ) NetBeans.Logger.log("net.getMimeType");
         if( !aRequest ){
             throw new Error("netmonitor.getMimeType - Invalid argument. Request is null");
@@ -756,7 +876,7 @@
     }
 
     function sendProgressUpdate(progress, aRequest, current, max, total, maxTotal, time) {
-        var DEBUG_METHOD = false & DEBUG;
+        var DEBUG_METHOD = true & DEBUG;
 
         if ( DEBUG_METHOD ){NetBeans.Logger.log("net.sendProgressUpdate"); }
         var request = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
@@ -779,7 +899,7 @@
         netActivity.total = total;
         netActivity.maxTotal = maxTotal;
         loadXmlActivityResponse(netActivity, activity);
-        if( DEBUG ){
+        if( DEBUG_METHOD ){
             NetBeans.Logger.log(netActivity.toXMLString());
         }
         socket.send(netActivity);
@@ -794,19 +914,31 @@
     function getRequestWebProgress(aRequest) {
         try
         {
-            var DEBUG_METHOD = (false & DEBUG);
+            var DEBUG_METHOD = (true & DEBUG);
             if(DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress: - aRequest:" + aRequest);
 
             var i = 0;
             var myInterface = null;
-            if (aRequest.notificationCallbacks)
+            var notificationCallbacks;
+
+            if (aRequest.notificationCallbacks) {
+                if(DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress: - got notificationCallback from request");
+                notificationCallbacks = aRequest.notificationCallbacks;
+            }
+
+            if (!notificationCallbacks && aRequest.loadGroup && aRequest.loadGroup.notificationCallbacks) {
+                if(DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress: - got notificationCallback from request.loadGroup");
+                notificationCallbacks = aRequest.loadGroup.notificationCallbacks;
+            }
+
+            if (notificationCallbacks)
             {
-                if(DEBUG_METHOD)  NetBeans.Logger.log("net.getRequestWebProgress: Notification Callback does exist #2.:" + aRequest.notificationCallbacks);
+                if(DEBUG_METHOD)  NetBeans.Logger.log("net.getRequestWebProgress: Notification Callback does exist #2.:" + notificationCallbacks);
                 var bypass = false;
                 if (getRequestCategory(aRequest) == "xhr")
                 {
-                    if(DEBUG_METHOD)  NetBeans.Logger.log("net.getRequestWebProgress: - begin visit requestHeaders aRequest.notificationCallbacks.channel: " + aRequest.notificationCallbacks.channel);
-                    aRequest.notificationCallbacks.channel.visitRequestHeaders(
+                    if(DEBUG_METHOD)  NetBeans.Logger.log("net.getRequestWebProgress: - begin visit requestHeaders notificationCallbacks.channel: " + notificationCallbacks.channel);
+                    notificationCallbacks.channel.visitRequestHeaders(
                     {
                         visitHeader: function(header, value)
                         {
@@ -818,10 +950,14 @@
                         }
                     });
                 }
-                if (!bypass){
-                    myInterface = aRequest.notificationCallbacks.getInterface(NetBeans.Constants.WebProgressIF);
+                if (!bypass) {
+                    try {
+                        myInterface = notificationCallbacks.getInterface(NetBeans.Constants.WebProgressIF);
+                    } catch (exc) {}
                     if(myInterface && DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress - myInterface: "+ myInterface);
-                    return myInterface;
+                    if (myInterface) {
+                        return myInterface;
+                    }
                 }
 
             }
@@ -830,7 +966,7 @@
         }
 
         try {
-            if ( aRequest.loadGroup && DEBUG && DEBUG_METHOD ) NetBeans.Logger.log("net.getRequestWebProgress - loadGroup:" + aRequest.loadGroup );
+            if (DEBUG_METHOD) NetBeans.Logger.log("net.getRequestWebProgress - loadGroup:" + aRequest.loadGroup);
             if (aRequest.loadGroup && aRequest.loadGroup.groupObserver) {
                 myInterface = aRequest.loadGroup.groupObserver.QueryInterface(NetBeans.Constants.WebProgressIF);
                 if( DEBUG && DEBUG_METHOD ) NetBeans.Logger.log("net.getRequestWebProgress - myInterface: "+ myInterface);
@@ -849,25 +985,29 @@
 
     function isURLEncodedFile(request, text, headers)
     {
-        if ( !request ) {
-            return false;
-        }
-        if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1){
-            return true;
-        }
-
-        var headerValue = null;
         try {
-            headerValue = request.contentType;
-        } catch(exc) {
-            if (DEBUG)NetBeans.Logger.log("netmonitor.isURLEncodedFile: request:" + request + " text:" + text + " Exception:" + exc);
+            if ( !request ) {
+                return false;
+            }
+            if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1){
+                return true;
+            }
+
+            var headerValue = null;
+            try {
+                headerValue = request.contentType;
+            } catch(exc) {
+                if (DEBUG)NetBeans.Logger.log("netmonitor.isURLEncodedFile: request:" + request + " text:" + text + " Exception:" + exc);
+            }
+            if ( !headerValue ){
+                headerValue = findHeader(headers, "Content-Type");
+            }
+            // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
+            // there can be even charset specified. So, use indexOf rather than just "==".
+            return (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0);
+        } catch (exc) {
+            return undefined;
         }
-        if ( !headerValue ){
-            headerValue = findHeader(headers, "Content-Type");
-        }
-        // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
-        // there can be even charset specified. So, use indexOf rather than just "==".
-        return (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0);
     }
 
     function findHeader(headers, name) {

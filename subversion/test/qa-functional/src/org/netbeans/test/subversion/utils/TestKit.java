@@ -28,6 +28,7 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -54,6 +55,7 @@ public final class TestKit {
     public final static String IGNORED_STATUS = "[Ignored ]";
     public final static String UPTODATE_STATUS = "";
     public final static String LOGGER_NAME = "org.netbeans.modules.subversion.t9y";
+    public final static int TIME_OUT = 15;
     
     public static File prepareProject(String category, String project, String project_name) throws Exception {
         //create temporary folder for test
@@ -273,7 +275,13 @@ public final class TestKit {
     }
 
     public static boolean waitText(MessageHandler handler) {
+        int i = 0;
+
         while (!handler.isFinished()) {
+            i++;
+            if (i > TIME_OUT) {
+                throw new TimeoutExpiredException("Text hasn't been found in reasonable time!");
+            }
             try {
                 Thread.sleep(500);
             } catch (InterruptedException ex) {

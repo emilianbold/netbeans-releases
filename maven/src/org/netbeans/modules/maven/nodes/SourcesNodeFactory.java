@@ -80,9 +80,9 @@ public class SourcesNodeFactory implements NodeFactory {
             List<SourceGroup> list = new ArrayList<SourceGroup>();
             Sources srcs = ProjectUtils.getSources(project);
             SourceGroup[] javagroup = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            for (int i = 0; i < javagroup.length; i++) {
-                    list.add(javagroup[i]);
-                }
+            for (SourceGroup sg : javagroup) {
+                list.add(sg);
+            }
             return list;
         }
         
