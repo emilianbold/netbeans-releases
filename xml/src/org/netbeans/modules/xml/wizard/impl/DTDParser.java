@@ -59,7 +59,7 @@ import org.netbeans.modules.xml.util.Util;
  *
  * @author  Petr Kuzel
  */
-final class DTDParser extends DefaultHandler implements DeclHandler {
+public final class DTDParser extends DefaultHandler implements DeclHandler {
 
     static final String SAX_PROPERTY = "http://xml.org/sax/properties/";        // NOI18N
     static final String DECL_HANDLER = "declaration-handler";                   // NOI18N
