@@ -156,7 +156,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         
         logger.println ("NetBeans: Classes to be reloaded:");
         
-        Map map = new HashMap ();
+        Map<String, byte[]> map = new HashMap<String, byte[]>();
         EditorContext editorContext = (EditorContext) DebuggerManager.
             getDebuggerManager ().lookupFirst (null, EditorContext.class);
 

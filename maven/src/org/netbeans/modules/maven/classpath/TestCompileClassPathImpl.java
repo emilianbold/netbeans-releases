@@ -61,16 +61,14 @@ class TestCompileClassPathImpl extends AbstractProjectClassPathImpl {
     }
     
    URI[] createPath() {
-        List lst = new ArrayList();
+        List<URI> lst = new ArrayList<URI>();
         //TODO we shall add the test class output as well. how?
         // according the current 2.1 sources this is almost the same as getCompileClasspath()
         //except for the fact that multiproject references are not redirected to their respective
         // output folders.. we lways retrieve stuff from local repo..
-        List arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
-        List assemblies = new ArrayList();
-        Iterator it = arts.iterator();
-        while (it.hasNext()) {
-            Artifact art = (Artifact)it.next();
+        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
+        List<File> assemblies = new ArrayList<File>();
+        for (Artifact art : arts) {
             if (art.getFile() != null) {
                 File fil = FileUtil.normalizeFile(art.getFile());
                 // the assemblied jars go as last ones, otherwise source for binaries don't really work.
@@ -84,16 +82,14 @@ class TestCompileClassPathImpl extends AbstractProjectClassPathImpl {
                 //null means dependencies were not resolved..
             } 
         }
-        it = assemblies.iterator();
-        while (it.hasNext()) {
-            File ass = (File)it.next();
+        for (File ass : assemblies) {
             lst.add(ass.toURI());
         }
         File fil = new File(getMavenProject().getOriginalMavenProject().getBuild().getOutputDirectory());
         fil = FileUtil.normalizeFile(fil);
         lst.add(0, fil.toURI());
         URI[] uris = new URI[lst.size()];
-        uris = (URI[])lst.toArray(uris);
+        uris = lst.toArray(uris);
         return uris;
     }    
     

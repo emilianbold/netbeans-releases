@@ -60,12 +60,12 @@ class TestSourceClassPathImpl extends AbstractProjectClassPathImpl {
     }
     
     URI[] createPath() {
-        Collection col = new ArrayList();
+        Collection<URI> col = new ArrayList<URI>();
         col.addAll(Arrays.asList(getMavenProject().getSourceRoots(true)));
         col.addAll(Arrays.asList(getMavenProject().getResources(true)));
         
         URI[] uris = new URI[col.size()];
-        uris = (URI[])col.toArray(uris);
+        uris = col.toArray(uris);
         return uris;        
     }
     

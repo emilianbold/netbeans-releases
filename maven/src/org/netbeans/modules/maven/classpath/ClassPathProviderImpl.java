@@ -86,23 +86,23 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             return new ClassPath[]{ getBootClassPath() };
         }
         if (ClassPath.COMPILE.equals(type)) {
-            List/*<ClassPath>*/ l = new ArrayList(2);
+            List<ClassPath> l = new ArrayList<ClassPath>(2);
             l.add(getCompileTimeClasspath(TYPE_SRC));
             l.add(getCompileTimeClasspath(TYPE_TESTSRC));
-            return (ClassPath[])l.toArray(new ClassPath[l.size()]);
+            return l.toArray(new ClassPath[l.size()]);
         }
         if (ClassPath.EXECUTE.equals(type)) {
-            List/*<ClassPath>*/ l = new ArrayList(2);
+            List<ClassPath> l = new ArrayList<ClassPath>(2);
             l.add(getRuntimeClasspath(TYPE_SRC));
             l.add(getRuntimeClasspath(TYPE_TESTSRC));
-            return (ClassPath[])l.toArray(new ClassPath[l.size()]);
+            return l.toArray(new ClassPath[l.size()]);
         }
         
         if (ClassPath.SOURCE.equals(type)) {
-            List/*<ClassPath>*/ l = new ArrayList(2);
+            List<ClassPath> l = new ArrayList<ClassPath>(2);
             l.add(getSourcepath(TYPE_SRC));
             l.add(getSourcepath(TYPE_TESTSRC));
-            return (ClassPath[])l.toArray(new ClassPath[l.size()]);
+            return l.toArray(new ClassPath[l.size()]);
         }
         return new ClassPath[0];
     }
