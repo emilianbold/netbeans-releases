@@ -176,7 +176,6 @@ public final class XMLUtil extends Object {
     private static final char[] DEC2HEX = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
-    private static Class fastParserFactoryClass = null;
 
     /** Forbids creating new XMLUtil */
     private XMLUtil() {
