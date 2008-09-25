@@ -74,7 +74,7 @@ public class FmtTabsIndents extends JPanel {
 
         freeFormatCheckBox = new javax.swing.JCheckBox();
 
-        setName("null");
+        setName(null);
         setOpaque(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(freeFormatCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_Free_Format")); // NOI18N

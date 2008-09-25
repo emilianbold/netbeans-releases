@@ -113,8 +113,10 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
         }
         radioButton = null;
         valueState = null;
-        inplaceEditor.cleanUp();
-        inplaceEditor = null;
+        if (inplaceEditor != null) {
+            inplaceEditor.cleanUp();
+            inplaceEditor = null;
+        }
     }
 
     public JComponent getCustomEditorComponent() {

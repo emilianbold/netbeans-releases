@@ -43,6 +43,11 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudio_12" display="Sun Studio 12 Compiler Collection" family="SunStudio"/>
+    <default_locations>
+        <platform os="linux" directory="/opt/sunsutio12/bin"/>
+        <platform os="sun_intel" directory="/opt/SUNWspro/bin"/>
+        <platform os="sun_sparc" directory="/opt/SUNWspro/bin"/>
+    </default_locations>
     <c>
         <version flags="-V" pattern=".*Sun C 5.9"/>
         <architecture>

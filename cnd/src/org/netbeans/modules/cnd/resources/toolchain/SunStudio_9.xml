@@ -44,6 +44,9 @@ made subject to such option by the copyright holder.
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudio_9" display="Sun Studio 9 Compiler Collection" family="SunStudio"/>
     <platforms stringvalue="sun_sparc"/>
+    <default_locations>
+        <platform os="sun_sparc" directory="/opt/SUNWspro/bin"/>
+    </default_locations>
     <c>
         <version flags="-V" pattern=".*Sun C 5.6"/>
     </c>

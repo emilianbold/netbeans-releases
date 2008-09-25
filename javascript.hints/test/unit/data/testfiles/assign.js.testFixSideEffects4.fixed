@@ -17,7 +17,7 @@ function foo() {
 } 
 
 function foo() {
-    var = bar4
+    myvar = bar4
     baz
     return;
 } 

@@ -159,7 +159,9 @@ public class PersistentClassIndex extends ClassIndexImpl {
         for (ParserResult result: info.getEmbeddedResults(mimeType)) {
             assert result != null;
 
-            sa.analyseUnitAndStore(indexer, result);
+            if (result.isValid()) {
+                sa.analyseUnitAndStore(indexer, result);
+            }
         }
         
         long et = System.currentTimeMillis();
