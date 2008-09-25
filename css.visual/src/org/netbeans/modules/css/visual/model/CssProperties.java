@@ -238,7 +238,7 @@ public final class CssProperties {
         cssLengthUnits.add("mm"); //NOI18N
         cssLengthUnits.add("em"); //NOI18N
         cssLengthUnits.add("ex"); //NOI18N
-        cssLengthUnits.add("picas"); //NOI18N
+        cssLengthUnits.add("pc"); //NOI18N
     }
     
     private static List<String> backgroundRepeatValues = new ArrayList<String>();
