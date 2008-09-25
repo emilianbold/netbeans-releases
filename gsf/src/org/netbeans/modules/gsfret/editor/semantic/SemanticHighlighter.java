@@ -105,7 +105,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         final SortedSet<SequenceElement> newColoring = new TreeSet<SequenceElement>();
 
         
-        if (isCancelled()) {
+        if (isCancelled() || info.hasInvalidResults()) {
             return true;
         }
 

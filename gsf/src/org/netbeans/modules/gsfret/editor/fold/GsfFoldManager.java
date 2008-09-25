@@ -310,6 +310,13 @@ public class GsfFoldManager implements FoldManager {
             
             long startTime = System.currentTimeMillis();
 
+            // Don't update folds, if there is an invalid result
+            // It should be solved per lenguages, but then there has to be remembered
+            // lates folds and transformed to the new possition.
+            if (info.hasInvalidResults()) {
+                return;
+            }
+
             TreeSet<FoldInfo> folds = new TreeSet<FoldInfo>();
             boolean success = gsfFoldScan(fm, info, folds);
             if (!success || isCancelled()) {

@@ -67,12 +67,22 @@ public abstract class ParserResult {
     @NonNull private String mimeType;
     @NonNull private CompilationInfo info;
     @NonNull protected UpdateState updateState = UpdateState.NOT_SUPPORTED;
+    /**
+     * Flag, whether the parser result is valid. If is not valid, then index, codefolding
+     * and semantic coloring will not be refreshed.
+     */
+    private final boolean valid;
 
     /** Creates a new instance of ParserResult */
     public ParserResult(@NonNull Parser parser, @NonNull ParserFile file, @NonNull String mimeType) {
+        this(parser, file, mimeType, true);
+    }
+
+    public ParserResult(@NonNull Parser parser, @NonNull ParserFile file, @NonNull String mimeType, boolean isValid) {
         this.parser = parser;
         this.file = file;
         this.mimeType = mimeType;
+        this.valid = isValid;
     }
 
     @NonNull
@@ -94,7 +104,17 @@ public abstract class ParserResult {
     public TranslatedSource getTranslatedSource() {
         return translatedSource;
     }
-    
+
+    /**
+     * Return true iff this is a valid parser result.
+     * A parser result is valid if it did not contain fatal errors.
+     * 
+     * @return
+     */
+    public boolean isValid() {
+        return valid;
+    }
+
     /**
      * Returns the errors in the file represented by the {@link CompilationInfo}
      * for one particular mime type.
