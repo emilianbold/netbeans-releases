@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.customizer;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -385,6 +386,11 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
         }
         if (lineNum < 0) {
             return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec");
+        }
+        
+        File file = new File(sourceName);
+        if(file == null || !file.exists() || file.isDirectory()) {
+            return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_Invalid_File");
         }
         
         if (breakpoint != null ){
