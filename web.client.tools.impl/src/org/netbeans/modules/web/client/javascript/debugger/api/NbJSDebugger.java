@@ -103,7 +103,6 @@ import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -126,8 +125,8 @@ public final class NbJSDebugger {
 
     private static final Object SESSION_LOCK = new Object();
 
+    private final WebClientToolsProjectUtils.Browser browser;
     private final URI uri;
-    private final Factory browser;
     private Lookup lookup;
     private final List<JSDebuggerEventListener> listeners;
     private final List<JSHttpMessageEventListener> httpListeners;
@@ -301,7 +300,8 @@ public final class NbJSDebugger {
 
     NbJSDebugger(URI uri, HtmlBrowser.Factory browser, Lookup lookup, JSDebugger debugger) {
         this.uri = uri;
-        this.browser = browser;
+        this.browser = (browser == WebClientToolsProjectUtils.getInternetExplorerBrowser()) ?
+            WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER : WebClientToolsProjectUtils.Browser.FIREFOX;
         this.lookup = lookup;
         this.debugger = debugger;
 
@@ -369,7 +369,7 @@ public final class NbJSDebugger {
                     Session[] sessions = manager.getSessions();
                     for (Session session : sessions) {
                         NbJSDebugger runningNbJSDebugger = session.lookupFirst(null, NbJSDebugger.class);
-                        if (runningNbJSDebugger != null && runningNbJSDebugger.getBrowser() == browser) {
+                        if (runningNbJSDebugger != null && runningNbJSDebugger.getBrowser() == WebClientToolsProjectUtils.Browser.FIREFOX) {
                             runningSession = session;
                             break;
                         }
@@ -428,8 +428,12 @@ public final class NbJSDebugger {
         }
     }
 
-    public HtmlBrowser.Factory getBrowser() {
+    public WebClientToolsProjectUtils.Browser getBrowser() {
         return browser;
+    }
+
+    public boolean supportsHttpMonitor() {
+        return browser == WebClientToolsProjectUtils.Browser.FIREFOX;
     }
 
     public String getID() {
