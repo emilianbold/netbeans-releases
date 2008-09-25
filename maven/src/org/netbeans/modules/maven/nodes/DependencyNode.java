@@ -832,7 +832,8 @@ public class DependencyNode extends AbstractNode {
             Action[] superActions = super.getActions(false);
             boolean hasOpen = false;
             for (int i = 0; i < superActions.length; i++) {
-                if (superActions[i] instanceof OpenAction || superActions[i] instanceof EditAction) {
+                if ((superActions[i] instanceof OpenAction || superActions[i] instanceof EditAction)
+                        && !dobj.getClass().getName().contains("ClassDataObject")) {//NOI18N #148053
                     result.add(superActions[i]);
                     hasOpen = true;
                 }
@@ -840,10 +841,10 @@ public class DependencyNode extends AbstractNode {
                     result.add(superActions[i]);
                 }
             }
-            result.add(new OpenSrcAction(true));
             if (!hasOpen) { //necessary? maybe just keep around for all..
                 result.add(new OpenSrcAction(false));
             }
+            result.add(new OpenSrcAction(true));
 
             return result.toArray(new Action[result.size()]);
         }
