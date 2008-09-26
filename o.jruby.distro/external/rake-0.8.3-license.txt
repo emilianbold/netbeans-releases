@@ -1,8 +1,8 @@
 Name: Rake
-Version: 0.8.2
-Description: Rake 0.8.2
+Version: 0.8.3
+Description: Rake 0.8.3
 License: MIT
-Files: rake-0.8.2.gem
+Files: rake-0.8.3.gem
 OSR: 6063
 Origin: http://rake.rubyforge.org/
 
