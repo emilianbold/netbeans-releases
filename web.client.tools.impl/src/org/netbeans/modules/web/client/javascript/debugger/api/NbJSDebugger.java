@@ -245,9 +245,17 @@ public final class NbJSDebugger {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
             String pref = evt.getKey();
-            if (NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_ENABLED.equals(pref) ||
-                    NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_OPENED.equals(pref)) {
+            if (NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_ENABLED.equals(pref)) {
                 setBooleanFeatures(Feature.Name.HTTP_MONITOR, Boolean.parseBoolean(evt.getNewValue()));
+            } else if (NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_OPENED.equals(pref)) {
+                NbJSPreferences preferences = NbJSPreferences.getInstance();
+                
+                boolean enabled = preferences.getHttpMonitorEnabled();
+                boolean monitorOpened = Boolean.parseBoolean(evt.getNewValue());
+
+                if (monitorOpened && enabled) {
+                    setBooleanFeatures(Feature.Name.HTTP_MONITOR, true);
+                }
             }
         }
     }
@@ -506,10 +514,11 @@ public final class NbJSDebugger {
     }
 
     public void setBooleanFeatures(Feature.Name feature, boolean value) {
-        NbJSPreferences preferences = NbJSPreferences.getInstance();
         if (debugger != null) {
             if (Feature.Name.HTTP_MONITOR.equals(feature)) {
-                debugger.setBooleanFeature(feature, preferences.getHttpMonitorEnabled());
+                synchronized (this) {
+                    debugger.setBooleanFeature(feature, value);
+                }
             } else {
                 throw new UnsupportedOperationException("Setting features for Feature: " + feature + " has yet to be implmented");
             }
@@ -522,6 +531,12 @@ public final class NbJSDebugger {
             // Set the initial feature set
             NbJSPreferences preferences = NbJSPreferences.getInstance();
 
+            if (preferenceChangeListener == null) {
+                preferenceChangeListener = new PreferenceChangeListenerImpl();
+                NbJSPreferences nbJSPreferences = NbJSPreferences.getInstance();
+                nbJSPreferences.addPreferenceChangeListener(preferenceChangeListener);
+            }
+            
             debugger.setBooleanFeature(Feature.Name.SHOW_FUNCTIONS, preferences.getShowFunctions());
             debugger.setBooleanFeature(Feature.Name.SHOW_CONSTANTS, preferences.getShowConstants());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_FIRST_LINE, preferences.getSuspendOnFirstLine());
@@ -530,20 +545,13 @@ public final class NbJSDebugger {
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_DEBUGGERKEYWORD, preferences.getSuspendOnDebuggerKeyword());
             debugger.setBooleanFeature(Feature.Name.IGNORE_QUERY_STRINGS, ignoreQueryStrings);
 
-            //We probably need to figure out the best place to specify the Http Monitor being on or off by default.  
-            debugger.setBooleanFeature(Feature.Name.HTTP_MONITOR, preferences.getHttpMonitorEnabled());
-
+            debugger.setBooleanFeature(Feature.Name.HTTP_MONITOR, preferences.getHttpMonitorEnabled() && preferences.getHttpMonitorOpened());
+            
             setBreakPoints();
         }
         if (state == JSDebuggerState.STARTING_READY) {
             if (console != null) {
                 console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_JSDEBUGGER_STARTED") + getURI()); // NOI18N
-            }
-
-            if (preferenceChangeListener == null) {
-                preferenceChangeListener = new PreferenceChangeListenerImpl();
-                NbJSPreferences nbJSPreferences = NbJSPreferences.getInstance();
-                nbJSPreferences.addPreferenceChangeListener(preferenceChangeListener);
             }
         }
         if (state.getState() == JSDebuggerState.State.SUSPENDED) {

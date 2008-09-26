@@ -77,10 +77,6 @@ final class HttpMonitorTopComponent extends TopComponent {
         DebuggerManager manager = DebuggerManager.getDebuggerManager();
         manager.addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, debuggerManagerListener);
         manager.addDebuggerListener(DebuggerManager.PROP_SESSIONS, debuggerManagerListener);
-
-//        if (HttpMonitorUtility.getCurrentHttpMonitorModel() != null) {
-            HttpMonitorUtility.setEnabled(true);
-//        }
     }
     private Icon StartIcon;
     private Icon StopIcon;
@@ -90,8 +86,10 @@ final class HttpMonitorTopComponent extends TopComponent {
         Icon retIcon;
         if (HttpMonitorUtility.isEnabled()) {
             retIcon = (StopIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(STOP_ICON_PATH)));
+            StopIcon = retIcon;
         } else {
-            retIcon =  (StartIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(START_ICON_PATH)));
+            retIcon =  (StartIcon != null ? StartIcon : new javax.swing.ImageIcon(getClass().getResource(START_ICON_PATH)));
+            StartIcon = retIcon;
         }
         return retIcon;
         
