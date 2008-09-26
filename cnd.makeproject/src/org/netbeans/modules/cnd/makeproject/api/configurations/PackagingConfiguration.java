@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.PackagingNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement.FileType;
-import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.packaging.PackageDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.openide.DialogDisplayer;
@@ -147,39 +147,39 @@ public class PackagingConfiguration {
         }
         
         // Solaris SVR4
-        List<InfoElement> headerList = getInfo().getValue();
-        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "PKG", getOutputName(), true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "NAME", "Package description ...", true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "ARCH", defArch, true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "CATEGORY", "application", true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "VERSION", "1.0", true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "BASEDIR", "/opt", false, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "CLASSES", "none", false, true)); // NOI18N
+        List<PackagerInfoElement> headerList = getInfo().getValue();
+        headerList.add(new PackagerInfoElement(TYPE_SVR4_PACKAGE, "PKG", getOutputName(), true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_SVR4_PACKAGE, "NAME", "Package description ...", true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_SVR4_PACKAGE, "ARCH", defArch, true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_SVR4_PACKAGE, "CATEGORY", "application", true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_SVR4_PACKAGE, "VERSION", "1.0", true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_SVR4_PACKAGE, "BASEDIR", "/opt", false, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_SVR4_PACKAGE, "PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_SVR4_PACKAGE, "CLASSES", "none", false, true)); // NOI18N
         
         // RPM
         //List<InfoElement> rpmHeaderList = getRpmHeader().getValue();
-        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "Summary", "Sumary...", true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "Name", getOutputName(), true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "Version", "1.0", true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "Release", "1", true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "Group", "Applications/System", true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "License", "BSD-type", true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "%description", "Description...", true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_RPM_PACKAGE, "Summary", "Sumary...", true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_RPM_PACKAGE, "Name", getOutputName(), true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_RPM_PACKAGE, "Version", "1.0", true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_RPM_PACKAGE, "Release", "1", true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_RPM_PACKAGE, "Group", "Applications/System", true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_RPM_PACKAGE, "License", "BSD-type", true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_RPM_PACKAGE, "%description", "Description...", true, true)); // NOI18N
         
         // Debian
         //List<InfoElement> debianHeaderList = getDebianHeader().getValue();
-        headerList.add(new InfoElement(TYPE_DEBIAN_PACKAGE, "Package", getOutputName(), true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_DEBIAN_PACKAGE, "Version", "1.0", true, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_DEBIAN_PACKAGE, "Architecture", defArch, false, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_DEBIAN_PACKAGE, "Maintainer", System.getProperty("user.name"), false, true)); // NOI18N
-        headerList.add(new InfoElement(TYPE_DEBIAN_PACKAGE, "Description", "...", false, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_DEBIAN_PACKAGE, "Package", getOutputName(), true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_DEBIAN_PACKAGE, "Version", "1.0", true, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_DEBIAN_PACKAGE, "Architecture", defArch, false, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_DEBIAN_PACKAGE, "Maintainer", System.getProperty("user.name"), false, true)); // NOI18N
+        headerList.add(new PackagerInfoElement(TYPE_DEBIAN_PACKAGE, "Description", "...", false, true)); // NOI18N
     }
     
-    public List<InfoElement> getHeaderSubList(int type) {
-        List<InfoElement> list = new ArrayList<InfoElement>();
-        List<InfoElement> headerList = getInfo().getValue();
-        for (InfoElement elem : headerList) {
+    public List<PackagerInfoElement> getHeaderSubList(int type) {
+        List<PackagerInfoElement> list = new ArrayList<PackagerInfoElement>();
+        List<PackagerInfoElement> headerList = getInfo().getValue();
+        for (PackagerInfoElement elem : headerList) {
             if (elem.getType() == type) {
                 list.add(elem);
             }
@@ -199,7 +199,7 @@ public class PackagingConfiguration {
             }
         }
         
-        List<InfoElement> headerList = getHeaderSubList(getType().getValue());
+        List<PackagerInfoElement> headerList = getHeaderSubList(getType().getValue());
         if (getType().getValue() == TYPE_SVR4_PACKAGE && headerList.size() != 8) {
             return true;
         }
@@ -209,7 +209,7 @@ public class PackagingConfiguration {
         else if (getType().getValue() == TYPE_DEBIAN_PACKAGE && headerList.size() != 5) {
             return true;
         }
-        for (InfoElement elem : headerList) {
+        for (PackagerInfoElement elem : headerList) {
             if (!elem.isDefaultValue()) {
                 return true;
             }
@@ -417,7 +417,7 @@ public class PackagingConfiguration {
         }
     }
     
-    private String getOutputName() {
+    public String getOutputName() {
         String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {
             outputName = outputName.toLowerCase();
@@ -550,9 +550,9 @@ public class PackagingConfiguration {
     }
     
     
-    public InfoElement findInfoElement(String name) {
-        List<InfoElement> infoList = getInfo().getValue();
-        for (InfoElement elem : infoList) {
+    public PackagerInfoElement findInfoElement(String name) {
+        List<PackagerInfoElement> infoList = getInfo().getValue();
+        for (PackagerInfoElement elem : infoList) {
             if (elem.getName().equals(name)) {
                 return elem;
             }
@@ -561,8 +561,8 @@ public class PackagingConfiguration {
     }
     
     public String findInfoValueName(String name) {
-        List<InfoElement> infoList = getInfo().getValue();
-        for (InfoElement elem : infoList) {
+        List<PackagerInfoElement> infoList = getInfo().getValue();
+        for (PackagerInfoElement elem : infoList) {
             if (elem.getName().equals(name)) {
                 return elem.getValue();
             }

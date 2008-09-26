@@ -39,18 +39,70 @@
 
 package org.netbeans.modules.cnd.makeproject.packaging;
 
-import java.util.List;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+/**
+ *
+ * @author thp
+ */
+public class PackagerInfoElement {
+    private int type;
+    private String name;
+    private String value;
+    private boolean mandatory;
+    private boolean defaultValue;
+    
+    public PackagerInfoElement(int type, String name, String value) {
+        this.type = type;
+        this.name = name;
+        this.value = value;
+        this.mandatory = false;
+        this.defaultValue = false;
+    }
+    
+    public PackagerInfoElement(int type, String name, String value, boolean mandatory, boolean defaultValue) {
+        this.type = type;
+        this.name = name;
+        this.value = value;
+        this.mandatory = mandatory;
+        this.defaultValue = defaultValue;
+    }
 
-public interface PackagerDescriptor {
-    public String getName();
-    public String getDisplayName();
-    public boolean hasInfoList();
-    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration);
-    public boolean isOutputAFolder();
-    public String getOutputFileName(MakeConfiguration makeConfiguration);
-    public String getOutputFileSuffix();
-    public String getDefaultTool();
-    public String getDefaultOptions();
-    public String getTopDir(MakeConfiguration makeConfiguration);
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+    
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public boolean isMandatory() {
+        return mandatory;
+    }
+
+    public void setMandatory(boolean mandatory) {
+        this.mandatory = mandatory;
+    }
+
+    public boolean isDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(boolean defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 }

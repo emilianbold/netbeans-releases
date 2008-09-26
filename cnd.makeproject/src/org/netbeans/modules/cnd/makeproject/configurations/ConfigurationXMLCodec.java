@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
-import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.packaging.PackageDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -255,8 +255,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentPackagingConfiguration.getFiles().getValue().clear();
             //currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
-            List<InfoElement> toBeRemove = currentPackagingConfiguration.getHeaderSubList(currentPackagingConfiguration.getType().getValue());
-            for (InfoElement elem : toBeRemove) {
+            List<PackagerInfoElement> toBeRemove = currentPackagingConfiguration.getHeaderSubList(currentPackagingConfiguration.getType().getValue());
+            for (PackagerInfoElement elem : toBeRemove) {
                 currentPackagingConfiguration.getInfo().getValue().remove(elem);
             }
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
@@ -320,7 +320,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String name = atts.getValue(NAME_ATTR); // NOI18N
             String value = atts.getValue(VALUE_ATTR); // NOI18N
             String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
-            InfoElement infoElement = new InfoElement(currentPackagingConfiguration.getType().getValue(), name, value, mandatory.equals(TRUE_VALUE), false);
+            PackagerInfoElement infoElement = new PackagerInfoElement(currentPackagingConfiguration.getType().getValue(), name, value, mandatory.equals(TRUE_VALUE), false);
             if (currentPackagingConfiguration != null) {
                 currentPackagingConfiguration.getInfo().add(infoElement);
             }

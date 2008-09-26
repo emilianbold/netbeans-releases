@@ -58,7 +58,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
-import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -72,7 +72,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
     private JButton addEntryButton;
     private JTextArea docArea;
 
-    public PackagingInfoPanel(List<InfoElement> infoList, PackagingConfiguration packagingConfiguration) {
+    public PackagingInfoPanel(List<PackagerInfoElement> infoList, PackagingConfiguration packagingConfiguration) {
         super(infoList.toArray(), new JButton[]{new JButton(), new JButton()});
         getAddButton().setVisible(false);
         this.packagingConfiguration = packagingConfiguration;
@@ -103,7 +103,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
     class AddButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            addObjectAction(new InfoElement(packagingConfiguration.getType().getValue(), "", "")); // NOI18N
+            addObjectAction(new PackagerInfoElement(packagingConfiguration.getType().getValue(), "", "")); // NOI18N
         }
     }
     
@@ -121,8 +121,8 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
     @Override
     public Object copyAction(Object o) {
-        InfoElement elem = (InfoElement) o;
-        return new InfoElement(elem.getType(), new String(elem.getName()), new String(elem.getValue()));
+        PackagerInfoElement elem = (PackagerInfoElement) o;
+        return new PackagerInfoElement(elem.getType(), new String(elem.getName()), new String(elem.getValue()));
     }
 
     @Override
@@ -189,7 +189,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
             // Disable Remove button for mandatory entries
             int i = getSelectedIndex();
             if (listData.size() >= 0 && i >= 0 && i < listData.size()) {
-                InfoElement infoElement = (InfoElement)listData.get(i);
+                PackagerInfoElement infoElement = (PackagerInfoElement)listData.get(i);
                 if (infoElement.isMandatory()) {
                     getRemoveButton().setEnabled(false);
                 }
@@ -304,7 +304,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
             return;
         }
         
-        InfoElement elem = (InfoElement)listData.get(i);
+        PackagerInfoElement elem = (PackagerInfoElement)listData.get(i);
         if (elem.getName().equals("ARCH")) { //NOI18N
             docArea.setText(getString("PACKAGING_ARCH_DOC"));
         }
@@ -402,7 +402,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
-            InfoElement elem = (InfoElement) listData.elementAt(row);
+            PackagerInfoElement elem = (PackagerInfoElement) listData.elementAt(row);
             if (col == 0) {
             } else if (col == 1) {
                 String val = elem.getValue();
@@ -437,7 +437,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
         @Override
         public Object getValueAt(int row, int col) {
 //            return listData.elementAt(row);
-            InfoElement elem = (InfoElement) listData.elementAt(row);
+            PackagerInfoElement elem = (PackagerInfoElement) listData.elementAt(row);
             if (col == 0) {
                 return elem.getName();
             }
@@ -455,7 +455,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
         @Override
         public void setValueAt(Object value, int row, int col) {
-            InfoElement elem = (InfoElement) listData.elementAt(row);
+            PackagerInfoElement elem = (PackagerInfoElement) listData.elementAt(row);
             if (col == 0) {
                 elem.setName((String) value);
             } else if (col == 1) {

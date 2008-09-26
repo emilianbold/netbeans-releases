@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
 import org.openide.util.NbBundle;
 
 /**
@@ -275,7 +275,7 @@ private void entryComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         }
 }//GEN-LAST:event_entryComboBoxActionPerformed
 
-public InfoElement getInfoElement() {
+public PackagerInfoElement getInfoElement() {
     String name = (String)entryComboBox.getSelectedItem();
     String value = entryValueTextArea.getText();
     StringBuilder sb = new StringBuilder();
@@ -286,7 +286,7 @@ public InfoElement getInfoElement() {
             sb.append("\\n"); // NOI18N
         }
     }
-    return new InfoElement(packagingConfiguration.getType().getValue(), name, sb.toString());
+    return new PackagerInfoElement(packagingConfiguration.getType().getValue(), name, sb.toString());
 }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

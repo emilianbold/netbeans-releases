@@ -40,93 +40,66 @@
 package org.netbeans.modules.cnd.makeproject.packaging;
 
 import java.util.List;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.openide.util.NbBundle;
 
-public class PackagerDescriptorImpl implements PackagerDescriptor {
-    private String name;
-    private String displayName;
-    private boolean hasInfoList = false;
-    private List<InfoElement> defaultInfoList = null;
-    private boolean isOutputAFolder;
-    private String suffix;
-    private String defaultOptions;
-    private String defaultTool;
-    private String topDir;
-    
-    public PackagerDescriptorImpl(String name, String displayName) {
-        this.name = name;
-        this.displayName = displayName;
-    }
+/**
+ *
+ * @author thp
+ */
+public class TarPackager implements PackagerDescriptor {
+    public static String PACKAGER_NAME = "Tar"; // NOI18N
 
     public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        return PACKAGER_NAME;
     }
 
     public String getDisplayName() {
-        return displayName;
+        return getString("Tar");
     }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
+    
     public boolean hasInfoList() {
-        return hasInfoList;
+        return false;
     }
-
-    public void setHasInfoList(boolean hasInfoList) {
-        this.hasInfoList = hasInfoList;
-    }
-
-    public void setDefaultInfoList(List<InfoElement> defaultInfoList) {
-        this.defaultInfoList = defaultInfoList;
-    }
-
-    public List<InfoElement> getDefaultInfoList() {
-        return defaultInfoList;
-    }
-
-    public boolean isOutputAFolder() {
-        return isOutputAFolder;
-    }
-
-    public void setIsOutputAFolder(boolean isOutputAFolder) {
-        this.isOutputAFolder = isOutputAFolder;
-    }
-
-    public String getSuffix() {
-        return suffix;
-    }
-
-    public void setSuffix(String suffix) {
-        this.suffix = suffix;
+    
+    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration) {
+        return null;
     }
 
     public String getDefaultOptions() {
-        return defaultOptions;
-    }
-
-    public void setDefaultOptions(String defaultOptions) {
-        this.defaultOptions = defaultOptions;
+        return "-v"; // NOI18N
     }
 
     public String getDefaultTool() {
-        return defaultTool;
+        return "tar"; // NOI18N
     }
 
-    public void setDefaultTool(String defaultTool) {
-        this.defaultTool = defaultTool;
+    public boolean isOutputAFolder() {
+        return false;
+    }
+    
+    public String getOutputFileName(MakeConfiguration makeConfiguration) {
+        return makeConfiguration.getPackagingConfiguration().getOutputName();
     }
 
-    public String getTopDir() {
+    public String getOutputFileSuffix() {
+        return "tar";  // NOI18N
+    }
+
+    public String getTopDir(MakeConfiguration makeConfiguration) {
+        String topDir = IpeUtils.getBaseName(makeConfiguration.getPackagingConfiguration().getOutputValue());
+        
+        int i = topDir.lastIndexOf("."); // NOI18N
+        if (i > 0) {
+            topDir = topDir.substring(0, i);
+        }
         return topDir;
     }
 
-    public void setTopDir(String topDir) {
-        this.topDir = topDir;
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(PackagingConfiguration.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around
     }
-    
 }

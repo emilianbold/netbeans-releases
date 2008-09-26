@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
-import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
 
 public class ConfigurationMakefileWriter {
     private MakeConfigurationDescriptor projectDescriptor;
@@ -851,8 +851,8 @@ public class ConfigurationMakefileWriter {
         bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
-        List<InfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_SVR4_PACKAGE);
-        for (InfoElement elem : infoList) {
+        List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_SVR4_PACKAGE);
+        for (PackagerInfoElement elem : infoList) {
             bw.write("echo \'" + elem.getName() + "=\"" + packagingConfiguration.expandMacros(elem.getValue()) + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N       
@@ -989,8 +989,8 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
         bw.write("echo " + "BuildRoot: ${TOP}/${TMPDIR} >> ${SPEC_FILE}\n"); // NOI18N
-        List<InfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_RPM_PACKAGE);
-        for (InfoElement elem : infoList) {
+        List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_RPM_PACKAGE);
+        for (PackagerInfoElement elem : infoList) {
             if (elem.getName().startsWith("%")) { // NOI18N
                 bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
                 String value = elem.getValue();
@@ -1086,8 +1086,8 @@ public class ConfigurationMakefileWriter {
         bw.write("mkdir -p ${TMPDIR}/DEBIAN\n"); // NOI18N
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
-        List<InfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_DEBIAN_PACKAGE);
-        for (InfoElement elem : infoList) {
+        List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_DEBIAN_PACKAGE);
+        for (PackagerInfoElement elem : infoList) {
             String value = elem.getValue();
             int i = 0;
             int j = value.indexOf("\\n"); // NOI18N 

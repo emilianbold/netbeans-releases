@@ -39,70 +39,68 @@
 
 package org.netbeans.modules.cnd.makeproject.packaging;
 
+import java.util.List;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author thp
  */
-public class InfoElement {
-    private int type;
-    private String name;
-    private String value;
-    private boolean mandatory;
-    private boolean defaultValue;
-    
-    public InfoElement(int type, String name, String value) {
-        this.type = type;
-        this.name = name;
-        this.value = value;
-        this.mandatory = false;
-        this.defaultValue = false;
-    }
-    
-    public InfoElement(int type, String name, String value, boolean mandatory, boolean defaultValue) {
-        this.type = type;
-        this.name = name;
-        this.value = value;
-        this.mandatory = mandatory;
-        this.defaultValue = defaultValue;
-    }
+public class ZipPackager implements PackagerDescriptor {
+    public static String PACKAGER_NAME = "Zip"; // NOI18N
 
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-    
     public String getName() {
-        return name;
+        return PACKAGER_NAME;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getDisplayName() {
+        return getString("Zip");
+    }
+    
+    public boolean hasInfoList() {
+        return false;
+    }
+    
+    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration) {
+        return null;
     }
 
-    public String getValue() {
-        return value;
+    public String getDefaultOptions() {
+        return ""; // NOI18N
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public String getDefaultTool() {
+        return "zip"; // NOI18N
     }
 
-    public boolean isMandatory() {
-        return mandatory;
+    public boolean isOutputAFolder() {
+        return false;
+    }
+    
+    public String getOutputFileName(MakeConfiguration makeConfiguration) {
+        return makeConfiguration.getPackagingConfiguration().getOutputName();
+    }
+    
+    public String getOutputFileSuffix() {
+        return "zip";  // NOI18N
     }
 
-    public void setMandatory(boolean mandatory) {
-        this.mandatory = mandatory;
+    public String getTopDir(MakeConfiguration makeConfiguration) {
+        String topDir = IpeUtils.getBaseName(makeConfiguration.getPackagingConfiguration().getOutputValue());
+        
+        int i = topDir.lastIndexOf("."); // NOI18N
+        if (i > 0) {
+            topDir = topDir.substring(0, i);
+        }
+        return topDir;
     }
 
-    public boolean isDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(boolean defaultValue) {
-        this.defaultValue = defaultValue;
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(PackagingConfiguration.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around
     }
 }
