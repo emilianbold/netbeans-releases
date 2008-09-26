@@ -114,6 +114,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -185,6 +186,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -265,6 +267,7 @@ public final class JavaSource {
 
     private static final int REPARSE_DELAY = 500;
     private int reparseDelay;
+    private long eventCounter;
     
     /**Used by unit tests*/
     static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider (); 
@@ -603,6 +606,10 @@ public final class JavaSource {
      * </div>
      */
     public void runUserActionTask( final Task<CompilationController> task, final boolean shared) throws IOException {
+        runUserActionTaskImpl(task, shared);
+    }
+    
+    private long runUserActionTaskImpl ( final Task<CompilationController> task, final boolean shared) throws IOException {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
@@ -617,7 +624,7 @@ public final class JavaSource {
                 LOGGER.warning("JavaSource.runUserActionTask called in AWT event thread by: " + stackTraceElement); // NOI18N
             }
         }
-        
+        long currentId = -1;
         if (this.files.size()<=1) {                        
             final JavaSource.Request request = currentRequest.getTaskToCancel();
             try {
@@ -631,6 +638,7 @@ public final class JavaSource {
                     Pair<DocPositionRegion, MethodTree> changedMethod = null;
                     synchronized (this) {                        
                         jsInvalid = this.currentInfo == null || (this.flags & INVALID)!=0;
+                        currentId = eventCounter;
                         currentInfo = this.currentInfo;
                         changedMethod = (currentInfo == null ? null : this.currentInfo.getChangedTree());
                         if (!shared) {
@@ -765,6 +773,7 @@ public final class JavaSource {
                 currentRequest.cancelCompleted(request);
             }
         }
+        return currentId;
     }
 
     private void runUserActionTask( final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
@@ -772,6 +781,28 @@ public final class JavaSource {
         this.runUserActionTask (_task, shared);
     }
     
+    
+    long createTaggedController (final long timestamp, final Object[] controller) throws IOException {        
+        assert controller.length == 1;
+        if (isCurrent(timestamp)) {
+            assert controller[0] instanceof CompilationController;
+            return timestamp;
+        }
+        else {
+            final Task<CompilationController> wrapperTask = new Task<CompilationController>() {
+                public void run(CompilationController parameter) throws Exception {
+                    controller[0] = parameter;
+                }
+            };            
+            final long newTimestamp = runUserActionTaskImpl(wrapperTask, false);
+            assert controller[0] != null;
+            return newTimestamp;
+        }        
+    }
+    //where
+    private boolean isCurrent (long timestamp) {        
+        return eventCounter == timestamp;
+    }
     
     /**
      * Performs the given task when the scan finished. When no background scan is running
@@ -1409,11 +1440,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         synchronized (this) {
             invalid = (this.flags & INVALID) != 0;
             this.flags|=CHANGE_EXPECTED;
-            if (invalidate) {
+            if (invalidate) {                
                 this.flags|=(INVALID|RESCHEDULE_FINISHED_TASKS);
                 if (this.currentInfo != null) {
                     this.currentInfo.setChangedMethod (changedMethod);
                 }
+                eventCounter++;
             }
             if (updateIndex) {
                 this.flags|=UPDATE_INDEX;
