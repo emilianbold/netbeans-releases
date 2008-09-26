@@ -279,7 +279,7 @@ public class SrcNode extends FilterNode {
 
         private Action[] getCommonActions() {
             Action[] toAdd = null;
-            if (CommandUtils.isPhpFile(getFileObject())) {
+            if (CommandUtils.isPhpOrHtmlFile(getFileObject())) {
                 // not available for multiple selected nodes => create new instance every time
                 toAdd = new Action[] {
                     null,
