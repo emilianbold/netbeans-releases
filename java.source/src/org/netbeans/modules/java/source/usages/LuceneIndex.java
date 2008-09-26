@@ -105,7 +105,9 @@ class LuceneIndex extends Index {
     
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     
-    private final Directory directory;
+    private final File refCacheRoot;
+    //@GuardedBy(this)
+    private Directory directory;
     private Long rootTimeStamp;
     
     //@GuardedBy (this)
@@ -122,7 +124,8 @@ class LuceneIndex extends Index {
     /** Creates a new instance of LuceneIndex */
     private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
-        this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
+        this.refCacheRoot = refCacheRoot;
+        this.directory = FSDirectory.getDirectory(this.refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
         PerFieldAnalyzerWrapper _analyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer());
         _analyzer.addAnalyzer(DocumentUtil.identTerm("").field(), new WhitespaceAnalyzer());
         _analyzer.addAnalyzer(DocumentUtil.featureIdentTerm("").field(), new WhitespaceAnalyzer());
@@ -863,44 +866,50 @@ class LuceneIndex extends Index {
         checkPreconditions();
         this.rootPkgCache = null;
         this.close ();
-        final String[] content = this.directory.list();
-        boolean dirty = false;
-        for (String file : content) {
-            try {
-                directory.deleteFile(file);
-            } catch (IOException e) {
-                //Some temporary files
-                if (directory.fileExists(file)) {
-                    dirty = true;
-                }
-            }
-        }
-        if (dirty) {
-            //Try to delete dirty files and log what's wrong
-            final File cacheDir = ((FSDirectory)this.directory).getFile();
-            final File[] children = cacheDir.listFiles();
-            if (children != null) {
-                for (final File child : children) {
-                    if (!child.delete()) {
-                        final Class c = this.directory.getClass();
-                        int refCount = -1;
-                        try {
-                            final Field field = c.getDeclaredField("refCount"); 
-                            field.setAccessible(true);
-                            refCount = field.getInt(this.directory);                            
-                        } catch (NoSuchFieldException e) {/*Not important*/}
-                          catch (IllegalAccessException e) {/*Not important*/}
-                        
-                        throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
-                                child.exists()  +","+                                               //NOI18N
-                                child.canRead() +","+                                               //NOI18N
-                                child.canWrite() +","+                                              //NOI18N
-                                cacheDir.canRead() +","+                                            //NOI18N
-                                cacheDir.canWrite() +","+                                           //NOI18N
-                                refCount+")");                                                      //NOI18N
+        try {
+            final String[] content = this.directory.list();
+            boolean dirty = false;
+            for (String file : content) {
+                try {
+                    directory.deleteFile(file);
+                } catch (IOException e) {
+                    //Some temporary files
+                    if (directory.fileExists(file)) {
+                        dirty = true;
                     }
                 }
             }
+            if (dirty) {
+                //Try to delete dirty files and log what's wrong
+                final File cacheDir = ((FSDirectory)this.directory).getFile();
+                final File[] children = cacheDir.listFiles();
+                if (children != null) {
+                    for (final File child : children) {
+                        if (!child.delete()) {
+                            final Class c = this.directory.getClass();
+                            int refCount = -1;
+                            try {
+                                final Field field = c.getDeclaredField("refCount"); 
+                                field.setAccessible(true);
+                                refCount = field.getInt(this.directory);                            
+                            } catch (NoSuchFieldException e) {/*Not important*/}
+                              catch (IllegalAccessException e) {/*Not important*/}
+
+                            throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
+                                    child.exists()  +","+                                               //NOI18N
+                                    child.canRead() +","+                                               //NOI18N
+                                    child.canWrite() +","+                                              //NOI18N
+                                    cacheDir.canRead() +","+                                            //NOI18N
+                                    cacheDir.canWrite() +","+                                           //NOI18N
+                                    refCount+")");                                                      //NOI18N
+                        }
+                    }
+                }
+            }
+        } finally {
+            //Need to recreate directory, see issue: #148374
+            this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
+            closed = false;
         }
     }
         
@@ -917,7 +926,7 @@ class LuceneIndex extends Index {
     }
     
     public @Override String toString () {
-        return this.directory.toString();
+        return getClass().getSimpleName()+"["+this.refCacheRoot.getAbsolutePath()+"]";  //NOI18N
     }
     
     private synchronized IndexReader getReader () throws IOException {
