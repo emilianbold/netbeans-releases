@@ -245,7 +245,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findUidsByPrefix(String prefix) {
-        return getDeclarationsSorage().getUIDsRange(prefix, prefix+Character.MAX_VALUE);
+        // To improve performance use char(255) instead real Character.MAX_VALUE
+        char maxChar = 255; //Character.MAX_VALUE;
+        return getDeclarationsSorage().getUIDsRange(prefix, prefix+maxChar);
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUnnamedUids() {

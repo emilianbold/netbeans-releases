@@ -85,7 +85,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem preCheck() {
         TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-        if (!handle.getFileObject().isValid()) {
+        if (!handle.getFileObject().isValid() || RetoucheUtils.getElementHandle(handle) == null) {
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
         }
         if (handle.getKind() == Tree.Kind.ARRAY_TYPE) {

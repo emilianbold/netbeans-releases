@@ -150,7 +150,7 @@ public class ExamineManifest  {
                 String deps = attrs.getValue("OpenIDE-Module-Module-Dependencies"); //NOI18N
                 if (deps != null) {
                     StringTokenizer tokens = new StringTokenizer(deps, ","); //NOI18N
-                    List depList = new ArrayList();
+                    List<String> depList = new ArrayList<String>();
                     while (tokens.hasMoreTokens()) {
                         String tok = tokens.nextToken();
                         //we are just interested in specification and loose dependencies.

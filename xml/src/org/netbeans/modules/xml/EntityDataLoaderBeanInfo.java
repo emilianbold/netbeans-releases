@@ -42,9 +42,8 @@ package org.netbeans.modules.xml;
 
 import java.beans.*;
 import java.awt.Image;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Exceptions;
 

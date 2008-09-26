@@ -133,7 +133,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         
         String gfRootStr = properties.getGlassfishRoot();
         if (gfRootStr != null) {
-            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices-rt");
+            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices-rt" + ServerUtilities.GFV3_VERSION_MATCHER);
             jsr109lib = new File(gfRootStr, "jsr109-impl");
         }
 
@@ -197,7 +197,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                                              "jsr109-impl"};
             List<File> cPath = new ArrayList<File>();
             List<String> entryList = Arrays.asList(entries);
-            File f = ServerUtilities.getJarName(gfRootStr, "javax.javaee");
+            File f = ServerUtilities.getJarName(gfRootStr, "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER);
             if (null == f) {
                 // Prelude release hack
                 entryList = ServerUtilities.filterByManifest(entryList, 

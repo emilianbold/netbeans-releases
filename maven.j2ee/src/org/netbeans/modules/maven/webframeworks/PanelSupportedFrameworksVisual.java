@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
@@ -64,9 +66,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
+import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
@@ -96,7 +101,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     public static final int UNUSED_FRAMEWORKS = 2;
     
     private List ignoredFrameworks;
-    private Map extenders = new IdentityHashMap();
+    private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
 
     private FrameworksTableModel model;
     private PanelSupportedFrameworks panel;
@@ -168,30 +173,37 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         ServerInstanceWrapper selectedItem = null;
         boolean sjasFound = false;
         for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
-            String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.WAR)) {
-                ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
-                // decide whether this server should be preselected
-                if (selectedItem == null || !sjasFound) {
-                    if (selectedServerInstanceID != null) {
-                        if (selectedServerInstanceID.equals(serverInstanceID)) {
-                            selectedItem = serverWrapper;
+            ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
+            if (si != null) {
+                try {
+                    String displayName = si.getServerDisplayName();
+                    J2eePlatform j2eePlatform = si.getJ2eePlatform();
+                    if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.WAR)) {
+                        ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
+                        // decide whether this server should be preselected
+                        if (selectedItem == null || !sjasFound) {
+                            if (selectedServerInstanceID != null) {
+                                if (selectedServerInstanceID.equals(serverInstanceID)) {
+                                    selectedItem = serverWrapper;
+                                }
+                            } else {
+                                // preselect the best server ;)
+                                String shortName = POHImpl.privateGetServerId(serverInstanceID);
+                                if ("J2EE".equals(shortName)) { // NOI18N
+                                    selectedItem = serverWrapper;
+                                    sjasFound = true;
+                                }
+                                else
+                                if ("JBoss4".equals(shortName)) { // NOI18N
+                                    selectedItem = serverWrapper;
+                                }
+                            }
                         }
-                    } else {
-                        // preselect the best server ;)
-                        String shortName = Deployment.getDefault().getServerID(serverInstanceID);
-                        if ("J2EE".equals(shortName)) { // NOI18N
-                            selectedItem = serverWrapper;
-                            sjasFound = true;
-                        }
-                        else
-                        if ("JBoss4".equals(shortName)) { // NOI18N
-                            selectedItem = serverWrapper;
-                        }
+                        servers.add(serverWrapper);
                     }
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(PanelSupportedFrameworksVisual.class.getName()).log(Level.FINE, "", ex);
                 }
-                servers.add(serverWrapper);
             }
         }
         for (ServerInstanceWrapper item : servers) {
@@ -396,20 +408,26 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         // update the j2ee spec list according to the selected server
         ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
         if (serverInstanceWrapper != null) {
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceWrapper.getServerInstanceID());
-            Set supportedVersions = j2eePlatform.getSupportedSpecVersions(J2eeModule.WAR);
-            comJ2eeVersion.removeAllItems();
-            if (supportedVersions.contains(J2eeModule.JAVA_EE_5)) {
-                comJ2eeVersion.addItem(JAVA_EE_SPEC_50_LABEL);
-            }
-            if (supportedVersions.contains(J2eeModule.J2EE_14)) {
-                comJ2eeVersion.addItem(J2EE_SPEC_14_LABEL);
-            }
-            if (supportedVersions.contains(J2eeModule.J2EE_13)) {
-                comJ2eeVersion.addItem(J2EE_SPEC_13_LABEL);
-            }
-            if (prevSelectedItem != null) {
-                comJ2eeVersion.setSelectedItem(prevSelectedItem);
+            ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceWrapper.serverInstanceID);
+            try {
+                J2eePlatform j2eePlatform = si.getJ2eePlatform();
+                Set supportedVersions = j2eePlatform.getSupportedSpecVersions(J2eeModule.WAR);
+                comJ2eeVersion.removeAllItems();
+                if (supportedVersions.contains(J2eeModule.JAVA_EE_5)) {
+                    comJ2eeVersion.addItem(JAVA_EE_SPEC_50_LABEL);
+                }
+                if (supportedVersions.contains(J2eeModule.J2EE_14)) {
+                    comJ2eeVersion.addItem(J2EE_SPEC_14_LABEL);
+                }
+                if (supportedVersions.contains(J2eeModule.J2EE_13)) {
+                    comJ2eeVersion.addItem(J2EE_SPEC_13_LABEL);
+                }
+                if (prevSelectedItem != null) {
+                    comJ2eeVersion.setSelectedItem(prevSelectedItem);
+                }
+
+            } catch (InstanceRemovedException ex) {
+                comJ2eeVersion.removeAllItems();
             }
         } else {
             comJ2eeVersion.removeAllItems();
@@ -562,13 +580,13 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         settings.putProperty(WizardProperties.EXTENDERS, getSelectedExtenders());    //NOI18N
     }
 
-    public List getSelectedExtenders() {
-        List selectedExtenders = new LinkedList();
+    public List<WebModuleExtender> getSelectedExtenders() {
+        List<WebModuleExtender> selectedExtenders = new LinkedList<WebModuleExtender>();
         FrameworksTableModel mdl = (FrameworksTableModel) jTableFrameworks.getModel();
         for (int i = 0; i < mdl.getRowCount(); i++) {
             FrameworkModelItem item = mdl.getItem(i);
             if (item.isSelected()) {
-                WebModuleExtender extender = (WebModuleExtender) extenders.get(item.getFramework());
+                WebModuleExtender extender = extenders.get(item.getFramework());
                 if (extender != null) {
                     selectedExtenders.add(extender);
                 }

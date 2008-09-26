@@ -121,7 +121,7 @@ public final class EditHistory implements DocumentListener {
     private int delta = 0;
 
     EditHistory previous; // package protected only for tests
-    private int version;
+    private int version = -1;
 
     /**
      * The beginning position of the damaged region.
@@ -372,7 +372,7 @@ public final class EditHistory implements DocumentListener {
     }
 
     /** Maximum number of previous edit histories to keep */
-    private static final int MAX_KEEP = 20;
+    private static final int MAX_KEEP = 15;
 
     public void add(@NonNull EditHistory history) {
         history.previous = this;

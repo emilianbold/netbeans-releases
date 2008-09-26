@@ -61,7 +61,7 @@ class SourceClassPathImpl extends AbstractProjectClassPathImpl {
     }
     
     URI[] createPath() {
-        Collection col = new ArrayList();
+        Collection<URI> col = new ArrayList<URI>();
         col.addAll(Arrays.asList(getMavenProject().getSourceRoots(false)));
         //TODO temporary solution
         col.addAll(Arrays.asList(getMavenProject().getGeneratedSourceRoots()));
@@ -71,7 +71,7 @@ class SourceClassPathImpl extends AbstractProjectClassPathImpl {
         }
         col.addAll(Arrays.asList(getMavenProject().getResources(false)));
         URI[] uris = new URI[col.size()];
-        uris = (URI[])col.toArray(uris);
+        uris = col.toArray(uris);
         return uris;        
     }
 

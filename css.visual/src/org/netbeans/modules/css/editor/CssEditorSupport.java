@@ -140,24 +140,22 @@ public class CssEditorSupport {
                         try {
                             if (oldRule != null && newRule == null) {
                                 //remove the old rule line - maybe we should just cut the exact part?!?!
-                                int offset = oldRule.key().offset();
-                                int lineStart = Utilities.getRowStart(doc, offset);
-
-                                //do not remove the rule opening bracket if we are on it's line
-                                int ruleOpenBracketOffset = myRule.getRuleOpenBracketOffset();
-                                if (lineStart <= ruleOpenBracketOffset) {
-                                    lineStart = ruleOpenBracketOffset + 1;
+                                int start = oldRule.key().offset();
+                                int end = oldRule.value().offset() + oldRule.value().name().length();
+                                
+                                //cut off also the semicolon if there is any
+                                end = oldRule.semicolonOffset() != -1 ? oldRule.semicolonOffset() + 1 : end; 
+                                
+                                doc.remove(start, end - start);
+                                
+                                //check if the line is empty and possibly remove it
+                                if(Utilities.isRowWhite(doc, start)) {
+                                    int lineStart = Utilities.getRowStart(doc, start);
+                                    int lineOffset = Utilities.getLineOffset(doc, start);
+                                    int nextLineStart = Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
+                                    
+                                    doc.remove(lineStart, nextLineStart - lineStart);
                                 }
-
-                                int lineEnd = Utilities.getRowEnd(doc, offset) + LINE_SEPARATOR.length();
-
-                                //do not remove the rule closing bracket if we are on it's line
-                                int ruleCloseBracketOffset = myRule.getRuleCloseBracketOffset();
-                                if (lineEnd > ruleCloseBracketOffset) {
-                                    lineEnd = ruleCloseBracketOffset;
-                                }
-
-                                doc.remove(lineStart, lineEnd - lineStart);
 
                             } else if (oldRule == null && newRule != null) {
                                 //add the new rule at the end of the rule block:

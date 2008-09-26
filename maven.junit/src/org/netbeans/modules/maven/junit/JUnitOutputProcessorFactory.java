@@ -57,7 +57,7 @@ public class JUnitOutputProcessorFactory implements ContextOutputProcessorFactor
     public JUnitOutputProcessorFactory() {
     }
 
-    public Set createProcessorsSet(Project project) {
+    public Set<OutputProcessor> createProcessorsSet(Project project) {
         return Collections.<OutputProcessor>emptySet();
     }
 

@@ -851,7 +851,7 @@ public class ConfigurationMakefileWriter {
         bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
-        List<InfoElement> infoList = packagingConfiguration.getSvr4Header().getValue();
+        List<InfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_SVR4_PACKAGE);
         for (InfoElement elem : infoList) {
             bw.write("echo \'" + elem.getName() + "=\"" + packagingConfiguration.expandMacros(elem.getValue()) + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
         }
@@ -989,7 +989,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
         bw.write("echo " + "BuildRoot: ${TOP}/${TMPDIR} >> ${SPEC_FILE}\n"); // NOI18N
-        List<InfoElement> infoList = packagingConfiguration.getRpmHeader().getValue();
+        List<InfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_RPM_PACKAGE);
         for (InfoElement elem : infoList) {
             if (elem.getName().startsWith("%")) { // NOI18N
                 bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
@@ -1086,7 +1086,7 @@ public class ConfigurationMakefileWriter {
         bw.write("mkdir -p ${TMPDIR}/DEBIAN\n"); // NOI18N
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
-        List<InfoElement> infoList = packagingConfiguration.getDebianHeader().getValue();
+        List<InfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_DEBIAN_PACKAGE);
         for (InfoElement elem : infoList) {
             String value = elem.getValue();
             int i = 0;

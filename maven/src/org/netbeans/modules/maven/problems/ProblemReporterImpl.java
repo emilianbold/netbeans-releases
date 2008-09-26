@@ -127,7 +127,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
     }
     
-    public Collection getReports() {
+    public Collection<ProblemReport> getReports() {
         synchronized (reports) {
             return new ArrayList<ProblemReport>(reports);
         }

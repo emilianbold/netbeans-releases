@@ -68,10 +68,9 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
     public static final int EXECUTION_STRATEGY_RELATIONALMAP = 2;
     /** XML formatting constant: indent prefix */
     public static final String INDENT = "    ";
-
-    public static final String AXION_DB_WORKING_DIR="AxiondbWorkingDirectory";
-    public static final String AXION_DB_DATA_DIR="AxiondbDataDirectory";
-    public static final String DYNAMIC_FLAT_FILE="DynamicFlatFile";
+    public static final String AXION_DB_WORKING_DIR = "AxiondbWorkingDirectory";
+    public static final String AXION_DB_DATA_DIR = "AxiondbDataDirectory";
+    public static final String DYNAMIC_FLAT_FILE = "DynamicFlatFile";
 
     /**
      * add an sql object listener
@@ -104,39 +103,36 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      */
     public void setExecutionStrategyStr(String text);
 
-    
     /**
      * sets the working folder where axion instance will 
      * run this colloboration
      * @param appDataRoot
      */
     public void setAxiondbWorkingDirectory(String appDataRoot);
-    
+
     /**
      * sets the name of the axion instance where this etl 
      * colloboration is run
      * @param dbInstanceName
      */
     public void setAxiondbDataDirectory(String dbInstanceName);
-    
+
     /**
      * getter for axion db working folder
      * @return
      */
     public String getAxiondbWorkingDirectory();
-    
+
     /**
      * getter for the axion database instance name
      * @return
      */
     public String getAxiondbDataDirectory();
-    
-    
+
     public boolean isDynamicFlatFile();
-    
+
     public void setDynamicFlatFile(boolean flag);
-    
-    
+
     public Object getAttributeValue(String attrName);
 
     /**
@@ -328,13 +324,13 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      */
     public List<ValidationInfo> validate();
 
-   /**
+    /**
      * validate the definition starting from the target tables.
      *
      * @return Map of invalid input object as keys and reason as value
      */
     public List<ValidationInfo> badgeValidate();
-    
+
     /**
      * Validate Database synchronization. Identify any eTL Collaboration element which has been
      * deleted or modified in Database.
@@ -342,4 +338,10 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      * @return Map of invalid object as keys and reason as value
      */
     public List<ValidationInfo> validateDbSynchronization();
+
+    /**
+     * Removes the join operator only. Source Tables used in the join are retained.
+     * @param joinView
+     */
+    public void removeJoinViewOnly(SQLJoinView joinView);
 }

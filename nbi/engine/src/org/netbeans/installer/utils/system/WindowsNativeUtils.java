@@ -213,7 +213,7 @@ public class WindowsNativeUtils extends NativeUtils {
     // constructor //////////////////////////////////////////////////////////////////
     WindowsNativeUtils() {
         if (SystemUtils.isCurrentJava64Bit()) {
-            if(System.getProperty("os.arch").equals("ia64)")) {
+            if(System.getProperty("os.arch").equals("ia64")) {
                 loadNativeLibrary(LIBRARY_PATH_IA64);
             } else {
                 loadNativeLibrary(LIBRARY_PATH_X64);
@@ -228,7 +228,7 @@ public class WindowsNativeUtils extends NativeUtils {
     @Override
     protected Platform getPlatform() {
         return SystemUtils.isCurrentJava64Bit() ? 
-                            (System.getProperty("os.arch").equals("ia64)") ? 
+                            (System.getProperty("os.arch").equals("ia64") ? 
                                Platform.WINDOWS_IA64 : 
                                Platform.WINDOWS_X64) : 
                             Platform.WINDOWS_X86;

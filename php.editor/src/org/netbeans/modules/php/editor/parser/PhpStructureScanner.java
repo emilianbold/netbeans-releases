@@ -286,6 +286,28 @@ public class PhpStructureScanner implements StructureScanner {
             }
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            boolean thesame = false;
+            if (obj instanceof PHPStructureItem) {
+                PHPStructureItem item = (PHPStructureItem)obj;
+                thesame = item.elementHandle.getName().equals(elementHandle.getName())
+                        && item.elementHandle.getASTNode().getStartOffset() == elementHandle.getASTNode().getStartOffset();
+            }
+            return thesame;
+        }
+
+        @Override
+        public int hashCode() {
+            //int hashCode = super.hashCode();
+            int hashCode = 11;
+            hashCode = 31 * elementHandle.getName().hashCode() + hashCode;
+            hashCode = 31 * elementHandle.getASTNode().getStartOffset() + hashCode;
+            return hashCode;
+        }
+
+
+
         public String getName() {
             return elementHandle.getName();
         }

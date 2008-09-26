@@ -212,7 +212,7 @@ public class RunJarPanel extends javax.swing.JPanel {
     /**
      * @deprecated 
      */
-    private void applyDeprecatedExternalChanges() throws MissingResourceException {
+    private @Deprecated void applyDeprecatedExternalChanges() throws MissingResourceException {
         File assDir = new File(new File(new File(project.getOriginalMavenProject().getBasedir(), "src"), "main"), "assemblies"); //NOI18N
         if (!assDir.exists()) {
             assDir.mkdirs();
@@ -607,7 +607,7 @@ public class RunJarPanel extends javax.swing.JPanel {
     /**
      * @deprecated 
      */
-    private Plugin checkJarPlugin(Plugin jarPlugin, String val) {
+    private @Deprecated Plugin checkJarPlugin(Plugin jarPlugin, String val) {
         if (jarPlugin == null) {
             jarPlugin = new Plugin();
             jarPlugin.setArtifactId(ARTFACTID_JAR); 
@@ -629,7 +629,7 @@ public class RunJarPanel extends javax.swing.JPanel {
     /**
      * @deprecated 
      */
-    private Plugin checkAssemblyPlugin(Plugin assPlugin) {
+    private @Deprecated Plugin checkAssemblyPlugin(Plugin assPlugin) {
         if (assPlugin == null) {
             assPlugin = new org.apache.maven.model.Plugin();
             assPlugin.setArtifactId(ARITFACTID_ASSEMBLY); 

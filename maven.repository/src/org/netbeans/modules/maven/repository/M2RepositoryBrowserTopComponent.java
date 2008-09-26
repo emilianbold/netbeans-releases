@@ -331,14 +331,14 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow() {
-
         return btv.requestFocusInWindow();
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void requestFocus() {
-
         btv.requestFocus();
     }
 

@@ -76,8 +76,8 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
-import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
+import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -122,7 +122,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     }
     
     @Override
-    protected List getDynamicCompletion(String path, HintContext hintCtx, org.jdom.Element parent) {
+    protected List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, org.jdom.Element parent) {
         if (path.endsWith("plugins/plugin/configuration") || //NOI18N
             path.endsWith("plugins/plugin/executions/execution/configuration")) { //NOI18N
             // assuming we have the configuration node as parent..
@@ -137,7 +137,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 return collectPluginParams(pluginDoc, hintCtx);
             }
         }
-        return Collections.EMPTY_LIST;
+        return Collections.<GrammarResult>emptyList();
     }
     
     private ArtifactInfoHolder findArtifactInfo(Node previous) {
@@ -206,7 +206,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         return holder;
     }
     
-    private List collectPluginParams(Document pluginDoc, HintContext hintCtx) {
+    private List<GrammarResult> collectPluginParams(Document pluginDoc, HintContext hintCtx) {
         Iterator it = pluginDoc.getRootElement().getDescendants(new Filter() {
             public boolean matches(Object object) {
                 if (object instanceof Element) {
@@ -220,8 +220,8 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 return false;
             }
         });
-        List toReturn = new ArrayList();
-        Collection params = new HashSet();
+        List<GrammarResult> toReturn = new ArrayList<GrammarResult>();
+        Collection<String> params = new HashSet<String>();
         while (it.hasNext()) {
             Element el = (Element)it.next();
             String editable = el.getChildText("editable"); //NOI18N
@@ -237,7 +237,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     }
 
     @Override
-    protected Enumeration getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el) {
+    protected Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el) {
         if (path.endsWith("executions/execution/goals/goal")) { //NOI18N
             Node previous;
             // HACK.. if currentPrefix is zero length, the context is th element, otherwise it's the content inside
@@ -256,8 +256,9 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         if (path.endsWith("executions/execution/phase")) { //NOI18N
             MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
-            List phases = embedder.getLifecyclePhases();
-            return super.createTextValueList((String[])phases.toArray(new String[phases.size()]), virtualTextCtx);
+            @SuppressWarnings("unchecked")
+            List<String> phases = embedder.getLifecyclePhases();
+            return super.createTextValueList(phases.toArray(new String[phases.size()]), virtualTextCtx);
         }
         if (path.endsWith("dependencies/dependency/version") || //NOI18N
             path.endsWith("plugins/plugin/version") || //NOI18N
@@ -273,7 +274,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             ArtifactInfoHolder hold = findPluginInfo(previous, null, false);
             if (hold.getGroupId() != null && hold.getArtifactId() != null) {
                 Set<String> verStrings = getVersions(hold.getGroupId(), hold.getArtifactId());
-                Collection elems = new ArrayList();
+                Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
                 for (String vers : verStrings) {
                     if (vers.startsWith(virtualTextCtx.getCurrentPrefix())) {
                         elems.add(new MyTextElement(vers, virtualTextCtx.getCurrentPrefix()));
@@ -286,7 +287,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         if (path.endsWith("dependencies/dependency/groupId") || //NOI18N
             path.endsWith("extensions/extension/groupId")) {    //NOI18N
                 Set<String> elems = getGroupIds();
-                ArrayList texts = new ArrayList();
+                ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
                 for (String elem : elems) {
                     if (elem.startsWith(virtualTextCtx.getCurrentPrefix())) {
                         texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
@@ -299,7 +300,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             
                 Set<String> elems = RepositoryQueries.filterPluginGroupIds(virtualTextCtx.getCurrentPrefix());
 //                elems.addAll(getRelevant(virtualTextCtx.getCurrentPrefix(), getCachedPluginGroupIds()));
-                ArrayList texts = new ArrayList();
+                ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
                 for (String elem : elems) {
                     texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
                 }
@@ -317,7 +318,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             ArtifactInfoHolder hold = findArtifactInfo(previous);
             if (hold.getGroupId() != null) {
                     Set<String> elems = getArtifactIds(hold.getGroupId());
-                    ArrayList texts = new ArrayList();
+                    ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
                     String currprefix = virtualTextCtx.getCurrentPrefix();
                     for (String elem : elems) {
                         if (elem.startsWith(currprefix)) {
@@ -340,7 +341,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             ArtifactInfoHolder hold = findArtifactInfo(previous);
             if (hold.getGroupId() != null) {
                 Set<String> elems = RepositoryQueries.filterPluginArtifactIds(hold.getGroupId(), virtualTextCtx.getCurrentPrefix());
-                ArrayList texts = new ArrayList();
+                ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
                 for (String elem : elems) {
                     texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
                 }
@@ -387,7 +388,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                          return pathname.isDirectory() && new File(pathname, "pom.xml").exists(); //NOI18N
                     }
                 });
-                Collection elems = new ArrayList();
+                Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
                 for (int i = 0; i < modules.length; i++) {
                     if (modules[i].getName().startsWith(virtualTextCtx.getCurrentPrefix())) {
                         elems.add(new MyTextElement(modules[i].getName(), virtualTextCtx.getCurrentPrefix()));
@@ -540,8 +541,9 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         return null;
     }
 
-    private Enumeration collectGoals(Document pluginDoc, HintContext virtualTextCtx) {
-        Iterator it = pluginDoc.getRootElement().getDescendants(new Filter() {
+    private Enumeration<GrammarResult> collectGoals(Document pluginDoc, HintContext virtualTextCtx) {
+        @SuppressWarnings("unchecked")
+        Iterator<Element> it = pluginDoc.getRootElement().getDescendants(new Filter() {
             public boolean matches(Object object) {
                 if (object instanceof Element) {
                     Element el = (Element)object;
@@ -553,9 +555,9 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 return false;
             }
         });
-        Collection toReturn = new ArrayList();
+        Collection<GrammarResult> toReturn = new ArrayList<GrammarResult>();
         while (it.hasNext()) {
-            Element el = (Element)it.next();
+            Element el = it.next();
             String name = el.getText();
             if (name.startsWith(virtualTextCtx.getCurrentPrefix())) {
                toReturn.add(new MyTextElement(name, virtualTextCtx.getCurrentPrefix()));
