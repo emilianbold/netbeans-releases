@@ -235,9 +235,9 @@ public class ClassBreakpointsTest extends JellyTestCase {
             dialog.ok();
             new EventTool().waitNoEvent(500);
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped.", 0);
+            Utilities.waitStatusText("Thread main stopped.");
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines + 1);
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -253,9 +253,9 @@ public class ClassBreakpointsTest extends JellyTestCase {
             setBreakpointType(dialog, "Class");
             dialog.ok();
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped.", 0);
+            Utilities.waitStatusText("Thread main stopped.");
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines + 1);
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -277,13 +277,13 @@ public class ClassBreakpointsTest extends JellyTestCase {
             new DebugProjectAction().performMenu();
             Utilities.getDebugToolbar().waitComponentVisible(true);
             //Class breakpoint hit for class examples.advanced.Helper.");
-            int lines = Utilities.waitDebuggerConsole("Class breakpoint hit for class examples.advanced.Helper", 0);
-            new ContinueAction().performMenu();
-            lines = Utilities.waitDebuggerConsole("Class breakpoint hit for class examples.advanced.MemoryView$1.", lines + 1);
+            Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.Helper");
+            new ContinueAction().perform();
+            Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView$1.");
             //Class breakpoint hit for class examples.advanced.MemoryView$1
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:121.", lines + 1);
-            new ContinueAction().performMenu();
-           Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:121.");
+            new ContinueAction().perform();
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

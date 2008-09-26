@@ -408,7 +408,7 @@ public class Utilities {
         return new OutputTabOperator(debuggerConsoleTitle).getLineCount();
     }
 
-    public static int waitDebuggerConsole(final String text, final int status) {
+/*    public static int waitDebuggerConsole(final String text, final int status) {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         ConsoleChooser cch = new ConsoleChooser(op, text, status);
         JemmyProperties.getCurrentOutput().printLine("Waiting on text in debugger console '" + text + "' from line " + status);
@@ -422,7 +422,7 @@ public class Utilities {
         }
         JemmyProperties.getCurrentOutput().printLine("Found text in debugger console '" + text + "' at line " + cch.getLastIndex());
         return cch.getLastIndex();
-    }
+    }*/
 
     public static boolean checkConsoleForText(String text, int startLine) {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
@@ -432,6 +432,17 @@ public class Utilities {
             }
         }
         return false;
+    }
+
+    public static int checkConsoleForNumberOfOccurrences(String text, int startLine) {
+        OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
+        int number = 0;
+        for (int i = startLine; i < op.getLineCount(); i++) {
+            if (op.getLine(i).startsWith(text)) {
+                number++;
+            }
+        }
+        return number;
     }
 
     public static void captureScreen(JellyTestCase testCase) {
