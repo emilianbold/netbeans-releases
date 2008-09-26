@@ -1065,7 +1065,7 @@ abstract class EntrySupport {
                         int cnt = 0;
                         boolean found = false;
                         cnt += snapshotCount;
-                        if (who != null) {
+                        if (cnt == 0) {
                             for (Entry entry : visibleEntries) {
                                 EntryInfo info = entryToInfo.get(entry);
                                 if (info.currentNode() != null) {
