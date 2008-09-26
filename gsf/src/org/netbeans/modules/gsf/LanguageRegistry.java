@@ -448,31 +448,32 @@ public class LanguageRegistry implements Iterable<Language> {
                 // that both languages would point to the same lucene repository
                 // (because the same indexer reported the same name and version).
                 // That causes fatal corruption errors. Make sure this can't happen.
-                boolean assertionsEnabled = false;
-                assert (assertionsEnabled = true);
-                if (assertionsEnabled && Boolean.getBoolean("netbeans.logger.console")) { // NOI18N
-                    Set<String> indexerNames = new HashSet<String>();
-                    for (Language language : languages) {
-                        Indexer indexer = language.getIndexer();
-                        if (indexer != null) {
-                            String name = indexer.getIndexerName();
-                            if (indexerNames.contains(name)) {
-                                StringBuilder sb = new StringBuilder();
-                                sb.append("Warning: There are multiple indexers named \"");
-                                sb.append(name);
-                                sb.append("\" from ");
-                                for (Language l : languages) {
-                                    if (l.getIndexer() != null && l.getIndexer().getIndexerName().equals(name)) {
-                                        sb.append(l.getDisplayName());
-                                        sb.append(",");
-                                    }
-                                }
-                                Logger.global.log(Level.SEVERE, sb.toString());
-                            }
-                            indexerNames.add(name);
-                        }
-                    }
-                }
+// Find a way to delay
+//                boolean assertionsEnabled = false;
+//                assert (assertionsEnabled = true);
+//                if (assertionsEnabled && Boolean.getBoolean("netbeans.logger.console")) { // NOI18N
+//                    Set<String> indexerNames = new HashSet<String>();
+//                    for (Language language : languages) {
+//                        Indexer indexer = language.getIndexer();
+//                        if (indexer != null) {
+//                            String name = indexer.getIndexerName();
+//                            if (indexerNames.contains(name)) {
+//                                StringBuilder sb = new StringBuilder();
+//                                sb.append("Warning: There are multiple indexers named \"");
+//                                sb.append(name);
+//                                sb.append("\" from ");
+//                                for (Language l : languages) {
+//                                    if (l.getIndexer() != null && l.getIndexer().getIndexerName().equals(name)) {
+//                                        sb.append(l.getDisplayName());
+//                                        sb.append(",");
+//                                    }
+//                                }
+//                                Logger.global.log(Level.SEVERE, sb.toString());
+//                            }
+//                            indexerNames.add(name);
+//                        }
+//                    }
+//                }
             }
         }
     }
