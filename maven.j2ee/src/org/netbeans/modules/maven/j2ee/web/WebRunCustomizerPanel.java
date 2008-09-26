@@ -196,7 +196,9 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         isRunCompatible = checkMapping(run);
         isDebugCompatible = checkMapping(debug);
         oldUrl = isRunCompatible ? run.getProperties().getProperty(PROP_CLIENT_URL_PART) : //NOI18N
-                                      debug.getProperties().getProperty(PROP_CLIENT_URL_PART); //NOI18N
+                                   debug.getProperties().getProperty(PROP_CLIENT_URL_PART); //NOI18N
+        run.getProperties().list(System.out);
+        
         if (oldUrl != null) {
             txtRelativeUrl.setText(oldUrl);
         } else {
@@ -366,9 +368,12 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         Iterator it = map.getGoals().iterator();
         while (it.hasNext()) {
             String goal = (String) it.next();
-            if (goal.indexOf("org.codehaus.mevenide:netbeans-deploy-plugin") > -1) { //NOI18N
+            if (goal.indexOf("netbeans-deploy-plugin") > -1) { //NOI18N
                 return true;
             }
+        }
+        if (map.getProperties().containsKey(Constants.ACTION_PROPERTY_DEPLOY)) {
+            return true;
         }
         return false;
     }
@@ -377,12 +382,12 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         String newUrl = txtRelativeUrl.getText().trim();
         if (!newUrl.equals(oldUrl)) {
             if (isRunCompatible) {
-                run.getProperties().setProperty( PROP_CLIENT_URL_PART,newUrl); //NOI18N
+                run.getProperties().setProperty( PROP_CLIENT_URL_PART, newUrl); //NOI18N
                 ModelHandle.setUserActionMapping(run, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
             if (isDebugCompatible) {
-                debug.getProperties().setProperty( PROP_CLIENT_URL_PART,newUrl); //NOI18N
+                debug.getProperties().setProperty( PROP_CLIENT_URL_PART, newUrl); //NOI18N
                 ModelHandle.setUserActionMapping(debug, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }

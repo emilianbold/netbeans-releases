@@ -44,6 +44,9 @@
  * @author Anton Chechel
  */
 interface UserCodeAwareness {
+
     void goToSource();
+
     void resetUserCode();
+
 }

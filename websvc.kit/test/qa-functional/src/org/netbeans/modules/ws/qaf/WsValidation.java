@@ -631,6 +631,11 @@ public class WsValidation extends WebServicesTestBase {
 
     protected void waitForWsImport(String targetName) throws IOException {
         OutputTabOperator oto = new OutputTabOperator(targetName); //NOI18N
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         oto.waitText("(total time: "); //NOI18N
         dumpOutput();

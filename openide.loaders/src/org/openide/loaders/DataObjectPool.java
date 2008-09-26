@@ -83,7 +83,7 @@ implements ChangeListener {
     private Map<FileObject,List<Item>> children = new HashMap<FileObject, List<Item>>();
     
     /** covers all FileSystems we're listening on */
-    private Set<FileSystem> knownFileSystems = new WeakSet<FileSystem>();
+    private final Set<FileSystem> knownFileSystems = new WeakSet<FileSystem>();
     
     /** error manager to log what is happening here */
     private static final Logger err = Logger.getLogger("org.openide.loaders.DataObject.find"); // NOI18N
@@ -94,7 +94,7 @@ implements ChangeListener {
     private static DataObjectPool POOL;
 
     /** Lock for creating POOL instance */
-    private static Object lockPOOL = new Object();
+    private static final Object lockPOOL = new Object();
 
     /** check to know if someone is waiting in waitNotified, changed from
      * inside synchronized block, but read without synchronization, that is
@@ -667,7 +667,7 @@ implements ChangeListener {
         FileObject fo = fe.getFile();
         // The FileSystem notifying us about the changes should
         // not hold any lock so we're safe here
-        synchronized (DataObjectPool.POOL) {
+        synchronized (DataObjectPool.getPOOL()) {
             Item itm = DataObjectPool.POOL.map.get(fo);
             if (itm != null) { // the file was someones' primary
                 return Collections.singleton(itm); // so notify only owner
@@ -958,11 +958,11 @@ implements ChangeListener {
         *   due to weak references (should not happen)
         */
         public DataObject getDataObject () {
-            DataObject obj = getDataObjectOrNull ();
-            if (obj == null) {
+            DataObject o = getDataObjectOrNull ();
+            if (o == null) {
                 throw new IllegalStateException ();
             }
-            return obj;
+            return o;
         }
 
         /** Deregister one reference.
@@ -990,12 +990,13 @@ implements ChangeListener {
             
         }
         
+        @Override
         public String toString () {
-            DataObject obj = this.obj.get ();
-            if (obj == null) {
+            DataObject o = this.obj.get ();
+            if (o == null) {
                 return "nothing[" + primaryFile + "]"; // NOI18N
             }
-            return obj.toString ();
+            return o.toString ();
         }
     }
 
@@ -1293,6 +1294,7 @@ implements ChangeListener {
             super(512);
         }
         
+        @Override
         public Item put(FileObject obj, Item item) {
             Item prev = super.put(obj, item);
             if (children == null) {
@@ -1310,6 +1312,7 @@ implements ChangeListener {
             arr.add(item);
             return prev;
         }
+        @Override
         public Item remove(Object obj) {
             Item prev = super.remove(obj);
             if (! (obj instanceof FileObject)) {

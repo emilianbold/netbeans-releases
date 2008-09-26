@@ -63,7 +63,7 @@ public class StaticStatement extends Statement {
 		}
 	}
         
-        public StaticStatement(int start, int end,  List expressions) {
+        public StaticStatement(int start, int end,  List<Exception> expressions) {
 		this(start, end, expressions == null ? null : (Expression[]) expressions.toArray(new Expression[expressions.size()]));
 	}
         
@@ -72,14 +72,14 @@ public class StaticStatement extends Statement {
 	 */
 	public Variable[] getVariables() {
 
-		List vars = new LinkedList();
+		List<Variable> vars = new LinkedList<Variable>();
 		for (Expression node : this.expressions) {
 			if (node instanceof Variable) {
-				vars.add(node);
+				vars.add((Variable)node);
 			} else {
 				assert node instanceof Assignment;
 				Assignment ass = (Assignment) node;
-				vars.add(ass.getLeftHandSide());
+				vars.add((Variable)ass.getLeftHandSide());
 			}
 		}
 		return (Variable[]) vars.toArray(new Variable[vars.size()]);

@@ -59,6 +59,9 @@
                     <file name="org-openide-actions-CopyAction.instance">
                         <attr name="position" intvalue="500"/>
                     </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="550"/>
+                    </file>
                     <file name="org-openide-actions-CutAction.instance">
                         <attr name="position" intvalue="400"/>
                     </file>

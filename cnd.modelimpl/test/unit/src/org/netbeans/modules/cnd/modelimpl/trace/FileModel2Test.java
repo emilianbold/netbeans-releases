@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.util.Collection;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+
 /**
  * Just a continuation of the FileModelTest
  * (which became too large)
@@ -108,5 +112,16 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#146560 Internal C++ compiler does not accept 'struct' after 'new'
         performTest("iz146560.cc");
     }
-
+    
+    public void testIZ147284isDefined() throws Exception {
+        // IZ#147284 APTMacroCallback.isDefined(CharSequence) ignores #undef
+        String base = "iz147284_is_defined";
+        performTest(base + ".cc");
+        FileImpl fileImpl = findFile(base + ".h");
+        assertNotNull(fileImpl);
+        Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
+        assertEquals(handlers.size(), 1);
+        String macro = "MAC";
+        assertFalse(macro + " should be undefined!", handlers.iterator().next().getMacroMap().isDefined(macro));
+    }
 }

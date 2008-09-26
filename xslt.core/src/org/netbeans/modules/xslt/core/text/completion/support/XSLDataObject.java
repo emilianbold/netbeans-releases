@@ -50,7 +50,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.xml.cookies.*;
 import org.netbeans.modules.xml.XMLDataObjectLook;
 import org.netbeans.modules.xml.text.TextEditorSupport;
@@ -97,13 +96,13 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
         TextEditorSupport.TextEditorSupportFactory editorFactory =
             new TextEditorSupport.TextEditorSupportFactory (this, XMLKit.MIME_TYPE);
         editorFactory.registerCookies (set);
-		
+
+        set.assign(XmlFileEncodingQueryImpl.class, XmlFileEncodingQueryImpl.singleton());
     }
 
     @Override
     public final Lookup getLookup() {
-        return Lookups.fixed(new Object[] {
-            super.getLookup(), this, XmlFileEncodingQueryImpl.singleton()});
+        return getCookieSet().getLookup();
     }
 
     @Override

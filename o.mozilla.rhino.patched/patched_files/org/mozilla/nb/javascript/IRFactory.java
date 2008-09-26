@@ -444,11 +444,17 @@ final class IRFactory
                 // function's name to the function value.
                 if (fnNode.addVar(name) == ScriptOrFnNode.DUPLICATE_CONST)
                     parser.addError("msg.const.redecl", name, null);
+                // <netbeans>
+                // We don't need the extra binding AST nodes, we don't use
+                // these and they cause for example issue 147450
+                /*
                 Node setFn = new Node(Token.EXPR_VOID,
                                  new Node(Token.SETNAME,
                                      Node.newString(Token.BINDNAME, name),
                                      new Node(Token.THISFN)));
                 statements.addChildrenToFront(setFn);
+                */
+                // </netbeans>
             }
         }
 

@@ -166,7 +166,7 @@ public class CommentOutRule extends GroovySelectionRule {
                     int startOfRow = Utilities.getRowStart(baseDoc, start);
 
                     edits.replace(startOfRow, 0, START_INSERT, false, 1);
-                    edits.setFormatter(new Formatter(), true);
+                    edits.setFormatAll(true);
                     edits.apply();
 
                     component.setCaretPosition(start + 4);

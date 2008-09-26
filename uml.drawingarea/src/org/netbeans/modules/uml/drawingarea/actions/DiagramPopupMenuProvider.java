@@ -188,10 +188,13 @@ public class DiagramPopupMenuProvider implements PopupMenuProvider
 
                 lookup = new ProxyLookup(Utilities.actionsGlobalContext(), 
                                          Lookups.fixed(context.getContextItems()), 
-                                         Lookups.singleton(context));
+                                         Lookups.singleton(context),
+                                         widget.getLookup());
             } else
             {
-                lookup = Utilities.actionsGlobalContext();
+                //lookup = Utilities.actionsGlobalContext();
+                lookup = new ProxyLookup(Utilities.actionsGlobalContext(),
+                                         widget.getLookup());
             }
 
             return Utilities.actionsToPopup(actionArray, lookup);

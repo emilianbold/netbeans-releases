@@ -77,6 +77,8 @@ import org.openide.util.NbPreferences;
 public class SampleDatabaseCreator {
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     public static final String DRIVER_DISP_NAME_NET = "Java DB (Network)"; // NOI18N
+    private static final String CONN_EXISTS_MSG = "connection already exists"; // NOI18N
+
     private static Logger LOGGER = Logger.getLogger(SampleDatabaseCreator.class.getName());
 
     /** Creates a new instance of SampleDatabaseUtils */
@@ -141,7 +143,13 @@ public class SampleDatabaseCreator {
         DatabaseConnection[] dbconns = ConnectionManager.getDefault().getConnections();
         List dbconnsList = Arrays.asList(dbconns);
         if (!dbconnsList.contains(dbconn.getName())) {
-            ConnectionManager.getDefault().addConnection(dbconn);
+            try {
+                ConnectionManager.getDefault().addConnection(dbconn);
+            } catch(DatabaseException de) {
+                // No impact to user if connection already exists. Log warning in case there are other errors.
+                // Connection already exists error can occur if user migrates previous NetBeans settings at startup
+                LOGGER.log(Level.WARNING, de.getMessage());
+            }
         }
         return dbconn;
     }

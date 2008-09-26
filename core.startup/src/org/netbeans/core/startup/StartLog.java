@@ -134,6 +134,7 @@ public class StartLog {
                 // Presumably you did want to keep on going at this point.
                 // Note that this can only happen when logging is off
                 // (which is the default).
+                System.err.flush();
                 System.exit(1);
             }
             LOG.log(Level.FINE, "end", action); // NOI18N

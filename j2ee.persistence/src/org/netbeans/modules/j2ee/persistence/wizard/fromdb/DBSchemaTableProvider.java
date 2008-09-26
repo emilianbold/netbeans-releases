@@ -68,11 +68,13 @@ public class DBSchemaTableProvider implements TableProvider {
     private final SchemaElement schemaElement;
     private final PersistenceGenerator persistenceGen;
     private final Set<Table> tables;
+    private Set<String> tablesReferecedByOtherTables;
 
     public DBSchemaTableProvider(SchemaElement schemaElement, PersistenceGenerator persistenceGen) {
         this.schemaElement = schemaElement;
         this.persistenceGen = persistenceGen;
 
+        tablesReferecedByOtherTables = DbSchemaEjbGenerator.getTablesReferecedByOtherTables(schemaElement);
         tables = buildTables();
     }
 
@@ -89,7 +91,7 @@ public class DBSchemaTableProvider implements TableProvider {
         // need to create all the tables first
         TableElement[] tableElements = schemaElement.getTables();
         for (TableElement tableElement : tableElements) {
-            boolean join = DbSchemaEjbGenerator.isJoinTable(tableElement);
+            boolean join = DbSchemaEjbGenerator.isJoinTable(tableElement, tablesReferecedByOtherTables);
 
             List<DisabledReason> disabledReasons = getDisabledReasons(tableElement, persistenceGen);
             DisabledReason disabledReason = null;

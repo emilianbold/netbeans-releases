@@ -81,7 +81,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.standalone.trace"); //NOI18N
 
-    CsmModelListener listener = new CsmModelListener() {
+    private final CsmModelListener listener = new CsmModelListener() {
 
         public void projectOpened(CsmProject project) {
         }
@@ -99,7 +99,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
     };
 
-    CsmProgressListener progressListener = new CsmProgressAdapter() {
+    private final CsmProgressListener progressListener = new CsmProgressAdapter() {
 
         @Override
         public void projectLoaded(CsmProject project) {
@@ -113,6 +113,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     public CsmStandaloneFileProviderImpl() {
         CsmListeners.getDefault().addModelListener(listener);
+        CsmListeners.getDefault().addProgressListener(progressListener);
     }
 
     static CsmStandaloneFileProviderImpl getDefaultImpl() {
@@ -134,21 +135,24 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 return csmFile;
             }
             NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
-            if (TRACE) trace("adding project %s", name);            
+            if (TRACE) trace("adding project %s", name); //NOI18N
             project = ModelImpl.instance().addProject(platformProject, name, true);
         }
-        return project.getFile(javaIoFile);
+        if (project != null) {
+            return project.getFile(javaIoFile);
+        }
+        return null;
     }
 
     private void clean(ProjectBase projectOpened) {
         if (projectOpened.getPlatformProject() instanceof NativeProjectImpl) {
             return;
         }
-        if (TRACE) trace("checking project %s", projectOpened.toString());
+        if (TRACE) trace("checking project %s", projectOpened.toString()); //NOI18N
         for (CsmProject dummy : ModelImpl.instance().projects()) {
             if (dummy.getPlatformProject() instanceof NativeProjectImpl) {
                 for (CsmFile file : dummy.getAllFiles()) {
-                    if (TRACE) trace("\nchecking file %s", file.getAbsolutePath());
+                    if (TRACE) trace("\nchecking file %s", file.getAbsolutePath()); //NOI18N
                     if (projectOpened.getFile(((FileImpl) file).getFile()) != null) {
                         scheduleProjectRemoval(dummy);
                         continue;
@@ -190,7 +194,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
 
     synchronized public void notifyClosed(CsmFile file) {
-        if (TRACE) trace("checking file %s", file.toString());
+        if (TRACE) trace("checking file %s", file.toString()); //NOI18N
         FileImpl fileImpl = (FileImpl) file;
         for (CsmProject project : ModelImpl.instance().projects()) {
             if (project.getPlatformProject() instanceof NativeProjectImpl) {
@@ -202,21 +206,21 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
     
     private void scheduleProjectRemoval(final CsmProject project) {
-        if (TRACE) trace("schedulling removal %s", project.toString());
+        if (TRACE) trace("schedulling removal %s", project.toString()); //NOI18N
         ModelImpl.instance().enqueueModelTask(new Runnable() {
             public void run() {
                 if (project.isValid()) {
-                    if (TRACE) trace("removing %s", project.toString());
+                    if (TRACE) trace("removing %s", project.toString()); //NOI18N
                     ProjectBase projectBase = (ProjectBase) project;
                     ModelImpl.instance().closeProjectBase(projectBase, false);
                 }
             }
-        }, "Standalone project removal.");
+        }, "Standalone project removal."); //NOI18N
     }
 
     private static void trace(String pattern, Object... args) {
-        assert TRACE : "Should not be called if TRACE is off!";
-        System.err.printf("### Standalone provider:  %s\n", String.format(pattern, args));
+        assert TRACE : "Should not be called if TRACE is off!"; //NOI18N
+        System.err.printf("### Standalone provider:  %s\n", String.format(pattern, args)); //NOI18N
     }
     
     private static final class NativeProjectImpl implements NativeProject {

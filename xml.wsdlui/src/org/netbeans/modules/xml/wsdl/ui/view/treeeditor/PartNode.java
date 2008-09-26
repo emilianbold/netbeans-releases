@@ -123,7 +123,7 @@ public class PartNode extends WSDLNamedElementNode<Part> {
     };
 
     public PartNode(Part wsdlConstruct) {
-        super( new GenericWSDLComponentChildren<Part>(wsdlConstruct), wsdlConstruct);
+        super(wsdlConstruct);
         mWSDLConstruct = wsdlConstruct;
         
         this.mPropertyAdapter = new PartPropertyAdapter();

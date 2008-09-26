@@ -67,7 +67,7 @@ public class ImportFolderNode extends FolderNode {
     private Definitions mDef = null;
     
     public ImportFolderNode(Definitions element) {
-        super(new ImportFolderChildren(element), element, Import.class);
+        super(new FolderChildFactory(element, Import.class), element, Import.class);
         mDef = element;
         this.setDisplayName(NbBundle.getMessage(ImportFolderNode.class, 
         "IMPORT_FOLDER_NODE_NAME"));

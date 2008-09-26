@@ -92,7 +92,7 @@ public class FFExtensionManager {
     private static final String PROFILE_LOCK_WINDOWS = "parent.lock";
     private static final String PROFILE_LOCK = "lock";
     
-    private static final String FIREBUG_1_2_MIN_VERSION = "1.2.0";
+    private static final String FIREBUG_1_2_MIN_VERSION = "1.2.1";
     
     private static final String EXTENSION_CACHE = "extensions.cache";
     private static final String UNINSTALL_KEYWORD = "needs-uninstall";
@@ -100,7 +100,7 @@ public class FFExtensionManager {
     
     private static final String FIREBUG_EXTENSION_ID = "firebug@software.joehewitt.com"; // NOI18N
     
-    private static final String FIREBUG_EXTENSION_PATH = "modules/ext/firebug-1.2.0.xpi"; // NOI18N
+    private static final String FIREBUG_EXTENSION_PATH = "modules/ext/firebug-1.2.1-fx.xpi"; // NOI18N
                
     private static final String FIREFOX_EXTENSION_ID = "netbeans-firefox-extension@netbeans.org"; // NOI18N
 
@@ -438,7 +438,18 @@ public class FFExtensionManager {
         while (tokens.hasMoreTokens()) {
             String nextToken = tokens.nextToken();
             try {
-                if (nextToken.contains("b")) {
+                if (nextToken.contains("a")) {
+                    int index = nextToken.indexOf("a");
+
+                    String first = nextToken.substring(0, index);
+                    String second = nextToken.substring(index + 1, nextToken.length());
+
+                    // version xxbyy is greater than any version xx-1 without a beta
+                    // but less than version xx without a beta
+                    result.add(new Integer(Integer.valueOf(first).intValue() - 1));
+                    result.add(Integer.valueOf(-1));
+                    result.add(Integer.valueOf(second));
+                } else if (nextToken.contains("b")) {
                     int index = nextToken.indexOf("b");
 
                     String first = nextToken.substring(0, index);

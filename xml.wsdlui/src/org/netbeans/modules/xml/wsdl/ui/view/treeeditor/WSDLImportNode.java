@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -56,10 +57,10 @@ import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
 import org.netbeans.modules.xml.wsdl.ui.view.ImportWSDLCustomizer;
 import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -82,7 +83,7 @@ public class WSDLImportNode extends ImportNode {
      ("org/netbeans/modules/xml/wsdl/ui/view/resources/import-wsdl.png");
    
     public WSDLImportNode(Import wsdlConstruct) {
-        super(new WSDLImportNodeChildren(wsdlConstruct), 
+        super(new WSDLImportChildFactory(wsdlConstruct), 
               wsdlConstruct);
     }
         
@@ -120,6 +121,75 @@ public class WSDLImportNode extends ImportNode {
         Import imp = getWSDLComponent();
         setDisplayName(imp.getLocation());
     }
+    
+     public static class WSDLImportChildFactory extends ChildFactory implements Refreshable {
+        private Import wsdlImport;
+        
+    
+        public WSDLImportChildFactory(Import wsdlConstruct) {
+            super();
+            this.wsdlImport = wsdlConstruct;
+        }
+        
+        @Override
+        protected Node createNodeForKey(Object key) {
+            if(key instanceof Definitions) { 
+                try {
+                    Definitions definitions = (Definitions) key;
+                    // Create a lookup with save cookie of parent wsdl, so that save can be called on imported wsdl's nodes
+                    DataObject dobj = ActionHelper.getDataObject(wsdlImport.getModel());
+                    Lookup lookup = null;
+                    if (dobj != null) {
+                        lookup = new ProxyLookup(new Lookup[] {
+                                Lookups.exclude(dobj.getNodeDelegate().getLookup(), new Class[] {
+                                    Node.class,
+                                    DataObject.class
+                                })});
+                    }
+                    DataObject dataObj = DataObject.find(definitions.getModel().getModelSource().getLookup().lookup(FileObject.class));
+                    if(dataObj != null && dataObj instanceof WSDLDataObject) {
+                        Node node = NodesFactory.getInstance().create(definitions);
+                        FilterNode filterNode = null;
+                        if (lookup != null) {
+                            filterNode = new ReadOnlyNode(node, lookup);
+                        } else {
+                            filterNode = new ReadOnlyNode(node);
+                        }
+                        return filterNode;
+                    }
+                } catch(Exception ex) {
+                    AbstractNode node = new AbstractNode(Children.LEAF) {};
+                    node.setDisplayName("Error: could not load wsdl" );
+                    return node;
+                }
+            }
+            return Node.EMPTY;
+            
+            //return super.createNodes(key);
+            
+        }
+        
+        @Override
+        protected boolean createKeys(List keys) {
+            List<WSDLModel> models = wsdlImport.getModel().findWSDLModel(wsdlImport.getNamespace());
+            //getImportedObject();
+            for (WSDLModel model : models) {
+                if(model != null && model.getDefinitions() != null) {
+                    keys.add(model.getDefinitions());
+                }
+            }
+            //keys.addAll(super.getKeys());
+            //return keys;
+            return true;
+        }
+
+        public void refreshChildren(boolean immediate) {
+            refresh(immediate);
+        }
+        
+    
+    }
+    
 
      public static class WSDLImportNodeChildren extends GenericWSDLComponentChildren<Import> {
         

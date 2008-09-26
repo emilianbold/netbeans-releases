@@ -152,6 +152,10 @@ public class IntroduceHintTest extends NbTestCase {
         performSimpleSelectionVerificationTest("package test; public class Test {public void test() {new |Object|();}}", false);
     }
 
+    public void test121420() throws Exception {
+        performFixTest("package test; import java.util.ArrayList; public class Test {public void test() { |new ArrayList<String>()|; }}", "package test; import java.util.ArrayList; public class Test {public void test() {ArrayList<String> arrayList = new ArrayList<String>(); }}", new DialogDisplayerImpl(null, false, false, true), 1, 0);
+    }
+
     public void test142424() throws Exception {
         performFixTest("package test; public class Test {private static void bar(int i) {} public void test() {new Runnable() {public void run() {String foo = \"foo\";bar(|foo.length()|);}}.run();}}",
                        "package test; public class Test {private static void bar(int i) {} public void test() {new Runnable() {public void run() {String foo = \"foo\";int length = foo.length(); bar( length);}}.run();}}",

@@ -233,6 +233,7 @@ public final class MidpDatabindingCodeSupport {
                     code.append(MidpDatabindingCodeSupport.getCodeProviderNama(providerType)).append(", "); //NOI18N
                     code.append(CodeReferencePresenter.generateAccessCode(getComponent())).append(", "); //NOI!8N
                     code.append(MidpDatabindingCodeSupport.getCodeFeatureName(featureType)).append(");"); //NOI18N
+                    code.append("\n"); //NOI18N
                     section.getWriter().write(code.toString());
                 }
 

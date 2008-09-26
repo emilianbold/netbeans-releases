@@ -117,13 +117,16 @@ public class RestResourceGenerator {
                         reportProgress(mes);
                         clientName = generateClient(project, wsdlURL.toString(), clientPackageName);
                     }
+
+                    Client client = jaxwsModel.findClientByName(clientName);
+                    if (client == null) {
+                        finishProgressReporting();
+                        dialog.close();
+                        return;
+                    }
                     JAXWSClientSupport clientSupport = JAXWSClientSupport.getJaxWsClientSupport(folder);
                     FileObject localWsdlFolder = clientSupport.getLocalWsdlFolderForClient(clientName, false);
 
-                    Client client = jaxwsModel.findClientByName(clientName);
-                    if(client == null){
-                        return;
-                    }
                     FileObject localWsdl = localWsdlFolder.getFileObject(client.getLocalWsdlFile());
                     WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(localWsdl.getURL());
                     wsdlModeler.setPackageName(clientPackageName);
@@ -131,6 +134,10 @@ public class RestResourceGenerator {
                     wsdlModeler.generateWsdlModel(new WsdlModelListener() {
 
                         public void modelCreated(WsdlModel model) {
+                            if (model == null) {
+                                finishProgressReporting();
+                                dialog.close();
+                            }
                             wsdlModel = model;
                             JavaSource targetSource = null;
 
@@ -138,7 +145,7 @@ public class RestResourceGenerator {
                             try {
                                 restSupport.ensureRestDevelopmentReady();
                             } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                                ErrorManager.getDefault().notify();
                             }
                             List<WsdlService> services = wsdlModel.getServices();
                             for (WsdlService service : services) {
@@ -291,25 +298,17 @@ public class RestResourceGenerator {
         final OpenCookie openCookie = dobj.getCookie(OpenCookie.class);
 
         if (openCookie != null) {
-            RequestProcessor.getDefault().post(new
+            RequestProcessor.getDefault().post(new Runnable() {
 
-                  Runnable() {
-
-
-
-             public void run() {
+                public void run() {
                     openCookie.open();
                 }
             }, 1000);
         } else {
             final EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            RequestProcessor.getDefault().post(new
+            RequestProcessor.getDefault().post(new Runnable() {
 
-                  Runnable() {
-
-
-
-             public void run() {
+                public void run() {
                     ec.open();
                 }
             }, 1000);

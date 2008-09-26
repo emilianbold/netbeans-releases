@@ -165,7 +165,7 @@ public class ParserQueueTest extends BaseTestCase {
             } else {
                 Entry entry = null;
                 try {
-                    entry = queue.poll();
+                    entry = queue.poll(null);
                 } catch (InterruptedException e) {
                     fail("Unexpected InterruptedException during queue.poll()"); // NOI18N
                 }

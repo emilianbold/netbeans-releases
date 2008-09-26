@@ -76,6 +76,16 @@ public class PropertyEditorImage extends PropertyEditorUserCode implements Prope
         return new PropertyEditorImage();
     }
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.clean(component);
+            radioButton = null;
+        }
+        customEditor = null;
+    }
+
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorImage.class, "LBL_IMAGE_STR")); // NOI18N;
@@ -153,6 +163,4 @@ public class PropertyEditorImage extends PropertyEditorUserCode implements Prope
         customEditor.init(component.getDocument());
         super.init(component);
     }
-    
-    
 }

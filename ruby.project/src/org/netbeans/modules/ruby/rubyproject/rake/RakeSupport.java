@@ -304,13 +304,13 @@ public final class RakeSupport {
 
         argList.addAll(RubyExecution.getRubyArgs(platform));
 
-        File platformInfoScript = InstalledFileLocator.getDefault().locate(
+        File rakeTaskInfoScript = InstalledFileLocator.getDefault().locate(
                 "rake_tasks_info.rb", "org.netbeans.modules.ruby.project", false);  // NOI18N
-        if (platformInfoScript == null) {
+        if (rakeTaskInfoScript == null) {
             throw new IllegalStateException("Cannot locate rake_tasks_info.rb script"); // NOI18N
         }
 
-        argList.add(platformInfoScript.getAbsolutePath());
+        argList.add(rakeTaskInfoScript.getAbsolutePath());
 
         String[] args = argList.toArray(new String[argList.size()]);
         ProcessBuilder pb = new ProcessBuilder(args);
@@ -363,6 +363,9 @@ public final class RakeSupport {
                 line = br.readLine();
                 if (line == null) {
                     break;
+                }
+                if (!line.contains("=")) { // not 'key=value' property
+                    continue;
                 }
                 sb.append(line);
                 sb.append('\n');

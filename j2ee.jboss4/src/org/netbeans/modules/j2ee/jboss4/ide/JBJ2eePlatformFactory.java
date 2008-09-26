@@ -56,12 +56,14 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
@@ -71,6 +73,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.Lookups;
 
  
 /**
@@ -251,8 +254,18 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         private boolean containsJaxWsLibraries() {
             File root = new File(properties.getRootDir(), "client"); // NOI18N
             File jaxWsAPILib = new File(root, "jboss-jaxws.jar"); // NOI18N
-            if (jaxWsAPILib.exists()) return true;
-            else return false;
+            if (jaxWsAPILib.exists()) {
+                return true;
+            }
+            jaxWsAPILib = new File(root, "jbossws-native-jaxws.jar"); // NOI18N
+            if (jaxWsAPILib.exists()) {
+                return true;
+            }
+            jaxWsAPILib = new File(root, "jaxws-api.jar"); // NOI18N
+            if (jaxWsAPILib.exists()) {
+                return true;
+            }
+            return false;
         }
 
         private boolean containsPersistenceProvider(String providerName) {
@@ -337,32 +350,49 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         private File[] getJaxWsLibraries() {
             File root = new File(properties.getRootDir(), "client"); // NOI18N
             File jaxWsAPILib = new File(root, "jboss-jaxws.jar"); // NOI18N
+            // JBoss without jbossws 
             if (jaxWsAPILib.exists()) {
                 return new File[] {
-                    new File(root, "activation.jar"),     // NOI18N
-                    new File(root, "getopt.jar"),    // NOI18N
                     new File(root, "wstx.jar"),   // NOI18N
-                    new File(root, "jbossall-client.jar"),  // NOI18N
-                    new File(root, "log4j.jar"),     // NOI18N
-                    new File(root, "mail.jar"),    // NOI18N
-                    new File(root, "jbossws-spi.jar"),   // NOI18N
                     new File(root, "jaxws-tools.jar"),  // NOI18N
-                    new File(root, "jaxws-rt.jar"),     // NOI18N
+                    new File(root, "jboss-common-client.jar"),  // NOI18N
+                    new File(root, "jboss-logging-spi.jar"),  // NOI18N
                     new File(root, "stax-api.jar"),    // NOI18N
-                    new File(root, "jaxb-api.jar"),   // NOI18N
-                    new File(root, "jaxb-impl.jar"),  // NOI18N
-                    new File(root, "jaxb-xjc.jar"),   // NOI18N
-                    new File(root, "streambuffer.jar"),  // NOI18N
-                    new File(root, "stax-ex.jar"),    // NOI18N
-                    //for SunRI JAX-WS implementation uncomment this:
-                    //new File(root, "jbossws-sunri-client.jar"),   // NOI18N
-                    //and comment out following jars:
-                    new File(root, "javassist.jar"),  // NOI18N
-                    new File(root, "jboss-xml-binding.jar"),   // NOI18N
+                    
                     new File(root, "jbossws-client.jar"),  // NOI18N
+                    new File(root, "jboss-jaxws-ext.jar"),    // NOI18N
                     new File(root, "jboss-jaxws.jar"),    // NOI18N
-                    new File(root, "jboss-jaxrpc.jar"),    // NOI18N
                     new File(root, "jboss-saaj.jar")    // NOI18N
+                };
+            }
+            jaxWsAPILib = new File(root, "jbossws-native-jaxws.jar"); // NOI18N
+            // JBoss+jbossws-native
+            if (jaxWsAPILib.exists()) {
+                return new File[] {
+                    new File(root, "wstx.jar"),   // NOI18N
+                    new File(root, "jaxws-tools.jar"),  // NOI18N
+                    new File(root, "jboss-common-client.jar"),  // NOI18N
+                    new File(root, "jboss-logging-spi.jar"),  // NOI18N
+                    new File(root, "stax-api.jar"),    // NOI18N
+
+                    new File(root, "jbossws-native-client.jar"),  // NOI18N
+                    new File(root, "jbossws-native-jaxws-ext.jar"),    // NOI18N
+                    new File(root, "jbossws-native-jaxws.jar"),    // NOI18N
+                    new File(root, "jbossws-native-saaj.jar")    // NOI18N
+                };
+            }
+            jaxWsAPILib = new File(root, "jaxws-api.jar"); // NOI18N
+            // JBoss+jbossws-metro
+            if (jaxWsAPILib.exists()) {
+                return new File[] {
+                    new File(root, "wstx.jar"),   // NOI18N
+                    new File(root, "jaxws-tools.jar"),  // NOI18N
+                    new File(root, "jboss-common-client.jar"),  // NOI18N
+                    new File(root, "jboss-logging-spi.jar"),  // NOI18N
+                    new File(root, "stax-api.jar"),    // NOI18N
+
+                    new File(root, "jbossws-metro-client.jar"),  // NOI18N
+                    new File(root, "saaj-api.jar")    // NOI18N
                 };
             }
             return null;
@@ -409,5 +439,12 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, properties.getSources());
             libraries = new LibraryImplementation[] {lib};
         }
+
+        @Override
+        public Lookup getLookup() {
+            Lookup baseLookup = Lookups.fixed(properties.getRootDir());
+            return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/JBoss4/Lookup"); //NOI18N
+        }
+        
     }
 }

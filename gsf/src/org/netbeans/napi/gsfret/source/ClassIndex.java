@@ -170,8 +170,13 @@ public final class ClassIndex extends Index {
                 Indexer indexer = language.getIndexer();
                 if (indexer != null) {
                     for (ClassIndexImpl ci : bootIndices) {
-                        if (indexer.acceptQueryPath(ci.getRoot().toExternalForm())) {
-                            indeces.add(ci);
+                        if (ci != null) {
+                            URL root = ci.getRoot();
+                            if (root != null) {
+                                if (indexer.acceptQueryPath(root.toExternalForm())) {
+                                    indeces.add(ci);
+                                }
+                            }
                         }
                     }
                 }

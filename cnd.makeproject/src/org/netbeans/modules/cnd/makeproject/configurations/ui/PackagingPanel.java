@@ -91,8 +91,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-            // FIXUP
-            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getRpmHeader().getValue(), packagingConfiguration));
+            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getDebianHeader().getValue(), packagingConfiguration));
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
@@ -155,7 +154,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             packagingConfiguration.getRpmHeader().setValue(new ArrayList(packagingInfoPanel.getListData()));
         }
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-            //FIXUP
+            packagingConfiguration.getDebianHeader().setValue(new ArrayList(packagingInfoPanel.getListData()));
         }
         
         packagingConfiguration.getFiles().setValue(new ArrayList(packagingFilesPanel.getListData()));

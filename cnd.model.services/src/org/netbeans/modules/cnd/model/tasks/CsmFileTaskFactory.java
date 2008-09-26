@@ -133,6 +133,39 @@ public abstract class CsmFileTaskFactory {
                 toRemove.put(csmFile, csm2task.remove(csmFile));
             }
 
+            List<FileObject> verifiedFiles = new ArrayList<FileObject>(fobj2csm.keySet());
+            // Model events should be redesigned. It is still inconvenient for clients. Move to lookup of DataObject direction. Stop hacking!
+            // verify rest task
+            for (FileObject v : verifiedFiles) {
+                if (v == null) {
+                    continue;
+                }
+                if (!v.isValid()) {
+                    continue;
+                }
+                if (!checkMimeType(v)) {
+                    continue;
+                }
+                CsmFile csmFile = CsmUtilities.getCsmFile(v, false);
+                if (csmFile == null) {
+                    csmFile = CsmStandaloneFileProvider.getDefault().getCsmFile(v);
+                }
+
+                if (csmFile != null) {
+                    CsmFile oldCsmFile = fobj2csm.get(v);
+                    if (!csmFile.equals(oldCsmFile)) {
+                        fobj2csm.remove(v);
+                        toRemove.put(csmFile, csm2task.remove(oldCsmFile));
+
+                        PhaseRunner task = createTask(v);
+                        Pair pair = new Pair(task);
+                        toAdd.put(csmFile, pair);
+                        fobj2csm.put(v, csmFile);
+                        csm2task.put(csmFile, pair);
+                    }
+                }
+            }
+
             //add new tasks:
             for (FileObject fileObject : addedFiles) {
                 if (fileObject == null) {
@@ -179,9 +212,9 @@ public abstract class CsmFileTaskFactory {
         }
 
         for (Entry<CsmFile, Pair> e : toAdd.entrySet()) {
-            if (OpenedEditors.SHOW_TIME) System.err.println("CFTF: adding "+
+            if (OpenedEditors.SHOW_TIME) System.err.println("CFTF: adding "+ //NOI18N
                     (e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT)+
-                    " "+e.getValue().runner.toString()+" " + e.getKey().getAbsolutePath());
+                    " "+e.getValue().runner.toString()+" " + e.getKey().getAbsolutePath()); //NOI18N
             post(e.getValue(), e.getKey(), e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT, DELAY);
         }
     }

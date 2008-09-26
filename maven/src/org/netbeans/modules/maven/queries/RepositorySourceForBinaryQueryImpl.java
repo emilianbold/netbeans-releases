@@ -122,9 +122,15 @@ public class RepositorySourceForBinaryQueryImpl implements SourceForBinaryQueryI
         
         public FileObject[] getRoots() {
             if (file.exists()) {
-                FileObject[] fos = new FileObject[1];
-                fos[0] = FileUtil.getArchiveRoot(FileUtil.toFileObject(file));
-                return fos;
+                FileObject fo = FileUtil.getArchiveRoot(FileUtil.toFileObject(file));
+                if (fo != null) { //#139894 it seems that sometimes it can return null.
+                                  // I suppose it's in the case when the jar/zip file in repository exists
+                                  // but is corrupted (not zip, eg. when downloaded from a wrongly
+                                  //setup repository that returns html documents on missing jar files.
+                    FileObject[] fos = new FileObject[1];
+                    fos[0] = fo;
+                    return fos;
+                }
             }
             return new FileObject[0];
         }

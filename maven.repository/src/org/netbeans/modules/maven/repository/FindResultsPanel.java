@@ -180,7 +180,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
             @Override
             public Image getIcon(int arg0) {
-                return Utilities.loadImage("org/netbeans/modules/maven/repository/empty.png");
+                return Utilities.loadImage("org/netbeans/modules/maven/repository/empty.png"); //NOI18N
             }
 
             @Override
@@ -199,7 +199,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
 
         for (NBVersionInfo nbvi : infos) {
-            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId();
+            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
             List<NBVersionInfo> get = map.get(key);
             if (get == null) {
                 get = new ArrayList<NBVersionInfo>();
@@ -286,7 +286,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             this.nbvi = versionInfo;
 
             setName(versionInfo.getVersion());
-            setDisplayName(versionInfo.getVersion() + " [ " + versionInfo.getType() + (versionInfo.getClassifier() != null ? ("," + versionInfo.getClassifier()) : "") + " ] " + " - " + versionInfo.getRepoId());
+            setDisplayName(versionInfo.getVersion() + " [ " + versionInfo.getType() + (versionInfo.getClassifier() != null ? ("," + versionInfo.getClassifier()) : "") + " ] " + " - " + versionInfo.getRepoId()); //NOI18N
 
             setIconBaseWithExtension("org/netbeans/modules/maven/repository/DependencyJar.gif"); //NOI18N
 

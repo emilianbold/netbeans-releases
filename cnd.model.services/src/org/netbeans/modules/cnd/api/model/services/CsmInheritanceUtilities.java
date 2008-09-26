@@ -280,7 +280,11 @@ public final class CsmInheritanceUtilities {
         // friend has maximal visibility
         if (CsmFriendResolver.getDefault().isFriend(contextDeclaration, clazz)) {
             return MAX_VISIBILITY;
-        }        
+        }
+        // nested classes should see at least themselves
+        if (isNestedClass(contextClass, clazz)) {
+            return MAX_VISIBILITY;
+        }
         // from global context only public members are visible, friend is checked above
         // return passed default public visibility
         if (contextClass == null || !checkInheritance) {
@@ -420,4 +424,10 @@ public final class CsmInheritanceUtilities {
         }
         return false;
     }
+
+    private static boolean isNestedClass(CsmClass inner, CsmClass outer) {
+        return inner != null && outer != null
+                && inner.getQualifiedName().toString().startsWith(outer.getQualifiedName().toString());
+    }
+
 }

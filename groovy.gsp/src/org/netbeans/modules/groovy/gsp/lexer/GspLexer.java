@@ -430,7 +430,7 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case GSCRIPT: // %{ ... }%
                     switch(actChar) {
                         case '}':
-                            state = JDECLAR_PC;
+                            state = GSCRIPT_PC;
                             break;
                     }
                     break;

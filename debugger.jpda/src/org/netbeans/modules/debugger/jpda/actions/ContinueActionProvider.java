@@ -40,21 +40,14 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
-import com.sun.jdi.ObjectCollectedException;
-import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
-import com.sun.jdi.VirtualMachine;
-
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
 import org.netbeans.api.debugger.ActionsManager;
-
-
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.ThreadsCollectorImpl;
 
 
 /**
@@ -63,14 +56,15 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  */
 public class ContinueActionProvider extends JPDADebuggerActionProvider {
     
-    private volatile boolean doingAction;
-    
+    private ThreadsCollectorImpl threadsCollector;
     
     public ContinueActionProvider (ContextProvider contextProvider) {
         super (
             (JPDADebuggerImpl) contextProvider.lookupFirst 
                 (null, JPDADebugger.class)
         );
+        threadsCollector = (ThreadsCollectorImpl) debugger.getThreadsCollector();
+        threadsCollector.addPropertyChangeListener(this);
         setProviderToDisableOnLazyAction(this);
     }
     
@@ -79,26 +73,17 @@ public class ContinueActionProvider extends JPDADebuggerActionProvider {
     }
     
     public void doAction (Object action) {
-        doingAction = true;
-        try {
-            getDebuggerImpl ().resume ();
-        } finally {
-            doingAction = false;
-        }
+        getDebuggerImpl ().resume ();
     }
     
+    @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
-        doingAction = true;
         doLazyAction(new Runnable() {
             public void run() {
                 try {
                     getDebuggerImpl ().resume ();
                 } finally {
-                    try {
-                        actionPerformedNotifier.run();
-                    } finally {
-                        doingAction = false;
-                    }
+                    actionPerformedNotifier.run();
                 }
             }
         });
@@ -107,7 +92,7 @@ public class ContinueActionProvider extends JPDADebuggerActionProvider {
     protected void checkEnabled (int debuggerState) {
         setEnabled (
             ActionsManager.ACTION_CONTINUE,
-            debuggerState == JPDADebugger.STATE_STOPPED
+            threadsCollector.isSomeThreadSuspended()
         );
     }
     

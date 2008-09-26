@@ -8,7 +8,7 @@ java.util.*
 
 */
 
-FileSys       // java.io.FileSystem
+FileRea       // java.io.FileReader
 ClassCastExc  // java.lang.ClassCastException
 BigDec        // java.math.BigDecimal
 BigInte       // java.math.BigInteger

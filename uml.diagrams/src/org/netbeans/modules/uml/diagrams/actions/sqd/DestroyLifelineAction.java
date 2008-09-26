@@ -56,6 +56,7 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IExecutionOccurrence;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.LifelineWidget;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 
 /**
  *
@@ -89,8 +90,7 @@ public class DestroyLifelineAction extends WidgetAction.LockedAdapter {
     {
         State retVal = State.REJECTED;
         
-        if ((event.isControlDown() == true) &&
-            (event.getKeyCode() == KeyEvent.VK_ENTER))
+        if(Util.isPaletteExecute(event) == true)
         {
             createLifelineDestroy(widget);
         }

@@ -1,15 +1,3 @@
 Code completion result for source line:
 public function |setFld($fld) {
 (QueryType=COMPLETION, NameKind=PREFIX)
-------------------------------------
-KEYWORD    __call()                                   null
-KEYWORD    __clone()                                  null
-KEYWORD    __construct()                              null
-KEYWORD    __destruct()                               null
-KEYWORD    __get()                                    null
-KEYWORD    __set()                                    null
-KEYWORD    __set_state()                              null
-KEYWORD    __sleep()                                  null
-KEYWORD    __toString()                               null
-KEYWORD    __unset()                                  null
-KEYWORD    __wakeup()                                 null

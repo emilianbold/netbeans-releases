@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
@@ -56,9 +55,8 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.openide.ErrorManager;
 
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 
@@ -81,7 +79,6 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     private JPDAThread                      currentThread;
     private JPDADebugger                    currentDebugger;
     private SourcePath                      currentSourcePath;
-    private String                          currentLanguage;
     private AllThreadsAnnotator             allThreadsAnnotator;
 
 
@@ -192,11 +189,6 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 break;
             }
         }
-        // TODO: Listen on changes of the language!
-        synchronized (this) {
-            currentLanguage = currentSession == null ? 
-                null : currentSession.getCurrentLanguage ();
-        }
         DebuggerEngine currentEngine = (currentSession == null) ?
             null : currentSession.getCurrentEngine();
         SourcePath sourcePath = (currentEngine == null) ? 
@@ -237,7 +229,14 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             }
             csf = debugger.getCurrentCallStackFrame ();
             sourcePath = currentSourcePath;
-            language = currentLanguage;
+            Session s;
+            try {
+                s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                s = null;
+            }
+            language = (s != null) ? s.getCurrentLanguage() : null;
         }
 
         // 3) annotate current line & stack
@@ -490,10 +489,18 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             }
             Map<JPDAThread, Object> threadAnnotations = new HashMap<JPDAThread, Object>();
             Set<JPDAThread> removeFutures = new HashSet<JPDAThread>();
+            Session s;
+            try {
+                s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                s = null;
+            }
+            String language = (s != null) ? s.getCurrentLanguage() : null;
             for (JPDAThread t : threadsToAnnotate) {
                 Object annotation;
                 if (theCurrentSourcePath != null) {
-                    annotation = theCurrentSourcePath.annotate(t, currentLanguage, false);
+                    annotation = theCurrentSourcePath.annotate(t, language, false);
                 } else {
                     annotation = null;
                 }

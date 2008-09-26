@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -74,7 +76,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     
     private static final CharSequence GLOBAL = CharSequenceKey.create("$Global$"); // NOI18N
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
-    private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
+    private Object projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
     
     // only one of parent/parentUID must be used (based on USE_UID_TO_CONTAINER)
@@ -109,7 +111,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
             
-        this.projectRef = null;
+        this.projectRef = new WeakReference(project); 
         declarationsSorageKey = new DeclarationContainer(this).getKey();
 
         project.registerNamespace(this);
@@ -125,7 +127,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
 
-        this.projectRef = null;
+        this.projectRef = new WeakReference(project); 
         this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
@@ -460,7 +462,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                 parent.removeNestedNamespace(this);
             }
             projectRef = _getProject();
-            projectRef.unregisterNamesace(this);
+            ((ProjectBase)projectRef).unregisterNamesace(this);
             dispose();            
         }
     }
@@ -502,10 +504,16 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private ProjectBase _getProject() {
         projectLock.readLock().lock();
         try {
-            ProjectBase prj = this.projectRef;
+            ProjectBase prj = null;
+            if (projectRef instanceof ProjectBase) {
+                prj = (ProjectBase)projectRef;
+            } else if (projectRef instanceof Reference) {
+                prj = ((Reference<ProjectBase>)projectRef).get();
+            }
             if (prj == null) {
                 prj = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
                 assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+                projectRef = new WeakReference<ProjectBase>(prj);
             }
             return prj;
         } finally {

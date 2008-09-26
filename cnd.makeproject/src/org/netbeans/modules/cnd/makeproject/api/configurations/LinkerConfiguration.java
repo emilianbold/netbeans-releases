@@ -82,7 +82,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	output = new StringConfiguration(null, ""); // NOI18N
 	additionalLibs = new VectorConfiguration(null);
 	dynamicSearch = new VectorConfiguration(null);
-	stripOption = new BooleanConfiguration(null, false, "", "-s"); // NOI18N
+	stripOption = new LinkerStripConfiguration(null, false); // NOI18N
 	picOption = new BooleanConfiguration(null, true, "", "-Kpic"); // NOI18N
 	norunpathOption = new BooleanConfiguration(null, true, "", "-norunpath"); // NOI18N
 	nameassignOption = new BooleanConfiguration(null, true);
@@ -450,6 +450,44 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 return;
             }
             super.setValue(v);
+        }
+    }
+    
+    private class LinkerStripConfiguration extends BooleanConfiguration {
+        public LinkerStripConfiguration(BooleanConfiguration master, boolean def) {
+            super(master, def);
+        }
+
+        @Override
+        public String getOption() {
+            if (getValue()) {
+                String option;
+                if (getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                    option = "-Wl,-S "; // NOI18N
+                }
+                else {
+                    option= "-s ";  // NOI18N
+                }
+                return option;
+            } else {
+                return ""; // NOI18N
+            }
+        }
+
+        // Clone and Assign
+        @Override
+        public void assign(BooleanConfiguration conf) {
+            setDirty(getDirty() || getValue() != conf.getValue());
+            setValue(conf.getValue());
+            setModified(conf.getValue());
+        }
+
+        @Override
+        public LinkerStripConfiguration clone() {
+            LinkerStripConfiguration clone = new LinkerStripConfiguration(getMaster(), getDefault());
+            clone.setValue(getValue());
+            clone.setModified(getModified());
+            return clone;
         }
     }
     

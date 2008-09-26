@@ -204,8 +204,8 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 buf.append("<br><pre>"); // NOI18N
                 appendInclStack(buf, includeStack);
                 // append search paths
-                appendPaths(buf, i18n("SourceUserPaths"), CsmFileInfoQuery.getDefault().getUserIncludePaths(csmFile));
-                appendPaths(buf, i18n("SourceSystemPaths"), CsmFileInfoQuery.getDefault().getSystemIncludePaths(csmFile));
+                appendPaths(buf, i18n("SourceUserPaths"), CsmFileInfoQuery.getDefault().getUserIncludePaths(csmFile));// NOI18N
+                appendPaths(buf, i18n("SourceSystemPaths"), CsmFileInfoQuery.getDefault().getSystemIncludePaths(csmFile));// NOI18N
                 buf.append("</pre>"); // NOI18N
             }
             // for testing put info into output window

@@ -131,7 +131,6 @@ public class JavaWsdlMapper {
      * @return the <code>wsdl:serviceName</code> for the <code>implClass</code>
      */
     public static QName getServiceName(FileObject implClass) {
-
         final java.lang.String[] serviceNameQNameARR = new String[2];
         if (implClass == null) {
             return null;
@@ -142,6 +141,7 @@ public class JavaWsdlMapper {
                  public void run(CompilationController controller) throws java.io.IOException {
                      controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                      SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                     if (sourceUtils == null) return; // see 147028
                      TypeElement te = sourceUtils.getTypeElement();
 
                      serviceNameQNameARR[0] = te.getSimpleName().toString() + SERVICE;
@@ -186,7 +186,11 @@ public class JavaWsdlMapper {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return new QName(serviceNameQNameARR[1], serviceNameQNameARR[0]);
+        if (serviceNameQNameARR[0] == null) {
+            return null;
+        } else {
+            return new QName(serviceNameQNameARR[1], serviceNameQNameARR[0]);
+        }
     }
 
     /**

@@ -11,15 +11,14 @@ package org.netbeans.test.subversion.main.commit;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -31,6 +30,7 @@ import org.netbeans.test.subversion.operators.CommitOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 
@@ -51,6 +51,7 @@ public class CommitDataTest extends JellyTestCase {
     Operator.DefaultStringComparator oldOperator;
     long timeout_c;
     long timeout_d;
+    static Logger log;
     
     /** Creates a new instance of CommitDataTest */
     public CommitDataTest(String name) {
@@ -59,8 +60,14 @@ public class CommitDataTest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
         System.out.println("### "+getName()+" ###");
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
     
     protected boolean isUnix() {
@@ -85,9 +92,11 @@ public class CommitDataTest extends JellyTestCase {
     
     public void testCommitFile() throws Exception {
         try {
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
+
             TestKit.showStatusLabels();
             VersioningOperator vo = VersioningOperator.invoke();
-            OutputOperator.invoke();
             
             org.openide.nodes.Node nodeIDE;
             long start;
@@ -119,19 +128,25 @@ public class CommitDataTest extends JellyTestCase {
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
             //open project
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.waitText("Checking out... finished.");
+
+            TestKit.waitText(mh);
+
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             TestKit.waitForScanFinishedAndQueueEmpty();
             
             TestKit.createNewElement(PROJECT_NAME, "javaapp", "NewClass");
+            mh = new MessageHandler("Refreshing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
             Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
             nodeFile.performPopupAction("Subversion|Show Changes");
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
             color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+
+            TestKit.waitText(mh);
+
             vo = VersioningOperator.invoke();
             table = vo.tabFiles();
             assertEquals("Wrong row count of table.", 1, table.getRowCount());
@@ -139,8 +154,15 @@ public class CommitDataTest extends JellyTestCase {
             
             //invoke commit action but exlude the file from commit
             start = System.currentTimeMillis();
+            mh = new MessageHandler("Refreshing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+            
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
             CommitOperator cmo = CommitOperator.invoke(nodeFile);
+
+            TestKit.waitText(mh);
+
             end = System.currentTimeMillis();
             //print message to log file.
             TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
@@ -157,15 +179,18 @@ public class CommitDataTest extends JellyTestCase {
             assertEquals("Expected file is missing.", "NewClass.java", table.getModel().getValueAt(0, 0).toString());
             assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
             
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+            mh = new MessageHandler("Committing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
             cmo = CommitOperator.invoke(nodeFile);
             cmo.selectCommitAction("NewClass.java", "Add as Text");
             start = System.currentTimeMillis();
             cmo.commit();
-            oto.waitText("Committing... finished.");
+
+            TestKit.waitText(mh);
+
             end = System.currentTimeMillis();
             
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
@@ -181,6 +206,8 @@ public class CommitDataTest extends JellyTestCase {
             assertNotNull("There shouldn't be any table in Versioning view", tee);
             stream.flush();
             stream.close();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {        
             TestKit.closeProject(PROJECT_NAME);
         }    
@@ -188,6 +215,9 @@ public class CommitDataTest extends JellyTestCase {
     
     public void testCommitPackage() throws Exception {
         try {
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
+
             org.openide.nodes.Node nodeIDE;
             JTableOperator table;
             long start;
@@ -219,9 +249,9 @@ public class CommitDataTest extends JellyTestCase {
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
             //open project
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.waitText("Checking out... finished.");
+
+            TestKit.waitText(mh);
+            
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
@@ -254,15 +284,17 @@ public class CommitDataTest extends JellyTestCase {
             status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             assertEquals("Wrong status of node!!!", TestKit.NEW_STATUS, status);
             
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+            mh = new MessageHandler("Committing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
             nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             cmo = CommitOperator.invoke(nodePack);
             cmo.selectCommitAction("xx", "Add Directory");
             start = System.currentTimeMillis();
             cmo.commit();
-            oto.waitText("Committing... finished.");
+
+            TestKit.waitText(mh);
+
             end = System.currentTimeMillis();
             
             nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
@@ -280,7 +312,9 @@ public class CommitDataTest extends JellyTestCase {
             }
             assertNotNull("There shouldn't be any table in Versioning view", tee);
             stream.flush();
-            stream.close();            
+            stream.close();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    
@@ -288,6 +322,9 @@ public class CommitDataTest extends JellyTestCase {
     
     public void testRecognizeMimeType() throws Exception {
         try {
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
+
             org.openide.nodes.Node nodeIDE;
             JTableOperator table;
             String color;
@@ -320,10 +357,10 @@ public class CommitDataTest extends JellyTestCase {
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
+
             //open project
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.waitText("Checking out... finished.");
+            TestKit.waitText(mh);
+
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
@@ -337,13 +374,13 @@ public class CommitDataTest extends JellyTestCase {
                 TestKit.copyTo(src + expected[i], dest + expected[i]);
             }
             
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+            mh = new MessageHandler("Refreshing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
             
             Node nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             nodeSrc.performPopupAction("Subversion|Show Changes");
-            oto.waitText("Refreshing... finished.");
+            TestKit.waitText(mh);
             
             Node nodeTest;
             for (int i = 0; i < expected.length; i++) {
@@ -364,9 +401,10 @@ public class CommitDataTest extends JellyTestCase {
             int result = TestKit.compareThem(expected, actual, false);
             assertEquals("Not All files listed in Commit dialog", expected.length, result);
             
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+            mh = new MessageHandler("Committing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             CommitOperator cmo = CommitOperator.invoke(nodeSrc);
             table = cmo.tabFiles();
@@ -383,11 +421,11 @@ public class CommitDataTest extends JellyTestCase {
             result = TestKit.compareThem(expected, actual, false);
             assertEquals("Not All files listed in Commit dialog", expected.length, result);
             cmo.commit();
-            for (int i = 0; i < expected.length; i++) {
-                oto.waitText("add -N");
-                oto.waitText(expected[i]);
-            }
-            oto.waitText("Committing... finished.");
+//            for (int i = 0; i < expected.length; i++) {
+//                oto.waitText("add -N");
+//                oto.waitText(expected[i]);
+//            }
+            TestKit.waitText(mh);
             //files have been committed,
             //verify explorer node
             for (int i = 0; i < expected.length; i++) {
@@ -407,6 +445,8 @@ public class CommitDataTest extends JellyTestCase {
             assertNotNull("There shouldn't be any table in Versioning view", tee);
             stream.flush();
             stream.close();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }

@@ -361,6 +361,13 @@ made subject to such option by the copyright holder.
                 <file name="org.netbeans.modules.hibernate.service.HibernateProjectLookupExtender.instance"/>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-ant-freeform">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.hibernate.service.HibernateProjectLookupExtender.instance">
+                    <attr name="position" intvalue="700"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
     <folder name="Navigator">
         <folder name="Panels">

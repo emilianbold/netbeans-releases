@@ -39,6 +39,8 @@
 package org.netbeans.modules.maven.j2ee;
 
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -138,7 +140,7 @@ public class ExecutionChecker implements ExecutionResultChecker {
                 }
             }
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(ExecutionChecker.class.getName()).log(Level.FINE, "Exception occured wile deploying to Application Server.", ex);
         }
     }
 

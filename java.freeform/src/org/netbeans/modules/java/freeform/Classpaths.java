@@ -383,7 +383,6 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                     mutablePathImplsByType = new HashMap<List<String>,MutableClassPathImplementation>();
                     mutablePathImpls.put(type, mutablePathImplsByType);
                 }
-            }
             MutableClassPathImplementation impl = mutablePathImplsByType.get(packageRootNames);
             if (impl == null) {
                 // XXX will it ever not be null?
@@ -397,6 +396,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                 registerNewClasspath(type, cp);
             }
             return cp;
+            }
         } else {
             // Unknown.
             return null;

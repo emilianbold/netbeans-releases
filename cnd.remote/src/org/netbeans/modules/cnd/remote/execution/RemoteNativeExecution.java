@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
 
 /**
@@ -81,10 +80,5 @@ public class RemoteNativeExecution extends NativeExecution {
     }
 
     public void stop() {
-    }
-
-    @Override
-    protected String getUnbufferPath(String host) {
-        return Unbuffer.getRemotePath(host);
     }
 }

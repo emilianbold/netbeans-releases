@@ -45,6 +45,7 @@ import java.util.*;
 
 import javax.swing.text.JTextComponent;
 
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.napi.gsfret.source.CompilationController;
@@ -143,6 +144,13 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
 
             //final int caretOffset = c.getCaret().getDot();
             Source js = Source.forDocument(c.getDocument());
+
+            if (c.getDocument() instanceof BaseDocument) {
+                BaseDocument doc = (BaseDocument) c.getDocument();
+                if (doc.isAtomicLock()) {
+                    return false;
+                }
+            }
 
             if (js != null) {
                 try {

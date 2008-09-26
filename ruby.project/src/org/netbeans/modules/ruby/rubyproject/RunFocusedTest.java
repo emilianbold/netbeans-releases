@@ -51,7 +51,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.netbeans.api.project.Project;
@@ -100,7 +100,7 @@ public class RunFocusedTest extends BaseAction {
             return;
         }
 
-        FileObject file = NbUtilities.findFileObject(target);
+        FileObject file = GsfUtilities.findFileObject(target);
 
         if (file != null) {
             Project project = FileOwnerQuery.getOwner(file);

@@ -109,6 +109,15 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
                     return new String[] { GSP, FOLDER };
                 case GRAILSAPP_I18N:
                     return new String[] { PROPERTIES };
+                case SRC_JAVA:
+                    return new String[] {
+                        "Templates/Classes/Class.java",
+                        "Templates/Classes/Interface.java",
+                        "Templates/Classes/Enum.java",
+                        "Templates/Classes/AnnotationType.java",
+                        "Templates/Classes/Exception.java",
+                        "Templates/Classes/Package.java",
+                    };
             }
         }
         return new String[] {};

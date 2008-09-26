@@ -277,7 +277,7 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
 
     Rectangle boundsSuggested(Widget widget, Rectangle originalSceneRectangle, Rectangle rectangle, ControlPoint controlPoint, int modifiers) {
         this.resizingmodifiers=modifiers;
-        return boundsSuggested(widget, rectangle, rectangle, controlPoint);
+        return boundsSuggested(widget, originalSceneRectangle, rectangle, controlPoint);
     }
 
     void resizingFinished(Widget widget, int modifiers) {

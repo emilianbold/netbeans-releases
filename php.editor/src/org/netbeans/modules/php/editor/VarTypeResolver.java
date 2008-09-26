@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -72,6 +73,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -152,7 +154,17 @@ public final class VarTypeResolver {
                             String typeName = parameterType.getName();
                             String paramName = null;
                             Expression parameterName = param.getParameterName();
-                            if (parameterName instanceof Variable) {
+                            Variable var = null;
+                            if (parameterName instanceof Reference) {
+                                Reference ref = (Reference) parameterName;
+                                parameterName = ref.getExpression();
+                                if (parameterName instanceof Variable) {
+                                    var = (Variable) parameterName;
+                                }
+                            } else if (parameterName instanceof Variable) {
+                                var = (Variable) parameterName;
+                            }
+                            if (var != null) {
                                 paramName = CodeUtils.extractVariableName((Variable) parameterName);
                             }
                             if (paramName != null && typeName != null && typeName.length() > 0) {
@@ -210,7 +222,7 @@ public final class VarTypeResolver {
                         if (dispatcher instanceof Variable) {
                             Variable var = (Variable) dispatcher;
                             String name = CodeUtils.extractVariableName(var);
-                            if (name.equals(varName)) {
+                            if (name != null && name.equals(varName)) {
                                 String fldNames = CodeUtils.extractVariableName(field);
                                 if (fldNames != null) {
                                     memberNames.put(fldNames, ElementKind.FIELD);
@@ -224,7 +236,7 @@ public final class VarTypeResolver {
 
             @Override
             public void visit(MethodInvocation node) {
-                int offset = anchor;                
+                int offset = anchor;
                 if ((offset != (-1) && offset >= node.getStartOffset())) {
                     if (isValidBlock(path)) {
 
@@ -232,7 +244,7 @@ public final class VarTypeResolver {
                         if (dispatcher instanceof Variable) {
                             Variable var = (Variable) dispatcher;
                             String name = CodeUtils.extractVariableName(var);
-                            if (name.equals(varName)) {
+                            if (name != null && name.equals(varName)) {
                                 String methName = CodeUtils.extractFunctionName(node.getMethod());
                                 if (methName != null) {
                                     memberNames.put(methName, ElementKind.METHOD);
@@ -252,55 +264,69 @@ public final class VarTypeResolver {
                     Expression rightHandSide = node.getRightHandSide();
                     if (leftHandSide instanceof Variable) {
                         String leftVarName = CodeUtils.extractVariableName((Variable) leftHandSide);
-                        if (isValidBlock(path)) {
-                            if (rightHandSide instanceof Variable) {
-                                String rightVarName = CodeUtils.extractVariableName((Variable) rightHandSide);
-                                Union2<Variable, String> rAssignment = assignments.get(rightVarName);
-                                if (rAssignment != null) {
-                                    assignments.put(leftVarName, rAssignment);
-                                } else {
-                                    assignments.put(leftVarName, Union2.<Variable, String>createFirst((Variable) rightHandSide));
+                        if (leftVarName != null) {
+                            if (isValidBlock(path)) {
+                                if (rightHandSide instanceof Reference) {
+                                    while(rightHandSide instanceof Reference) {
+                                        rightHandSide = ((Reference)rightHandSide).getExpression();
+                                    }
                                 }
-                            } else if (rightHandSide instanceof ClassInstanceCreation) {
-                                assignments.put(leftVarName, Union2.<Variable, String>createSecond(CodeUtils.extractClassName((ClassInstanceCreation) rightHandSide)));
-                            } else {
-                                String typeName = null;
-                                if (rightHandSide instanceof VariableBase) {
-                                    Stack<VariableBase> stack = new Stack<VariableBase>();
-                                    createVariableBaseChain((VariableBase) rightHandSide, stack);
-                                    while (!stack.isEmpty() && stack.peek() != null) {
-                                        VariableBase varBase = stack.pop();
-                                        if (typeName == null) {
-                                            if (varBase instanceof FunctionInvocation) {
-                                                typeName = getReturnType((FunctionInvocation) varBase, result,index);
-                                            } else if (varBase instanceof Variable) {
-                                                typeName = findPrecedingType((Variable) varBase, assignments);
-                                            } else if (varBase instanceof StaticFieldAccess) {
-                                                typeName = getReturnType((StaticFieldAccess)varBase, result,index);
-                                            } else if (varBase instanceof StaticMethodInvocation) {
-                                                typeName = getReturnType((StaticMethodInvocation)varBase, result,index);
-                                            }
+                                if (rightHandSide instanceof Variable) {
+                                    String rightVarName = CodeUtils.extractVariableName((Variable) rightHandSide);
+                                    Union2<Variable, String> rAssignment = assignments.get(rightVarName);
+                                    if (rAssignment != null) {
+                                        assignments.put(leftVarName, rAssignment);
+                                    } else {
+                                        assignments.put(leftVarName, Union2.<Variable, String>createFirst((Variable) rightHandSide));
+                                    }
+                                } else if (rightHandSide instanceof ClassInstanceCreation) {
+                                    ClassInstanceCreation clsInstanceCreation = (ClassInstanceCreation) rightHandSide;
+                                    ClassName className = clsInstanceCreation.getClassName();
+                                    Expression expr = className.getName();
+                                    if (expr instanceof Identifier) {
+                                        assignments.put(leftVarName, Union2.<Variable, String>createSecond(((Identifier) expr).getName()));
+                                    } else {
+                                        assignments.put(leftVarName, null);
+                                    }
+                                } else {
+                                    String typeName = null;
+                                    if (rightHandSide instanceof VariableBase) {
+                                        Stack<VariableBase> stack = new Stack<VariableBase>();
+                                        createVariableBaseChain((VariableBase) rightHandSide, stack);
+                                        while (!stack.isEmpty() && stack.peek() != null) {
+                                            VariableBase varBase = stack.pop();
                                             if (typeName == null) {
-                                                break;
-                                            }
-                                        } else {
-                                            if (varBase instanceof MethodInvocation) {
-                                                typeName = getReturnType(typeName, (MethodInvocation) varBase, result,index);
+                                                if (varBase instanceof FunctionInvocation) {
+                                                    typeName = getReturnType((FunctionInvocation) varBase, result, index);
+                                                } else if (varBase instanceof Variable) {
+                                                    typeName = findPrecedingType((Variable) varBase, assignments);
+                                                } else if (varBase instanceof StaticFieldAccess) {
+                                                    typeName = getReturnType((StaticFieldAccess) varBase, result, index);
+                                                } else if (varBase instanceof StaticMethodInvocation) {
+                                                    typeName = getReturnType((StaticMethodInvocation) varBase, result, index);
+                                                }
+                                                if (typeName == null) {
+                                                    break;
+                                                }
                                             } else {
-                                                typeName = null;
-                                                break;
+                                                if (varBase instanceof MethodInvocation) {
+                                                    typeName = getReturnType(typeName, (MethodInvocation) varBase, result, index);
+                                                } else {
+                                                    typeName = null;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
+                                    if (typeName == null) {
+                                        assignments.put(leftVarName, null);
+                                    } else {
+                                        assignments.put(leftVarName, Union2.<Variable, String>createSecond(typeName));
+                                    }
                                 }
-                                if (typeName == null) {
-                                    assignments.put(leftVarName, null);
-                                } else {
-                                    assignments.put(leftVarName, Union2.<Variable, String>createSecond(typeName));
-                                }
+                            } else {
+                                assignments.put(leftVarName, null);
                             }
-                        } else {
-                            assignments.put(leftVarName, null);
                         }
                     }
                     super.visit(node);
@@ -363,15 +389,17 @@ public final class VarTypeResolver {
         String clsName = staticFieldAccess.getClassName().getName();
         Variable var = staticFieldAccess.getField();
         String varName = CodeUtils.extractVariableName(var);
-        varName = (varName.startsWith("$")) //NOI18N
-                ? varName.substring(1) : varName;
+        if (varName != null) {
+            varName = (varName.startsWith("$")) //NOI18N
+                    ? varName.substring(1) : varName;
 
-        Collection<IndexedConstant> constants =
-                index.getAllProperties(result, clsName, varName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
+            Collection<IndexedConstant> constants =
+                    index.getAllFields(result, clsName, varName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
 
-        if (!constants.isEmpty()) {
-            IndexedConstant con = constants.iterator().next();
-            return con.getTypeName();
+            if (!constants.isEmpty()) {
+                IndexedConstant con = constants.iterator().next();
+                return con.getTypeName();
+            }
         }
         return null;
     }
@@ -392,6 +420,11 @@ public final class VarTypeResolver {
     }
     private static String findPrecedingType(Variable node, final Map<String, Union2<Variable, String>> assignments) {
         String varName = CodeUtils.extractVariableName(node);
+
+        if (varName == null){
+            return null;
+        }
+
         return findPrecedingType(varName, assignments);
     }
 

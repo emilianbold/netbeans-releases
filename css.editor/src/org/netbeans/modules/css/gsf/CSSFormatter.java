@@ -41,7 +41,6 @@ package org.netbeans.modules.css.gsf;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Formatter;
@@ -52,6 +51,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.indent.spi.Context;
 import org.openide.util.Exceptions;
 
 /**
@@ -66,20 +66,21 @@ public class CSSFormatter implements Formatter {
         return false;
     }
 
-    public void reformat(Document doc, int startOffset, int endOffset, CompilationInfo info) {
-        reindent(doc, startOffset, endOffset);
+    public void reformat(Context context, CompilationInfo info) {
+        reindent(context);
     }
 
-    public void reindent(final Document document, final int startOffset, final int endOffset) {
-        final BaseDocument bdoc = (BaseDocument) document;
+    public void reindent(final Context context) {
+        final BaseDocument bdoc = (BaseDocument) context.document();
 
         bdoc.runAtomic(new Runnable() {
 
             public void run() {
                 //XXX still using the old formatting API, the new one is a subject of change in next version of netbeans.
-                org.netbeans.editor.Formatter editorFormatter = bdoc.getFormatter();
+                int startOffset = context.startOffset();
+                int endOffset = context.endOffset();
                 try {
-                    int indentLevel = IndentUtils.indentLevelSize(document);
+                    int indentLevel = IndentUtils.indentLevelSize(bdoc);
                     int lastLine = Utilities.getLineOffset(bdoc, bdoc.getLength());
                     int indents[] = new int[lastLine + 1];
                     int indentShift[] = new int[lastLine + 1];
@@ -120,15 +121,17 @@ public class CSSFormatter implements Formatter {
                                             //where the property name is of IDENT token type
                                             //..or.. we are just after end of a rule ("}" token)
                                             //=> use the same indent level
+
+                                            // TODO - use IndentUtils here instead of Utilities!
                                             int indent = Utilities.getRowIndent(bdoc, t.offset(th));
-                                            editorFormatter.changeRowIndent(bdoc, lineBegin, indent);
+                                            context.modifyIndent(lineBegin, indent);
                                             return;
                                         } else if (t.id() == CSSTokenId.LBRACE) {
                                             // just rule beginning before current position - increase indent
                                             int indent = Utilities.getRowIndent(bdoc, t.offset(th));
 
                                             //XXX or should I use the this.indentSize() instead????
-                                            editorFormatter.changeRowIndent(bdoc, lineBegin, indent + indentLevel);
+                                            context.modifyIndent(lineBegin, indent + indentLevel);
                                             return;
                                         }
                                     }
@@ -216,7 +219,11 @@ public class CSSFormatter implements Formatter {
                     for (int line = firstLineWithinFormattingRange; line <= lastLineWithinFormattingRange; line++) {
                         if (formattableLines[line]) {
                             int lStart = Utilities.getRowStartFromLineOffset(bdoc, line);
-                            editorFormatter.changeRowIndent(bdoc, lStart, indents[line] + indentShift[line]);
+                            int newIndent = indents[line] + indentShift[line];
+                            if(newIndent < 0) {
+                                newIndent = 0; //hack - quick fix
+                            }
+                            context.modifyIndent(lStart, newIndent);
                         }
                     }
 

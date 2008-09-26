@@ -2,4 +2,4 @@ Code completion result for source line:
 InsideClass::|$stfld;
 (QueryType=COMPLETION, NameKind=PREFIX)
 VARIABLE   ? $stfld                        [STATIC]   InsideClass
-VARIABLE   ? INS_CONST                     [STATIC]   InsideClass
+CONSTANT   ? INS_CONST                                InsideClass

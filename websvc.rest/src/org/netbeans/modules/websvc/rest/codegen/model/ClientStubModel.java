@@ -602,7 +602,7 @@ public class ClientStubModel {
 
     public class WadlModeler extends ResourceModel {
 
-        private ArrayList<Resource> resourceList;
+        private Map<String, Resource> staticRMap = new HashMap<String, Resource>();
         private InputStream is;
         private String baseUrl;
 
@@ -615,21 +615,58 @@ public class ClientStubModel {
         }
 
         public void build() throws IOException {
-            this.resourceList = new ArrayList<Resource>();
+            List<Node> staticR = new ArrayList<Node>();
+            List<Node> dynamicR = new ArrayList<Node>();
             try {
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 Document doc = db.parse(is);
 
+                Node app = doc.getDocumentElement();
+                Node resources = getChildNodes(app, "resources").get(0);
+                
                 //App base
-                this.baseUrl = RestUtils.getAttributeValue(doc, "//application/resources", "base");
+                this.baseUrl = getAttributeValue(resources, "base");
 
                 //Resources
-                NodeList resourceNodes = RestUtils.getNodeList(doc, "//application/resources/resource");
-                if (resourceNodes != null && resourceNodes.getLength() > 0) {
-                    for (int i = 0; i < resourceNodes.getLength(); i++) {
-                        Resource r = createResource(doc, resourceNodes.item(i));
+                List<Node> resourceNodes = getChildNodes(resources, "resource");
+                for (Node s: resourceNodes) {
+                    staticR.add(s);
+                }
+                
+                //Sub-Resources
+                for (Node sNode : staticR) {
+                    List<Node> subRNodes = getChildNodes(sNode, "resource");
+                    for (Node d:subRNodes) {
+                        dynamicR.add(d);
+                        NodeList resNodes = RestUtils.getNodeList(d, "*/resource");
+                        if (resNodes != null) {
+                            for (int i = 0; i < resNodes.getLength(); i++) {
+                                dynamicR.add(resNodes.item(i));
+                            }
+                        }
+                    }
+                }
+                
+                for (Node sNode : staticR) {
+                    Resource r = createResource(doc, sNode);
+                    staticRMap.put(r.getName(), r);
+                    addResource(r);
+                }
+                for (Node dNode : dynamicR) {
+                    Resource r = createResource(doc, dNode);
+                    String rName = r.getName();
+                    if(rName.endsWith(Constants.COLLECTION))
+                        rName = rName.substring(0, rName.indexOf(Constants.COLLECTION))+"s";
+                    if(staticRMap.get(rName) == null)
                         addResource(r);
+                }
+                
+                //If any resource is a container, then remove trailing '/' on baseUrl
+                for (Resource r : getResources()) {
+                    if (r.isContainer() && this.baseUrl.endsWith("/")) {
+                        this.baseUrl = this.baseUrl.substring(0, this.baseUrl.length()-1);
+                        break;
                     }
                 }
             } catch (Exception ex) {
@@ -639,20 +676,31 @@ public class ClientStubModel {
 
         private Resource createResource(Document doc, Node n) throws IOException {
             try {
-                NamedNodeMap rAttrList = n.getAttributes();
-                String path = null;
-                Attr pathAttr = (Attr) rAttrList.getNamedItem("path");
-                if (pathAttr != null) {
-                    path = pathAttr.getNodeValue();
+                String path = getAttributeValue(n, "path");
+                String name = findResourceNameFromPath(path);
+                if (isContainerItem(n)) {
+                    Node p = n.getParentNode();
+                    String pName = findResourceNameFromPath(getAttributeValue(p, "path"));
+                    pName = pName.substring(0, pName.length()-1);
+                    if(name.startsWith(pName)) {
+                        name = pName;
+                        path = "/"+name+"/";
+                    }
                 }
-                String name = path.replaceAll("/", "");
                 name = name.substring(0, 1).toUpperCase() + name.substring(1);
-                Resource r = new Resource(normalizeName(name), path);
+                Resource r = new Resource(name, path);
                 buildResource(r, doc, n);
                 return r;
             } catch (Exception ex) {
                 throw new IOException(ex.getMessage());
             }
+        }
+        
+        private String findResourceNameFromPath(String path) {
+            String name = path.replaceAll("/", "");
+            name = name.replace("{", "");
+            name = name.replace("}", "");
+            return normalizeName(name);
         }
             
         private void buildResource(Resource r, Document doc, Node n) throws IOException {
@@ -662,9 +710,9 @@ public class ClientStubModel {
                 if (methods != null && methods.getLength() > 0) {
                     for (int j = 0; j < methods.getLength(); j++) {
                         Node method = methods.item(j);
-                        String mName = getMethodName(method);
+                        String mName = getAttributeValue(method, "name");
                         if (mName == null) {
-                            mName = getMethodRef(method);
+                            mName = getAttributeValue(method, "href");
                             if (mName == null) {
                                 throw new IOException("Method do not have name or " +
                                         "href attribute for resource: " + r.getName());
@@ -674,7 +722,7 @@ public class ClientStubModel {
                                     ref = ref.substring(1);
                                 }
                                 method = findMethodNodeByRef(doc, ref);
-                                mName = getMethodName(method);
+                                mName = getAttributeValue(method, "name");
                                 addMethod(r, mName, method);
                             }
                         } else {
@@ -682,31 +730,93 @@ public class ClientStubModel {
                         }
                     }
                 }
-                //Sub-Resources
-                NodeList resourceNodes = RestUtils.getNodeList(n, "resource");
-                if (resourceNodes != null && resourceNodes.getLength() > 0) {
-                    for (int i = 0; i < resourceNodes.getLength(); i++) {
-                        Resource sub = createResource(doc, resourceNodes.item(i));
-                        addResource(sub);
-                    }
-                }
             } catch (Exception ex) {
                 throw new IOException(ex.getMessage());
             }
+            buildRepresentationDocument(r, n);
         }
-
-        private String getMethodName(Node method) {
-            NamedNodeMap mAttrList = method.getAttributes();
-            Attr nameAttr = (Attr) mAttrList.getNamedItem("name");
-            if (nameAttr != null) {
-                return nameAttr.getNodeValue();
+        
+        private void buildRepresentationDocument(Resource r, Node n) throws IOException {
+            RepresentationDocument rDoc = r.getRepresentation();
+            if(isContainer(n)) {
+                RepresentationNode rootNode = createRootNode(findResourceNameFromPath(r.getPath()));
+                rDoc.setRoot(rootNode);
+                rootNode.setIsContainer(r.isContainer());
+                int expandLevel = 0;
+                processSubResource(n, rDoc, rootNode, r, expandLevel);
+            } else if(isContainerItem(n)) {
+                RepresentationNode rootNode = createRootNode(findResourceNameFromPath(r.getPath()));
+                rDoc.setRoot(rootNode);
+                
+                //Template params as fields
+                List<Node> params = getChildNodes(n, "param");
+                for (Node param:params) {
+                    String eName = getAttributeValue(param, "name");
+                    RepresentationNode cElem = new RepresentationNode(eName);
+                    rootNode.addChild(cElem);
+                }
             }
-            return null;
         }
 
-        private String getMethodRef(Node method) {
-            NamedNodeMap mAttrList = method.getAttributes();
-            Attr refAttr = (Attr) mAttrList.getNamedItem("href");
+        private RepresentationNode createRootNode(String name) { 
+            RepresentationNode rootNode = new RepresentationNode(name);
+            rootNode.setIsRoot(true);
+            return rootNode;
+        }
+
+        private void processSubResource(Node n, RepresentationDocument rr,
+                RepresentationNode rElem, Resource r, int expandLevel) throws IOException {
+            List<Node> childNodes = getChildNodes(n, "resource");
+            for(Node child : childNodes) {
+                if(isContainerItem(child)) {
+                    r.setIsContainer(true);
+                    String name = findResourceNameFromPath(getAttributeValue(child, "path"));
+                    String pName = findResourceNameFromPath(getAttributeValue(n, "path"));
+                    pName = pName.substring(0, pName.length()-1);
+                    if(name.startsWith(pName)) {
+                        name = pName;
+                    }
+                    rElem.addChild(createRootNode(name));
+                }
+            }
+        }
+        
+        private boolean isContainer(Node n) {
+            List<Node> childNodes = getChildNodes(n, "resource");
+            for(Node child : childNodes) {
+                if(isContainerItem(child)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private boolean isContainerItem(Node n) {
+            String path = getAttributeValue(n, "path");
+            return path.contains("{") && path.contains("}");
+        }
+        
+        private List<Node> getChildNodes(Node n, String name) {
+            List<Node> childNodes = new ArrayList<Node>();
+            NodeList childs = n.getChildNodes();
+            if(childs != null) {
+                for(int i=0;i<childs.getLength();i++) {
+                    Node child = childs.item(i);
+                    String cName = child.getNodeName();
+                    if(cName.indexOf(":")!=-1) {
+                        cName = cName.substring(cName.indexOf(":")+1);
+                    }
+                    if(cName.equals(name) && (child.getNamespaceURI() == null || 
+                            child.getNamespaceURI().equals(n.getNamespaceURI())))
+                        childNodes.add(child);
+                }
+            }
+            return childNodes;
+        }
+        
+        private String getAttributeValue(Node attr, String name) {
+            NamedNodeMap mAttrList = attr.getAttributes();
+            Attr refAttr = (Attr) mAttrList.getNamedItem(name);
             if (refAttr != null) {
                 return refAttr.getNodeValue();
             }

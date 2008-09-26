@@ -170,7 +170,6 @@ final class TokenListListUpdate<T extends TokenId> {
                     throw new IllegalStateException("Invalid modTokenListIndex");
                 }
             } else { // Cannot fix the index
-                eventInfo.tokenHierarchyOperation().setInactiveAfterInconsistency();
                 throw new IllegalStateException("Cannot fix modTokenListIndex");
             }
         }

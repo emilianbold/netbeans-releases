@@ -1,13 +1,13 @@
 class Foo
   # TODO Comment
-  def mymethod
+  def new_name
     some_call1 do
       a = 1
       b = 2
     end # some_call1
   end
   
-  mymethod
+  new_name
 end
 
 module Bar

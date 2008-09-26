@@ -102,7 +102,7 @@ public class VersionCommand {
                 provider.run(tool.getHostKey(),
                         path + " " + getVersionFlags() + " 2>&1", // NOI18N
                         Collections.EMPTY_MAP);
-                version = extractVersion(new StringReader(provider.toString()));
+                version = extractVersion(new StringReader(provider.getOutput()));
             }
         }
         alreadyRun = true;

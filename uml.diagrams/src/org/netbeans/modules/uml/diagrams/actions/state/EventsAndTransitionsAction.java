@@ -97,7 +97,7 @@ public class EventsAndTransitionsAction extends SceneNodeAction implements Conte
                     return this;
             }
         }
-        return null;
+        return this;
     }
 
     @Override
@@ -141,10 +141,14 @@ public class EventsAndTransitionsAction extends SceneNodeAction implements Conte
     {
         StateWidget widget = getStateWidget(scene, pe);
         
-        boolean enable = state.getIsSubmachineState() && 
+        boolean enable = false;
+        if(state != null)
+        {
+            enable = state.getIsSubmachineState() &&
                          widget != null && 
                          widget.isDetailVisible() &&
                          scene.isReadOnly() == false;
+        }
         
         popupMenu = new JMenu(loc("ACT_EventsAndTransitions")); // NOI18N
 

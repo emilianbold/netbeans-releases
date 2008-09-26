@@ -57,6 +57,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -69,6 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -359,14 +361,20 @@ public class DefaultProjectActionHandler implements ActionListener {
                         //TODO: only output window for remote for now
                         conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                     }
-                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) { 
-                        args = pae.getProfile().getArgsFlat();
-                        exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
+                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                        if (HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS) {
+                            // we need to run the application under cmd on windows
+                            exe = "cmd.exe"; // NOI18N
+                            args = "/c " + IpeUtils.quoteIfNecessary(pae.getExecutable()) + " " + pae.getProfile().getArgsFlat(); // NOI18N
+                        } else {
+                            exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
+                            args = pae.getProfile().getArgsFlat();
+                        }
                         unbuffer = true;
                     } else {
                         showInput = false;
                         if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                            conType = pae.getProfile().getDefaultConsoleType();
+                            conType = RunProfile.getDefaultConsoleType();
                         }
                         if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
                             try {
@@ -509,6 +517,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 try {
                     FileObject projectFileObject = paes[currentAction].getProject().getProjectDirectory();
                     projectFileObject.getFileSystem().refresh(false);
+                    MakeLogicalViewProvider.refreshBrokenItems(paes[currentAction].getProject());
                 } catch (Exception e) {
                 }
             }

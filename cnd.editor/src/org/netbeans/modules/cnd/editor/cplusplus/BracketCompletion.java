@@ -42,8 +42,11 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import java.util.Stack;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenProcessor;
@@ -51,9 +54,8 @@ import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  * This static class groups the whole aspect of bracket
@@ -115,7 +117,7 @@ public class BracketCompletion {
                 TokenID tokenAtDot = support.getTokenID(dotPos - 1);
                 if (tokenAtDot == CCTokenContext.THIS) {
                     doc.remove(dotPos, 1);
-                    doc.insertString(dotPos, "->", null);
+                    doc.insertString(dotPos, "->", null);// NOI18N
                     caret.setDot(dotPos + 2);
                 }
             }
@@ -666,11 +668,8 @@ public class BracketCompletion {
      * Returns true if bracket completion is enabled in options.
      */
     private static boolean completionSettingEnabled() {
-        Boolean value = ((Boolean)Settings.getValue(CCKit.class, SettingsNames.PAIR_CHARACTERS_COMPLETION));
-        if (value != null){
-            return value.booleanValue();
-        }
-        return true;
+        Preferences prefs = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+        return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, true);
     }
     
     /**

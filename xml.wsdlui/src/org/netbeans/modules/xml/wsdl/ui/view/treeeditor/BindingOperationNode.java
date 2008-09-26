@@ -85,7 +85,7 @@ public class BindingOperationNode extends WSDLExtensibilityElementNode<BindingOp
     private Image ICON;
 
     public BindingOperationNode(BindingOperation wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<BindingOperation>(wsdlConstruct), wsdlConstruct, new BindingOperationNewTypesFactory());
+        super(wsdlConstruct, new BindingOperationNewTypesFactory());
         // Must set the icon to something to honor getIcon() contract.
         ICON = Utilities.loadImage(
                 "org/netbeans/modules/xml/wsdl/ui/view/resources/bindingoperation.png");

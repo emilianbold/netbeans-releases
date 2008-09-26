@@ -90,7 +90,7 @@ public class ServiceNode extends WSDLExtensibilityElementNode<Service> {
     private ServicePropertyAdapter mPropertyAdapter;
     
     public ServiceNode(Service wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<Service>(wsdlConstruct), wsdlConstruct, new ServiceNewTypesFactory());
+        super(wsdlConstruct, new ServiceNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         

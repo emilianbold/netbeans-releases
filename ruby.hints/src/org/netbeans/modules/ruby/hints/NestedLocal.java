@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.LocalVarNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
@@ -221,13 +220,21 @@ public class NestedLocal extends RubyAstRule {
             EditRegions.getInstance().edit(context.compilationInfo.getFileObject(), ranges, caretOffset);
         }
 
-        private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges) {
-            if (((node instanceof LocalAsgnNode) || (node instanceof LocalVarNode)) && name.equals(((INameNode)node).getName())) {
+        private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges, boolean isParameter) {
+            if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
+            } else if (isParameter && (node.nodeId == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
+                OffsetRange range = AstUtilities.getNameRange(node);
+                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
+                if (range != OffsetRange.NONE) {
+                    ranges.add(range);
+                }
+            } else if (node.nodeId == NodeType.ARGSNODE) {
+                isParameter = true;
             }
 
             List<Node> list = node.childNodes();
@@ -247,7 +254,7 @@ public class NestedLocal extends RubyAstRule {
                     continue;
                 }
 
-                addNonBlockRefs(child, name, ranges);
+                addNonBlockRefs(child, name, ranges, isParameter);
             }
         }
 
@@ -259,9 +266,9 @@ public class NestedLocal extends RubyAstRule {
 
             if (renameOuter) {
                 Node scope = AstUtilities.findLocalScope(path.leaf(), path);
-                addNonBlockRefs(scope, name, ranges);
+                addNonBlockRefs(scope, name, ranges, false);
             } else {
-                addNonBlockRefs(target, name, ranges);
+                addNonBlockRefs(target, name, ranges, false);
             }
 
             return ranges;

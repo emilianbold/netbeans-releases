@@ -86,7 +86,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     private boolean asp_tags = false;
     private StateStack stack = new StateStack();
 
-    private boolean short_tags_allowed = true;
+    private boolean short_tags_allowed;
 
     private LexerInput input;
     
@@ -119,16 +119,22 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     	initialize(parameters[6]);
     }
     */
-        public PHP5ColoringLexer(LexerRestartInfo info, boolean asp_tags) {
+        public PHP5ColoringLexer(LexerRestartInfo info, boolean short_tags_allowed, boolean asp_tags_allowed, boolean inPHP) {
             this.input = info.input();
-            this.asp_tags = asp_tags;
+            this.asp_tags = asp_tags_allowed;
+            this.short_tags_allowed = short_tags_allowed;
             
             if(info.state() != null) {
                 //reset state
                 setState((LexerState)info.state());
             } else {
                 //initial state
-                zzState = zzLexicalState = YYINITIAL;
+                if (inPHP) {
+                    zzState = zzLexicalState = ST_PHP_IN_SCRIPTING;
+                }
+                else {
+                    zzState = zzLexicalState = YYINITIAL;
+                }
                 stack.clear();
             }
             
@@ -144,15 +150,20 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             final String heredoc;
             /** and the lenght of */
             final int heredoc_len;
-            
-            LexerState (StateStack stack, int zzState, int zzLexicalState, String heredoc, int heredoc_len) {
+
+            final boolean shortTag;
+            final boolean aspTag;
+
+            LexerState (StateStack stack, int zzState, int zzLexicalState, String heredoc, int heredoc_len, boolean shortTag, boolean aspTag) {
                 this.stack = stack;
                 this.zzState = zzState;
                 this.zzLexicalState = zzLexicalState;
                 this.heredoc = heredoc;
                 this.heredoc_len = heredoc_len;
+                this.shortTag = shortTag;
+                this.aspTag = aspTag;
             }
-            
+
             @Override
             public boolean equals(Object obj) {
                 if (this == obj) {
@@ -162,15 +173,17 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 		if (obj == null || obj.getClass() != this.getClass()) {
 			return false;
 		}
-                
+
                 LexerState state = (LexerState) obj;
-                return (this.stack.equals(state.stack) 
-                    && (this.zzState == state.zzState) 
+                return (this.stack.equals(state.stack)
+                    && (this.zzState == state.zzState)
                     && (this.zzLexicalState == state.zzLexicalState)
                     && (this.heredoc_len == state.heredoc_len)
+                    && (this.shortTag == state.shortTag)
+                    && (this.aspTag == state.aspTag)
                     && ((this.heredoc == null && state.heredoc == null) || (this.heredoc != null && state.heredoc != null && this.heredoc.equals(state.heredoc))));
             }
-         
+
             @Override
             public int hashCode() {
                 int hash = 11;
@@ -186,11 +199,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 return hash;
             }
         }
-        
+
         public LexerState getState() {
-            return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, heredoc_len);
+            return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, heredoc_len, short_tags_allowed, asp_tags);
         }
-        
+
         public void setState(LexerState state) {
             this.stack.copyFrom(state.stack);
             this.zzState = state.zzState;

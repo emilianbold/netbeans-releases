@@ -83,7 +83,7 @@
                       <Component id="directorySelector" alignment="0" pref="464" max="32767" attributes="1"/>
                       <Component id="domainsCombo" alignment="0" pref="464" max="32767" attributes="1"/>
                       <Component id="labelInstall" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="labelDomain" alignment="0" min="-2" pref="92" max="-2" attributes="0"/>
+                      <Component id="labelDomain" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>

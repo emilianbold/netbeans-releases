@@ -78,6 +78,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -369,6 +370,10 @@ final public class EjbJarProjectProperties {
             });
             // and save the project        
             ProjectManager.getDefault().saveProject(project);
+            //Delete COS mark
+            if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
+                DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir", false); // NOI18N
+            }            
         } 
         catch (MutexException e) {
             Exceptions.printStackTrace((IOException) e.getException());

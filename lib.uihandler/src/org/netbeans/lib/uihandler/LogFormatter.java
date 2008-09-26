@@ -115,6 +115,9 @@ class LogFormatter extends XMLFormatter{
     }
     
     private void printFrame(StackTraceElement frame, StringBuffer sb){
+        if (frame == null){ // might be caused by OOM bugs see #145298
+            return;
+        }
         sb.append("    <frame>\n");// NOI18N
         sb.append("      <class>");// NOI18N
         escape(sb, frame.getClassName());

@@ -109,20 +109,20 @@ public abstract class Command {
     }
 
     protected final void showURLForProjectFile() throws MalformedURLException {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForProjectFile());
+        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForProjectFile(true));
     }
 
     protected final void showURLForDebugProjectFile() throws MalformedURLException {
-        showURLForDebug(getURLForDebug(null));
+        showURLForDebug(getURLForDebug(null, true));
     }
 
-    protected final URL getURLForDebug(Lookup context) throws MalformedURLException {
+    protected final URL getURLForDebug(Lookup context, boolean useWebRoot) throws MalformedURLException {
         DebugInfo debugInfo = getDebugInfo();
         URL debugUrl;
         if (context != null) {
-            debugUrl = debugInfo.debugServer ? urlForDebugContext(context) : urlForContext(context);
+            debugUrl = debugInfo.debugServer ? urlForDebugContext(context, useWebRoot) : urlForContext(context, useWebRoot);
         } else {
-            debugUrl = debugInfo.debugServer ? urlForDebugProjectFile() : urlForProjectFile();
+            debugUrl = debugInfo.debugServer ? urlForDebugProjectFile(useWebRoot) : urlForProjectFile(useWebRoot);
         }
         return debugUrl;
     }
@@ -211,16 +211,16 @@ public abstract class Command {
         }
     }
 
-    protected final URL urlForDebugProjectFile() throws MalformedURLException {
-        return appendQuery(urlForProjectFile(), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+    protected final URL urlForDebugProjectFile(boolean useWebRoot) throws MalformedURLException {
+        return appendQuery(urlForProjectFile(useWebRoot), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
     }
 
-    protected final URL urlForDebugContext(Lookup context) throws MalformedURLException {
-        return appendQuery(urlForContext(context), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+    protected final URL urlForDebugContext(Lookup context, boolean useWebRoot) throws MalformedURLException {
+        return appendQuery(urlForContext(context, useWebRoot), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
     }
 
-    protected final URL urlForProjectFile() throws MalformedURLException {
-        String relativePath = relativePathForProject();
+    protected final URL urlForProjectFile(boolean useWebRoot) throws MalformedURLException {
+        String relativePath = relativePathForProject(useWebRoot);
         if (relativePath == null) {
             //TODO makes sense just in case if listing is enabled | maybe user message
             relativePath = ""; //NOI18N
@@ -230,8 +230,8 @@ public abstract class Command {
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
 
-    protected final URL urlForContext(Lookup context) throws MalformedURLException {
-        String relativePath = relativePathForContext(context);
+    protected final URL urlForContext(Lookup context, boolean useWebRoot) throws MalformedURLException {
+        String relativePath = relativePathForContext(context, useWebRoot);
         if (relativePath == null) {
             throw new MalformedURLException();
         }
@@ -241,27 +241,30 @@ public abstract class Command {
     }
 
     //or null
-    protected final String relativePathForContext(Lookup context) {
-        return getCommandUtils().getRelativeWebRootPath(fileForContext(context));
-    }
-
-    //or null
-    protected final String relativePathForProject() {
-        return getCommandUtils().getRelativeWebRootPath(fileForProject());
-    }
-
-    //or null
-    protected final FileObject fileForProject() {
-        FileObject retval = null;
-        String nameOfIndexFile = ProjectPropertiesSupport.getIndexFile(project);
-        FileObject[] srcRoots = Utils.getSourceObjects(getProject());
-        for (FileObject fileObject : srcRoots) {
-            retval = fileObject.getFileObject(nameOfIndexFile);
-            if (retval != null) {
-                break;
-            }
+    protected final String relativePathForContext(Lookup context, boolean useWebRoot) {
+        FileObject fileForContext = fileForContext(context);
+        if (useWebRoot) {
+            return getCommandUtils().getRelativeWebRootPath(fileForContext);
         }
-        return retval;
+        return getCommandUtils().getRelativeWebRootPath(fileForContext);
+    }
+
+    //or null
+    protected final String relativePathForProject(boolean useWebRoot) {
+        FileObject fileForProject = fileForProject(useWebRoot);
+        if (useWebRoot) {
+            return getCommandUtils().getRelativeWebRootPath(fileForProject);
+        }
+        return getCommandUtils().getRelativeSrcPath(fileForProject);
+    }
+
+    //or null
+    protected final FileObject fileForProject(boolean useWebRoot) {
+        String nameOfIndexFile = ProjectPropertiesSupport.getIndexFile(project);
+        if (useWebRoot) {
+            return ProjectPropertiesSupport.getWebRootDirectory(project).getFileObject(nameOfIndexFile);
+        }
+        return ProjectPropertiesSupport.getSourcesDirectory(project).getFileObject(nameOfIndexFile);
     }
 
     /** eventually show the customizer */

@@ -198,18 +198,19 @@ public class BuildArtifactMapperImpl {
     }
     
     @SuppressWarnings("deprecation")
-    public static boolean ensureBuilt(URL sourceRoot, boolean cleanCompletely) throws IOException {
+    public static Boolean ensureBuilt(URL sourceRoot, boolean cleanCompletely) throws IOException {
         File targetFolder = getTarget(sourceRoot);
         
         if (targetFolder == null) {
-            return false;
+            return null;
         }
         
         try {
             SourceUtils.waitScanFinished();
         } catch (InterruptedException e) {
             //Not Important
-            Exceptions.printStackTrace(e);            
+            LOG.log(Level.FINE, null, e);
+            return false;
         }
 
         FileObject[][] sources = new FileObject[1][];

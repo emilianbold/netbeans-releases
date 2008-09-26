@@ -485,7 +485,7 @@ public class Repository implements Serializable {
     */
     @Deprecated
     public final FileObject find(String aPackage, String name, String ext) {
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
 
         Enumeration<? extends FileSystem> en = getFileSystems();
 
@@ -510,7 +510,7 @@ public class Repository implements Serializable {
     */
     @Deprecated
     public final FileObject findResource(String name) {
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
 
         Enumeration<? extends FileSystem> en = getFileSystems();
 
@@ -534,7 +534,7 @@ public class Repository implements Serializable {
     */
     @Deprecated
     public final Enumeration<? extends FileObject> findAllResources(String name) {
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
 
         Vector<FileObject> v = new Vector<FileObject>(8);
         Enumeration<? extends FileSystem> en = getFileSystems();
@@ -565,7 +565,7 @@ public class Repository implements Serializable {
     */
     @Deprecated
     public final Enumeration<? extends FileObject> findAll(String aPackage, String name, String ext) {
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
 
         Enumeration<? extends FileSystem> en = getFileSystems();
         Vector<FileObject> ret = new Vector<FileObject>();

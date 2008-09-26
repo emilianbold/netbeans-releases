@@ -85,13 +85,7 @@ public class DebuggerAction extends AbstractAction {
         if (key == Action.NAME) {
             return NbBundle.getMessage (DebuggerAction.class, (String) super.getValue(key));
         }
-        Object value = super.getValue(key);
-        if (key == Action.SMALL_ICON) {
-            if (value instanceof String) {
-                value = Utils.getIcon ((String) value);
-            }
-        }
-        return value;
+        return super.getValue(key);
     }
     
     public void actionPerformed (ActionEvent evt) {
@@ -147,9 +141,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createContinueAction() {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_CONTINUE);
         action.putValue (Action.NAME, "CTL_Continue_action_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/Continue" // NOI18N
-        );
         action.putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/Continue.gif" // NOI18N
@@ -160,9 +151,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createFixAction() {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_FIX);
         action.putValue (Action.NAME, "CTL_Fix_action_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/Fix" // NOI18N
-        );
         action.putValue (
             "iconBase",
             "org/netbeans/modules/debugger/resources/actions/Fix.gif" // NOI18N
@@ -173,9 +161,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createKillAction() {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_KILL);
         action.putValue (Action.NAME, "CTL_KillAction_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/Kill" // NOI18N
-        );
         action.putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/Kill.gif" // NOI18N
@@ -187,9 +172,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createMakeCalleeCurrentAction() {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_MAKE_CALLEE_CURRENT);
         action.putValue (Action.NAME, "CTL_MakeCalleeCurrentAction_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/GoToCalledMethod" // NOI18N
-        );
         action.putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/GoToCalledMethod.gif" // NOI18N
@@ -200,9 +182,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createMakeCallerCurrentAction() {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_MAKE_CALLER_CURRENT);
         action.putValue (Action.NAME, "CTL_MakeCallerCurrentAction_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/GoToCallingMethod" // NOI18N
-        );
         action.putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/GoToCallingMethod.gif" // NOI18N
@@ -213,9 +192,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createPauseAction () {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_PAUSE);
         action.putValue (Action.NAME, "CTL_Pause_action_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/Pause" // NOI18N
-        );
         action.putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/Pause.gif" // NOI18N
@@ -238,9 +214,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createRunToCursorAction () {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_RUN_TO_CURSOR);
         action.putValue (Action.NAME, "CTL_Run_to_cursor_action_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/RunToCursor" // NOI18N
-        );
         action.putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/RunToCursor.gif" // NOI18N
@@ -251,9 +224,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createStepIntoAction () {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_STEP_INTO);
         action.putValue (Action.NAME, "CTL_Step_into_action_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/StepInto" // NOI18N
-        );
         action.putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/StepInto.gif" // NOI18N
@@ -270,9 +240,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createStepOutAction () {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_STEP_OUT);
         action.putValue (Action.NAME, "CTL_Step_out_action_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/StepOut" // NOI18N
-        );
         action.putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/StepOut.gif" // NOI18N
@@ -283,9 +250,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createStepOverAction () {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_STEP_OVER);
         action.putValue (Action.NAME, "CTL_Step_over_action_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/StepOver" // NOI18N
-        );
         action.putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/StepOver.gif" // NOI18N
@@ -296,9 +260,6 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createStepOperationAction () {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_STEP_OPERATION);
         action.putValue (Action.NAME, "CTL_Step_operation_action_name");
-        action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/actions/StepOverOperation" // NOI18N
-        );
         action.putValue (
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/StepOverOperation.gif" // NOI18N

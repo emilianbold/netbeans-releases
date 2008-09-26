@@ -67,10 +67,10 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
  */
 public final class MethodCustomizerPanel extends javax.swing.JPanel {
 
-    public static final String NAME = "name";
-    public static final String RETURN_TYPE = "returnType";
-    public static final String INTERFACES = "interfaces";
-    public static final String PARAMETERS = "parameters";
+    public static final String NAME = "name";  // NOI18N
+    public static final String RETURN_TYPE = "returnType";  // NOI18N
+    public static final String INTERFACES = "interfaces";  // NOI18N
+    public static final String PARAMETERS = "parameters";  // NOI18N
     // immutable method prototype
     private final MethodModel methodModel;
     private final ParametersPanel parametersPanel;
@@ -464,7 +464,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         List<String> result = new ArrayList<String>();
         if (exceptionsPanel != null) {
             for (String exception : exceptionsPanel.getExceptions()) {
-                if (!"".equals(exception.trim())) {
+                if (!"".equals(exception.trim())) {  // NOI18N
                     result.add(exception);
                 }
             }
@@ -524,7 +524,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         }
     }
 
-/**
+    /**
      * Listener on text fields.
      * Fires change event for specified property of this JPanel,
      * old and new value of event is null.

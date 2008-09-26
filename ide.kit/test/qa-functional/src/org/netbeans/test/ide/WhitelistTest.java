@@ -43,20 +43,29 @@ package org.netbeans.test.ide;
 
 import java.io.File;
 import junit.framework.Test;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  * Whitelist test
  * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
  *
+ * To run this test do the following:
+ * 1. execute test/whitelist/prepare.bat to prepare LimeWare project
+ * 2. execute test/whitelist/test.bat to do the measurement
+ * 3. execute test/whitelist/unprepare.bat to restore the environment
+ *
  * @author mrkam@netbeans.org
  */
 public class WhitelistTest extends JellyTestCase {
 
+    private static int stage;
+
     private static boolean initBlacklistedClassesHandler() {        
         String whitelistFN = new WhitelistTest("Dummy").getDataDir()
-                + File.separator + "whitelist.txt";
+                + File.separator + "whitelist_" + stage + ".txt";
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
         
         System.out.println("BlacklistedClassesHandler will be initialized with " + whitelistFN);
@@ -77,27 +86,75 @@ public class WhitelistTest extends JellyTestCase {
     
     public static Test suite() {
         
+        stage = Integer.getInteger("test.whitelist.stage", 1);
+        
         initBlacklistedClassesHandler();
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             WhitelistTest.class
-        ).clusters(".*").enableModules(".*");
+        ).clusters(".*").enableModules(".*").reuseUserDir(stage > 1);
         
-        conf = conf.addTest("testWhitelist");
-
+        conf = conf.addTest("testWhitelist" + stage);
+        
         return NbModuleSuite.create(conf);
+    }
+
+    public void testWhitelist1() throws Exception {
+        stage = 1;
+        Thread.sleep(3000);
+        testWhitelist();
+    }
+
+    public void testWhitelist2() throws Exception {
+        stage = 2;
+        try {
+            Thread.sleep(3000);
+            testWhitelist();
+        } finally {
+            openLime6Project();
+        }
+    }
+
+    public void testWhitelist3() throws Exception {
+        stage = 3;
+        long start = System.currentTimeMillis();
+        System.out.println("TRACE 0 0");
+
+        OpenProjects.getDefault().openProjects().get();
+
+        System.out.println("TRACE 1 " + (System.currentTimeMillis() - start));
+
+        Thread.sleep(1000);
+
+        WatchProjects.waitScanFinished();
+
+        System.out.println("TRACE 2 " + (System.currentTimeMillis() - start));
+
+        testWhitelist();
     }
 
     public void testWhitelist() throws Exception {
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
         assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
-        bcHandler.saveWhiteList(getLog("loadedClasses.txt"));
+        bcHandler.saveWhiteList(getLog("loadedClasses_" + stage + ".txt"));
         try {
-            bcHandler.listViolations(getLog("whitelist_violators.txt"), false);
-            bcHandler.listViolations(getLog("report.txt"), false, true);
-            assertTrue(bcHandler.reportViolations(getLog("violations.xml")), bcHandler.noViolations());
+            bcHandler.listViolations(getLog("whitelist_violators_" + stage + ".txt"), false);
+            bcHandler.listViolations(getLog("report_" + stage + ".txt"), false, true);
+            assertTrue(bcHandler.reportViolations(getLog("violations_" + stage + ".xml")), bcHandler.noViolations());
         } finally {
             bcHandler.unregister();
-        }        
+        }
+    }
+
+    public void openProject(String projectPath) throws Exception {
+        File projectsDir = new File(getDataDir(), projectPath);
+        Object prj = ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
+        OpenProjects.getDefault().openProjects().get();
+        WatchProjects.waitScanFinished();
+    }
+
+    public void openLime6Project() throws Exception {
+        openProject("lime6");
     }
 }

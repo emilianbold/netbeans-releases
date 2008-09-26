@@ -46,33 +46,37 @@
                         <attr name="template" boolvalue="true"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
                     </file>
-                        
+                </folder>
+
+                <folder name="Web">
                     <file name="JsfJpa" url="JsfJpa.zip">
+                        <attr name="position" intvalue="427"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/JsfJpa.html"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/WebModuleNode.gif"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                     </file>
                     
                     <file name="JsfJpaCrud" url="JsfJpaCrud.zip">
+                        <attr name="position" intvalue="437"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/JsfJpaCrud.html"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/WebModuleNode.gif"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                     </file>
                     
                     <file name="WebJpa" url="WebJpa.zip">
+                        <attr name="position" intvalue="417"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/WebJpa.html"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/WebModuleNode.gif"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                     </file>
-                    
                 </folder>
-                </folder>
+            </folder>
         </folder>
     </folder>
 </filesystem>

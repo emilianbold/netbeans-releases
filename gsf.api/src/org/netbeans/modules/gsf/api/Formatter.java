@@ -41,6 +41,7 @@
 package org.netbeans.modules.gsf.api;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
@@ -57,14 +58,14 @@ public interface Formatter {
      * You may use the provided parse tree information, if available, to guide formatting decisions.
      * The caret (if any) should be updated to the corresponding position that it was at before formatting.     * 
      */
-    void reformat(@NonNull Document doc, int startOffset, int endOffset, @CheckForNull CompilationInfo compilationInfo);
+    void reformat(@NonNull Context context, @CheckForNull CompilationInfo compilationInfo);
 
     /**
      * Reindent the source code. Adjusts indentation and strips trailing whitespace but
      * does not otherwise change the code. The caret (if any) should be updated to the corresponding
      * position that it was at before formatting.
      */
-    void reindent(@NonNull Document doc, int startOffset, int endOffset);
+    void reindent(@NonNull Context context);
 
     /**
      * Return true if the reformat() task in this implementation utilizes the parse information.

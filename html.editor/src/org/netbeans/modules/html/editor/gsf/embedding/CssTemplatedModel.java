@@ -212,21 +212,23 @@ public class CssTemplatedModel extends CssModel {
                                     //repair the code from the selector list beginning to first left curly bracket
                                     int from = siblingBefore.startOffset();
                                     int curlyBracketIndex = buff.indexOf("{", from);
-                                    if(curlyBracketIndex > 0) {
-                                        //test if there is a generated virtual code
-                                        String selectorListText = buff.substring(from, curlyBracketIndex);
-                                        int idx = selectorListText.indexOf(TEMPLATING);
-                                        if(idx >= 0) {
-                                            StringBuilder fixedText = new StringBuilder(selectorListText);
-                                            clear(fixedText, idx, idx + TEMPLATING.length());
-                                            clearAndWrite(buff, from, curlyBracketIndex, fixedText.toString());
-                                            cleared[0] = true;
-                                        } else {
-                                            //probably not necessary?!?! should be covered by the 'true' if block
-                                            clearAndWrite(buff, from, curlyBracketIndex, FIXED_SELECTOR);
-                                            cleared[0] = true;
-                                        }
+                                    if(curlyBracketIndex == -1) {
+                                        //no curly bracket found - this likely means that we are at the end of the css
+                                        //code and the bracket is simply missing
+                                        curlyBracketIndex = buff.length();
                                     }
+                                        
+                                    //test if there is a generated virtual code
+                                    String selectorListText = buff.substring(from, curlyBracketIndex);
+                                    int idx = selectorListText.indexOf(TEMPLATING);
+                                    if(idx >= 0) {
+                                        StringBuilder text = new StringBuilder(selectorListText);
+                                        //remove all semicolons in the text - just the generated identifier(s) will be left
+                                        String fixedText = text.toString().replace(';', 'E');
+                                        clearAndWrite(buff, from, curlyBracketIndex, fixedText);
+                                        cleared[0] = true;
+                                    }
+
                                     
                                 }
                             }

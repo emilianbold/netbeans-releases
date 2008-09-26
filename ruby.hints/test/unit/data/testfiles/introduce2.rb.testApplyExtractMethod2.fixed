@@ -7,7 +7,7 @@ def test
   notusedinexpression = 60
   alreadyexists4
   # Start of expression
-  alreadyexists2, usedlater = mymethod(alreadyexists1, alreadyexists2)
+  alreadyexists2, usedlater = new_name(alreadyexists1, alreadyexists2)
   # end of refactored expression
   if (true) 
     puts usedlater
@@ -16,7 +16,7 @@ def test
 end
 
 # TODO Comment
-def mymethod(alreadyexists1, alreadyexists2)
+def new_name(alreadyexists1, alreadyexists2)
   newvar = 50
   puts alreadyexists1
   puts alreadyexists2

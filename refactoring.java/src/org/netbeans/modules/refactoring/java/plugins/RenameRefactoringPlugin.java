@@ -557,7 +557,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             );
         
         TreePath temp = tp;
-        while (temp.getLeaf().getKind() != Tree.Kind.METHOD) {
+        while (temp != null && temp.getLeaf().getKind() != Tree.Kind.METHOD) {
             Scope scope = info.getTrees().getScope(temp);
             for (Element el:scope.getLocalElements()) {
                 if (el.getSimpleName().toString().equals(newName)) {

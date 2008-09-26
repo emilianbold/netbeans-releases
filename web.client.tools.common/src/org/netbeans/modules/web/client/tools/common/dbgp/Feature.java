@@ -71,7 +71,8 @@ public class Feature {
     	SUSPEND_ON_DEBUGGERKEYWORD(true) { @Override public String toDBGPFeatureName() { return "suspendOnDebuggerKeyword"; }},
         SHOW_FUNCTIONS(true)             { @Override public String toDBGPFeatureName() { return "showFunctions"; }},
     	SHOW_CONSTANTS(true)             { @Override public String toDBGPFeatureName() { return "showConstants"; }},
-        
+        IGNORE_QUERY_STRINGS(true)       { @Override public String toDBGPFeatureName() { return "ignoreQueryStrings"; }},
+
     	ENABLE(true)                     { @Override public String toDBGPFeatureName() { return "enable"; }}
         ;
 

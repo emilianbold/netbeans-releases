@@ -213,7 +213,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         boolean folderAnnotation = false;
                 
         for (final File file : context.getRootFiles()) {
-            FileInformation info = cache.getCachedStatus(file, true);
+            FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 File parentFile = file.getParentFile();
                 Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[] {file, folderToScan, parentFile});
@@ -266,7 +266,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     private Image annotateFileIcon(VCSContext context, Image icon) throws IllegalArgumentException {
         FileInformation mostImportantInfo = null;
         for (final File file : context.getRootFiles()) {
-            FileInformation info = cache.getCachedStatus(file, true);
+            FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 File parentFile = file.getParentFile();
                 Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[]{file, folderToScan, parentFile});
@@ -320,7 +320,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             // There is an assumption here that annotateName was already
             // called and FileStatusCache.getStatus was scheduled if
             // FileStatusCache.getCachedStatus returned null.
-            FileInformation info = cache.getCachedStatus(file, true);
+            FileInformation info = cache.getCachedStatus(file);
             if (info != null && (info.getStatus() & STATUS_BADGEABLE) != 0) {
                 isVersioned = true;
                 break;

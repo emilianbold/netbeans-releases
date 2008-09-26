@@ -26,6 +26,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 
 public class SQLDataObject extends MultiDataObject {
     
@@ -37,6 +38,11 @@ public class SQLDataObject extends MultiDataObject {
     
     protected Node createNodeDelegate() {
         return new SQLDataNode(this);
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
 }

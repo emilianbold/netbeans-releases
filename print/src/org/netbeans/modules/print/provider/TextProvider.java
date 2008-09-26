@@ -67,107 +67,105 @@ import static org.netbeans.modules.print.ui.UI.*;
  */
 public final class TextProvider extends ComponentProvider {
 
-  public TextProvider(EditorCookie editor, Date lastModified) {
-    super(null, getName(editor), lastModified);
-    myEditor = editor;
-  }
+    public TextProvider(EditorCookie editor, Date lastModified) {
+        super(null, getName(editor), lastModified);
+        myEditor = editor;
+    }
 
-  @Override
-  protected JComponent getComponent() {
-    JTextComponent component = getTextComponent();
+    @Override
+    protected JComponent getComponent() {
+        JTextComponent component = getTextComponent();
 
-    if (component == null) {
-      return null;
-    }
-    if (Config.getDefault().isAsEditor()) {
-      return component;
-    }
-    Document document = myEditor.getDocument();
+        if (component == null) {
+            return null;
+        }
+        if (Config.getDefault().isAsEditor()) {
+            return component;
+        }
+        Document document = myEditor.getDocument();
 
-    if (document == null) {
-      return null;
-    }
-    int start;
-    int end;
+        if (document == null) {
+            return null;
+        }
+        int start;
+        int end;
 
-    if (Config.getDefault().isSelection()) {
-      start = component.getSelectionStart();
-      end = component.getSelectionEnd();
+        if (Config.getDefault().isSelection()) {
+            start = component.getSelectionStart();
+            end = component.getSelectionEnd();
+        } else {
+            start = 0;
+            end = document.getLength();
+        }
+        int length = end - start;
+
+        if (document instanceof BaseDocument && length < MAX_LENGTH) {
+            PrintContainer container = new PrintContainer();
+            ((BaseDocument) document).print(container, false, true, start, end);
+            return new ComponentDocument(container.getIterators());
+        } else {
+            try {
+                return new ComponentDocument(component.getText(start, length));
+            } catch (BadLocationException e) {
+                return null;
+            }
+        }
     }
-    else {
-      start = 0;
-      end = document.getLength();
-    }
-    int length = end - start;
-      
-    if (document instanceof BaseDocument && length < MAX_LENGTH) {
-      PrintContainer container = new PrintContainer();
-      ((BaseDocument) document).print(container, false, true, start, end);
-      return new ComponentDocument(container.getIterators());
-    }
-    else {
-      try {
-        return new ComponentDocument(component.getText(start, length));
-      }
-      catch (BadLocationException e) {
+
+    private JTextComponent getTextComponent() {
+        JEditorPane[] panes = myEditor.getOpenedPanes();
+
+        if (panes != null && panes.length != 0) {
+            return panes[0];
+        }
         return null;
-      }
-    }
-  }
-
-  private JTextComponent getTextComponent() {
-    JEditorPane [] panes = myEditor.getOpenedPanes();
-
-    if (panes != null && panes.length != 0) {
-      return panes[0];
-    }
-    return null;
-  }
-
-  private static String getName(EditorCookie editor) {
-    Document document = editor.getDocument();
-      
-    if (document == null) {
-      return null;
-    }
-    return ((String) document.getProperty(Document.TitleProperty)).replace('\\', '/'); // NOI18N
-  }
-
-  // --------------------------------------------------------------------------------------
-  private static final class PrintContainer implements org.netbeans.editor.PrintContainer {
-    PrintContainer() {
-      myCharacters = new AttributedCharacters();
-      myCharactersList = new ArrayList<AttributedCharacters>();
     }
 
-    public void add(char [] chars, Font font, Color foreColor, Color backColor) {
+    private static String getName(EditorCookie editor) {
+        Document document = editor.getDocument();
+
+        if (document == null) {
+            return null;
+        }
+        return ((String) document.getProperty(Document.TitleProperty)).replace('\\', '/'); // NOI18N
+    }
+
+    // --------------------------------------------------------------------------------------
+    private static final class PrintContainer implements org.netbeans.editor.PrintContainer {
+
+        private List<AttributedCharacters> myCharactersList;
+        private AttributedCharacters myCharacters;
+
+        PrintContainer() {
+            myCharacters = new AttributedCharacters();
+            myCharactersList = new ArrayList<AttributedCharacters>();
+        }
+
+        public void add(char[] chars, Font font, Color foreColor, Color backColor) {
 //out(getString(foreColor) + " " + getString(backColor) + " " + getString(font) + " " + new String(chars));
-      myCharacters.append(chars, font, foreColor);
-    }
+            myCharacters.append(chars, font, foreColor);
+        }
 
-    public void eol() {
+        public void eol() {
 //out();
-      myCharactersList.add(myCharacters);
-      myCharacters = new AttributedCharacters();
+            myCharactersList.add(myCharacters);
+            myCharacters = new AttributedCharacters();
+        }
+
+        public boolean initEmptyLines() {
+            return false;
+        }
+
+        AttributedCharacterIterator[] getIterators() {
+            AttributedCharacterIterator[] iterators = new AttributedCharacterIterator[myCharactersList.size()];
+
+            for (int i = 0; i < myCharactersList.size(); i++) {
+                iterators[i] = myCharactersList.get(i).iterator();
+            }
+            return iterators;
+        }
     }
 
-    public boolean initEmptyLines() {
-      return false;
-    }
-  
-    AttributedCharacterIterator [] getIterators() {
-      AttributedCharacterIterator [] iterators = new AttributedCharacterIterator [myCharactersList.size()];
-
-      for (int i=0; i < myCharactersList.size(); i++) {
-        iterators [i] = myCharactersList.get(i).iterator();
-      }
-      return iterators;
-    }
-
-    private AttributedCharacters myCharacters;
-    private List<AttributedCharacters> myCharactersList;
-  }
-
-  private EditorCookie myEditor;
-  private static final int MAX_LENGTH = 64000;
+    private EditorCookie myEditor;
+    private static final int MAX_LENGTH = 64000;
 }

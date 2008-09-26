@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
                         <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                         <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                     </file>
-                    <file name="converter.zip" url="converter.zip">
+                    <file name="CurrencyConverter.zip" url="converter.zip">
                         <attr name="position" intvalue="200"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/converter.html"/>

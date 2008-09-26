@@ -265,13 +265,7 @@ public class WSUtils {
                         FileSystem fs = implClassFo.getFileSystem();
                         fs.runAtomicAction(new AtomicAction() {
                             public void run() {
-                                FileObject parent = implClassFo.getParent();
                                 deleteFile(implClassFo);
-                                while (parent!=srcRoot && parent.getChildren().length==0) {
-                                    FileObject fileToDelete=parent;
-                                    parent = parent.getParent();
-                                    deleteFile(fileToDelete);
-                                }
                             }
                         });
                     } catch (IOException ex) {
@@ -286,18 +280,12 @@ public class WSUtils {
     private static void deleteFile(FileObject f) {
         FileLock lock = null;
         try {
-            lock = f.lock();
-            if (f.isFolder()) {
-                DataFolder folder = DataFolder.findFolder(f);
-                // save all opened files
-                if (folder!=null) {
-                    DataObject[] children = folder.getChildren();
-                    for (int i=0;i<children.length;i++) {
-                        SaveCookie save = children[i].getCookie(SaveCookie.class);
-                        if (save!=null) save.save();
-                    }
-                }
+            DataObject dObj = DataObject.find(f);
+            if (dObj != null) {
+                SaveCookie save = dObj.getCookie(SaveCookie.class);
+                if (save!=null) save.save();
             }
+            lock = f.lock();
             f.delete(lock);
         } catch(java.io.IOException e) {
             NotifyDescriptor ndd =
@@ -373,9 +361,10 @@ public class WSUtils {
     }
     
     private static String getJaxWsApiDir() {
-        File file = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
-        if (file!=null) {
-            return file.getParent();
+        File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+        if (jaxwsApi!=null) {
+            File jaxbApi =  InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
+            return jaxwsApi.getParent()+(jaxbApi != null? ":"+jaxbApi.getParent() : ""); //NOI18N
         }
         return null;
     }

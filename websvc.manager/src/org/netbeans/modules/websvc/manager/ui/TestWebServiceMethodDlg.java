@@ -134,7 +134,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         if (wsdlFile != null) {
             try {
                 wsdlFile = wsdlFile.getCanonicalFile();
-                return wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURL());
+                return wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURI());
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

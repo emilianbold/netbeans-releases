@@ -186,6 +186,7 @@ public class ViewUpdateCenterAction extends NodeAction {
                 ucIO.readInputStreams(process.getInputStream(), process.getErrorStream());
                 writer = new OutputStreamWriter(process.getOutputStream());
                 writer.write("y\n");
+                writeProxyInfo(writer);
                 writer.flush();
                 int exitCode = process.waitFor();
                 Logger.getLogger("glassfish").log(Level.FINEST, "UC exit code = " + exitCode);
@@ -242,6 +243,11 @@ public class ViewUpdateCenterAction extends NodeAction {
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
+    }
+
+    private void writeProxyInfo(Writer writer) throws IOException {
+        // TODO - add code to write proxy info to the output stream.
+        writer.write("n\n");
     }
     
 }

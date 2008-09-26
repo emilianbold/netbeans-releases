@@ -170,11 +170,6 @@ public class Utilities {
       return prefs.getBoolean("guessMethodArguments", false); //NOI18N
     }
 
-    public static boolean pairCharactersCompletion() {
-      Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
-      return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
-    }
-
     private static void lazyInit() {
         if (!inited) {
             inited = true;

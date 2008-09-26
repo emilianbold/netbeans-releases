@@ -119,6 +119,9 @@ public class ThreadsListener extends DebuggerManagerAdapter {
                 infoPanel.setShowStepBrkp(listener.debugger, listener.stepBrkpThread, listener.stepBrkpBreakpoint);
             }
             infoPanel.recomputeMenuItems(getHits());
+        } else {
+            // Release reference to DebuggingView when there's no debugger.
+            debuggingView = null;
         }
         this.currentDebugger = deb;
     }
@@ -214,7 +217,6 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             if (listener != null) {
                 listener.unregister();
             }
-            debuggerToListener.remove(listener);
             if (debuggingView != null) {
                 debuggingView.updateSessionsComboBox();
             }
@@ -324,6 +326,7 @@ public class ThreadsListener extends DebuggerManagerAdapter {
         }
 
         private synchronized void unregister() {
+            if (debugger == null) return ;
             for (JPDAThread thread : threads) {
                 ((Customizer) thread).removePropertyChangeListener(this);
             }
@@ -339,8 +342,12 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             }
             threads.clear();
             lockedThread = null;
+            lockerThreads = null;
+            stepBrkpThread = null;
+            stepBrkpBreakpoint = null;
             debugger.removePropertyChangeListener(this);
             debugger.getThreadsCollector().getDeadlockDetector().removePropertyChangeListener(this);
+            debugger = null;
         }
         
         private boolean isCurrent(JPDAThread thread) {

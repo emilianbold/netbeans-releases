@@ -125,7 +125,10 @@ public class SpringHelper {
             //emfElement.appendChild(createDataSourceProperty());
             //emfElement.appendChild(createWeaverProperty());
             //emfElement.appendChild(createJpaVendorAdapterProperty());
-            emfElement.appendChild(createJpaProperties());
+            Element propElement = createJpaProperties();
+            if (propElement != null) {
+                emfElement.appendChild(propElement);
+            }
         } else {
             emfElement = createBean(EMF_ID, SIMPLE_EMF_CLASS);
             emfElement.appendChild(createProperty(PERSISTENCE_UNIT_NAME_PROP, pu.getName()));
@@ -234,9 +237,10 @@ public class SpringHelper {
     }
 
     private Element createJpaProperties() {
-        Element propertyElement = createProperty(JPA_PROPERTIES_PROP, null);
+        Element propertyElement = null; 
 
         if (HIBERNATE_PROVIDER.equals(pu.getProvider())) {
+            propertyElement = createProperty(JPA_PROPERTIES_PROP, null);
             Element propsElement = helper.createElement(PROPS_TAG);
             Element propElement = helper.createElement(PROP_TAG, HIBERNATE_TRANSACTION_FACTORY_CLASS);
             propElement.setAttribute(KEY_ATTR, HIBERNATE_TRANSACTION_FACTORY_CLASS_PROP);

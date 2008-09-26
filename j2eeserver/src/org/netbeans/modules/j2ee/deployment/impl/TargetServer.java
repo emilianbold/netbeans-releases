@@ -132,8 +132,8 @@ public class TargetServer {
                 }
                 targets = tempTargets.toArray(new Target[tempTargets.size()]);
             }
-
         }
+
         incremental = instance.getIncrementalDeployment();
         if (incremental != null && !checkServiceImplementations())
             incremental = null;
@@ -644,6 +644,37 @@ public class TargetServer {
         }
     }
 
+    public void undeploy(ProgressUI ui, boolean startServer) throws IOException, ServerException {
+
+        // TODO is this valid for multiple targets behind one server (bit theoretical) ?
+        if (!instance.isRunning() && !startServer) {
+            return;
+        }
+
+        init(ui, startServer, false);
+
+        TargetModule[] modules = getDeploymentDirectoryModules();
+        if (modules.length <= 0) {
+            return;
+        }
+
+        List<TargetModuleID> toUndeploy = new ArrayList<TargetModuleID>();
+        for (TargetModule module : modules) {
+            toUndeploy.add(module.delegate());
+            module.remove();
+        }
+
+        TargetModuleID[] tmIDs = (TargetModuleID[]) toUndeploy.toArray(new TargetModuleID[toUndeploy.size()]);
+        ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Undeploying"));
+        ProgressObject undeployPO = instance.getDeploymentManager().undeploy(tmIDs);
+        try {
+            ProgressObjectUtil.trackProgressObject(ui, undeployPO, instance.getDeploymentTimeout()); // lets use the same timeout as for deployment
+        } catch (TimedOutException e) {
+            // undeployment failed, try to continue anyway
+            LOGGER.log(Level.INFO, "Undeploy timeouted");
+        }
+    }
+
     /**
      * Inform the plugin about the deploy action, even if there was
      * really nothing needed to be deployed.
@@ -682,12 +713,11 @@ public class TargetServer {
     public DeployOnSaveManager.DeploymentState notifyArtifactsUpdated(
             J2eeModuleProvider provider, Iterable<File> artifacts) {
 
-        ServerInstance si = dtarget.getServer().getServerInstance();
-        if (!si.isRunning()) {
+        if (!instance.isRunning()) {
             return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
 
-        if (!DeployOnSaveManager.isServerStateSupported(si)) {
+        if (!DeployOnSaveManager.isServerStateSupported(instance)) {
             return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
         }
 

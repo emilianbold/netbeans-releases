@@ -1,5 +1,5 @@
+Alias foo to accounting.customer
 Column invoice_id in table accounting.invoice
 Column customer_id in table accounting.invoice
 Column customer_id in table accounting.customer
-Alias foo
 Schema accounting

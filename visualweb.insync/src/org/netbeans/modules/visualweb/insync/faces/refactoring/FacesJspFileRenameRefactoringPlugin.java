@@ -42,6 +42,7 @@
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -196,7 +197,12 @@ public class FacesJspFileRenameRefactoringPlugin extends FacesRefactoringPlugin 
                                     FacesModel iFacesModel = (FacesModel) iModel;
                                     if (!iFacesModel.isBusted()) {
                                         if (iFacesModel.isPageBean()) {
-                                            FileObject iFacesModelMarkupFileObject = iFacesModel.getMarkupFile();                                            
+                                            FileObject iFacesModelMarkupFileObject = iFacesModel.getMarkupFile();
+                                            if (iFacesModelMarkupFileObject == null) {
+                                                // XXX #132694 Logging illegal state, instead of NPE.
+                                                info(new IllegalStateException("The FacesModel returned null markup file, facesModel=" + iFacesModel)); // NOI18N
+                                                continue;
+                                            }
                                             FileObject iFacesModelMarkupParentFileObject = iFacesModelMarkupFileObject.getParent();                                            
                                             String iFacesModelMarkupParentFileObjectRelativePath = FileUtil.getRelativePath(webFolderFileobject, iFacesModelMarkupParentFileObject);
                                             String toRelativePath = FacesRefactoringUtils.computeRelativePath(iFacesModelMarkupParentFileObject.getPath(),
@@ -264,5 +270,9 @@ public class FacesJspFileRenameRefactoringPlugin extends FacesRefactoringPlugin 
         }
 
         return null;
+    }
+
+    private static void info(Exception ex) {
+        Logger.getLogger(FacesJspFileRenameRefactoringPlugin.class.getName()).log(Level.INFO, null, ex);
     }
 }

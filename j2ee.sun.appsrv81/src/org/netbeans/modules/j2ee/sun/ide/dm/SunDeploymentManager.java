@@ -60,9 +60,7 @@ import java.rmi.ServerException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
@@ -87,7 +85,6 @@ import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.appsrvapi.PortDetector;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
-import org.netbeans.modules.glassfish.eecommon.api.ProgressEventSupport;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
@@ -108,6 +105,7 @@ import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.sun.api.CmpMappingProvider;
@@ -300,10 +298,11 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         if (null != props) {
             this.password = props.getProperty(InstanceProperties.PASSWORD_ATTR);
         }
-        if (password.equals("")){//it means we did not stored the password. Get it from the static in memory cache if available
+        if ("".equals(password)) { // NOI18N
+            //it means we did not stored the password. Get it from the static in memory cache if available
             password = (String) passwordForURI.get(uri+platformRoot);
             if (this.password==null) {
-                this.password="";
+                this.password=""; // NOI18N
             }
             
         }
@@ -563,10 +562,10 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
-        
+        Thread holder = Thread.currentThread();
         try {
             try {
-                grabInnerDM(false);
+                grabInnerDM(holder,false);
                 TargetModuleID[] tm =  innerDM.getAvailableModules(modType, target);
     /*     	System.out.println("in getAvailableModules "+modType);
              for(int i = 0; i < target.length; i++) {
@@ -578,7 +577,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
      */
                 return tm;
             } finally {
-                releaseInnerDM();
+                releaseInnerDM(holder);
             }
         } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
@@ -614,13 +613,14 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     throws TargetException, IllegalStateException {
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
+        Thread holder = Thread.currentThread();
         try{
             try {
-                grabInnerDM(false);
+                grabInnerDM(holder,false);
                 TargetModuleID[] ttt= innerDM.getRunningModules(mType, target);
                 return ttt;
             } finally {
-                releaseInnerDM();            
+                releaseInnerDM(holder);
             }
         } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
@@ -641,6 +641,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             return new Target[0];
         }
         Target[] retVal = null;
+        Thread holder = Thread.currentThread();
         if (secureStatusHasBeenChecked==false){ //unknown status. no targets.
             retVal = null;
         } else {
@@ -653,7 +654,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
 //            return retVal;
             } else {
                 try {
-                    grabInnerDM(false);
+                    grabInnerDM(holder,false);
                     if (null == domainDir) {
                         DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
                         domainDir =  dmProps.getLocation();
@@ -706,7 +707,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 } catch (IOException ioe) {
                     Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.FINER, null, ioe);
                 } finally {
-                    releaseInnerDM();
+                    releaseInnerDM(holder);
                 }
             }
         }
@@ -756,26 +757,36 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         ViewLogAction.viewLog(this);
         
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
+        ProgressObject  retVal = null;
+        Thread holder = Thread.currentThread();
         try {
             Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
             //        File f = getInternalPlanFile(plan);
             //        innerPlan = new FileInputStream(f);
-            grabInnerDM(false);
-            ProgressObject  retVal = innerDM.redeploy(targetModuleID, archive, innerPlan);
+            grabInnerDM(holder,false);
+            retVal = innerDM.redeploy(targetModuleID, archive, innerPlan);
             if (null != retVal) {
-                retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+                retVal.addProgressListener(new ReleaseInnerDMPL(holder));
+                // the server might have finished before we could register the 
+                // listener....
+                if (!retVal.getDeploymentStatus().isRunning()) {
+                    releaseInnerDM(holder);
+                }
             }
             return retVal;
         } catch (IllegalStateException ise) {
-            releaseInnerDM();
+            releaseInnerDM(holder);
             throw ise;
         } catch (Exception ioe) {
             IllegalStateException ise =
                     new IllegalStateException("file handling issues");
             ise.initCause(ioe);
-            releaseInnerDM();
+            releaseInnerDM(holder);
             throw ise;
         } finally {
+            if (null == retVal) {
+                    releaseInnerDM(holder);
+            }
             Thread.currentThread().setContextClassLoader(origClassLoader);
             if (null != innerPlan){
                 try {
@@ -803,17 +814,33 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
+        ProgressObject retVal = null;
+        Thread holder = Thread.currentThread();
         try{
-            grabInnerDM(false);
-            ProgressObject retVal = innerDM.redeploy(targetModuleID, archive, null);
+            grabInnerDM(holder,false);
+            retVal = innerDM.redeploy(targetModuleID, archive, null);
             if (null != retVal) {
-                retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+                retVal.addProgressListener(new ReleaseInnerDMPL(holder));
+                // the server might have finished before we could register the 
+                // listener....
+                if (!retVal.getDeploymentStatus().isRunning()) {
+                    releaseInnerDM(holder);
+                }
             }
             return  retVal;
         } catch (IllegalStateException ise) {
-            releaseInnerDM();
+            releaseInnerDM(holder);
+            throw ise;
+        } catch (Exception ioe) {
+            IllegalStateException ise =
+                    new IllegalStateException("file handling issues");
+            ise.initCause(ioe);
+            releaseInnerDM(holder);
             throw ise;
         } finally{
+            if (null == retVal) {
+                releaseInnerDM(holder);
+            }
             Thread.currentThread().setContextClassLoader(origClassLoader);            
         }
     }
@@ -858,7 +885,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                         NbBundle.getMessage(SunDeploymentManager.class,"MESS_STARTED"),
                         StateType.COMPLETED,targetModuleID);
             } else {
-                retVal =  innerDM.start(weeded);
+                retVal =  new StartPOWorkAround(weeded,innerDM.start(weeded));
             }
             return retVal;
         } finally{
@@ -931,18 +958,29 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         
         ProgressObject retVal = null;
+        Thread holder = Thread.currentThread();
         try{
-            grabInnerDM(false);
+            grabInnerDM(holder,false);
             retVal = innerDM.undeploy(targetModuleID);
             if (null != retVal) {
-                retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+                retVal.addProgressListener(new ReleaseInnerDMPL(holder));
+                // the server might have finished before we could register the 
+                // listener....
+                if (!retVal.getDeploymentStatus().isRunning()) {
+                    releaseInnerDM(holder);
+                }
             }
             return retVal;
-        }
         
-        finally{
+        } catch (Exception ioe) {
+            IllegalStateException ise =
+                    new IllegalStateException("");
+            ise.initCause(ioe);
+            releaseInnerDM(holder);
+            throw ise;
+        } finally{
             if (null == retVal) {
-                releaseInnerDM();
+                releaseInnerDM(holder);
             }
             Thread.currentThread().setContextClassLoader(origClassLoader);
             
@@ -955,12 +993,12 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         InstanceProperties ip = SunURIManager.getInstanceProperties(getPlatformRoot(),
                 getHost(), getPort());
         if (ip!=null){ //Null is a possible returned value there...
-            Object domainDir = ip.getProperty("LOCATION");
-            if (null != domainDir) {
+            Object localDomainDir = ip.getProperty("LOCATION");
+            if (null != localDomainDir) {
                 isLocal = true;
                 isset = true;
             }
-            if ("".equals(domainDir)) {
+            if ("".equals(localDomainDir)) {
                 isLocal = false;
                 isset = true;           // this may be redundant
             }
@@ -971,6 +1009,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             } else {
                 try {
                     new Thread() {
+                        @Override
                         public void run() {
                             try {
                                 String ia = InetAddress.getByName(getHost()).getHostAddress();
@@ -1470,11 +1509,11 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 
                 for (int j = 0; j < len; j++) { // String url: instanceURLs) {
                     String url = instanceURLs[j];
-                    String uri = null;
+                    String localUri = null;
                     if (null != ip) {
-                        uri = ip.getProperty(InstanceProperties.URL_ATTR);
+                        localUri = ip.getProperty(InstanceProperties.URL_ATTR);
                     }
-                    if (!url.equals(uri)) {
+                    if (!url.equals(localUri)) {
                         InstanceProperties iip = InstanceProperties.getInstanceProperties(url);
                         if (iip != null) {
                             String anotherName = iip.getProperty(PROP_INSTANCE_ID);
@@ -1538,11 +1577,13 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         
     }
     
-    private final AtomicBoolean locked = new AtomicBoolean(false);
-    
-    public boolean grabInnerDM(boolean returnInsteadOfWait) {
+    //private final AtomicBoolean locked = new AtomicBoolean(false);
+    private final AtomicReference<Thread> owner = new AtomicReference<Thread>(null);
+
+    public boolean grabInnerDM(Thread bar, boolean returnInsteadOfWait) {
         while (true) {
-            if (locked.compareAndSet(false,true)) {
+            //if (locked.compareAndSet(false,true)) {
+            if (owner.compareAndSet(null, bar)) {
                 // I just closed the lock
                 break;
             } else {
@@ -1550,9 +1591,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                     if (returnInsteadOfWait) {
                         return false;
                     }
-                    synchronized (locked) { //(innerDM) {
+                    synchronized (owner) { //(innerDM) {
                         //innerDM.wait();
-                        locked.wait(500);
+                        owner.wait(500);
                     }
                 } catch (InterruptedException ie) {
                     // what do I do now?
@@ -1562,11 +1603,13 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         return true;
     }
     
-    public void releaseInnerDM() {
-        locked.set(false);
-        synchronized (locked) { // (innerDM) {
-            //innerDM.notifyAll();
-            locked.notifyAll();
+    public void releaseInnerDM(Thread foo) {
+        if (owner.compareAndSet(foo, null)) {
+            //locked.set(false);
+            synchronized (owner) { // (innerDM) {
+                //innerDM.notifyAll();
+                owner.notifyAll();
+            }
         }
     }
     
@@ -1577,12 +1620,13 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }
         
         public void handleProgressEvent(ProgressEvent progressEvent) {
-            DeploymentStatus dms = progressEvent.getDeploymentStatus();
-            if (!dms.isRunning()) {
-                locked.set(false);
-                synchronized (locked) { //(innerDM) {
-                    //innerDM.notifyAll();
-                    locked.notifyAll();
+            if (owner.compareAndSet(locker, null)) {
+                DeploymentStatus dms = progressEvent.getDeploymentStatus();
+                if (!dms.isRunning()) {
+                    synchronized (owner) { //(innerDM) {
+                        //innerDM.notifyAll();
+                        owner.notifyAll();
+                    }
                 }
             }
         }
@@ -1615,5 +1659,64 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }
     }
     //</editor-fold>
-    
+
+// <editor-fold defaultstate="collapsed" desc=" StartPOWorkAround code ">
+
+    /** the PO returned by start has TMID objects that do not have the WebUrl property
+     * initialized.  That is so helpful.
+     */
+    class StartPOWorkAround implements ProgressObject {
+
+        TargetModuleID[] modules;
+        ProgressObject po;
+
+        public StartPOWorkAround(TargetModuleID[] modules, ProgressObject po) {
+            this.po = po;
+            this.modules = modules;
+        }
+
+        public DeploymentStatus getDeploymentStatus() {
+            DeploymentStatus retVal = po.getDeploymentStatus();
+            // if the start has failed, we should make sure the result value
+            // will be empty, too. just in case someone uses the value despite
+            // having checked that the operation failed.
+            if (retVal.isFailed()) {
+                modules = new TargetModuleID[0];
+            }
+            return retVal;
+        }
+
+        public TargetModuleID[] getResultTargetModuleIDs() {
+            return modules;
+        }
+
+        public ClientConfiguration getClientConfiguration(TargetModuleID arg0) {
+            return po.getClientConfiguration(arg0);
+        }
+
+        public boolean isCancelSupported() {
+            return po.isCancelSupported();
+        }
+
+        public void cancel() throws OperationUnsupportedException {
+            po.cancel();
+        }
+
+        public boolean isStopSupported() {
+            return po.isStopSupported();
+        }
+
+        public void stop() throws OperationUnsupportedException {
+            po.stop();
+        }
+
+        public void addProgressListener(ProgressListener arg0) {
+            po.addProgressListener(arg0);
+        }
+
+        public void removeProgressListener(ProgressListener arg0) {
+            po.removeProgressListener(arg0);
+        }
+    }
+    // </editor-fold>
 }

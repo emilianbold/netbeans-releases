@@ -44,8 +44,6 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.datatransfer.Transferable;
 import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Set;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
@@ -85,7 +83,7 @@ import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.openide.util.NbBundle;
 
 
-public class UMLClassWidget  extends SwitchableWidget
+public class UMLClassWidget  extends SwitchableWidget implements ICommonFeature
 {
     private UMLNameWidget nameWidget = null;
     
@@ -175,14 +173,6 @@ public class UMLClassWidget  extends SwitchableWidget
         getScene().validate();
     }
 
-    public void selectAttributeAfterCreation(IAttribute attr) {
-        this.attributeToSelect=attr;
-    }
-
-    public void selectOperationAfterCreation(IOperation op) {
-        this.operationToSelect=op;
-    }
-    
     protected Widget initializeContents(IClassifier clazz)
     {
         Widget retVal = classView;
@@ -626,20 +616,20 @@ public class UMLClassWidget  extends SwitchableWidget
                 {
                     IOperation op=(IOperation)newVal;
                     OperationWidget operW=addOperation(op);
-                    if(operW!=null && op==operationToSelect)
+                    if(operW!=null && op == getSelectedOperation())
                     {
                         operW.select();
-                        operationToSelect=null;
+                        setSelectedOperation(null);
                     }
                 }
                 else if(newVal instanceof IAttribute)
                 {
                     IAttribute attr=(IAttribute)newVal;
                     AttributeWidget attrW=addAttribute(attr);
-                    if(attrW!=null && attr==attributeToSelect)
+                    if(attrW!=null && attr == getSelectedAttribute())
                     {
                         attrW.select();
-                        attributeToSelect=null;
+                        setSelectedAttribute(null);
                     }
                 }
             }
@@ -929,6 +919,26 @@ public class UMLClassWidget  extends SwitchableWidget
             classView.revalidate();
         }
         revalidate();
+    }
+
+    public void setSelectedAttribute(IAttribute attr)
+    {
+        this.attributeToSelect = attr;
+    }
+
+    public void setSelectedOperation(IOperation op)
+    {
+        this.operationToSelect = op;
+    }
+
+    public IAttribute getSelectedAttribute()
+    {
+        return this.attributeToSelect;
+    }
+
+    public IOperation getSelectedOperation()
+    {
+        return this.operationToSelect;
     }
 
 }

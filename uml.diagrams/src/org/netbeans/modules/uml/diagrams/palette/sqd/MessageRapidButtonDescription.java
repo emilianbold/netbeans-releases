@@ -58,6 +58,7 @@ import org.netbeans.modules.uml.diagrams.engines.SequenceDiagramEngine;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteButtonModel;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -220,8 +221,7 @@ public class MessageRapidButtonDescription implements ContextPaletteButtonModel
         @Override
         public State keyPressed(Widget widget, WidgetKeyEvent event)
         {
-            if ((event.isControlDown() == true) &&
-                (event.getKeyCode() == KeyEvent.VK_ENTER))
+            if(Util.isPaletteExecute(event) == true)
             {
                 if (widget.getScene() instanceof DesignerScene)
                 {

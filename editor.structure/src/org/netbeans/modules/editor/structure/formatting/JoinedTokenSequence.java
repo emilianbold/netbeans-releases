@@ -91,6 +91,17 @@ public class JoinedTokenSequence {
         return Integer.MIN_VALUE;
     }
 
+    boolean isJustAfterGap(){
+        boolean justAfterGap = !currentTokenSequence().movePrevious();
+
+        if (justAfterGap){
+            currentTokenSequence().moveStart();
+        }
+        
+        currentTokenSequence().moveNext();
+        return justAfterGap;
+    }
+
     public int offset() {
         return currentTokenSequence().offset();
     }

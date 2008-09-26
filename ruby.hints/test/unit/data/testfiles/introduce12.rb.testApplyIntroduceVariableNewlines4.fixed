@@ -13,9 +13,9 @@ else
   puts "no"
 end
 
-myvar = y+1
+new_name = y+1
 puts x,
-  myvar
+  new_name
 
 puts x,
   (1+y)

@@ -137,7 +137,9 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String ECLIPSE_LINK_LIB = "EclipseLink-GlassFish-V3"; // NOI18N
     private static final String EL_CORE_LIB_PREFIX = "eclipselink-wrapper-10.0"; // NOI18N
 
-    private static final String PERSISTENCE_API_LIB_PREFIX = "javax.javaee-10.0"; // NOI18N
+    private static final String PERSISTENCE_API_LIB_PREFIX_1 = "javax.javaee-10.0"; // NOI18N
+    private static final String PERSISTENCE_API_LIB_PREFIX_2 = "javax.persistence-10.0"; // NOI18N
+        
     private static final String PERSISTENCE_JAVADOC = "javaee5-doc-api.zip"; // NOI18N
     
     public synchronized boolean ensureEclipseLinkSupport(String installRoot) {
@@ -173,9 +175,14 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 if(f != null && f.exists()) {
                     libraryList.add(ServerUtilities.fileToUrl(f));
                 }
-                f = ServerUtilities.getJarName(installRoot, PERSISTENCE_API_LIB_PREFIX);
+                f = ServerUtilities.getJarName(installRoot, PERSISTENCE_API_LIB_PREFIX_1);
                 if(f != null && f.exists()) {
                     libraryList.add(ServerUtilities.fileToUrl(f));
+                } else {
+                    f = ServerUtilities.getJarName(installRoot, PERSISTENCE_API_LIB_PREFIX_2);
+                    if(f != null && f.exists()) {
+                        libraryList.add(ServerUtilities.fileToUrl(f));
+                    }
                 }
                 
                 List<URL> docList = new ArrayList<URL>();

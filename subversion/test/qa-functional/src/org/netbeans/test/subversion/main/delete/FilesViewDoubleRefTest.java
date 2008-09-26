@@ -29,12 +29,12 @@ package org.netbeans.test.subversion.main.delete;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -48,6 +48,7 @@ import org.netbeans.test.subversion.operators.CommitOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 
@@ -66,6 +67,7 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
     String os_name;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
+    static Logger log;
 
     /** Creates a new instance of FilesViewRefTest */
     public FilesViewDoubleRefTest(String name) {
@@ -74,8 +76,14 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
         System.out.println("### " + getName() + " ###");
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
 
     protected boolean isUnix() {
@@ -98,7 +106,9 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
 
     public void testFilesViewDoubleRefactoring() throws Exception {
         try {
-            OutputOperator.invoke();
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
+
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
             comOperator = new Operator.DefaultStringComparator(true, true);
@@ -124,26 +134,37 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
             //open project
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.waitText("Checking out... finished.");
+
+            TestKit.waitText(mh);
+
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             TestKit.waitForScanFinishedAndQueueEmpty();
 
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
             TestKit.createNewPackage(PROJECT_NAME, "a.b.c");
             TestKit.createNewElement(PROJECT_NAME, "a", "AClass");
             TestKit.createNewElement(PROJECT_NAME, "a.b", "BClass");
             TestKit.createNewElement(PROJECT_NAME, "a.b.c", "CClass");
+
+            mh = new MessageHandler("Refreshing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME);
             node.performPopupActionNoBlock("Subversion|Show Changes");
+
+            TestKit.waitText(mh);
+
+            mh = new MessageHandler("Committing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             CommitOperator cmo = CommitOperator.invoke(node);
             cmo.commit();
+
+            TestKit.waitText(mh);
 
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME + "|src|a|AClass.java");
             node.performPopupActionNoBlock("Refactor|Rename...");
@@ -174,9 +195,16 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             assertEquals("Wrong status in Versioning View", expected.length, result);
 //            commit
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME);
+
+            mh = new MessageHandler("Committing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             node.performPopupActionNoBlock("Subversion|Show Changes");
             cmo = CommitOperator.invoke(node);
             cmo.commit();
+
+            TestKit.waitText(mh);
 //            refactor back
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME + "|src|a|A_AClass.java");
             node.performPopupActionNoBlock("Refactor|Rename...");
@@ -185,6 +213,8 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             txt.setText("AClass");
             refBut = new JButtonOperator(nbdialog, "Refactor");
             refBut.push();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }

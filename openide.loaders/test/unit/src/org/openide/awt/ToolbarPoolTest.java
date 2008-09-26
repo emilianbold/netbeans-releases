@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -128,7 +129,8 @@ public class ToolbarPoolTest extends NbTestCase {
         assertEquals ("By default there is the one", "tlb2", myTlbs[0].getName ());
         
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1337
     public void testWaitsForToolbars () throws Exception {
         FileObject tlb = FileUtil.createFolder (toolbars, "tlbx");
         DataFolder f = DataFolder.findFolder (tlb);

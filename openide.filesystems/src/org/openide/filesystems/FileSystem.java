@@ -105,7 +105,7 @@ public abstract class FileSystem implements Serializable {
     static final String PROP_CAPABILITIES = "capabilities"; // NOI18N    
 
     /** Used for synchronization purpose*/
-    private static Object internLock = new Object();
+    private static final Object internLock = new Object();
     private transient static ThreadLocal<EventControl> thrLocal = new ThreadLocal<EventControl>();
 
     /** Empty status */
@@ -207,6 +207,7 @@ public abstract class FileSystem implements Serializable {
     }
 
     /** Getter for the hidden property.
+     * @return the hidden property.
      * @deprecated This property is now useless.
     */
     @Deprecated
@@ -344,7 +345,7 @@ public abstract class FileSystem implements Serializable {
     */
     @Deprecated
     public FileObject find(String aPackage, String name, String ext) {
-        assert FileUtil.assertDeprecatedMethod();
+        assert false : "Deprecated.";
 
         StringBuffer bf = new StringBuffer();
 
@@ -412,6 +413,7 @@ public abstract class FileSystem implements Serializable {
         }
     }
 
+    @Override
     public String toString() {
         return getSystemName() + "[" + super.toString() + "]"; // NOI18N
     }
@@ -447,9 +449,10 @@ public abstract class FileSystem implements Serializable {
     }
 
     /** The object describing capabilities of this filesystem.
-    * Subclasses cannot override it.
+     * Subclasses cannot override it.
+     * @return object describing capabilities of this filesystem.
      * @deprecated Capabilities are no longer used.
-    */
+     */
     @Deprecated
     public final FileSystemCapability getCapability() {
         if (capability == null) {
@@ -845,11 +848,11 @@ public abstract class FileSystem implements Serializable {
     }
 
     /** Extension interface for Status provides HTML-formatted annotations.
-     * Principally this is used to de&euml;mphasize status text by presenting
+     * Principally this is used to deemphasize status text by presenting
      * it in a lighter color, by placing it inside
      * &lt;font color=!controlShadow&gt; tags.  Note that it is preferable to
      * use logical colors (such as controlShadow) which are resolved by calling
-     * UIManager.getColor(key) &mdash; this way they will always fit with the
+     * UIManager.getColor(key) - this way they will always fit with the
      * look and feel.  To use a logical color, prefix the color name with a
      * ! character.
      * <p>
@@ -862,7 +865,7 @@ public abstract class FileSystem implements Serializable {
         /** Annotate a name such that the returned value contains HTML markup.
          * The return value less the HTML content should typically be the same
          * as the return value from <code>annotateName()</code>.  This is used,
-         * for example, by VCS filesystems to de&euml;mphasize the status information
+         * for example, by VCS filesystems to deemphasize the status information
          * included in the file name by using a light grey font color.
          * <p>
          * For consistency with <code>Node.getHtmlDisplayName()</code>,
@@ -870,9 +873,16 @@ public abstract class FileSystem implements Serializable {
          * this interface to supply HTML annotations) should return null if
          * the filesystem they proxy does not provide an implementation of
          * {@link FileSystem.HtmlStatus}.
-         * @param name the name suggested by default
-         * @param files an immutable set of files belonging to this filesystem
-         * @return the annotated name (XXX may it be the same as the passed-in name or should it then be null?)
+         *
+         * @param name the name suggested by default. It cannot contain HTML
+         * markup tags but must escape HTML metacharacters. For example
+         * "&lt;default package&gt;" is illegal but "&amp;lt;default package&amp;gt;"
+         * is fine.
+         * @param files an immutable set of {@link FileObject}s belonging to this filesystem
+         * @return the annotated name. It may be the same as the passed-in name.
+         * It may be null if getStatus returned status that doesn't implement
+         * HtmlStatus but plain Status.
+         *
          * @since 4.30
          * @see <a href="@org-openide-loaders@/org/openide/loaders/DataNode.html#getHtmlDisplayName()"><code>DataNode.getHtmlDisplayName()</code></a>
          * @see <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getHtmlDisplayName"><code>Node.getHtmlDisplayName()</code></a>
@@ -887,8 +897,9 @@ public abstract class FileSystem implements Serializable {
     */
     @Deprecated
     public static abstract class Environment extends Object {
+        /** Deprecated. */
         public Environment() {
-            assert FileUtil.assertDeprecatedMethod();
+            assert false : "Deprecated.";
         }
 
         /** Adds one element to the class path environment variable.

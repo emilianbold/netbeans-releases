@@ -464,6 +464,9 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                     t = ts.token ();
                 }
                 e = ts.offset () + t.length ();
+                String tokenText = t.text ().toString ();
+                if (tokenText.endsWith ("\n"))
+                    e--;
                 sln = NbDocument.findLineNumber ((StyledDocument)doc, s);
                 eln = NbDocument.findLineNumber ((StyledDocument)doc, e);
                 if (eln - sln < 1) return;

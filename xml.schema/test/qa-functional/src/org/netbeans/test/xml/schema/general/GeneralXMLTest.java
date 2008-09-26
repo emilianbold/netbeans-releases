@@ -239,7 +239,11 @@ public class GeneralXMLTest extends JellyTestCase {
         jbBrowse.pushNoBlock( );
         JDialogOperator jdBrowse = new JDialogOperator( "Browse Folders" );
         JTreeOperator jtBrowse = new JTreeOperator( jdBrowse, 0 );
-        jtBrowse.selectPath( jtBrowse.findPath( sProject + "|src|" + sPackage ) );
+        jtBrowse.selectPath(
+            jtBrowse.findPath(
+                sProject + " - Source Packages|" + sPackage
+              )
+          );
         JButtonOperator jbSelect = new JButtonOperator( jdBrowse, "Select Folder" );
         jbSelect.push( );
         jdBrowse.waitClosed( );

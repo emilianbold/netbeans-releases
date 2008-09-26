@@ -44,9 +44,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -70,7 +67,6 @@ import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
-import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
@@ -88,8 +84,8 @@ public class CompositeStateWidget extends CompositeNodeWidget
     private Scene scene;
     private Widget bodyWidget;
     private Widget tabWidget;
-    private boolean horizontal = true;
-    private LinkedHashSet<RegionWidget> regionWidgets = new LinkedHashSet<RegionWidget>();
+    private SeparatorWidget.Orientation orientation = SeparatorWidget.Orientation.HORIZONTAL;
+    private ArrayList<CompartmentWidget> regionWidgets = new ArrayList<CompartmentWidget>();
     private UMLNameWidget nameWidget;
     // variable to hold all region contained elements for discovering relationships after the all regions
     // are initialized
@@ -151,7 +147,7 @@ public class CompositeStateWidget extends CompositeNodeWidget
         UMLRoundedBorder border = new UMLRoundedBorder(15, 15, 0, 0, null, Color.BLACK);
         bodyWidget.setBorder(border);
         bodyWidget.setMinimumSize(new Dimension(150, 80));
-        setHorizontalLayout(horizontal);
+        setOrientation(orientation);
         if (!PersistenceUtil.isDiagramLoading())
         {
             initRegions();
@@ -173,7 +169,7 @@ public class CompositeStateWidget extends CompositeNodeWidget
             IRegion region = regions.get(i);
             boolean found = false;
 
-            for (RegionWidget rw : regionWidgets)
+            for (CompartmentWidget rw : regionWidgets)
             {
                 if (rw.getElement().equals(region))
                 {
@@ -187,7 +183,7 @@ public class CompositeStateWidget extends CompositeNodeWidget
             }
         }
 
-        for (RegionWidget rw : regionWidgets)
+        for (CompartmentWidget rw : regionWidgets)
         {
             if (!PersistenceUtil.isDiagramLoading())
             {
@@ -282,43 +278,11 @@ public class CompositeStateWidget extends CompositeNodeWidget
         nameWidget.propertyChange(event);
     }
 
-    public boolean isHorizontalLayout()
-    {
-        return horizontal;
-    }
-
-    public Collection<RegionWidget> getRegionWidgets()
-    {
-        return regionWidgets;
-    }
-
-    public void setHorizontalLayout(boolean val)
-    {
-        horizontal = val;
-        if (horizontal)
-        {
-            bodyWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
-        } else
-        {
-            bodyWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
-        }
-        for (RegionWidget widget : regionWidgets)
-        {
-            widget.updateOrientation(horizontal);
-        }
-    }
-
     public State getElement()
     {
         return state;
     }
 
-    public void discoverRelationship()
-    {
-        // discover relationships (inter or inner) after all regions are loaded
-        UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
-        relationshipD.discoverCommonRelations(elements);
-    }
 
     @Override
     public void load(NodeInfo nodeReader)
@@ -331,13 +295,7 @@ public class CompositeStateWidget extends CompositeNodeWidget
         if (elt != null && elt instanceof IState)
         {
             String or = nodeReader.getProperties().get("Orientation").toString();
-            if (or.contains(SeparatorWidget.Orientation.VERTICAL.toString()))
-            {
-                this.setHorizontalLayout(false);
-            } else
-            {
-                this.setHorizontalLayout(true);
-            }
+            setOrientation(SeparatorWidget.Orientation.valueOf(or));
             initRegions();
             this.setPreferredLocation(nodeReader.getPosition());
             this.setPreferredSize(nodeReader.getSize());
@@ -345,7 +303,7 @@ public class CompositeStateWidget extends CompositeNodeWidget
         }
         if (elt != null && elt instanceof IRegion)
         {
-            RegionWidget regionW = findRegionWidget((IRegion) elt);
+            CompartmentWidget regionW = findCompartmentWidget(elt);
             if (regionW != null)
             {
                 //fix the size/location/properties
@@ -357,47 +315,10 @@ public class CompositeStateWidget extends CompositeNodeWidget
         }
     }
 
-    private RegionWidget findRegionWidget(IRegion region)
-    {
-        RegionWidget retVal = null;
-        if (region != null)
-        {
-            Collection<RegionWidget> list = getRegionWidgets();
-            for (Iterator<RegionWidget> it = list.iterator(); it.hasNext();)
-            {
-                RegionWidget regionWidget = it.next();
-                if (regionWidget.getElement().equals(region))
-                {
-                    retVal = regionWidget;
-                    break;
-                }
-            }
-        }
-        return retVal;
-    }
-
-    @Override
-    public void save(NodeWriter nodeWriter)
-    {
-        String layout = "";
-        if (isHorizontalLayout())
-        {
-            layout = SeparatorWidget.Orientation.HORIZONTAL.toString();
-        } else
-        {
-            layout = SeparatorWidget.Orientation.VERTICAL.toString();
-        }
-        HashMap map = nodeWriter.getProperties();
-        map.put("Orientation", layout);
-        nodeWriter.setProperties(map);
-        super.save(nodeWriter);
-    }
 
     public Collection<CompartmentWidget> getCompartmentWidgets()
     {
-        ArrayList<CompartmentWidget> result = new ArrayList<CompartmentWidget>();
-        result.addAll(getRegionWidgets());
-        return result;
+        return regionWidgets;
     }
 
     public String getWidgetID()
@@ -446,20 +367,24 @@ public class CompositeStateWidget extends CompositeNodeWidget
     @Override
     public void setOrientation(SeparatorWidget.Orientation orientation)
     {
-        setHorizontalLayout(orientation == SeparatorWidget.Orientation.HORIZONTAL? true: false);
+        this.orientation = orientation;
+ 
+        if (orientation == SeparatorWidget.Orientation.HORIZONTAL)
+        {
+            bodyWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        } else
+        {
+            bodyWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        }
+        for (CompartmentWidget widget : regionWidgets)
+        {
+            widget.updateOrientation(orientation == SeparatorWidget.Orientation.HORIZONTAL);
+        }
     }
 
     @Override
     public SeparatorWidget.Orientation getOrientation()
     {
-        return isHorizontalLayout()? SeparatorWidget.Orientation.HORIZONTAL:SeparatorWidget.Orientation.VERTICAL;
+        return orientation;
     }
-
-    @Override
-    public void clear()
-    {
-        regionWidgets.clear();
-        bodyWidget.removeChildren();
-    }
-
 }

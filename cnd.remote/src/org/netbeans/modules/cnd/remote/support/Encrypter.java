@@ -45,7 +45,8 @@ package org.netbeans.modules.cnd.remote.support;
  */
 public class Encrypter {
     private final byte[] passPhrase;
-    private final static String emptyPwd = "$$$EmptyPassword$$$";
+    private final static String emptyPwd = "$$$EmptyPassword$$$"; // NOI18N
+    private final static char delimeter = '\000';
     Encrypter(String passPhrase) {
         this.passPhrase = passPhrase.getBytes();
     }
@@ -55,12 +56,16 @@ public class Encrypter {
         if (str != null && str.length() == 0) {
             str = emptyPwd;
         }
-        return xor(str);
+        return xor(str + delimeter);
     }
 
     public String decrypt(String str) {
         // now just xor with passphrase :-(
         String out = xor(str);
+        int delimIndex = out == null ? -1 : out.indexOf(delimeter);
+        if (delimIndex > -1) {
+            out = out.substring(0, delimIndex);
+        }
         if (emptyPwd.equals(out)) {
             out = "";
         }

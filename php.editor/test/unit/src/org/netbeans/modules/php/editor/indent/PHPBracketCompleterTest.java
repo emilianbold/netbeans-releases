@@ -44,13 +44,11 @@ package org.netbeans.modules.php.editor.indent;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
 /**
@@ -68,29 +66,32 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
  * 
  * @author Tor Norbye
  */
-public class PHPBracketCompleterTest extends NbTestCase {
+public class PHPBracketCompleterTest extends PHPTestBase {
     
     public PHPBracketCompleterTest(String testName) {
         super(testName);
     }
 
-    private static BaseDocument createDocument(String s) {
-        try {
-            BaseDocument doc = new BaseDocument(null, false);
-            doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
-            doc.putProperty("mimeType", PHPLanguage.PHP_MIME_TYPE);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
 
-            doc.insertString(0, s, null);
-            return doc;
+        try {
+            TestLanguageProvider.register(HTMLTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Ignore -- we've already registered this either via layers or other means
         }
-        catch (Exception ex){
-            fail(ex.toString());
-            return null;
+        try {
+            TestLanguageProvider.register(PHPTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Ignore -- we've already registered this either via layers or other means
         }
     }
 
-    private static BaseDocument getDocument(String s) {
-        return createDocument(s);
+    @Override
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
     }
 
     private static String wrapAsPhp(String s) {
@@ -98,7 +99,9 @@ public class PHPBracketCompleterTest extends NbTestCase {
         return "<?\n" + s + "\n?>";
     }
     
-    private void match(String original) throws BadLocationException {
+    public void match(String original) throws BadLocationException {
+        super.assertMatches(wrapAsPhp(original));
+        /*
         PHPBracketCompleter bc = new PHPBracketCompleter();
 
         original = wrapAsPhp(original);
@@ -128,298 +131,38 @@ public class PHPBracketCompleterTest extends NbTestCase {
                 doc.getText(range.getStart(), range.getLength()) + "' instead of " + 
                 LexUtilities.getToken(doc, caretPos).text().toString(), 
                 caretPos, range.getStart());
+         */
     }
     
-    private void insertBreak(String original, String expected) throws BadLocationException {
-        PHPBracketCompleter bc = new PHPBracketCompleter();
-        
-        original = wrapAsPhp(original);
-        expected = wrapAsPhp(expected);
-        
-        int insertOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, insertOffset) + original.substring(insertOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
-
-        BaseDocument doc = getDocument(original);
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(insertOffset);
-        int newOffset = bc.beforeBreak(doc, insertOffset, ta);
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.insertString(caret.getDot(), "\n", null);
-            // Indent the new line
-            PHPFormatter formatter = new PHPFormatter();
-            //ParserResult result = parse(fo);
-
-            int startPos = caret.getDot()+1;
-            int endPos = startPos+1;
-
-            //ParserResult result = parse(fo);
-            formatter.reindent(doc, startPos, endPos);
-            int indent = LexUtilities.getLineIndent(doc, insertOffset+1);
-
-            //bc.afterBreak(doc, insertOffset, caret);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (newOffset != -1) {
-                caret.setDot(newOffset);
-            } else {
-                caret.setDot(insertOffset+1+indent);
-            }
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
+    @Override
+    public void insertBreak(String original, String expected) throws Exception {
+        super.insertBreak(wrapAsPhp(original), wrapAsPhp(expected));
     }
 
-    private void insertChar(String original, char insertText, String expected) throws BadLocationException {
+    private void insertChar(String original, char insertText, String expected) throws Exception {
         insertChar(original, insertText, expected, null);
     }
 
-    private void insertChar(String original, char insertText, String expected, String selection) throws BadLocationException {
+    private void insertChar(String original, char insertText, String expected, String selection) throws Exception {
         insertChar(original, insertText, expected, selection, false);
     }
 
-    private void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws BadLocationException {
+    @Override
+    protected void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws Exception {
         original = wrapAsPhp(original);
         expected = wrapAsPhp(expected);
-        
-        int insertOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, insertOffset) + original.substring(insertOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
-
-        PHPBracketCompleter bc = new PHPBracketCompleter();
-
-        BaseDocument doc = getDocument(original);
-        
-        if (codeTemplateMode) {
-            // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
-            String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
-            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);            
-        }
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(insertOffset);
-        if (selection != null) {
-            int start = original.indexOf(selection);
-            assertTrue(start != -1);
-            assertTrue("Ambiguous selection - multiple occurrences of selection string",
-                    original.indexOf(selection, start+1) == -1);
-            ta.setSelectionStart(start);
-            ta.setSelectionEnd(start+selection.length());
-            assertEquals(selection, ta.getSelectedText());
-        }
-
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        boolean handled = false;
-        try {
-            handled = bc.beforeCharInserted(doc, insertOffset, ta, insertText);
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
-        if (!handled) {
-            if (ta.getSelectedText() != null && ta.getSelectedText().length() > 0) {
-                insertOffset = ta.getSelectionStart();
-                doc.remove(ta.getSelectionStart(), ta.getSelectionEnd()-ta.getSelectionStart());
-                caret.setDot(insertOffset);
-            }
-            doc.insertString(caret.getDot(), ""+insertText, null);
-            caret.setDot(insertOffset+1);
-            bc.afterCharInserted(doc, insertOffset, ta, insertText);
-        }
-        String formatted = doc.getText(0, doc.getLength());
-        assertEquals(expected, formatted);
-        if (finalCaretPos != -1) {
-            assertEquals(finalCaretPos, caret.getDot());
-        }
+        super.insertChar(original, insertText, expected, selection, codeTemplateMode);
     }
 
-    private void deleteChar(String original, String expected) throws BadLocationException {
-        original = wrapAsPhp(original);
-        expected = wrapAsPhp(expected);
-
-        int afterRemoveOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
-
-        PHPBracketCompleter bc = new PHPBracketCompleter();
-
-        BaseDocument doc = getDocument(original);
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(afterRemoveOffset);
-        int dot = afterRemoveOffset;
-        char ch = doc.getChars(dot-1, 1)[0];
-
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.remove(dot - 1, 1);
-            caret.setDot(dot-1);
-            boolean handled = bc.charBackspaced(doc, dot-1, ta, ch);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
+    @Override
+    protected void deleteChar(String original, String expected) throws Exception {
+        super.deleteChar(wrapAsPhp(original), wrapAsPhp(expected));
     }
-    
-    private void deleteWord(String original, String expected) throws BadLocationException {
-        // Try deleting the word not just using the testcase but also surrounded by strings
-        // to make sure there's no problem with lexer token directions
-        deleteWordImpl(original, expected);
-        deleteWordImpl(original+"foo", expected+"foo");
-        deleteWordImpl("foo"+original, "foo"+expected);
-        deleteWordImpl(original+"::", expected+"::");
-        deleteWordImpl(original+"::", expected+"::");
+
+    @Override
+    protected void deleteWord(String original, String expected) throws Exception {
+        super.deleteWord(wrapAsPhp(original), wrapAsPhp(expected));
     }
-    
-    private void deleteWordImpl(String original, String expected) throws BadLocationException {
-        original = wrapAsPhp(original);
-        expected = wrapAsPhp(expected);
-        
-        int afterRemoveOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
-
-        PHPBracketCompleter bc = new PHPBracketCompleter();
-
-        BaseDocument doc = getDocument(original);
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(afterRemoveOffset);
-        int dot = afterRemoveOffset;
-        //REMOVE char ch = doc.getChars(dot-1, 1)[0];
-
-        int begin = bc.getNextWordOffset(doc, dot, true);
-        if (begin == -1) {
-            begin = Utilities.getPreviousWord(ta, dot);
-        }
-        
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.remove(begin, dot-begin);
-            caret.setDot(begin);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
-    }
-    
-//    private void assertLogicalRange(String source, boolean up, String expected) throws Exception {
-//        String BEGIN = "%<%"; // NOI18N
-//        String END = "%>%"; // NOI18N
-//        int sourceStartPos = source.indexOf(BEGIN);
-//        if (sourceStartPos != -1) {
-//            source = source.substring(0, sourceStartPos) + source.substring(sourceStartPos+BEGIN.length());
-//        }
-//        
-//        int caretPos = source.indexOf('^');
-//        source = source.substring(0, caretPos) + source.substring(caretPos+1);
-//
-//        int sourceEndPos = source.indexOf(END);
-//        if (sourceEndPos != -1) {
-//            source = source.substring(0, sourceEndPos) + source.substring(sourceEndPos+END.length());
-//        }
-//        
-//        int expectedStartPos = expected.indexOf(BEGIN);
-//        if (expectedStartPos != -1) {
-//            expected = expected.substring(0, expectedStartPos) + expected.substring(expectedStartPos+BEGIN.length());
-//        }
-//
-//        int expectedCaretPos = expected.indexOf('^');
-//        expected = expected.substring(0, expectedCaretPos) + expected.substring(expectedCaretPos+1);
-//        
-//        int expectedEndPos = expected.indexOf(END);
-//        if (expectedEndPos != -1) {
-//            expected = expected.substring(0, expectedEndPos) + expected.substring(expectedEndPos+END.length());
-//        }
-//
-//        assertEquals("Only range markers should differ", source,expected);
-//
-//        OffsetRange selected = null;
-//        
-//        BaseDocument doc = getDocument(source);
-//        FileObject fileObject = null;
-//        CompilationInfo info = new TestCompilationInfo(this, fileObject, doc, source);
-//        
-//        PHPBracketCompleter completer = new PHPBracketCompleter();
-//        List<OffsetRange> ranges = completer.findLogicalRanges(info, caretPos);
-//        OffsetRange expectedRange;
-//        if (expectedStartPos != -1) {
-//            expectedRange = new OffsetRange(expectedStartPos, expectedEndPos);
-//        } else {
-//            expectedRange = new OffsetRange(expectedCaretPos, expectedCaretPos);
-//        }
-//
-//        if (sourceStartPos != -1) {
-//            assert sourceEndPos != -1;
-//            selected = new OffsetRange(sourceStartPos, sourceEndPos);            
-//
-//            for (int i = 0; i < ranges.size(); i++) {
-//                if (ranges.get(i).equals(selected)) {
-//                    if (up) {
-//                        assertTrue(i < ranges.size()-1);
-//                        OffsetRange was = ranges.get(i+1);
-//                        assertEquals("Wrong selection: expected \"" + 
-//                                expected.substring(expectedRange.getStart(),expectedRange.getEnd()) + "\" and was \"" +
-//                                source.substring(was.getStart(), was.getEnd()) + "\"",
-//                                expectedRange, was);
-//                        return;
-//                    } else {
-//                        if (i == 0) {
-//                            assertEquals(caretPos, expectedCaretPos);
-//                            return;
-//                        }
-//                        OffsetRange was = ranges.get(i-1);
-//                        assertEquals("Wrong selection: expected \"" + 
-//                                expected.substring(expectedRange.getStart(),expectedRange.getEnd()) + "\" and was \"" +
-//                                source.substring(was.getStart(), was.getEnd()) + "\"",
-//                                expectedRange, was);
-//                        return;
-//                    }
-//                }
-//            }
-//            fail("Selection range " + selected + " is not in the range");
-//        } else {
-//            assert ranges.size() > 0;
-//            OffsetRange was = ranges.get(0);
-//            assertEquals("Wrong selection: expected \"" + 
-//                    expected.substring(expectedRange.getStart(),expectedRange.getEnd()) + "\" and was \"" +
-//                    source.substring(was.getStart(), was.getEnd()) + "\"",
-//                    expectedRange, was);
-//            return;
-//        }
-//    }
 
     public void testInsertX() throws Exception {
         insertChar("c^ass", 'l', "cl^ass");
@@ -427,6 +170,41 @@ public class PHPBracketCompleterTest extends NbTestCase {
 
     public void testInsertX2() throws Exception {
         insertChar("clas^", 's', "class^");
+    }
+
+    public void testInsertBreakAfterClass2() throws Exception {
+        insertBreak("class Foo {^\n    \n}", "class Foo {\n    ^\n    \n}");
+    }
+
+    public void testInsertBreakAfterClass() throws Exception {
+        insertBreak("class Foo {^", "class Foo {\n    ^\n}");
+    }
+
+    public void testInsertBreakAfterFunction() throws Exception {
+        insertBreak("function foo() {^", "function foo() {\n    ^\n}");
+    }
+
+    public void testInsertBreakAfterIf() throws Exception {
+        insertBreak("if (1) {^", "if (1) {\n    ^\n}");
+    }
+
+    public void testInsertBreakAfterIfElse() throws Exception {
+        insertBreak("if (1) {\n    \n} else {^", "if (1) {\n    \n} else {\n    ^\n}");
+    }
+    public void testInsertBreakAfterWhile() throws Exception {
+        insertBreak("while (1) {^", "while (1) {\n    ^\n}");
+    }
+    public void testInsertBreakAfterCatch() throws Exception {
+        insertBreak("try {\n    \n} catch (Exception $exc) {^",
+                "try {\n    \n} catch (Exception $exc) {\n    ^\n}");
+    }
+    public void testInsertBreakAfterTry() throws Exception {
+        insertBreak("try {^\n} catch (Exception $ex) {\n}",
+                "try {\n    ^\n} catch (Exception $ex) {\n}");
+    }
+    public void testInsertBreakAfterForEach() throws Exception {
+        insertBreak("foreach ($array_variable as $number_variable => $variable) {^",
+                "foreach ($array_variable as $number_variable => $variable) {\n    ^\n}");
     }
 
     public void testNoMatchInComments() throws Exception {

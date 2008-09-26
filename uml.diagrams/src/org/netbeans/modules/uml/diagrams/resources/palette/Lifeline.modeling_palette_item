@@ -4,7 +4,7 @@
   <element name="Lifeline" />
 
   <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/lifeline.png" />
-  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/lifeline.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/lifeline-32.png" />
 
   <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.palette.Bundle"
                display-name-key="NAME_Lifeline"

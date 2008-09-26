@@ -122,7 +122,7 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
     private boolean isExtensionIdentified = false;
 
     public ExtensibilityElementNode(ExtensibilityElement wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<ExtensibilityElement>(wsdlConstruct), wsdlConstruct);
+        super(wsdlConstruct);
         mWSDLConstruct = wsdlConstruct;
         QName qName = mWSDLConstruct.getQName();
         //Fix qname, sometimes there is no namespace associated with it.

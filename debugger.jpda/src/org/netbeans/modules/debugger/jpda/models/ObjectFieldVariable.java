@@ -120,7 +120,13 @@ implements org.netbeans.api.debugger.jpda.Field {
     }
 
     public JPDAClassType getDeclaringClass() {
-        return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) objectReference.type());
+        ReferenceType type;
+        if (objectReference != null) {
+            type = (ReferenceType) objectReference.type();
+        } else {
+            type = field.declaringType();
+        }
+        return new JPDAClassTypeImpl(getDebugger(), type);
     }
 
     /**

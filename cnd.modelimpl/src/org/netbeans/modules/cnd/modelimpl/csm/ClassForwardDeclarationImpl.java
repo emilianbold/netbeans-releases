@@ -72,13 +72,38 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     private TemplateDescriptor templateDescriptor = null;
     
     public ClassForwardDeclarationImpl(AST ast, CsmFile file) {
-        super(ast, file);
+        super(file, getClassForwardStartOffset(ast), getClassForwardEndOffset(ast));
         AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
         this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, null);
     }
 
+    private static int getClassForwardStartOffset(AST ast) {        
+        AST firstChild = ast.getFirstChild();
+        if (firstChild != null && firstChild.getType() == CPPTokenTypes.LITERAL_typedef) {
+            AST secondChild = firstChild.getNextSibling();
+            if (secondChild != null &&
+                    (secondChild.getType() == CPPTokenTypes.LITERAL_struct ||
+                    secondChild.getType() == CPPTokenTypes.LITERAL_union ||
+                    secondChild.getType() == CPPTokenTypes.LITERAL_class)) {
+                return getStartOffset(secondChild);
+            }
+        }
+        return getStartOffset(ast);        
+    }
+    
+    private static int getClassForwardEndOffset(AST ast) {
+        AST firstChild = ast.getFirstChild();
+        if (firstChild != null && firstChild.getType() == CPPTokenTypes.LITERAL_typedef) {
+            AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+            if(qid != null) {
+                return getEndOffset(qid);
+            }
+        }
+        return getEndOffset(ast);        
+    }
+    
     public CsmScope getScope() {
         return getContainingFile();
     }
@@ -142,7 +167,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return Collections.emptyList();
     }
 
-    public void init(AST ast, CsmScope scope) {
+    public void init(AST ast, CsmScope scope, boolean registerInProject) {
         // we now know the scope - let's modify nameParts accordingly
         if (CsmKindUtilities.isQualified(scope)) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
@@ -161,15 +186,15 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
             }
         }
         // create fake class we refer to
-        createForwardClassIfNeed(ast, scope);
+        createForwardClassIfNeed(ast, scope, registerInProject);
     }
 
     /**
      * Creates a fake class this forward declaration refers to
      */
-    protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope) {
+    protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
         if (!isTemplate()) { // FIXUP until completion/xref can not distinguishing specializations correctly
-            return ForwardClass.create(name.toString(), getContainingFile(), ast, scope);
+            return ForwardClass.create(name.toString(), getContainingFile(), ast, scope, registerInProject);
         }
         return null;
     }

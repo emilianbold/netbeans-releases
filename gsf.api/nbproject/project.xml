@@ -2,9 +2,18 @@
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
             <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
                     <build-prerequisite/>
@@ -12,6 +21,24 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.27</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.lib2</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -82,6 +109,20 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.settings</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <friend-packages>
                 <friend>net.java.dev.nbpython.editor</friend>
                 <friend>org.netbeans.modules.css.devtools</friend>
@@ -120,6 +161,8 @@
                 <friend>org.netbeans.modules.scala.project</friend>
                 <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.php.prado</friend>
+                <friend>org.netbeans.modules.php.symfony</friend>
                 <package>org.netbeans.modules.gsf.api</package>
                 <package>org.netbeans.modules.gsf.api.annotations</package>
                 <package>org.netbeans.modules.gsf.spi</package>

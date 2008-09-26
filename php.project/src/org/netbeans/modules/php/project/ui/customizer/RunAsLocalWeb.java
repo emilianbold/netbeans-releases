@@ -57,6 +57,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -64,7 +65,8 @@ import org.openide.util.NbBundle;
  * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5348981723432331L;
+    private static final long serialVersionUID = -53489817846332331L;
+    private final PhpProjectProperties properties;
     private final PhpProject project;
     private final JLabel[] labels;
     private final JTextField[] textFields;
@@ -72,15 +74,13 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private final String displayName;
     final Category category;
 
-    public RunAsLocalWeb(PhpProject project, ConfigManager manager, Category category) {
-        this(project, manager, category, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
-    }
-
-    private RunAsLocalWeb(PhpProject project, ConfigManager manager, Category category, String displayName) {
+    public RunAsLocalWeb(PhpProjectProperties properties, ConfigManager manager, Category category) {
         super(manager);
-        this.project = project;
+        this.properties = properties;
         this.category = category;
-        this.displayName = displayName;
+        project = properties.getProject();
+        displayName = NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb");
+
         initComponents();
         this.labels = new JLabel[] {
             urlLabel,
@@ -140,9 +140,13 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(ProjectPropertiesSupport.getWebRootDirectory(project)), indexFile, args);
+        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);
         category.setErrorMessage(err);
         category.setValid(err == null);
+    }
+
+    private FileObject getWebRoot() {
+        return ProjectPropertiesSupport.getSourceSubdirectory(project, properties.getWebRoot());
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -257,7 +261,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.CENTER)
                     .add(indexFileBrowseButton)
-                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, 19, GroupLayout.PREFERRED_SIZE)
+                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(indexFileLabel))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.CENTER)
@@ -294,7 +298,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseSourceFile(project, indexFileTextField);
+        Utils.browseFolderFile(getWebRoot(), indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

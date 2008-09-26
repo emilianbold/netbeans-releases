@@ -55,8 +55,6 @@ import javax.swing.*;
 import java.io.File;
 import java.util.*;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 
 /**
  * Opens Search History Component.

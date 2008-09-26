@@ -75,7 +75,6 @@ import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.w3c.dom.Document;
@@ -134,7 +133,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_PORT = "8080";
     public static final String DEFAULT_BASE_URL = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT;
-    public static final String BASE_URL_TOKEN = "___BASE_URL___";
+    public static final String BASE_URL_TOKEN = "__BASE_URL__";
     public static final String FILE_ENCODING_TOKEN = "__FILE_ENCODING__";
     
     private FileObject stubFolder;
@@ -862,7 +861,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 containerStubTokens.put("__CONTAINER_PATH_NAME__", containerRepName);
                 containerStubTokens.put("__CONTAINER_ITEM_NAME__", containerItemName);
                 containerStubTokens.put("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
-                containerStubTokens.put("__STUB_METHODS__", "   ,\n"+stubJSToken);
+                containerStubTokens.put("__STUB_METHODS__", stubJSToken.equals("")?stubJSToken:"   ,\n"+stubJSToken);
                 containerStubTokens.put("__PROJECT_NAME__", getProjectName());
                 setTokens(containerStubTokens);
             }
@@ -908,7 +907,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 genericStubTokens.put("__SUB_RESOURCE_PATH_NAME__", "");
                 genericStubTokens.put("__FIELDS_TOSTRING__", createFieldsToStringBody(root, true));
                 genericStubTokens.put("__FIELD_NAMES_TOSTRING__", createFieldNamesBody(root, true));
-                genericStubTokens.put("__STUB_METHODS__", "   ,\n"+stubJSToken);
+                genericStubTokens.put("__STUB_METHODS__", stubJSToken.equals("")?stubJSToken:"   ,\n"+stubJSToken);
                 setTokens(genericStubTokens);
             }
         }
@@ -1001,7 +1000,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         private String pluralize(String word) {
             String plural = Util.pluralize(word);
             if(plural.endsWith("ss"))
-                plural = plural.substring(0, plural.length()-2)+"Collection";
+                plural = plural.substring(0, plural.length()-2)+Constants.COLLECTION;
             return plural;
         }
         

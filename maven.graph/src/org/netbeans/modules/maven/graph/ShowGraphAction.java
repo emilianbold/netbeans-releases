@@ -54,18 +54,18 @@ import org.openide.windows.WindowManager;
  */
 public class ShowGraphAction extends AbstractAction implements ContextAwareAction {
     public ShowGraphAction() {
-        putValue(Action.NAME, "Show Library Dependency Graph");
+        putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ShowGraphAction.class, "ACT_Show_Graph"));
     }
     
     public ShowGraphAction(Project prj) {
         this();
         if (prj != null) {
-            putValue("prj", prj);
+            putValue("prj", prj); //NOI18N
         }
     }
     
     public void actionPerformed(ActionEvent e) {
-        Project project = (Project) getValue("prj");
+        Project project = (Project) getValue("prj"); //NOI18N
         if (project != null) {
             TopComponent tc = new DependencyGraphTopComponent(project);
             WindowManager.getDefault().findMode("editor").dockInto(tc); //NOI18N

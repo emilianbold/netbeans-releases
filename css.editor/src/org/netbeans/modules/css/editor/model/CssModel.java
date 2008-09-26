@@ -62,7 +62,6 @@ import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.css.gsf.CSSParserResult;
-import org.netbeans.modules.css.gsf.EditorAwareSourceTaskSupport;
 import org.netbeans.modules.css.parser.ASCII_CharStream;
 import org.netbeans.modules.css.parser.CSSParser;
 import org.netbeans.modules.css.parser.CSSParserConstants;
@@ -76,6 +75,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * A domain object model representing CSS file backed up by 
@@ -151,70 +151,72 @@ public final class CssModel {
     private boolean immutable;
 
     private CssModel(Document doc) {
-        try {
-            this.doc = doc;
+        this.doc = doc;
 
-            //all domain model objects provided by this model are immutable
-            //changes are done by propagating the modifications to the underlying document
-            //and subsequent regeneration of the model
-            this.immutable = true;
+        //all domain model objects provided by this model are immutable
+        //changes are done by propagating the modifications to the underlying document
+        //and subsequent regeneration of the model
+        this.immutable = true;
 
-            DataObject od = NbEditorUtilities.getDataObject(doc);
-            FileObject fo = od.getPrimaryFile();
+        DataObject od = NbEditorUtilities.getDataObject(doc);
+        final FileObject fo = od.getPrimaryFile();
 
+        //ensure the model is built
+        RequestProcessor.getDefault().post(new Runnable() {
 
-            //listen on the css parser
-            EditorAwareSourceTaskSupport.Listener parseListener = new EditorAwareSourceTaskSupport.Listener() {
+            public void run() {
+                try {
+                    final Collection<ParserResult> result = new HashSet<ParserResult>(1);
+                    SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+                    model.runUserActionTask(new CancellableTask<CompilationInfo>() {
 
-                public void parsed(CompilationInfo info) {
-                    //ignore if not our document
-                    //this is uglyyyyyyyyyyyy!!!!!!!!!! fix the whole support please once you have some time!
-                    if (info.getDocument() != CssModel.this.doc) {
-                        return;
-                    }
+                        public void cancel() {
+                        }
 
-                    ParserResult presult = info.getEmbeddedResults("text/x-css").iterator().next(); //NOI18N
+                        public void run(CompilationInfo ci) throws Exception {
+                            ParserResult presult = ci.getEmbeddedResults("text/x-css").iterator().next(); //NOI18N
+                            result.add(presult);
+                        }
+                    }, true);
+
+                    ParserResult presult = result.iterator().next();
                     SimpleNode root = ((CSSParserResult) presult).root();
-
-
                     if (containsErrors(presult)) {
                         support.firePropertyChange(MODEL_INVALID, rules, null);
                         return;
                     }
 
                     updateModel(root);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            };
-            EditorAwareSourceTaskSupport.instance().addListener(parseListener);
-
-            //ensure the model is built
-            final Collection<ParserResult> result = new HashSet<ParserResult>(1);
-            SourceModel model = SourceModelFactory.getInstance().getModel(fo);
-            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
-
-                public void cancel() {
-                }
-
-                public void run(CompilationInfo ci) throws Exception {
-                    ParserResult presult = ci.getEmbeddedResults("text/x-css").iterator().next(); //NOI18N
-                    result.add(presult);
-                }
-            }, true);
-
-            ParserResult presult = result.iterator().next();
-            SimpleNode root = ((CSSParserResult) presult).root();
-            if (containsErrors(presult)) {
-                support.firePropertyChange(MODEL_INVALID, rules, null);
-                return;
             }
+        });
 
-            updateModel(root);
-
-
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    }
+    
+    //called by CssEditorAwareSourceTask
+    void parsed(CompilationInfo info) {
+        //ignore if not our document
+        //this is uglyyyyyyyyyyyy!!!!!!!!!! fix the whole support please once you have some time!
+        if (info.getDocument() != CssModel.this.doc) {
+            return;
         }
 
+        Collection<? extends ParserResult> results = info.getEmbeddedResults("text/x-css"); //NOI18N
+        if(results == null || results.isEmpty()) {
+            return ;
+        }
+        
+        ParserResult presult = results.iterator().next();
+        SimpleNode root = ((CSSParserResult) presult).root();
+
+        if (containsErrors(presult)) {
+            support.firePropertyChange(MODEL_INVALID, rules, null);
+            return;
+        }
+
+        updateModel(root);
     }
 
     private boolean containsErrors(ParserResult result) {

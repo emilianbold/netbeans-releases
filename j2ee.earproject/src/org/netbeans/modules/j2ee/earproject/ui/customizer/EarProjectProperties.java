@@ -57,7 +57,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
@@ -78,6 +77,7 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
@@ -935,6 +935,10 @@ public final class EarProjectProperties {
                         }
                     }
                     storeProperties();
+                    //Delete COS mark
+                    if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
+                        DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, null, true); // NOI18N
+                    }
                     return true;
                 }
             });

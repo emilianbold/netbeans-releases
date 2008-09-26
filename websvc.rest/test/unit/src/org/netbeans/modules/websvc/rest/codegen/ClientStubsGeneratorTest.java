@@ -40,8 +40,8 @@ public class ClientStubsGeneratorTest extends TestBase {
         ResourceModel m = new ClientStubModel().createModel(is);
         m.build();
         String url = ((WadlModeler)m).getBaseUrl();
-        assertEquals(url, "http://localhost:8080/"+appName+"/resources/");
-        assertEquals(m.getResources().size(), 6);
+        assertEquals("http://localhost:8080/"+appName+"/resources/", url);
+        assertEquals(6, m.getResources().size());
     }
 
     private void testGenerateFromWadl(String appName) throws Exception {
@@ -72,12 +72,11 @@ public class ClientStubsGeneratorTest extends TestBase {
         File base = new File(FileUtil.toFile(restFolder), fileName+".zip");
         FileUtil.copy(this.getClass().getResourceAsStream(fileName+".zip"), new FileOutputStream(base));
 
-        assertEquals(zipFile.length(), base.length());
+        assertEquals(base.length(), zipFile.length());
     }
     
     public void testGenerateFromWadlNonRecursiveResources() throws Exception {
         testGenerateFromWadl("WebApplication1");
-        
     }
     
     public void testGenerateFromWadlRecursiveResources() throws Exception {
@@ -102,7 +101,7 @@ public class ClientStubsGeneratorTest extends TestBase {
 //        Project p = FileOwnerQuery.getOwner(work.getFileObject(appName));
 //        ResourceModel m = new ClientStubModel().createModel(p);
 //        m.build();
-//        assertEquals(m.getResources().size(), 6);
+//        assertEquals(6, m.getResources().size());
 //    }
 //    
 //    public void testGenerateFromProject() throws Exception {
@@ -133,6 +132,6 @@ public class ClientStubsGeneratorTest extends TestBase {
 //        File base = new File(FileUtil.toFile(restFolder), appName.toLowerCase()+".zip");
 //        FileUtil.copy(this.getClass().getResourceAsStream(appName.toLowerCase()+".zip"), new FileOutputStream(base));
 //
-//        assertEquals(zipFile.length(), base.length());
+//        assertEquals(base.length(), zipFile.length());
 //    }
 }

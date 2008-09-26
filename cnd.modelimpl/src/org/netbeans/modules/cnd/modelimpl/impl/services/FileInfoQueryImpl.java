@@ -124,33 +124,25 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                         walker.visit();
                         out = walker.getBlocks();
                     } else {
-                        Comparator<CsmOffsetable> comparator = new Comparator<CsmOffsetable>() {
-                            public int compare(CsmOffsetable o1, CsmOffsetable o2) {
-                                int diff = o1.getStartOffset() - o2.getStartOffset();
-                                if (diff == 0) {
-                                    return o1.getEndOffset() - o2.getEndOffset();
-                                } else {
-                                    return diff;
-                                }
-                            }
-                        };
-                        TreeSet<CsmOffsetable> result = new TreeSet<CsmOffsetable>(comparator);
+                        //Comparator<CsmOffsetable> comparator = new OffsetableComparator();
+                        //TreeSet<CsmOffsetable> result = new TreeSet<CsmOffsetable>(comparator);
+                        List<CsmOffsetable> result = new  ArrayList<CsmOffsetable>();
                         boolean first = true;
                         for (APTPreprocHandler handler : handlers) {
                             APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler);
                             walker.visit();
                             List<CsmOffsetable> blocks = walker.getBlocks();
                             if (first) {
-                                result.addAll(blocks);
+                                result = blocks;
                                 first = false;
                             } else {
-                                result.retainAll(blocks);
-                                if (result == null) {
+                                result = intersection(result, blocks);
+                                if (result.isEmpty()) {
                                     break;
                                 }
                             }
                         }
-                        out = new ArrayList<CsmOffsetable>(result);
+                        out = result;
                     }
                 }
             } catch (IOException ex) {
@@ -159,6 +151,35 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
         return out;
+    }
+    
+    private static boolean contains(CsmOffsetable bigger, CsmOffsetable smaller) {
+        if (bigger != null && smaller != null) {
+            if (bigger.getStartOffset() <= smaller.getStartOffset() &&
+                smaller.getEndOffset() <= bigger.getEndOffset()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static List<CsmOffsetable> intersection(Collection<CsmOffsetable> first, Collection<CsmOffsetable> second) {
+        List<CsmOffsetable> result = new ArrayList(Math.max(first.size(), second.size()));
+        for (CsmOffsetable o1 : first) {
+            for (CsmOffsetable o2 : second) {
+                if (o1 != null) { //paranoia
+                    if (o1.equals(o2)) {
+                        result.add(o1);
+                    } else if (contains(o1, o2)) {
+                        result.add(o2);
+                        
+                    } else if (contains(o2, o1)) {
+                        result.add(o1);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private static boolean hasConditionalsDirectives(APTFile apt) {
@@ -188,9 +209,24 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                 long lastParsedTime = fileImpl.getLastParsedTime();
                 APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
                 if (apt != null) {
-                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, fileImpl.getPreprocHandler());
-                    walker.getTokenStream();
-                    out = walker.getCollectedData();
+                    Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
+                    if (handlers.isEmpty()) {
+                        DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
+                        return Collections.<CsmReference>emptyList();                    
+                    } else if (handlers.size() == 1) {
+                        APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handlers.iterator().next());
+                        walker.getTokenStream();
+                        out = walker.getCollectedData();
+                    } else {
+                        Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
+                        TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
+                        for (APTPreprocHandler handler : handlers) {
+                            APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler);
+                            walker.getTokenStream();
+                            result.addAll(walker.getCollectedData());
+                        }
+                        out = new ArrayList<CsmReference>(result);
+                    }
                 }
                 if (lastParsedTime == fileImpl.getLastParsedTime()) {
                     fileImpl.setLastMacroUsages(out);
@@ -283,5 +319,16 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
         return Collections.<CsmInclude>emptyList();
+    }
+    
+    private static class OffsetableComparator<T extends CsmOffsetable> implements Comparator<T> {
+        public int compare(CsmOffsetable o1, CsmOffsetable o2) {
+            int diff = o1.getStartOffset() - o2.getStartOffset();
+            if (diff == 0) {
+                return o1.getEndOffset() - o2.getEndOffset();
+            } else {
+                return diff;
+            }
+        }
     }
 }

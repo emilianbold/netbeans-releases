@@ -50,6 +50,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.NamedNodeMap;
@@ -125,7 +126,12 @@ public final class HyperlinkEnv {
         
         if (ContextUtilities.isValueToken(token)
                 || ContextUtilities.isAttributeToken(documentContext.getCurrentToken())) {
-            currentTag = (Tag) documentContext.getCurrentElement();
+            SyntaxElement element = documentContext.getCurrentElement();
+            if (element instanceof Tag) {
+                currentTag  = (Tag) element;
+            } else {
+                return;
+            }
             Tag beanTag = (Tag) SpringXMLConfigEditorUtils.getBean(currentTag);
             if (beanTag != null) {
                 beanTagOffset = beanTag.getElementOffset();

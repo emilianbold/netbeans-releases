@@ -116,11 +116,8 @@ public class CommandUtils {
         return getRelativePhpPath(ProjectPropertiesSupport.getWebRootDirectory(getProject()), fileObject);
     }
 
-    public String getRelativePhpPath(FileObject folder, FileObject fileObject) {
+    private String getRelativePhpPath(FileObject folder, FileObject fileObject) {
         if (fileObject != null) {
-            if (fileObject.equals(getProject().getProjectDirectory())) {
-                return ""; //NOI18N
-            }
             if (FileUtil.isParentOf(folder, fileObject)) {
                 return FileUtil.getRelativePath(folder, fileObject);
             } else if (folder.equals(fileObject)) {
@@ -136,7 +133,8 @@ public class CommandUtils {
     }
 
     public static boolean isPhpFile(FileObject file) {
-        return file.getMIMEType().equals(PhpSourcePath.MIME_TYPE);
+        assert file != null;
+        return PhpSourcePath.MIME_TYPE.equals(FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE));
     }
 
     private static FileObject[] filter(Collection<? extends FileObject> files, FileObject dir) {

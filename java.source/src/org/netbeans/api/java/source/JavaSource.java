@@ -1195,6 +1195,15 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
 
+        //for dev builds, fill stack trace for CompletionFailures (see #146026):
+        boolean assertsEnabled = false;
+
+        assert assertsEnabled = true;
+
+        if (assertsEnabled) {
+            options.add("-XDide");   // NOI18N
+        }
+
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {            
             //The ToolProvider.defaultJavaCompiler will use the context classloader to load the javac implementation
@@ -1891,6 +1900,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     }
                     if (js != null) {
                         js.k24 = false;
+                        Request _request = request; 
+                        request = null;
+                        currentRequest.cancelCompleted(_request);
                     }                   
                 }
                 lastEditorRef = new WeakReference<JTextComponent>(editor);
@@ -2054,7 +2066,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if (scp != js.classpathInfo.getClassPath(PathKind.SOURCE)) {
                 //Revalidate
                 final Project owner = FileOwnerQuery.getOwner(fo);
-                LOGGER.warning("ClassPath identity changed, class path owner: " +       //NOI18N
+                LOGGER.warning("ClassPath identity changed for " + fo + ", class path owner: " +       //NOI18N
                         (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")));       //NOI18N
                 js.classpathInfo = ClasspathInfo.create(fo);
             }
@@ -2982,29 +2994,28 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     static final class DocPositionRegion extends PositionRegion {
         
-        private final Document doc;
+        private final Reference<Document> doc;
         
         public DocPositionRegion (final Document doc, final int startPos, final int endPos) throws BadLocationException {
             super (doc,startPos,endPos);
             assert doc != null;
-            this.doc = doc;
-        }
-        
-        public Document getDocument () {
-            return this.doc;
-        }
+            this.doc = new WeakReference<Document>(doc);
+        }                
         
         public String getText () {
             final String[] result = new String[1];
-            this.doc.render(new Runnable() {
-                public void run () {
+            final Document _doc = doc.get();
+            if (_doc != null) {
+                _doc.render(new Runnable() {
+                    public void run () {
                     try {
-                        result[0] = doc.getText(getStartOffset(), getLength());
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                            result[0] = _doc.getText(getStartOffset(), getLength());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
-                }
-            });
+                });
+            }
             return result[0];
         }
         

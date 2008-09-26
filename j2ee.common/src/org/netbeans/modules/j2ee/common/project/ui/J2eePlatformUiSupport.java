@@ -203,7 +203,11 @@ public class J2eePlatformUiSupport {
         }
         
         public String toString() {
-            return platform.getDisplayName();
+            String s = platform.getDisplayName();
+            if (s == null) {
+                s = ""; // NOI18N
+            }
+            return s;
         }
 
         public int compareTo(Object o) {

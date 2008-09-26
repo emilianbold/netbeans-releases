@@ -45,7 +45,6 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget.UMLWidgetIDString;
 
@@ -60,8 +59,10 @@ public class ShallowHistoryStateWidget extends InitialStateWidget
         super(scene, path);
     }
 
+    @Override
     public void initializeNode(IPresentationElement presentation)
     {
+        super.initializeNode(presentation);
         CircleWidget circleWidget = new CircleWidget(getScene(),
                 getRadius(),
                 getResourcePath(),
@@ -80,11 +81,10 @@ public class ShallowHistoryStateWidget extends InitialStateWidget
         layer.setBackground(null);
         layer.addChild(labelWidget);
         circleWidget.addChild(layer, 1);
-        setCurrentView(circleWidget);
-        
-        super.initializeNode(presentation);
+        setCurrentView(circleWidget);        
     }
 
+    @Override
     public String getWidgetID()
     {
         return UMLWidgetIDString.SHALLOWHISTORYSTATEWIDGET.toString();

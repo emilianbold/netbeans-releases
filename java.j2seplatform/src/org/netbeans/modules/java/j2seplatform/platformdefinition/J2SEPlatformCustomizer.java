@@ -48,7 +48,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
@@ -57,12 +56,12 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.openide.NotifyDescriptor;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.util.Exceptions;
 
 
 
@@ -349,7 +348,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
             chooser.setAcceptAllFileFilterUsed( false );
-            chooser.setFileFilter (new SimpleFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
+            chooser.setFileFilter (new ArchiveFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
             if (this.currentDir != null) {
                 chooser.setCurrentDirectory(this.currentDir);
             }
@@ -526,7 +525,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 try {
                     url = new URL (url.toExternalForm()+"/");
                 } catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify(mue);
+                    Exceptions.printStackTrace(mue);
                 }
             }
             java.util.List<URL> data = getData();
@@ -585,13 +584,13 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
     }
 
 
-    private static class SimpleFileFilter extends FileFilter {
+    private static class ArchiveFileFilter extends FileFilter {
 
         private String description;
         private Collection extensions;
 
 
-        public SimpleFileFilter (String description, String[] extensions) {
+        public ArchiveFileFilter (String description, String[] extensions) {
             this.description = description;
             this.extensions = Arrays.asList(extensions);
         }
@@ -604,7 +603,15 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             if (index <= 0 || index==name.length()-1)
                 return false;
             String extension = name.substring (index+1).toUpperCase();
-            return this.extensions.contains(extension);
+            if (!this.extensions.contains(extension)) {
+                return false;
+            }
+            try {
+                return FileUtil.isArchiveFile(f.toURI().toURL());
+            } catch (MalformedURLException e) {
+                Exceptions.printStackTrace(e);
+                return false;
+            }
         }
 
         public String getDescription() {

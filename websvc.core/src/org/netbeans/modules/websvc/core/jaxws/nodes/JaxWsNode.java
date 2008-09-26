@@ -139,7 +139,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
-public class JaxWsNode extends AbstractNode implements 
+public class JaxWsNode extends AbstractNode implements
         WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
 
     Service service;
@@ -164,10 +164,12 @@ public class JaxWsNode extends AbstractNode implements
         if (implBeanClass.getAttribute("jax-ws-service") == null ||
                 service.isUseProvider() && implBeanClass.getAttribute("jax-ws-service-provider") == null) {
             try {
-                if(implBeanClass.getAttribute("jax-ws-service") == null)
+                if (implBeanClass.getAttribute("jax-ws-service") == null) {
                     implBeanClass.setAttribute("jax-ws-service", Boolean.TRUE);
-                if(service.isUseProvider() && implBeanClass.getAttribute("jax-ws-service-provider") == null)
+                }
+                if (service.isUseProvider() && implBeanClass.getAttribute("jax-ws-service-provider") == null) {
                     implBeanClass.setAttribute("jax-ws-service-provider", Boolean.TRUE);
+                }
                 getDataObject().setValid(false);
             } catch (PropertyVetoException ex) {
                 ErrorManager.getDefault().notify(ex);
@@ -186,7 +188,9 @@ public class JaxWsNode extends AbstractNode implements
         } else {
             content.add(new JaxWsGenWSDLImpl(project, serviceName));
         }
-        content.add(new ConvertToRestCookieImpl(this));
+        if (isWebProject()) {
+            content.add(new ConvertToRestCookieImpl(this));
+        }
         OpenCookie cookie = new OpenCookie() {
 
             public void open() {
@@ -198,10 +202,22 @@ public class JaxWsNode extends AbstractNode implements
         };
         content.add(cookie);
         RequestProcessor.getDefault().post(new Runnable() {
+
             public void run() {
                 JaxWsNode.this.setValue("wsdl-url", getWsdlURL());
             }
         });
+    }
+
+    private boolean isWebProject() {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            Object moduleType = provider.getJ2eeModule().getModuleType();
+            if (J2eeModule.WAR.equals(moduleType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -374,9 +390,11 @@ public class JaxWsNode extends AbstractNode implements
             ServerInstance.Descriptor instanceDescriptor = serverInstance.getDescriptor();
             if (instanceDescriptor != null) {
                 int port = instanceDescriptor.getHttpPort();
-                portNumber = port==0 ? "8080" : String.valueOf(port); //NOI18N
+                portNumber = port == 0 ? "8080" : String.valueOf(port); //NOI18N
                 String hstName = instanceDescriptor.getHostname();
-                if (hstName != null) hostName = hstName;
+                if (hstName != null) {
+                    hostName = hstName;
+                }
             } else {
                 // using the old way to obtain port name and host name
                 // should be removed if ServerInstance.Descriptor is implemented in server plugins
@@ -387,17 +405,17 @@ public class JaxWsNode extends AbstractNode implements
                 } else {
                     portNumber = getPortNumber(instanceProperties);
                     hostName = getHostName(instanceProperties);
-                }                
+                }
             }
         } catch (InstanceRemovedException ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, "Removed ServerInstance", ex); //NOI18N
         }
-        
+
         String contextRoot = null;
         Object moduleType = provider.getJ2eeModule().getModuleType();
         // need to compute from annotations
         String wsURI = null;
-        
+
         WSStackUtils stackUtils = new WSStackUtils(project);
         boolean isJsr109Supported = stackUtils.isJsr109Supported();
         if (J2eeModule.WAR.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {
@@ -873,7 +891,6 @@ public class JaxWsNode extends AbstractNode implements
         return new WebServiceTransferable(new WebServiceReference(url, service.getWsdlUrl() != null ? service.getServiceName() : service.getName(), project.getProjectDirectory().getName()));
     }
 
- 
     private class RefreshServiceImpl implements JaxWsRefreshCookie {
 
         /**
@@ -904,7 +921,7 @@ public class JaxWsNode extends AbstractNode implements
             }
         }
     }
-    
+
     /** Old way to obtain port number from server instance (using instance properties)
      * 
      * @param instanceProperties
@@ -916,9 +933,9 @@ public class JaxWsNode extends AbstractNode implements
             return "8080"; //NOI18N
         } else {
             return portNumber;
-        }        
+        }
     }
-    
+
     /** Old way to obtain host name from server instance (using instance properties)
      * 
      * @param instanceProperties

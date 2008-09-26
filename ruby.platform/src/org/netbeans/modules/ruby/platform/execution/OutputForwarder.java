@@ -90,6 +90,14 @@ final class OutputForwarder implements Runnable {
     private List<OutputRecognizer> recognizers;
     private String encoding;
     private final int readMaxWaitTime;
+    /**
+     * Specifies whether the forwarder should invoke the {@link OutputRecognizer#beforeFinish()} 
+     * method after the processing is done. 
+     * <i>Not a very elegant solution for issue 145447 -- we only want this to be enabled for
+     * one forwarder -- but since we're migrating to the new execution
+     * API it didn't seem worth the effort to do major redesigns at this point</i>.
+     */
+    private final boolean runBeforeFinishHook;
 
     OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
         List<OutputRecognizer> recognizers, StopAction stopAction) {
@@ -98,6 +106,12 @@ final class OutputForwarder implements Runnable {
 
     OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
         List<OutputRecognizer> recognizers, StopAction stopAction, String encoding, int readWaitTime) {
+        this(instream, out, fileLocator, recognizers, stopAction, null,readWaitTime, false);
+    }
+
+    OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
+        List<OutputRecognizer> recognizers, StopAction stopAction, String encoding,
+        int readWaitTime, boolean runBeforeFinishHook) {
         str = instream;
         writer = out;
         this.fileLocator = fileLocator;
@@ -105,6 +119,7 @@ final class OutputForwarder implements Runnable {
         this.stopAction = stopAction;
         this.encoding = encoding;
         this.readMaxWaitTime = readWaitTime;
+        this.runBeforeFinishHook = runBeforeFinishHook;
     }
 
     /** Package private for unit test. */
@@ -338,6 +353,13 @@ final class OutputForwarder implements Runnable {
                     read.close();
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, e.getMessage(), e);
+                }
+                if (runBeforeFinishHook) {
+                    for (OutputRecognizer recognizer : recognizers) {
+                        for (String line : recognizer.beforeFinish()) {
+                            writer.println(line);
+                        }
+                    }
                 }
                 writer.flush();
                 writer.close();

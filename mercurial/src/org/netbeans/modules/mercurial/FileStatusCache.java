@@ -313,7 +313,7 @@ public class FileStatusCache {
      * @return give file's status or null if the file's status is not in cache
      */
     @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
-    FileInformation getCachedStatus(File file, boolean bCheckSharability) {
+    public FileInformation getCachedStatus(File file) {
         File parent = file.getParentFile();
         if (parent == null) return FileStatusCache.FILE_INFORMATION_NOTMANAGED_DIRECTORY;
 

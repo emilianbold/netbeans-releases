@@ -251,6 +251,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 }
                 
 		//projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
+                makeCustomizer.save();
 		projectDescriptor.assign(clonedProjectdescriptor);
 		projectDescriptor.setModified();
                 projectDescriptor.save(); // IZ 133606

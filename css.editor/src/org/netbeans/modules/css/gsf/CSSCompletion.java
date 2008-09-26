@@ -790,20 +790,16 @@ public class CSSCompletion implements CodeCompletionHandler {
             return false;
         }
 
-        public List<String> getInsertParams() {
-            return null;
-        }
-
-        public String[] getParamListDelimiters() {
-            return new String[]{"(", ")"}; // NOI18N
-        }
-
         public String getCustomInsertTemplate() {
             return null;
         }
 
         public ElementHandle getElement() {
             return element;
+        }
+
+        public int getSortPrioOverride() {
+            return 0;
         }
     }
 }

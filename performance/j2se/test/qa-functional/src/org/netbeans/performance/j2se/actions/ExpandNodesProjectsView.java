@@ -124,7 +124,15 @@ public class ExpandNodesProjectsView extends PerformanceTestCase {
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder100";
         doMeasurement();
     }
-    
+
+    public void testExpandFolderWith1000JavaFiles(){
+        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_PREPARE = 2000;
+        project = "PerformanceTestFoldersData";
+        pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder1000";
+        doMeasurement();
+    }
+
     public void testExpandFolderWith100XmlFiles(){
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 500;

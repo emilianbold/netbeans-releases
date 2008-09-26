@@ -41,6 +41,7 @@
 package org.netbeans.modules.gsfret.hints.infrastructure;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -52,6 +53,7 @@ import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
 import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
+import org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 
@@ -85,8 +87,14 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
             return;
         }
 
+        // Do we have a selection? If so, don't do suggestions
+        int[] range = SelectionAwareSourceTaskFactory.getLastSelection(info.getFileObject());
+        if (range != null && range.length == 2 && range[0] != -1 && range[1] != -1 && range[0] != range[1]) {
+            HintsController.setErrors(info.getFileObject(), SuggestionsTask.class.getName(), Collections.<ErrorDescription>emptyList());
+            return;
+        }
+
         int pos = CaretAwareSourceTaskFactory.getLastPosition(info.getFileObject());
-        
         if (pos == -1) {
             return;
         }

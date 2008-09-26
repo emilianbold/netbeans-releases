@@ -45,6 +45,7 @@ package org.netbeans.modules.gsfret.navigation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -101,44 +102,44 @@ public final class ClassMemberFilters {
         
     }
     
-    public Collection<StructureItem> filter( Collection<StructureItem> original ) {
-        
-        if(disableFiltering) {
-            return original;
-        }
-        
+    public Collection<StructureItem> filter(List<StructureItem> original) {
         boolean non_public = filters.isSelected(SHOW_NON_PUBLIC);
         boolean statik = filters.isSelected(SHOW_STATIC);
         boolean fields = filters.isSelected(SHOW_FIELDS);
         // XXX Enable later boolean inherited = filters.isSelected(SHOW_INHERITED);
-                        
-        ArrayList<StructureItem> result = new ArrayList<StructureItem>(original.size());
-        for (StructureItem description : original) {
-            
-            // I default no access modifier to mean public, unlike the Java version where it means package protected
-            if (!non_public &&
-                   (description.getModifiers().contains(Modifier.PROTECTED) || description.getModifiers().contains(Modifier.PRIVATE))) {
+
+        List<StructureItem> result = new ArrayList<StructureItem>(original.size());
+      
+        if (disableFiltering) {
+            for (StructureItem description : original) {
+
+                // I default no access modifier to mean public, unlike the Java version where it means package protected
+                if (!non_public &&
+                        (description.getModifiers().contains(Modifier.PROTECTED) || description.getModifiers().contains(Modifier.PRIVATE))) {
 //            if ( !non_public && 
 //                 !description.getModifiers().contains(Modifier.PUBLIC)                 
 //                 /* Fix for #89777 && !description.modifiers.contains(Modifier.PROTECTED) */ ) {
-                continue;
+                    continue;
+                }
+
+                if (!statik && description.getModifiers().contains(Modifier.STATIC)) {
+                    continue;
+                }
+
+                if (!fields && (description.getKind() == ElementKind.FIELD || (description.getKind() == ElementKind.ATTRIBUTE))) {
+                    continue;
+                }
+
+                // XXX Inherited members
+
+                result.add(description);
             }
-            
-            if ( !statik && description.getModifiers().contains(Modifier.STATIC)) {
-                continue;
-            }
-            
-            if ( !fields && (description.getKind() == ElementKind.FIELD || (description.getKind() == ElementKind.ATTRIBUTE))) {
-                continue;
-            }
-            
-            // XXX Inherited members
-            
-            result.add(description);                        
+        } else {
+            result = original;
         }
-  
-        Collections.sort( result, isNaturalSort() ?  Description.POSITION_COMPARATOR : Description.ALPHA_COMPARATOR );
-        
+
+        Collections.sort(result, isNaturalSort() ? Description.POSITION_COMPARATOR : Description.ALPHA_COMPARATOR);
+
         return result;
     }
     

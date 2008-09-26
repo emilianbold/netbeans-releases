@@ -65,7 +65,7 @@ import org.openide.windows.WindowManager;
 public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     
     private static Map<String, RemoteUserInfo> map;
-    private static final String REMOTE_USER_INFO = "remote.user.info";
+    private static final String REMOTE_USER_INFO = "remote.user.info"; // NOI18N
     private String passwd;
     private JTextField passwordField = (JTextField) new JPasswordField(20);
     private final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1, 1,

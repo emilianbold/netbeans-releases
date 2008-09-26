@@ -103,9 +103,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
     
+        <change id="copylibs-library-upgrade">
+            <api name="j2ee-utilities"/>
+            <summary>Helper method makeSureProjectHasCopyLibsLibrary was added.</summary>
+            <version major="1" minor="29"/>
+            <date day="11" month="9" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Helper method makeSureProjectHasCopyLibsLibrary was added.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.common.project.classpath" name="ClassPathSupport"/>
+            <issue number="146736"/>
+        </change>
+        
         <change id="revive-copylib-task">
             <api name="j2ee-utilities"/>
-            <summary></summary>
+            <summary>&lt;copylibs&gt; Ant task was revived</summary>
             <version major="1" minor="26"/>
             <date day="27" month="6" year="2008"/>
             <author login="dkonecny"/>
@@ -113,7 +129,7 @@ is the proper place.
             <description>
                 <p>
                     Removal of support for generating  libs.XXX.classpath.libfile.XXX properties
-                    and keeping them up to date. It was replaced with <copylibs> Ant task.
+                    and keeping them up to date. It was replaced with &lt;copylibs&gt; Ant task.
                     All friend API clients updated.
                 </p>
             </description>
@@ -122,7 +138,7 @@ is the proper place.
         
         <change id="ProjectTypeRefactorings">
             <api name="j2ee-utilities"/>
-            <summary></summary>
+            <summary>Refactorings of J2EE/Web code</summary>
             <version major="1" minor="22"/>
             <date day="18" month="2" year="2008"/>
             <author login="dkonecny"/>
