@@ -43,7 +43,6 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
-import java.util.Iterator;
 import java.util.SortedSet;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
@@ -134,13 +133,13 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         categoryValue.setSelectedItem(CustomizerComponentFactory.WAIT_VALUE);
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
-                final SortedSet moduleCategories = getProperties().getModuleCategories();
+                final SortedSet<String> moduleCategories = getProperties().getModuleCategories();
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         DefaultComboBoxModel model = new DefaultComboBoxModel();
                         categoryValue.removeAllItems();
-                        for (Iterator it = moduleCategories.iterator(); it.hasNext(); ) {
-                            model.addElement(it.next());
+                        for (String cat : moduleCategories) {
+                            model.addElement(cat);
                         }
                         if (!moduleCategories.contains(getCategory())) {
                             // put module's own category at the beginning
