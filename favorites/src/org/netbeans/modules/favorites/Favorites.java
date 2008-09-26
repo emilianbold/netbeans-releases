@@ -338,6 +338,19 @@ final class Favorites extends FilterNode implements Index {
         }
         
         @Override
+        public void setName(String name) {
+            // #113859 - keep order of children in favorites folder after rename
+            final DataFolder favoritesFolder = Favorites.getFolder();
+            final DataObject[] children = favoritesFolder.getChildren();
+            super.setName(name);
+            try {
+                favoritesFolder.setOrder(children);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        @Override
         public String getDisplayName () {
             //Change display name only for favorite nodes (links) under Favorites node.
             if (Favorites.getNode().equals(this.getParentNode())) {
