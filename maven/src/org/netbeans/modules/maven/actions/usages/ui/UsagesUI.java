@@ -280,7 +280,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
             if (mavProj != null) {
 
                 MavenProject mp = mavProj.getOriginalMavenProject();
-                List artifacts = new ArrayList();
+                List<Artifact> artifacts = new ArrayList<Artifact>();
                 switch (type) {
                     case TYPE_DEPENDENCY:
                          {
@@ -306,8 +306,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
                         break;
                 }
 
-                for (Object o : artifacts) {
-                    Artifact d = (Artifact) o;
+                for (Artifact d : artifacts) {
                     if (d.getGroupId().equals(artifact.getGroupId()) && d.getArtifactId().equals(artifact.getArtifactId()) && d.getVersion().equals(artifact.getVersion())) {
 
                         mavenProjects.add(mavProj);

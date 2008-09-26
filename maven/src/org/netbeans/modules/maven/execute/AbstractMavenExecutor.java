@@ -82,7 +82,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
     private List<String> messages = new ArrayList<String>();
     private List<OutputListener> listeners = new ArrayList<OutputListener>();
     protected ExecutorTask task;
-    private static final Set forbidden = new HashSet();
+    private static final Set<String> forbidden = new HashSet<String>();
     
 
     static {

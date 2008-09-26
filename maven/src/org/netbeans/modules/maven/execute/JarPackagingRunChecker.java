@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  * @deprecated just for compatibility reasons there, should not
  * be actually showing any UI, since the org.codehaus.mevenide:netbeans-run-plugin is no more default.
  */
-public class JarPackagingRunChecker implements PrerequisitesChecker {
+public @Deprecated class JarPackagingRunChecker implements PrerequisitesChecker {
     
     private List applicableActions = Arrays.asList(new String[] {
         ActionProvider.COMMAND_RUN,

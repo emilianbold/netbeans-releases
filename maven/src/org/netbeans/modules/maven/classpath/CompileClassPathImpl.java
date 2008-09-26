@@ -42,7 +42,6 @@ package org.netbeans.modules.maven.classpath;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -60,15 +59,13 @@ class CompileClassPathImpl extends AbstractProjectClassPathImpl {
     }
     
     URI[] createPath() {
-        List lst = new ArrayList();
+        List<URI> lst = new ArrayList<URI>();
         // according the current 2.1 sources this is almost the same as getCompileClasspath()
         //except for the fact that multiproject references are not redirected to their respective
         // output folders.. we lways retrieve stuff from local repo..
-        List arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();
-        List assemblies = new ArrayList();
-        Iterator it = arts.iterator();
-        while (it.hasNext()) {
-            Artifact art = (Artifact)it.next();
+        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();
+        List<File> assemblies = new ArrayList<File>();
+        for (Artifact art : arts) {
             if (art.getFile() != null) {
                 File fil = FileUtil.normalizeFile(art.getFile());
                 // the assemblied jars go as last ones, otherwise source for binaries don't really work.
@@ -82,13 +79,11 @@ class CompileClassPathImpl extends AbstractProjectClassPathImpl {
               //NOPMD   //null means dependencies were not resolved..
             } 
         }
-        it = assemblies.iterator();
-        while (it.hasNext()) {
-            File ass = (File)it.next();
+        for (File ass : assemblies) {
             lst.add(ass.toURI());
         }
         URI[] uris = new URI[lst.size()];
-        uris = (URI[])lst.toArray(uris);
+        uris = lst.toArray(uris);
         return uris;
     }
     

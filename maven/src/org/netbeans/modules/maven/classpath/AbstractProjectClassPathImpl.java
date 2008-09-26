@@ -65,7 +65,7 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
  */
 abstract class AbstractProjectClassPathImpl implements ClassPathImplementation {
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private List resources;
+    private List<PathResourceImplementation> resources;
     private NbMavenProjectImpl project;
     
     protected AbstractProjectClassPathImpl(NbMavenProjectImpl proj) {
@@ -74,9 +74,9 @@ abstract class AbstractProjectClassPathImpl implements ClassPathImplementation {
         NbMavenProject.addPropertyChangeListener(proj, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                    List newValues = getPath();
+                    List<PathResourceImplementation> newValues = getPath();
                     synchronized (AbstractProjectClassPathImpl.this) {
-                        List oldvalue = resources;
+                        List<PathResourceImplementation> oldvalue = resources;
 //                        System.out.println("checking=" + AbstractProjectClassPathImpl.this.getClass());
                         if (hasChanged(oldvalue, newValues)) {
                             resources = newValues;
@@ -91,23 +91,24 @@ abstract class AbstractProjectClassPathImpl implements ClassPathImplementation {
         });
     }
     
-    private boolean hasChanged(List oldValues, List newValues) {
+    private boolean hasChanged(List<PathResourceImplementation> oldValues,
+                               List<PathResourceImplementation> newValues) {
         if (oldValues == null) {
             return (newValues != null);
         }
-        Iterator it = oldValues.iterator();
-        ArrayList nl = new ArrayList();
+        Iterator<PathResourceImplementation> it = oldValues.iterator();
+        ArrayList<PathResourceImplementation> nl = new ArrayList<PathResourceImplementation>();
         nl.addAll(newValues);
         while (it.hasNext()) {
-            PathResourceImplementation res = (PathResourceImplementation)it.next();
+            PathResourceImplementation res = it.next();
             URL oldUrl = res.getRoots()[0];
             boolean found = false;
             if (nl.size() == 0) {
                 return true;
             }
-            Iterator inner = nl.iterator();
+            Iterator<PathResourceImplementation> inner = nl.iterator();
             while (inner.hasNext()) {
-                PathResourceImplementation res2 = (PathResourceImplementation)inner.next();
+                PathResourceImplementation res2 = inner.next();
                 URL newUrl = res2.getRoots()[0];
                 if (newUrl.equals(oldUrl)) {
                     inner.remove();
@@ -129,7 +130,7 @@ abstract class AbstractProjectClassPathImpl implements ClassPathImplementation {
         return project;
     }
     
-    public synchronized List /*<PathResourceImplementation>*/ getResources() {
+    public synchronized List<PathResourceImplementation> getResources() {
         if (resources == null) {
             resources = this.getPath();
         }
@@ -144,7 +145,7 @@ abstract class AbstractProjectClassPathImpl implements ClassPathImplementation {
         return null;
     }
     
-    private List getPath() {
+    private List<PathResourceImplementation> getPath() {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         URI[] pieces = createPath();
         for (int i = 0; i < pieces.length; i++) {
@@ -183,16 +184,16 @@ abstract class AbstractProjectClassPathImpl implements ClassPathImplementation {
         if (filtering != null) {
             result.add(filtering);
         }
-        return Collections.unmodifiableList(result);
+        return Collections.<PathResourceImplementation>unmodifiableList(result);
     }
     
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener propertyChangeListener) {
+    public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
         synchronized (support) {
             support.addPropertyChangeListener(propertyChangeListener);
         }
     }
     
-    public void removePropertyChangeListener(java.beans.PropertyChangeListener propertyChangeListener) {
+    public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
         synchronized (support) {
             support.removePropertyChangeListener(propertyChangeListener);
         }
