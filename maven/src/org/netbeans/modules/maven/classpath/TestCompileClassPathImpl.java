@@ -66,6 +66,7 @@ class TestCompileClassPathImpl extends AbstractProjectClassPathImpl {
         // according the current 2.1 sources this is almost the same as getCompileClasspath()
         //except for the fact that multiproject references are not redirected to their respective
         // output folders.. we lways retrieve stuff from local repo..
+        @SuppressWarnings("unchecked")
         List<Artifact> arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
         List<File> assemblies = new ArrayList<File>();
         for (Artifact art : arts) {

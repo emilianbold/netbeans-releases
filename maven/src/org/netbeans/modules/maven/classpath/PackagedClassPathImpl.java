@@ -42,7 +42,6 @@ package org.netbeans.modules.maven.classpath;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
@@ -61,7 +60,9 @@ class PackagedClassPathImpl extends AbstractProjectClassPathImpl {
 
     public URI[] createPath() {
         List<URI> lst = new ArrayList<URI>();
+        @SuppressWarnings("unchecked")
         List<Artifact> arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();
+        @SuppressWarnings("unchecked")
         List<Dependency> deps = getMavenProject().getOriginalMavenProject().getCompileDependencies();
         List<String> packagedIds = new ArrayList<String>();
         for (Dependency dep : deps) {

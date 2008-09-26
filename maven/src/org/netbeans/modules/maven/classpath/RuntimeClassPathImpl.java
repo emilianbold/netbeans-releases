@@ -70,6 +70,7 @@ class RuntimeClassPathImpl extends AbstractProjectClassPathImpl {
             lst.add(fil.toURI());
         }
         try {
+            @SuppressWarnings("unchecked")
             List<String> srcs = getMavenProject().getOriginalMavenProject().getRuntimeClasspathElements();
             for (String str : srcs) {
                 File fil = FileUtil.normalizeFile(new File(str));
