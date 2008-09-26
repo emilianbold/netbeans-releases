@@ -151,7 +151,11 @@ public class HttpMessage extends Message {
     public String getUrlParams() {
         Node node = getChild(getNode(), "urlParams");
         if (node != null) {
-            return node.getChildNodes().item(0).getNodeValue();
+            NodeList nodeList = node.getChildNodes();
+            // XXX #148305 Fixing NPE.
+            if (nodeList.getLength() > 0) {
+                return nodeList.item(0).getNodeValue();
+            }
         }
         return null;
 
