@@ -638,7 +638,12 @@ public abstract class Children extends Object {
         @Override
         void postInitializeEntrySupport() {
             if (!lazySupport) {
+                if (getNodesEntry() == null) {
+                    nodesEntry = createNodesEntry();
+                }
                 entrySupport().setEntries(Collections.singleton(getNodesEntry()));
+            } else if (getNodesEntry() != null) {
+                nodesEntry = null;
             }
         }
 
@@ -1292,27 +1297,48 @@ public abstract class Children extends Object {
         @Override
         void checkSupport() {
             if (lazySupport && nodes != null && nodes.size() > 0) {
-                changeSupportToDefault();
+                fallbackToDefaultSupport();
             }
         }
 
-        void changeSupportToDefault() {
-            if (!lazySupport) {
+        void fallbackToDefaultSupport() {
+            LOG.warning("Fallbacking entry support from lazy to default - Children.Array method was used"); // NOI18N
+            switchSupport(false);
+        }
+
+        void switchSupport(boolean toLazy) {
+            if (toLazy == lazySupport) {
                 return;
             }
             try {
                 Children.PR.enterWriteAccess();
-                LOG.warning("Fallbacking entry support from lazy to default - Children.Array method was used");
                 List<Entry> entries = entrySupport().getEntries();
+
                 boolean init = entrySupport().isInitialized();
-                entrySupport = null;
-                lazySupport = false;
-                nodesEntry = createNodesEntry();
-                entries.add(before ? 0 : entries.size(), nodesEntry);
-                entrySupport().setEntries(entries);
-                if (init) {
-                    entrySupport.getNodesCount(false);
+                if (init && parent != null) {
+                    List<Node> snapshot = entrySupport.createSnapshot();
+                    if (snapshot.size() > 0) {
+                        int[] idxs = new int[snapshot.size()];
+                        for (int i = 0; i < idxs.length; i++) {
+                            idxs[i] = i;
+                        }
+                        parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);
+                    }
                 }
+
+                entrySupport = null;
+                lazySupport = toLazy;
+                if (toLazy) {
+                    nodesEntry = null;
+                } else {
+                    nodesEntry = createNodesEntry();
+                    entries.add(before ? 0 : entries.size(), nodesEntry);
+                }
+
+                if (init) {
+                    entrySupport().notifySetEntries();
+                }
+                entrySupport().setEntries(entries);
             } finally {
                 Children.PR.exitWriteAccess();
             }
@@ -1325,7 +1351,7 @@ public abstract class Children extends Object {
         @Override
         public boolean add(Node[] arr) {
             if (lazySupport) {
-                changeSupportToDefault();
+                fallbackToDefaultSupport();
             }
             return super.add(arr);
         }
