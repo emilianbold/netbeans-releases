@@ -374,8 +374,16 @@ public class DebuggerProxy {
     
     private void sendStopMessage(String msg) {
         Message message = Message.createMessage(msg);
-        suspensionPointQueue.add(message);
-        httpQueue.add(message);        
+        boolean addedToSuspensionQueue = suspensionPointQueue.offer(message);
+        boolean addedToHttpQueue = httpQueue.offer(message);
+
+        if (!addedToSuspensionQueue) {
+            Log.getLogger().log(Level.INFO, "Could not send terminate message to Suspension Point Handler");
+        }
+
+        if (!addedToHttpQueue) {
+            Log.getLogger().log(Level.INFO, "Could not send terminate message to HTTP Message Handler");
+        }
     }
 
     private class MessageHandler extends Thread {
