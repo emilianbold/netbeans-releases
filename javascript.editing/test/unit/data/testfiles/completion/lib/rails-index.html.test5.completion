@@ -1,0 +1,7 @@
+Code completion result for source line:
+$$('li:f|');
+(QueryType=COMPLETION, NameKind=PREFIX)
+RULE       file                                       <i>All file uploads (type="file")</i>
+RULE       first                                      <i>Equivalent to :eq(0)</i>
+RULE       first-child                                <i>First child of its parent</i>
+RULE       focus                                      <i>Element during user actions</i>
