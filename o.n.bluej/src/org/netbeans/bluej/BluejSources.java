@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -114,7 +115,7 @@ public class BluejSources implements Sources {
         }
 
         public Icon getIcon(boolean b) {
-            return new ImageIcon(Utilities.loadImage("/org/netbeans/bluej/resources/bluejproject.png"));   // NOI18N
+            return new ImageIcon(ImageUtilities.loadImage("/org/netbeans/bluej/resources/bluejproject.png"));   // NOI18N
         }
 
         public boolean contains(FileObject fileObject) throws IllegalArgumentException {

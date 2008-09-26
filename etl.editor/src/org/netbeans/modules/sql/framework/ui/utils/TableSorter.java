@@ -28,6 +28,7 @@ import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.*;
+import org.openide.util.ImageUtilities;
 
 /**
  * TableSorter is a decorator for TableModels; adding sorting
@@ -101,8 +102,8 @@ public final class TableSorter extends AbstractTableModel {
         }
     };
 
-    private final Icon ICON_ASCENDING = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/sql/framework/ui/resources/images/columnsSortedAsc.gif", true)); // NOI18N
-    private final Icon ICON_DESCENDING = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/sql/framework/ui/resources/images/columnsSortedDesc.gif", true)); // NOI18N
+    private final Icon ICON_ASCENDING = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/sql/framework/ui/resources/images/columnsSortedAsc.gif", true)); // NOI18N
+    private final Icon ICON_DESCENDING = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/sql/framework/ui/resources/images/columnsSortedDesc.gif", true)); // NOI18N
     
     private Row[] viewToModel;
     private int[] modelToView;

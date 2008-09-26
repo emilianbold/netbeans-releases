@@ -180,6 +180,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -290,40 +291,40 @@ public class DefineCorrelationWizard implements WizardProperties {
         Map<Class, Icon> mapIcons =  new HashMap<Class, Icon>(9);
         
         String iconFileName = IMAGE_FOLDER_NAME + "UNKNOWN_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Object.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(Object.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
 
         iconFileName = IMAGE_FOLDER_NAME + "RECEIVE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Receive.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(Receive.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
 
         iconFileName = IMAGE_FOLDER_NAME + "REPLY" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Reply.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(Reply.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
 
         iconFileName = IMAGE_FOLDER_NAME + "INVOKE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Invoke.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(Invoke.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
         
         iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Message.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(Message.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
         
         iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_PART" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Part.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(Part.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
         
         iconFileName = IMAGE_FOLDER_NAME + "ON_EVENT" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(OnEvent.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(OnEvent.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
         
         iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_HANDLER" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(OnMessage.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(OnMessage.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_ELEMENT" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Element.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(Element.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
     
         iconFileName = IMAGE_FOLDER_NAME + "ATTRIBUTE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Attribute.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(Attribute.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_COMPLEX_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(ComplexType.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(ComplexType.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
         
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_SIMPLE_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(SimpleType.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(SimpleType.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
          
         return mapIcons;
     }

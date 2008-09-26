@@ -48,6 +48,7 @@ import java.lang.reflect.Method;
 
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import org.netbeans.modules.form.*;
@@ -261,9 +262,9 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         switch (type) {
             case BeanInfo.ICON_COLOR_16x16:
             case BeanInfo.ICON_MONO_16x16:
-                return Utilities.loadImage(iconURL);
+                return ImageUtilities.loadImage(iconURL);
             default:
-                return Utilities.loadImage(icon32URL);
+                return ImageUtilities.loadImage(icon32URL);
         }
     }
 

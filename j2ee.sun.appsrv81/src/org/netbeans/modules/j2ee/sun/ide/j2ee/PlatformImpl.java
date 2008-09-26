@@ -66,6 +66,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSu
 import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -375,7 +376,7 @@ public class PlatformImpl extends J2eePlatformImpl {
      * @return platform's icon.
      */
     public Image getIcon() {
-        return Utilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N;
+        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N;
     }
     
     /**

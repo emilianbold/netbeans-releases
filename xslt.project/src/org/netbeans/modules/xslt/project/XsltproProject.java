@@ -70,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -87,7 +88,7 @@ import org.w3c.dom.Text;
  */
 public class XsltproProject implements Project, AntProjectListener {
     
-    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage(XSLT_PROJECT_ICON)); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage(XSLT_PROJECT_ICON)); // NOI18N
     public static final String SOURCES_TYPE_XSLTPRO = "BIZPRO";
     public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
     

@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** 
@@ -108,11 +109,11 @@ public class ElementNode extends AbstractNode {
     @Override
     public Image getIcon(int type) {
         if (description.getCustomIcon() != null) {
-            return Utilities.icon2Image(description.getCustomIcon());
+            return ImageUtilities.icon2Image(description.getCustomIcon());
         }
         Icon icon = Icons.getElementIcon(description.getKind(), description.getModifiers());
         if (icon != null) {
-            return Utilities.icon2Image(icon);
+            return ImageUtilities.icon2Image(icon);
         } else {
             return super.getIcon(type);
         }
@@ -448,7 +449,7 @@ public class ElementNode extends AbstractNode {
         
     private static class WaitNode extends AbstractNode {
         
-        private Image waitIcon = Utilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/wait.gif"); // NOI18N
+        private Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/wait.gif"); // NOI18N
         
         WaitNode( ) {
             super( Children.LEAF );

@@ -42,6 +42,7 @@
 package org.netbeans.modules.mobility.editor.pub;
 import org.openide.ErrorManager;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -70,7 +71,7 @@ public final class J2MEDataLoaderBeanInfo extends SimpleBeanInfo {
      */
     public Image getIcon(@SuppressWarnings("unused")
 	final int type) {
-        return Utilities.loadImage( "org/netbeans/modules/mobility/editor/resources/class.gif"); // NOI18N
+        return ImageUtilities.loadImage( "org/netbeans/modules/mobility/editor/resources/class.gif"); // NOI18N
     }
     
 }

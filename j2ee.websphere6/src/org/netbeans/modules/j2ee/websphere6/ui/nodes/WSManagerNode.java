@@ -64,6 +64,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -133,7 +134,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
      * @return the node's icon
      */
     public Image getIcon(int type) {
-        return Utilities.loadImage(ICON);
+        return ImageUtilities.loadImage(ICON);
     }
 
     /**
@@ -142,7 +143,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
      * @return the node's icon
      */
     public Image getOpenedIcon(int type) {
-        return Utilities.loadImage(ICON);
+        return ImageUtilities.loadImage(ICON);
     }
 
     /**

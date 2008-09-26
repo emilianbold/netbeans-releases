@@ -44,6 +44,7 @@ import java.beans.*;
 import java.awt.Image;
 import org.netbeans.modules.xml.util.Util;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -123,9 +124,9 @@ public class XMLDataLoaderBeanInfo extends SimpleBeanInfo {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
 
-            return Utilities.loadImage (ICON_DIR_BASE + "xmlObject.gif"); // NOI18N
+            return ImageUtilities.loadImage (ICON_DIR_BASE + "xmlObject.gif"); // NOI18N
         } else {
-            return Utilities.loadImage (ICON_DIR_BASE + "xmlObject32.gif"); // NOI18N
+            return ImageUtilities.loadImage (ICON_DIR_BASE + "xmlObject32.gif"); // NOI18N
         }
     }
 

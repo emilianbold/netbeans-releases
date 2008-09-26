@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.xml.sax.EntityResolver;
@@ -101,7 +102,7 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
     }
     
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/catalog/resources/DDCatalog.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/ddloaders/catalog/resources/DDCatalog.gif"); // NOI18N
     }
 
     public String getDisplayName() {

@@ -48,6 +48,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 import org.openide.util.Utilities;
@@ -117,7 +118,7 @@ public class WSDLDataLoaderBeanInfo extends SimpleBeanInfo {
     @Override
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage ("org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png");
+            return ImageUtilities.loadImage ("org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png");
         }
         return null;
     }

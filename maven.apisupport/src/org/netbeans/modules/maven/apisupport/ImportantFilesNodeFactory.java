@@ -68,6 +68,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -144,8 +145,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
         private Image getIcon(boolean opened) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/maven/apisupport/config-badge.gif", true); //NOI18N
-            return Utilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
+            Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/apisupport/config-badge.gif", true); //NOI18N
+            return ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
         }
         
         private static final String DISPLAY_NAME = NbBundle.getMessage(ImportantFilesNodeFactory.class, "LBL_important_files");

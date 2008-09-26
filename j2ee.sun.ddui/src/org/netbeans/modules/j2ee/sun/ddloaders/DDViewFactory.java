@@ -51,6 +51,7 @@ import org.netbeans.modules.glassfish.eecommon.api.config.J2EEBaseVersion;
 import org.netbeans.modules.glassfish.eecommon.api.config.J2EEVersion;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -317,7 +318,7 @@ public abstract class DDViewFactory implements Serializable {
         }
         
         public Image getIcon() {
-            return Utilities.loadImage(Utils.ICON_BASE_DD_VALID + ".gif"); //NOI18N
+            return ImageUtilities.loadImage(Utils.ICON_BASE_DD_VALID + ".gif"); //NOI18N
         }
         
         public String preferredID() {

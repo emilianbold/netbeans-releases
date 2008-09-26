@@ -47,6 +47,7 @@ import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -58,7 +59,7 @@ public class AutoLayoutAction extends AbstractAction {
     
     private WeakReference<CasaDataObject> mReference;
     
-    private static final Image ICON_IMAGE = Utilities.loadImage(
+    private static final Image ICON_IMAGE = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/AutoLayout.png");
     
     

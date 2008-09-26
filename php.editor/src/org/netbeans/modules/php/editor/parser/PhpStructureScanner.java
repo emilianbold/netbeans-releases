@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -531,7 +532,7 @@ public class PhpStructureScanner implements StructureScanner {
         @Override
         public ImageIcon getCustomIcon() {
             if (INTERFACE_ICON == null) {
-                INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
+                INTERFACE_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_INTERFACE_ICON));
             }
             return INTERFACE_ICON;
         }

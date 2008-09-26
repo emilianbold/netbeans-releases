@@ -53,7 +53,7 @@ import org.openide.util.*;
 public class PrintSettingsBeanInfo extends SimpleBeanInfo {
     /** Returns the PrintSettings' icon */
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/openide/text/printSettings.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/openide/text/printSettings.gif"); // NOI18N
     }
 
     /** Descriptor of valid properties

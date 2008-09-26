@@ -41,6 +41,7 @@
 package org.netbeans.modules.jmx.jconsole;
 
 import java.util.MissingResourceException;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -212,7 +213,7 @@ public class LaunchAction extends javax.swing.AbstractAction {
         //Needed in Tools|Options|...| ToolBars action icons
          putValue (
             Action.SMALL_ICON, 
-            new javax.swing.ImageIcon (org.openide.util.Utilities.loadImage("org/netbeans/modules/jmx/jconsole/resources/console.png")) // NOI18N        
+            new javax.swing.ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/jmx/jconsole/resources/console.png")) // NOI18N
                 );
     }
     

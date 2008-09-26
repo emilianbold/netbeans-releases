@@ -46,6 +46,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -90,7 +91,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         Icon icon = g.getIcon(opened);
         if (icon == null) {
             Image image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
-            return Utilities.mergeImages(image, PackageRootNode.PACKAGE_BADGE, 7, 7);
+            return ImageUtilities.mergeImages(image, PackageRootNode.PACKAGE_BADGE, 7, 7);
         } else {
             if (icon instanceof ImageIcon) {
                 return ((ImageIcon) icon).getImage();

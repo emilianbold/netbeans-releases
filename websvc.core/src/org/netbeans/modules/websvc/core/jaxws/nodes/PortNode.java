@@ -45,6 +45,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -71,7 +72,7 @@ public class PortNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/wsport.png"); //NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/wsport.png"); //NOI18N
     }
     
     @Override

@@ -48,6 +48,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -69,7 +70,7 @@ public class TestPlatform extends J2eePlatformImpl {
 
     @Override
     public Image getIcon() {
-        return Utilities.loadImage("org/netbeans/tests/j2eeserver/plugin/registry/plugin.gif");
+        return ImageUtilities.loadImage("org/netbeans/tests/j2eeserver/plugin/registry/plugin.gif");
     }
 
     @Override

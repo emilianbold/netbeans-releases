@@ -44,6 +44,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.netbeans.api.editor.completion.Completion;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Document;
@@ -92,7 +93,7 @@ public class PPDirectiveCompletionItem implements CompletionItem {
         synchronized (this)
         {
             if (icon == null) {
-                icon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/mobility/editor/resources/d.png"));
+                icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/mobility/editor/resources/d.png"));
             }
         }
         

@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.catalog.impl.sun;
 import java.beans.*;
 import java.awt.Image;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import org.netbeans.modules.xml.catalog.spi.*;
@@ -62,7 +63,7 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
     public BeanDescriptor getBeanDescriptor() {
 	BeanDescriptor beanDescriptor = new BeanDescriptor  ( Catalog.class , CatalogCustomizer.class );
         beanDescriptor.setDisplayName ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_Catalog") );
-        beanDescriptor.setShortDescription ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_Catalog_desc") );//GEN-HEADEREND:BeanDescriptor
+        beanDescriptor.setShortDescription ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_Catalog_desc") );                              
 
         // Here you can add code for customizing the BeanDescriptor.
 
@@ -97,7 +98,7 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
             properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", Catalog.class, null, null, "getIcon", null );
             properties[PROPERTY_icon].setHidden ( true );
         }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        catch( IntrospectionException e) {}                          
         properties[PROPERTY_shortDescription].setName(CatalogDescriptor.PROP_CATALOG_DESC);
         properties[PROPERTY_displayName].setName(CatalogDescriptor.PROP_CATALOG_NAME);
         properties[PROPERTY_icon].setName(CatalogDescriptor.PROP_CATALOG_ICON);
@@ -152,7 +153,7 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
 
-            return Utilities.loadImage (ICON_DIR_BASE + "sunCatalog.gif"); // NOI18N
+            return ImageUtilities.loadImage (ICON_DIR_BASE + "sunCatalog.gif"); // NOI18N
         } else {
             return null;
         }

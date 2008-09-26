@@ -59,6 +59,7 @@ import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.util.RequestProcessor;
 import org.openide.NotifyDescriptor;
@@ -213,8 +214,8 @@ public final class IndexSearch
 
 
         
-        sourceButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/showSource.gif"))); // NOI18N
-        byReferenceButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/refSort.gif"))); // NOI18N
+        sourceButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/showSource.gif"))); // NOI18N
+        byReferenceButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/refSort.gif"))); // NOI18N
         byTypeButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/typeSort.gif"))); // NOI18N
         byNameButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/alphaSort.gif"))); // NOI18N
         quickViewButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_only.gif"))); // NOI18N

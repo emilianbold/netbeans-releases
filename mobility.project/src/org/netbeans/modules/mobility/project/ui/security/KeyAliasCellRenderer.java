@@ -55,6 +55,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
 import org.netbeans.modules.mobility.project.security.KeyStoreRepository;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -64,10 +65,10 @@ import org.openide.util.NbBundle;
  */
 public class KeyAliasCellRenderer extends DefaultListCellRenderer {
     
-    private static final Image key = Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/key.gif"); //NOI18N
-    private static final Icon ICON_OPENED = new ImageIcon(Utilities.mergeImages(key, Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/unlockedBadge.gif"), 0, 0)); //NOI18N
-    private static final Icon ICON_CLOSED = new ImageIcon(Utilities.mergeImages(key, Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/lockedBadge.gif"), 0, 0)); //NOI18N
-    private static final Icon ICON_INVALID = new ImageIcon(Utilities.mergeImages(key, Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/invalidBadge.gif"), 0, 0)); //NOI18N
+    private static final Image key = ImageUtilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/key.gif"); //NOI18N
+    private static final Icon ICON_OPENED = new ImageIcon(ImageUtilities.mergeImages(key, ImageUtilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/unlockedBadge.gif"), 0, 0)); //NOI18N
+    private static final Icon ICON_CLOSED = new ImageIcon(ImageUtilities.mergeImages(key, ImageUtilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/lockedBadge.gif"), 0, 0)); //NOI18N
+    private static final Icon ICON_INVALID = new ImageIcon(ImageUtilities.mergeImages(key, ImageUtilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/invalidBadge.gif"), 0, 0)); //NOI18N
     
     public static final String notAvailableString = NbBundle.getMessage(KeyAliasCellRenderer.class, "LBL_NotAvailable"); // NOI18N
     public static final String invalidKeyAliasString = NbBundle.getMessage(KeyAliasCellRenderer.class, "LBL_InvalidKeyAlias"); // NOI18N

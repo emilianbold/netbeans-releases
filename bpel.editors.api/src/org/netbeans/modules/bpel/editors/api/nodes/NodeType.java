@@ -25,6 +25,7 @@ import javax.swing.ImageIcon;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -242,7 +243,7 @@ public enum NodeType {
         } else {
             fileName = IMAGE_FOLDER_NAME + name + "_" + modificator + ".png"; // NOI18N
         }
-        return Utilities.loadImage(fileName);
+        return ImageUtilities.loadImage(fileName);
     }
     
     public static boolean isValidImage(Image img) {

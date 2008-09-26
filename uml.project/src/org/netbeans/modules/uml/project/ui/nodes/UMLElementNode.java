@@ -62,6 +62,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -680,7 +681,7 @@ public class UMLElementNode extends AbstractModelElementNode
                     // this code will badge the diagram icon with a
                     // yellow triangle with an exclamation point to 
                     // visually indicate the diagram's state
-                    retVal = Utilities.mergeImages(
+                    retVal = ImageUtilities.mergeImages(
                         retVal, createImage(ICON_BADGE_EXCLAMATION), 0, 0);
                 }
             }
@@ -886,7 +887,7 @@ public class UMLElementNode extends AbstractModelElementNode
 	 */
 	protected Image createImage(String iconLocation)
 	{
-		return Utilities.loadImage( iconLocation, true );
+		return ImageUtilities.loadImage( iconLocation, true );
 	}
 	
 	/**

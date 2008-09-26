@@ -52,6 +52,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -100,7 +101,7 @@ public class ContentSection extends BackgroundPanel implements Constants {
             centerImageName = "section_bottom_right.png"; //NOI18N
             break;
         }
-        center = Utilities.loadImage( "org/netbeans/modules/welcome/resources/" + centerImageName ); //NOI18N
+        center = ImageUtilities.loadImage( "org/netbeans/modules/welcome/resources/" + centerImageName ); //NOI18N
     }
 
     @Override

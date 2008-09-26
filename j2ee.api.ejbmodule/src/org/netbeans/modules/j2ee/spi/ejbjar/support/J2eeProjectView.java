@@ -62,6 +62,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -115,7 +116,7 @@ public final class J2eeProjectView {
         private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
 
         private static Image CONFIGURATION_FILES_BADGE =
-                Utilities.loadImage( "org/netbeans/modules/j2ee/ejbjar/project/ui/ejbjar.gif", true ); // NOI18N
+                ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ejbjar/project/ui/ejbjar.gif", true ); // NOI18N
 
         public DocBaseNode(DataFolder folder) {
             super(folder.getNodeDelegate(), folder.createNodeChildren(VISIBILITY_QUERY_FILTER));
@@ -132,7 +133,7 @@ public final class J2eeProjectView {
         private Image computeIcon( boolean opened, int type ) {
             Node folderNode = getOriginal();
             Image image = opened ? folderNode.getOpenedIcon( type ) : folderNode.getIcon( type );
-            return Utilities.mergeImages( image, CONFIGURATION_FILES_BADGE, 7, 7 );
+            return ImageUtilities.mergeImages( image, CONFIGURATION_FILES_BADGE, 7, 7 );
         }
         
         public String getName() {

@@ -50,6 +50,7 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 import org.openide.NotifyDescriptor;
@@ -98,7 +99,7 @@ public class AntActions {
         //Needed in Tools|Options|...| ToolBars action icons
         a.putValue (
             Action.SMALL_ICON, 
-            new ImageIcon (org.openide.util.Utilities.loadImage("org/netbeans/modules/jmx/jconsole/resources/run_project.png")) // NOI18N        
+            new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/jmx/jconsole/resources/run_project.png")) // NOI18N
                 );
         return a;
     }
@@ -128,7 +129,7 @@ public class AntActions {
         //Needed in Tools|Options|...| ToolBars action icons
         a.putValue (
             Action.SMALL_ICON, 
-            new ImageIcon (org.openide.util.Utilities.loadImage("org/netbeans/modules/jmx/jconsole/resources/debug_project.png")) // NOI18N        
+            new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/jmx/jconsole/resources/debug_project.png")) // NOI18N
                 );
         return a;
     }

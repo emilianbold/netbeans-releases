@@ -69,6 +69,7 @@ import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
+import org.openide.util.ImageUtilities;
 
 public class WebServiceChildren extends Children.Keys {
     
@@ -95,7 +96,7 @@ public class WebServiceChildren extends Children.Keys {
                 @java.lang.Override
                 public java.awt.Image getIcon(int type) {
                     if (cachedIcon == null) {
-                        cachedIcon = org.openide.util.Utilities.loadImage(OPERATION_ICON);
+                        cachedIcon = ImageUtilities.loadImage(OPERATION_ICON);
                     }
                     return cachedIcon;
                 }

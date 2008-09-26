@@ -61,6 +61,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -385,7 +386,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
 
         @Override
         public Image getIcon(int arg0) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/maven/actions/usages/ArtifactBadge.png", true); //NOI18N
+            Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/actions/usages/ArtifactBadge.png", true); //NOI18N
             return badge;
         }
 
@@ -429,7 +430,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
 
         @Override
         public Image getIcon(int arg0) {
-            return Utilities.icon2Image(pi.getIcon());
+            return ImageUtilities.icon2Image(pi.getIcon());
         }
 
         @Override

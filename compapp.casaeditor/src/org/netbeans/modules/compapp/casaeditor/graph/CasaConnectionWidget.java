@@ -69,6 +69,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityEleme
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.ConnectionNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.ClearConfigExtensionsAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -81,10 +82,10 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
     private static final Stroke STROKE_DEFAULT = new BasicStroke(1.0f);
     private static final Stroke STROKE_HOVERED = new BasicStroke(1.5f);
     private static final Stroke STROKE_SELECTED = new BasicStroke(2.0f);
-    private static final Image IMAGE_QOS_BADGE_ICON = Utilities.loadImage(
+    private static final Image IMAGE_QOS_BADGE_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/QoS.png");    // NOI18N
 
-    private static final Image IMAGE_UNCONFIGURED_QOS_BADGE_ICON = Utilities.loadImage(
+    private static final Image IMAGE_UNCONFIGURED_QOS_BADGE_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/UnConfiguredQoS.png");    // NOI18N
 
     private DependenciesRegistry mDependenciesRegistry = new DependenciesRegistry(this);

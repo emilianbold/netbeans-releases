@@ -79,6 +79,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -115,16 +116,16 @@ public class DependenciesNode extends AbstractNode {
     
     @Override
     public Image getIcon(int param) {
-        Image retValue = Utilities.mergeImages(getTreeFolderIcon(false),
-                Utilities.loadImage("org/netbeans/modules/maven/libraries-badge.png"), //NOI18N
+        Image retValue = ImageUtilities.mergeImages(getTreeFolderIcon(false),
+                ImageUtilities.loadImage("org/netbeans/modules/maven/libraries-badge.png"), //NOI18N
                 8, 8);
         return retValue;
     }
     
     @Override
     public Image getOpenedIcon(int param) {
-        Image retValue = Utilities.mergeImages(getTreeFolderIcon(true),
-                Utilities.loadImage("org/netbeans/modules/maven/libraries-badge.png"), //NOI18N
+        Image retValue = ImageUtilities.mergeImages(getTreeFolderIcon(true),
+                ImageUtilities.loadImage("org/netbeans/modules/maven/libraries-badge.png"), //NOI18N
                 8, 8);
         return retValue;
     }
@@ -528,11 +529,11 @@ public class DependenciesNode extends AbstractNode {
         Image base = null;
         Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
         if (baseIcon != null) {
-            base = Utilities.icon2Image(baseIcon);
+            base = ImageUtilities.icon2Image(baseIcon);
         } else {
             base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
             if (base == null) { // fallback to our owns
-                base = Utilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, true);
+                base = ImageUtilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, true);
             }
         }
         assert base != null;

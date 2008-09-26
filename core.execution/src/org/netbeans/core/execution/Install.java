@@ -87,6 +87,7 @@ import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -518,7 +519,7 @@ public class Install extends ModuleInstall {
         /** Creates node for action. */
         public NoActionNode(Icon icon, String name, String display) {
             super(Children.LEAF);
-            if (icon != null) img = Utilities.icon2Image(icon);
+            if (icon != null) img = ImageUtilities.icon2Image(icon);
             
             setName(name);
             if (display != null) setDisplayName(display);

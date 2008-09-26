@@ -64,6 +64,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
 import org.netbeans.api.visual.widget.Scene;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -510,7 +511,7 @@ public class ZoomManager {
             this.manager = manager;
             String path = NbBundle.getMessage(FitDiagramAction.class,
                     "IMG_FitDiagramAction");
-            Image img = Utilities.loadImage(path);
+            Image img = ImageUtilities.loadImage(path);
             if (img != null) {
                 putValue(Action.SMALL_ICON, new ImageIcon(img));
             }
@@ -556,7 +557,7 @@ public class ZoomManager {
             this.manager = manager;
             String path = NbBundle.getMessage(FitWidthAction.class,
                     "IMG_FitWidthAction");
-            Image img = Utilities.loadImage(path);
+            Image img = ImageUtilities.loadImage(path);
             if (img != null) {
                 putValue(Action.SMALL_ICON, new ImageIcon(img));
             }
@@ -599,7 +600,7 @@ public class ZoomManager {
             this.manager = manager;
             String path = NbBundle.getMessage(ZoomDefaultAction.class,
                     "IMG_ZoomDefaultAction");
-            Image img = Utilities.loadImage(path);
+            Image img = ImageUtilities.loadImage(path);
             if (img != null) {
                 putValue(Action.SMALL_ICON, new ImageIcon(img));
             }
@@ -631,7 +632,7 @@ public class ZoomManager {
             this.manager = manager;
             String path = NbBundle.getMessage(ZoomInAction.class,
                     "IMG_ZoomInAction");
-            Image img = Utilities.loadImage(path);
+            Image img = ImageUtilities.loadImage(path);
             if (img != null) {
                 putValue(Action.SMALL_ICON, new ImageIcon(img));
             }
@@ -670,7 +671,7 @@ public class ZoomManager {
             this.manager = manager;
             String path = NbBundle.getMessage(ZoomOutAction.class,
                     "IMG_ZoomOutAction");
-            Image img = Utilities.loadImage(path);
+            Image img = ImageUtilities.loadImage(path);
             if (img != null) {
                 putValue(Action.SMALL_ICON, new ImageIcon(img));
             }

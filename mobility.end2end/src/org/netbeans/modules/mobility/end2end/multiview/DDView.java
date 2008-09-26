@@ -51,6 +51,7 @@ import java.io.Serializable;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -96,7 +97,7 @@ public class DDView extends DesignMultiViewDesc implements Serializable {
     }
     
     public java.awt.Image getIcon() {
-        return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); //NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); //NOI18N
     }
     
     public String preferredID() {

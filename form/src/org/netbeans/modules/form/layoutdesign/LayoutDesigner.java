@@ -52,6 +52,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.*;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 public class LayoutDesigner implements LayoutConstants {
@@ -1286,19 +1287,19 @@ public class LayoutDesigner implements LayoutConstants {
     private Image getLinkBadge(int dimension) {
         if (dimension == (BOTH_DIMENSIONS)) {
             if (linkBadgeBoth == null) {
-                linkBadgeBoth = Utilities.loadImage("org/netbeans/modules/form/resources/sameboth.png"); //NOI18N
+                linkBadgeBoth = ImageUtilities.loadImage("org/netbeans/modules/form/resources/sameboth.png"); //NOI18N
             }
             return linkBadgeBoth;
         }
         if (dimension == HORIZONTAL) {
             if (linkBadgeHorizontal == null) {
-                linkBadgeHorizontal = Utilities.loadImage("org/netbeans/modules/form/resources/samewidth.png"); //NOI18N
+                linkBadgeHorizontal = ImageUtilities.loadImage("org/netbeans/modules/form/resources/samewidth.png"); //NOI18N
             }
             return linkBadgeHorizontal;
         }
         if (dimension == VERTICAL) {
             if (linkBadgeVertical == null) {
-                linkBadgeVertical = Utilities.loadImage("org/netbeans/modules/form/resources/sameheight.png"); //NOI18N
+                linkBadgeVertical = ImageUtilities.loadImage("org/netbeans/modules/form/resources/sameheight.png"); //NOI18N
             }
             return linkBadgeVertical;
         }

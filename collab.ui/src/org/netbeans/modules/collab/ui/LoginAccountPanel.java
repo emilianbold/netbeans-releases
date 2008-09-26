@@ -108,7 +108,7 @@ public class LoginAccountPanel extends JPanel {
         updateAccountList();
 
         if (SHOW_BACKGROUND) {
-            backgroundImage = Utilities.loadImage("org/netbeans/modules/collab/ui/resources/login_bg.jpg");
+            backgroundImage = ImageUtilities.loadImage("org/netbeans/modules/collab/ui/resources/login_bg.jpg");
 
             if (backgroundImage == null) {
                 Debug.out.println("Couldn't load background image");
@@ -740,7 +740,7 @@ public class LoginAccountPanel extends JPanel {
      *
      */
     public final class AccountListRenderer extends DefaultListCellRenderer {
-        private final Image IMAGE = Utilities.loadImage("org/netbeans/modules/collab/core/resources/account_png.gif"); // NOI18N
+        private final Image IMAGE = ImageUtilities.loadImage("org/netbeans/modules/collab/core/resources/account_png.gif"); // NOI18N
         private final Image DISABLED_IMAGE = GrayFilter.createDisabledImage(IMAGE);
         private final Icon ICON = new ImageIcon(IMAGE);
         private final Icon DISABLED_ICON = new ImageIcon(DISABLED_IMAGE);

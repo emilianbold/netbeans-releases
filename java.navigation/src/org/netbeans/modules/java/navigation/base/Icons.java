@@ -12,6 +12,7 @@ package org.netbeans.modules.java.navigation.base;
 import java.awt.Image;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Capable of serving incns for the navigator modules. Notice that it is not
@@ -30,7 +31,7 @@ public class Icons {
     }
     
     public static Icon getBusyIcon () {
-        Image img = Utilities.loadImage (WAIT);
+        Image img = ImageUtilities.loadImage (WAIT);
         if (img == null) {
             return null;
         }

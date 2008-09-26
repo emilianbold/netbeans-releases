@@ -42,6 +42,7 @@ import java.awt.Image;
 import javax.swing.Action;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -61,7 +62,7 @@ public class ElementNode extends AbstractNode {
 
     @Override
     public Image getIcon(int arg0) {
-        return Utilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/tag.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/tag.png");
     }
 
     @Override

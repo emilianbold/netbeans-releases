@@ -73,6 +73,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -347,8 +348,8 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
     
     private static class PlatformFileView extends FileView {
         
-        private static final Icon BADGE = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/platform/resources/platformBadge.gif")); // NOI18N
-        private static final Icon EMPTY = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/platform/resources/empty.gif")); // NOI18N
+        private static final Icon BADGE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/platform/resources/platformBadge.gif")); // NOI18N
+        private static final Icon EMPTY = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/platform/resources/empty.gif")); // NOI18N
         
         private FileSystemView fsv;
         private Icon lastOriginal;

@@ -91,6 +91,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -594,7 +595,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         // on Mac all icons from UIManager are the same, some default, so load our own.
         // it's also fallback if icon from UIManager not found, may happen
         if (isMac || upFolderIcon == null) {
-            upFolderIcon = new ImageIcon(Utilities.loadImage("org/netbeans/swing/dirchooser/resources/upFolderIcon.gif"));
+            upFolderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/swing/dirchooser/resources/upFolderIcon.gif"));
         }
         upFolderButton.setIcon(upFolderIcon);
         upFolderButton.setToolTipText(upFolderToolTipText);
@@ -617,7 +618,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 homeIcon = UIManager.getIcon("FileChooser.homeFolderIcon");
             }
             if (isMac || homeIcon == null) {
-                homeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/swing/dirchooser/resources/homeIcon.gif"));
+                homeIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/swing/dirchooser/resources/homeIcon.gif"));
             }
             homeButton.setIcon(homeIcon);
             homeButton.setText(null);
@@ -645,7 +646,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         // on Mac all icons from UIManager are the same, some default, so load our own.
         // it's also fallback if icon from UIManager not found, may happen
         if (isMac || newFolderIcon == null) {
-            newFolderIcon = new ImageIcon(Utilities.loadImage("org/netbeans/swing/dirchooser/resources/newFolderIcon.gif"));
+            newFolderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/swing/dirchooser/resources/newFolderIcon.gif"));
         }
         newFolderButton.setIcon(newFolderIcon);
         newFolderButton.setToolTipText(newFolderToolTipText);

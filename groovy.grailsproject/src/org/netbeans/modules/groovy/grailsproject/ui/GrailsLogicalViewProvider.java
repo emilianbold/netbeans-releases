@@ -63,6 +63,7 @@ import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -110,7 +111,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         }
 
         public Image getIcon(int type) {
-            return Utilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
+            return ImageUtilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
         }
 
         public Image getOpenedIcon(int type) {

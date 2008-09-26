@@ -47,6 +47,7 @@ import org.openide.filesystems.Repository;
 import org.openide.nodes.AbstractNode;
 import java.awt.Image;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import javax.swing.Action;
 import org.openide.util.Utilities;
@@ -78,7 +79,7 @@ public class WebServicesRootNode extends AbstractNode {
     
     private java.awt.Image getServicesBadge() {
         if (cachedServicesBadge == null) {
-            cachedServicesBadge = Utilities.loadImage(SERVICES_BADGE);
+            cachedServicesBadge = ImageUtilities.loadImage(SERVICES_BADGE);
         }            
         return cachedServicesBadge;        
     }
@@ -104,7 +105,7 @@ public class WebServicesRootNode extends AbstractNode {
     private Image computeIcon(boolean opened) {
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, getServicesBadge(), 7, 7 );
+        image = ImageUtilities.mergeImages(image, getServicesBadge(), 7, 7 );
         return image;
     }
     

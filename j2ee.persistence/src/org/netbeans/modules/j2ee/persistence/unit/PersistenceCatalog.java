@@ -51,6 +51,7 @@ import java.util.List;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
+import org.openide.util.ImageUtilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.openide.util.NbBundle;
@@ -130,7 +131,7 @@ public class PersistenceCatalog implements CatalogReader, CatalogDescriptor, org
     }
     
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/j2ee/persistence/dd/resources/persistenceCatalog.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/dd/resources/persistenceCatalog.gif"); // NOI18N
     }
     
     public String getDisplayName() {

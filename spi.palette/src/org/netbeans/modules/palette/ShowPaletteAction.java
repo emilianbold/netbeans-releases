@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -63,7 +64,7 @@ public class ShowPaletteAction extends AbstractAction {
     public ShowPaletteAction() {
         putValue(NAME, Utils.getBundleString("CTL_PaletteAction") );
         putValue(SMALL_ICON, new ImageIcon(
-            Utilities.loadImage("org/netbeans/modules/palette/resources/palette.png"))); // NOI18N
+            ImageUtilities.loadImage("org/netbeans/modules/palette/resources/palette.png"))); // NOI18N
     }
 
 

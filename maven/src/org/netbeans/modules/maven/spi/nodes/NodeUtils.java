@@ -42,6 +42,7 @@ package org.netbeans.modules.maven.spi.nodes;
 import java.awt.Image;
 import javax.swing.Icon;
 import javax.swing.UIManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -60,11 +61,11 @@ public class NodeUtils {
         Image base = null;
         Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
         if (baseIcon != null) {
-            base = Utilities.icon2Image(baseIcon);
+            base = ImageUtilities.icon2Image(baseIcon);
         } else {
             base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
             if (base == null) { // fallback to our owns
-                base = Utilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, true);
+                base = ImageUtilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, true);
             }
         }
         assert base != null;

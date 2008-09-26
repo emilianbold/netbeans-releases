@@ -80,6 +80,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -295,7 +296,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
         return ((UMLLogicalViewRootNode)createLogicalView()).getModelRootNode();
     }
     
-    private static Image brokenProjectBadge = Utilities.loadImage(
+    private static Image brokenProjectBadge = ImageUtilities.loadImage(
         ImageUtil.IMAGE_FOLDER + "broken-project-badge.gif"); // NOI18N
     /////// end isBroken stuff
     
@@ -335,7 +336,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
             Image original = super.getIcon(type);
             
             return broken
-                    ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0)
+                    ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0)
                     : original;
         }
         
@@ -345,7 +346,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
             Image original = super.getOpenedIcon(type);
             
             return broken
-                    ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0)
+                    ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0)
                     : original;
         }
         

@@ -48,6 +48,7 @@
 package org.netbeans.modules.web.struts;
 
 import org.netbeans.modules.xml.catalog.spi.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 /**
@@ -170,7 +171,7 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
      * @return icon representing current state or null
      */
     public java.awt.Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/web/struts/resources/StrutsCatalog.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/web/struts/resources/StrutsCatalog.png"); // NOI18N
     }
     
     /**

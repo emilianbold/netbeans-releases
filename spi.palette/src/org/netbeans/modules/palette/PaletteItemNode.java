@@ -57,6 +57,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -162,7 +163,7 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
             if (icon16 == null) {
                 icon16 = _getIcon(icon16URL);
                 if (icon16 == null)
-                    icon16 = Utilities.loadImage("org/netbeans/modules/palette/resources/unknown16.gif"); // NOI18N
+                    icon16 = ImageUtilities.loadImage("org/netbeans/modules/palette/resources/unknown16.gif"); // NOI18N
             }
             icon = icon16;
         }
@@ -170,7 +171,7 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
             if (icon32 == null) {
                 icon32 = _getIcon(icon32URL);
                 if (icon32 == null)
-                    icon32 = Utilities.loadImage("org/netbeans/modules/palette/resources/unknown32.gif"); // NOI18N
+                    icon32 = ImageUtilities.loadImage("org/netbeans/modules/palette/resources/unknown32.gif"); // NOI18N
             }
             icon = icon32;
         }
@@ -292,7 +293,7 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
 
         Image icon = null;
         try {
-            icon = Utilities.loadImage(iconURL);
+            icon = ImageUtilities.loadImage(iconURL);
         }
         catch (Exception ex) {
             Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
