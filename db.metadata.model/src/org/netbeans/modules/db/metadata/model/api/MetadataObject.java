@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.metadata.model.api;
 
 /**
+ * Encapsulates a metadata object (catalog, schema, table, etc.).
  *
  * @author Andrei Badea
  */
@@ -47,5 +48,11 @@ public abstract class MetadataObject {
 
     MetadataObject() {}
 
+    /**
+     * Returns the name of this metadata object or {@code null} if
+     * this object has no name.
+     *
+     * @return the name.
+     */
     public abstract String getName();
 }
