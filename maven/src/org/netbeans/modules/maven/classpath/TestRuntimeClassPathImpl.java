@@ -74,6 +74,7 @@ class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
             fil = FileUtil.normalizeFile(fil);
             lst.add(fil.toURI());
         }
+        @SuppressWarnings("unchecked")
         List<Artifact> arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
         List<File> assemblies = new ArrayList<File>();
         for (Artifact art : arts) {
