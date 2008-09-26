@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.jdom.Element;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
+import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 
 /**
@@ -85,7 +86,7 @@ public class MavenSettingsGrammar extends AbstractSchemaBasedGrammar {
     }
 
     @Override
-    protected List getDynamicCompletion(String path, HintContext hintCtx, Element lowestParent) {
+    protected List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, Element lowestParent) {
         if ("/settings/proxies".equals(path)) { //NOI18N
             // doesn't work!!!'
 //            if ("proxy".startsWith(hintCtx.getCurrentPrefix())) {
@@ -96,11 +97,11 @@ public class MavenSettingsGrammar extends AbstractSchemaBasedGrammar {
 //                return Collections.singletonList(rootRes);
 //            }
         }
-        return Collections.EMPTY_LIST;
+        return Collections.<GrammarResult>emptyList();
     }
 
     @Override
-    protected Enumeration getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el) {
+    protected Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el) {
         if (path.endsWith("releases/updatePolicy") || //NOI18N
                 path.endsWith("snapshots/updatePolicy")) { //NOI18N
             return super.createTextValueList(UPDATE_POLICIES, virtualTextCtx);
@@ -123,7 +124,7 @@ public class MavenSettingsGrammar extends AbstractSchemaBasedGrammar {
 
             Set elems = RepositoryQueries.filterPluginGroupIds(virtualTextCtx.getCurrentPrefix());
             Iterator it = elems.iterator();
-            ArrayList texts = new ArrayList();
+            ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
             while (it.hasNext()) {
                 String elem = (String) it.next();
                 texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
