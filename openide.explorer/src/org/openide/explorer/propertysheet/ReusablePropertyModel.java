@@ -114,7 +114,7 @@ class ReusablePropertyModel implements ExPropertyModel {
             checkThread();
         }
 
-        return getProperty().getValueType();
+        return null == getProperty() ? Object.class : getProperty().getValueType();
     }
 
     public Object getValue() throws java.lang.reflect.InvocationTargetException {
