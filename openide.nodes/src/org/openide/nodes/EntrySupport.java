@@ -66,7 +66,7 @@ abstract class EntrySupport {
     private static final Reference<ChildrenArray> EMPTY = new WeakReference<ChildrenArray>(null);
 
     /** children we are attached to */
-    public final Children children;
+    public Children children;
 
     /** array of children Reference (ChildrenArray) */
     Reference<ChildrenArray> array = EMPTY;
@@ -1082,7 +1082,9 @@ abstract class EntrySupport {
                             inited = false;
                             initThread = null;
                             initInProgress = false;
-                            children.callRemoveNotify();
+                            if (children != null) {
+                                children.callRemoveNotify();
+                            }
                         }
                     }
                 } finally {
