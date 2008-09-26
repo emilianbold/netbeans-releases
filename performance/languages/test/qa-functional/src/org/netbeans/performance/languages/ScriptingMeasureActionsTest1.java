@@ -60,7 +60,8 @@ public class ScriptingMeasureActionsTest1 {
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
                 .addTest(CreatePHPProject.class)
-                .addTest(CreatePHPSampleProject.class)
+                // TODO: Enable once browser problem is fixed
+//                .addTest(CreatePHPSampleProject.class)
                 
                 .addTest(SavingPHPProjectProperties.class)
                 .addTest(CreateScriptingPackFiles.class)
