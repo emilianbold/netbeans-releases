@@ -112,6 +112,7 @@ class LuceneIndex extends Index {
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
     private Set<String> rootPkgCache;   //Cache, do not use this dirrectly
     private Analyzer analyzer;  //Analyzer used to store documents
+    private volatile boolean closed;
     
     static Index create (final File cacheRoot) throws IOException {        
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
@@ -132,6 +133,7 @@ class LuceneIndex extends Index {
 
     @SuppressWarnings ("unchecked")     // NOI18N, unchecked - lucene has source 1.4
     public List<String> getUsagesFQN(final String resourceName, final Set<ClassIndexImpl.UsageType>mask, final BooleanOperator operator) throws IOException, InterruptedException {
+        checkPreconditions();
         if (!isValid(false)) {
             return null;
         }
@@ -180,6 +182,7 @@ class LuceneIndex extends Index {
 
         
     public String getSourceName (final String resourceName) throws IOException {
+        checkPreconditions();
         if (!isValid(false)) {
             return null;
         }
@@ -200,6 +203,7 @@ class LuceneIndex extends Index {
         
     @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
     public <T> void getDeclaredTypes (final String name, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException {
+        checkPreconditions();
         if (!isValid(false)) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
@@ -353,6 +357,7 @@ class LuceneIndex extends Index {
     }
     
     public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
+        checkPreconditions();
         if (!isValid(false)) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
             return;
@@ -588,6 +593,7 @@ class LuceneIndex extends Index {
     
     
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws IOException, InterruptedException {        
+        checkPreconditions();
         if (directOnly && this.rootPkgCache != null && prefix.length() == 0) {
                 result.addAll(this.rootPkgCache);
                 return;
@@ -656,6 +662,7 @@ class LuceneIndex extends Index {
     }
 
     public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {        
+        checkPreconditions();
         if (!isValid(false)) {
             return false;
         }
@@ -705,6 +712,7 @@ class LuceneIndex extends Index {
     }
     
     public void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
+        checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !isValid (false);
@@ -728,6 +736,7 @@ class LuceneIndex extends Index {
     }
 
     public void store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
+        checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !isValid (false);        
@@ -837,6 +846,7 @@ class LuceneIndex extends Index {
     }
 
     public boolean isValid (boolean tryOpen) throws IOException {  
+        checkPreconditions();
         boolean res = IndexReader.indexExists(this.directory);
         if (res && tryOpen) {
             try {
@@ -850,6 +860,7 @@ class LuceneIndex extends Index {
     }    
     
     public synchronized void clear () throws IOException {
+        checkPreconditions();
         this.rootPkgCache = null;
         this.close ();
         final String[] content = this.directory.list();
@@ -901,6 +912,7 @@ class LuceneIndex extends Index {
             }
         } finally {
            this.directory.close();
+           this.closed = true;
         }
     }
     
@@ -933,6 +945,12 @@ class LuceneIndex extends Index {
             refRoot.mkdir();
         }
         return refRoot;
+    }
+    
+    private void checkPreconditions () {
+        if (closed) {
+            throw new IllegalStateException ("Index already closed");   //NOI18N
+        }
     }
     
     private static class LMListener implements LowMemoryListener {        
