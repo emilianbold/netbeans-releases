@@ -255,14 +255,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentPackagingConfiguration.getFiles().getValue().clear();
             //currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
-            if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-                currentPackagingConfiguration.getSvr4Header().getValue().clear();
-            }
-            else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-                currentPackagingConfiguration.getRpmHeader().getValue().clear();
-            }
-            else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-                currentPackagingConfiguration.getDebianHeader().getValue().clear();
+            List<InfoElement> toBeRemove = currentPackagingConfiguration.getHeaderSubList(currentPackagingConfiguration.getType().getValue());
+            for (InfoElement elem : toBeRemove) {
+                currentPackagingConfiguration.getInfo().getValue().remove(elem);
             }
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
@@ -325,17 +320,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String name = atts.getValue(NAME_ATTR); // NOI18N
             String value = atts.getValue(VALUE_ATTR); // NOI18N
             String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
-            InfoElement infoElement = new InfoElement(name, value, mandatory.equals(TRUE_VALUE), false);
+            InfoElement infoElement = new InfoElement(currentPackagingConfiguration.getType().getValue(), name, value, mandatory.equals(TRUE_VALUE), false);
             if (currentPackagingConfiguration != null) {
-                if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-                    currentPackagingConfiguration.getSvr4Header().add(infoElement);
-                }
-                else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-                    currentPackagingConfiguration.getRpmHeader().add(infoElement);
-                }
-                else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-                    currentPackagingConfiguration.getDebianHeader().add(infoElement);
-                }
+                currentPackagingConfiguration.getInfo().add(infoElement);
             }
         }
     }

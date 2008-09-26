@@ -643,35 +643,10 @@ public abstract class CommonConfigurationXMLCodec
             });
         }
 	xes.elementClose(PACK_FILES_LIST_ELEMENT);
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+        int type = packagingConfiguration.getType().getValue();
+        if (type == PackagingConfiguration.TYPE_SVR4_PACKAGE || type == PackagingConfiguration.TYPE_RPM_PACKAGE || type == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
             xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
-            List<InfoElement> infoList = packagingConfiguration.getSvr4Header().getValue();
-            for (InfoElement elem : infoList) {
-                xes.element(PACK_INFO_LIST_ELEMENT,
-                        new AttrValuePair[] {
-                            new AttrValuePair(NAME_ATTR, "" + elem.getName()), // NOI18N
-                            new AttrValuePair(VALUE_ATTR, "" + elem.getValue()), // NOI18N
-                            new AttrValuePair(MANDATORY_ATTR, "" + elem.isMandatory()), // NOI18N
-                });
-            }
-            xes.elementClose(PACK_INFOS_LIST_ELEMENT);
-        }
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
-            List<InfoElement> infoList = packagingConfiguration.getRpmHeader().getValue();
-            for (InfoElement elem : infoList) {
-                xes.element(PACK_INFO_LIST_ELEMENT,
-                        new AttrValuePair[] {
-                            new AttrValuePair(NAME_ATTR, "" + elem.getName()), // NOI18N
-                            new AttrValuePair(VALUE_ATTR, "" + elem.getValue()), // NOI18N
-                            new AttrValuePair(MANDATORY_ATTR, "" + elem.isMandatory()), // NOI18N
-                });
-            }
-            xes.elementClose(PACK_INFOS_LIST_ELEMENT);
-        }
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-            xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
-            List<InfoElement> infoList = packagingConfiguration.getDebianHeader().getValue();
+            List<InfoElement> infoList = packagingConfiguration.getHeaderSubList(packagingConfiguration.getType().getValue());
             for (InfoElement elem : infoList) {
                 xes.element(PACK_INFO_LIST_ELEMENT,
                         new AttrValuePair[] {

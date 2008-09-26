@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -80,9 +81,7 @@ public class PackagingConfiguration {
     public static final int TYPE_DEBIAN_PACKAGE = 4;
     private IntConfiguration type;
     private BooleanConfiguration verbose;
-    private VectorConfiguration svr4Header;
-    private VectorConfiguration rpmHeader;
-    private VectorConfiguration debianHeader;
+    private VectorConfiguration info;
     private VectorConfiguration files;
     private StringConfiguration output;
     private StringConfiguration tool;
@@ -93,9 +92,7 @@ public class PackagingConfiguration {
         this.makeConfiguration = makeConfiguration;
         type = new IntConfiguration(null, TYPE_TAR, TYPE_DISPLAY_NAMES, null);
         verbose = new BooleanConfiguration(null, true);
-        svr4Header = new VectorConfiguration(null); // NOI18N
-        rpmHeader = new VectorConfiguration(null); // NOI18N
-        debianHeader = new VectorConfiguration(null); // NOI18N
+        info = new VectorConfiguration(null); // NOI18N
         files = new VectorConfiguration(null); // NOI18N
         output = new StringConfiguration(null, ""); // NOI18N
         tool = new StringConfiguration(null, ""); // NOI18N
@@ -150,35 +147,45 @@ public class PackagingConfiguration {
         }
         
         // Solaris SVR4
-        List<InfoElement> headerList = getSvr4Header().getValue();
-        headerList.add(new InfoElement("PKG", getOutputName(), true, true)); // NOI18N
-        headerList.add(new InfoElement("NAME", "Package description ...", true, true)); // NOI18N
-        headerList.add(new InfoElement("ARCH", defArch, true, true)); // NOI18N
-        headerList.add(new InfoElement("CATEGORY", "application", true, true)); // NOI18N
-        headerList.add(new InfoElement("VERSION", "1.0", true, true)); // NOI18N
-        headerList.add(new InfoElement("BASEDIR", "/opt", false, true)); // NOI18N
-        headerList.add(new InfoElement("PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
-        headerList.add(new InfoElement("CLASSES", "none", false, true)); // NOI18N
+        List<InfoElement> headerList = getInfo().getValue();
+        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "PKG", getOutputName(), true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "NAME", "Package description ...", true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "ARCH", defArch, true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "CATEGORY", "application", true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "VERSION", "1.0", true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "BASEDIR", "/opt", false, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_SVR4_PACKAGE, "CLASSES", "none", false, true)); // NOI18N
         
         // RPM
-        List<InfoElement> rpmHeaderList = getRpmHeader().getValue();
-        rpmHeaderList.add(new InfoElement("Summary", "Sumary...", true, true)); // NOI18N
-        rpmHeaderList.add(new InfoElement("Name", getOutputName(), true, true)); // NOI18N
-        rpmHeaderList.add(new InfoElement("Version", "1.0", true, true)); // NOI18N
-        rpmHeaderList.add(new InfoElement("Release", "1", true, true)); // NOI18N
-        rpmHeaderList.add(new InfoElement("Group", "Applications/System", true, true)); // NOI18N
-        rpmHeaderList.add(new InfoElement("License", "BSD-type", true, true)); // NOI18N
-        rpmHeaderList.add(new InfoElement("%description", "Description...", true, true)); // NOI18N
+        //List<InfoElement> rpmHeaderList = getRpmHeader().getValue();
+        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "Summary", "Sumary...", true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "Name", getOutputName(), true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "Version", "1.0", true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "Release", "1", true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "Group", "Applications/System", true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "License", "BSD-type", true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_RPM_PACKAGE, "%description", "Description...", true, true)); // NOI18N
         
         // Debian
-        List<InfoElement> debianHeaderList = getDebianHeader().getValue();
-        debianHeaderList.add(new InfoElement("Package", getOutputName(), true, true)); // NOI18N
-        debianHeaderList.add(new InfoElement("Version", "1.0", true, true)); // NOI18N
-        debianHeaderList.add(new InfoElement("Architecture", defArch, false, true)); // NOI18N
-        debianHeaderList.add(new InfoElement("Maintainer", System.getProperty("user.name"), false, true)); // NOI18N
-        debianHeaderList.add(new InfoElement("Description", "...", false, true)); // NOI18N
+        //List<InfoElement> debianHeaderList = getDebianHeader().getValue();
+        headerList.add(new InfoElement(TYPE_DEBIAN_PACKAGE, "Package", getOutputName(), true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_DEBIAN_PACKAGE, "Version", "1.0", true, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_DEBIAN_PACKAGE, "Architecture", defArch, false, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_DEBIAN_PACKAGE, "Maintainer", System.getProperty("user.name"), false, true)); // NOI18N
+        headerList.add(new InfoElement(TYPE_DEBIAN_PACKAGE, "Description", "...", false, true)); // NOI18N
     }
     
+    public List<InfoElement> getHeaderSubList(int type) {
+        List<InfoElement> list = new ArrayList<InfoElement>();
+        List<InfoElement> headerList = getInfo().getValue();
+        for (InfoElement elem : headerList) {
+            if (elem.getType() == type) {
+                list.add(elem);
+            }
+        }
+        return list;
+    }
     public boolean isModified() {
         if (getType().getModified()) {
             return true;
@@ -191,34 +198,20 @@ public class PackagingConfiguration {
                 return true;
             }
         }
-        if (getType().getValue() == TYPE_SVR4_PACKAGE) {
-            if (svr4Header.getValue().size() != 8) {
-                return true;
-            }
-            for (InfoElement elem : (List<InfoElement>)svr4Header.getValue()) {
-                if (!elem.isDefaultValue()) {
-                    return true;
-                }
-            }
+        
+        List<InfoElement> headerList = getHeaderSubList(getType().getValue());
+        if (getType().getValue() == TYPE_SVR4_PACKAGE && headerList.size() != 8) {
+            return true;
         }
-        if (getType().getValue() == TYPE_RPM_PACKAGE) {
-            if (rpmHeader.getValue().size() != 6) {
-                return true;
-            }
-            for (InfoElement elem : (List<InfoElement>)rpmHeader.getValue()) {
-                if (!elem.isDefaultValue()) {
-                    return true;
-                }
-            }
+        else if (getType().getValue() == TYPE_RPM_PACKAGE && headerList.size() != 7) {
+            return true;
         }
-        if (getType().getValue() == TYPE_DEBIAN_PACKAGE) {
-            if (debianHeader.getValue().size() != 5) {
+        else if (getType().getValue() == TYPE_DEBIAN_PACKAGE && headerList.size() != 5) {
+            return true;
+        }
+        for (InfoElement elem : headerList) {
+            if (!elem.isDefaultValue()) {
                 return true;
-            }
-            for (InfoElement elem : (List<InfoElement>)debianHeader.getValue()) {
-                if (!elem.isDefaultValue()) {
-                    return true;
-                }
             }
         }
         return false;
@@ -249,28 +242,12 @@ public class PackagingConfiguration {
         this.verbose = verbose;
     }
 
-    public VectorConfiguration getSvr4Header() {
-        return svr4Header;
+    public VectorConfiguration getInfo() {
+        return info;
     }
 
-    public void setSvr4Header(VectorConfiguration svr4Header) {
-        this.svr4Header = svr4Header;
-    }
-    
-    public VectorConfiguration getRpmHeader() {
-        return rpmHeader;
-    }
-
-    public void setRpmHeader(VectorConfiguration rpmHeader) {
-        this.rpmHeader = rpmHeader;
-    }
-    
-    public VectorConfiguration getDebianHeader() {
-        return debianHeader;
-    }
-
-    public void setDebianHeader(VectorConfiguration debianHeader) {
-        this.debianHeader = debianHeader;
+    public void setInfo(VectorConfiguration svr4Header) {
+        this.info = svr4Header;
     }
 
     public VectorConfiguration getFiles() {
@@ -318,9 +295,7 @@ public class PackagingConfiguration {
         setMakeConfiguration(conf.getMakeConfiguration());
         getType().assign(conf.getType());
         getVerbose().assign(conf.getVerbose());
-        getSvr4Header().assign(conf.getSvr4Header());
-        getRpmHeader().assign(conf.getRpmHeader());
-        getDebianHeader().assign(conf.getDebianHeader());
+        getInfo().assign(conf.getInfo());
         getFiles().assign(conf.getFiles());
         getOutput().assign(conf.getOutput());
         getTool().assign(conf.getTool());
@@ -333,9 +308,7 @@ public class PackagingConfiguration {
         PackagingConfiguration clone = new PackagingConfiguration(getMakeConfiguration());
         clone.setType((IntConfiguration) getType().clone());
         clone.setVerbose((BooleanConfiguration) getVerbose().clone());
-        clone.setSvr4Header((VectorConfiguration) getSvr4Header().clone());
-        clone.setRpmHeader((VectorConfiguration) getRpmHeader().clone());
-        clone.setDebianHeader((VectorConfiguration) getDebianHeader().clone());
+        clone.setInfo((VectorConfiguration) getInfo().clone());
         clone.setFiles((VectorConfiguration) getFiles().clone());
         clone.setOutput((StringConfiguration) getOutput().clone());
         clone.setTool((StringConfiguration) getTool().clone());
@@ -578,7 +551,7 @@ public class PackagingConfiguration {
     
     
     public InfoElement findInfoElement(String name) {
-        List<InfoElement> infoList = getSvr4Header().getValue();
+        List<InfoElement> infoList = getInfo().getValue();
         for (InfoElement elem : infoList) {
             if (elem.getName().equals(name)) {
                 return elem;
@@ -588,7 +561,7 @@ public class PackagingConfiguration {
     }
     
     public String findInfoValueName(String name) {
-        List<InfoElement> infoList = getSvr4Header().getValue();
+        List<InfoElement> infoList = getInfo().getValue();
         for (InfoElement elem : infoList) {
             if (elem.getName().equals(name)) {
                 return elem.getValue();
