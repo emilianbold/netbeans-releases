@@ -24,11 +24,14 @@ public class ImportAction extends ActionNoBlock {
     public static final String SVN_ITEM = "Subversion";
             
     /** "Import..." menu item. */
-    public static final String IMPORT_ITEM = "Import into Repository...";
+    public static final String IMPORT_MAIN_ITEM = "Import into Repository...";
+
+    /** "Import..." popup item. */
+    public static final String IMPORT_POPUP_ITEM = "Import into Subversion Repository...";
     
     /** Creates a new instance of ImportAction */
     public ImportAction() {
-        super(VERSIONING_ITEM + "|" + SVN_ITEM + "|" + IMPORT_ITEM, VERSIONING_ITEM + "|" + IMPORT_ITEM);
+        super(VERSIONING_ITEM + "|" + SVN_ITEM + "|" + IMPORT_MAIN_ITEM, VERSIONING_ITEM + "|" + IMPORT_POPUP_ITEM);
     }
     
 }
