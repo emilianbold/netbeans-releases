@@ -160,7 +160,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         try {
             GetPropertyCommand cmd;
             if (null != name) {
-                cmd = new ServerCommand.GetPropertyCommand("resources.*."+name); // NOI18N
+                cmd = new ServerCommand.GetPropertyCommand("resources.*."+name+".*"); // NOI18N
             } else {
                 cmd = new ServerCommand.GetPropertyCommand("resources.*"); // NOI18N
             }
