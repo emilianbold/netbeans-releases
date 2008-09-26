@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -56,17 +57,16 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class SystemMacroImpl implements CsmMacro {
     
-    private final String macroName;
-    private final String macroBody;
-    private final String macroText;
+    private final CharSequence macroName;
+    private final CharSequence macroBody;
     private final boolean isUserDefined;
     private final List<? extends CharSequence> params;
     private CsmFile containingFile;
     private CsmUID<CsmMacro> uid;
 
     public SystemMacroImpl(String macroName, String macroBody, List<String> macroParams, CsmFile containingFile, boolean isUserDefined) {
-        this.macroName = macroName;
-        this.macroBody = macroBody;
+        this.macroName = QualifiedNameCache.getManager().getString(macroName);
+        this.macroBody = QualifiedNameCache.getManager().getString(macroBody);
         this.isUserDefined = isUserDefined;
         if (macroParams != null) {
             this.params = Collections.unmodifiableList(macroParams);
@@ -76,7 +76,6 @@ public class SystemMacroImpl implements CsmMacro {
         assert containingFile instanceof Unresolved.UnresolvedFile;
         this.containingFile = containingFile;
         uid = new SelfUID<CsmMacro>(this);
-        this.macroText = "#define " + macroName + " " + macroBody; // NOI18N
     }
     
     public List<? extends CharSequence> getParameters() {
@@ -116,7 +115,7 @@ public class SystemMacroImpl implements CsmMacro {
     }
 
     public CharSequence getText() {
-        return macroText; //NOI18N
+        return "#define " + macroName + " " + macroBody; // NOI18N
     }
 
     public CsmUID<CsmMacro> getUID() {
