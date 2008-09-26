@@ -392,13 +392,7 @@ made subject to such option by the copyright holder.
     <macrodef name="test-dep-build">
         <attribute name="test.type"/>
         <sequential>
-            <pathconvert property="test.modules.fullpath" >
-                <path>
-                    <dirset dir="${nb_all}" includes="${test.@{test.type}.testdep}" />
-                </path>
-                <mapper type="identity" />
-            </pathconvert>
-            <sortsuitemodules unsortedmodules="${test.modules.fullpath}" sortedmodulesproperty="mods.sorted" sorttests="true"/>
+            <sortsuitemodules unsortedmodules="${test.@{test.type}.testdep}" sortedmodulesproperty="mods.sorted" sorttests="true"/>
             <subant buildpath="${mods.sorted}" target="do-test-build" />
         </sequential>
     </macrodef>
