@@ -44,6 +44,7 @@ package org.netbeans.modules.compapp.casaeditor.palette;
 import java.awt.Image;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -61,11 +62,11 @@ public class CasaPaletteRootNode extends AbstractNode {
     }
     
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/myfirstexplorer/right-rectangle.png");     // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/myfirstexplorer/right-rectangle.png");     // NOI18N
     }
     
     public Image getOpenedIcon(int type) {
-        return Utilities.loadImage("org/netbeans/myfirstexplorer/down-rectangle.png");      // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/myfirstexplorer/down-rectangle.png");      // NOI18N
     }
     
     public boolean canCut() {

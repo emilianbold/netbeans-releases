@@ -52,6 +52,7 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.awt.Image;
 import org.netbeans.api.visual.widget.Scene;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -60,9 +61,9 @@ import org.openide.util.Utilities;
  */
 public class CasaPinWidgetBindingConsumes extends CasaPinWidgetBinding {
     
-    private static final Image IMAGE_ARROW_RIGHT_CONSUMES = Utilities.loadImage(
+    private static final Image IMAGE_ARROW_RIGHT_CONSUMES = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRight.png"); // NOI18N    
-    private static final Image IMAGE_ARROW_RIGHT_CONSUMES_CLASSIC = Utilities.loadImage(
+    private static final Image IMAGE_ARROW_RIGHT_CONSUMES_CLASSIC = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRightClassic.png"); // NOI18N
     
     /** Creates a new instance of CasaPinWidgetBindingConsumes */

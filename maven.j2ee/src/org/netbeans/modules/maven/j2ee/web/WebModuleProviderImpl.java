@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
@@ -165,7 +166,7 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
     public void setServerInstanceID(String str) {
         String oldone = null;
         if (serverInstanceID != null) {
-            oldone = Deployment.getDefault().getServerID(serverInstanceID);
+            oldone = POHImpl.privateGetServerId(serverInstanceID);
         }
         serverInstanceID = str;
         if (oldone != null) {
@@ -183,7 +184,7 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
      */
     @Override
     public String getServerInstanceID() {
-        if (serverInstanceID != null && Deployment.getDefault().getServerID(serverInstanceID) != null) {
+        if (serverInstanceID != null && POHImpl.privateGetServerId(serverInstanceID) != null) {
             return serverInstanceID;
         }
         return ExecutionChecker.DEV_NULL;
@@ -195,7 +196,7 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
     @Override
     public String getServerID() {
         if (serverInstanceID != null) {
-            String tr = Deployment.getDefault().getServerID(serverInstanceID);
+            String tr = POHImpl.privateGetServerId(serverInstanceID);
             if (tr != null) {
                 return tr;
             }

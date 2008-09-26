@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.metro.samples;
 
 import javax.swing.JPanel;
@@ -50,7 +49,6 @@ import org.openide.util.NbBundle;
 public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provider {
 
     private PanelConfigureProject panel;
-
     private PanelProjectLocationVisual projectLocationPanel;
     private PanelOptionsVisual optionsPanel;
 
@@ -59,23 +57,23 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
         this.panel = panel;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
-        
+
         projectLocationPanel = new PanelProjectLocationVisual(panel);
         locationContainer.add(projectLocationPanel, java.awt.BorderLayout.NORTH);
 
         optionsPanel = new PanelOptionsVisual(panel);
-        optionsContainer.add(optionsPanel, java.awt.BorderLayout.NORTH);
+        // optionsContainer.add(optionsPanel, java.awt.BorderLayout.NORTH);
 
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "LBL_NWP1_ProjectTitleName")); //NOI18N
-        putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewWebApp")); //NOI18N
+        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewWebApp")); //NOI18N
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
         return projectLocationPanel.valid(wizardDescriptor) && optionsPanel.valid(wizardDescriptor);
     }
 
-    void read (WizardDescriptor d) {
+    void read(WizardDescriptor d) {
         projectLocationPanel.read(d);
         optionsPanel.read(d);
     }
@@ -133,11 +131,10 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
     private javax.swing.JPanel locationContainer;
     private javax.swing.JPanel optionsContainer;
     // End of variables declaration//GEN-END:variables
-
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PanelConfigureProjectVisual.class);
-    }    
+    }
 }

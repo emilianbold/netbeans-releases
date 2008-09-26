@@ -272,82 +272,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                     break;
                 case CLASS_CONTEXT_KEYWORDS:
-                    Document document = info.getDocument();
-                    TokenHierarchy th = TokenHierarchy.get(document);
-                    TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
-                    tokenSequence.move(caretOffset);
-                    boolean offerMagicAndInherited = true;
-                    if (!(!tokenSequence.moveNext() && !tokenSequence.movePrevious())) {
-                        Token<PHPTokenId> token = tokenSequence.token();
-                        int tokenIdOffset = tokenSequence.token().offset(th);
-                        offerMagicAndInherited = !CompletionContextFinder.lineContainsAny(token, caretOffset-tokenIdOffset, tokenSequence, Arrays.asList(new PHPTokenId[]{
-                                    PHPTokenId.PHP_PRIVATE,
-                                    PHPTokenId.PHP_PUBLIC,
-                                    PHPTokenId.PHP_PROTECTED,
-                                    PHPTokenId.PHP_ABSTRACT,
-                                    PHPTokenId.PHP_VAR,
-                                    PHPTokenId.PHP_STATIC,
-                                    PHPTokenId.PHP_CONST
-                                }));
-                    }
-
-                    autoCompleteKeywords(proposals, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
-                    ClassDeclaration enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
-                    Set<String> methodNames = new HashSet<String>();
-                    if (enclosingClass != null && offerMagicAndInherited) {
-                        Identifier superClass = enclosingClass.getSuperClass();
-                        if (superClass != null) {
-                            String clsName = enclosingClass.getName().getName();
-                            Set<String> insideNames = new HashSet<String>();
-                            Collection<IndexedFunction> methods = request.index.getMethods(
-                                    request.result, clsName, request.prefix,
-                                    NameKind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
-                            for (IndexedFunction meth : methods) {
-                                insideNames.add(meth.getName());
-                                methodNames.add(meth.getName());
-                            }
-                            String superClsName = superClass.getName();
-                            Collection<IndexedFunction> superMethods = request.index.getAllMethods(
-                                    request.result, superClsName, request.prefix,
-                                    NameKind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-                            for (IndexedFunction superMeth : superMethods) {
-                                if (superMeth.getName().startsWith(request.prefix) && !superMeth.isFinal() && !insideNames.contains(superMeth.getName()) && !methodNames.contains(superMeth.getName())) {
-                                    for (int i = 0; i <= superMeth.getOptionalArgs().length; i++) {
-                                        methodNames.add(superMeth.getName());
-                                        proposals.add(new PHPCompletionItem.FunctionDeclarationItem(superMeth, request, i,false));
-                                    }
-                                }
-                            }
-                        }
-                        List<Identifier> interfaces = enclosingClass.getInterfaes();
-                        for (Identifier identifier : interfaces) {
-                            String ifaceName = identifier.getName();
-                            Collection<IndexedFunction> superMethods = request.index.getAllMethods(
-                                    request.result, ifaceName, request.prefix,
-                                    NameKind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-                            for (IndexedFunction ifaceMeth : superMethods) {
-                                if (ifaceMeth.getName().startsWith(request.prefix) && !ifaceMeth.isFinal()&& !methodNames.contains(ifaceMeth.getName())) {
-                                    for (int i = 0; i <= ifaceMeth.getOptionalArgs().length; i++) {
-                                        methodNames.add(ifaceMeth.getName());
-                                        proposals.add(new PHPCompletionItem.FunctionDeclarationItem(ifaceMeth, request, i,true));
-                                    }
-                                }
-                            }
-
-                        }
-
-                        List<String> magicMethods = new ArrayList<String>();
-                        for (String name : PredefinedSymbols.MAGIC_METHODS.keySet()) {
-                            if (!methodNames.contains(name)) {
-                                methodNames.add(name);
-                                magicMethods.add(name);
-                            }
-                        }
-                        autoCompleteMagicItems(proposals, request, magicMethods);
-                    }
+                    autoCompleteInClassContext(info, caretOffset, proposals, request);
                     break;
                 case METHOD_NAME:
-                    autoCompleteMethodName(proposals, request);
+                    autoCompleteMethodName(info, caretOffset, proposals, request);
                     break;
                 case IMPLEMENTS:
                     autoCompleteKeywords(proposals, request, Collections.singletonList("implements"));//NOI18N
@@ -399,18 +327,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
     }
 
-    private void autoCompleteMethodName(List<CompletionProposal> proposals,
-            PHPCompletionItem.CompletionRequest request) {
-        autoCompleteMagicItems(proposals, request, PredefinedSymbols.MAGIC_METHODS.keySet());
-    }
-
     private void autoCompleteMagicItems(List<CompletionProposal> proposals,
-            PHPCompletionItem.CompletionRequest request,final Collection<String> proposedTexts) {
+            PHPCompletionItem.CompletionRequest request,final Collection<String> proposedTexts,
+            boolean completeNameAndBodyOnly, Set<String> insideNames) {
         for (String keyword : proposedTexts) {
-            if (keyword.startsWith(request.prefix)) {
+            if (keyword.startsWith(request.prefix) && !insideNames.contains(keyword)) {
                 IndexedFunction magicFunc = PredefinedSymbols.MAGIC_METHODS.get(keyword);
                 if (magicFunc != null) {
-                    proposals.add(new PHPCompletionItem.MagicMethodItem(magicFunc, request));
+                    if (completeNameAndBodyOnly) {
+                        proposals.add(new PHPCompletionItem.MagicMethodNameItem(magicFunc, request));
+                    } else {
+                        proposals.add(new PHPCompletionItem.MagicMethodItem(magicFunc, request));
+                    }
                 }
             }
         }
@@ -618,7 +546,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 fieldName = fieldName.substring(1);
             }
 
-            for (IndexedConstant field : request.index.getAllProperties(request.result, preceedingType,
+            for (IndexedConstant field : request.index.getAllFields(request.result, preceedingType,
                     fieldName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
 
                 type = field.getTypeName();
@@ -684,6 +612,104 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return functionName;
     }
 
+    private void autoCompleteMethodName(CompilationInfo info, int caretOffset, List<CompletionProposal> proposals,
+            PHPCompletionItem.CompletionRequest request) {
+        ClassDeclaration enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
+        if (enclosingClass != null) {
+            String clsName = enclosingClass.getName().getName();
+            Set<String> insideNames = new HashSet<String>();
+            Collection<IndexedFunction> methods = request.index.getMethods(
+                    request.result, clsName, request.prefix,
+                    NameKind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
+            for (IndexedFunction meth : methods) {
+                insideNames.add(meth.getName());
+            }
+            autoCompleteMagicItems(proposals, request, PredefinedSymbols.MAGIC_METHODS.keySet(),true, insideNames);
+        }
+
+    }
+    private void autoCompleteInClassContext(CompilationInfo info, int caretOffset, List<CompletionProposal> proposals,
+            PHPCompletionItem.CompletionRequest request) {
+        Document document = info.getDocument();
+        TokenHierarchy th = TokenHierarchy.get(document);
+        TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
+        tokenSequence.move(caretOffset);
+        boolean offerMagicAndInherited = true;
+        if (!(!tokenSequence.moveNext() && !tokenSequence.movePrevious())) {
+            Token<PHPTokenId> token = tokenSequence.token();
+            int tokenIdOffset = tokenSequence.token().offset(th);
+            offerMagicAndInherited = !CompletionContextFinder.lineContainsAny(token, caretOffset - tokenIdOffset, tokenSequence, Arrays.asList(new PHPTokenId[]{
+                        PHPTokenId.PHP_PRIVATE,
+                        PHPTokenId.PHP_PUBLIC,
+                        PHPTokenId.PHP_PROTECTED,
+                        PHPTokenId.PHP_ABSTRACT,
+                        PHPTokenId.PHP_VAR,
+                        PHPTokenId.PHP_STATIC,
+                        PHPTokenId.PHP_CONST
+                    }));
+        }
+
+        autoCompleteKeywords(proposals, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
+        ClassDeclaration enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
+        Set<String> insideNames = new HashSet<String>();
+        Set<String> methodNames = new HashSet<String>();
+        if (enclosingClass != null) {
+            String clsName = enclosingClass.getName().getName();
+            Collection<IndexedFunction> methods = request.index.getMethods(
+                    request.result, clsName, request.prefix,
+                    NameKind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
+            for (IndexedFunction meth : methods) {
+                insideNames.add(meth.getName());
+                methodNames.add(meth.getName());
+            }
+        }
+        if (enclosingClass != null && offerMagicAndInherited) {
+            Identifier superClass = enclosingClass.getSuperClass();
+            if (superClass != null) {
+                String superClsName = superClass.getName();
+                Collection<IndexedFunction> superMethods = request.index.getAllMethods(
+                        request.result, superClsName, request.prefix,
+                        NameKind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+                for (IndexedFunction superMeth : superMethods) {
+                    if (superMeth.getName().startsWith(request.prefix) &&
+                            !superMeth.isFinal() &&
+                            !insideNames.contains(superMeth.getName()) &&
+                            !methodNames.contains(superMeth.getName())) {
+                        for (int i = 0; i <= superMeth.getOptionalArgs().length; i++) {
+                            methodNames.add(superMeth.getName());
+                            proposals.add(new PHPCompletionItem.FunctionDeclarationItem(superMeth, request, i, false));
+                        }
+                    }
+                }
+            }
+            List<Identifier> interfaces = enclosingClass.getInterfaes();
+            for (Identifier identifier : interfaces) {
+                String ifaceName = identifier.getName();
+                Collection<IndexedFunction> superMethods = request.index.getAllMethods(
+                        request.result, ifaceName, request.prefix,
+                        NameKind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+                for (IndexedFunction ifaceMeth : superMethods) {
+                    if (ifaceMeth.getName().startsWith(request.prefix) && !ifaceMeth.isFinal() && !methodNames.contains(ifaceMeth.getName())) {
+                        for (int i = 0; i <= ifaceMeth.getOptionalArgs().length; i++) {
+                            methodNames.add(ifaceMeth.getName());
+                            proposals.add(new PHPCompletionItem.FunctionDeclarationItem(ifaceMeth, request, i, true));
+                        }
+                    }
+                }
+
+            }
+            List<String> magicMethods = new ArrayList<String>();
+            for (String name : PredefinedSymbols.MAGIC_METHODS.keySet()) {
+                if (!methodNames.contains(name)) {
+                    methodNames.add(name);
+                    magicMethods.add(name);
+                }
+            }
+            autoCompleteMagicItems(proposals, request, magicMethods, false, insideNames);
+        }
+
+    }
+
     private void autoCompleteClassMembers(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request, boolean staticContext) {
         Document document = request.info.getDocument();
@@ -695,6 +721,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         //TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(document, request.anchor);
+
+        if (tokenSequence == null){
+            return;
+        }
+
         tokenSequence.move(request.anchor);
         if (tokenSequence.movePrevious())
         {
@@ -786,8 +817,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 String prefix = (staticContext && request.prefix.startsWith("$")) //NOI18N
                         ? request.prefix.substring(1) : request.prefix;
                 Collection<IndexedConstant> properties = includeInherited ?
-                    request.index.getAllProperties(request.result, typeName, prefix, nameKind, attrMask) :
-                    request.index.getProperties(request.result, typeName, prefix, nameKind, attrMask);
+                    request.index.getAllFields(request.result, typeName, prefix, nameKind, attrMask) :
+                    request.index.getFields(request.result, typeName, prefix, nameKind, attrMask);
 
                 for (IndexedConstant prop : properties){
                     if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {

@@ -67,6 +67,7 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -304,7 +305,7 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
         }
 
         public java.awt.Image getIcon(final int type) {
-            return Utilities.loadImage(iconURL);
+            return ImageUtilities.loadImage(iconURL);
         }
 
     }
@@ -338,7 +339,7 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
             Image icon = componentInfo == null ? null : componentInfo
                     .getIcon(type);
             if (icon == null) {
-                icon = Utilities
+                icon = ImageUtilities
                         .loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component.png"); // NOI18N
             }
             return icon;
@@ -457,7 +458,7 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
         }
 
         public Image getIcon(int iconKind) {
-            return Utilities
+            return ImageUtilities
                     .loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component.png"); // NOI18N
         }
     }

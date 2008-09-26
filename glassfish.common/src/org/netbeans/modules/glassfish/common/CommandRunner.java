@@ -224,11 +224,24 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
     
     public Future<OperationState> deploy(File dir, String moduleName, String contextRoot)  {
-        return execute(new Commands.DeployCommand(dir.getAbsolutePath(), moduleName, contextRoot));
+        return execute(new Commands.DeployCommand(dir.getAbsolutePath(), moduleName, 
+                contextRoot, computePreserveSessions(ip)));
     }
     
     public Future<OperationState> redeploy(String moduleName, String contextRoot)  {
-        return execute(new Commands.RedeployCommand(moduleName, contextRoot));
+        return execute(new Commands.RedeployCommand(moduleName, contextRoot, 
+                computePreserveSessions(ip)));
+    }
+
+    private static Boolean computePreserveSessions(Map<String,String> ip) {
+        // prefer the value stored in the instance properties for a domain.
+        String sessionPreservationFlag = ip.get(GlassfishModule.SESSION_PRESERVATION_FLAG);
+        if (null == sessionPreservationFlag) {
+            // if there isn't a value stored for the instance, use the value of
+            // the command-line flag.
+            sessionPreservationFlag = System.getProperty("glassfish.session.preservation.enabled","false"); // NOI18N
+        }
+        return Boolean.parseBoolean(sessionPreservationFlag);
     }
     
     public Future<OperationState> undeploy(String moduleName) {

@@ -46,6 +46,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -64,7 +65,7 @@ public class SVGDataLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(int type) {
         if (type == java.beans.BeanInfo.ICON_COLOR_16x16 ||
                 type == java.beans.BeanInfo.ICON_MONO_16x16) {
-            return org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/svg.png"); // NOI18N        
+            return ImageUtilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/svg.png"); // NOI18N
         } else {
             return null;
         }

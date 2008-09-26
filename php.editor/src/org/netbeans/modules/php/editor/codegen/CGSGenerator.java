@@ -36,11 +36,12 @@ public class CGSGenerator implements CodeGenerator {
 
     private static final String NEW_LINE = System.getProperty("line.separator");    //NOI18N
     private static final String PROPERTY = "${PROPERTY}";                           //NOI18N
+    private static final String CURSOR = "${cursor}";                           //NOI18N
 
     //constructor
     private static final String PARAMS = "${PARAMS}";                               //NOI18N
     private static final String ASSIGNMENTS = "${ASSIGNMENT}";                       //NOI18N
-    private static final String CONSTRUCTOR_TEMPLATE = "function __construct(" + PARAMS + ") {" + ASSIGNMENTS + NEW_LINE + "}" + NEW_LINE;    //NOI18N
+    private static final String CONSTRUCTOR_TEMPLATE = "function __construct(" + PARAMS + ") {" + ASSIGNMENTS  + CURSOR + NEW_LINE + "}" + NEW_LINE;    //NOI18N
     private static final String ASSIGNMENT_TEMPLATE = NEW_LINE + "$this->" + PROPERTY + " = $" + PROPERTY + ";";          //NOI18N
     private static final String UP_FIRST_LETTER_PROPERTY = "${UpFirstLetterProperty}";  //NOI18N
     private static final String GETTER_TEMPLATE = "public function " + START_OF_GETTER + UP_FIRST_LETTER_PROPERTY + "() {" + NEW_LINE + "return $$this->" + PROPERTY + ";" + NEW_LINE + "}" + NEW_LINE;    //NOI18N

@@ -51,6 +51,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.awt.HtmlRenderer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 
@@ -68,8 +69,8 @@ class SVGNavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final String ANIMATE_16  = "org/netbeans/modules/mobility/svgcore/resources/badge_animate.png"; //NOI18N
     private static final String TAG_GRAY_16 = "org/netbeans/modules/mobility/svgcore/resources/tag_gray.png"; //NOI18N
     
-    private final Image  ERROR_IMAGE   = Utilities.loadImage(ERROR_16, true);   
-    private final Image  ANIMATE_IMAGE = Utilities.loadImage(ANIMATE_16, true);   
+    private final Image  ERROR_IMAGE   = ImageUtilities.loadImage(ERROR_16, true);
+    private final Image  ANIMATE_IMAGE = ImageUtilities.loadImage(ANIMATE_16, true);
     private final Icon[] TAG_GRAY_ICON = new Icon[]{getImageIcon(TAG_GRAY_16, false), getImageIcon(TAG_GRAY_16, true)};
     private final Icon[] TAG_ICON      = new Icon[]{getImageIcon(TAG_16, false), getImageIcon(TAG_16, true)};
     //private final Icon[] PI_ICON       = new Icon[]{getImageIcon(PI_16, false), getImageIcon(PI_16, true)};
@@ -77,7 +78,7 @@ class SVGNavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
     //private final Icon[] CDATA_ICON    = new Icon[]{getImageIcon(CDATA_16, false), getImageIcon(CDATA_16, true)};
 
     private final Icon[] ANIMATE_TAG_ICON = new Icon[]{
-        new ImageIcon(Utilities.mergeImages( Utilities.loadImage(TAG_16), ANIMATE_IMAGE, 5, 3)),
+        new ImageIcon(ImageUtilities.mergeImages( ImageUtilities.loadImage(TAG_16), ANIMATE_IMAGE, 5, 3)),
         TAG_ICON[1]
     };
     
@@ -122,9 +123,9 @@ class SVGNavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
     }
     
     private ImageIcon getImageIcon(String name, boolean error){
-        ImageIcon icon = new ImageIcon(Utilities.loadImage(name));
+        ImageIcon icon = new ImageIcon(ImageUtilities.loadImage(name));
         if(error)
-            return new ImageIcon(Utilities.mergeImages( icon.getImage(), ERROR_IMAGE, 15, 7 ));
+            return new ImageIcon(ImageUtilities.mergeImages( icon.getImage(), ERROR_IMAGE, 15, 7 ));
         else
             return icon;
     }    

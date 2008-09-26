@@ -139,6 +139,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         if(originalDisplayName.equals("")) { // NOI18N
             originalDisplayName = displayName;
         }
+        logChangedDisplayName(this.displayName, displayName);
         this.displayName = displayName;
         setProgress();
     }
@@ -190,6 +191,15 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     private static void log(String msg) {
         SvnUtils.logT9Y(msg);
         Subversion.LOG.log(Level.FINE, msg); 
+    }
+
+    private void logChangedDisplayName(String thisDisplayName, String displayName) {
+        if(thisDisplayName != null && !thisDisplayName.equals(displayName)) {
+            if(!thisDisplayName.equals("")) {
+                log("End - " + thisDisplayName); // NOI18N
+                log("Start - " + displayName); // NOI18N
+            }
+        }
     }
 
     public void annotate(SVNClientException ex) {                        

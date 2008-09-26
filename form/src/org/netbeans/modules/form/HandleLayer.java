@@ -60,6 +60,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
@@ -658,7 +659,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     
     private Image resizeHandle() {
         if (resizeHandle == null) {
-            resizeHandle = new ImageIcon(Utilities.loadImage(
+            resizeHandle = new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/form/resources/resize_handle.png")).getImage(); // NOI18N
         }
         return resizeHandle;
@@ -3024,7 +3025,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     if (node == null) {
                         icon = paletteItem.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
                         if (icon == null) {
-                            icon = Utilities.loadImage("org/netbeans/modules/form/resources/form.gif"); // NOI18N
+                            icon = ImageUtilities.loadImage("org/netbeans/modules/form/resources/form.gif"); // NOI18N
                         }
                     } else {
                         icon = node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);

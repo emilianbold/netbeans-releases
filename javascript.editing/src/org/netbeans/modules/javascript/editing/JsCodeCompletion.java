@@ -85,6 +85,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -368,11 +369,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         "@name",
         "@namespace",
         "@param",
-        "@param",
         "@private",
         "@property",
         "@return",
-        "@scope",
         "@scope",
         "@static",
         "@type",
@@ -2776,7 +2775,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         @Override
         public ImageIcon getIcon() {
             if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(Js_KEYWORD));
+                keywordIcon = new ImageIcon(ImageUtilities.loadImage(Js_KEYWORD));
             }
 
             return keywordIcon;

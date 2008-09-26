@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
 import org.netbeans.modules.cnd.callgraph.impl.CallGraphPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -85,7 +86,7 @@ public final class CallGraphTopComponent extends TopComponent {
         initComponents();
         setName(NbBundle.getMessage(CallGraphTopComponent.class, "CTL_CallGraphTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(CallGraphTopComponent.class, "HINT_CallGraphTopComponent")); // NOI18N
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         pop = new JPopupMenu();
         pop.add(new Close());
         pop.add(new CloseAll());

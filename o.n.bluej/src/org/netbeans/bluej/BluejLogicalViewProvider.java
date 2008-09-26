@@ -69,6 +69,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -207,13 +208,13 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
         public Image getIcon(int type) {
             Image retValue;
             if (iconPath != null) {
-                retValue = Utilities.loadImage(iconPath);
+                retValue = ImageUtilities.loadImage(iconPath);
                 if (status != null && !status.isBuilt()) {
-                    retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/compiled.png"), //NOI18N
+                    retValue = ImageUtilities.mergeImages(retValue, ImageUtilities.loadImage("org/netbeans/bluej/resources/compiled.png"), //NOI18N
                                                      attached ? 8 : 3, attached ? 11 : 13);
                 }
                 if (hasMain()) {
-                    retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/executable-badge.gif"),  //NOI18N
+                    retValue = ImageUtilities.mergeImages(retValue, ImageUtilities.loadImage("org/netbeans/bluej/resources/executable-badge.gif"),  //NOI18N
                                                      attached ? 44 : 41, attached ? 5 : 7);
                 }
             } else {

@@ -71,9 +71,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Dispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
@@ -83,6 +85,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
@@ -223,6 +226,59 @@ public class SemiAttribute extends DefaultVisitor {
     }
 
     @Override
+    public void visit(InstanceOfExpression node) {
+        ClassName className = node.getClassName();
+        if (className != null) {
+            Expression expr = className.getName();
+            String name = (expr instanceof Identifier) ? ((Identifier)expr).getName() : null;
+            if (name != null) {
+                Collection<AttributedElement> namedGlobalElements = getNamedGlobalElements(Kind.CLASS, name);
+                if (!namedGlobalElements.isEmpty()) {
+                    node2Element.put(expr, lookup(name, Kind.CLASS));
+                } else {
+                    node2Element.put(expr, lookup(name, Kind.IFACE));
+                }
+            }
+        }
+        Expression expression = node.getExpression();
+        if (expression instanceof Variable) {
+            Variable var = (Variable) expression;
+            final String name = extractVariableName(var);
+            if (var != null && name != null) {
+                node2Element.put(var,
+                        scopes.peek().enterWrite(name, Kind.VARIABLE, var));
+            }            
+        }
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(CatchClause node) {
+        Identifier className = node.getClassName();
+        AttributedElement ae = null;
+        if (className != null) {
+            String name = className.getName();
+            Collection<AttributedElement> namedGlobalElements =
+                    getNamedGlobalElements(Kind.CLASS, name);
+            if (!namedGlobalElements.isEmpty()) {
+                node2Element.put(className, ae = lookup(name, Kind.CLASS));
+            } else {
+                node2Element.put(className, ae = lookup(name, Kind.IFACE));
+            }
+        }
+        Variable var = node.getVariable();
+        final String name = extractVariableName(var);
+
+        if (var != null && name != null) {       
+            node2Element.put(var,
+                    scopes.peek().enterWrite(name, Kind.VARIABLE, var));
+        } 
+
+        super.visit(node);
+    }
+
+
+    @Override
     public void visit(FormalParameter node) {
         Variable var = null;
         if (node.getParameterName() instanceof Reference) {
@@ -240,7 +296,18 @@ public class SemiAttribute extends DefaultVisitor {
                 scopes.peek().enterWrite(name, Kind.VARIABLE, var);
             }
         }
-
+        Identifier parameterType = node.getParameterType();
+        if (parameterType != null) {
+            String name = parameterType.getName();
+            if (name != null) {
+                Collection<AttributedElement> namedGlobalElements = getNamedGlobalElements(Kind.CLASS, name);
+                if (!namedGlobalElements.isEmpty()) {
+                    node2Element.put(parameterType, lookup(name, Kind.CLASS));
+                } else {
+                    node2Element.put(parameterType, lookup(name, Kind.IFACE));
+                }
+            }
+        }
         super.visit(node);
     }
 
@@ -248,9 +315,8 @@ public class SemiAttribute extends DefaultVisitor {
     public void visit(Variable node) {
         if (!node2Element.containsKey(node)) {
             String name = extractVariableName(node);
-
             if (name != null) {
-                node2Element.put(node, lookup(name, Kind.VARIABLE));
+               node2Element.put(node, lookup(name, Kind.VARIABLE));
             }
         }
 
@@ -439,7 +505,15 @@ public class SemiAttribute extends DefaultVisitor {
         if (ce != null && name != null) {
             AttributedElement thisEl = ce.lookup(name, Kind.VARIABLE);
             node2Element.put(node, thisEl);
-            node2Element.put(node.getField(), thisEl);
+            Variable field = node.getField();
+            node2Element.put(field, thisEl);
+            if (field instanceof ArrayAccess) {
+                Expression exprName = field.getName();
+                if (exprName instanceof Variable) {
+                    node2Element.put(exprName, thisEl);
+                }
+                super.visit(node);
+            }
         } else {
             scan(node.getField());
         }
@@ -512,9 +586,16 @@ public class SemiAttribute extends DefaultVisitor {
                     if (name != null) {
                         AttributedElement thisEl = ce.lookup(name, Kind.VARIABLE);
                         if (thisEl != null) {
+                            Variable field = node.getField();
                             node2Element.put(node.getClassName(), ce);
                             node2Element.put(node, thisEl);
-                            node2Element.put(node.getField(), thisEl);
+                            node2Element.put(field, thisEl);
+                            if (field instanceof ArrayAccess) {
+                                Expression expr = field.getName();
+                                if (expr instanceof Variable) {
+                                    node2Element.put(expr, thisEl);
+                                }
+                            }
                             break;
                         }
                     }
@@ -548,7 +629,7 @@ public class SemiAttribute extends DefaultVisitor {
                 if (v.getScalarType() == Type.STRING) {
                     String value = v.getStringValue();
                     if (NavUtils.isQuoted(value)) {
-                        node2Element.put(node, enterGlobalVariable(NavUtils.dequote(value)));
+                        node2Element.put(v, enterGlobalVariable(NavUtils.dequote(value)));
                     }
                 }
             }
@@ -587,10 +668,12 @@ public class SemiAttribute extends DefaultVisitor {
 
     private AttributedElement lookup(String name, Kind k) {
         DefinitionScope ds = scopes.peek();
+
         AttributedElement e;
 
         switch (k) {
             case FUNC:
+            case IFACE:    
             case CLASS:
                 e = global.lookup(name, k);
                 break;
@@ -605,6 +688,7 @@ public class SemiAttribute extends DefaultVisitor {
 
         switch (k) {
             case FUNC:
+            case IFACE:
             case CLASS:
                 return global.enterWrite(name, k, (ASTNode) null);
             default:
@@ -629,12 +713,14 @@ public class SemiAttribute extends DefaultVisitor {
             }
             if (Kind.CLASS.equals(k) && fName.equals("parent")) {//NOI18N
                 Collection<AttributedElement> values = name2El.values();
-                for (AttributedElement ael : values) {
-                    if (ael instanceof ClassElement) {
-                        ClassElement ce = (ClassElement) ael;
-                        ClassElement superClass = ce.getSuperClass();
-                        if (superClass != null) {
-                            retval.add(superClass);
+                if (name2El != null) {
+                    for (AttributedElement ael : values) {
+                        if (ael instanceof ClassElement) {
+                            ClassElement ce = (ClassElement) ael;
+                            ClassElement superClass = ce.getSuperClass();
+                            if (superClass != null) {
+                                retval.add(superClass);
+                            }
                         }
                     }
                 }
@@ -1085,7 +1171,7 @@ public class SemiAttribute extends DefaultVisitor {
                     enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
                 } break;
                 case VARIABLE:
-                for (IndexedConstant m : index.getAllProperties(null, getName(), name, NameKind.PREFIX, attrs)) {
+                for (IndexedConstant m : index.getAllFields(null, getName(), name, NameKind.PREFIX, attrs)) {
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.VARIABLE, m);
@@ -1298,17 +1384,14 @@ public class SemiAttribute extends DefaultVisitor {
 
         public AttributedElement enter(String name, Kind k, AttributedElement el) {
             Map<String, AttributedElement> name2El = name2Writes.get(k);
-
             if (name2El == null) {
                 name2Writes.put(k, name2El = new HashMap<String, AttributedElement>());
             }
-
             name2El.put(name, el);
-
             return el;
         }
 
-        public AttributedElement lookup(String name, Kind k) {
+        public AttributedElement lookup(String name, Kind k) {            
             AttributedElement el = null;
             Map<String, AttributedElement> name2El = name2Writes.get(k);
             if (name2El != null) {

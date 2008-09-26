@@ -49,6 +49,7 @@ import javax.swing.ImageIcon;
 
 import org.netbeans.modules.form.ComponentInspector;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -62,7 +63,7 @@ public class InspectorAction extends AbstractAction {
     public InspectorAction() {
         putValue(NAME, NbBundle.getMessage(InspectorAction.class, "CTL_InspectorAction"));
         putValue(SMALL_ICON, new ImageIcon(
-            Utilities.loadImage("org/netbeans/modules/form/resources/inspector.png"))); // NOI18N
+            ImageUtilities.loadImage("org/netbeans/modules/form/resources/inspector.png"))); // NOI18N
     }
 
 

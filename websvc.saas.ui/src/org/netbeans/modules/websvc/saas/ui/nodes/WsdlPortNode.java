@@ -52,6 +52,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -96,9 +97,9 @@ public class WsdlPortNode extends AbstractNode {
     }
     
     private static final java.awt.Image ICON =
-       Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/wsport-closed.png" ); //NOI18N
+       ImageUtilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/wsport-closed.png" ); //NOI18N
     private static final java.awt.Image OPENED_ICON =
-       Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/wsport-open.png" ); //NOI18N
+       ImageUtilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/wsport-open.png" ); //NOI18N
     
     @Override
     public Image getIcon(int type) {

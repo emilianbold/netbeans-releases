@@ -64,6 +64,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport.Reflection;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
@@ -157,13 +158,13 @@ public class WsdlMethodNode extends AbstractNode {
     private Image getMethodIcon() {
         JavaMethod javaMethod = method.getJavaMethod();
         if (javaMethod != null && !"void".equals(javaMethod.getReturnType().getRealName())) {
-            Image image1 = Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/methodicon.png");
-            Image image2 = Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/table_dp_badge.png");
+            Image image1 = ImageUtilities.loadImage("org/netbeans/modules/websvc/manager/resources/methodicon.png");
+            Image image2 = ImageUtilities.loadImage("org/netbeans/modules/websvc/manager/resources/table_dp_badge.png");
             int x = image1.getWidth(null) - image2.getWidth(null);
             int y = image1.getHeight(null) - image2.getHeight(null);
-            return Utilities.mergeImages(image1, image2, x, y);
+            return ImageUtilities.mergeImages(image1, image2, x, y);
         } else {
-            return Utilities.loadImage("org/netbeans/modules/websvc/saas/ui/resources/methodicon.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/ui/resources/methodicon.png");
         }
     }
 

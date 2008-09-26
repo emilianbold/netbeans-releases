@@ -58,6 +58,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -406,7 +407,7 @@ public class UMLNewAction extends NodeAction
                      Mnemonics.setLocalizedText(item, label);
                      if (iconRes != null)
                      {
-                        ImageIcon icon = new ImageIcon(Utilities.loadImage(iconRes));
+                        ImageIcon icon = new ImageIcon(ImageUtilities.loadImage(iconRes));
                         item.setIcon(icon);
                      }
                      item.addActionListener(new SubActionListener(i, model));

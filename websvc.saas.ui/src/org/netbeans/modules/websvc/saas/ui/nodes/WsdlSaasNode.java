@@ -58,6 +58,7 @@ import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -97,7 +98,7 @@ public class WsdlSaasNode extends SaasNode {
     }
     
     private static final java.awt.Image ICON =
-       Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservice.png" ); //NOI18N
+       ImageUtilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservice.png" ); //NOI18N
     
     public Image getGenericIcon(int type) {
         return ICON;

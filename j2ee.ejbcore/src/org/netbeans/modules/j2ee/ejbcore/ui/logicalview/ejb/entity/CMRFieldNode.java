@@ -50,6 +50,7 @@ import javax.swing.Action;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.WeakListeners;
@@ -80,7 +81,7 @@ public class CMRFieldNode extends AbstractNode implements PropertyChangeListener
     }
     
     public Image getIcon(int type) {
-        return Utilities.loadImage(CMR_FIELD_ICON);
+        return ImageUtilities.loadImage(CMR_FIELD_ICON);
     }
     
     public boolean canDestroy(){

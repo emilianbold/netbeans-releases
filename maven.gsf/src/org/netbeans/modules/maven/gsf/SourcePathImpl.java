@@ -62,7 +62,7 @@ class SourcePathImpl implements ClassPathImplementation {
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private CPProvider provider;
     private NbMavenProject project;
-    private List resources;
+    private List<PathResourceImplementation> resources;
     private boolean test;
 
     public SourcePathImpl(NbMavenProject project, CPProvider prvd, boolean b) {
@@ -72,7 +72,7 @@ class SourcePathImpl implements ClassPathImplementation {
         //TODO add listening on project change..
     }
 
-    public synchronized List /*<PathResourceImplementation>*/ getResources() {
+    public synchronized List<PathResourceImplementation> getResources() {
         if (resources == null) {
             resources = this.getPath();
         }
@@ -81,7 +81,7 @@ class SourcePathImpl implements ClassPathImplementation {
 
 
 
-    private List getPath() {
+    private List<PathResourceImplementation> getPath() {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         URI[] pieces = provider.getSourceRoots(test);
         for (int i = 0; i < pieces.length; i++) {
@@ -116,7 +116,7 @@ class SourcePathImpl implements ClassPathImplementation {
                 ErrorManager.getDefault().notify(mue);
             }
         }
-        return Collections.unmodifiableList(result);
+        return Collections.<PathResourceImplementation>unmodifiableList(result);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener arg0) {

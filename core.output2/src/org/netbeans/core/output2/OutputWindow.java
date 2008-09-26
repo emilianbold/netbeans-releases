@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import javax.swing.UIManager;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
 import org.netbeans.core.output2.ui.AbstractOutputWindow;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -119,7 +120,7 @@ public class OutputWindow extends AbstractOutputWindow {
         // setting name to satisfy the accesible name requirement for window.
         setName (NbBundle.getMessage(OutputWindow.class, "LBL_OUTPUT")); //NOI18N
         
-        setIcon(Utilities.loadImage(ICON_RESOURCE)); // NOI18N
+        setIcon(ImageUtilities.loadImage(ICON_RESOURCE)); // NOI18N
          // special title for sliding mode
         // XXX - please rewrite to regular API when available - see issue #55955
         putClientProperty("SlidingName", getDisplayName()); //NOI18N 

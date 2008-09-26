@@ -55,6 +55,7 @@ import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
@@ -121,7 +122,7 @@ public class ManagerNode extends AbstractNode implements LookupListener {
   
   @Override
   public synchronized Image getIcon(int i) {
-    return Utilities.loadImage(NbBundle.getMessage(this.getClass(), "ManagerNode_Icon")); // NOI18N
+    return ImageUtilities.loadImage(NbBundle.getMessage(this.getClass(), "ManagerNode_Icon")); // NOI18N
   }
   
   public void setEngineLookup(Lookup.Result<Engine> lookup) {

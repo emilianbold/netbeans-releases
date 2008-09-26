@@ -60,6 +60,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 
 /*
@@ -85,7 +86,7 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
         return XML_CONSTANT;
     }
     
-    private static final Image JSFConfigIcon = org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
+    private static final Image JSFConfigIcon = ImageUtilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
     public Image getIcon() {
         return JSFConfigIcon;
     }

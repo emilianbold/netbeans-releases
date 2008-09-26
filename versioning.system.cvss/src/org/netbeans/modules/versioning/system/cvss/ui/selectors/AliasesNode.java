@@ -44,6 +44,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.selectors;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -193,8 +194,8 @@ final class AliasesNode extends AbstractNode {
         }
 
         private Image badge(Image image) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/ui/selectors/link.png", true);  // NOI18N
-            return Utilities.mergeImages(image, badge, 0, 8);
+            Image badge = ImageUtilities.loadImage("org/netbeans/modules/versioning/system/cvss/ui/selectors/link.png", true);  // NOI18N
+            return ImageUtilities.mergeImages(image, badge, 0, 8);
         }
     }
 }

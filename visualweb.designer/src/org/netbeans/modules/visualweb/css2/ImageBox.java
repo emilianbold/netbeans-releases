@@ -56,6 +56,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
@@ -557,7 +558,7 @@ public class ImageBox extends CssBox {
 //    }
     
     private static Icon loadIcon(String iconResource) {
-        Image image = Utilities.loadImage(iconResource);
+        Image image = ImageUtilities.loadImage(iconResource);
         if (image == null) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new NullPointerException("No image for iconResource=" + iconResource)); // NOI18N

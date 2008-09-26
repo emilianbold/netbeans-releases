@@ -59,6 +59,7 @@ import org.netbeans.modules.debugger.ui.Utils;
 
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -279,7 +280,7 @@ public class DebuggerAction extends AbstractAction {
         Action a = FileSensitiveActions.fileCommandAction(
             "debug.single", // XXX Define standard
             NbBundle.getMessage(DebuggerAction.class, "LBL_DebugSingleAction_Name"), // NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/debugger/resources/debugSingle.png" ) )); //NOI18N
+            new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/debugger/resources/debugSingle.png" ) )); //NOI18N
         a.putValue("iconBase","org/netbeans/modules/debugger/resources/debugSingle.png"); //NOI18N
         a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
         return a;
@@ -289,7 +290,7 @@ public class DebuggerAction extends AbstractAction {
         Action a = FileSensitiveActions.fileCommandAction(
             "debug.test.single", // XXX Define standard
             NbBundle.getMessage(DebuggerAction.class, "LBL_DebugTestSingleAction_Name" ),// NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/debugger/resources/debugTestSingle.png" ) )); //NOI18N
+            new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/debugger/resources/debugTestSingle.png" ) )); //NOI18N
         a.putValue("iconBase","org/netbeans/modules/debugger/resources/debugTestSingle.png"); //NOI18N
         a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
         return a;

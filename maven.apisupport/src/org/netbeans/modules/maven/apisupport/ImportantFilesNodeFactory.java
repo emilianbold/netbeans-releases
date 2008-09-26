@@ -68,6 +68,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -80,7 +81,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     /** Package private for unit tests. */
     static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
     
-    static final Object LAYER = new Object();
+    static final String LAYER = "LAYER-FILE.PLACEHOLDER"; //NOI18N
     /** Package private for unit tests only. */
     static final RequestProcessor RP = new RequestProcessor();
     
@@ -144,8 +145,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
         private Image getIcon(boolean opened) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/maven/apisupport/config-badge.gif", true); //NOI18N
-            return Utilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
+            Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/apisupport/config-badge.gif", true); //NOI18N
+            return ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
         }
         
         private static final String DISPLAY_NAME = NbBundle.getMessage(ImportantFilesNodeFactory.class, "LBL_important_files");
@@ -175,13 +176,14 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     /**
      * Actual list of important files.
      */
-    private static final class ImportantFilesChildren extends Children.Keys {
+    private static final class ImportantFilesChildren extends Children.Keys<String> {
         
-        private List visibleFiles = new ArrayList();
+        private List<String> visibleFiles = new ArrayList<String>();
         private FileChangeListener fcl;
         boolean nolayer = false;
         
         private FileChangeListener layerfcl = new FileChangeAdapter() {
+            @Override
             public void fileDeleted(FileEvent fe) {
                 nolayer = true;
                 refreshKeys();
@@ -189,7 +191,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         };
         
         /** Abstract location to display name. */
-        private static final java.util.Map<String,String> FILES = new LinkedHashMap();
+        private static final java.util.Map<String,String> FILES = new LinkedHashMap<String,String>();
         static {
             FILES.put("src/main/nbm/manifest.mf", NbBundle.getMessage(ImportantFilesNodeFactory.class, "LBL_module_manifest")); //NOI18N
             FILES.put("src/main/nbm/module.xml", NbBundle.getMessage(ImportantFilesNodeFactory.class, "LBL_module.xml")); //NOI18N
@@ -210,25 +212,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         
         @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<String>emptySet());
             removeListeners();
             super.removeNotify();
         }
         
-        protected Node[] createNodes(Object key) {
-            if (key instanceof String) {
-                String loc = (String) key;
-                FileObject file = project.getProjectDirectory().getFileObject(loc);
-                if (file != null) {
-                    try {
-                        Node orig = DataObject.find(file).getNodeDelegate();
-                        return new Node[] {new SpecialFileNode(orig, FILES.get(loc))};
-                    } catch (DataObjectNotFoundException e) {
-                        throw new AssertionError(e);
-                    }
-                }
-                return new Node[0];
-            } else if (key == LAYER) {
+        protected Node[] createNodes(String key) {
+            if (LAYER.equals(key)) {
                 Node nd = NodeFactoryUtils.createLayersNode(project);
                 if (nd != null) {
                     DataObject dobj = nd.getLookup().lookup(DataObject.class);
@@ -239,16 +229,24 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     return new Node[] {nd };
                 }
                 return new Node[0];
-//            } else if (key instanceof ServiceNodeHandler) {
-//                return new Node[]{((ServiceNodeHandler)key).createServiceRootNode()};
-            } else {
-                throw new AssertionError(key);
+            }
+            else {
+                FileObject file = project.getProjectDirectory().getFileObject(key);
+                if (file != null) {
+                    try {
+                        Node orig = DataObject.find(file).getNodeDelegate();
+                        return new Node[] {new SpecialFileNode(orig, FILES.get(key))};
+                    } catch (DataObjectNotFoundException e) {
+                        throw new AssertionError(e);
+                    }
+                }
+                return new Node[0];
             } 
         }
         
         private void refreshKeys() {
             Set<FileObject> files = new HashSet<FileObject>();
-            List newVisibleFiles = new ArrayList();
+            List<String> newVisibleFiles = new ArrayList<String>();
             if (!nolayer) {
                 newVisibleFiles.add(LAYER);
                 nolayer = false;
@@ -261,9 +259,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 //                newVisibleFiles.add(handle);
 //                files.add(layerFile);
 //            }
-            Iterator it = FILES.keySet().iterator();
+            Iterator<String> it = FILES.keySet().iterator();
             while (it.hasNext()) {
-                String loc = (String) it.next();
+                String loc = it.next();
                 FileObject file = project.getProjectDirectory().getFileObject(loc);
                 if (file != null) {
                     newVisibleFiles.add(loc);
@@ -286,9 +284,11 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             try {
                 if (fcl == null) {
                     fcl = new FileChangeAdapter() {
+                        @Override
                         public void fileDataCreated(FileEvent fe) {
                             refreshKeys();
                         }
+                        @Override
                         public void fileDeleted(FileEvent fe) {
                             refreshKeys();
                         }
@@ -354,7 +354,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             String result = null;
             DataObject dob = getLookup().lookup(DataObject.class);
             if (dob != null) {
-                Set files = dob.files();
+                Set<FileObject> files = dob.files();
                 result = computeAnnotatedHtmlDisplayName(getDisplayName(), files);
             }
             return result;
@@ -367,12 +367,12 @@ public class ImportantFilesNodeFactory implements NodeFactory {
      * result; <code>null</code> otherwise.
      */
     private static String computeAnnotatedHtmlDisplayName(
-            final String htmlDisplayName, final Set files) {
+            final String htmlDisplayName, final Set<FileObject> files) {
         
         String result = null;
         if (files != null && files.iterator().hasNext()) {
             try {
-                FileObject fo = (FileObject) files.iterator().next();
+                FileObject fo = files.iterator().next();
                 FileSystem.Status stat = fo.getFileSystem().getStatus();
                 if (stat instanceof FileSystem.HtmlStatus) {
                     FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;

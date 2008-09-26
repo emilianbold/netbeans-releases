@@ -73,6 +73,7 @@ import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -271,7 +272,7 @@ public class FileRenameRefactoringUI implements org.netbeans.modules.refactoring
 
     public Icon getCustomIcon() {
          return new ImageIcon(
-            Utilities.loadImage(
+            ImageUtilities.loadImage(
             "org/netbeans/modules/xml/refactoring/resources/"+
             "graphical_view_refactoring.png"));
     }

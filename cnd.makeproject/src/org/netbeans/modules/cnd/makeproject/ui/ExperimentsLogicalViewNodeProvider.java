@@ -56,6 +56,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
@@ -76,11 +77,11 @@ class ExperimentsRootNode extends AbstractNode {
     }
     
     public Image getIcon( int type ) {
-        return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
     }
     
     public Image getOpenedIcon( int type) {
-        return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
     }
     
     public boolean canRename() {
@@ -136,11 +137,11 @@ class ExperimentsGroupNode extends AbstractNode {
     }
     
     public Image getIcon( int type ) {
-        return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
     }
     
     public Image getOpenedIcon( int type) {
-        return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
     }
     
     public boolean canRename() {
@@ -203,7 +204,7 @@ class Experiment extends AbstractNode {
     }
     
     public Image getIcon( int type ) {
-        return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
     }
     
     public boolean canRename() {

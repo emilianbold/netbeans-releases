@@ -62,6 +62,7 @@ import javax.swing.Timer;
 import org.netbeans.modules.uihandler.api.Controller;
 import org.openide.awt.Actions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -110,8 +111,8 @@ public final class SubmitAction extends CallableSystemAction {
             
             timer = new Timer(100, this);
             
-            tacho = new ImageIcon(Utilities.loadImage("org/netbeans/modules/uihandler/tachometer24.png"));
-            tachoOk = new ImageIcon(Utilities.loadImage("org/netbeans/modules/uihandler/tachometer-ok.png"));
+            tacho = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/uihandler/tachometer24.png"));
+            tachoOk = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/uihandler/tachometer-ok.png"));
             setIcon(tacho);
             setToolTipText(NbBundle.getMessage(SubmitAction.class, "CTL_SubmitAction"));
         }

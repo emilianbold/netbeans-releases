@@ -188,8 +188,21 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         switch (el.getKind()) {
             case FUNC:
             case CLASS:
-            case VARIABLE:
                 n = writes.get(0);
+                break;
+            case VARIABLE:
+                int startOffest = -1;
+                n = writes.get(0);
+                for (Union2<ASTNode, IndexedElement> union2 : writes) {
+                    if (union2.hasFirst()) {
+                        ASTNode tmp = union2.first();
+                        if (tmp != null && (tmp.getStartOffset() < startOffest || startOffest == -1)) {
+                            n = union2;
+                            startOffest = tmp.getStartOffset();
+                        }
+                    }
+                }
+                
                 break;
             default:
                 n = writes.get(writes.size() - 1);
@@ -220,11 +233,15 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 case VARIABLE:
                     if (el.isClassMember()) {
                         SemiAttribute.ClassMemberElement memberElement = (ClassMemberElement) el;
-                        fromIndex = index.getAllProperties(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX, PHPIndex.ANY_ATTR);
+                        fromIndex = index.getAllFields(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX, PHPIndex.ANY_ATTR);
                     } else if (n.hasSecond()) {
                         final IndexedElement indexed = n.second();
                         FileObject file = indexed.getFileObject();
-                        assert file != null;
+
+                        if (file == null){
+                            return DeclarationLocation.NONE;
+                        }
+
                         return new DeclarationLocation(file, indexed.getOffset());
                     } else {
                         fromIndex = Collections.emptyList();

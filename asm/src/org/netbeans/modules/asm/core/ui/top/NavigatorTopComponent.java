@@ -52,6 +52,7 @@ import javax.swing.UIManager;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -82,7 +83,7 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
             
     private NavigatorTopComponent() {
         initComponents();
-        setIcon(Utilities.loadImage(ICON_PATH, true));        
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         setName(NbBundle.getMessage(NavigatorTopComponent.class, "CTL_NavigatorTopComponent")); // NOI18N
         //setToolTipText(NbBundle.getMessage(NavigatorTopComponent.class, "HINT_NavigatorTopComponent"));
         //mainTabbedPanel.setVisible(false);

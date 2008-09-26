@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml.text;
 
+import org.netbeans.modules.xml.util.Util;
 import java.io.*;
 import java.text.*;
 import java.util.Enumeration;

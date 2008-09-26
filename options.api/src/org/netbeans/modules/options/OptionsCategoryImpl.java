@@ -50,6 +50,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -89,15 +90,15 @@ public class OptionsCategoryImpl extends OptionsCategory {
     @Override
     public Icon getIcon() {
         if (icon == null) {
-            Image image = Utilities.loadImage(iconBase);
+            Image image = ImageUtilities.loadImage(iconBase);
             if (image != null) {
                 return new ImageIcon(image);
             }
-            image = Utilities.loadImage(iconBase + ".png");
+            image = ImageUtilities.loadImage(iconBase + ".png");
             if (image != null) {
                 return new ImageIcon(image);
             }
-            image = Utilities.loadImage(iconBase + ".gif");
+            image = ImageUtilities.loadImage(iconBase + ".gif");
             if (image == null) {
                 return null;
             }

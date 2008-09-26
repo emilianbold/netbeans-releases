@@ -56,6 +56,7 @@ import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -75,7 +76,7 @@ import org.w3c.dom.Text;
  */
 public final class IepProject implements Project, AntProjectListener {
 
-    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/iep/project/ui/resources/iepProject.gif")); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/iep/project/ui/resources/iepProject.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
     public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
 

@@ -296,7 +296,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.14</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -407,6 +407,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2me.cdc.project.nsicom</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.ricoh</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.savaje</friend>
+                <friend>org.netbeans.modules.j2me.cdc.project.sjmc</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.semc</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.bdj</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.ui.wizards</friend>

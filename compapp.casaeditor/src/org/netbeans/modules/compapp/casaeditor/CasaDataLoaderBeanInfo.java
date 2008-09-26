@@ -43,6 +43,7 @@ package org.netbeans.modules.compapp.casaeditor;
 
 import org.openide.loaders.UniFileLoader;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -84,7 +85,7 @@ public class CasaDataLoaderBeanInfo extends SimpleBeanInfo {
      */
     public Image getIcon(int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/compapp/casaeditor/resources/service_composition_16.png"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/compapp/casaeditor/resources/service_composition_16.png"); // NOI18N
         } else {
             return null;
         }

@@ -59,6 +59,7 @@ import org.netbeans.modules.editor.hints.FixData;
 import org.netbeans.modules.editor.hints.HintsUI;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.awt.HtmlRenderer;
+import org.openide.util.ImageUtilities;
 
 /**
 * @author Miloslav Metelka, Dusan Balek
@@ -69,7 +70,7 @@ public class ListCompletionView extends JList implements ListCellRenderer {
 
     private final HtmlRenderer.Renderer defaultRenderer = HtmlRenderer.createRenderer();
     private Font font;
-    private Icon icon = new ImageIcon (org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/hints/resources/suggestion.gif")); // NOI18N
+    private Icon icon = new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/editor/hints/resources/suggestion.gif")); // NOI18N
                 
     public ListCompletionView() {
         setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);

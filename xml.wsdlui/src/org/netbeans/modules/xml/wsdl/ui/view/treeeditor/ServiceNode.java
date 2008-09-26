@@ -70,6 +70,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ServicePortNewTy
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -83,7 +84,7 @@ public class ServiceNode extends WSDLExtensibilityElementNode<Service> {
     
     protected Service mWSDLConstruct;
     
-    private static Image ICON  = Utilities.loadImage
+    private static Image ICON  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/service.png");
     
     

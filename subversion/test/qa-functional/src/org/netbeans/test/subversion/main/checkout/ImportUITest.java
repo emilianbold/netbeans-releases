@@ -13,11 +13,8 @@ import java.io.File;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -93,6 +90,8 @@ public class ImportUITest extends JellyTestCase {
             ImportWizardOperator iwo = ImportWizardOperator.invoke(node);
             Operator.setDefaultStringComparator(oldOperator);
             iwo.cancel();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
@@ -141,6 +140,8 @@ public class ImportUITest extends JellyTestCase {
             //Finish button should be enabled.
             assertTrue("Finish button should be enabled", ftiso.btFinish().isEnabled());
             iwo.cancel();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
@@ -210,6 +211,8 @@ public class ImportUITest extends JellyTestCase {
             assertEquals("Wrong folder selection!!!", "branches/release_01/" + PROJECT_NAME, ftiso.getRepositoryFolder());
 
             iwo.cancel();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
@@ -217,7 +220,6 @@ public class ImportUITest extends JellyTestCase {
 
     public void testCommitStep() throws Exception {
         try {
-            OutputOperator.invoke();
             TestKit.showStatusLabels();
             
             new File(TMP_PATH).mkdirs();
@@ -263,6 +265,8 @@ public class ImportUITest extends JellyTestCase {
             cso.selectCommitAction("test", "Add Directory");
             cso.selectCommitAction("test", "Exclude from Commit");
             iwo.cancel();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
@@ -310,6 +314,8 @@ public class ImportUITest extends JellyTestCase {
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
             rso = new RepositoryStepOperator();
             rso.verify();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }

@@ -83,6 +83,7 @@ import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -248,7 +249,7 @@ public final class SuiteProject implements Project {
         }
         
         public Icon getIcon() {
-            return new ImageIcon(Utilities.loadImage(SUITE_ICON_PATH));
+            return new ImageIcon(ImageUtilities.loadImage(SUITE_ICON_PATH));
         }
         
         public Project getProject() {

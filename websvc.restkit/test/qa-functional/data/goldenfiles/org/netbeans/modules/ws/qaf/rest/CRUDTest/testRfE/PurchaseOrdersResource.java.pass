@@ -19,8 +19,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import com.sun.jersey.api.core.ResourceContext;
 import javax.persistence.EntityManager;
-import o.n.m.ws.qaf.rest.crud.Product;
 import o.n.m.ws.qaf.rest.crud.Customer;
+import o.n.m.ws.qaf.rest.crud.Product;
 import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrdersConverter;
 import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter;
@@ -57,10 +57,13 @@ public class PurchaseOrdersResource {
     int expandLevel, @QueryParam("query")
     @DefaultValue("SELECT e FROM PurchaseOrder e")
     String query) {
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
+            persistenceSvc.beginTx();
             return new PurchaseOrdersConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
-            PersistenceService.getInstance().close();
+            persistenceSvc.commitTx();
+            persistenceSvc.close();
         }
     }
 

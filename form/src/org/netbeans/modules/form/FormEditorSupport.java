@@ -111,6 +111,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
+import org.openide.util.ImageUtilities;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
@@ -1051,7 +1052,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         }
         
         public java.awt.Image getIcon() {
-            return Utilities.loadImage(iconURL);
+            return ImageUtilities.loadImage(iconURL);
         }
         
         public int getPersistenceType() {
@@ -1119,7 +1120,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         }
         
         public java.awt.Image getIcon() {
-            return Utilities.loadImage(iconURL);
+            return ImageUtilities.loadImage(iconURL);
         }
         
         public int getPersistenceType() {

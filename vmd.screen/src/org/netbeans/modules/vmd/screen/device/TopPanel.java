@@ -58,6 +58,7 @@ import org.netbeans.modules.vmd.screen.MainPanel;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
 import org.netbeans.modules.vmd.screen.ScreenViewController;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -99,7 +100,7 @@ public class TopPanel extends JPanel {
             new float[] {5.0f,10.0f},
             0.0f);
     
-    private static final Image IMAGE_INJECT = Utilities.loadImage("org/netbeans/modules/vmd/screen/resources/inject.png"); // NOI18N
+    private static final Image IMAGE_INJECT = ImageUtilities.loadImage("org/netbeans/modules/vmd/screen/resources/inject.png"); // NOI18N
     
     private DevicePanel devicePanel;
     private List<SelectionShape> selectionShapes = Collections.emptyList();

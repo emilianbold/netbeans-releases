@@ -55,6 +55,7 @@ import java.beans.VetoableChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -74,9 +75,9 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private Object key;
     private int index;
     
-    private static final Image IMAGE_UNSELECTED  = Utilities.loadImage
+    private static final Image IMAGE_UNSELECTED  = ImageUtilities.loadImage
             ("/org/netbeans/modules/xml/multiview/resources/plus.gif"); // NOI18N
-    private static final Image IMAGE_SELECTED  = Utilities.loadImage
+    private static final Image IMAGE_SELECTED  = ImageUtilities.loadImage
             ("/org/netbeans/modules/xml/multiview/resources/minus.gif"); // NOI18N 
     
     private FocusListener sectionFocusListener = new FocusAdapter() {

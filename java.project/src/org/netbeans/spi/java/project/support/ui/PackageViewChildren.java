@@ -1214,14 +1214,12 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                     if (children[i].getPrimaryFile().isData() 
                     && VisibilityQuery.getDefault().isVisible (children[i].getPrimaryFile())) {
                         //Copy only the package level
-                        children[i].copy (dest);
                         if (this.op == DnDConstants.ACTION_MOVE) {
-                            try {
-                                children[i].delete();
-                            } catch (IOException ioe) {
-                                cantDelete = true;
-                            }
+                            children[i].move(dest);
                         }
+                        else {
+                            children[i].copy (dest);
+                        }                                                
                     }
                     else {
                         cantDelete = true;

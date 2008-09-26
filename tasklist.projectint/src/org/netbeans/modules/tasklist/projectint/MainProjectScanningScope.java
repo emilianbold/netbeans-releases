@@ -64,6 +64,7 @@ import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -99,7 +100,7 @@ public class MainProjectScanningScope extends TaskScanningScope
         return new MainProjectScanningScope(
                 NbBundle.getBundle( MainProjectScanningScope.class ).getString( "LBL_MainProjectScope" ), //NOI18N
                 NbBundle.getBundle( MainProjectScanningScope.class ).getString( "HINT_MainProjectScope" ), //NOI18N
-                Utilities.loadImage( "org/netbeans/modules/tasklist/projectint/main_project_scope.png" ) //NOI18N
+                ImageUtilities.loadImage( "org/netbeans/modules/tasklist/projectint/main_project_scope.png" ) //NOI18N
                 );
     }
     
@@ -109,25 +110,30 @@ public class MainProjectScanningScope extends TaskScanningScope
     
     @Override
     public boolean isInScope( FileObject resource ) {
-        if( null == resource || null == currentProject )
+        Project p = null;
+        synchronized( this ) {
+            p = currentProject;
+        }
+
+        if( null == resource || null == p )
             return false;
         
         Project owner = FileOwnerQuery.getOwner( resource );
         if( null == owner )
             return false;
         
-        if( owner.equals( currentProject ) )
+        if( owner.equals( p ) )
             return true;
         
-        if( currentProject.equals( OpenProjects.getDefault().getMainProject() ) ) {
+        if( p.equals( OpenProjects.getDefault().getMainProject() ) ) {
             Project[] projects = OpenProjects.getDefault().getOpenProjects();
             for( int i=0; i<projects.length; i++ ) {
-                if( projects[i].equals( currentProject ) )
+                if( projects[i].equals( p ) )
                     continue;
 
                 SubprojectProvider subProjectProvider = projects[i].getLookup().lookup( SubprojectProvider.class );
                 if( null != subProjectProvider 
-                        && subProjectProvider.getSubprojects().contains( currentProject )
+                        && subProjectProvider.getSubprojects().contains( p )
                         && projects[i].equals( owner ) ) {
                     return true;
                 }

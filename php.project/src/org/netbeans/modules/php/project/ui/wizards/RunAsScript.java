@@ -128,7 +128,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     public void loadPhpInterpreter() {
-        interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+        String phpInterpreter = PhpOptions.getInstance().getPhpInterpreter();
+        interpreterTextField.setText(phpInterpreter != null ? phpInterpreter : ""); // NOI18N
     }
 
     @Override

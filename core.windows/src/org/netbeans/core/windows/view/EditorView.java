@@ -216,7 +216,7 @@ public class EditorView extends ViewElement {
             // PENDING Adding image into empty area.
             String imageSource = Constants.SWITCH_IMAGE_SOURCE; // NOI18N
             if(imageSource != null) {
-                Image image = Utilities.loadImage(imageSource);
+                Image image = ImageUtilities.loadImage(imageSource);
                 if(image != null) {
                     JLabel label = new JLabel(new ImageIcon(image));
                     label.setMinimumSize(new Dimension(0, 0)); // XXX To be able shrink the area.

@@ -213,6 +213,21 @@ public class DependencyNode extends AbstractNode {
         }
     }
 
+    @Override
+    public String getShortDescription() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("<html><i>").append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep1")).append("</i><b> ").append(art.getGroupId()).append("</b><br><i>"); //NOI18N
+        buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep2")).append("</i><b> ").append(art.getArtifactId()).append("</b><br><i>");//NOI18N
+        buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep3")).append("</i><b> ").append(art.getVersion()).append("</b><br><i>");//NOI18N
+        buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep4")).append("</i><b> ").append(art.getType()).append("</b><br>");//NOI18N
+        if (art.getClassifier() != null) {
+            buf.append("<i>").append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep5")).append("</i><b> ").append(art.getClassifier()).append("</b><br>");//NOI18N
+        }
+        // it seems that with ending </html> tag the icon descriptions are not added.
+//        buf.append("</html>");//NOI18N
+        return buf.toString();
+    }
+
     private boolean isAddedToCP() {
         return art.getArtifactHandler().isAddedToClasspath();
     }
@@ -410,25 +425,6 @@ public class DependencyNode extends AbstractNode {
         refreshNode();
     }
 
-    public void downloadMainArtifact(MavenEmbedder online) {
-        Artifact art2 = project.getEmbedder().createArtifactWithClassifier(
-                art.getGroupId(),
-                art.getArtifactId(),
-                art.getVersion(),
-                art.getType(),
-                art.getClassifier());
-        try {
-            StatusDisplayer.getDefault().setStatusText(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Checking", art.getId()));
-            online.resolve(art2, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
-        } catch (ArtifactNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (ArtifactResolutionException ex) {
-            ex.printStackTrace();
-        } finally {
-            StatusDisplayer.getDefault().setStatusText(""); //NOI18N
-        }
-        refreshNode();
-    }
 
     
     @Override
@@ -851,7 +847,8 @@ public class DependencyNode extends AbstractNode {
             Action[] superActions = super.getActions(false);
             boolean hasOpen = false;
             for (int i = 0; i < superActions.length; i++) {
-                if (superActions[i] instanceof OpenAction || superActions[i] instanceof EditAction) {
+                if ((superActions[i] instanceof OpenAction || superActions[i] instanceof EditAction)
+                        && !dobj.getClass().getName().contains("ClassDataObject")) {//NOI18N #148053
                     result.add(superActions[i]);
                     hasOpen = true;
                 }
@@ -859,10 +856,10 @@ public class DependencyNode extends AbstractNode {
                     result.add(superActions[i]);
                 }
             }
-            result.add(new OpenSrcAction(true));
             if (!hasOpen) { //necessary? maybe just keep around for all..
                 result.add(new OpenSrcAction(false));
             }
+            result.add(new OpenSrcAction(true));
 
             return result.toArray(new Action[result.size()]);
         }

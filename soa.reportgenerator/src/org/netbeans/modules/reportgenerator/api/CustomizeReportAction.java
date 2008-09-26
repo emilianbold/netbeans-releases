@@ -15,6 +15,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -33,7 +34,7 @@ public class CustomizeReportAction extends AbstractAction {
 
 	public static final String ACCELERATOR = "alt shift F11"; // NOI18N
 	
-	private static final Icon icon = new ImageIcon(Utilities.loadImage(
+	private static final Icon icon = new ImageIcon(ImageUtilities.loadImage(
     "org/netbeans/modules/reportgenerator/api/impl/resources/images/customizeReport.png")); 
 	
 	private static final String label = NbBundle.getMessage(

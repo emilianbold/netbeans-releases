@@ -67,6 +67,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -213,7 +214,7 @@ public class PageFlowToolbarUtilities {
         scopeBox = comboBox;
         return comboBox;
     }
-    private static final Image LAYOUT_ICON = org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/resources/navigation.gif"); // NOI18N
+    private static final Image LAYOUT_ICON = ImageUtilities.loadImage("org/netbeans/modules/web/jsf/navigation/resources/navigation.gif"); // NOI18N
     private JButton layoutButton = null;
 
     /**

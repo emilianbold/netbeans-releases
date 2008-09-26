@@ -40,6 +40,7 @@
 				<file title="Libraries.html"/>
 				<file title="LinkerOptions.html"/>
 				<file title="Packaging.html"/>
+				<file title="preprocessor-definitions.html"/>
 				<file title="Projects.html"/>
 				<file title="ResolveBuildTools.html"/>
 				<file title="RunningCorC++Project.html"/>

@@ -77,6 +77,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -265,7 +266,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         Icon icon = null;
         if (warning.trim().length() > 0) {
-            icon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif"));
+            icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif"));
         }
         createPUWarningLabel.setIcon(icon);
         createPUWarningLabel.setText(warning);

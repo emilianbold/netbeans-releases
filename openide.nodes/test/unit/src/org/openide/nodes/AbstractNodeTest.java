@@ -42,6 +42,7 @@
 package org.openide.nodes;
 
 import java.beans.BeanInfo;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
@@ -119,7 +120,7 @@ public class AbstractNodeTest extends TestCase {
 
 
     private static Image getImage(String path) {
-        Image ret = Utilities.loadImage(path, true);
+        Image ret = ImageUtilities.loadImage(path, true);
         assertNotNull("Icon loaded", ret);
         return ret;
     }

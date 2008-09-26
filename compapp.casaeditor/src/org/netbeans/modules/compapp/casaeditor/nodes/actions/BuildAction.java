@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -59,7 +60,7 @@ import org.openide.util.Utilities;
  */
 public class BuildAction extends AbstractAction {
     
-    private static final Image ICON_IMAGE = Utilities.loadImage(
+    private static final Image ICON_IMAGE = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/BuildProject.png"); // NOI18N
     
     private WeakReference mReference;

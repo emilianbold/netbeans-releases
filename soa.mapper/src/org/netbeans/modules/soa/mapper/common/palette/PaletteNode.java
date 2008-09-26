@@ -30,6 +30,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 
 
@@ -212,9 +213,9 @@ public class PaletteNode extends org.openide.loaders.DataFolder.FolderNode {
 
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16)
                 || (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            return org.openide.util.Utilities.loadImage(iconURL);
+            return ImageUtilities.loadImage(iconURL);
         } else {
-            return org.openide.util.Utilities.loadImage(icon32URL);
+            return ImageUtilities.loadImage(icon32URL);
         }
     }
 

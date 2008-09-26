@@ -21,11 +21,11 @@ public class CopyAction extends ActionNoBlock{
     public static final String SVN_ITEM = "Subversion";
             
     /** "Copy..." menu item. */
-    public static final String COPY_ITEM = "Copy To";
+    public static final String COPY_ITEM = "Copy To...";
     
     /** Creates a new instance of CopyAction */
     public CopyAction() {
-        super(SVN_ITEM + "|" + COPY_ITEM, SVN_ITEM + "|" + COPY_ITEM);
+        super("Versioning" + "|" + COPY_ITEM, SVN_ITEM + "|" + COPY_ITEM);
     }
     
 }

@@ -56,6 +56,7 @@ import javax.swing.JDialog;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -75,9 +76,9 @@ public class ConnectionStatusPanel extends javax.swing.JPanel {
 
     // private Image conGood = Utilities.loadImage("org/netbeans/modules/db/sql/visualeditor/resources/started.png");  // NOI18N
     // private Image conFailed = Utilities.loadImage("org/netbeans/modules/db/sql/visualeditor/resources/disconnected.png");  // NOI18N
-    private Image conGood = Utilities.loadImage("org/netbeans/modules/db/sql/visualeditor/resources/ok.gif");  // NOI18N
-    private Image conFailed = Utilities.loadImage("org/netbeans/modules/db/sql/visualeditor/resources/error.gif");  // NOI18N
-    private Image conWarning = Utilities.loadImage("org/netbeans/modules/db/sql/visualeditor/resources/warning.gif");  // NOI18N
+    private Image conGood = ImageUtilities.loadImage("org/netbeans/modules/db/sql/visualeditor/resources/ok.gif");  // NOI18N
+    private Image conFailed = ImageUtilities.loadImage("org/netbeans/modules/db/sql/visualeditor/resources/error.gif");  // NOI18N
+    private Image conWarning = ImageUtilities.loadImage("org/netbeans/modules/db/sql/visualeditor/resources/warning.gif");  // NOI18N
     /** Creates new form ConnectionStatusDialog */
     public ConnectionStatusPanel() {
         initComponents();

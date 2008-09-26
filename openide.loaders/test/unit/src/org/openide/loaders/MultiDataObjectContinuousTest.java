@@ -77,8 +77,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        // 10 minutes
-        return 600000;
+        return 60000;
     }
 
     @Override

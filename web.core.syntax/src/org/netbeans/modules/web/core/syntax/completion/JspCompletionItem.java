@@ -69,6 +69,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -230,7 +231,7 @@ public class JspCompletionItem implements CompletionItem {
                 try {
                     //test whether we are trying to insert sg. what is already present in the text
                     String currentText = doc.getText(substitutionOffset, (doc.getLength() - substitutionOffset) < substituteText.length() ? (doc.getLength() - substitutionOffset) : substituteText.length());
-                    if (!substituteText.substring(0, substituteText.length() - 1).equals(currentText)) {
+                    if (!substituteText.equals(currentText)) {
                         //remove common part
                         doc.remove(substitutionOffset, len);
                         doc.insertString(substitutionOffset, substituteText, null);
@@ -919,10 +920,10 @@ public class JspCompletionItem implements CompletionItem {
             ImageIcon icon = null;
             switch (type) {
                 case ELImplicitObjects.OBJECT_TYPE:
-                    icon = new ImageIcon(org.openide.util.Utilities.loadImage(OBJECT_PATH));
+                    icon = new ImageIcon(ImageUtilities.loadImage(OBJECT_PATH));
                     break;
                 case ELImplicitObjects.MAP_TYPE:
-                    icon = new ImageIcon(org.openide.util.Utilities.loadImage(MAP_PATH));
+                    icon = new ImageIcon(ImageUtilities.loadImage(MAP_PATH));
                     break;
             }
             return icon;
@@ -980,7 +981,7 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(org.openide.util.Utilities.loadImage(BEAN_PATH));
+            return new ImageIcon(ImageUtilities.loadImage(BEAN_PATH));
         }
     }
 
@@ -1000,7 +1001,7 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(org.openide.util.Utilities.loadImage(PROPERTY_PATH));
+            return new ImageIcon(ImageUtilities.loadImage(PROPERTY_PATH));
         }
     }
 
@@ -1035,7 +1036,7 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(org.openide.util.Utilities.loadImage(ICON_PATH));
+            return new ImageIcon(ImageUtilities.loadImage(ICON_PATH));
         }
 
         @Override

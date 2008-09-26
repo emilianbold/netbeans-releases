@@ -107,6 +107,7 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -173,13 +174,13 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     
     /** Creates new form DebuggingView */
     public DebuggingView() {
-        setIcon(Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/debugging.png")); // NOI18N
+        setIcon(ImageUtilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/debugging.png")); // NOI18N
         // Remember the location of the component when closed.
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
         
         initComponents();
     
-        resumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png"));
+        resumeIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png"));
         focusedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_focused_16.png"));
         pressedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_pressed_16.png"));
         suspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_16.png"));

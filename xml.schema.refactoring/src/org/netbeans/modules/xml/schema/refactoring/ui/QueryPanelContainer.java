@@ -50,6 +50,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import org.openide.awt.MouseUtils;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -78,7 +79,7 @@ public class QueryPanelContainer extends TopComponent
     private PopupListener listener;
     private CloseListener closeL;
     private boolean isRefactoring;
-    private static Image QUERY_BADGE = Utilities.loadImage( 
+    private static Image QUERY_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/refactoring/resources/"+
             "findusages.png" ); // NOI18N
     private static final String XML_SCHEMA_QUERY = "xml-schema-query"; // NOI18N

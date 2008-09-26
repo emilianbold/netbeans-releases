@@ -48,6 +48,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -86,7 +87,7 @@ public class PreviousScreenEventHandlerCD extends ComponentDescriptor {
             // info
             InfoPresenter.createStatic (NbBundle.getMessage(PreviousScreenEventHandlerCD.class, "NAME_PreviousScreenEventHandler"), NbBundle.getMessage(PreviousScreenEventHandlerCD.class, "TYPE_Action"), DisplayableCD.ICON_PATH), // NOI18N
             // flow
-            new FlowEventHandlerPinBadgePresenter (Utilities.loadImage (ICON_PATH), 0),
+            new FlowEventHandlerPinBadgePresenter (ImageUtilities.loadImage (ICON_PATH), 0),
             // code
             new CodeMultiGuardedLevelPresenter () {
                 protected void generateMultiGuardedSectionCode (MultiGuardedSection section) {

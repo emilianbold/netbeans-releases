@@ -66,10 +66,10 @@ public class PackageNode extends AbstractNode implements FilesharingConstants {
     ////////////////////////////////////////////////////////////////////////////
     // Class variables
     ////////////////////////////////////////////////////////////////////////////
-    public static final Image PACKAGE_BADGE = Utilities.loadImage(
+    public static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/collab/channel/filesharing/resources/package.gif", true
         ); // NOI18N	
-    public static final Image EMPTY_PACKAGE_BADGE = Utilities.loadImage(
+    public static final Image EMPTY_PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/collab/channel/filesharing/resources/packageEmpty.gif", true
         ); // NOI18N	
 

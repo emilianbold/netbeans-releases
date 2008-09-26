@@ -143,12 +143,14 @@ public class JspCompletionQuery {
         TokenID id = item.getTokenID();
         String tokenPart = item.getImage().substring(0, offset - item.getOffset());
         String token = item.getImage().trim();
+        int anchor = -1;
         
         // SYMBOL
         if (id == JspTagTokenContext.SYMBOL) {
             if (tokenPart.equals("<")) { // NOI18N
                 // just after the beginning of the tag
-                addTagPrefixItems(result, offset, sup, sup.getTagPrefixes("")); // NOI18N
+                anchor = offset;
+                addTagPrefixItems(result, anchor, sup, sup.getTagPrefixes("")); // NOI18N
             }
             if (tokenPart.endsWith("\"")) { // NOI18N
                 // try an attribute value
@@ -176,14 +178,16 @@ public class JspCompletionQuery {
             if (isBlank(tokenPart.charAt(tokenPart.length() - 1))
                     || tokenPart.equals("\n")) {
                 // blank character - do attribute completion
-                addAttributeItems(result, offset, sup,  elem, sup.getTagAttributes(elem.getName(), ""), null); // NOI18N
+                anchor = offset;
+                addAttributeItems(result, anchor, sup,  elem, sup.getTagAttributes(elem.getName(), ""), null); // NOI18N
             } else {
                 int colonIndex = tokenPart.indexOf(":"); // NOI18N
+                anchor = offset - tokenPart.length();
                 if (colonIndex == -1) {
-                    addTagPrefixItems(result, offset - tokenPart.length(), sup, sup.getTagPrefixes(tokenPart));
+                    addTagPrefixItems(result, anchor, sup, sup.getTagPrefixes(tokenPart));
                 } else {
                     String prefix = tokenPart.substring(0, colonIndex);
-                    addTagPrefixItems(result, offset - tokenPart.length(), sup, prefix, sup.getTags(tokenPart), elem);
+                    addTagPrefixItems(result, anchor, sup, prefix, sup.getTags(tokenPart), elem);
                 }
             }
         }
@@ -193,9 +197,11 @@ public class JspCompletionQuery {
             // inside or after an attribute
             if (isBlank(tokenPart.charAt(tokenPart.length() - 1))) {
                 // blank character - do attribute completion
-                addAttributeItems(result, offset, sup, elem, sup.getTagAttributes(elem.getName(), ""), null); // NOI18N
+                anchor = offset;
+                addAttributeItems(result, anchor, sup, elem, sup.getTagAttributes(elem.getName(), ""), null); // NOI18N
             } else {
-                addAttributeItems(result, offset - tokenPart.length(), sup, elem, sup.getTagAttributes(elem.getName(), tokenPart), token);
+                anchor = offset - tokenPart.length();
+                addAttributeItems(result, anchor , sup, elem, sup.getTagAttributes(elem.getName(), tokenPart), token);
             }
         }
         
@@ -224,6 +230,10 @@ public class JspCompletionQuery {
                 }
             }
             
+        }
+        
+        if(anchor != -1) {
+            result.setAnchorOffset(anchor);
         }
        
     }
@@ -308,7 +318,10 @@ public class JspCompletionQuery {
         }
         
         TokenID id = item.getTokenID();
-        String tokenPart = item.getImage().substring(0, offset - item.getOffset());
+        String image = item.getImage();
+        int tokenPartLen = offset - item.getOffset();
+        String tokenPart = item.getImage().substring(0, tokenPartLen <= image.length() ? tokenPartLen : image.length());
+        
         
         if(id == JspTagTokenContext.SYMBOL2 && tokenPart.startsWith("<%")) {
             addDelimiterItems(result, offset - tokenPart.length(), tokenPart); // NOI18N
@@ -322,8 +335,9 @@ public class JspCompletionQuery {
             return;
         }
         
-        TokenID id = item.getTokenID();
-        String tokenPart = item.getImage().substring(0, offset - item.getOffset());
+        String image = item.getImage();
+        int tokenPartLen = offset - item.getOffset();
+        String tokenPart = item.getImage().substring(0, tokenPartLen <= image.length() ? tokenPartLen : image.length());
         
         if(tokenPart.startsWith("<")) {
             addDelimiterItems(result, offset - tokenPart.length(), tokenPart); // NOI18N
@@ -485,9 +499,13 @@ public class JspCompletionQuery {
         int removeLength = tokenPart.length();
         if (tokenPart.startsWith("/")) { // NOI18N
             tokenPart = tokenPart.substring(1);
-            result.addAllItems(sup.getPossibleEndTags(offset, offset - removeLength + 1, tokenPart, true)); //get only first end tag
+            int anchor = offset - removeLength + 1;
+            result.setAnchorOffset(anchor);
+            result.addAllItems(sup.getPossibleEndTags(offset, anchor, tokenPart, true)); //get only first end tag
         } else {
-            addTagPrefixItems(result, offset - removeLength, sup, sup.getTagPrefixes(tokenPart));
+            int anchor = offset - removeLength;
+            result.setAnchorOffset(anchor);
+            addTagPrefixItems(result, anchor, sup, sup.getTagPrefixes(tokenPart));
         }
 
     }

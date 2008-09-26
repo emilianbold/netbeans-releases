@@ -687,11 +687,11 @@ public class ConfigurationMakefileWriter {
         bw.write("# $2 to-file path\n"); // NOI18N
         bw.write("# $3 permission\n"); // NOI18N
         bw.write("{\n"); // NOI18N
-        bw.write("    cp $1 $2\n"); // NOI18N
+        bw.write("    cp \"$1\" \"$2\"\n"); // NOI18N
         bw.write("    checkReturnCode\n"); // NOI18N
         bw.write("    if [ \"$3\" != \"\" ]\n"); // NOI18N
         bw.write("    then\n"); // NOI18N
-        bw.write("        chmod $3 $2\n"); // NOI18N
+        bw.write("        chmod $3 \"$2\"\n"); // NOI18N
         bw.write("        checkReturnCode\n"); // NOI18N
         bw.write("    fi\n"); // NOI18N
         bw.write("}\n"); // NOI18N
@@ -750,7 +750,7 @@ public class ConfigurationMakefileWriter {
                 if (toDir != null && toDir.length() >= 0) {
                     bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
                 }
-                bw.write("copyFileToTmpDir " + elem.getFrom() + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+                bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
             }
             else if (elem.getType() == FileElement.FileType.DIRECTORY) {
                 bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
@@ -851,7 +851,7 @@ public class ConfigurationMakefileWriter {
         bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
-        List<InfoElement> infoList = packagingConfiguration.getSvr4Header().getValue();
+        List<InfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_SVR4_PACKAGE);
         for (InfoElement elem : infoList) {
             bw.write("echo \'" + elem.getName() + "=\"" + packagingConfiguration.expandMacros(elem.getValue()) + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
         }
@@ -937,7 +937,7 @@ public class ConfigurationMakefileWriter {
                 if (toDir != null && toDir.length() >= 0) {
                     bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
                 }
-                bw.write("copyFileToTmpDir " + elem.getFrom() + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+                bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
             }
             else if (elem.getType() == FileElement.FileType.DIRECTORY) {
                 bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
@@ -989,7 +989,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
         bw.write("echo " + "BuildRoot: ${TOP}/${TMPDIR} >> ${SPEC_FILE}\n"); // NOI18N
-        List<InfoElement> infoList = packagingConfiguration.getRpmHeader().getValue();
+        List<InfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_RPM_PACKAGE);
         for (InfoElement elem : infoList) {
             if (elem.getName().startsWith("%")) { // NOI18N
                 bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
@@ -1013,7 +1013,7 @@ public class ConfigurationMakefileWriter {
         bw.write("echo \'%files\' >> ${SPEC_FILE}\n"); // NOI18N 
         for (FileElement elem : fileList) {
             if (elem.getType() == FileElement.FileType.FILE || elem.getType() == FileElement.FileType.SOFTLINK) {
-                bw.write("echo " + "/" + elem.getTo() + " >> ${SPEC_FILE}\n"); // NOI18N
+                bw.write("echo " + "\\\"/" + elem.getTo() + "\\\" >> ${SPEC_FILE}\n"); // NOI18N
             }
         }
         bw.write("echo \'%dir\' >> ${SPEC_FILE}\n"); // NOI18N 
@@ -1055,7 +1055,7 @@ public class ConfigurationMakefileWriter {
                 if (toDir != null && toDir.length() >= 0) {
                     bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
                 }
-                bw.write("copyFileToTmpDir " + elem.getFrom() + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+                bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
             }
             else if (elem.getType() == FileElement.FileType.DIRECTORY) {
                 bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
@@ -1086,7 +1086,7 @@ public class ConfigurationMakefileWriter {
         bw.write("mkdir -p ${TMPDIR}/DEBIAN\n"); // NOI18N
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
-        List<InfoElement> infoList = packagingConfiguration.getDebianHeader().getValue();
+        List<InfoElement> infoList = packagingConfiguration.getHeaderSubList(PackagingConfiguration.TYPE_DEBIAN_PACKAGE);
         for (InfoElement elem : infoList) {
             String value = elem.getValue();
             int i = 0;

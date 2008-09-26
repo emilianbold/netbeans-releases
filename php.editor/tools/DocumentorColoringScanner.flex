@@ -59,6 +59,14 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state ST_IN_TAG
 %state ST_NO_TAG
 
+%eofval{
+          if(input.readLength() > 0) {
+              return PHPDocCommentTokenId.PHPDOC_COMMENT;
+          }
+          else {
+              return null;
+          }
+%eofval}
 
 %{
         private LexerInput input;
@@ -151,6 +159,8 @@ EMPTYLINE=({LINESTART}{TABS_AND_SPACES}{NEWLINE})
     "@package"       {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PACKAGE;}
     "@param"         {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PARAM;}
     "@property"      {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PROPERTY;}
+    "@property-read"  {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PROPERTY_READ;}
+    "@property-write" {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE;}
     "@return"        {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_RETURN;}
     "@see"           {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_SEE;}
     "@since"         {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_SINCE;}

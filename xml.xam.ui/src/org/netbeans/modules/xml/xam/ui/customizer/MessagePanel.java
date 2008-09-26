@@ -47,6 +47,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.jdesktop.layout.GroupLayout;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -99,11 +100,11 @@ public class MessagePanel extends javax.swing.JPanel implements MessageDisplayer
 		{
 			case ERROR:
                                 messageLabel.setForeground(Color.RED);
-				messageLabel.setIcon(new ImageIcon(Utilities.loadImage(
+				messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(
 						"org/netbeans/modules/xml/xam/ui/resources/error.gif"))); // NOI18N
 				break;
 			case WARNING:
-				messageLabel.setIcon(new ImageIcon(Utilities.loadImage(
+				messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(
 						"org/netbeans/modules/xml/xam/ui/resources/warning.gif"))); // NOI18N
 				break;
 			case INFO:

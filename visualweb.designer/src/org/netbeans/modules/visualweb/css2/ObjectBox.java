@@ -45,6 +45,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 
+import org.openide.util.ImageUtilities;
 import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
@@ -149,7 +150,7 @@ public class ObjectBox extends ContainerBox {
 
     private static Image getAppletLogo() {
         if (appletlogo == null) {
-            appletlogo = org.openide.util.Utilities.loadImage("org/netbeans/modules/visualweb/designer/resources/applet.gif");
+            appletlogo = ImageUtilities.loadImage("org/netbeans/modules/visualweb/designer/resources/applet.gif");
 
             // NOI18N
         }

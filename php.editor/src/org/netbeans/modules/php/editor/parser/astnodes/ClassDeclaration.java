@@ -70,7 +70,7 @@ public class ClassDeclaration extends TypeDeclaration {
         this.superClass = superClass;
     }
 
-    public ClassDeclaration(int start, int end, ClassDeclaration.Modifier modifier, Identifier className, Identifier superClass, List interfaces, Block body) {
+    public ClassDeclaration(int start, int end, ClassDeclaration.Modifier modifier, Identifier className, Identifier superClass, List<Identifier> interfaces, Block body) {
         this(start, end, modifier, className, superClass, interfaces == null ? null : (Identifier[]) interfaces.toArray(new Identifier[interfaces.size()]), body);
     }
 

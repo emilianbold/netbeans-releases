@@ -55,6 +55,7 @@ import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -557,7 +558,7 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
             JViewport jv = (JViewport)event.getSource();
             
             jlName.setText( "Sample" ); // NOI18N
-            jlName.setIcon(new ImageIcon(Utilities.loadImage(CsmImageName.CLASS)));
+            jlName.setIcon(new ImageIcon(ImageUtilities.loadImage(CsmImageName.CLASS)));
             
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);

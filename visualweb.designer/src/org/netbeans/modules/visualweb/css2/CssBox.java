@@ -76,6 +76,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -1240,7 +1241,7 @@ public class CssBox implements Box {
 //    }
     
     protected final void paintFocusWaterMark(Graphics g, int x, int y) {
-        Image image = Utilities.loadImage("org/netbeans/modules/visualweb/designer/resources/focus-watermark.gif"); // NOI18N
+        Image image = ImageUtilities.loadImage("org/netbeans/modules/visualweb/designer/resources/focus-watermark.gif"); // NOI18N
         if ((image != null) && (g instanceof Graphics2D)) {
             Graphics2D g2d = (Graphics2D)g;
             AffineTransform t = new AffineTransform(); // XXX keep transform object around?

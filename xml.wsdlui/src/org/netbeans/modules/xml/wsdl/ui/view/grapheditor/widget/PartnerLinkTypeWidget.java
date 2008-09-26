@@ -74,6 +74,7 @@ import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.NewAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -93,7 +94,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     private ExpanderWidget expander;
 	private WidgetAction editorAction;
 
-    private static final Image IMAGE = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/treeeditor/extension/bpel/resources/partnerlinktype.png");
+    private static final Image IMAGE = ImageUtilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/treeeditor/extension/bpel/resources/partnerlinktype.png");
 
     public PartnerLinkTypeWidget(Scene scene, PartnerLinkType partnerLinkType, Lookup lookup) {
         super(scene, partnerLinkType, lookup);

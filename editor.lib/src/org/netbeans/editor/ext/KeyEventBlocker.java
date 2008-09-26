@@ -80,9 +80,11 @@ public class KeyEventBlocker implements KeyListener {
         this.component.removeKeyListener(this);
         if (dispatchBlockedEvents){
             KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+            Component focusOwner = kfm.getFocusedWindow(); // or getFocusOwner()?
             while(!blockedEvents.isEmpty()) {
                 KeyEvent e = (KeyEvent)blockedEvents.removeFirst();
-                e = new KeyEvent((Component)e.getSource(), e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar(), e.getKeyLocation());
+                Component src = (focusOwner != null) ? focusOwner : (Component)e.getSource();
+                e = new KeyEvent(src, e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar(), e.getKeyLocation());
                 kfm.dispatchEvent(e);
             }
         }

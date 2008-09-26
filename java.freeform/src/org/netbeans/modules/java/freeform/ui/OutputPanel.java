@@ -161,6 +161,8 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         jPanel3 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jTextArea2 = new javax.swing.JTextArea();
+        jPanel4 = new javax.swing.JPanel();
+        jTextArea3 = new javax.swing.JTextArea();
 
         setPreferredSize(new java.awt.Dimension(275, 202));
         setLayout(new java.awt.GridBagLayout());
@@ -216,7 +218,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -308,7 +310,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         add(jPanel2, gridBagConstraints);
 
         jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Label.disabledForeground")));
@@ -341,6 +343,28 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(jPanel3, gridBagConstraints);
+
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        jTextArea3.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        jTextArea3.setEditable(false);
+        jTextArea3.setLineWrap(true);
+        jTextArea3.setText(org.openide.util.NbBundle.getMessage(OutputPanel.class, "Warning_Need_Output_Message")); // NOI18N
+        jTextArea3.setWrapStyleWord(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel4.add(jTextArea3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(jPanel4, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OutputPanel.class, "ACSN_OutputPanel")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OutputPanel.class, "ACSD_OutputPanel")); // NOI18N
@@ -574,9 +598,11 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
+    private javax.swing.JTextArea jTextArea3;
     private javax.swing.JTextField javadoc;
     private javax.swing.JButton javadocBrowse;
     private javax.swing.JLabel javadocLabel;

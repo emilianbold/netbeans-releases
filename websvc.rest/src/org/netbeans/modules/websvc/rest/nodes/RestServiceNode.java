@@ -50,6 +50,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -96,7 +97,7 @@ public class RestServiceNode extends AbstractNode{
     }
     
     private static final java.awt.Image SERVICE_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservice.png" ); //NOI18N
+            ImageUtilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservice.png" ); //NOI18N
     
     public java.awt.Image getIcon(int type) {
         return SERVICE_BADGE;

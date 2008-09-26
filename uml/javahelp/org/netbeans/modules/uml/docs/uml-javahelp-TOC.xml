@@ -15,6 +15,7 @@
 			<tocitem text="Design: UML Modeling Windows" target="uml_basics_design_windows">
 				<tocitem text="Diagram Editor" target="uml_basics_diagram_windows" />
 				<tocitem text="Modeling Palette" target="uml_basics_palette" />
+				<tocitem text="Context Palette" target="uml_basics_context_palette" />
 				<tocitem text="Properties Window" target="uml_basics_properties_window" />
 				<tocitem text="Documentation Window" target="uml_basics_documentation_window" />
 				<tocitem text="Source Editor" target="uml_basics_source_editor" />
@@ -75,7 +76,6 @@
 			<tocitem text="Creating Packages" target="uml_tasks_packages_creating" />
 			<tocitem text="Renaming Packages" target="uml_tasks_packages_renaming" />
 			<tocitem text="Deleting Packages" target="uml_tasks_packages_deleting" />
-			<tocitem text="Changing Package Element Display" target="uml_tasks_packages_changing_symbol_display" />
 		</tocitem>
 		<tocitem text="Working With Diagrams and Elements" target="uml_diagrams_ww_diagrams_elements">
 			<tocitem text="Creating Diagrams" target="uml_diagrams_creating_diagrams">
@@ -172,7 +172,6 @@
 				<tocitem text="Working With Use Case Sub Details" target="uml_diagrams_use_case_ww_use_case_sub_details" />
 			</tocitem>
 			<tocitem text="Generating Code" target="uml_diagrams_generating_code">
-				<tocitem text="Setting General Code Engineering Preferences" target="uml_round_trip_eng_setting_general_prefs" />
 				<tocitem text="Setting Java Code Engineering Preferences" target="uml_round_trip_eng_setting_java_prefs" />
 				<tocitem text="Source Code Synchronization" target="uml_diagrams_source_code_synchronization" />
 			</tocitem>

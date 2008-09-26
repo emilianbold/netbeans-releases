@@ -617,6 +617,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return (project != null) && (!project.isDisposing());
     }
 
+    public boolean isProjectDiabled(NativeProject id){
+        return disabledProjects.contains(id);
+    }
+
     private void cleanCaches() {
         TextCache.dispose();
         FilePathCache.dispose();

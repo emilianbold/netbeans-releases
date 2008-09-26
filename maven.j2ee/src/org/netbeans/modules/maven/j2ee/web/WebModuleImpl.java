@@ -71,6 +71,7 @@ import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -228,7 +229,10 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
     public void setUrl(String string) {
         url = string;
     }
-    
+
+    /**
+     * @inherit
+     */
     public FileObject getArchive() throws IOException {
         //TODO get the correct values for the plugin properties..
         MavenProject proj = mavenproject.getMavenProject();
@@ -247,6 +251,8 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
     }
 
     /**
+     * @inherit
+     *
      * according to sharold@netbeans.org this should return the iterator over
      * non-warred file, meaning from the expanded webapp. weird.
      */
@@ -273,7 +279,7 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
                 String finalName = proj.getBuild().getFinalName();
                 loc = proj.getBuild().getDirectory() + File.separator + finalName;
             }
-            File fil = FileUtil.normalizeFile(new File(loc));
+            File fil = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), loc);
     //        System.out.println("get content=" + fil);
             fo = FileUtil.toFileObject(fil);
         } 
@@ -297,6 +303,11 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
     }    
     
     //TODO this probably also adds test sources.. is that correct?
+    /**
+     * @inherit
+     * @return
+     */
+    @SuppressWarnings("deprecation")
     public FileObject[] getJavaSources() {
         Sources srcs = ProjectUtils.getSources(project);
         SourceGroup[] gr = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -313,11 +324,11 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
     // inspired by netbeans' webmodule codebase, not really sure what is the point
     // of the iterator..
     private static final class ContentIterator implements Iterator {
-        private ArrayList ch;
+        private ArrayList<FileObject> ch;
         private FileObject root;
         
         private ContentIterator(FileObject f) {
-            this.ch = new ArrayList();
+            this.ch = new ArrayList<FileObject>();
             ch.add(f);
             this.root = f;
         }
@@ -327,7 +338,7 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
         }
         
         public Object next() {
-            FileObject f = (FileObject) ch.get(0);
+            FileObject f = ch.get(0);
             ch.remove(0);
             if (f.isFolder()) {
                 f.refresh();

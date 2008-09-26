@@ -48,6 +48,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.loadgenerator.spi.Engine;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -71,7 +72,7 @@ public class RemoveStoppedAction extends AbstractAction {
   
   /** Creates a new instance of RemoveStoppedAction */
   public RemoveStoppedAction(final Engine engine) {
-    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Remove_All_Stopped"), new ImageIcon(Utilities.loadImage(ICON)));
+    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Remove_All_Stopped"), new ImageIcon(ImageUtilities.loadImage(ICON)));
     this.engine = engine;
     this.engine.addPropertyChangeListener(ProcessInstance.STATE, WeakListeners.propertyChange(listener, engine));
   }

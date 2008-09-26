@@ -257,6 +257,11 @@ public class Installer extends ModuleInstall implements Runnable {
                 for (LogRecord rec : disabledRec) {
                     LogRecords.write(logStreamMetrics(), rec);
                 }
+                List<LogRecord> clusterRec = new ArrayList<LogRecord>();
+                getClusterList(log, clusterRec);
+                for (LogRecord rec : clusterRec) {
+                    LogRecords.write(logStreamMetrics(), rec);
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -569,6 +574,20 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
+    static void getClusterList (Logger logger, List<LogRecord> clusterRec) {
+        LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
+        String dirs = System.getProperty("netbeans.dirs");
+        String [] k = dirs.split(File.pathSeparator);
+        String [] l = new String[k.length];
+        for (int i = 0; i < k.length; i++) {
+            File f = new File(k[i]);
+            l[i] = f.getName();
+        }
+        rec.setParameters(l);
+        rec.setLoggerName(logger.getName());
+        clusterRec.add(rec);
+    }
+    
     public static URL hintsURL() {
         return hintURL;
     }
@@ -1172,6 +1191,7 @@ public class Installer extends ModuleInstall implements Runnable {
         LOG.log(Level.FINE, "uploadLogs, flushing"); // NOI18N
         data.flush();
         gzip.finish();
+        os.println();
         os.println("----------konec<>bloku--");
         os.close();
         
@@ -1217,7 +1237,12 @@ public class Installer extends ModuleInstall implements Runnable {
 
     private static String findIdentity() {
         Preferences p = NbPreferences.root().node("org/netbeans/modules/autoupdate"); // NOI18N
-        String id = p.get("ideIdentity", null);
+        String id = p.get("qualifiedId", null);
+        //Strip id prefix
+        int ind = id.indexOf("0");
+        if (ind != -1) {
+            id = id.substring(ind + 1);
+        }
         LOG.log(Level.INFO, "findIdentity: {0}", id);
         return id;
     }
@@ -1495,6 +1520,7 @@ public class Installer extends ModuleInstall implements Runnable {
                             recs.add(thrownLog);//exception selected by user
                         }
                         recs.add(TimeToFailure.logFailure());
+                        recs.add(BuildInfo.logBuildInfoRec());
                         recs.add(userData);
                         if ((report) && !(reportPanel.asAGuest())) {
                             if (!checkUserName()) {
@@ -1868,11 +1894,6 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
                 } catch (IOException exc) {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
-                }
-                List<String> buildInfo = BuildInfo.logBuildInfo();
-                if (buildInfo != null) {
-                    Collection<? super String> c = params;
-                    c.addAll(buildInfo);
                 }
             }
         }

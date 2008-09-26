@@ -50,6 +50,7 @@ import java.util.List;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.xml.sax.EntityResolver;
@@ -143,7 +144,7 @@ public class SaasCatalog implements CatalogReader, CatalogDescriptor,
      * @return icon representing current state or null
      */
     public Image getIcon(int type) {
-        return Utilities.loadImage(IMAGE_PATH);
+        return ImageUtilities.loadImage(IMAGE_PATH);
     }
     
     /**

@@ -1432,6 +1432,10 @@ public class IDEValidation extends JellyTestCase {
     public void testGCProjects() throws Exception {
         WatchProjects.assertProjects();
     }
+
+    public void testReflectionUsage() throws Exception {
+        CountingSecurityManager.assertReflection(0, "allowed-reflection.txt");
+    }
     
     public void testBlacklistedClassesHandler() throws Exception {
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();

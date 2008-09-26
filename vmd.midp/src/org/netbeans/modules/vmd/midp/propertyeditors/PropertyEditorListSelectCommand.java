@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.BorderLayout;
@@ -77,10 +76,10 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  * @author Karol Harezlak
  */
-public final class PropertyEditorListSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement {
+public final class PropertyEditorListSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement, CleanUp {
 
-    private final List<String> tags = new ArrayList<String>();
-    private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
+    private List<String> tags = new ArrayList<String>();
+    private Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private TypeID typeID;
@@ -102,14 +101,26 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         Mnemonics.setLocalizedText(radioButton, mnemonic);
         this.noneItem = noneItem;
         this.defaultItem = defaultItem;
-        
+
         initElements(Collections.<PropertyEditorElement>singleton(this));
+    }
+
+    public void clean(DesignComponent component) {
+        super.cleanUp(component);
+        tags = null;
+        values = null;
+        if (customEditor != null) {
+            customEditor.clean();
+            customEditor = null;
+        }
+        radioButton = null;
+        typeID = null;
     }
 
     private void initComponents() {
         radioButton = new JRadioButton();
-        
-        radioButton.getAccessibleContext().setAccessibleName( 
+
+        radioButton.getAccessibleContext().setAccessibleName(
                 radioButton.getText());
         radioButton.getAccessibleContext().setAccessibleDescription(
                 radioButton.getText());
@@ -302,13 +313,19 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
             initComponents();
         }
 
+        void clean() {
+            combobox.removeActionListener(this);
+            combobox = null;
+            this.removeAll();
+        }
+
         private void initComponents() {
             setLayout(new BorderLayout());
             combobox = new JComboBox();
             combobox.setModel(new DefaultComboBoxModel());
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);
-            
+
             combobox.getAccessibleContext().setAccessibleName(
                     radioButton.getAccessibleContext().getAccessibleName());
             combobox.getAccessibleContext().setAccessibleDescription(

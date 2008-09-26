@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -190,7 +191,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     }
     
     public Image getIcon() {
-        return Utilities.loadImage(ICON);
+        return ImageUtilities.loadImage(ICON);
     }
     
     public File[] getPlatformRoots() {

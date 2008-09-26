@@ -48,12 +48,11 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  *
  * @author Tor Norbye
  */
-public class JsTranslatedSource implements TranslatedSource {
+public class JsTranslatedSource extends TranslatedSource {
     private JsModel model;
-    private JsEmbeddingModel embeddingModel;
 
     public JsTranslatedSource(JsEmbeddingModel embeddingModel, JsModel model) {
-        this.embeddingModel = embeddingModel;
+        super(embeddingModel);
         this.model = model;
     }
 
@@ -67,10 +66,6 @@ public class JsTranslatedSource implements TranslatedSource {
 
     public String getSource() {
         return model.getJsCode();
-    }
-
-    public EmbeddingModel getModel() {
-        return embeddingModel;
     }
 
     public int getSourceStartOffset() {

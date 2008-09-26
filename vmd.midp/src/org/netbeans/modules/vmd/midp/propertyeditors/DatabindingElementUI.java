@@ -47,14 +47,14 @@ import org.openide.util.NbBundle;
  *
  * @author Karol Harezlak
  */
-public class DatabindingElementUI extends javax.swing.JPanel {
+public class DatabindingElementUI extends javax.swing.JPanel implements CleanUp {
 
-    private static String NOT_DEFINED = NbBundle.getMessage(DatabindingElementUI.class, "LBL_NOT_DEFINED" ); //TODO Localized
+    private static String NOT_DEFINED = NbBundle.getMessage(DatabindingElementUI.class, "LBL_NOT_DEFINED"); //TODO Localized
     private DesignPropertyEditor propertyEditor;
     private JRadioButton radioButton;
-    private static String INDEXABLE = NbBundle.getMessage(DatabindingElementUI.class, "LBL_INDEXABLE" ); //NOI18N
-    private static String DATASET = NbBundle.getMessage(DatabindingElementUI.class, "LBL_DATASET" ); //NOI18N
-    private static String CREATE_INDEX  = NbBundle.getMessage(DatabindingElementUI.class, "LBL_CREATE_INDEX" ); //NOI18N
+    private static String INDEXABLE = NbBundle.getMessage(DatabindingElementUI.class, "LBL_INDEXABLE"); //NOI18N
+    private static String DATASET = NbBundle.getMessage(DatabindingElementUI.class, "LBL_DATASET"); //NOI18N
+    private static String CREATE_INDEX = NbBundle.getMessage(DatabindingElementUI.class, "LBL_CREATE_INDEX"); //NOI18N
 
     /** Creates new form DataSetDatabindingElement */
     DatabindingElementUI(DesignPropertyEditor propertyEditor, final JRadioButton radioButton) {
@@ -69,7 +69,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         jComboBoxDatasets.addFocusListener(focusListener);
         jComboBoxIndexNames.addFocusListener(focusListener);
         jComboBoxIndexNames.addActionListener(new UpdateUIListener());
-        
+
         jComboBoxCommandsIndexablePrevious.addFocusListener(focusListener);
         jComboBoxIndexableNext.addFocusListener(focusListener);
         jCheckBox1.addActionListener(new ActionListener() {
@@ -84,7 +84,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 }
             }
         });
-        
+
         jTextFieldExpressionRead.addKeyListener(new KeyAdapter() {
 
             @Override
@@ -98,8 +98,8 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         TextFieldFocusListener fl = new TextFieldFocusListener();
         jTextFieldExpressionRead.addFocusListener(fl);
         jTextFieldExpressionWrite.addFocusListener(fl);
-        
-        
+
+
         radioButton.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
@@ -113,14 +113,14 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             }
         });
         updateIndexableUIComponents();
-        
+
 
     }
 
     private boolean updateWarning() {
 
         if (radioButton.isSelected()) {
-            StringBuffer warning = new StringBuffer(); 
+            StringBuffer warning = new StringBuffer();
             if (jComboBoxDatasets.getSelectedItem() == null || jComboBoxDatasets.getSelectedItem() == NOT_DEFINED) {
                 warning.append(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_Dataset_not_Selected"));
             }
@@ -156,10 +156,12 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         return true;
     }
 
+   
+
     private void updateDataSetRelatedUI() {
         if (jComboBoxDatasets.getSelectedItem() != null && jComboBoxDatasets.getSelectedItem() != NOT_DEFINED) {
             jTextFieldExpressionRead.setEnabled(true);
-            
+
             if (jTextFieldExpressionRead.getText().equals(jTextFieldExpressionWrite.getText())) {
                 jCheckBox1.setSelected(true);
                 jTextFieldExpressionWrite.setEnabled(false);
@@ -175,8 +177,9 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             jTextFieldExpressionRead.setEnabled(false);
             jComboBoxCommandUpdate.setEnabled(false);
         }
-        if (!(jComboBoxDatasets.getModel() instanceof Model))
+        if (!(jComboBoxDatasets.getModel() instanceof Model)) {
             return;
+        }
         Model model = (Model) jComboBoxDatasets.getModel();
         if (model.isSelectedDataSetReadOnly() != null) {
             if (model.isSelectedDataSetReadOnly()) {
@@ -194,6 +197,39 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             jComboBoxCommandsIndexablePrevious.setEnabled(true);
             jComboBoxIndexableNext.setEnabled(true);
         }
+    }
+
+     public void clean(DesignComponent component) {
+        propertyEditor = null;
+        radioButton = null;
+        jCheckBox1 = null;
+        jComboBoxCommandUpdate = null;
+        jComboBoxCommandsIndexablePrevious = null;
+        jComboBoxDatasets = null;
+        jComboBoxIndexNames = null;
+        jComboBoxIndexableNext = null;
+        jLabel1 = null;
+        jLabel2 = null;
+        jLabel3 = null;
+        jLabel4 = null;
+        jLabel5 = null;
+        jLabel6 = null;
+        jLabel7 = null;
+        jLabel8 = null;
+        jLabel9 = null;
+        jLabelReadOnly = null;
+        jLabelWarning = null;
+        jLabelWarning1 = null;
+        jLabelWarning2 = null;
+        jPanel1 = null;
+        jPanel2 = null;
+        jPanel3 = null;
+        jPanel4 = null;
+        jPanel5 = null;
+        jTabbedPane1 = null;
+        jTextFieldExpressionRead = null;
+        jTextFieldExpressionWrite = null;
+        this.removeAll();
     }
 
     private void updateIndexableUIComponents() {
@@ -522,11 +558,12 @@ public class DatabindingElementUI extends javax.swing.JPanel {
 
 private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
 // TODO add your handling code here://GEN-LAST:event_jCheckBox1ActionPerformed
-}                                          
+    }
 
     public void updateComponent(final DesignComponent component) {
-        if (component == null)
+        if (component == null) {
             return;
+        }
         final DesignDocument document = component.getDocument();
         document.getTransactionManager().readAccess(new Runnable() {
 
@@ -542,14 +579,14 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 DesignComponent connector = MidpDatabindingSupport.getConnector(component, propertyEditor.getPropertyNames().get(0));
                 if (connector != null) {
                     radioButton.setSelected(true);
-                    String dataSetName =  createDataSetName((String) connector.getParentComponent().readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue(), connector.getParentComponent());
+                    String dataSetName = createDataSetName((String) connector.getParentComponent().readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue(), connector.getParentComponent());
                     jComboBoxDatasets.setSelectedItem(dataSetName);
                     String readExpression = (String) connector.readProperty(DataSetConnectorCD.PROP_EXPRESSION_READ).getPrimitiveValue();
                     String writeExpression = (String) connector.readProperty(DataSetConnectorCD.PROP_EXPRESSION_WRITE).getPrimitiveValue();
                     jTextFieldExpressionRead.setText(readExpression);
                     jTextFieldExpressionWrite.setText(writeExpression);
                     jComboBoxIndexNames.setSelectedItem(MidpDatabindingSupport.getIndexName(connector));
-                   
+
                     setCommandComboBox(connector, jComboBoxCommandUpdate, DataSetConnectorCD.PROP_UPDATE_COMMAND);
                     setCommandComboBox(connector, jComboBoxIndexableNext, DataSetConnectorCD.PROP_NEXT_COMMAND);
                     setCommandComboBox(connector, jComboBoxCommandsIndexablePrevious, DataSetConnectorCD.PROP_PREVIOUS_COMMAND);
@@ -567,7 +604,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         updateIndexableUIComponents();
         updateWarning();
     }
-    
+
     private void setReadOnlyLabel(DesignComponent connector) {
         PropertyValue value = connector.getParentComponent().readProperty(DataSetAbstractCD.PROP_READ_ONLY);
         if (value != PropertyValue.createNull() && value.getPrimitiveValue() == Boolean.TRUE) {
@@ -576,13 +613,14 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             jLabelReadOnly.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_WARNING_Read/Write"));
         }
     }
+
     private void setCommandComboBox(DesignComponent connector, JComboBox comboBox, String propertyName) {
         DesignComponent command = connector.readProperty(propertyName).getComponent();
         if (command != null) {
             String commandName = (String) command.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
             comboBox.setSelectedItem(commandName);
         }
-        
+
     }
 
     public void saveToModel(final DesignComponent component) {
@@ -593,7 +631,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         document.getTransactionManager().writeAccess(new Runnable() {
 
             public void run() {
-                
+
                 String selectedDataSet = cleanUpDataSetName((String) jComboBoxDatasets.getSelectedItem());
                 String selectedUpdateCommand = (String) jComboBoxCommandUpdate.getSelectedItem();
                 String selectedNextCommand = (String) jComboBoxIndexableNext.getSelectedItem();
@@ -611,7 +649,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         if (jComboBoxIndexNames.getSelectedItem() != null && !jComboBoxIndexNames.getSelectedItem().equals(NOT_DEFINED)) {
                             if (MidpDatabindingSupport.isIndexableDataSet(document, dataSet.getType())) {
                                 String indexName = (String) jComboBoxIndexNames.getSelectedItem();
-                                DesignComponent index = MidpDatabindingSupport.getIndex(dataSet,indexName);
+                                DesignComponent index = MidpDatabindingSupport.getIndex(dataSet, indexName);
                                 if (index == null) {
                                     index = MidpDatabindingSupport.createIndex(dataSet, indexName);
                                 }
@@ -620,29 +658,29 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         } else {
                             connector.writeProperty(DataSetConnectorCD.PROP_INDEX, PropertyValue.createNull());
                         }
-                        
+
                         connector.writeProperty(DataSetConnectorCD.PROP_COMPONENT_ID, MidpTypes.createLongValue(component.getComponentID()));
                         connector.writeProperty(DataSetConnectorCD.PROP_EXPRESSION_READ, MidpTypes.createStringValue(jTextFieldExpressionRead.getText().trim()));
                         connector.writeProperty(DataSetConnectorCD.PROP_EXPRESSION_WRITE, MidpTypes.createStringValue(jTextFieldExpressionWrite.getText().trim()));
-                        
+
                         saveCommands(document, connector, selectedUpdateCommand, DataSetConnectorCD.PROP_UPDATE_COMMAND);
                         saveCommands(document, connector, selectedNextCommand, DataSetConnectorCD.PROP_NEXT_COMMAND);
-                        saveCommands(document, connector, selectedPreviousCommand,DataSetConnectorCD.PROP_PREVIOUS_COMMAND);
+                        saveCommands(document, connector, selectedPreviousCommand, DataSetConnectorCD.PROP_PREVIOUS_COMMAND);
                         MidpDatabindingSupport.removerUnusedIndexes(document);
                         component.resetToDefault(propertyEditor.getPropertyNames().get(0));
                         break;
                     }
                 }
-                
+
             }
         });
     }
-    
-    private void saveCommands(DesignDocument document,  DesignComponent connector, String commandName, String propertyName) {
+
+    private void saveCommands(DesignDocument document, DesignComponent connector, String commandName, String propertyName) {
         assert document != null || connector != null || propertyName != null;
         Collection<DesignComponent> commands = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
         for (DesignComponent command : commands) {
-            PropertyValue  value = command.readProperty(ClassCD.PROP_INSTANCE_NAME);
+            PropertyValue value = command.readProperty(ClassCD.PROP_INSTANCE_NAME);
             if (value != PropertyValue.createNull() && value.getPrimitiveValue().equals(commandName)) {
                 connector.writeProperty(propertyName, PropertyValue.createComponentReference(command));
                 break;
@@ -652,6 +690,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     public void resetValuesInModel(final DesignComponent component) {
         component.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
             public void run() {
                 MidpDatabindingSupport.removeUnusedConnector(component, propertyEditor.getPropertyNames().get(0));
             }
@@ -671,7 +710,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         updateWarning();
         updateIndexableUIComponents();
     }
-    
+
     private static String createDataSetName(String name, DesignComponent c) {
         DescriptorRegistry registry = c.getDocument().getDescriptorRegistry();
         if (registry.isInHierarchy(IndexableDataAbstractSetCD.TYPEID, c.getType())) {
@@ -681,7 +720,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         return name;
     }
-    
+
     private static String cleanUpDataSetName(String name) {
         if (name != null) {
             name = name.replace(INDEXABLE, "").replace(DATASET, "").trim(); //NOI18N
@@ -726,9 +765,9 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         private TypeID categoryType;
         private ListDataListener lisener;
         private Map<String, Boolean> dataSetWriteCapability;
-        
+
         Model(DesignComponent component) {
-            Collection<DesignComponent> connectors = MidpDatabindingSupport.getAllConnectors(component.getDocument()); 
+            Collection<DesignComponent> connectors = MidpDatabindingSupport.getAllConnectors(component.getDocument());
             names = new ArrayList<String>();
             for (DesignComponent connector : connectors) {
                 DesignComponent index = connector.readProperty(DataSetConnectorCD.PROP_INDEX).getComponent();
@@ -736,16 +775,16 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 if (index != null && !names.contains(indexName)) {
                     names.add(indexName);
                 }
-               
+
             }
             names.add(NOT_DEFINED);
             names.add(CREATE_INDEX); //NOI18N
         }
-        
+
         Model(List<String> items) {
             names = items;
         }
-        
+
         Model(DesignComponent component, TypeID categoryType) {
             this.categoryType = categoryType;
             this.names = new ArrayList<String>();
@@ -767,7 +806,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                             dataSetWriteCapability.put(name, Boolean.FALSE);
                         }
                     }
-                    
+
                     if (categoryType == CommandsCategoryCD.TYPEID) {
                         Collection<String> activeCommands = new HashSet<String>();
                         Collection<DesignComponent> eventSources = DocumentSupport.gatherAllComponentsOfTypeID(component.getDocument(), CommandEventSourceCD.TYPEID);
@@ -793,17 +832,17 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 this.selectedItem = (String) item;
             }
         }
-        
+
         public Boolean isSelectedDataSetReadOnly() {
             if (dataSetWriteCapability == null) {
                 return null;
             }
             Boolean readOnly = dataSetWriteCapability.get(selectedItem);
-            if ( readOnly != null) {
+            if (readOnly != null) {
                 return readOnly;
             }
             return null;
-            
+
         }
 
         public Object getSelectedItem() {
@@ -828,85 +867,76 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         public void removeListDataListener(ListDataListener listener) {
             this.lisener = null;
         }
-        
+
         public List<String> getItems() {
             return names;
         }
-
     }
-   
+
     private class ComponentFocusAdapter extends FocusAdapter {
 
         @Override
         public void focusGained(FocusEvent e) {
             radioButton.setSelected(true);
         }
-            
     }
-    
+
     private class Listener implements ListDataListener {
 
         public void intervalAdded(ListDataEvent e) {
-            
         }
 
         public void intervalRemoved(ListDataEvent e) {
-            
         }
 
         public void contentsChanged(ListDataEvent e) {
-                //String nameDataSet = cleanUpDataSetName((String) jComboBoxDatasets.getSelectedItem());
-                //nameDataSet = nameDataSet.substring(0,1).toUpperCase() + nameDataSet.substring(1);
-                String name = "index";//NOI18N + nameDataSet;
-                List<String> names= ((Model) jComboBoxIndexNames.getModel()).getItems();
-                names.remove(CREATE_INDEX);
-                names.remove(NOT_DEFINED);
-                int i = 0;
-                while (names.contains(name)) {
-                    name = name + i++;
-                }
-                names.add(name);
-                names.add(NOT_DEFINED);
-                names.add(CREATE_INDEX);
-                Model indexNamesModel = new Model(names);
-                jComboBoxIndexNames.setModel(indexNamesModel);
-                indexNamesModel.addListDataListener(new Listener());
-                jComboBoxIndexNames.setSelectedItem(name);
-                
-        }
+            //String nameDataSet = cleanUpDataSetName((String) jComboBoxDatasets.getSelectedItem());
+            //nameDataSet = nameDataSet.substring(0,1).toUpperCase() + nameDataSet.substring(1);
+            String name = "index";//NOI18N + nameDataSet;
+            List<String> names = ((Model) jComboBoxIndexNames.getModel()).getItems();
+            names.remove(CREATE_INDEX);
+            names.remove(NOT_DEFINED);
+            int i = 0;
+            while (names.contains(name)) {
+                name = name + i++;
+            }
+            names.add(name);
+            names.add(NOT_DEFINED);
+            names.add(CREATE_INDEX);
+            Model indexNamesModel = new Model(names);
+            jComboBoxIndexNames.setModel(indexNamesModel);
+            indexNamesModel.addListDataListener(new Listener());
+            jComboBoxIndexNames.setSelectedItem(name);
 
+        }
     }
-    
+
     private class UpdateUIListener implements ActionListener {
 
-       public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {
             updateDataSetRelatedUI();
             updateWarning();
             updateIndexableUIComponents();
-            
-       }
-        
+
+        }
     }
-    
+
     private class TextFieldFocusListener extends FocusAdapter {
 
-            @Override
-            public void focusGained(FocusEvent e) {
-                super.focusGained(e);
-                jTextFieldExpressionRead.setText(jTextFieldExpressionRead.getText().trim());
-                jTextFieldExpressionWrite.setText(jTextFieldExpressionWrite.getText().trim());
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                super.focusLost(e);
-                jTextFieldExpressionRead.setText(jTextFieldExpressionRead.getText().trim());
-                jTextFieldExpressionWrite.setText(jTextFieldExpressionWrite.getText().trim());
-            }
-            
-            
+        @Override
+        public void focusGained(FocusEvent e) {
+            super.focusGained(e);
+            jTextFieldExpressionRead.setText(jTextFieldExpressionRead.getText().trim());
+            jTextFieldExpressionWrite.setText(jTextFieldExpressionWrite.getText().trim());
         }
 
+        @Override
+        public void focusLost(FocusEvent e) {
+            super.focusLost(e);
+            jTextFieldExpressionRead.setText(jTextFieldExpressionRead.getText().trim());
+            jTextFieldExpressionWrite.setText(jTextFieldExpressionWrite.getText().trim());
+        }
+    }
 }
     
     

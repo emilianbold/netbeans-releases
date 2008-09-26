@@ -31,6 +31,7 @@ import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -133,6 +134,6 @@ public enum NodeType {
         } else {
             fileName = IMAGE_FOLDER_PATH + name + "_" + modificator + ".png"; // NOI18N
         }
-        return Utilities.loadImage(fileName);
+        return ImageUtilities.loadImage(fileName);
     }
 }

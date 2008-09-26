@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.catalog.impl;
 import java.beans.*;
 import java.awt.Image;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
@@ -97,7 +98,7 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
             properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", XCatalog.class, null, null, "getIcon", null );
             properties[PROPERTY_icon].setHidden ( true );
         }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        catch( IntrospectionException e) {}                          
         
         // Here you can add code for customizing the properties array.
         
@@ -111,7 +112,7 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
 
-            return Utilities.loadImage ("org/netbeans/modules/xml/catalog/impl/xmlCatalog.gif"); // NOI18N
+            return ImageUtilities.loadImage ("org/netbeans/modules/xml/catalog/impl/xmlCatalog.gif"); // NOI18N
         } else {
             return null;
         }

@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.beans.*;
 
 import org.netbeans.core.ui.SwingBrowser;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -126,6 +127,6 @@ public class SwingBrowserBeanInfo extends SimpleBeanInfo {
     * Returns the internal browser icon. 
     */
     public Image getIcon (int type) {
-        return Utilities.loadImage("org/openide/resources/html/htmlView.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/openide/resources/html/htmlView.gif"); // NOI18N
     }
 }

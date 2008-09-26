@@ -245,10 +245,11 @@ public class CommitAction extends ContextAction {
         for (File file : fileList) {
             File parent = null;;
             while((parent = file.getParentFile()) != null) {
-                if(checked.contains(parent)) break;
+                if(checked.contains(parent)) break;                
                 checked.add(parent);
+                if(fileList.contains(parent)) break;
                 if(!SvnUtils.isManaged(parent)) break;
-                FileInformation info = onlyCached ? cache.getCachedStatus(file) : cache.getStatus(file);
+                FileInformation info = onlyCached ? cache.getCachedStatus(parent) : cache.getStatus(parent);
                 if(info == null) continue;
                 if(info.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY ||
                    info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)

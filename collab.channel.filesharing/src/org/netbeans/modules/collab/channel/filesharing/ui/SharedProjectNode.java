@@ -43,6 +43,7 @@ package org.netbeans.modules.collab.channel.filesharing.ui;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -120,7 +121,7 @@ public class SharedProjectNode extends FilterNode implements FilesharingConstant
         this.displayName = name;
 
         if (displayName.equals(WEB_FOLDER_NAME)) {
-            badge = Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webPagesBadge.gif"); //NOI18N	
+            badge = ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webPagesBadge.gif"); //NOI18N
         }
 
         DataObject d = (DataObject) node.getCookie(DataObject.class);
@@ -165,7 +166,7 @@ public class SharedProjectNode extends FilterNode implements FilesharingConstant
         Image image = opened ? originalNode.getOpenedIcon(type) : originalNode.getIcon(type);
 
         if (this.badge != null) {
-            image = Utilities.mergeImages(image, this.badge, 7, 7);
+            image = ImageUtilities.mergeImages(image, this.badge, 7, 7);
         }
 
         return image;

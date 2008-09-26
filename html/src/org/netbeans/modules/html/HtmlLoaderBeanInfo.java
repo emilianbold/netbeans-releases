@@ -46,6 +46,7 @@ import java.awt.Image;
 
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Html data loader bean info.
@@ -69,9 +70,9 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
                 (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-	    return Utilities.loadImage("org/netbeans/modules/html/htmlObject.png"); // NOI18N
+	    return ImageUtilities.loadImage("org/netbeans/modules/html/htmlObject.png"); // NOI18N
         } else {
-	    return Utilities.loadImage ("org/netbeans/modules/html/htmlObject32.gif"); // NOI18N
+	    return ImageUtilities.loadImage ("org/netbeans/modules/html/htmlObject32.gif"); // NOI18N
         }
     }
 

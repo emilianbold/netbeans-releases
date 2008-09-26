@@ -52,6 +52,7 @@ import java.util.Locale;
 import javax.swing.*;
 
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.DialogDisplayer;
@@ -89,7 +90,7 @@ public class BundleNodeCustomizer extends JPanel {
 
     /** Utility method. Gets icon for key item in key list. */    
     private static Icon getLocaleIcon() {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/properties/propertiesLocale.gif")); // NOI18N
+        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/properties/propertiesLocale.gif")); // NOI18N
     }
     
     /** Retrieves entry locales. Utility method.

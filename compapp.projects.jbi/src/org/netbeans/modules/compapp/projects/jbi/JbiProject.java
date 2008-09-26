@@ -66,6 +66,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -104,7 +105,7 @@ import org.openide.filesystems.FileUtil;
  */
 public final class JbiProject implements Project, AntProjectListener, ProjectPropertyProvider {
     private static final Icon PROJECT_ICON = new ImageIcon(
-            Utilities.loadImage(
+            ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png" // NOI18N
             )
             ); // NOI18N

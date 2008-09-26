@@ -47,7 +47,6 @@ made subject to such option by the copyright holder.
                 xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:param name="jaxwsversion">jaxws21lib</xsl:param>
-    <xsl:param name="xnocompile">true</xsl:param>
     <xsl:template match="/">
 
         <project>
@@ -163,13 +162,11 @@ made subject to such option by the copyright holder.
                     </condition>
                 </target>
                 <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
-                    <xsl:variable name="xnocompile_var" select="$xnocompile = 'true'"/>
                     <xsl:variable name="forceReplace_var" select="jaxws:package-name/@forceReplace"/>
                     <xsl:variable name="isService_var" select="false()"/>
                     <xsl:call-template name="invokeWsimport">
                         <xsl:with-param name="isService" select="$isService_var"/>
                         <xsl:with-param name="forceReplace" select="$forceReplace_var"/>
-                        <xsl:with-param name="xnocompile" select="$xnocompile_var"/>
                         <xsl:with-param name="packageName" select="$package_name"/>
                         <xsl:with-param name="wsName" select="$wsname" />
                         <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
@@ -199,13 +196,11 @@ made subject to such option by the copyright holder.
                         </condition>
                     </target>
                     <target name="wsimport-service-{$wsname}" depends="wsimport-init,wsimport-service-check-{$wsname}" unless="wsimport-service-{$wsname}.notRequired">
-                        <xsl:variable name="xnocompile_var" select="$xnocompile = 'true'"/>
                         <xsl:variable name="forceReplace_var" select="jaxws:package-name/@forceReplace" />
                         <xsl:variable name="isService_var" select="true()"/>
                         <xsl:call-template name="invokeWsimport">
                             <xsl:with-param name="isService" select="$isService_var"/>
                             <xsl:with-param name="forceReplace" select="$forceReplace_var"/>
-                            <xsl:with-param name="xnocompile" select="$xnocompile_var"/>
                             <xsl:with-param name="packageName" select="$package_name"/>
                             <xsl:with-param name="wsName" select="$wsname" />
                             <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
@@ -265,7 +260,6 @@ made subject to such option by the copyright holder.
 
     <!-- invokeWsimport template -->
     <xsl:template name="invokeWsimport">
-        <xsl:param name="xnocompile" />
         <xsl:param name="forceReplace"/>
         <xsl:param name="packageName"/>
         <xsl:param name="isService" />
@@ -275,9 +269,6 @@ made subject to such option by the copyright holder.
         <xsl:param name="Catalog"/>
         <xsl:param name="wsimportoptions"/>
         <wsimport>
-            <xsl:if test="$xnocompile = 'true'">
-                <xsl:attribute name="xnocompile">true</xsl:attribute>
-            </xsl:if>
             <xsl:if test="$forceReplace">
                 <xsl:attribute name="package"><xsl:value-of select="$packageName"/></xsl:attribute>
             </xsl:if>

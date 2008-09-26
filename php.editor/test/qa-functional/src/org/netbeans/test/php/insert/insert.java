@@ -47,6 +47,20 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.test.php.GeneralPHP;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import java.util.List;
 
 /**
@@ -67,5 +81,31 @@ public class insert extends GeneralPHP
     // Type Alt+Insert
     eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
     Sleep( 1000 );
+  }
+
+  private class dummyClick implements Runnable
+  {
+    private JListOperator list;
+    private int index, count;
+    public dummyClick( JListOperator l, int i, int j )
+    {
+      list = l;
+      index = i;
+      count = j;
+    }
+
+    public void run( )
+    {
+      list.clickOnItem( index, count );
+    }
+  }
+
+  protected void ClickListItemNoBlock(
+      JListOperator jlList,
+      int iIndex,
+      int iCount
+    )
+  {
+    ( new Thread( new dummyClick( jlList, iIndex, iCount ) ) ).start( );
   }
 }

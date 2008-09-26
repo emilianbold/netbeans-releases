@@ -159,7 +159,6 @@ public class DeprecationsTest extends HintTestBase {
             exceptions.add("sys.rb");
 
             // New in Rails 2.0.2:
-            
             exceptions.add("authorization_test.rb");
             exceptions.add("session_fixation_test.rb");
             exceptions.add("request_forgery_protection_test.rb");
@@ -178,6 +177,9 @@ public class DeprecationsTest extends HintTestBase {
             exceptions.add("connection_test.rb");
             exceptions.add("has_many_associations_test.rb");
             exceptions.add("template_finder_test.rb");
+
+            // New in Rails 2.1.1
+            exceptions.add("document_test.rb");
             
             assertNoJRubyMatches(createRule(), exceptions);
             

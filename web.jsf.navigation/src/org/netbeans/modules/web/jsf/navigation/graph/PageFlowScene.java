@@ -97,6 +97,7 @@ import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteActio
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.layout.ConnectionWrapperLayout;
 import org.openide.actions.DeleteAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
@@ -146,7 +147,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private PFObjectSceneListener pfObjectSceneListener;
     private static Paint PAINT_BACKGROUND;
     static {
-        Image sourceImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/paper_grid.png"); // NOI18N
+        Image sourceImage = ImageUtilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/paper_grid.png"); // NOI18N
         int width = sourceImage.getWidth(null);
         int height = sourceImage.getHeight(null);
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -277,7 +278,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         nodeWidget.setNodeName(displayName);
 
         Widget header = nodeWidget.getHeader();
-        ImageWidget imageWidget = new DefaultAnchorWidget(this, Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"));
+        ImageWidget imageWidget = new DefaultAnchorWidget(this, ImageUtilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"));
         imageWidget.getActions().addAction(connectAction);
         imageWidget.getActions().addAction(createWidgetHoverAction());
         header.addChild(imageWidget);

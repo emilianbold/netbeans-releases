@@ -46,7 +46,6 @@ public class SearchRevisionsTest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {        
-        os_name = System.getProperty("os.name");
         System.out.println("### "+getName()+" ###");
         
     }
@@ -111,6 +110,8 @@ public class SearchRevisionsTest extends JellyTestCase {
 
             stream.flush();
             stream.close();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }   

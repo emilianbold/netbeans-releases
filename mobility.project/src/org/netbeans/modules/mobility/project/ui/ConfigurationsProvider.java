@@ -85,6 +85,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.ErrorManager;
@@ -201,7 +202,7 @@ class ConfigurationsProvider
                     if ("jar".equals(roots[i].getURL().getProtocol()))
                     { //NOI18N
                         file = FileUtil.getArchiveFile(roots[i]);
-                        icon = openedIcon = new ImageIcon(Utilities.loadImage(ARCHIVE_ICON));
+                        icon = openedIcon = new ImageIcon(ImageUtilities.loadImage(ARCHIVE_ICON));
                         node=PackageView.createPackageView(new LibrariesSourceGroup(roots[i],file.getNameExt(),icon, openedIcon));
                     }
                     //Add a file or folder

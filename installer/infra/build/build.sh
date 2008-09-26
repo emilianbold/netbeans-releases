@@ -150,6 +150,10 @@ if [ -z "$ML_BUILD" ] ; then
     ML_BUILD=0
 fi
 
+if [ -z "$COMMUNITY_ML_BUILD" ] ; then
+    COMMUNITY_ML_BUILD=0
+fi
+
 if [ -z "$BUILD_JTB" ] ; then
     #do not build NetBeans/JDK5 bundles by default
     BUILD_JTB=0
@@ -159,6 +163,12 @@ if [ -z "$BUILD_MYSQL" ] ; then
     #do not build NetBeans/GlassFish/MySQL bundles by default
     BUILD_MYSQL=0
 fi
+
+if [ -z "$BUILD_JAVAFX" ] ; then
+    #do not build NetBeans/JavaFX bundles by default
+    BUILD_JAVAFX=0
+fi
+
 
 run() {
     ################################################################################
@@ -172,11 +182,13 @@ run() {
             \"-Dnb.locales=${LOCALES}\" \
             \"-Dnb.build.type=${NB_BUILD_TYPE}\" \
             \"-Dgf.build.type=${GF_BUILD_TYPE}\" \
+            \"-Dcommunity.mlbuild=${COMMUNITY_ML_BUILD}\" \
             \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
             \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
             \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \
             \"-Dportalpack.builds.host=${PORTALPACK_BUILDS_HOST}\" \
     	    \"-Dwtk.builds.host=${WTK_BUILDS_HOST}\" \
+            \"-Djavafx.builds.host=${JAVAFX_BUILDS_HOST}\" \
             \"-Djdk.home=${JDK_HOME}\" \
             \"-Dcvs.root=${CVS_ROOT}\" \
             \"-Dcvs.timestamp=${CVS_STAMP}\" \
@@ -186,6 +198,7 @@ run() {
             \"-Dbuild.jtb=${BUILD_JTB}\" \
             \"-Dbuild.mysql=${BUILD_MYSQL}\" \
             \"-Dbuild.netbeans.bundles=${BUILD_NETBEANS}\" \
+            \"-Dbuild.javafx=${BUILD_JAVAFX}\" \
             \"-Dglassfish.home=${GLASSFISH_HOME}\" \
             \"-Dglassfish.asadmin=${GLASSFISH_ASADMIN}\" \
             \"-Dglassfish.http.port=${GLASSFISH_HTTP_PORT}\" \

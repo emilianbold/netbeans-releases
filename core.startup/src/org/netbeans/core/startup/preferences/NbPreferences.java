@@ -63,13 +63,17 @@ public abstract class NbPreferences extends AbstractPreferences {
     private static final RequestProcessor RP = new RequestProcessor();
     /*private*/final RequestProcessor.Task flushTask = RP.create(new Runnable() {
         public void run() {
-            synchronized(lock) {
-                try {
-                    flushSpi();
-                } catch (BackingStoreException ex) {
-                    ErrorManager.getDefault().notify(ex);
+            fileStorage.runAtomic(new Runnable() {
+                public void run() {
+                    synchronized (lock) {
+                        try {
+                            flushSpi();
+                        } catch (BackingStoreException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
                 }
-            }
+            });
         }
     },true);
     
@@ -262,5 +266,6 @@ public abstract class NbPreferences extends AbstractPreferences {
         void markModified();
         Properties load() throws IOException;
         void save(final Properties properties) throws IOException;
+        void runAtomic(Runnable run);
     }
 }

@@ -51,6 +51,7 @@ import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -62,10 +63,10 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 	private static ImageIcon imgScene;
 	
 	static {
-		imgGame = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/game/integration/res/gamer_16.png"));
-		imgSprite = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/sprite.png"));
-		imgTiled = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/tiled.png"));
-		imgScene = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/scene.png"));
+		imgGame = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/game/integration/res/gamer_16.png"));
+		imgSprite = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/sprite.png"));
+		imgTiled = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/tiled.png"));
+		imgScene = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/scene.png"));
 	}
 
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {

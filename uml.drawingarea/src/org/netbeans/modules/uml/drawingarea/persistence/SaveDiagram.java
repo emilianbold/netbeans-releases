@@ -40,12 +40,14 @@
  */
 package org.netbeans.modules.uml.drawingarea.persistence;
 
+import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -68,12 +70,21 @@ public class SaveDiagram implements SaveCookie {
         if (scene != null) {
             PersistenceManager pMgr = new PersistenceManager(fileObj);
             pMgr.saveDiagram(scene);
+            
+            FileObject fobj = FileUtil.toFileObject(new File(scene.getDiagram().getProject().getFileName()));
+            DataObject dobj = DataObject.find(fobj);
+            SaveCookie sc = dobj.getCookie(SaveCookie.class);                
+            if (sc != null) {
+                sc.save();                    
+            }
         }
         //Remove the save cookie    
         DataObject dobj = DataObject.find(fileObj);
         if (dobj instanceof UMLDiagramDataObject) {
             ((UMLDiagramDataObject)dobj).setDirty(false, scene);
         }
+
+
 //         System.out.println(" !!!!!!!!!!!! END Saving... !!!!!!!!!!!!!!!!!!");
     }
 }

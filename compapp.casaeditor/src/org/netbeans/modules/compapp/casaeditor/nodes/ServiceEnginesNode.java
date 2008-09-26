@@ -50,6 +50,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServi
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddExternalServiceUnitAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddJBIModuleAction;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -60,7 +61,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class ServiceEnginesNode extends CasaNode {
 
-    private static final Image ICON = Utilities.loadImage(
+    private static final Image ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceEnginesNode.png");      // NOI18N
 
     public ServiceEnginesNode(List<CasaServiceEngineServiceUnit> data, CasaNodeFactory factory) {

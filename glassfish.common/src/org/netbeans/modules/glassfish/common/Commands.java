@@ -297,13 +297,14 @@ public class Commands {
         }
     
     };
-    
+
+ 
     /**
      * Command to deploy a directory
      */
     public static final class DeployCommand extends ServerCommand {
         
-        public DeployCommand(final String path, final String name, final String contextRoot) {
+        public DeployCommand(final String path, final String name, final String contextRoot, final Boolean preserveSessions) {
             super("deploy"); // NOI18N
             
             StringBuilder cmd = new StringBuilder(128);
@@ -318,6 +319,7 @@ public class Commands {
                 cmd.append(contextRoot);
             }
             cmd.append(PARAM_SEPARATOR + "force=true");
+            addKeepSessions(cmd,preserveSessions);
             query = cmd.toString();
         }
         
@@ -328,7 +330,7 @@ public class Commands {
      */
     public static final class RedeployCommand extends ServerCommand {
         
-        public RedeployCommand(final String name, final String contextRoot) {
+        public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions) {
             super("redeploy"); // NOI18N
             
             StringBuilder cmd = new StringBuilder(128);
@@ -338,9 +340,17 @@ public class Commands {
                 cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
+            addKeepSessions(cmd,preserveSessions);
             query = cmd.toString();
         }
         
+    }
+    
+    private static void addKeepSessions(StringBuilder cmd, Boolean preserveSessions) {
+        if (Boolean.TRUE.equals(preserveSessions)) {
+            cmd.append(ServerCommand.PARAM_SEPARATOR + "properties="); // NOI18N
+            cmd.append("keepSessions=true");
+        }        
     }
     
     /**

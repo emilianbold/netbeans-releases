@@ -155,6 +155,8 @@ public class StartTask extends BasicTask<OperationState> {
         LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
         logger.readInputStreams(recognizers, serverProcess.getInputStream(), serverProcess.getErrorStream());
 
+        GlassfishInstance gi = new GlassfishInstance(ip);
+
         // Waiting for server to start
         while(System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
@@ -167,8 +169,14 @@ public class StartTask extends BasicTask<OperationState> {
                     Thread.sleep(3000);
                 } catch (InterruptedException ex) {
                 }
-                return fireOperationStateChanged(OperationState.COMPLETED, 
-                        "MSG_SERVER_STARTED", instanceName); // NOI18N
+                OperationState state = OperationState.COMPLETED;
+                String messageKey = "MSG_SERVER_STARTED";
+                if (!gi.getCommonSupport().isReallyRunning()) {
+                    state = OperationState.FAILED;
+                    messageKey = "MSG_START_SERVER_FAILED";
+                }
+                return fireOperationStateChanged(state,
+                        messageKey, instanceName); // NOI18N
             }
             
             // Sleep for a little so that we do not make our checks too often
@@ -246,7 +254,7 @@ public class StartTask extends BasicTask<OperationState> {
                 File.separatorChar + "bin" + File.separatorChar + "java";
         }
         String serverHome = ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-        File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_PREFIX_JAR_NAME);
+        File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_JAR_MATCHER);
         if(jar == null) {
             fireOperationStateChanged(OperationState.FAILED, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
             return null;

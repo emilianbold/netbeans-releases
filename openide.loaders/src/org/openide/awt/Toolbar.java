@@ -358,7 +358,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         
         private Cursor dragMoveCursor = DragSource.DefaultMoveDrop;
         private Cursor dragNoDropCursor = DragSource.DefaultMoveNoDrop;
-        private Cursor dragRemoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/loaders/delete.gif"), "NO_ACTION_MOVE" );
+        private Cursor dragRemoveCursor = Utilities.createCustomCursor( Toolbar.this, ImageUtilities.loadImage( "org/openide/loaders/delete.gif"), "NO_ACTION_MOVE" );
         private Map<Component, DragGestureRecognizer> recognizers = new HashMap<Component, DragGestureRecognizer>();
         
         public DnDSupport() {
@@ -1108,7 +1108,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                              a.getValue(javax.swing.Action.NAME).toString().length() ==
                              0)) {
                             a.putValue(javax.swing.Action.SMALL_ICON,
-                                       new ImageIcon( Utilities.loadImage( "org/openide/loaders/unknown.gif") ));
+                                       new ImageIcon( ImageUtilities.loadImage( "org/openide/loaders/unknown.gif") ));
                         }
                         org.openide.awt.Actions.connect(b, a);
                         b.putClientProperty("file", file);
@@ -1662,7 +1662,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             Icon retValue = super.getIcon();
             if( null == retValue && (null == getText() || getText().length() == 0 ) ) {
                 if (unknownIcon == null) {
-                    unknownIcon = new ImageIcon( Utilities.loadImage( "org/openide/loaders/unknown.gif") );
+                    unknownIcon = new ImageIcon( ImageUtilities.loadImage( "org/openide/loaders/unknown.gif") );
                 }
                 retValue = unknownIcon;
             }

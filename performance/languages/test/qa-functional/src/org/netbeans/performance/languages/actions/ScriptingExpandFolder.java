@@ -126,7 +126,7 @@ public class ScriptingExpandFolder extends PerformanceTestCase {
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.RUBY_PROJECT;
         pathToFolderNode = "";
-        expectedTime = 100;
+        expectedTime = 1000;
         doMeasurement();          
     }
 
@@ -135,7 +135,7 @@ public class ScriptingExpandFolder extends PerformanceTestCase {
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.RUBY_PROJECT;
         pathToFolderNode = "Source Files" + "|" + "100RbFiles";
-        expectedTime = 100;
+        expectedTime = 1000;
         doMeasurement();        
     }
 
@@ -144,7 +144,7 @@ public class ScriptingExpandFolder extends PerformanceTestCase {
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.RAILS_PROJECT;
         pathToFolderNode = "";
-        expectedTime = 100;
+        expectedTime = 1000;
         doMeasurement();          
     }
 
@@ -162,7 +162,7 @@ public class ScriptingExpandFolder extends PerformanceTestCase {
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.RAILS_PROJECT;
         pathToFolderNode = "Views" + "|" + "100RhtmlFiles";
-        expectedTime = 100;
+        expectedTime = 1000;
         doMeasurement();        
     }
     public void testExpandFolderWith100JSFiles() {
@@ -170,7 +170,7 @@ public class ScriptingExpandFolder extends PerformanceTestCase {
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.SCRIPTING_PROJECT;
         pathToFolderNode = "Web Pages" + "|" + "100JsFiles";
-        expectedTime = 100;
+        expectedTime = 1000;
         doMeasurement();           
     }
     public void testExpandFolderWith100CssFiles() {
@@ -178,7 +178,7 @@ public class ScriptingExpandFolder extends PerformanceTestCase {
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.SCRIPTING_PROJECT;
         pathToFolderNode = "Web Pages" + "|" + "100CssFiles";
-        expectedTime = 100;
+        expectedTime = 1000;
         doMeasurement();           
     }  
     public void testExpandFolderWith100PhpFiles() {
