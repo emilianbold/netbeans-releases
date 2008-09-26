@@ -41,16 +41,17 @@ package org.netbeans.modules.cnd.makeproject.packaging;
 
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 
 public interface PackagerDescriptor {
     public String getName();
     public String getDisplayName();
     public boolean hasInfoList();
-    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration);
+    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
     public boolean isOutputAFolder();
-    public String getOutputFileName(MakeConfiguration makeConfiguration);
+    public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
     public String getOutputFileSuffix();
     public String getDefaultTool();
     public String getDefaultOptions();
-    public String getTopDir(MakeConfiguration makeConfiguration);
+    public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
 }

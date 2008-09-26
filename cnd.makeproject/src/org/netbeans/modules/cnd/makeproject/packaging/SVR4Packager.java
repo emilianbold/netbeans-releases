@@ -68,7 +68,7 @@ public class SVR4Packager implements PackagerDescriptor {
         return true;
     }
     
-    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration) {
+    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String defArch;
         if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
             defArch = "i386"; // NOI18N
@@ -81,7 +81,7 @@ public class SVR4Packager implements PackagerDescriptor {
             defArch = "i386"; // NOI18N
         }
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "PKG", makeConfiguration.getPackagingConfiguration().getOutputName(), true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "PKG", packagingConfiguration.getOutputName(), true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "NAME", "Package description ...", true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "ARCH", defArch, true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "CATEGORY", "application", true, true)); // NOI18N
@@ -105,7 +105,7 @@ public class SVR4Packager implements PackagerDescriptor {
         return true;
     }
     
-    public String getOutputFileName(MakeConfiguration makeConfiguration) {
+    public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
     
@@ -113,8 +113,8 @@ public class SVR4Packager implements PackagerDescriptor {
         return null;
     }
 
-    public String getTopDir(MakeConfiguration makeConfiguration) {
-        return makeConfiguration.getPackagingConfiguration().findInfoValueName("PKG"); // NOI18N
+    public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
+        return packagingConfiguration.findInfoValueName("PKG"); // NOI18N
     }
    
     /** Look up i18n strings here */

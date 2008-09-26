@@ -65,7 +65,7 @@ public class DebianPackager implements PackagerDescriptor {
         return true;
     }
     
-    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration) {
+    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String defArch;
         if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
             defArch = "i386"; // NOI18N
@@ -78,7 +78,7 @@ public class DebianPackager implements PackagerDescriptor {
             defArch = "i386"; // NOI18N
         }
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_DEBIAN_PACKAGE, "Package", makeConfiguration.getPackagingConfiguration().getOutputName(), true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_DEBIAN_PACKAGE, "Package", packagingConfiguration.getOutputName(), true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_DEBIAN_PACKAGE, "Version", "1.0", true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_DEBIAN_PACKAGE, "Architecture", defArch, false, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_DEBIAN_PACKAGE, "Maintainer", System.getProperty("user.name"), false, true)); // NOI18N
@@ -98,15 +98,15 @@ public class DebianPackager implements PackagerDescriptor {
         return false;
     }
 
-    public String getOutputFileName(MakeConfiguration makeConfiguration) {
-        return makeConfiguration.getPackagingConfiguration().getOutputName();
+    public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
+        return packagingConfiguration.getOutputName();
     }
 
     public String getOutputFileSuffix() {
         return "deb";  // NOI18N
     }
 
-    public String getTopDir(MakeConfiguration makeConfiguration) {
+    public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return "/usr"; // NOI18N
     }
     

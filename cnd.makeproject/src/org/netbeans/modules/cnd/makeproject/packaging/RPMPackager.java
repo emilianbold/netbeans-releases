@@ -64,10 +64,10 @@ public class RPMPackager implements PackagerDescriptor {
         return true;
     }
     
-    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration) {
+    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
         infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Summary", "Sumary...", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Name", makeConfiguration.getPackagingConfiguration().getOutputName(), true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Name", packagingConfiguration.getOutputName(), true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Version", "1.0", true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Release", "1", true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Group", "Applications/System", true, true)); // NOI18N
@@ -89,7 +89,7 @@ public class RPMPackager implements PackagerDescriptor {
         return true;
     }
     
-    public String getOutputFileName(MakeConfiguration makeConfiguration) {
+    public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
     
@@ -97,7 +97,7 @@ public class RPMPackager implements PackagerDescriptor {
         return null;
     }
 
-    public String getTopDir(MakeConfiguration makeConfiguration) {
+    public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return "/usr"; // NOI18N
     }
 

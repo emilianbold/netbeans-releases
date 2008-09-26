@@ -64,7 +64,7 @@ public class TarPackager implements PackagerDescriptor {
         return false;
     }
     
-    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration) {
+    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
 
@@ -80,16 +80,16 @@ public class TarPackager implements PackagerDescriptor {
         return false;
     }
     
-    public String getOutputFileName(MakeConfiguration makeConfiguration) {
-        return makeConfiguration.getPackagingConfiguration().getOutputName();
+    public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
+        return packagingConfiguration.getOutputName();
     }
 
     public String getOutputFileSuffix() {
         return "tar";  // NOI18N
     }
 
-    public String getTopDir(MakeConfiguration makeConfiguration) {
-        String topDir = IpeUtils.getBaseName(makeConfiguration.getPackagingConfiguration().getOutputValue());
+    public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
+        String topDir = IpeUtils.getBaseName(packagingConfiguration.getOutputValue());
         
         int i = topDir.lastIndexOf("."); // NOI18N
         if (i > 0) {
