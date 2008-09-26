@@ -63,6 +63,15 @@ public class JsPositionManagerTest extends JsTestBase {
         super(name);
     }
 
+    private void addAll(Node node, List<Node> list) {
+        list.add(node);
+        if (node.hasChildren()) {
+            for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+                addAll(child, list);
+            }
+        }
+    }
+
     public void testGetPosition1() throws Exception {
         GsfTestCompilationInfo info = getInfo("testfiles/prototype-new.js");
         PositionManager pm = getPreferredLanguage().getParser().getPositionManager();
@@ -99,6 +108,12 @@ public class JsPositionManagerTest extends JsTestBase {
                     int expected = t.indexOf("function toQueryPair");
                     assertTrue(expected != -1);
                     assertEquals(expected, range.getStart());
+
+                    // Totally mismatched info (so resolving handles won't work)
+                    // ...obtain a reasonable position anyway (from old info)
+                    GsfTestCompilationInfo newInfo = getInfo("testfiles/rename.js");
+                    OffsetRange newRange = pm.getOffsetRange(newInfo, element);
+                    assertEquals(range, newRange);
                 }
                 break;
             }
@@ -169,14 +184,5 @@ public class JsPositionManagerTest extends JsTestBase {
         };
         OffsetRange r = jpm.getOffsetRange(null, handle);
         assertNotNull(r);
-    }
-
-    private void addAll(Node node, List<Node> list) {
-        list.add(node);
-        if (node.hasChildren()) {
-            for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
-                addAll(child, list);
-            }
-        }
     }
 }

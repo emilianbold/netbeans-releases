@@ -70,6 +70,21 @@ public class JsPositionManager implements PositionManager {
         } else if (object != null) {
             Logger.global.log(Level.WARNING, "Foreign element: " + object + " of type " +
                 ((object != null) ? object.getClass().getName() : "null"));
+        } else {
+            if (objectHandle instanceof AstElement) {
+                AstElement el = (AstElement)objectHandle;
+                if (el.getNode() != null) {
+                    OffsetRange astRange = AstUtilities.getRange(el.getNode());
+                    if (astRange != OffsetRange.NONE) {
+                        CompilationInfo oldInfo = el.getInfo();
+                        if (oldInfo == null) {
+                            oldInfo = info;
+                        }
+                        return LexUtilities.getLexerOffsets(oldInfo, astRange);
+                    }
+                    return OffsetRange.NONE;
+                }
+            }
         }
         return OffsetRange.NONE;
     }
