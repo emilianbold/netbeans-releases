@@ -24,6 +24,8 @@ public class PHPSamplesWizardPanel implements WizardDescriptor.Panel,
     private WizardDescriptor wizardDescriptor;
     private PHPSamplesPanelVisual component;
 
+    static final String SET_AS_MAIN = "setAsMain"; // NOI18N
+    
     public PHPSamplesWizardPanel() {
     }
 
@@ -86,6 +88,8 @@ public class PHPSamplesWizardPanel implements WizardDescriptor.Panel,
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
         d.putProperty("NewProjectWizard_Title", null); // NOI18N
+        // set as main project - never set as main
+        d.putProperty(SET_AS_MAIN, false);
     }
 
     public boolean isFinishPanel() {
