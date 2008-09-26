@@ -44,25 +44,36 @@ package org.netbeans.modules.cnd.makeproject.packaging;
  * @author thp
  */
 public class InfoElement {
+    private int type;
     private String name;
     private String value;
     private boolean mandatory;
     private boolean defaultValue;
     
-    public InfoElement(String name, String value) {
+    public InfoElement(int type, String name, String value) {
+        this.type = type;
         this.name = name;
         this.value = value;
         this.mandatory = false;
         this.defaultValue = false;
     }
     
-    public InfoElement(String name, String value, boolean mandatory, boolean defaultValue) {
+    public InfoElement(int type, String name, String value, boolean mandatory, boolean defaultValue) {
+        this.type = type;
         this.name = name;
         this.value = value;
         this.mandatory = mandatory;
         this.defaultValue = defaultValue;
     }
 
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+    
     public String getName() {
         return name;
     }

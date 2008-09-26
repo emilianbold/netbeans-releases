@@ -47,9 +47,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
@@ -82,20 +82,10 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         env.addPropertyChangeListener(this);
         
         // Add tabs
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getSvr4Header().getValue(), packagingConfiguration));
+        int type = packagingConfiguration.getType().getValue();
+        if (type == PackagingConfiguration.TYPE_SVR4_PACKAGE || type == PackagingConfiguration.TYPE_RPM_PACKAGE || type == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeaderSubList(type), packagingConfiguration));
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
-        }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getRpmHeader().getValue(), packagingConfiguration));
-            packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
-        }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getDebianHeader().getValue(), packagingConfiguration));
-            packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
-        }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
-            packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
         else {
             packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
@@ -147,14 +137,22 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private Object getPropertyValue() throws IllegalStateException {
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            packagingConfiguration.getSvr4Header().setValue(new ArrayList(packagingInfoPanel.getListData()));
-        }
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            packagingConfiguration.getRpmHeader().setValue(new ArrayList(packagingInfoPanel.getListData()));
-        }
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-            packagingConfiguration.getDebianHeader().setValue(new ArrayList(packagingInfoPanel.getListData()));
+        int type = packagingConfiguration.getType().getValue();
+        if (type == PackagingConfiguration.TYPE_SVR4_PACKAGE || type == PackagingConfiguration.TYPE_RPM_PACKAGE || type == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            List<InfoElement> oldList = packagingConfiguration.getInfo().getValue();
+            List<InfoElement> newList = new ArrayList<InfoElement>();
+            // Copy all other types over
+            for (InfoElement elem : oldList) {
+                if (elem.getType() != packagingConfiguration.getType().getValue()) {
+                    newList.add(elem);
+                }
+            }
+            // Copy edited list
+            Vector<InfoElement> editedList = packagingInfoPanel.getListData();
+            for (InfoElement elem : editedList) {
+                newList.add(elem);
+            }
+            packagingConfiguration.getInfo().setValue(newList);
         }
         
         packagingConfiguration.getFiles().setValue(new ArrayList(packagingFilesPanel.getListData()));

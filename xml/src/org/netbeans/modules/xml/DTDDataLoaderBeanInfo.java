@@ -42,7 +42,7 @@ package org.netbeans.modules.xml;
 
 import java.beans.*;
 import java.awt.Image;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 

@@ -79,16 +79,14 @@ made subject to such option by the copyright holder.
         <file name="M-J.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.PreviousTabAction" />
         </file>
-                
+
         <file name="M-R.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.ReplaceAction"/>
         </file>
         
-        <file name="C-H.shadow_hidden"/>
-
         <file name="D-BACK_QUOTE.shadow_hidden"/>
-        
-        <file name="OS-G.instance">
+
+        <file name="O-G.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.GotoAction"/>
 	</file>
         

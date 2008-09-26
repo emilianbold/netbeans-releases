@@ -38,10 +38,24 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.saas;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.List;
+import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -55,7 +69,10 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
@@ -178,7 +195,7 @@ public class RestResourceGenerator {
                                     for (WSOperation operation : operations) {
                                         try {
                                             new RestWrapperForSoapGenerator(service, port, operation, project,
-                                                    targetSource.getFileObjects().iterator().next()).generate();
+                                                    targetSource.getFileObjects().iterator().next(), wsdlURL.toString()).generate();
                                         } catch (IOException ex) {
                                             ErrorManager.getDefault().notify(ex);
                                             try {
@@ -198,6 +215,11 @@ public class RestResourceGenerator {
                                                 Exceptions.printStackTrace(e);
                                             }
                                         }
+                                    }
+                                    try {
+                                        initializeClient(service, port, wsdlURL.toString(), targetSource);
+                                    } catch (IOException ex) {
+                                        Exceptions.printStackTrace(ex);
                                     }
                                     try {
                                         FileObject targetFile = targetSource.getFileObjects().iterator().next();
@@ -224,6 +246,56 @@ public class RestResourceGenerator {
         });
         generatorTask.schedule(50);
         dialog.open();
+    }
+
+    private void initializeClient(final WSService service, final WSPort port, final String wsdlUrl, JavaSource targetSource)
+            throws IOException {
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                TreeMaker make = workingCopy.getTreeMaker();
+                MethodTree constructor = JavaSourceHelper.getDefaultConstructor(workingCopy);
+                String body = "\n{\nport = getPort();\n}\n";
+                ModifiersTree publicTree = GenerationUtils.newInstance(workingCopy).createModifiers(Modifier.PUBLIC);
+                List<TypeParameterTree> params = Collections.emptyList();
+                List<VariableTree> vars = Collections.emptyList();
+                List<ExpressionTree> thrws = Collections.emptyList();
+                MethodTree modifiedConstructor = make.Constructor(publicTree, params, vars, thrws, body);
+                workingCopy.rewrite(constructor, modifiedConstructor);
+                ClassTree modifiedClass = JavaSourceHelper.addField(workingCopy, javaClass, new Modifier[]{Modifier.PRIVATE}, null, null, "port", port.getJavaName(), null);
+                workingCopy.rewrite(javaClass, modifiedClass);
+
+                ClassTree modifiedJavaClass = JavaSourceHelper.addMethod(workingCopy, modifiedClass,
+                        new Modifier[]{Modifier.PRIVATE}, null, null,
+                        "getPort", port.getJavaName(), null, null,
+                        null, null,
+                        generateGetPort(service, port), "");      //NOI18N
+                workingCopy.rewrite(javaClass, modifiedJavaClass);
+            }
+
+            public void cancel() {
+            }
+        };
+        targetSource.runModificationTask(task).commit();
+    }
+
+    private String generateGetPort(WSService service, WSPort port) {
+        String getPort = "";
+        String serviceVar = "service";  //NOI18N
+        String serviceJavaName = service.getJavaName();
+        String portJavaName = port.getJavaName();
+        String portGetterMethod = port.getPortGetter();
+        Object[] args = new String[]{serviceJavaName, portJavaName, portGetterMethod, "", "", serviceVar};
+        String body = RestWrapperForSoapGenerator.JAVA_TRY +
+                RestWrapperForSoapGenerator.JAVA_SERVICE_DEF +
+                RestWrapperForSoapGenerator.JAVA_PORT_DEF +
+                "\nreturn p;\n" +
+                RestWrapperForSoapGenerator.JAVA_CATCH;
+        body += "\nreturn null;\n";
+        getPort = "\n{\n" + MessageFormat.format(body, args) + "\n}\n";
+        return getPort;
     }
 
     private boolean clientExists(JaxWsModel jaxwsModel, String clientName) {

@@ -78,7 +78,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     public boolean isModuleSupported(String glassfishHome, Properties asenvProps) {
 
         // Do some moderate sanity checking to see if this v3 build looks ok.
-        File jar = ServerUtilities.getJarName(glassfishHome, ServerUtilities.GFV3_PREFIX_JAR_NAME);
+        File jar = ServerUtilities.getJarName(glassfishHome, ServerUtilities.GFV3_JAR_MATCHER);
 
 
         if (jar==null) {
@@ -135,10 +135,10 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String JAVADOC_VOLUME = "javadoc"; // NOI18N
     
     private static final String ECLIPSE_LINK_LIB = "EclipseLink-GlassFish-V3"; // NOI18N
-    private static final String EL_CORE_LIB_PREFIX = "eclipselink-wrapper-10.0"; // NOI18N
+    private static final String EL_CORE_JAR_MATCHER = "eclipselink-wrapper" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
 
-    private static final String PERSISTENCE_API_LIB_PREFIX_1 = "javax.javaee-10.0"; // NOI18N
-    private static final String PERSISTENCE_API_LIB_PREFIX_2 = "javax.persistence-10.0"; // NOI18N
+    private static final String PERSISTENCE_API_JAR_MATCHER_1 = "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
+    private static final String PERSISTENCE_API_JAR_MATCHER_2 = "javax.persistence" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
         
     private static final String PERSISTENCE_JAVADOC = "javaee5-doc-api.zip"; // NOI18N
     
@@ -171,15 +171,15 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 // classpath, src, javadoc -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
-                File f = ServerUtilities.getJarName(installRoot, EL_CORE_LIB_PREFIX);
+                File f = ServerUtilities.getJarName(installRoot, EL_CORE_JAR_MATCHER);
                 if(f != null && f.exists()) {
                     libraryList.add(ServerUtilities.fileToUrl(f));
                 }
-                f = ServerUtilities.getJarName(installRoot, PERSISTENCE_API_LIB_PREFIX_1);
+                f = ServerUtilities.getJarName(installRoot, PERSISTENCE_API_JAR_MATCHER_1);
                 if(f != null && f.exists()) {
                     libraryList.add(ServerUtilities.fileToUrl(f));
                 } else {
-                    f = ServerUtilities.getJarName(installRoot, PERSISTENCE_API_LIB_PREFIX_2);
+                    f = ServerUtilities.getJarName(installRoot, PERSISTENCE_API_JAR_MATCHER_2);
                     if(f != null && f.exists()) {
                         libraryList.add(ServerUtilities.fileToUrl(f));
                     }
@@ -214,8 +214,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     }
  
     private static final String COMET_LIB = "Comet-GlassFish-V3"; // NOI18N
-    private static final String COMET_JAR_LIB_PREFIX = "grizzly-module"; // NOI18N
-    private static final String GRIZZLY_OPTIONAL_JAR_LIB_PREFIX = "grizzly-optional"; // NOI18N
+    private static final String COMET_JAR_MATCHER = "grizzly-module" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
+    private static final String GRIZZLY_OPTIONAL_JAR_MATCHER = "grizzly-optional" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
     
     public synchronized boolean ensureCometSupport(String installRoot) {
         LibraryManager lmgr = LibraryManager.getDefault();
@@ -246,9 +246,9 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 // classpath, src,  -- library volumes
                 List<URL> libraryList = new ArrayList<URL>();
-                File f = ServerUtilities.getJarName(installRoot, GRIZZLY_OPTIONAL_JAR_LIB_PREFIX);
+                File f = ServerUtilities.getJarName(installRoot, GRIZZLY_OPTIONAL_JAR_MATCHER);
                 if(f == null || !f.exists()) {
-                    f = ServerUtilities.getJarName(installRoot, COMET_JAR_LIB_PREFIX);
+                    f = ServerUtilities.getJarName(installRoot, COMET_JAR_MATCHER);
                 }
                 if(f != null && f.exists()) {
                     libraryList.add(ServerUtilities.fileToUrl(f));

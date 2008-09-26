@@ -83,9 +83,12 @@ final class JavadocQuery implements JavadocForBinaryQueryImplementation {
                         assert rawtext != null;
                         String evaltext = eval.evaluate(rawtext);
                         if (evaltext != null) {
-                            if (evalTextToURL(evaltext).equals(binaryRoot)) {
-                                rightCU = true;
-                                break;
+                            URL url = evalTextToURL(evaltext);
+                            if (url != null) {
+                                if (url.equals(binaryRoot)) {
+                                    rightCU = true;
+                                    break;
+                                }
                             }
                         }
                     }

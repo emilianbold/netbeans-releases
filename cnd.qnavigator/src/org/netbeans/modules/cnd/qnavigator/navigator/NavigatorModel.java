@@ -160,7 +160,6 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (busyListener != null) {
                 busyListener.busyStart();
             }
-            System.out.println("CppNavigator update:"+csmFile);
             synchronized(lock) {
                 if (fileModel.setFile(csmFile)){
                     final Children children = root.getChildren();

@@ -123,7 +123,7 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
             }
             String mess = Util.rootOfUsableDomain(domainDir);
             if (null != mess) {
-                setErrorMsg(mess);
+                setErrorMsgLiteral(mess);
                 component.setAdminPort("");  //NOI18N
                 return false;
             }
@@ -173,6 +173,10 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
         }
     }
     
+    private void setErrorMsgLiteral(String msg) {
+        wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+    }
+
     private void setErrorMsg(String msg) {
         wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                 NbBundle.getMessage(AddDomainDirectoryPanel.class, msg));

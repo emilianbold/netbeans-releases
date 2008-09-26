@@ -6,12 +6,14 @@
 
 package org.netbeans.modules.xml.wizard;
 
+import org.netbeans.modules.xml.wizard.SchemaParser;
+import org.netbeans.modules.xml.wizard.XMLContentAttributes;
 import java.io.File;
 import java.util.Iterator;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -293,7 +295,7 @@ public class XMLContentPanel extends AbstractPanel {
            return null;
         } 
         FileObject fobj = FileUtil.toFileObject(f);
-        schemaInfo = Util.getRootElements(fobj);
+        schemaInfo = SchemaParser.getRootElements(fobj);
         return schemaInfo;
     }
 
