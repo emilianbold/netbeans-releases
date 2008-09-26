@@ -43,6 +43,7 @@ package org.netbeans.modules.css.visual.ui.preview;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -54,7 +55,7 @@ public class CssPreviewAction extends AbstractAction {
     
     public CssPreviewAction() {
         super(NbBundle.getMessage(CssPreviewAction.class, "CTL_CssPreviewAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(CssPreviewTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(CssPreviewTopComponent.ICON_PATH, true)));
     }
     
     public void actionPerformed(ActionEvent evt) {

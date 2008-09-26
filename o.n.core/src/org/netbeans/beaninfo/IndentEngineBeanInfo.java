@@ -47,6 +47,7 @@ import java.beans.*;
 import java.util.ResourceBundle;
 import org.openide.util.Exceptions;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -80,8 +81,8 @@ public class IndentEngineBeanInfo extends SimpleBeanInfo {
     */
     public Image getIcon(int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-            return Utilities.loadImage("org/netbeans/core/resources/indentEngines.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/core/resources/indentEngines.gif"); // NOI18N
         else
-            return Utilities.loadImage("org/netbeans/core/resources/indentEngines.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/core/resources/indentEngines.gif"); // NOI18N
     }
 }

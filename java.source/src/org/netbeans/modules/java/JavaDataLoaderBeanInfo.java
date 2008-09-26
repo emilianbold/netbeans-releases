@@ -46,6 +46,7 @@ import java.awt.Image;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** BeanInfo for java source loader.
@@ -68,10 +69,10 @@ public final class JavaDataLoaderBeanInfo extends SimpleBeanInfo {
     */
     public Image getIcon(final int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage( "org/netbeans/modules/java/resources/class.png"); // NOI18N
+            return ImageUtilities.loadImage( "org/netbeans/modules/java/resources/class.png"); // NOI18N
         }
         else {
-            return Utilities.loadImage( "org/netbeans/modules/java/resources/class32.gif"); // NOI18N
+            return ImageUtilities.loadImage( "org/netbeans/modules/java/resources/class32.gif"); // NOI18N
         }
     }
     

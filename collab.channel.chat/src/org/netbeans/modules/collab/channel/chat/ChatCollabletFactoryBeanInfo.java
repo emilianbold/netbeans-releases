@@ -150,13 +150,13 @@ public class ChatCollabletFactoryBeanInfo extends SimpleBeanInfo {
     public Image getIcon(int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
             if (smallIcon == null) {
-                smallIcon = Utilities.loadImage("org/netbeans/modules/collab/channel/chat/resources/chat_png.gif"); // NOI18N
+                smallIcon = ImageUtilities.loadImage("org/netbeans/modules/collab/channel/chat/resources/chat_png.gif"); // NOI18N
             }
 
             return smallIcon;
         } else {
             if (largeIcon == null) {
-                largeIcon = Utilities.loadImage("org/netbeans/modules/collab/channel/chat/resources/chat_png.gif"); // NOI18N
+                largeIcon = ImageUtilities.loadImage("org/netbeans/modules/collab/channel/chat/resources/chat_png.gif"); // NOI18N
             }
 
             return largeIcon;

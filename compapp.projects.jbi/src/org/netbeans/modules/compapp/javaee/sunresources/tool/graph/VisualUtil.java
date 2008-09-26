@@ -48,6 +48,7 @@ import java.util.Iterator;
 
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.javaee.sunresources.tool.archive.Archive;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import org.netbeans.modules.compapp.javaee.sunresources.tool.archive.ApplicationArchive;
@@ -70,17 +71,17 @@ public class VisualUtil {
     
     // images
     public final static Image SESSION_BEAN_IMG = 
-        Utilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/session_bean.png").getScaledInstance(32, 32, Image.SCALE_DEFAULT); // NOI18N
+        ImageUtilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/session_bean.png").getScaledInstance(32, 32, Image.SCALE_DEFAULT); // NOI18N
     public final static Image MDB_IMG = 
-        Utilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/message_bean.png").getScaledInstance(32, 32, Image.SCALE_DEFAULT); // NOI18N
+        ImageUtilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/message_bean.png").getScaledInstance(32, 32, Image.SCALE_DEFAULT); // NOI18N
     public final static Image ENTITY_BEAN_IMG = 
-        Utilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/entity_bean.png"); // NOI18N
+        ImageUtilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/entity_bean.png"); // NOI18N
     public final static Image WS_IMG = 
-        Utilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/web_service_one.png"); // NOI18N
+        ImageUtilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/web_service_one.png"); // NOI18N
     public final static Image RES_IMG = 
-        Utilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/Servers.png"); // NOI18N
+        ImageUtilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/Servers.png"); // NOI18N
     public final static Image DEFAULT_IMG = 
-        Utilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/default.png"); // NOI18N
+        ImageUtilities.loadImage ("org/netbeans/modules/compapp/javaee/sunresources/resources/default.png"); // NOI18N
     
     public final static int MAX_WIDTH = 800;
     public final static int MAX_HEIGHT = 600;

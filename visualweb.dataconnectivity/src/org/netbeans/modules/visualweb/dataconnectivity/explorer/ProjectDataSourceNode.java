@@ -44,6 +44,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.BrokenDataSourceSupport;
 import javax.swing.Action;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourcesListener;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
@@ -70,8 +71,8 @@ import org.openide.xml.XMLUtil;
 public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, ProjectDataSourcesListener, ConnectionListener  {
 
     org.netbeans.api.project.Project nbProject = null ;
-    private static Image brokenDsReferenceBadge = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png" ); // NOI18N
-    private static Image dSContainerImage = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png" ); // NOI18N
+    private static Image brokenDsReferenceBadge = ImageUtilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png" ); // NOI18N
+    private static Image dSContainerImage = ImageUtilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png" ); // NOI18N
 
     public ProjectDataSourceNode(org.netbeans.api.project.Project project) {
         super(new ProjectDataSourceNodeChildren(project));
@@ -144,7 +145,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         } 
         
         if (isBroken){
-            Image brokenBadge = Utilities.mergeImages(dSContainerImage, brokenDsReferenceBadge, 8, 0);
+            Image brokenBadge = ImageUtilities.mergeImages(dSContainerImage, brokenDsReferenceBadge, 8, 0);
             if (ImportDataSource.isLegacyProject(nbProject)) {
                 ImportDataSource.showAlert();
             }

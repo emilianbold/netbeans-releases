@@ -77,6 +77,7 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -234,7 +235,7 @@ public class WhereUsedQueryUI implements org.netbeans.modules.refactoring.spi.ui
 
     public Icon getCustomIcon() {
        return new ImageIcon(
-            Utilities.loadImage(
+            ImageUtilities.loadImage(
             "org/netbeans/modules/xml/refactoring/resources/"+
             "graphical_view_refactoring.png"));
     }

@@ -58,6 +58,7 @@ import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.openide.actions.PropertiesAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -157,7 +158,7 @@ public final class EventSourceSupport {
         }
 
         public Image getIcon (DesignComponent component, InfoPresenter.IconType iconType) {
-            return Utilities.loadImage (CommandCD.ICON_PATH);
+            return ImageUtilities.loadImage (CommandCD.ICON_PATH);
         }
 
     }

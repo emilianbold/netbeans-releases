@@ -57,6 +57,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.Presenter;
@@ -67,7 +68,7 @@ import org.openide.util.actions.Presenter;
  */
 class DynaMenuModel {
     private static final Icon BLANK_ICON = new ImageIcon(
-        Utilities.loadImage("org/openide/loaders/empty.gif")); // NOI18N            
+        ImageUtilities.loadImage("org/openide/loaders/empty.gif")); // NOI18N
     
     private List<JComponent> menuItems;
     private HashMap<DynamicMenuContent, JComponent[]> actionToMenuMap;

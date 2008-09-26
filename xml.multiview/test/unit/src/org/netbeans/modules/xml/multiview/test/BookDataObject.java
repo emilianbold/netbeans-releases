@@ -55,6 +55,7 @@ import org.netbeans.spi.xml.cookies.*;
 
 import org.netbeans.modules.xml.multiview.test.bookmodel.*;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -127,7 +128,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
         }
 
         public java.awt.Image getIcon() {
-            return org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/multiview/resources/xmlObject.gif"); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/xml/multiview/resources/xmlObject.gif"); //NOI18N
         }
 
         public String preferredID() {

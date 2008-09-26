@@ -246,9 +246,9 @@ final class InstanceNode extends DataNode implements Runnable {
                 Action action = (Action)ic.instanceCreate();
                 Icon icon = (Icon)action.getValue(Action.SMALL_ICON);
                 if (icon != null) {
-                    beanInfoIcon = Utilities.icon2Image(icon);
+                    beanInfoIcon = ImageUtilities.icon2Image(icon);
                 } else {
-                    beanInfoIcon = Utilities.loadImage("org/openide/loaders/empty.gif", true); // NOI18N
+                    beanInfoIcon = ImageUtilities.loadImage("org/openide/loaders/empty.gif", true); // NOI18N
                 }
             }
         } catch (Exception e) {

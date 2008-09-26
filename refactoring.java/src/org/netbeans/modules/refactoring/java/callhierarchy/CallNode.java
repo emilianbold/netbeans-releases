@@ -51,6 +51,7 @@ import javax.swing.Icon;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -107,7 +108,7 @@ final class CallNode extends AbstractNode {
     public Image getIcon(int type) {
         CallDescriptor desc = getLookup().lookup(CallDescriptor.class);
         Icon icon = desc != null ? desc.getIcon() : null;
-        return icon != null ? Utilities.icon2Image(icon) : super.getIcon(type);
+        return icon != null ? ImageUtilities.icon2Image(icon) : super.getIcon(type);
     }
 
     @Override

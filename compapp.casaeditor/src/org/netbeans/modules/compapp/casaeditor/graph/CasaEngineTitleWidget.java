@@ -63,6 +63,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.EditablePropertiesAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.ServiceUnitNode;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -71,18 +72,18 @@ import org.openide.util.Utilities;
  */
 public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
     
-    private static final Image DEFAULT_ICON = Utilities.loadImage(
+    private static final Image DEFAULT_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceUnitNode.png");     // NOI18N
     
     private static final int   TITLE_GAP          = 3;
     
     private static final int TITLE_MINIMIZE_BUTTON_DISPLACEMENT = CasaNodeWidgetEngine.MARGIN_SE_ROUNDED_RECTANGLE + 8;
     
-    private static final Image IMAGE_EXPAND       = Utilities.loadImage(
+    private static final Image IMAGE_EXPAND       = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/graph/resources/expand.png"); // NOI18N
-    private static final Image IMAGE_COLLAPSE     = Utilities.loadImage(
+    private static final Image IMAGE_COLLAPSE     = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/graph/resources/collapse.png"); // NOI18N
-    private static final Image IMAGE_UNCONFIGURED = Utilities.loadImage(
+    private static final Image IMAGE_UNCONFIGURED = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/palette/resources/question_violet.png");   // NOI18N
     
     private static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder(

@@ -49,6 +49,7 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import org.apache.tools.ant.module.AntModule;
 import org.openide.loaders.DataLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 public class AntProjectDataLoaderBeanInfo extends SimpleBeanInfo {
@@ -87,7 +88,7 @@ public class AntProjectDataLoaderBeanInfo extends SimpleBeanInfo {
     @Override
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return org.openide.util.Utilities.loadImage ("org/apache/tools/ant/module/resources/AntIcon.gif");
+            return ImageUtilities.loadImage ("org/apache/tools/ant/module/resources/AntIcon.gif");
         } else {
             return null;
         }

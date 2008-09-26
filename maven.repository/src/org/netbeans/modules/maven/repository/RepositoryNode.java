@@ -57,6 +57,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -79,9 +80,9 @@ public class RepositoryNode extends AbstractNode {
     @Override
     public Image getIcon(int arg0) {
         if (info.isRemoteDownloadable()) {
-            return Utilities.loadImage("org/netbeans/modules/maven/repository/remoterepo.png", true); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/remoterepo.png", true); //NOI18N
         }
-        return Utilities.loadImage("org/netbeans/modules/maven/repository/localrepo.png", true); //NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/localrepo.png", true); //NOI18N
     }
 
     @Override

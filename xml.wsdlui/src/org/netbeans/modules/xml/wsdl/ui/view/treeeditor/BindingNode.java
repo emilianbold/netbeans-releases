@@ -75,6 +75,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -91,7 +92,7 @@ public class BindingNode extends WSDLExtensibilityElementNode<Binding> {
     
     private BindingPropertyAdapter mPropertyAdapter = null;
     
-    private static Image ICON  = Utilities.loadImage
+    private static Image ICON  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/binding.png");
 
     public BindingNode(Binding wsdlConstruct) {

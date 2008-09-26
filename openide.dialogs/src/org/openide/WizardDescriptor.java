@@ -99,6 +99,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -1322,7 +1323,7 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private static Image getDefaultImage() {
-        return Utilities.loadImage("org/netbeans/modules/dialogs/defaultWizard.gif", true);
+        return ImageUtilities.loadImage("org/netbeans/modules/dialogs/defaultWizard.gif", true);
     }
 
     private void updateButtonAccessibleDescription() {
@@ -2522,17 +2523,17 @@ public class WizardDescriptor extends DialogDescriptor {
                 switch (msgType) {
                     case MSG_TYPE_ERROR:
                         prepareMessage(m_lblMessage,
-                            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/error.gif")),
+                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/error.gif")),
                             nbErrorForeground);
                         break;
                     case MSG_TYPE_WARNING:
                         prepareMessage(m_lblMessage, 
-                            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
+                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
                             nbWarningForeground);
                         break;
                     case MSG_TYPE_INFO:
                         prepareMessage(m_lblMessage, 
-                            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
+                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
                             nbInfoForeground);
                         break;
                     default:
@@ -2882,7 +2883,7 @@ public class WizardDescriptor extends DialogDescriptor {
         @Override
         public Dimension getPreferredSize() {
             Dimension preferredSize = super.getPreferredSize();
-            assert ESTIMATED_HEIGHT == Utilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon.";
+            assert ESTIMATED_HEIGHT == ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon.";
             preferredSize.height = Math.max (ESTIMATED_HEIGHT, preferredSize.height);
             return preferredSize;
         }

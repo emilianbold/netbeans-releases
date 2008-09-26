@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.debugger.gdb.ui;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -53,7 +54,7 @@ public class MemoryViewAction extends AbstractAction {
     public MemoryViewAction() {
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         super(NbBundle.getMessage(MemoryViewAction.class, "CTL_MemoryViewAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(MemoryViewTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(MemoryViewTopComponent.ICON_PATH, true)));
     }
 
     public void actionPerformed(ActionEvent evt) {

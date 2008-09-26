@@ -46,6 +46,7 @@
 package org.openide.explorer.propertysheet;
 
 import org.openide.nodes.Node.Property;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.Color;
@@ -511,7 +512,7 @@ class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_In
         //See if there's an icon to display, either invalid state or
         //a property-specified icon
         if (env.getState() == env.STATE_INVALID) {
-            ic = new ImageIcon(Utilities.loadImage("org/openide/resources/propertysheet/invalid.gif")); //NOI18N
+            ic = new ImageIcon(ImageUtilities.loadImage("org/openide/resources/propertysheet/invalid.gif")); //NOI18N
         } else if (getProperty().getValue("valueIcon") != null) { //NOI18N
 
             Object o = getProperty().getValue("valueIcon"); //NOI18N

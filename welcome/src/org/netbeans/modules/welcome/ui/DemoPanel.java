@@ -83,6 +83,7 @@ import org.netbeans.modules.welcome.content.Utils;
 import org.netbeans.modules.welcome.content.WebLink;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -216,7 +217,7 @@ class DemoPanel extends RSSFeedReaderPanel {
                 } catch( Exception e ) {
                     Logger.getLogger( DemoPanel.class.getName() ).log( Level.FINE, 
                             "Error while caching Welcome Page demo image", e ); //NOI18N
-                    image = new ImageIcon( Utilities.loadImage( Constants.BROKEN_IMAGE ) );
+                    image = new ImageIcon( ImageUtilities.loadImage( Constants.BROKEN_IMAGE ) );
                 } finally {
                     if( null != output ) {
                         try { output.close(); } catch( IOException e ) {}
@@ -301,7 +302,7 @@ class DemoPanel extends RSSFeedReaderPanel {
         
         public MaxSizeImageIcon( Image content ) {
             this.content = content;
-            frame = Utilities.loadImage( IMAGE_PICTURE_FRAME );
+            frame = ImageUtilities.loadImage( IMAGE_PICTURE_FRAME );
         }
 
         public void paintIcon(Component c, Graphics g, int x, int y) {

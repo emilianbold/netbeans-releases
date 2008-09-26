@@ -43,6 +43,7 @@ package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -51,7 +52,7 @@ import org.openide.util.Utilities;
  */
 public class ProvidesNode extends EndpointNode {
     
-    private static final Image ICON = Utilities.loadImage(
+    private static final Image ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ProvidesNode.png");    // NOI18N
     
     public ProvidesNode(CasaProvides component, CasaNodeFactory factory) {

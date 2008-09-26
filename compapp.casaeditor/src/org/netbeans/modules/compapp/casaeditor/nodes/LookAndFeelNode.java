@@ -50,6 +50,7 @@ import org.netbeans.modules.compapp.casaeditor.properties.LookAndFeelProperty;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -59,7 +60,7 @@ import org.openide.util.Utilities;
  */
 public class LookAndFeelNode extends CasaNode {
 
-    private static final Image ICON = Utilities.loadImage(
+    private static final Image ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/LookAndFeelNode.png"); // NOI18N
 
 

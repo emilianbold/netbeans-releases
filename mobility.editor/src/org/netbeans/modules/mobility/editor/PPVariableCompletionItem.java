@@ -51,6 +51,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.*;
+import org.openide.util.ImageUtilities;
 
 /**
  * Created by IntelliJ IDEA.
@@ -115,7 +116,7 @@ public class PPVariableCompletionItem implements CompletionItem {
         synchronized (this)
         {
             if (icon == null) {
-                icon = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/mobility/editor/resources/v.png"));
+                icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/mobility/editor/resources/v.png"));
             }
         }
         

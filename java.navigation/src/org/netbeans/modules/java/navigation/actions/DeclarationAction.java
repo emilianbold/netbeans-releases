@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.java.navigation.DeclarationTopComponent;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -59,7 +60,7 @@ public class DeclarationAction extends AbstractAction {
     
     public DeclarationAction() {
         super(NbBundle.getMessage(DeclarationAction.class, "CTL_DeclarationAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(DeclarationTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(DeclarationTopComponent.ICON_PATH, true)));
     }
     
     public void actionPerformed(ActionEvent evt) {

@@ -78,6 +78,7 @@ import org.openide.actions.NewAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -93,7 +94,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class PartNode extends WSDLNamedElementNode<Part> {
     
-    private Image ICON  = Utilities.loadImage
+    private Image ICON  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/part.png");
     
     private Part mWSDLConstruct;

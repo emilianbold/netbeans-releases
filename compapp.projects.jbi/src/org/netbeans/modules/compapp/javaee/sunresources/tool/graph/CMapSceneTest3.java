@@ -46,6 +46,7 @@ import org.netbeans.api.visual.vmd.VMDGraphScene;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -97,7 +98,7 @@ public class CMapSceneTest3 extends VMDGraphScene {
     }
     */
     
-    public static final Image IMAGE_CANVAS = Utilities.loadImage ("custom_displayable_32.png"); // NOI18N
+    public static final Image IMAGE_CANVAS = ImageUtilities.loadImage ("custom_displayable_32.png"); // NOI18N
     
     public CMapSceneTest3(String title) {
         addChild(new LabelWidget(this, title));

@@ -84,6 +84,7 @@ import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD.SVGButtonEventSourceOrder;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -97,7 +98,7 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
     public static final String PROP_SVGBUTTON = "svgButton"; //NOI18N
     
     private static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/button_16.png"; // NOI18N                                                
-    private static final Image ICON_SVG_BUTTON = Utilities.loadImage(ICON_PATH);
+    private static final Image ICON_SVG_BUTTON = ImageUtilities.loadImage(ICON_PATH);
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(EventSourceCD.TYPEID, TYPEID, true, false);

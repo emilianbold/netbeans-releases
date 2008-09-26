@@ -50,6 +50,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.requirementsframework.IRequirement;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -167,7 +168,7 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
     
     public Image getIcon()
     {
-        return Utilities.loadImage(
+        return ImageUtilities.loadImage(
                 "org/netbeans/modules/uml/documentation/ui/resources/DocPane.gif"); // NOI18N
     }
     

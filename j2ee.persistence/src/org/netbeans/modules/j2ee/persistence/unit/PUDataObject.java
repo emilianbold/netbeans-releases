@@ -73,6 +73,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -312,7 +313,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
         }
         
         public java.awt.Image getIcon() {
-            return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"); //NOI18N
         }
         
         public String preferredID() {
@@ -373,7 +374,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
     }
     
     protected Image getXmlViewIcon() {
-        return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"); //NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"); //NOI18N
     }
     
     private class ModelSynchronizer extends XmlMultiViewDataSynchronizer {

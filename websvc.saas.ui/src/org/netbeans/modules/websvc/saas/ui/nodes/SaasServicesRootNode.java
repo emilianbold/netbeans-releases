@@ -49,6 +49,7 @@ import org.netbeans.modules.websvc.saas.ui.actions.AddGroupAction;
 import org.netbeans.modules.websvc.saas.ui.actions.AddServiceAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -94,7 +95,7 @@ public class SaasServicesRootNode extends AbstractNode {
     }
     
     static final java.awt.Image ICON =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservicegroup.png" ); //NOI18N
+            ImageUtilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservicegroup.png" ); //NOI18N
     
     @Override
     public Image getIcon(int type){

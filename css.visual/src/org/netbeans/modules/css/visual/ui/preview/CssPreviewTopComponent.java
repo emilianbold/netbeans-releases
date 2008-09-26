@@ -62,6 +62,7 @@ import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -129,7 +130,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     private CssPreviewTopComponent() {
         initComponents();
         setToolTipText(NbBundle.getMessage(CssPreviewTopComponent.class, "HINT_CssPreviewTopComponent")); //NOI18N
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
         NO_PREVIEW_PANEL = makeMsgPanel(NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("No_Preview"));
         add(NO_PREVIEW_PANEL, BorderLayout.CENTER);

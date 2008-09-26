@@ -42,6 +42,7 @@ package org.netbeans.modules.maven.repository;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -54,7 +55,7 @@ public class M2RepositoryBrowserAction extends AbstractAction {
     
     public M2RepositoryBrowserAction() {
         super(NbBundle.getMessage(M2RepositoryBrowserAction.class, "CTL_M2RepositoryBrowserAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(M2RepositoryBrowserTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(M2RepositoryBrowserTopComponent.ICON_PATH, true)));
     }
     
     public void actionPerformed(ActionEvent evt) {

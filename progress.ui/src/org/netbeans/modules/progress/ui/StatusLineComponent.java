@@ -92,6 +92,7 @@ import org.netbeans.progress.spi.ProgressUIWorkerWithModel;
 import org.netbeans.progress.spi.TaskModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
@@ -575,7 +576,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
                 Image icon = (Image)UIManager.get("nb.progress.cancel.icon");
                 if (icon == null) {
                        // for custom L&F?
-                   icon = Utilities.loadImage("org/netbeans/progress/module/resources/buton.png");
+                   icon = ImageUtilities.loadImage("org/netbeans/progress/module/resources/buton.png");
                 }
                 putValue(Action.SMALL_ICON, new ImageIcon(icon));
             }

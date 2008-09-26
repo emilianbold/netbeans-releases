@@ -52,6 +52,7 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -70,10 +71,10 @@ public class PanAction extends WidgetAction.LockedAdapter {
     private void initCursor()
     {
          MOUSE_PRESSED = Utilities.createCustomCursor(scene.getView(), 
-                Utilities.icon2Image(ImageUtil.instance().getIcon("pan-closed-hand.gif")),
+                ImageUtilities.icon2Image(ImageUtil.instance().getIcon("pan-closed-hand.gif")),
                 "PanClosedHand");
         MOUSE_RELEASED = Utilities.createCustomCursor(scene.getView(), 
-                Utilities.icon2Image(ImageUtil.instance().getIcon("pan-open-hand.gif")),
+                ImageUtilities.icon2Image(ImageUtil.instance().getIcon("pan-open-hand.gif")),
                 "PanOpenedHand");
     }
     

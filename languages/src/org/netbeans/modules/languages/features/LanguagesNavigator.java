@@ -73,6 +73,7 @@ import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
@@ -293,9 +294,9 @@ public class LanguagesNavigator implements NavigatorPanel {
         private static Icon getCIcon (String resourceName) {
             if (resourceName == null) return null;
             if (!icons.containsKey (resourceName)) {
-                Image image = Utilities.loadImage (resourceName);
+                Image image = ImageUtilities.loadImage (resourceName);
                 if (image == null)
-                    image = Utilities.loadImage (
+                    image = ImageUtilities.loadImage (
                         "org/netbeans/modules/languages/resources/node.gif"
                     );
                 icons.put (

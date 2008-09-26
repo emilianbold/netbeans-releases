@@ -46,6 +46,7 @@ import java.awt.Image;
 
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /** StrutsConfig loader bean info.
  *
@@ -66,7 +67,7 @@ public class JSFConfigLoaderBeanInfo extends SimpleBeanInfo {
      * @return returns the Image loader's icon
      */
     public Image getIcon(final int type) {
-        return org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
     }
     
 }

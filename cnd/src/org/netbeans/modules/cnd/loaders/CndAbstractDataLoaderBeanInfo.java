@@ -48,6 +48,7 @@ import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -68,6 +69,6 @@ public class CndAbstractDataLoaderBeanInfo extends SimpleBeanInfo {
     }
 
     public Image getIcon(int type) {
-	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif");   // NOI18N
+	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif");   // NOI18N
     }
 }

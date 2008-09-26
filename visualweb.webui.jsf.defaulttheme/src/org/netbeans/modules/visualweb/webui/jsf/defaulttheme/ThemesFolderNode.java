@@ -72,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -121,13 +122,13 @@ final class ThemesFolderNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-themesFolder.png"); // NOI18N;
+        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-themesFolder.png"); // NOI18N;
     }
 
     @Override
     public Image getOpenedIcon(int type) {
         // TODO: need graphic for opened folder icon
-        return Utilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-themesFolder.png"); // NOI18N;
+        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-themesFolder.png"); // NOI18N;
     }
 
     @Override
@@ -257,18 +258,18 @@ final class ThemesFolderNode extends AbstractNode {
 
         @Override
         public Image getIcon(int type) {
-            Image baseImage = Utilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-theme.png"); // NOI18N
+            Image baseImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-theme.png"); // NOI18N
             String currentTheme = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_CURRENT_THEME);
             if (currentTheme != null && currentTheme.equals(theme.getName())) {
-                Image currentThemeBadge = Utilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-currentThemeBadge.png"); // NOI18N
-                baseImage = Utilities.mergeImages(baseImage, currentThemeBadge, baseImage.getWidth(null), baseImage.getHeight(null) - currentThemeBadge.getHeight(null) + 1);
+                Image currentThemeBadge = ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-currentThemeBadge.png"); // NOI18N
+                baseImage = ImageUtilities.mergeImages(baseImage, currentThemeBadge, baseImage.getWidth(null), baseImage.getHeight(null) - currentThemeBadge.getHeight(null) + 1);
                 getAction().setEnabled(false);
             } else {
                 if (version != null) {
                     getAction().setEnabled(true);
                 } else {
-                    Image errorBadge = Utilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-error-badge.gif"); // NOI18N
-                    baseImage = Utilities.mergeImages(baseImage, errorBadge, baseImage.getWidth(null), baseImage.getHeight(null) - errorBadge.getHeight(null) + 1);
+                    Image errorBadge = ImageUtilities.loadImage("org/netbeans/modules/visualweb/webui/jsf/defaulttheme/resources/JSF-error-badge.gif"); // NOI18N
+                    baseImage = ImageUtilities.mergeImages(baseImage, errorBadge, baseImage.getWidth(null), baseImage.getHeight(null) - errorBadge.getHeight(null) + 1);
 
                     getAction().setEnabled(false);
                 }

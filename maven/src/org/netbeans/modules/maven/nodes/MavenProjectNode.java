@@ -136,7 +136,7 @@ public class MavenProjectNode extends AbstractNode {
     
     @Override
     public Image getIcon(int param) {
-        Image img = Utilities.icon2Image(info.getIcon());
+        Image img = ImageUtilities.icon2Image(info.getIcon());
         if (reporter.getReports().size() > 0) {
             Image ann = ImageUtilities.loadImage(BADGE_ICON); //NOI18N
             ann = ImageUtilities.addToolTipToImage(ann, toolTipBroken);
@@ -147,7 +147,7 @@ public class MavenProjectNode extends AbstractNode {
     
     @Override
     public Image getOpenedIcon(int param) {
-        Image img = Utilities.icon2Image(info.getIcon());
+        Image img = ImageUtilities.icon2Image(info.getIcon());
         if (reporter.getReports().size() > 0) {
             Image ann = ImageUtilities.loadImage(BADGE_ICON); //NOI18N
             ann = ImageUtilities.addToolTipToImage(ann, toolTipBroken);

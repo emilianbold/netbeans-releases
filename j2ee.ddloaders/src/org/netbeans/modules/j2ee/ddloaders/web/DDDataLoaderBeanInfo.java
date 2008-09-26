@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Bean info for the deployment descriptor loader.
@@ -68,7 +69,7 @@ public class DDDataLoaderBeanInfo extends SimpleBeanInfo {
     * @return returns the Image loader's icon
     */
     public Image getIcon(final int type) {
-        return Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); // NOI18N
     }
 
 }

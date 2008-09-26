@@ -45,6 +45,7 @@ import java.awt.Image;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -62,7 +63,7 @@ public class CustomSectionNodePanel extends SectionNodePanel {
     }
     
     public void setTitleIcon(String iconBase) {
-        Image iconImage = org.openide.util.Utilities.loadImage(iconBase, true);
+        Image iconImage = ImageUtilities.loadImage(iconBase, true);
         getTitleButton().setIcon(iconImage != null ? new ImageIcon(iconImage) : null);
     }
 

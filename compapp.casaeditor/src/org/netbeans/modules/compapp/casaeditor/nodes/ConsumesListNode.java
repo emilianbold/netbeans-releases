@@ -55,6 +55,7 @@ import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -64,7 +65,7 @@ import org.openide.util.Utilities;
  */
 public class ConsumesListNode extends CasaNode {
     
-    private static final Image ICON = Utilities.loadImage(
+    private static final Image ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ConsumesListNode.png");    // NOI18N
     
     public ConsumesListNode(List<CasaConsumes> data, CasaNodeFactory factory) {

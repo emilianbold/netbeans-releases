@@ -46,6 +46,7 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.options.OptionsCategoryImpl;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -134,9 +135,9 @@ public abstract class OptionsCategory {
      * @return 32x32 icon
      */
     public Icon getIcon () {
-        Image image = Utilities.loadImage (getIconBase () + ".png");
+        Image image = ImageUtilities.loadImage (getIconBase () + ".png");
         if (image != null) return new ImageIcon (image);
-        image = Utilities.loadImage (getIconBase () + ".gif");
+        image = ImageUtilities.loadImage (getIconBase () + ".gif");
         if (image == null) return null;
         return new ImageIcon (image);
         }

@@ -54,6 +54,7 @@ import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.spi.project.support.ant.ui.VariablesSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -237,8 +238,8 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     // End of variables declaration//GEN-END:variables
 
-    private static Icon brokenRef = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/project/resources/broken-reference.gif")); // NOI18N
-    private static Icon resolvedRef = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/project/resources/resolved-reference.gif")); // NOI18N
+    private static Icon brokenRef = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/project/resources/broken-reference.gif")); // NOI18N
+    private static Icon resolvedRef = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/project/resources/resolved-reference.gif")); // NOI18N
 
     private static class ListCellRendererImpl extends DefaultListCellRenderer {
 

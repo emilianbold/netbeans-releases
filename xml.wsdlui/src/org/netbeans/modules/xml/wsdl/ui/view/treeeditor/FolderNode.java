@@ -73,6 +73,7 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
@@ -138,7 +139,7 @@ public abstract class FolderNode extends AbstractNode
     public Image getIcon(int type) {
         Image folderIcon = FolderIcon.getIcon(type);
         if (BADGE_ICON != null) {
-            return Utilities.mergeImages(folderIcon, BADGE_ICON, 8, 8);
+            return ImageUtilities.mergeImages(folderIcon, BADGE_ICON, 8, 8);
         }
         return folderIcon;
     }
@@ -147,7 +148,7 @@ public abstract class FolderNode extends AbstractNode
     public Image getOpenedIcon(int type) {
         Image folderIcon = FolderIcon.getOpenedIcon(type);
         if (BADGE_ICON != null) {
-            return Utilities.mergeImages(folderIcon, BADGE_ICON, 8, 8);
+            return ImageUtilities.mergeImages(folderIcon, BADGE_ICON, 8, 8);
         }
         return folderIcon;
     }

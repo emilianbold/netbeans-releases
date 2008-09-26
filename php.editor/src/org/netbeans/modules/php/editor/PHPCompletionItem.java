@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,7 +75,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     PHPCompletionItem(ElementHandle element, CompletionRequest request) {
         this.request = request;
         this.element = element;
-        keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_KEYWORD_ICON));
+        keywordIcon = new ImageIcon(ImageUtilities.loadImage(PHP_KEYWORD_ICON));
     }
 
     public int getAnchorOffset() {
@@ -377,7 +378,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         private static ImageIcon icon() {
             if (INTERFACE_ICON == null) {
-                INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
+                INTERFACE_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_INTERFACE_ICON));
             }
             return INTERFACE_ICON;
         }

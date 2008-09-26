@@ -62,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -240,8 +241,8 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
 
         public ReRunAction(boolean debug) {
             this.debug = debug;
-            this.putValue(Action.SMALL_ICON, debug ? new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/execute/refreshdebug.png")) : //NOI18N
-                    new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/execute/refresh.png")));//NOI18N
+            this.putValue(Action.SMALL_ICON, debug ? new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/refreshdebug.png")) : //NOI18N
+                    new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/refresh.png")));//NOI18N
 
             putValue(Action.NAME, debug ? NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Rerun_extra") : NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Rerun"));
             putValue(Action.SHORT_DESCRIPTION, debug ? NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Rerun_Extra") : NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Rerun"));
@@ -277,7 +278,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         private AbstractMavenExecutor exec;
 
         StopAction() {
-            putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/execute/stop.gif"))); //NOi18N
+            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/stop.gif"))); //NOi18N
 
             putValue(Action.NAME, NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Stop_execution"));
             putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Stop_Execution"));
@@ -300,7 +301,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         private MavenBuildPlanSupport mbps;
 
         BuildPlanAction() {
-            putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/execute/buildplangoals.png"))); //NOi18N
+            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/buildplangoals.png"))); //NOi18N
 
             putValue(Action.NAME, NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Build_Plan"));
             putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Build_Plan_tip"));

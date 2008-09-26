@@ -83,6 +83,7 @@ import javax.swing.table.TableModel;
 import org.netbeans.modules.tasklist.impl.OpenTaskAction;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -704,9 +705,9 @@ class TaskListTable extends JTable {
 
         private ImageIcon getProperIcon( boolean descending ) {
             if( descending ) {
-                return new ImageIcon( org.openide.util.Utilities.loadImage( SORT_DESC_ICON ) );
+                return new ImageIcon( ImageUtilities.loadImage( SORT_DESC_ICON ) );
             } else {
-                return new ImageIcon( org.openide.util.Utilities.loadImage( SORT_ASC_ICON ) );
+                return new ImageIcon( ImageUtilities.loadImage( SORT_ASC_ICON ) );
             }
         }
     }

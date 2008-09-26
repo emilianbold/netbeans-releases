@@ -68,6 +68,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
@@ -194,12 +195,12 @@ final class Favorites extends FilterNode implements Index {
     
     @Override
     public Image getIcon (int type) {
-        return Utilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.png"); // NOI18N
     }
     
     @Override
     public Image getOpenedIcon (int type) {
-        return Utilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.png"); // NOI18N
     }
     
     @Override

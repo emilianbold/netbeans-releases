@@ -47,6 +47,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -120,7 +121,7 @@ class ErrorLabel extends JLabel {
     }
     
     protected Icon getErrorIcon() {
-        return new ImageIcon( Utilities.loadImage("org/netbeans/modules/java/editor/resources/error-glyph.gif") );
+        return new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/java/editor/resources/error-glyph.gif") );
     }
     
     /**
