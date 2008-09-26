@@ -55,6 +55,7 @@ public class CompilerTest extends NbTestSuite {
         super("C/C++ Compiler Personality"); // NOI18N   
         
         this.addTestSuite(ReadRegistryTestCase.class);
+        this.addTestSuite(WriteRegistryTestCase.class);
     }
 
     public static Test suite() {
