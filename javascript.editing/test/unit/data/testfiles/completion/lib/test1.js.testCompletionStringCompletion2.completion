@@ -2,17 +2,17 @@ Code completion result for source line:
 z = "f\|oo"
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-KEYWORD    \                                          \<i>ooo</i>: The latin character in octal <i>ooo</i>
-KEYWORD    \"                                         Double Quote (\u0022)
-KEYWORD    \'                                         Single Quote (\u0027)
-KEYWORD    \0                                         The NUL character (\u0000)
-KEYWORD    \\                                         Backslash (\u005C)
-KEYWORD    \b                                         Backspace (0x08)
-KEYWORD    \c                                         \c<i>X</i>: The control character ^<i>X</i>
-KEYWORD    \f                                         Form feed (\u000C)
-KEYWORD    \n                                         Newline (\u000A)
-KEYWORD    \r                                         Carriage return (\u000D)
-KEYWORD    \t                                         Tab (\u0009)
-KEYWORD    \u                                         \u<i>xxxx</i>: The Unicode character in hex <i>xxxx</i>
-KEYWORD    \v                                         Vertical tab (\u000B)
-KEYWORD    \x                                         \x<i>nn</i>: The latin character in hex <i>nn</i>
+KEYWORD    \ \<i>ooo</i>: The latin chara             null
+KEYWORD    \" Double Quote (\u0022)                   null
+KEYWORD    \' Single Quote (\u0027)                   null
+KEYWORD    \0 The NUL character (\u0000)              null
+KEYWORD    \\ Backslash (\u005C)                      null
+KEYWORD    \b Backspace (0x08)                        null
+KEYWORD    \c \c<i>X</i>: The control cha             null
+KEYWORD    \f Form feed (\u000C)                      null
+KEYWORD    \n Newline (\u000A)                        null
+KEYWORD    \r Carriage return (\u000D)                null
+KEYWORD    \t Tab (\u0009)                            null
+KEYWORD    \u \u<i>xxxx</i>: The Unicode              null
+KEYWORD    \v Vertical tab (\u000B)                   null
+KEYWORD    \x \x<i>nn</i>: The latin char             null
