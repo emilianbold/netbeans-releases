@@ -313,7 +313,7 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
         if (unitLogger == null) {
             return;
         }
-        LOG.info("build finished!!!!"); //NOI18N
+        LOG.fine("build finished!!!!"); //NOI18N
         FakeAntEvent evnt = new FakeAntEvent(session, prj);
         AntEvent event = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(evnt);
         evnt.setTaskName("junit"); //NOI18N
