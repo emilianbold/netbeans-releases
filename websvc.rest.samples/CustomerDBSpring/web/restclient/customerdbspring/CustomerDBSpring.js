@@ -40,18 +40,18 @@
  */
 
 /*
-* CustomerDB stub
+* CustomerDBSpring stub
 */
 
-function CustomerDB() {}
+function CustomerDBSpring() {}
 
-function CustomerDB(uri_) {
+function CustomerDBSpring(uri_) {
     this.uri = uri_;
 }
 
-CustomerDB.prototype = {
+CustomerDBSpring.prototype = {
 
-   uri : '__BASE_URL__',
+   uri : 'http://localhost:8080/CustomerDBSpring/resources',
 
    resources : new Array(),
    

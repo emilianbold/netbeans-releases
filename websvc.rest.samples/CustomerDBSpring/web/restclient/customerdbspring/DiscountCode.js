@@ -40,122 +40,134 @@
  */
 
 /*
-* Support js for Customers
+* Support js for DiscountCode
 */
 
-function Customers(uri_) {
-    this.uri = uri_;
-    this.items = new Array();
-    this.initialized = false;
+function DiscountCode(uri_) {
+    this.DiscountCode(uri_, false);
 }
 
-Customers.prototype = {
+function DiscountCode(uri_, initialized_) {
+    this.uri = uri_;
+    this.discountCode = '';
+    this.rate = '';
+    this.customers = new Array();
+
+    this.initialized = initialized_;
+}
+
+DiscountCode.prototype = {
 
    getUri : function() {
       return this.uri;
    },
 
-   getItems : function() {
+   getDiscountCode : function() {
       if(!this.initialized)
-          this.init();
-      return this.items;
+         this.init();
+      return this.discountCode;
    },
 
-   addItem : function(item) {
-      this.items[this.items.length+1] = item;
+   setDiscountCode : function(discountCode_) {
+      this.discountCode = discountCode_;
    },
 
-   removeItem : function(item) {
-      var status = item.delete_();
-      if(status != '-1')
-        this.init(); //re-read items
-      return status;
+   getRate : function() {
+      if(!this.initialized)
+         this.init();
+      return this.rate;
    },
+
+   setRate : function(rate_) {
+      this.rate = rate_;
+   },
+
+   getCustomers : function() {
+      if(!this.initialized)
+         this.init();
+      return this.customers;
+   },
+
+   setCustomers : function(customers_) {
+      this.customers = customers_;
+   },
+
+
 
    init : function() {
-      var remote = new CustomersRemote(this.uri);
+      var remote = new DiscountCodeRemote(this.uri);
       var c = remote.getJson_();
       if(c != -1) {
-         var myObj = eval('('+c+')');
-         var customers = myObj.customers;
-         if(customers == null || customers == undefined) {
-            rjsSupport.debug('customers is undefined, so skipping init of Customers');
-            return;
-         }
-         var refs = customers.customer;
-         if(refs != undefined) {
-             if(refs.length == undefined) {
-                 this.initChild(refs, 0);
-             } else {
-                 var j = 0;
-                 for(j=0;j<refs.length;j++) {
-                    var ref = refs[j];
-                    this.initChild(ref, j);
-                 }
-             }
-         } else {
-            rjsSupport.debug('customer is undefined, so skipping initChild for Customers');
-         }
+         var myObj = eval('(' +c+')');
+         var discountCode = myObj.discountCode;
+         this.uri = discountCode['@uri'];
+         this.discountCode = this.findValue(this.discountCode, discountCode['discountCode']);
+         this.rate = this.findValue(this.rate, discountCode['rate']);
+         this.customers = new Customers(discountCode['customerCollection']['@uri']);
+
          this.initialized = true;
       }
    },
 
-   initChild : function(ref, j) {
-      var uri2 = ref['@uri'];
-      this.items[j] = new Customer(uri2);
+   findValue : function(field, value) {
+      if(value == undefined)
+          return field;
+      else
+         return value;
    },
 
    flush : function() {
-      var remote = new CustomersRemote(this.uri);
-      remote.postJson_('{'+this.toString()+'}');
+      var remote = new DiscountCodeRemote(this.uri);
+      return remote.putJson_('{'+this.toString()+'}');
    },
 
-   flush : function(customer) {
-      var remote = new CustomersRemote(this.uri);
-      return remote.postJson_('{'+customer.toString()+'}');
+   delete_ : function() {
+      var remote = new DiscountCodeRemote(this.uri);
+      return remote.deleteJson_();
    },
 
    toString : function() {
       if(!this.initialized)
          this.init();
-      var s = '';
-      var j = 0;
-      if(this.items.length > 1)
-          s = s + '[';
-      for(j=0;j<this.items.length;j++) {
-         var c = this.items[j];
-         if(j<this.items.length-1)
-            s = s + '{"@uri":"'+c.getUri()+'", "customerId":"'+rjsSupport.findIdFromUrl(c.getUri())+'"},';
-         else
-            s = s + '{"@uri":"'+c.getUri()+'", "customerId":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}';
-      }
-      if(this.items.length > 1)
-          s = s + ']';
-      var myObj = '';
-      if(s == '') {
-          myObj = '"customers":{"@uri":"'+this.getUri()+'"}';
-      } else {
-          myObj = 
-            '"customers":{'+'"@uri":"'+this.getUri()+'",'+'"customer":'+s+''+'}';
-      }
+      var myObj = 
+         '"discountCode":'+
+         '{'+
+         '"@uri":"'+this.uri+'"'+
+                  ', "discountCode":"'+this.discountCode+'"'+
+         ', "rate":"'+this.rate+'"'+
+         ', "customers":{"@uri":"'+this.customers.getUri()+'"}'+
+
+         '}';
       return myObj;
+   },
+
+   getFields : function() {
+      var fields = [];
+         fields.push('discountCode');
+         fields.push('rate');
+
+      return fields;
    }
 
 }
 
-function CustomersRemote(uri_) {
-    this.uri = uri_+'?expandLevel=0';
+function DiscountCodeRemote(uri_) {
+    this.uri = uri_+'?expandLevel=1';
 }
 
-CustomersRemote.prototype = {
+DiscountCodeRemote.prototype = {
 
 /* Default getJson_() method used by init() method. Do not remove. */
    getJson_ : function() {
       return rjsSupport.get(this.uri, 'application/json');
    },
-/* Default postJson_() method used by flush() methods. Do not remove. */
-   postJson_ : function(content) {
-      return rjsSupport.post(this.uri, 'application/json', content);
+/* Default putJson_() method used by flush() method. Do not remove. */
+   putJson_ : function(content) {
+      return rjsSupport.put(this.uri, 'application/json', content);
+   },
+/* Default deleteJson_() method used by delete_() method. Do not remove. */
+   deleteJson_ : function() {
+      return rjsSupport.delete_(this.uri);
    }
    ,
    getXml : function() {
@@ -166,16 +178,20 @@ CustomersRemote.prototype = {
       return rjsSupport.get(this.uri, 'application/json');
    },
 
-   postXml : function(content) {
-      return rjsSupport.post(this.uri, 'application/xml', content);
+   putXml : function(content) {
+      return rjsSupport.put(this.uri, 'application/xml', content);
    },
 
-   postJson : function(content) {
-      return rjsSupport.post(this.uri, 'application/json', content);
+   putJson : function(content) {
+      return rjsSupport.put(this.uri, 'application/json', content);
    },
 
-   getCustomerResource : function(customerId) {
-      var link = new Customer(this.uri+'/'+customerId);
+   delete_ : function() {
+      return rjsSupport.delete_(this.uri);
+   },
+
+   getCustomerCollectionResource : function(customerCollection) {
+      var link = new Customers(this.uri+'/'+customerCollection);
       return link;
    }
 }

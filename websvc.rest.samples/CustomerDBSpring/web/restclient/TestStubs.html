@@ -39,16 +39,29 @@
  Version 2 license, then the option applies only if the new code is
  made subject to such option by the copyright holder.
 -->
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html>
     <head>
-        <title>Javascript client stub for RESTful Web Services - Readme</title>
+        <title>Javascript client stub for RESTful Web Services - Test</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <link rel="stylesheet" href="./css/clientstubs.css" type="text/css"/>
         <link rel="stylesheet" href="./css/css_master-all.css" type="text/css"/>
+        <!-- JS_DECLARE_START - DO NOT REMOVE-->
+        <script type="text/javascript" src="./Support.js"></script>
+	<script type='text/javascript' src='./customerdbspring/CustomerDBSpring.js'></script>
+	<script type='text/javascript' src='./customerdbspring/DiscountCodes.js'></script>
+	<script type='text/javascript' src='./customerdbspring/Customers.js'></script>
+	<script type='text/javascript' src='./customerdbspring/DiscountCode.js'></script>
+	<script type='text/javascript' src='./customerdbspring/Customer.js'></script>
+        <!-- JS_DECLARE_END - DO NOT REMOVE-->
+	<!--<script type="text/javascript">
+            //rest debug, uncomment to enable debugging
+            var rjsConfig = {
+                isDebug: true
+            };
+	</script>-->
     </head>
     <body>
         <div class="outerBorder">
@@ -57,31 +70,42 @@
                 <div class="banner"><img src="./css/images/pname-clientstubs.png"/></div>
             </div> <!-- header -->
             <div id="main" class="main">
-                <table width="100%">
-                    <tr>
-                        <td id="content" class="content" valign="top" colspan="12">
-                            
- <h2>Steps to run Rest Javascripts stubs</h2> 
- <ol> 
- <li>Open Netbeans IDE.</li> 
- <li>Create a web project.</li> 
- <li>Right click on the web project, then select "New->Restful Web Service Client Stubs". 
- In the wizard select a web project that contain the RESTful Web Services. Click "Finish".</li> 
- <li>Run "/Web Pages/rest/TestStubs.html" to test generated Javascripts for the 
- RESTful Web Service project. This displays a table of available resources.</li> 
- </ol> 
- Note: When using proxy for javascript cross-domain, 
- <ol>
- <li>Create a java package under &lt;Source Packages&gt;org.netbeans.rest.proxy.</li>
- <li>Copy RestProxyServlet.txt to new package.</li>
- <li>Rename RestProxyServlet.txt to RestProxyServlet.java.</li>
- <li>Add servlet mapping info into /WEB-INF/web.xml as specified in the class documentation for RestProxyServlet.java.</li>
- <li>Uncomment the line that starts with '//app.setProxy(' in TestStubs.html, then set the 
- correct url to the proxy servlet.</li>
- </ol>
-                        </td>
-                    </tr>
-                </table>
+              <h2>Javascript client stub for RESTful Web Services - Test</h2>
+              <div id="containerContent"> </div>
+              <!-- JS_USAGE_START - DO NOT REMOVE-->
+
+	<!-- Using JavaScript files for project CustomerDBSpring-->
+	<script language='Javascript'>
+		var str = '';
+		//Example test code for CustomerDBSpring
+		str = '<h2>Resources for CustomerDBSpring:</h2><br><table border="1">';
+		var app = new CustomerDBSpring('http://localhost:8080/CustomerDBSpring/resources');
+		//Uncomment below if using proxy for javascript cross-domain.
+		//app.setProxy("http://localhost:8080/CustomerDBSpring/restproxy");
+		var resources = app.getResources();
+		for(i=0;i<resources.length;i++) {
+		  var resource = resources[i];
+		  var uri = resource.getUri();
+		  str += '<tr><td valign="top"><a href="'+uri+'" target="_blank">'+uri+'</a></td><td>';
+		  var items  = resource.getItems();
+		  if(items != undefined && items.length > 0) {
+		    for(j=0;j<items.length;j++) {
+		        var item = items[j];
+		        var uri2 = item.getUri();
+		        str += '<a href="'+uri2+'" target="_blank">'+uri2+'</a><br/>';
+		        str += '&nbsp;&nbsp;<font size="-3">'+item.toString()+'</font><br/>';
+		    }
+		  } else {
+		    str += 'No items, please check the url: <a href="'+uri+'" target="_blank">'+uri+'</a>.<br/>Set proxy if RESTful web service is not running on the same domain as this application.';
+		  }
+		  str += '</td></tr>';
+		}
+		str += '</table><br>';
+		var n = document.getElementById('containerContent');
+		n.innerHTML = n.innerHTML + str;
+
+	</script>
+              <!-- JS_USAGE_END - DO NOT REMOVE--> 
             </div> <!-- main -->
         </div> <!-- outerborder -->
     </body>
