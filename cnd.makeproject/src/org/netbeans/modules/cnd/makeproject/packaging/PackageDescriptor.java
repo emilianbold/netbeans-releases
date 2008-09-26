@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.editing;
 
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-
+package org.netbeans.modules.cnd.makeproject.packaging;
 
 /**
  *
- * @author Tor Norbye
+ * @author thp
  */
-public class JsPositionManager implements PositionManager {
-    public JsPositionManager() {
-    }
-
-    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle objectHandle) {
-        Element object = JsParser.resolveHandle(info, objectHandle);
-        if (object instanceof AstElement) {
-            Node target = ((AstElement)object).getNode();
-            if (target != null) {
-                return LexUtilities.getLexerOffsets(info, new OffsetRange(target.getSourceStart(), target.getSourceEnd()));
+public class PackageDescriptor {
+    public static String[] NAMES = {
+        "Tar", // NOI18N
+        "Zip", // NOI18N
+        "SVR4", // NOI18N
+        "RPM", // NOI18N
+        "Debian" // NOI18N
+    };
+    
+    public static int getTypeFromName(String name) {
+        int type = 0;
+        for (int i = 0; i < NAMES.length; i++) {
+            if (NAMES[i].equals(name)) {
+                type = i;
+                break;
             }
-            return OffsetRange.NONE;
-        } else if (object != null) {
-            Logger.global.log(Level.WARNING, "Foreign element: " + object + " of type " +
-                ((object != null) ? object.getClass().getName() : "null"));
         }
-        return OffsetRange.NONE;
+        return type;
     }
 }

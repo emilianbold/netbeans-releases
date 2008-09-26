@@ -24,7 +24,7 @@ public class ImportAction extends ActionNoBlock {
     public static final String SVN_ITEM = "Subversion";
             
     /** "Import..." menu item. */
-    public static final String IMPORT_ITEM = "Import into Subversion";
+    public static final String IMPORT_ITEM = "Import into Repository...";
     
     /** Creates a new instance of ImportAction */
     public ImportAction() {

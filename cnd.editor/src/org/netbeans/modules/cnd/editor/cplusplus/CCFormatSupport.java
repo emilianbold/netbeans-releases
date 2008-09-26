@@ -266,9 +266,15 @@ public class CCFormatSupport extends ExtFormatSupport {
                         break;
 
                     case CCTokenContext.COLON_ID:
-                        TokenItem tt = findAnyToken(t, null, new TokenID[] {CCTokenContext.CASE, CCTokenContext.DEFAULT, CCTokenContext.QUESTION}, t.getTokenContextPath(), true);
+                        TokenItem tt = findAnyToken(t, null, new TokenID[] {CCTokenContext.CASE, CCTokenContext.DEFAULT,
+                        CCTokenContext.PUBLIC, CCTokenContext.PRIVATE, CCTokenContext.PROTECTED,
+                        CCTokenContext.LBRACE, CCTokenContext.RBRACE, CCTokenContext.SEMICOLON,
+                        CCTokenContext.QUESTION}, t.getTokenContextPath(), true);
                         if (tt != null) {
                             switch (tt.getTokenID().getNumericID()) {
+                                case CCTokenContext.PUBLIC_ID:
+                                case CCTokenContext.PRIVATE_ID:
+                                case CCTokenContext.PROTECTED_ID:
                                 case CCTokenContext.CASE_ID:
                                 case CCTokenContext.DEFAULT_ID:
                                     return (lit != null) ? lit : t;

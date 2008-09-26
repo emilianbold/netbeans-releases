@@ -119,6 +119,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.apisupport.ant</friend>
                 <friend>org.netbeans.modules.autoupdate.services</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
+                <friend>org.netbeans.modules.modulemanager</friend>
                 <package>org.netbeans.core.startup</package>
                 <package>org.netbeans.core.startup.layers</package>
             </friend-packages>

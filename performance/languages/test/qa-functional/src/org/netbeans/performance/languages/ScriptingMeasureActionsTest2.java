@@ -38,39 +38,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javascript.editing;
 
+package org.netbeans.performance.languages;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.actions.*;
 
 
 /**
  *
- * @author Tor Norbye
+ * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
-public class JsPositionManager implements PositionManager {
-    public JsPositionManager() {
-    }
+public class ScriptingMeasureActionsTest2 {
+    public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
 
-    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle objectHandle) {
-        Element object = JsParser.resolveHandle(info, objectHandle);
-        if (object instanceof AstElement) {
-            Node target = ((AstElement)object).getNode();
-            if (target != null) {
-                return LexUtilities.getLexerOffsets(info, new OffsetRange(target.getSourceStart(), target.getSourceEnd()));
-            }
-            return OffsetRange.NONE;
-        } else if (object != null) {
-            Logger.global.log(Level.WARNING, "Foreign element: " + object + " of type " +
-                ((object != null) ? object.getClass().getName() : "null"));
-        }
-        return OffsetRange.NONE;
+        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
+        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureActionsTest");
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EditorMenuPopup.class)
+                .addTest(FormatFileTest.class)
+                .addTest(CloseProjectTest.class)
+                .addTest(CloseScriptingFiles.class)
+                .addTest(TypingInScriptingEditor.class)
+                .addTest(ScriptingCodeCompletionInEditor.class)
+                .addTest(OpenScriptingFiles.class)
+
+                // Saving modified document
+                .addTest(SaveModifiedScriptingFiles.class)
+
+                // Page Up and Down in scripting editor
+                .addTest(PageUpPageDownScriptingEditor.class)
+
+                // Can cause RubyProject to be closed in case of failure
+                .addTest(OpenRubyProject.class)
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));
+
+        return suite;        
     }
 }

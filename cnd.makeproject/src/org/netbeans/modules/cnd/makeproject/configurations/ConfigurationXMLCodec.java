@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackageDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -254,14 +255,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentPackagingConfiguration.getFiles().getValue().clear();
             //currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
-            if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-                currentPackagingConfiguration.getSvr4Header().getValue().clear();
-            }
-            else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-                currentPackagingConfiguration.getRpmHeader().getValue().clear();
-            }
-            else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-                currentPackagingConfiguration.getDebianHeader().getValue().clear();
+            List<InfoElement> toBeRemove = currentPackagingConfiguration.getHeaderSubList(currentPackagingConfiguration.getType().getValue());
+            for (InfoElement elem : toBeRemove) {
+                currentPackagingConfiguration.getInfo().getValue().remove(elem);
             }
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
@@ -324,17 +320,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String name = atts.getValue(NAME_ATTR); // NOI18N
             String value = atts.getValue(VALUE_ATTR); // NOI18N
             String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
-            InfoElement infoElement = new InfoElement(name, value, mandatory.equals(TRUE_VALUE), false);
+            InfoElement infoElement = new InfoElement(currentPackagingConfiguration.getType().getValue(), name, value, mandatory.equals(TRUE_VALUE), false);
             if (currentPackagingConfiguration != null) {
-                if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-                    currentPackagingConfiguration.getSvr4Header().add(infoElement);
-                }
-                else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-                    currentPackagingConfiguration.getRpmHeader().add(infoElement);
-                }
-                else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-                    currentPackagingConfiguration.getDebianHeader().add(infoElement);
-                }
+                currentPackagingConfiguration.getInfo().add(infoElement);
             }
         }
     }
@@ -542,7 +530,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(PACK_TYPE_ELEMENT)) {
             if (currentPackagingConfiguration != null) {
-                int type = new Integer(currentText).intValue();
+                int type;
+                if (descriptorVersion <= 50) {
+                    type = new Integer(currentText).intValue();
+                }
+                else {
+                    type = PackageDescriptor.getTypeFromName(currentText);
+                }
                 currentPackagingConfiguration.getType().setValue(type);
             }
         } else if (element.equals(PREPROCESSOR_ELEMENT)) {
