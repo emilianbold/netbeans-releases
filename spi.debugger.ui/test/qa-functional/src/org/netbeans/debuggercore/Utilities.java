@@ -302,7 +302,7 @@ public class Utilities {
         eo.setCaretPosition(line, column);
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new EventTool().waitNoEvent(5000);
+        new EventTool().waitNoEvent(500);
         return dialog;
     }
 

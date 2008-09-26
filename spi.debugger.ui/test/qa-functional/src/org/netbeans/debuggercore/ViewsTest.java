@@ -123,7 +123,7 @@ public class ViewsTest extends JellyTestCase {
         Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
         new OpenAction().performAPI(beanNode); // NOI18N
         EditorOperator op = new EditorOperator("MemoryView.java");
-        new EventTool().waitNoEvent(4000);
+        new EventTool().waitNoEvent(500);
         Utilities.toggleBreakpoint(op, 92);
         Utilities.startDebugger();
         Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");

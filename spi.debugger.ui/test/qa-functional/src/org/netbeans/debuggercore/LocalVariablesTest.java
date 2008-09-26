@@ -351,9 +351,7 @@ public class LocalVariablesTest extends JellyTestCase {
             Utilities.setCaret(eo, 104);
             new EventTool().waitNoEvent(500);
             new RunToCursorAction().performMenu();
-            new EventTool().waitNoEvent(1500);
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
-            new EventTool().waitNoEvent(1500);
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
