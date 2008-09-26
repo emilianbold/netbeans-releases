@@ -438,23 +438,22 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
 
     public String getAxiondbDataDirectory() {
         String dbName = (String) this.getAttributeValue(AXION_DB_DATA_DIR);
-        dbName = (dbName == null) ? ETLEditorSupport.PRJ_PATH + File.separator + "data" + File.separator :  dbName;
+        dbName = (dbName == null) ? ETLEditorSupport.PRJ_PATH + File.separator + "data" + File.separator : dbName;
         return dbName;
     }
-    
+
     public boolean isDynamicFlatFile() {
         Boolean dynamicFlatFile = (Boolean) this.getAttributeValue(DYNAMIC_FLAT_FILE);
         boolean flag = false;
-        if(dynamicFlatFile != null) {
+        if (dynamicFlatFile != null) {
             flag = dynamicFlatFile.booleanValue();
         }
         return flag;
     }
-    
+
     public void setDynamicFlatFile(boolean flag) {
         this.setAttribute(DYNAMIC_FLAT_FILE, Boolean.valueOf(flag));
     }
-    
 
     public String getExecutionStrategyStr() {
         int code = getExecutionStrategyCode().intValue();
@@ -1045,7 +1044,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     public void setAxiondbDataDirectory(String dbInstanceName) {
         this.setAttribute(AXION_DB_DATA_DIR, dbInstanceName);
     }
-    
+
     /**
      * @see SQLDefinition#setParent
      */
@@ -1726,5 +1725,9 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     }
 
     public void setExecutionStrategyStr(String text) {
+    }
+
+    public void removeJoinViewOnly(SQLJoinView joinView) {
+        objectMap.remove(joinView.getId());
     }
 }
