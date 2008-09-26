@@ -299,21 +299,24 @@ public class DebuggerProxy {
             command.send(sessionSocket.getOutputStream());
             if (command.wantAcknowledgment()) {
                 Message message = responseQueue.poll(20, TimeUnit.SECONDS);
-                if (message instanceof ResponseMessage) {
-                    ResponseMessage response = (ResponseMessage) message;
-                    assert (response.getTransactionId() == command.getTransactionId());
-                    
-                    if (message instanceof RuntimeErrorResponse) {
-                        Log.getLogger().log(Level.WARNING, "Unexpected debugger extension error: " + 
-                                ((RuntimeErrorResponse)message).getMessage());
-                        return null;
+                //Synchronize to ensure timed out response is ignored
+                synchronized(ignoreIDs) {                
+                    if (message instanceof ResponseMessage) {
+                        ResponseMessage response = (ResponseMessage) message;
+                        assert (response.getTransactionId() == command.getTransactionId());
+
+                        if (message instanceof RuntimeErrorResponse) {
+                            Log.getLogger().log(Level.WARNING, "Unexpected debugger extension error: " + 
+                                    ((RuntimeErrorResponse)message).getMessage());
+                            return null;
+                        }
+
+                        return response;
                     }
-                    
-                    return response;
+                    Log.getLogger().log(Level.FINE, command.getCommandName() + " request timed-out");  //NOI18N
+                    //Track the id of the timed-out request to ignore the corresponding response
+                    ignoreIDs.add(command.getTransactionId());
                 }
-                Log.getLogger().log(Level.FINE, command.getCommandName() + " request timed-out");  //NOI18N
-                //Track the id of the timed-out request to ignore the corresponding response
-                ignoreIDs.add(command.getTransactionId());
             }
         } catch (SocketException se) {
             Log.getLogger().log(Level.WARNING, se.getMessage(), se);
@@ -335,15 +338,18 @@ public class DebuggerProxy {
             if( txID == -1) {
                 suspensionPointQueue.add(message);
             }else {
-                //Ignore if the response is for a timed-out request
-                if(ignoreIDs.size() > 0) {
-                    int index = ignoreIDs.indexOf(txID);
-                    if(index != -1) {
-                        ignoreIDs.remove(index);
-                        return;
+                //Synchronize to ensure timed out response is ignored
+                synchronized(ignoreIDs) {
+                    //Ignore if the response is for a timed-out request
+                    if(ignoreIDs.size() > 0) {
+                        int index = ignoreIDs.indexOf(txID);
+                        if(index != -1) {
+                            ignoreIDs.remove(index);
+                            return;
+                        }
                     }
+                    responseQueue.add((ResponseMessage) message);
                 }
-                responseQueue.add((ResponseMessage) message);
             }
         } else if (message instanceof InitMessage ||
                    message instanceof OnloadMessage ||
