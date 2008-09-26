@@ -286,7 +286,7 @@ public InfoElement getInfoElement() {
             sb.append("\\n"); // NOI18N
         }
     }
-    return new InfoElement(name, sb.toString());
+    return new InfoElement(packagingConfiguration.getType().getValue(), name, sb.toString());
 }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

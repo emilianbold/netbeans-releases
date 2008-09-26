@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.xml.wizard.impl;
 
+import org.netbeans.modules.xml.wizard.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.MalformedURLException;
@@ -53,7 +54,7 @@ import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOperation;
 

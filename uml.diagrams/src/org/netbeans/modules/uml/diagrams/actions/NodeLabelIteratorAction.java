@@ -99,7 +99,7 @@ public class NodeLabelIteratorAction extends IterateSelectAction {
         
         for (Widget child : widget.getChildren())
         {
-            if (child instanceof CombinedFragmentWidget)
+            if (child instanceof UMLNodeWidget)
             {
                 break;
             }

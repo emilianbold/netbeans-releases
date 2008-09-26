@@ -103,7 +103,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
     class AddButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            addObjectAction(new InfoElement("", "")); // NOI18N
+            addObjectAction(new InfoElement(packagingConfiguration.getType().getValue(), "", "")); // NOI18N
         }
     }
     
@@ -122,7 +122,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
     @Override
     public Object copyAction(Object o) {
         InfoElement elem = (InfoElement) o;
-        return new InfoElement(new String(elem.getName()), new String(elem.getValue()));
+        return new InfoElement(elem.getType(), new String(elem.getName()), new String(elem.getValue()));
     }
 
     @Override

@@ -38,8 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.xml.wizard.impl;
 
+import org.netbeans.modules.xml.wizard.SchemaParser;
+import org.netbeans.modules.xml.wizard.*;
 import java.awt.Component;
 
 import java.awt.Color;
@@ -70,7 +72,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -360,7 +362,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     row.add(false);
                     row.add(obj);
                    
-                    SchemaParser.SchemaInfo info = Util.getRootElements(fobj);
+                    SchemaParser.SchemaInfo info = SchemaParser.getRootElements(fobj);
                     if (info != null && info.roots.size() > 0) {
                         Iterator it = info.roots.iterator();
                         String[] rootElements = new String[(info.roots.size())];

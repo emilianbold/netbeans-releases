@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,62 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xml.util;
 
-package org.netbeans.modules.xml.wizard;
-
-import java.awt.Image;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.lib.*;
+import org.openide.filesystems.*;
 
 /**
- * An abstract node that uses a file folder icon. Ideally the icon is
- * taken from the Node delegate of DataFolder, if it is available.
- * Otherwise a default icon is used.
+ * It represents r/o filesystem given by an InputStream.
+ * Such filesystem contains just one StreamFileObject.
  *
- * @author  Nathan Fiedler
+ * @author  Petr Kuzel
+ * @version untested draft
  */
-public class FolderNode extends AbstractNode {
-    /** The source for our folder icons. */
-    private static Node iconSource;
+class StreamFileSystem extends FileSystem {
 
-    static {
-        FileObject fobj = Repository.getDefault().getDefaultFileSystem().getRoot();
-        try {
-            DataObject dobj = DataObject.find(fobj);
-            iconSource = dobj.getNodeDelegate();
-        } catch (DataObjectNotFoundException donfe) {
-            // In this case, we have our default icons, which are not
-            // platform-conformant, but they are better than nothing.
-        }
+    /** Serial Version UID */
+    private static final long serialVersionUID =2822790916118072639L;
+
+    private FileObject root;
+
+    // == StreamFileObject
+
+    /** Creates new StreamFileSystem */
+    public StreamFileSystem(StreamFileObject root) {
+        this.root = root;
     }
 
-    public FolderNode(Children children) {
-        super(children);
+    public org.openide.filesystems.FileObject getRoot() {
+        return root;
     }
-
-    public Image getIcon(int type) {
-        if (iconSource != null) {
-            return iconSource.getIcon(type);
-        } else {
-            String url = NbBundle.getMessage(FolderNode.class,
-                    "IMG_FolderNode_Closed");
-            return org.openide.util.Utilities.loadImage(url);
-        }
+    
+    public org.openide.filesystems.FileObject findResource(java.lang.String str) {
+        return null;
     }
-
-    public Image getOpenedIcon(int type) {
-        if (iconSource != null) {
-            return iconSource.getOpenedIcon(type);
-        } else {
-            String url = NbBundle.getMessage(FolderNode.class,
-                    "IMG_FolderNode_Opened");
-            return org.openide.util.Utilities.loadImage(url);
-        }
+    
+    public org.openide.util.actions.SystemAction[] getActions() {
+        return new org.openide.util.actions.SystemAction[0];
     }
+    
+    public boolean isReadOnly() {
+        return true;
+    }
+    
+    public java.lang.String getDisplayName() {
+        return Util.THIS.getString (
+                StreamFileSystem.class, "PROP_StreamFileSystem");
+    }
+    
 }

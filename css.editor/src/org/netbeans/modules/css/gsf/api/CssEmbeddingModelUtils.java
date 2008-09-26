@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,56 +37,24 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.css.gsf.api;
 
 /**
  *
- * @author Sonali
+ * @author marekfukala
  */
-public class SchemaObject {
-    String str;
-    String[] rootElements;
-    private String namespace;
-    private String prefix;
-    private String fileName;
-    
-    public SchemaObject(String schemaFileName){
-        str=schemaFileName;
-    }
-    
-    public String toString(){
-        return str;
-    }
+public class CssEmbeddingModelUtils {
 
-    String[] getRootElements() {
-        return rootElements;
-    }
-
-    void setRootElements(String[] root) {
-        this.rootElements = root;
+    private static final String GEN_CODE_IDENT = "GENERATED_CODE";
+    private static final String POSTFIX = ";";
+    private static final String GEN_CODE_IDENT_WITH_POSTFIX = GEN_CODE_IDENT + POSTFIX;
+    
+    public static final String getGeneratedCodeIdentifier() {
+        return GEN_CODE_IDENT_WITH_POSTFIX;
     }
     
-    public void setNamespace(String n){
-        namespace = n;
+    public static final boolean containsGeneratedCode(String text) {
+        return text.contains(GEN_CODE_IDENT);
     }
     
-    public String getNamespace(){
-        return namespace;        
-    }
-    
-    public void setPrefix(String pre) {
-        prefix = pre;
-    }
-    
-    public String getPrefix(){
-        return prefix;
-    }
-    
-    public void setSchemaFileName(String name){
-        fileName = name;
-    }
-
-    public String getSchemaFileName(){
-        return fileName;
-    }
 }

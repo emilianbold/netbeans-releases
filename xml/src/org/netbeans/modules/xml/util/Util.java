@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.lib;
+package org.netbeans.modules.xml.util;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -166,20 +166,6 @@ public class Util extends AbstractUtil {
         }        
     }    
     
-    /**
-     * Perform default action on specified data object.
-     */
-    public static void performDefaultAction (DataObject dataObject) {
-
-        Node node = dataObject.getNodeDelegate();
-        SystemAction action = node.getDefaultAction();
-
-        if (action != null) {
-            ActionManager manager = (ActionManager) Lookup.getDefault().lookup(ActionManager.class);
-            manager.invokeAction(action, new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-        }
-    }
-    
     public static String getDocumentType() {
         return "xsd";
     }
@@ -258,58 +244,6 @@ public class Util extends AbstractUtil {
             }
         }
         return result;
-    }
-    
-    public static String getNamespace(FileObject fobj){
-        SchemaParser parser = new SchemaParser();
-        File file = FileUtil.toFile(fobj);
-//        String systemId = file.getAbsolutePath();
-//        try {
-//            URL context = fobj.getURL();
-//            //#25604 workaround
-//            if (context.toExternalForm().endsWith("/") == false) {
-//                context = new URL(context.toExternalForm() + "/");
-//            }
-//            if (context != null) {
-//                systemId = new URL(context, systemId).toExternalForm();
-//            }
-//        } catch (MalformedURLException ex) {
-//            // ignore it use one passes by user
-//        } catch(FileStateInvalidException e){
-//            
-//        }
-        SchemaParser.SchemaInfo info = parser.parse(file.toURI().toString());
-            
-        if (info == null) return null;
-        
-        return info.namespace;
-        
-    }
-    
-    
-    public static SchemaParser.SchemaInfo getRootElements(FileObject fobj){
-        SchemaParser parser = new SchemaParser();
-        File file = FileUtil.toFile(fobj);
-//        String systemId = file.getAbsolutePath();
-//        try {
-//            URL context = fobj.getURL();
-//            //#25604 workaround
-//            if (context.toExternalForm().endsWith("/") == false) {
-//                context = new URL(context.toExternalForm() + "/");
-//            }
-//            if (context != null) {
-//                systemId = new URL(context, systemId).toExternalForm();
-//            }
-//        } catch (MalformedURLException ex) {
-//            // ignore it use one passes by user
-//        } catch(FileStateInvalidException e){
-//            
-//        }
-        SchemaParser.SchemaInfo info = parser.parse(file.toURI().toString());
-            
-        if (info == null) return null;
-        else return info;
-        
     }
     
     public  static String getRelativePath(File file, File relativeTo) throws IOException {

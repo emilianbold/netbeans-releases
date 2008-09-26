@@ -504,8 +504,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
             return ;
         }
         if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
-            if (   e.getModifiersEx() == (KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK)
-                || e.getModifiersEx() == KeyEvent.ALT_DOWN_MASK) {
+            if (e.getModifiersEx() == KeyEvent.ALT_DOWN_MASK) {
                 if ( !popupShowing) {
                     invokeDefaultAction(false);
                     e.consume();

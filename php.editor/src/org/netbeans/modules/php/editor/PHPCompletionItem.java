@@ -470,6 +470,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    static class MagicMethodNameItem extends MagicMethodItem {
+        public MagicMethodNameItem(IndexedFunction function, CompletionRequest request) {
+            super(function, request);
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            return super.getNameAndFunctionBodyForTemplate();
+        }        
+    }
+
     static class MagicMethodItem extends FunctionDeclarationItem {
         public MagicMethodItem(IndexedFunction function, CompletionRequest request) {
             super(function, request, 0,false);
@@ -641,15 +652,21 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
-        public final String getCustomInsertTemplate() {
+        public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            String modifierStr = getFunction().getModifiersString();
-            final String functionSignature = getFunction().getFunctionSignature();
+            String modifierStr = getFunction().getModifiersString();            
             if (modifierStr.length() != 0) {
                 modifierStr = modifierStr.replace("abstract","").trim();//NOI18N
                 template.append(modifierStr);
             }
             template.append(" ").append("function");//NOI18N
+            template.append(getNameAndFunctionBodyForTemplate());
+            return template.toString();
+        }
+
+        protected String getNameAndFunctionBodyForTemplate() {
+            StringBuilder template = new StringBuilder();
+            final String functionSignature = getFunction().getFunctionSignature();
             template.append(" ").append(functionSignature);//NOI18N
             template.append(" ").append("{\n");//NOI18N
             template.append(getFunctionBodyForTemplate());//NOI18N

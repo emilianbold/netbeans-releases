@@ -838,6 +838,9 @@ public class RetoucheUtils {
                 throw (RuntimeException) new RuntimeException().initCause(ex);
             }
             Element el = handle.resolveElement(cc);
+            if (el == null) {
+                return;
+            }
             f = SourceUtils.getFile(el, cc.getClasspathInfo());
             try {
                 eh=ElementHandle.create(el);

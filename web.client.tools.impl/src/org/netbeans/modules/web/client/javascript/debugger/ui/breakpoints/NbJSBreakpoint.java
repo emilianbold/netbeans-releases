@@ -71,7 +71,7 @@ public abstract class NbJSBreakpoint extends Breakpoint {
     // private Line line;
     private String condition = ""; // NOI18N
     private String printText;
-    private JSAbstractLocation location;
+    protected JSAbstractLocation location;
 
     /**
      * This contructor is to only be used if you do not have a line.

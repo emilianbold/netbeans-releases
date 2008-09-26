@@ -141,7 +141,8 @@ made subject to such option by the copyright holder.
         <file name="OS-U.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-FindUsagesOpenAction.instance"/>
         </file>
-        <file name="D-R.shadow">
+        <!-- please igonore the warning and do not change to D-R, it is necessary to prevent collisions with replace action on Mac -->
+        <file name="C-R.shadow">
             <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-RenameAction.instance"/>
         </file>
         <file name="D-M.shadow">

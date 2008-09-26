@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,51 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.xml.lib;
 
-import org.openide.filesystems.*;
+package org.netbeans.modules.xml.wizard.impl;
 
 /**
- * It represents r/o filesystem given by an InputStream.
- * Such filesystem contains just one StreamFileObject.
  *
- * @author  Petr Kuzel
- * @version untested draft
+ * @author Sonali
  */
-class StreamFileSystem extends FileSystem {
-
-    /** Serial Version UID */
-    private static final long serialVersionUID =2822790916118072639L;
-
-    private FileObject root;
-
-    // == StreamFileObject
-
-    /** Creates new StreamFileSystem */
-    public StreamFileSystem(StreamFileObject root) {
-        this.root = root;
-    }
-
-    public org.openide.filesystems.FileObject getRoot() {
-        return root;
+public class SchemaObject {
+    String str;
+    String[] rootElements;
+    private String namespace;
+    private String prefix;
+    private String fileName;
+    
+    public SchemaObject(String schemaFileName){
+        str=schemaFileName;
     }
     
-    public org.openide.filesystems.FileObject findResource(java.lang.String str) {
-        return null;
+    public String toString(){
+        return str;
+    }
+
+    String[] getRootElements() {
+        return rootElements;
+    }
+
+    void setRootElements(String[] root) {
+        this.rootElements = root;
     }
     
-    public org.openide.util.actions.SystemAction[] getActions() {
-        return new org.openide.util.actions.SystemAction[0];
+    public void setNamespace(String n){
+        namespace = n;
     }
     
-    public boolean isReadOnly() {
-        return true;
+    public String getNamespace(){
+        return namespace;        
     }
     
-    public java.lang.String getDisplayName() {
-        return Util.THIS.getString (
-                StreamFileSystem.class, "PROP_StreamFileSystem");
+    public void setPrefix(String pre) {
+        prefix = pre;
     }
     
+    public String getPrefix(){
+        return prefix;
+    }
+    
+    public void setSchemaFileName(String name){
+        fileName = name;
+    }
+
+    public String getSchemaFileName(){
+        return fileName;
+    }
 }

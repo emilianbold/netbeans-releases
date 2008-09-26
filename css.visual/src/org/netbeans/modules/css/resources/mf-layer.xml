@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
         <folder name="Window">
             <folder name="Other">
                 <attr name="position" intvalue="1700"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.Bundle"/>
                 <file name="CssPreviewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-css-visual-ui-preview-CssPreviewAction.instance"/>
                     <attr name="position" intvalue="700"/>

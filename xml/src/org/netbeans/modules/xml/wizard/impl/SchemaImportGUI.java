@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.xml.wizard.impl;
 
 
 import java.awt.BorderLayout;
@@ -72,7 +72,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.explorer.view.Visualizer;
 import org.openide.util.NbBundle;
 

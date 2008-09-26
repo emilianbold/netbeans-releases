@@ -72,6 +72,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
 import org.netbeans.modules.uml.diagrams.actions.NodeLabelIteratorAction;
+import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
 import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
@@ -252,9 +253,15 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         selectTool.addAction(selectAction);
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(mouseHoverAction);
-        selectTool.addAction(ActionFactory.createMoveAction(moveStrategy, moveProvider));
-        selectTool.addAction(new IterateSelectAction());
-        
+        selectTool.addAction(ActionFactory.createMoveAction(moveStrategy, moveProvider));        
+        if (widget instanceof CompositeNodeWidget)
+        {
+            selectTool.addAction(new NodeLabelIteratorAction());
+        }
+        else
+        {
+            selectTool.addAction(new IterateSelectAction());
+        }
         WidgetAction.Chain navigateLinkTool = widget.createActions(DesignerTools.NAVIGATE_LINK);
         navigateLinkTool.addAction(new NavigateLinkAction());
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
@@ -263,8 +270,15 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);
         readOnly.addAction(selectAction);
         readOnly.addAction(POPUP_ACTION);
-        readOnly.addAction(mouseHoverAction);
-        readOnly.addAction(new IterateSelectAction());
+        readOnly.addAction(mouseHoverAction);        
+        if (widget instanceof CompositeNodeWidget)
+        {
+            readOnly.addAction(new NodeLabelIteratorAction());
+        }
+        else
+        {
+            readOnly.addAction(new IterateSelectAction());
+        }
     }
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {

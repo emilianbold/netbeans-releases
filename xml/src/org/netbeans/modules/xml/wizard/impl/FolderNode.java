@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,53 +39,61 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages;
+package org.netbeans.modules.xml.wizard.impl;
 
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.languages.actions.*;
-
+import java.awt.Image;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
+ * An abstract node that uses a file folder icon. Ideally the icon is
+ * taken from the Node delegate of DataFolder, if it is available.
+ * Otherwise a default icon is used.
  *
- * @author mkhramov@netbeans.org, mrkam@netbeans.org
+ * @author  Nathan Fiedler
  */
-public class ScriptingMeasureActionsTest {
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
+public class FolderNode extends AbstractNode {
+    /** The source for our folder icons. */
+    private static Node iconSource;
 
-        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
-        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureActionsTest");
+    static {
+        FileObject fobj = Repository.getDefault().getDefaultFileSystem().getRoot();
+        try {
+            DataObject dobj = DataObject.find(fobj);
+            iconSource = dobj.getNodeDelegate();
+        } catch (DataObjectNotFoundException donfe) {
+            // In this case, we have our default icons, which are not
+            // platform-conformant, but they are better than nothing.
+        }
+    }
 
+    public FolderNode(Children children) {
+        super(children);
+    }
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
-                .addTest(CreatePHPProject.class)
-                .addTest(CreatePHPSampleProject.class)
-                
-                .addTest(SavingPHPProjectProperties.class)
-                .addTest(CreateScriptingPackFiles.class)
-                .addTest(ScriptingExpandFolder.class)
-                .addTest(PHPNavigatorTest.class)
-                .addTest(GoToSourceTest.class)
-                .addTest(NavigateGoToSourceTest.class)
-                .addTest(EditorMenuPopup.class)
-                .addTest(FormatFileTest.class)
-                .addTest(CloseProjectTest.class)
-                .addTest(CloseScriptingFiles.class)
-                .addTest(TypingInScriptingEditor.class)
-                .addTest(ScriptingCodeCompletionInEditor.class)
+    public Image getIcon(int type) {
+        if (iconSource != null) {
+            return iconSource.getIcon(type);
+        } else {
+            String url = NbBundle.getMessage(FolderNode.class,
+                    "IMG_FolderNode_Closed");
+            return org.openide.util.Utilities.loadImage(url);
+        }
+    }
 
-                // Saving modified document
-                .addTest(SaveModifiedScriptingFiles.class)
-
-                // Page Up and Down in scripting editor
-                .addTest(PageUpPageDownScriptingEditor.class)
-
-                // Can cause RubyProject to be closed in case of failure
-                .addTest(OpenRubyProject.class)
-                .enableModules(".*").clusters(".*").reuseUserDir(true)));
-
-        return suite;        
+    public Image getOpenedIcon(int type) {
+        if (iconSource != null) {
+            return iconSource.getOpenedIcon(type);
+        } else {
+            String url = NbBundle.getMessage(FolderNode.class,
+                    "IMG_FolderNode_Opened");
+            return org.openide.util.Utilities.loadImage(url);
+        }
     }
 }

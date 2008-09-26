@@ -38,8 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.xml.wizard.impl;
 
+import org.netbeans.modules.xml.wizard.*;
 import java.io.OutputStream;
 import java.io.BufferedOutputStream;
 import java.io.Writer;
@@ -67,7 +68,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.api.EncodingUtil;
 
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.lib.GuiUtil;
+import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.RetrieverEngine;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -255,7 +257,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         // perform default action and return
         Set set = new HashSet(1);                
         DataObject createdObject = DataObject.find(fileObject[0]);        
-        Util.performDefaultAction(createdObject);
+        GuiUtil.performDefaultAction(createdObject);
         set.add(createdObject);    
         
         formatXML(fileObject[0]);

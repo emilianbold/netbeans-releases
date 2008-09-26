@@ -43,7 +43,7 @@ package org.netbeans.modules.xml.actions;
 
 import java.util.Iterator;
 import org.netbeans.modules.xml.cookies.UpdateDocumentCookie;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
