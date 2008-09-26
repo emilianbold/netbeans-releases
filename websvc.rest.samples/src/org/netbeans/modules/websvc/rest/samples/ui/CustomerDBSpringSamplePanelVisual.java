@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,72 +39,18 @@
  * made subject to such option by the copyright holder.
  */
 
-/*
-* CustomerDB stub
-*/
 
-function CustomerDB() {}
+package org.netbeans.modules.websvc.rest.samples.ui;
 
-function CustomerDB(uri_) {
-    this.uri = uri_;
-}
 
-CustomerDB.prototype = {
+public class CustomerDBSpringSamplePanelVisual extends SampleWizardPanelVisual{
+    private static final long serialVersionUID = 1L;
+    /** Creates new form PanelProjectLocationVisual */
+    public CustomerDBSpringSamplePanelVisual(SampleWizardPanel panel) {
+        super(panel);
+    }
 
-   uri : '__BASE_URL__',
-
-   resources : new Array(),
-   
-   initialized : false,
-
-   getUri : function() {
-      return this.uri;
-   },
-
-   getResources : function() {
-      if(!this.initialized)
-          this.init();
-      return this.resources;
-   },
-
-   init : function() {
-      this.resources[0] = new DiscountCodes(this.uri+'/discountCodes/');
-      this.resources[1] = new Customers(this.uri+'/customers/');
-
-      this.initialized = true;
-   },
-
-   flush : function(resources_) {
-      for(j=0;j<resources_.length;j++) {
-        var r = resources_[j];
-        r.flush();
-      }
-   },
-   
-   getProxy : function() {
-       return rjsSupport.getHttpProxy();
-   },
-   
-   setProxy : function(proxy_) {
-       rjsSupport.setHttpProxy(proxy_);
-   },
-
-   toString : function() {
-      var s = '';
-      for(j=0;j<this.resources.length;j++) {
-        var c = this.resources[j];
-        if(j<this.resources.length-1)
-            s = s + '{"@uri":"'+c.getUri()+'"},';
-        else
-            s = s + '{"@uri":"'+c.getUri()+'"}';
-      }
-      var myObj = 
-         '{"resources":'+
-         '{'+
-         s+
-         '}'+
-      '}';
-      return myObj;
-   }
-
+    protected String getDefaultProjectName() {
+        return "CustomerDBSpring"; // NOI18N
+    }
 }

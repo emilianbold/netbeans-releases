@@ -70,15 +70,10 @@
  <li>Run "/Web Pages/rest/TestStubs.html" to test generated Javascripts for the 
  RESTful Web Service project. This displays a table of available resources.</li> 
  </ol> 
- Note: When using proxy for javascript cross-domain, 
- <ol>
- <li>Create a java package under &lt;Source Packages&gt;org.netbeans.rest.proxy.</li>
- <li>Copy RestProxyServlet.txt to new package.</li>
- <li>Rename RestProxyServlet.txt to RestProxyServlet.java.</li>
- <li>Add servlet mapping info into /WEB-INF/web.xml as specified in the class documentation for RestProxyServlet.java.</li>
- <li>Uncomment the line that starts with '//app.setProxy(' in TestStubs.html, then set the 
- correct url to the proxy servlet.</li>
- </ol>
+ Note: When using proxy for javascript cross-domain, create a java package under 
+ <Source Packages>org.netbeans.rest.proxy, then copy RestProxyServlet.txt to new package 
+ ,then rename RestProxyServlet.txt to RestProxyServlet.java. Add servlet mapping info 
+ into /WEB-INF/web.xml as specified in the class documentation for RestProxyServlet.java.
                         </td>
                     </tr>
                 </table>

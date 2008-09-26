@@ -191,6 +191,8 @@ Customer.prototype = {
       this.discountCode = discountCode_;
    },
 
+
+
    init : function() {
       var remote = new CustomerRemote(this.uri);
       var c = remote.getJson_();
