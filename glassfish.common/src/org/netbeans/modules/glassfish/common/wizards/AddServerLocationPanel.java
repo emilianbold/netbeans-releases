@@ -286,7 +286,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     }
 
     private boolean isValidV3Install(File installRoot, File glassfishRoot) {
-        File jar = ServerUtilities.getJarName(glassfishRoot.getAbsolutePath(), ServerUtilities.GFV3_PREFIX_JAR_NAME);
+        File jar = ServerUtilities.getJarName(glassfishRoot.getAbsolutePath(), ServerUtilities.GFV3_JAR_MATCHER);
         if(jar == null || !jar.exists()) {
             return false;          
         }
