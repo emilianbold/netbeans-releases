@@ -101,6 +101,8 @@ final class Call implements CallDescriptor {
     private boolean leaf;
     /** collection of references might not be complete */
     private boolean canceled = false;
+    private enum State { CANCELED, BROKEN }
+    private State state;
 
     private Call() {
     }
@@ -138,11 +140,21 @@ final class Call implements CallDescriptor {
     }
 
     public boolean isCanceled() {
-        return canceled;
+        return this.state == State.CANCELED;
     }
 
     void setCanceled(boolean canceled) {
-        this.canceled = canceled;
+        if (canceled) {
+            this.state = State.CANCELED;
+        }
+    }
+
+    void setBroken() {
+        this.state = State.BROKEN;
+    }
+
+    public boolean isBroken() {
+        return this.state == State.BROKEN;
     }
     
     TreePathHandle getSourceToQuery() {
