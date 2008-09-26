@@ -286,11 +286,12 @@ public class GdbUtils {
             i++;
             
             int tend;
-            switch (info.charAt(i++)) {
+            switch (info.charAt(i)) {
                 case '{':
-                    tend = findMatchingCurly(info, i);
+                    tend = findMatchingCurly(info, i++);
                     break;
                 case '"':
+                    i++;
                     // Fix for memory view data
                     if ("ascii".equals(key)) { // NOI18N
                         tend = i + GdbProxy.MEMORY_READ_WIDTH;
@@ -299,7 +300,7 @@ public class GdbUtils {
                     }
                     break;
                 case '[':
-                    tend = findMatchingBrace(info, i);
+                    tend = findMatchingBrace(info, i++);
                     break;
                 default:
                     break mainLoop;
@@ -487,7 +488,7 @@ public class GdbUtils {
         String name, value; 
         List<GdbVariable> list = new ArrayList<GdbVariable>();
         int len = info.length();
-        int pos, pos2;
+        int pos;
         int idx = 0;
         
         while (len > 0) {
@@ -665,11 +666,7 @@ public class GdbUtils {
             } else if (ch == rbrace && count == 0) {
                 return idx;
             } else if (ch == '\"' && last != '\\') {
-                if (inDoubleQuote) {
-                    inDoubleQuote = false;
-                } else {
-                    inDoubleQuote = true;
-                }
+                inDoubleQuote = !inDoubleQuote;
             } else if (ch == '\'') {
                 inSingleQuote = true;
             } else {
