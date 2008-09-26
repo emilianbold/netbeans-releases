@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
+import java.sql.DatabaseMetaData;
 import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
@@ -49,6 +50,8 @@ import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
 
 /**
+ * Encapsulates information about the metadata in a database. The meaning
+ * of "database" in this documentation is similar to that in {@link DatabaseMetaData}.
  *
  * @author Andrei Badea
  */
@@ -64,33 +67,40 @@ public class Metadata {
         this.impl = impl;
     }
 
+    // XXX can this return null?
     /**
+     * Returns the default catalog in this metadata instance.
+     *
      * @return the default catalog.
-     * @throws MetadataException.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
      */
     public Catalog getDefaultCatalog() {
         return impl.getDefaultCatalog();
     }
 
     /**
+     * Returns the catalogs in this metadata instance.
+     *
      * @return the catalogs.
-     * @throws MetadataException.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
      */
     public Collection<Catalog> getCatalogs() {
         return impl.getCatalogs();
     }
 
     /**
+     * Returns the catalog with the given name.
+     *
      * @param name a catalog name.
-     * @return a catalog named {@code name} or null.
-     * @throws MetadataException.
+     * @return a catalog named {@code name} or {@code null} if there is no such catalog.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
      */
     public Catalog getCatalog(String name) {
         return impl.getCatalog(name);
     }
 
     /**
-     * @throws MetadataException.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
      */
     public void refresh() {
         impl.refresh();

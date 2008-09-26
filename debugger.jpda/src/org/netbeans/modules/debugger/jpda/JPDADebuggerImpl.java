@@ -43,7 +43,9 @@ package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.IntegerValue;
 import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
@@ -52,6 +54,7 @@ import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
+import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.TypeComponent;
@@ -855,7 +858,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
-        return invokeMethod(null, reference, method, arguments);
+        return invokeMethod(null, reference, method, arguments, 0);
+    }
+
+    public Value invokeMethod (
+        ObjectReference reference,
+        Method method,
+        Value[] arguments,
+        int maxLength
+    ) throws InvalidExpressionException {
+        return invokeMethod(null, reference, method, arguments, maxLength);
     }
 
     /**
@@ -866,6 +878,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
         ObjectReference reference,
         Method method,
         Value[] arguments
+    ) throws InvalidExpressionException {
+        return invokeMethod(thread, reference, method, arguments, 0);
+    }
+
+    private Value invokeMethod (
+        JPDAThreadImpl thread,
+        ObjectReference reference,
+        Method method,
+        Value[] arguments,
+        int maxLength
     ) throws InvalidExpressionException {
         synchronized (currentThreadAndFrameLock) {
             if (thread == null && currentThread == null)
@@ -903,7 +925,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
                 l = disableAllBreakpoints ();
                 try {
-                    return org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+                    Value v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
                         invokeVirtual (
                             reference,
                             method,
@@ -911,6 +933,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
                             Arrays.asList (arguments),
                             this
                         );
+                    if (maxLength > 0 && maxLength < Integer.MAX_VALUE && (v instanceof StringReference)) {
+                        v = cutLength((StringReference) v, maxLength, tr);
+                    }
+                    return v;
                 } catch (InternalException e) {
                     InvalidExpressionException ieex = new InvalidExpressionException (e.getLocalizedMessage());
                     ieex.initCause(e);
@@ -944,6 +970,36 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             }
         }
+    }
+
+    private Value cutLength(StringReference sr, int maxLength, ThreadReference tr) throws InvalidExpressionException {
+        Method stringLengthMethod = ((ClassType) sr.type ()).
+            concreteMethodByName ("length", "()I");  // NOI18N
+        List<Value> emptyArgs = Collections.emptyList();
+        IntegerValue lengthValue = (IntegerValue) org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+            invokeVirtual (
+                sr,
+                stringLengthMethod,
+                tr,
+                emptyArgs,
+                this
+            );
+            if (lengthValue.value() > maxLength) {
+                Method subStringMethod = ((ClassType) sr.type ()).
+                    concreteMethodByName ("substring", "(II)Ljava/lang/String;");  // NOI18N
+                if (subStringMethod != null) {
+                    sr = (StringReference) org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+                        invokeVirtual (
+                            sr,
+                            subStringMethod,
+                            tr,
+                            Arrays.asList(new Value [] { sr.virtualMachine().mirrorOf(0),
+                                           sr.virtualMachine().mirrorOf(maxLength) }),
+                            this
+                        );
+                }
+            }
+        return sr;
     }
 
     public static String getGenericSignature (TypeComponent component) {

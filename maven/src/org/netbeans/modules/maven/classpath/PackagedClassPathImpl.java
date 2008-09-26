@@ -42,7 +42,6 @@ package org.netbeans.modules.maven.classpath;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
@@ -60,8 +59,10 @@ class PackagedClassPathImpl extends AbstractProjectClassPathImpl {
     }
 
     public URI[] createPath() {
-        List lst = new ArrayList();
-        List arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();
+        List<URI> lst = new ArrayList<URI>();
+        @SuppressWarnings("unchecked")
+        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();
+        @SuppressWarnings("unchecked")
         List<Dependency> deps = getMavenProject().getOriginalMavenProject().getCompileDependencies();
         List<String> packagedIds = new ArrayList<String>();
         for (Dependency dep : deps) {
@@ -70,10 +71,8 @@ class PackagedClassPathImpl extends AbstractProjectClassPathImpl {
             }
         }
         
-        List assemblies = new ArrayList();
-        Iterator it = arts.iterator();
-        while (it.hasNext()) {
-            Artifact art = (Artifact)it.next();
+        List<File> assemblies = new ArrayList<File>();
+        for (Artifact art : arts) {
             String key = art.getGroupId() + ":" + art.getArtifactId() + ":" + art.getType(); //NOI18N
             if (art.getFile() != null && packagedIds.contains(key)) {
                 File fil = FileUtil.normalizeFile(art.getFile());
@@ -88,13 +87,11 @@ class PackagedClassPathImpl extends AbstractProjectClassPathImpl {
               //NOPMD   //null means dependencies were not resolved..
             } 
         }
-        it = assemblies.iterator();
-        while (it.hasNext()) {
-            File ass = (File)it.next();
+        for (File ass : assemblies) {
             lst.add(ass.toURI());
         }
         URI[] uris = new URI[lst.size()];
-        uris = (URI[])lst.toArray(uris);
+        uris = lst.toArray(uris);
         return uris;
     }
 

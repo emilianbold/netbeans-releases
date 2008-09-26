@@ -282,9 +282,7 @@ void BreakpointUpdateCommand::setUpdatableValues(Breakpoint *pBreakpoint, map<ch
     iter = argsMap.find('h');
     if(iter != argsMap.end()) {
         int hitValue = _ttoi(iter->second.c_str());
-        if(hitValue > 0) {
-            pBreakpoint->setHitValue(hitValue);
-        }
+        pBreakpoint->setHitValue(hitValue);
     }
 
     iter = argsMap.find('o');

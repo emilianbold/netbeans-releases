@@ -144,8 +144,8 @@ public class CSSGSFParser implements Parser, PositionManager {
             return new OffsetRange(AstUtils.documentPosition(handle.node().startOffset(), source), 
                     AstUtils.documentPosition(handle.node().endOffset(), source));
         } else {
-            throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
-                    object) != null) ? object.getClass().getName() : "null"); //NOI18N
+            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
+                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
         }
     }
 }

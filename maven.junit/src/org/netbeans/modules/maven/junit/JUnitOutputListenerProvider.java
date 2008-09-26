@@ -114,10 +114,8 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
         match = runningPattern.matcher(line);
         if (match.matches()) {
             if (runningTestClass != null && outputDir != null) {
-                FileObject outDir = FileUtil.toFileObject(new File(outputDir));
-                outDir.refresh();
-                FileObject report = outDir.getFileObject("TEST-" + runningTestClass + ".xml"); //NOI18N 
-                generateAntLogSequent(report);
+                FileObject report = getTestReportFileObject(outputDir, "TEST-" + runningTestClass + ".xml"); //NOI18N
+                generateAntLogSequence(report);
             }
             runningTestClass = match.group(1);
             return;
@@ -152,10 +150,8 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
             return;
         }
         if (runningTestClass != null && outputDir != null) {
-            FileObject outDir = FileUtil.toFileObject(new File(outputDir));
-            outDir.refresh();
-            FileObject report = outDir.getFileObject("TEST-" + runningTestClass + ".xml"); //NOI18N
-            generateAntLogSequent(report);
+            FileObject report = getTestReportFileObject(outputDir, "TEST-" + runningTestClass + ".xml"); //NOI18N
+            generateAntLogSequence(report);
         }
         runningTestClass = null;
         outputDir = null;
@@ -166,12 +162,26 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
         unitLogger.taskFinished(event);
     }
 
+    private FileObject getTestReportFileObject(String outputDirectory, String reportFileName) {
+        assert outputDirectory != null;
+        File file = FileUtil.normalizeFile(new File(outputDir));
+        FileUtil.refreshFor(file);
+        FileObject outDir = FileUtil.toFileObject(file);
+        if (outDir != null) {
+            FileObject report = outDir.getFileObject(reportFileName);
+            return report;
+        }
+        return null;
+    }
+
+
+
     public void sequenceFail(String sequenceId, OutputVisitor visitor) {
         sequenceEnd(sequenceId, visitor);
     }
 
     
-    private void generateAntLogSequent(FileObject report) {
+    private void generateAntLogSequence(FileObject report) {
         if (report == null) {
             return;
         }
@@ -204,7 +214,7 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
             
             logText("Testsuite: " + testSuite.getAttributeValue("name"), AntEvent.LOG_INFO); //NOI18N
             
-            
+            @SuppressWarnings("unchecked")
             List<Element> testcases = testSuite.getChildren("testcase"); //NOI18N
             
             logText("junit.framework.TestListener: tests to run: " + testcases.size(), AntEvent.LOG_VERBOSE); //NOI18N
@@ -303,7 +313,7 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
         if (unitLogger == null) {
             return;
         }
-        LOG.info("build finished!!!!"); //NOI18N
+        LOG.fine("build finished!!!!"); //NOI18N
         FakeAntEvent evnt = new FakeAntEvent(session, prj);
         AntEvent event = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(evnt);
         evnt.setTaskName("junit"); //NOI18N

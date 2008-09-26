@@ -120,7 +120,7 @@ public final class OutputUtils {
          * @param ev the event describing the line
          */
         public void outputLineAction(OutputEvent ev) {
-            cookie.getLineSet().getCurrent(line).show(Line.SHOW_GOTO);
+            cookie.getLineSet().getCurrent(line).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         }
         
         /** Called when a line is cleared from the buffer of known lines.

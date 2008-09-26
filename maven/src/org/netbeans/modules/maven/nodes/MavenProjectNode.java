@@ -50,7 +50,6 @@ import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -71,15 +70,8 @@ import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -205,7 +197,7 @@ public class MavenProjectNode extends AbstractNode {
         lst.add(CommonProjectActions.copyProjectAction());
         lst.add(CommonProjectActions.deleteProjectAction());
             
-        loadLayerActions("Projects/Actions", lst); //NOI18N
+        lst.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
         lst.add(null);
         if (reporter.getReports().size() > 0) {
             lst.add(new ShowProblemsAction());
@@ -216,33 +208,6 @@ public class MavenProjectNode extends AbstractNode {
         return lst.toArray(new Action[lst.size()]);
     }
     
-    public static void loadLayerActions(String path, ArrayList lst) {
-        try {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(path); // NOI18N
-            if (fo != null) {
-                DataObject dobj = DataObject.find(fo);
-                FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                Lookup.Template query = new Lookup.Template(Object.class);
-                Lookup lookup = actionRegistry.getLookup();
-                Iterator it2 = lookup.lookup(query).allInstances().iterator();
-                if (it2.hasNext()) {
-                    lst.add(null);
-                }
-                while (it2.hasNext()) {
-                    Object next = it2.next();
-                    if (next instanceof Action) {
-                        lst.add(next);
-                    } else if (next instanceof JSeparator) {
-                        lst.add(null);
-                    }
-                }
-            }
-        } catch (DataObjectNotFoundException ex) {
-            // data folder for existing fileobject expected
-            ErrorManager.getDefault().notify(ex);
-        }
-    }
-
     @Override
     public String getShortDescription() {
         StringBuffer buf = new StringBuffer();

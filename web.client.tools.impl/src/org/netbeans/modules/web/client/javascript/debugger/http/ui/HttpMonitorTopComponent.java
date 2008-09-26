@@ -9,7 +9,6 @@ import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
-import java.lang.String;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,11 +20,10 @@ import javax.swing.JComponent;
 
 
 import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.Session;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpHeaderModel;
@@ -62,6 +60,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
     private final static HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
     private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
+    private final DebuggerManagerListenerImpl debuggerManagerListener = new DebuggerManagerListenerImpl();
 
     private final Logger LOG = Logger.getLogger(HttpMonitorTopComponent.class.getName());
 
@@ -77,12 +76,10 @@ final class HttpMonitorTopComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(HttpMonitorTopComponent.class, "HINT_HttpMonitorTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         LOG.exiting(HttpMonitorTopComponent.class.getName(), "constructor");
-        
-        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
 
-//        if (HttpMonitorUtility.getCurrentHttpMonitorModel() != null) {
-            HttpMonitorUtility.setEnabled(true);
-//        }
+        DebuggerManager manager = DebuggerManager.getDebuggerManager();
+        manager.addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, debuggerManagerListener);
+        manager.addDebuggerListener(DebuggerManager.PROP_SESSIONS, debuggerManagerListener);
     }
     private Icon StartIcon;
     private Icon StopIcon;
@@ -92,8 +89,10 @@ final class HttpMonitorTopComponent extends TopComponent {
         Icon retIcon;
         if (HttpMonitorUtility.isEnabled()) {
             retIcon = (StopIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(STOP_ICON_PATH)));
+            StopIcon = retIcon;
         } else {
-            retIcon =  (StartIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(START_ICON_PATH)));
+            retIcon =  (StartIcon != null ? StartIcon : new javax.swing.ImageIcon(getClass().getResource(START_ICON_PATH)));
+            StartIcon = retIcon;
         }
         return retIcon;
         
@@ -225,6 +224,10 @@ final class HttpMonitorTopComponent extends TopComponent {
                                 }else if ( mime.contains("xml")){
                                     contentType = "text/xml";
                                 }
+                            }
+                            if(contentType.equals("text/html")){
+                                EditorKit kit = MimeLookup.getLookup(contentType).lookup(EditorKit.class);
+                                resBodyEditorPane.setEditorKitForContentType(contentType,kit);
                             }
                             resBodyEditorPane.setContentType(contentType);
                             resBodyEditorPane.setText(activity.getResponseText());
@@ -755,22 +758,22 @@ final class HttpMonitorTopComponent extends TopComponent {
      * session has changed.
      */
     private class DebuggerManagerListenerImpl extends DebuggerManagerAdapter {
+        private HttpActivitiesModel currentModel = null;
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            assert evt.getPropertyName().equals(DebuggerManager.PROP_CURRENT_SESSION);
-            Object obj = evt.getNewValue();
-            if (obj != null && HttpMonitorUtility.isJSDebuggerSession((Session) obj)) {
-                HttpActivitiesModel model = HttpMonitorUtility.getCurrentHttpMonitorModel();
-                assert model != null;
+            HttpActivitiesModel model = HttpMonitorUtility.getCurrentHttpMonitorModel();
+            if (model != null) {
                 setToolbarButtonsEnabled(true);
-                resetHttpActivitesModel(model);
+                
             } else {
-                // The session was cleared and the model should be cleared.
                 setToolbarButtonsEnabled(false);
-                resetHttpActivitesModel(null);
             }
-            return;
+
+            if (currentModel != model) {
+                currentModel = model;
+                resetHttpActivitesModel(model);
+            }
         }
     }
 
