@@ -52,9 +52,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -134,6 +134,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     private boolean enabled = false;
     
     protected List<Mark> visibleMarks = new ArrayList<Mark>();
+    private final TreeMap<Integer, PaintInfo> cache = new TreeMap<Integer, PaintInfo>();
     
     /** Paint operations */
     public static final int PAINT_NOOP             = 0;
@@ -265,124 +266,132 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     public @Override void update(Graphics g) {
     }
     
-    protected void collectPaintInfos(View rootView, Fold fold, Map<Integer, PaintInfo> map, int level, int startIndex, int endIndex){
-        for(int i = 0; i < fold.getFoldCount(); i++) {
+    protected void collectPaintInfos(
+        View rootView, Fold fold, Map<Integer, PaintInfo> map, int level, int startIndex, int endIndex
+    ) throws BadLocationException {
+        
+        for (int i = 0; i < fold.getFoldCount(); i++) {
             Fold childFold = fold.getFold(i);
             int startViewIndex = rootView.getViewIndex(childFold.getStartOffset(), Position.Bias.Forward);
             int endViewIndex = rootView.getViewIndex(childFold.getEndOffset(), Position.Bias.Forward);
-            if (endViewIndex>=startIndex && startViewIndex<=endIndex && startViewIndex <= endViewIndex
-                    && level < 20 // #90931 - prevent stack overflow by a max fold nesting level
+            if (endViewIndex >= startIndex && startViewIndex <= endIndex && startViewIndex <= endViewIndex &&
+                level < 20 // #90931 - prevent stack overflow by a max fold nesting level
             ) {
-                collectPaintInfos(rootView, childFold, map, level+1, startIndex, endIndex);
+                collectPaintInfos(rootView, childFold, map, level + 1, startIndex, endIndex);
             }
         }
         int foldStartOffset = fold.getStartOffset();
         int foldEndOffset = fold.getEndOffset();
         int docLength = rootView.getDocument().getLength();
-        
-        if (foldEndOffset > docLength) return;
-        
+
+        if (foldEndOffset > docLength) {
+            return;
+        }
+
         int startViewIndex = rootView.getViewIndex(foldStartOffset, Position.Bias.Forward);
         int endViewIndex = rootView.getViewIndex(foldEndOffset, Position.Bias.Forward);
 
-        try{
-            View view;
-            BaseTextUI textUI = (BaseTextUI)component.getUI();
-            Shape viewShape;
-            Rectangle viewRect;
-            int markY = -1;
-            int y=-1;
-            
-            // PAINT_MARK
-            if (startIndex <= startViewIndex){
-                view = rootView.getView(startViewIndex);
+        View view;
+        BaseTextUI textUI = (BaseTextUI) component.getUI();
+        Shape viewShape;
+        Rectangle viewRect;
+        int markY = -1;
+        int y = -1;
+
+        // PAINT_MARK
+// XXX: Always paint whole fold otherwise the caching algorithm will break. This
+// is not eficient either and could be quite bad when typing inside large folds (eg. in XMLs).
+// Perhaps the algorithm should iterate through the rows that need to be painted and
+// look at folds containing the row rather then going through folds and updating PaintInfos
+// for each row in each fold.
+//        if (startIndex <= startViewIndex) {
+            view = rootView.getView(startViewIndex);
+            viewShape = textUI.modelToView(component, view.getStartOffset());
+            if (viewShape != null) {
+                viewRect = viewShape.getBounds();
+                y = viewRect.y + viewRect.height;
+                boolean isSingleLineFold = startViewIndex == endViewIndex;
+                //emi: the check bellow seems to be redundant, fold.isCollaped determines isSingleLineFold to be true
+                if (fold.isCollapsed() || isSingleLineFold) {
+                    boolean foldedSinglePaint = fold.isCollapsed(); //parents end here too ?
+                    if (foldedSinglePaint) {
+                        //see if the parents ends on the same line and mark it as SINGLE_PAINT_MARK
+                        int off = fold.getEndOffset();
+                        int rowEnd = javax.swing.text.Utilities.getRowEnd(component, off);
+                        Fold parent = fold.getParent();
+                        while (parent != null && !FoldUtilities.isRootFold(parent)) {
+                            if (rowEnd != javax.swing.text.Utilities.getRowEnd(component, parent.getEndOffset())) {
+                                foldedSinglePaint = false;
+                                break;
+                            }
+                            parent = parent.getParent();
+                        }
+                    }
+                    boolean singleMarkKind = fold.isCollapsed() ? foldedSinglePaint : isSingleLineFold;
+                    map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo((singleMarkKind ? SINGLE_PAINT_MARK : PAINT_MARK), level, viewRect.y, viewRect.height, fold.isCollapsed()));
+                    return;
+                }
+
+                markY = viewRect.y;
+                map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo(PAINT_MARK, level, viewRect.y, viewRect.height, fold.isCollapsed()));
+            }
+//        }
+
+        //PAINT_LINE
+        if (level == 0) {
+            int loopStart = /*(startViewIndex < startIndex) ? startIndex :*/ startViewIndex + 1;
+            int loopEnd = /*(endViewIndex > endIndex) ? endIndex :*/ endViewIndex;
+            viewRect = null;
+            for (int i = loopStart; i <= loopEnd; i++) {
+                view = rootView.getView(i);
+                //viewShape = textUI.modelToView(component, view.getStartOffset());
+                if (view instanceof DrawEngineLineView && y > -1) {
+                    int h = (int) ((DrawEngineLineView) view).getLayoutMajorAxisPreferredSpan();
+                    viewRect = new Rectangle(0, y, 0, h);
+                    if (i < loopEnd && loopEnd > loopStart) {
+                        y += h;
+                    }
+                } else {
+                    viewShape = textUI.modelToView(component, view.getStartOffset());
+                    if (viewShape != null) {
+                        viewRect = viewShape.getBounds();
+                        if (i < loopEnd && loopEnd > loopStart) {
+                            y = viewRect.y + viewRect.height;
+                        }
+                    }
+                }
+                if (viewRect != null && !map.containsKey(viewRect.y)) {
+                    map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo(PAINT_LINE, level, viewRect.y, viewRect.height));
+                }
+            }
+        }
+
+        //PAINT_END_MARK
+//        if (endViewIndex <= endIndex && endViewIndex >= startIndex) {
+            view = rootView.getView(endViewIndex);
+            //viewShape = textUI.modelToView(component, view.getStartOffset());
+            viewRect = null;
+            if (view instanceof DrawEngineLineView && y > -1 && level == 0) {
+                int h = (int) ((DrawEngineLineView) view).getLayoutMajorAxisPreferredSpan();
+                viewRect = new Rectangle(0, y, 0, h);
+                y += h;
+            } else {
                 viewShape = textUI.modelToView(component, view.getStartOffset());
                 if (viewShape != null) {
                     viewRect = viewShape.getBounds();
                     y = viewRect.y + viewRect.height;
-                    boolean isSingleLineFold = startViewIndex == endViewIndex;
-                    //emi: the check bellow seems to be redundant, fold.isCollaped determines isSingleLineFold to be true
-                    if (fold.isCollapsed() || isSingleLineFold){
-                        boolean foldedSinglePaint = fold.isCollapsed(); //parents end here too ?
-                        if(foldedSinglePaint){
-                            //see if the parents ends on the same line and mark it as SINGLE_PAINT_MARK 
-                            int off = fold.getEndOffset();
-                            int rowEnd = javax.swing.text.Utilities.getRowEnd(component, off);
-                            Fold parent = fold.getParent();
-                            while(parent!=null && !FoldUtilities.isRootFold(parent)){
-                                if(rowEnd!=javax.swing.text.Utilities.getRowEnd(component, parent.getEndOffset())){
-                                    foldedSinglePaint = false;
-                                    break;
-                                }
-                                parent = parent.getParent();
-                            }
-                        }
-                        boolean singleMarkKind = fold.isCollapsed() ? foldedSinglePaint : isSingleLineFold;
-                        map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo((singleMarkKind?SINGLE_PAINT_MARK:PAINT_MARK), level, viewRect.y, viewRect.height, fold.isCollapsed()));
-                        return;
-                    }
-
-                    markY = viewRect.y;
-                    map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo(PAINT_MARK, level, viewRect.y, viewRect.height, fold.isCollapsed()));
                 }
             }
-            
-            //PAINT_LINE
-            if (level == 0){
-                int loopStart = (startViewIndex<startIndex)? startIndex : startViewIndex+1;
-                int loopEnd = (endViewIndex>endIndex)? endIndex : endViewIndex;
-                viewRect = null;
-                for (int i=loopStart; i<=loopEnd; i++){
-                    view = rootView.getView(i);
-                    //viewShape = textUI.modelToView(component, view.getStartOffset());
-                    if (view instanceof DrawEngineLineView && y > -1){
-                        int h = (int)((DrawEngineLineView)view).getLayoutMajorAxisPreferredSpan();
-                        viewRect = new Rectangle(0, y, 0, h);
-                        if (i<loopEnd && loopEnd>loopStart) y += h;
-                    }else{
-                        viewShape = textUI.modelToView(component, view.getStartOffset()); 
-                        if (viewShape != null){
-                            viewRect = viewShape.getBounds();
-                            if (i<loopEnd && loopEnd>loopStart) {
-                                y = viewRect.y + viewRect.height;
-                            }
-                        }
-                    }
-                    if (viewRect != null && !map.containsKey(viewRect.y)) {
-                        map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo(PAINT_LINE, level, viewRect.y, viewRect.height));
-                    }
+            if (viewRect != null && markY != viewRect.y) {
+                PaintInfo pi = map.get(viewRect.y);
+                if (pi == null || (pi.getPaintOperation() != PAINT_MARK && pi.getPaintOperation() != SINGLE_PAINT_MARK) || level >= pi.getInnerLevel()) {
+                    map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo(PAINT_END_MARK, level, viewRect.y, viewRect.height));
                 }
             }
-            
-            //PAINT_END_MARK
-            if (endViewIndex<=endIndex){
-                view = rootView.getView(endViewIndex);
-                //viewShape = textUI.modelToView(component, view.getStartOffset());
-                viewRect = null;
-                if (view instanceof DrawEngineLineView && y > -1 && level == 0){
-                    int h = (int)((DrawEngineLineView)view).getLayoutMajorAxisPreferredSpan();
-                    viewRect = new Rectangle(0, y, 0, h);
-                    y += h;
-                }else{
-                    viewShape = textUI.modelToView(component, view.getStartOffset()); 
-                    if (viewShape !=null){
-                        viewRect = viewShape.getBounds();
-                        y = viewRect.y + viewRect.height;
-                    }
-                }
-                if (viewRect !=null && markY!=viewRect.y){
-                    PaintInfo pi = map.get(viewRect.y);
-                    if (pi == null || (pi.getPaintOperation() != PAINT_MARK && pi.getPaintOperation() != SINGLE_PAINT_MARK) || level >= pi.getInnerLevel()) {
-                        map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo(PAINT_END_MARK, level, viewRect.y, viewRect.height));
-                    }
-                }
-            }
-        } catch (BadLocationException ble) {
-            LOG.log(Level.WARNING, null, ble);
-        }
+//        }
     }
-    
-    protected List<? extends PaintInfo> getPaintInfo(int startPos, int endPos) {
+
+    protected List<? extends PaintInfo> getPaintInfo(int startPos, int endPos) throws BadLocationException {
         BaseDocument bdoc = Utilities.getDocument(component);
         if (bdoc == null) {
             return Collections.<PaintInfo>emptyList();
@@ -393,22 +402,31 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             FoldHierarchy hierarchy = FoldHierarchy.get(component);
             hierarchy.lock();
             try {
-                Map<Integer, PaintInfo> map = new HashMap<Integer, PaintInfo>();
-
                 View rootView = Utilities.getDocumentView(component);
                 if (rootView != null) {
-                    int startViewIndex = rootView.getViewIndex(startPos,Position.Bias.Forward);
-                    int endViewIndex = rootView.getViewIndex(endPos,Position.Bias.Forward);
+                    int startViewIndex = rootView.getViewIndex(startPos, Position.Bias.Forward);
+                    int endViewIndex = rootView.getViewIndex(endPos, Position.Bias.Forward);
 
                     List foldList = getFoldList(hierarchy, startPos, endPos);
                     for (int i = 0; i < foldList.size(); i++) {
                         Fold fold = (Fold) foldList.get(i);
-                        collectPaintInfos(rootView, fold, map, 0, startViewIndex, endViewIndex);
-                    }
-                }
 
-                return new ArrayList<PaintInfo>(map.values());
-                
+                        Rectangle foldStart = component.modelToView(fold.getStartOffset());
+                        Rectangle foldEnd = component.modelToView(fold.getEndOffset());
+
+                        if (!cache.containsKey(foldStart.y) || !cache.containsKey(foldEnd.y)) {
+                            collectPaintInfos(rootView, fold, cache, 0, startViewIndex, endViewIndex);
+                        }
+                    }
+
+                    Rectangle viewStart = component.modelToView(rootView.getView(startViewIndex).getStartOffset());
+                    Rectangle viewEnd = component.modelToView(rootView.getView(endViewIndex).getStartOffset());
+                    Map<Integer, PaintInfo> map = cache.subMap(viewStart.y, viewEnd.y + 1);
+
+                    return new ArrayList<PaintInfo>(map.values());
+                } else {
+                    return Collections.<PaintInfo>emptyList();
+                }
             } finally {
                 hierarchy.unlock();
             }
@@ -710,6 +728,22 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         }
         
         public void foldHierarchyChanged(FoldHierarchyEvent evt) {
+            BaseDocument bdoc = Utilities.getDocument(component);
+            if (bdoc != null) {
+                bdoc.readLock();
+                try {
+                    FoldHierarchy hierarchy = FoldHierarchy.get(component);
+                    hierarchy.lock();
+                    try {
+                        cache.clear();
+                        visibleMarks.clear();
+                    } finally {
+                        hierarchy.unlock();
+                    }
+                } finally {
+                    bdoc.readUnlock();
+                }
+            }
             repaint();
         }
     }
