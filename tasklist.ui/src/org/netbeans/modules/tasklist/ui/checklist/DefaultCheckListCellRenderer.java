@@ -88,7 +88,7 @@ public class DefaultCheckListCellRenderer extends JCheckBox
         setFont(list.getFont());
         if( cellHasFocus ) {
             Border b = UIManager.getBorder("List.focusCellHighlightBorder"); //NOI18N
-            if( null != b )
+            if( null != b && null != b.getBorderInsets(this) )
                 setBorder( b );
         } else {
             setBorder( noFocusBorder);

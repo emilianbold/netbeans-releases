@@ -127,20 +127,11 @@ public class CloseSessionsTest extends JellyTestCase {
             //nulling all temporary variables which could hold some references to debugger
             list = null;
             debugger = null;
-
-            // garbage collecting
-            System.gc();
-            System.gc();
-            System.gc();
             try {
-                assertNull("The debugger instance was not correctly released from memory.",debuggerRef);
-            } catch (AssertionError e) {
-                try {
-                    NbTestCase.assertGC("All the debugging sessions were not correctly closed", debuggerRef);
-                } catch (OutOfMemoryError u) {
-                    System.out.println(u.getMessage());
-                }
-            }
+                NbTestCase.assertGC("All the debugging sessions were not correctly closed", debuggerRef);
+            } catch (OutOfMemoryError u) {
+                System.out.println(u.getMessage());
+            }            
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
