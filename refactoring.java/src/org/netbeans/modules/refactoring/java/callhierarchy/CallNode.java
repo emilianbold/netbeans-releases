@@ -89,6 +89,13 @@ final class CallNode extends AbstractNode {
         
         return node;
     }
+
+    private static CallNode createBroken() {
+        CallNode node = new CallNode();
+        node.setDisplayName(NbBundle.getMessage(CallNode.class, "CallNode.Broken.displayName"));
+
+        return node;
+    }
     
     public static CallNode createCall(CallDescriptor desc) {
         CallNode node = new CallNode(desc.isLeaf() ? Children.LEAF : new CallChildren(), desc);
@@ -206,10 +213,10 @@ final class CallNode extends AbstractNode {
                 keys = Collections.emptyList();
             } else {
                 keys = desc.getReferences();
-                if (!isOccurrenceView && desc.isCanceled()) {
+                if (!isOccurrenceView && (desc.isCanceled() || desc.isBroken())) {
                     ArrayList<Object> temp = new ArrayList<Object>(keys.size() + 1);
                     temp.addAll(keys);
-                    temp.add(CallNode.createCanceled());
+                    temp.add(desc.isBroken() ? CallNode.createBroken() : CallNode.createCanceled());
                     keys = temp;
                 }
             }
