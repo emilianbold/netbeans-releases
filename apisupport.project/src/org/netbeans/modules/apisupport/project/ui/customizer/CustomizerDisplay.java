@@ -85,11 +85,21 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         }
         showInPluginManagerCheckbox.setSelected(autoUpdateShowInClient);
         showInPluginManagerCheckboxChanged = false;
-        NbPlatform plaf = getProperties().getActivePlatform();
+        final NbPlatform plaf = getProperties().getActivePlatform();
         if (plaf != null) {
             // #110661: only show for new target platforms.
-            // Checking harness version is not enough - a new harness with an old platform should *not* write this attr,
-            showInPluginManagerCheckbox.setVisible(plaf.getModule("org.netbeans.modules.autoupdate.services") != null); // NOI18N
+            // Checking harness version is not enough - a new harness with an old platform should *not* write this attr.
+            // Calling getModule can be slow (loads module list from platform), so do not call in EQ.
+            ModuleProperties.RP.post(new Runnable() {
+                public void run() {
+                    final boolean visible = plaf.getModule("org.netbeans.modules.autoupdate.services") != null; // NOI18N
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            showInPluginManagerCheckbox.setVisible(visible);
+                        }
+                    });
+                }
+            });
         } else {
             // XXX netbeans.org module; harder to check; skip for now and always show checkbox
         }
