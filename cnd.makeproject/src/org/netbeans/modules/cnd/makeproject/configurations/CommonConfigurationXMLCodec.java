@@ -643,8 +643,8 @@ public abstract class CommonConfigurationXMLCodec
             });
         }
 	xes.elementClose(PACK_FILES_LIST_ELEMENT);
-        int type = packagingConfiguration.getType().getValue();
-        if (type == PackagingConfiguration.TYPE_SVR4_PACKAGE || type == PackagingConfiguration.TYPE_RPM_PACKAGE || type == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+        String type = packagingConfiguration.getType().getValue();
+        if (type.equals("SVR4") || type.equals("RPM") || type.equals("Debian")) {
             xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
             List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(packagingConfiguration.getType().getValue());
             for (PackagerInfoElement elem : infoList) {

@@ -59,8 +59,8 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         initComponents();
         
         this.packagingConfiguration = packagingConfiguration;
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            entryComboBox.addItem("BASEDIR"); // NOI18N
+        if (packagingConfiguration.getType().getValue().equals("SVR4")) {
+            entryComboBox.addItem("BASEDIR"); // NOI18N == PackagingConfiguration.TYPE_SVR4_PACKAGE
             entryComboBox.addItem("CLASSES"); // NOI18N
             entryComboBox.addItem("DESC"); // NOI18N
             entryComboBox.addItem("EMAIL"); // NOI18N
@@ -86,7 +86,7 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
             entryComboBox.addItem("VENDOR"); // NOI18N
             entryComboBox.addItem("VSTOCK"); // NOI18N
         }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+        else if (packagingConfiguration.getType().getValue().equals("RPM")) {
             entryComboBox.addItem("Patch"); // NOI18N
             entryComboBox.addItem("%changelog"); // NOI18N
             entryComboBox.addItem("%pre"); // NOI18N
@@ -94,7 +94,7 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
             entryComboBox.addItem("%preun"); // NOI18N
             entryComboBox.addItem("%postun"); // NOI18N
         }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+        else if (packagingConfiguration.getType().getValue().equals("Debian")) {
             entryComboBox.addItem("Section"); // NOI18N
             entryComboBox.addItem("Priority"); // NOI18N
             entryComboBox.addItem("Architecture"); // NOI18N

@@ -86,7 +86,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         ownerTextField.setText(MakeOptions.getInstance().getDefOwner()); // NOI18N
         
         // Hide some fields:
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+        if (packagingConfiguration.getType().getValue().equals("Tar") || packagingConfiguration.getType().getValue().equals("Zip")) {
             groupLabel.setEnabled(false);
             groupTextField.setEnabled(false);
             ownerLabel.setEnabled(false);

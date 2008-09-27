@@ -81,14 +81,14 @@ public class SVR4Packager implements PackagerDescriptor {
             defArch = "i386"; // NOI18N
         }
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "PKG", packagingConfiguration.getOutputName(), true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "NAME", "Package description ...", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "ARCH", defArch, true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "CATEGORY", "application", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "VERSION", "1.0", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "BASEDIR", "/opt", false, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_SVR4_PACKAGE, "CLASSES", "none", false, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "PKG", packagingConfiguration.getOutputName(), true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "NAME", "Package description ...", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "ARCH", defArch, true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "CATEGORY", "application", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "VERSION", "1.0", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "BASEDIR", "/opt", false, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "CLASSES", "none", false, true)); // NOI18N
     
         return infoList;
     }

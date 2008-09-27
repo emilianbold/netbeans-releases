@@ -39,16 +39,18 @@
 
 package org.netbeans.modules.cnd.makeproject.packaging;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PackagerManager  {
-    private List<PackagerDescriptor> list = null;
+    private static List<PackagerDescriptor> list = null;
     
     private static PackagerManager instance;
     
     public static PackagerManager getDefault() {
         if (instance == null) {
             instance = new PackagerManager();
+            list = new ArrayList<PackagerDescriptor>();
             instance.addDefaultPackagers();
         }
         return instance;
@@ -66,4 +68,48 @@ public class PackagerManager  {
         list.add(packagingDescriptor);
     }
     
+    public int getNameIndex(String name) {
+        int index = 0;
+        for (PackagerDescriptor packagerDescriptor : list) {
+            if (packagerDescriptor.getName().equals(name))
+                return index;
+            index++;
+        }
+        return 0;
+        
+    }
+    
+    public String getDisplayName(int n) {
+        if (n < 0 || n >= list.size()) {
+            assert false;
+            return null;
+        }
+        PackagerDescriptor packagerDescriptor = list.get(n);
+        return packagerDescriptor.getDisplayName();
+    }
+    
+    public String[] getDisplayNames() {
+        String[] ret = new String[list.size()];
+        int i = 0;
+        for (PackagerDescriptor packagerDescriptor : list) {
+            ret[i++] = packagerDescriptor.getDisplayName();
+        }
+        return ret;
+    }
+    
+    public String getDisplayName(String name) {
+        for (PackagerDescriptor packagerDescriptor : list) {
+            if (packagerDescriptor.getName().equals(name))
+                return packagerDescriptor.getDisplayName();
+        }
+        return null;
+    }
+    
+    public String getName(String displayName) {
+        for (PackagerDescriptor packagerDescriptor : list) {
+            if (packagerDescriptor.getDisplayName().equals(displayName))
+                return packagerDescriptor.getName();
+        }
+        return null;
+    }
 }

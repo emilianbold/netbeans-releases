@@ -82,8 +82,8 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         env.addPropertyChangeListener(this);
         
         // Add tabs
-        int type = packagingConfiguration.getType().getValue();
-        if (type == PackagingConfiguration.TYPE_SVR4_PACKAGE || type == PackagingConfiguration.TYPE_RPM_PACKAGE || type == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+        String type = packagingConfiguration.getType().getValue();
+        if (type.equals("SVR4") || type.equals("RPM") || type.equals("Debian")) {
             packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeaderSubList(type), packagingConfiguration));
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
@@ -95,25 +95,25 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         tabbedPane.addTab(getString("InfoPanelText"), packagingInfoOuterPanel);
         tabbedPane.addTab(getString("FilePanelText"), packagingFilesOuterPanel);
             
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+        if (packagingConfiguration.getType().getValue().equals("Zip") || packagingConfiguration.getType().getValue().equals("Tar")) {
             // Add tabs
             tabbedPane.setEnabledAt(0,false);
             tabbedPane.setEnabledAt(1,true);
             tabbedPane.setSelectedIndex(1);
         }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+        else if (packagingConfiguration.getType().getValue().equals("SVR4")) {
             // Add tabs
             tabbedPane.setEnabledAt(0,true);
             tabbedPane.setEnabledAt(1,true);
             tabbedPane.setSelectedIndex(0);
         }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+        else if (packagingConfiguration.getType().getValue().equals("RPM")) {
             // Add tabs
             tabbedPane.setEnabledAt(0,true);
             tabbedPane.setEnabledAt(1,true);
             tabbedPane.setSelectedIndex(0);
         }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+        else if (packagingConfiguration.getType().getValue().equals("Debian")) {
             // Add tabs
             tabbedPane.setEnabledAt(0,true);
             tabbedPane.setEnabledAt(1,true);
@@ -137,13 +137,13 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private Object getPropertyValue() throws IllegalStateException {
-        int type = packagingConfiguration.getType().getValue();
-        if (type == PackagingConfiguration.TYPE_SVR4_PACKAGE || type == PackagingConfiguration.TYPE_RPM_PACKAGE || type == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+        String type = packagingConfiguration.getType().getValue();
+        if (type.equals("SVR4") || type.equals("RPM") || type.equals("Debian")) {
             List<PackagerInfoElement> oldList = packagingConfiguration.getInfo().getValue();
             List<PackagerInfoElement> newList = new ArrayList<PackagerInfoElement>();
             // Copy all other types over
             for (PackagerInfoElement elem : oldList) {
-                if (elem.getType() != packagingConfiguration.getType().getValue()) {
+                if (elem.getPackager() != packagingConfiguration.getType().getValue()) {
                     newList.add(elem);
                 }
             }

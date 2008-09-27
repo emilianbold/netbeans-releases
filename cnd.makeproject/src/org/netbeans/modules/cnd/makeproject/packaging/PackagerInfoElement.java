@@ -44,34 +44,34 @@ package org.netbeans.modules.cnd.makeproject.packaging;
  * @author thp
  */
 public class PackagerInfoElement {
-    private int type;
+    private String packager;
     private String name;
     private String value;
     private boolean mandatory;
     private boolean defaultValue;
     
-    public PackagerInfoElement(int type, String name, String value) {
-        this.type = type;
+    public PackagerInfoElement(String packager, String name, String value) {
+        this.packager = packager;
         this.name = name;
         this.value = value;
         this.mandatory = false;
         this.defaultValue = false;
     }
     
-    public PackagerInfoElement(int type, String name, String value, boolean mandatory, boolean defaultValue) {
-        this.type = type;
+    public PackagerInfoElement(String packager, String name, String value, boolean mandatory, boolean defaultValue) {
+        this.packager = packager;
         this.name = name;
         this.value = value;
         this.mandatory = mandatory;
         this.defaultValue = defaultValue;
     }
 
-    public int getType() {
-        return type;
+    public String getPackager() {
+        return packager;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public void setPackager(String packager) {
+        this.packager = packager;
     }
     
     public String getName() {

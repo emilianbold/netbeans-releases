@@ -122,7 +122,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
     @Override
     public Object copyAction(Object o) {
         PackagerInfoElement elem = (PackagerInfoElement) o;
-        return new PackagerInfoElement(elem.getType(), new String(elem.getName()), new String(elem.getValue()));
+        return new PackagerInfoElement(elem.getPackager(), new String(elem.getName()), new String(elem.getValue()));
     }
 
     @Override

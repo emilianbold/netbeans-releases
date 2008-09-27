@@ -66,13 +66,13 @@ public class RPMPackager implements PackagerDescriptor {
     
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Summary", "Sumary...", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Name", packagingConfiguration.getOutputName(), true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Version", "1.0", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Release", "1", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "Group", "Applications/System", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "License", "BSD-type", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_RPM_PACKAGE, "%description", "Description...", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Summary", "Sumary...", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Name", packagingConfiguration.getOutputName(), true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Version", "1.0", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Release", "1", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Group", "Applications/System", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "License", "BSD-type", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "%description", "Description...", true, true)); // NOI18N
     
         return infoList;
     }

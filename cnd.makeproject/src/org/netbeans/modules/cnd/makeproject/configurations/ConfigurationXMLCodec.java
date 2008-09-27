@@ -530,12 +530,26 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(PACK_TYPE_ELEMENT)) {
             if (currentPackagingConfiguration != null) {
-                int type;
+                String type;
                 if (descriptorVersion <= 50) {
-                    type = new Integer(currentText).intValue();
+                    int i;
+                    i = new Integer(currentText).intValue();
+                    if (i == 0)
+                        type = "Tar";
+                    else if (i == 1) 
+                        type = "Zip";
+                    else if (i == 2) 
+                        type = "SVR4";
+                    else if (i == 3) 
+                        type = "RPM";
+                    else if (i == 4) 
+                        type = "Debian";
+                    else
+                        type = "Tar";
+                
                 }
                 else {
-                    type = PackageDescriptor.getTypeFromName(currentText);
+                    type = currentText;
                 }
                 currentPackagingConfiguration.getType().setValue(type);
             }

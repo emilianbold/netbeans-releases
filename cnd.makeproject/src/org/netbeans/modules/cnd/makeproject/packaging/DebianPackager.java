@@ -78,11 +78,11 @@ public class DebianPackager implements PackagerDescriptor {
             defArch = "i386"; // NOI18N
         }
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_DEBIAN_PACKAGE, "Package", packagingConfiguration.getOutputName(), true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_DEBIAN_PACKAGE, "Version", "1.0", true, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_DEBIAN_PACKAGE, "Architecture", defArch, false, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_DEBIAN_PACKAGE, "Maintainer", System.getProperty("user.name"), false, true)); // NOI18N
-        infoList.add(new PackagerInfoElement(PackagingConfiguration.TYPE_DEBIAN_PACKAGE, "Description", "...", false, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Package", packagingConfiguration.getOutputName(), true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Version", "1.0", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Architecture", defArch, false, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Maintainer", System.getProperty("user.name"), false, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Description", "...", false, true)); // NOI18N
         return infoList;
     }
 
