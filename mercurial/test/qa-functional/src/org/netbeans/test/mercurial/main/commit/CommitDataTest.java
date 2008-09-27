@@ -11,11 +11,11 @@ package org.netbeans.test.mercurial.main.commit;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
@@ -25,6 +25,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.operators.CommitOperator;
 import org.netbeans.test.mercurial.operators.VersioningOperator;
+import org.netbeans.test.mercurial.utils.MessageHandler;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -37,6 +38,7 @@ public class CommitDataTest extends JellyTestCase {
     public File projectPath;
     public PrintStream stream;
     String os_name;
+    static Logger log;
     
     /** Creates a new instance of CommitDataTest */
     public CommitDataTest(String name) {
@@ -45,9 +47,14 @@ public class CommitDataTest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
         System.out.println("### "+getName()+" ###");
-        
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
     
     protected boolean isUnix() {
@@ -65,22 +72,21 @@ public class CommitDataTest extends JellyTestCase {
         
     public void testCommitFile() throws Exception {
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        try {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        } finally {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
-        }
-        
-        timeout = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
-        } finally {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
-        }
+//        try {
+//            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+//        } finally {
+//            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
+//        }
+//
+//        timeout = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
+//        try {
+//            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
+//        } finally {
+//            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
+//        }
         
         try {
             TestKit.showStatusLabels();
-            OutputOperator.invoke();
             
             org.openide.nodes.Node nodeIDE;
             long start;
@@ -91,9 +97,14 @@ public class CommitDataTest extends JellyTestCase {
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
 
+            MessageHandler mh = new MessageHandler("Refreshing");
+            log.addHandler(mh);
             TestKit.createNewElement(PROJECT_NAME, "javaapp", "NewClass");
+
             Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
             nodeFile.performPopupAction("Mercurial|Status");
+            TestKit.waitText(mh);
+
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
             color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
             VersioningOperator vo = VersioningOperator.invoke();
@@ -104,7 +115,13 @@ public class CommitDataTest extends JellyTestCase {
             //invoke commit action but exlude the file from commit
             start = System.currentTimeMillis();
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
+            mh = new MessageHandler("Preparing Commit");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             CommitOperator cmo = CommitOperator.invoke(nodeFile);
+            TestKit.waitText(mh);
+
             end = System.currentTimeMillis();
             //System.out.println("Duration of invoking Commit dialog: " + (end - start));
             //print message to log file.
@@ -123,16 +140,25 @@ public class CommitDataTest extends JellyTestCase {
             assertEquals("Wrong row count of table.", 1, table.getRowCount());
             assertEquals("Expected file is missing.", "NewClass.java", table.getModel().getValueAt(0, 0).toString());
             assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
-            
+
+            mh = new MessageHandler("Preparing Commit");
+            log.addHandler(mh);
+
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
             cmo = CommitOperator.invoke(nodeFile);
+            TestKit.waitText(mh);
             Thread.sleep(2000);
             cmo.selectCommitAction("NewClass.java", "Commit");
             start = System.currentTimeMillis();
+
+            mh = new MessageHandler("Committing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             cmo.commit();
-            OutputTabOperator oto = new OutputTabOperator(TestKit.getProjectAbsolutePath(PROJECT_NAME));
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.waitText("INFO: End of Commit");
+
+            TestKit.waitText(mh);
+            
             end = System.currentTimeMillis();
             
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
@@ -154,7 +180,7 @@ public class CommitDataTest extends JellyTestCase {
         } catch (Exception e) {
             TestKit.closeProject(PROJECT_NAME);
             throw new Exception("Test failed: " + e);
-        }    
+        }
     }
     
     public void testRecognizeMimeType() throws Exception {
@@ -217,17 +243,23 @@ public class CommitDataTest extends JellyTestCase {
                     assertEquals("Expected text file.", "Commit", model.getValueAt(i, 2).toString());
                 }
             }
+
+            MessageHandler mh = new MessageHandler("Committing");
+            log.addHandler(mh);
+
             result = TestKit.compareThem(expected, actual, false);
             assertEquals("Not All files listed in Commit dialog", expected.length, result);
             cmo.commit();
-            OutputTabOperator oto = new OutputTabOperator(TestKit.getProjectAbsolutePath(PROJECT_NAME));
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            for (int i = 0; i < expected.length; i++) {
-                oto.waitText("hg add " + expected[i]);
-            }
-            oto.waitText("INFO: End of Commit");
+//            OutputTabOperator oto = new OutputTabOperator(TestKit.getProjectAbsolutePath(PROJECT_NAME));
+//            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+//            for (int i = 0; i < expected.length; i++) {
+//                oto.waitText("hg add " + expected[i]);
+//            }
+//            oto.waitText("INFO: End of Commit");
             //System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=77060!!!");
-            
+
+            TestKit.waitText(mh);
+
             //files have been committed,
             //verify explorer node
             for (int i = 0; i < expected.length; i++) {
