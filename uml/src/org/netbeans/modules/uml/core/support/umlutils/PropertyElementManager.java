@@ -259,11 +259,13 @@ public class PropertyElementManager implements IPropertyElementManager
                            {
                               converted = false;
                            }
+                           boolean found = false;
                            while (tokenizer.hasMoreTokens())
                            {
                               if ((firstToken).equals(val)
                               || (converted && (convertedVal == i)))
                               {
+                                 found = true;
                                  break;
                               }
                               else
@@ -271,7 +273,27 @@ public class PropertyElementManager implements IPropertyElementManager
                                  firstToken = tokenizer.nextToken();
                                  i++;
                               }
+                           }    
+                       
+                           if (!found) 
+                           {
+                               validVals = pDef.getValidValues();
+                               if (validVals != null )
+                               {
+                                   tokenizer = new StringTokenizer(validVals, "|");
+                                   i = 0;
+                                   while(tokenizer.hasMoreTokens()) 
+                                   {
+                                       String token = tokenizer.nextToken();
+                                       if (token != null && token.equals(val)) 
+                                       {
+                                           break;
+                                       }
+                                       i++;
+                                   }
+                               }
                            }
+                           
                            String enumVals = pDef.getFromAttrMap("enumValues");
                            if (enumVals != null)
                            {
@@ -333,6 +355,9 @@ public class PropertyElementManager implements IPropertyElementManager
                      {
                         processResult(retObjGet, pDef, pEle);
                      }
+                     IPropertyElementManager manager = pEle.getPropertyElementManager();
+                     manager.interpretElementValue(pEle);
+                     
                      pEle.setModified(false);
                   }
                }
@@ -1566,6 +1591,14 @@ public class PropertyElementManager implements IPropertyElementManager
                   processEnumeration(pEle);
                }
             }
+         }
+         Vector<IPropertyElement> subElems = pEle.getSubElements();
+         if (subElems != null) 
+         {
+             for(IPropertyElement sub : subElems) 
+             {
+                 interpretElementValue(sub);
+             }
          }
       }
    }
