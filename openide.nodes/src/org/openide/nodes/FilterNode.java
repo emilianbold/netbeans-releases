@@ -1366,6 +1366,8 @@ public class FilterNode extends Node {
 
             if (newOriginal == null) {
                 entrySupport().notifySetEntries();
+                // force initialization
+                entrySupport().getNodesCount(false);
             }
         }
 
@@ -1460,15 +1462,20 @@ public class FilterNode extends Node {
         }
 
         private FilterChildrenSupport filterSupport() {
+            return (FilterChildrenSupport) entrySupport();
+        }
+
+        private boolean checkSupportChanged() {
             FilterChildrenSupport support = (FilterChildrenSupport) entrySupport();
             EntrySupport origSupport = original.getChildren().entrySupport();
 
             if (support.originalSupport() != origSupport) {
                 assert Children.MUTEX.isWriteAccess() : "Should be called only from changeOriginal() under write access"; // NOI18N
                 changeSupport(null);
-                return (FilterChildrenSupport) entrySupport();
+                return true;
+            } else {
+                return false;
             }
-            return support;
         }
 
         /* Delegates to filter node.
@@ -1494,6 +1501,10 @@ public class FilterNode extends Node {
         * @param ev info about the change
         */
         protected void filterChildrenRemoved(NodeMemberEvent ev) {
+            if (checkSupportChanged()) {
+                // support was changed, we should be already updated
+                return;
+            }
             filterSupport().filterChildrenRemoved(ev);
         }
 
@@ -1678,9 +1689,9 @@ public class FilterNode extends Node {
                 if (cha != null) {
                     int count = origSupport.getNodesCount(false);
 
-                    List<Entry> entries = origSupport.getEntries();
-                    ArrayList<Entry> filtEntries = new ArrayList<Entry>(entries.size());
-                    for (Entry e : entries) {
+                    List<Entry> origEntries = origSupport.getEntries();
+                    ArrayList<Entry> filtEntries = new ArrayList<Entry>(origEntries.size());
+                    for (Entry e : origEntries) {
                         filtEntries.add(new FilterNodeEntry(e));
                     }
 
