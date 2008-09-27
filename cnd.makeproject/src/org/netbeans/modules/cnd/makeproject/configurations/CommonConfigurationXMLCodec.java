@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
@@ -632,8 +632,8 @@ public abstract class CommonConfigurationXMLCodec
         if (packagingConfiguration.getTopDir().getModified())
 	    xes.element(PACK_TOPDIR_ELEMENT, packagingConfiguration.getTopDir().getValue());
 	xes.elementOpen(PACK_FILES_LIST_ELEMENT);
-        List<FileElement> filesList = packagingConfiguration.getFiles().getValue();
-        for (FileElement elem : filesList) {
+        List<PackagerFileElement> filesList = packagingConfiguration.getFiles().getValue();
+        for (PackagerFileElement elem : filesList) {
             xes.element(PACK_FILE_LIST_ELEMENT,
                     new AttrValuePair[] {
                         new AttrValuePair(TYPE_ATTR, "" + elem.getType().toString()), // NOI18N

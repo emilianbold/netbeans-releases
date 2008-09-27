@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.packaging;
 
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
@@ -169,13 +170,13 @@ public class SVR4Packager implements PackagerDescriptor {
         }
 
         private List<String> findUndefinedDirectories(PackagingConfiguration packagingConfiguration) {
-            List<FileElement> fileList = packagingConfiguration.getFiles().getValue();
+            List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
             HashSet set = new HashSet();
             ArrayList<String> list = new ArrayList<String>();
 
             // Already Defined
-            for (FileElement elem : fileList) {
-                if (elem.getType() == FileElement.FileType.DIRECTORY) {
+            for (PackagerFileElement elem : fileList) {
+                if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     String path = packagingConfiguration.expandMacros(elem.getTo());
                     if (path.endsWith("/")) { // NOI18N
                         path = path.substring(0, path.length() - 1);
@@ -184,8 +185,8 @@ public class SVR4Packager implements PackagerDescriptor {
                 }
             }
             // Do all sub dirrectories
-            for (FileElement elem : fileList) {
-                if (elem.getType() == FileElement.FileType.FILE || elem.getType() == FileElement.FileType.SOFTLINK) {
+            for (PackagerFileElement elem : fileList) {
+                if (elem.getType() == PackagerFileElement.FileType.FILE || elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     String path = IpeUtils.getDirName(packagingConfiguration.expandMacros(elem.getTo()));
                     String base = ""; // NOI18N
                     if (path != null && path.length() > 0) {
@@ -239,14 +240,14 @@ public class SVR4Packager implements PackagerDescriptor {
             }
 
             bw.write("\n"); // NOI18N
-            List<FileElement> fileList = packagingConfiguration.getFiles().getValue();
-            for (FileElement elem : fileList) {
+            List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
+            for (PackagerFileElement elem : fileList) {
                 bw.write("echo \"");// NOI18N
-                if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     bw.write("d");// NOI18N
-                } else if (elem.getType() == FileElement.FileType.FILE) {
+                } else if (elem.getType() == PackagerFileElement.FileType.FILE) {
                     bw.write("f");// NOI18N
-                } else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     bw.write("s");// NOI18N
                 } else {
                     assert false;
@@ -260,7 +261,7 @@ public class SVR4Packager implements PackagerDescriptor {
                     }
                     bw.write("=" + from);// NOI18N
                 }
-                if (elem.getType() != FileElement.FileType.SOFTLINK) {
+                if (elem.getType() != PackagerFileElement.FileType.SOFTLINK) {
                     bw.write(" 0" + elem.getPermission());// NOI18N
                     bw.write(" " + elem.getOwner());// NOI18N
                     bw.write(" " + elem.getGroup());// NOI18N

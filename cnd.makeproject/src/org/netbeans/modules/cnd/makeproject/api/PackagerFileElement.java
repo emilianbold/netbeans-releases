@@ -37,9 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.packaging;
+package org.netbeans.modules.cnd.makeproject.api;
 
-public class FileElement {
+public class PackagerFileElement {
     public enum FileType {
         FILE {
             @Override
@@ -74,7 +74,7 @@ public class FileElement {
     private String group;
     private boolean defaultValue;
     
-    public FileElement(FileType type, String from, String to) {
+    public PackagerFileElement(FileType type, String from, String to) {
         this.type = type;
         this.from = from;
         this.to = to;
@@ -84,7 +84,7 @@ public class FileElement {
         this.defaultValue = false;
     }
     
-    public FileElement(FileType type, String from, String to, String permission, String owner, String group) {
+    public PackagerFileElement(FileType type, String from, String to, String permission, String owner, String group) {
         this.type = type;
         this.from = from;
         this.to = to;

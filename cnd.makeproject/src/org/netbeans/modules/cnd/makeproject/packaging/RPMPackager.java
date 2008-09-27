@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.packaging;
 
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
@@ -135,21 +136,21 @@ public class RPMPackager implements PackagerDescriptor {
 
         private void writePackagingScriptBodyRPM(BufferedWriter bw, MakeConfiguration conf) throws IOException {
             PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
-            List<FileElement> fileList = (List<FileElement>) packagingConfiguration.getFiles().getValue();
+            List<PackagerFileElement> fileList = (List<PackagerFileElement>) packagingConfiguration.getFiles().getValue();
             String output = packagingConfiguration.getOutputValue();
 
             bw.write("# Copy files and create directories and links\n"); // NOI18N
-            for (FileElement elem : fileList) {
+            for (PackagerFileElement elem : fileList) {
                 bw.write("cd \"${TOP}\"\n"); // NOI18N
-                if (elem.getType() == FileElement.FileType.FILE) {
+                if (elem.getType() == PackagerFileElement.FileType.FILE) {
                     String toDir = IpeUtils.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
                         bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
                     }
                     bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
-                } else if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
-                } else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     String toDir = IpeUtils.getDirName(elem.getTo());
                     String toName = IpeUtils.getBaseName(elem.getTo());
                     if (toDir != null && toDir.length() >= 0) {
@@ -157,7 +158,7 @@ public class RPMPackager implements PackagerDescriptor {
                     }
                     bw.write("cd " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
                     bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
-                } else if (elem.getType() == FileElement.FileType.UNKNOWN) {
+                } else if (elem.getType() == PackagerFileElement.FileType.UNKNOWN) {
                     // skip ???
                 } else {
                     assert false;
@@ -215,14 +216,14 @@ public class RPMPackager implements PackagerDescriptor {
                 }
             }
             bw.write("echo \'%files\' >> ${SPEC_FILE}\n"); // NOI18N 
-            for (FileElement elem : fileList) {
-                if (elem.getType() == FileElement.FileType.FILE || elem.getType() == FileElement.FileType.SOFTLINK) {
+            for (PackagerFileElement elem : fileList) {
+                if (elem.getType() == PackagerFileElement.FileType.FILE || elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     bw.write("echo " + "\\\"/" + elem.getTo() + "\\\" >> ${SPEC_FILE}\n"); // NOI18N
                 }
             }
             bw.write("echo \'%dir\' >> ${SPEC_FILE}\n"); // NOI18N 
-            for (FileElement elem : fileList) {
-                if (elem.getType() == FileElement.FileType.DIRECTORY) {
+            for (PackagerFileElement elem : fileList) {
+                if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     bw.write("echo " + "/" + elem.getTo() + " >> ${SPEC_FILE}\n"); // NOI18N
                 }
             }

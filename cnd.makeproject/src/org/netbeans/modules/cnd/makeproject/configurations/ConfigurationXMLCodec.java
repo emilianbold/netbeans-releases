@@ -76,7 +76,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
-import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -312,7 +312,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String perm = atts.getValue(PERM_ATTR); // NOI18N
             String owner = atts.getValue(OWNER_ATTR); // NOI18N
             String group = atts.getValue(GROUP_ATTR); // NOI18N
-            FileElement fileElement = new FileElement(FileElement.toFileType(type), from, to, perm, owner, group);
+            PackagerFileElement fileElement = new PackagerFileElement(PackagerFileElement.toFileType(type), from, to, perm, owner, group);
             if (currentPackagingConfiguration != null)
                 currentPackagingConfiguration.getFiles().add(fileElement);
         } else if (element.equals(PACK_INFO_LIST_ELEMENT)) {

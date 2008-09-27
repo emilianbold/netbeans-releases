@@ -52,8 +52,8 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PackagingNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
-import org.netbeans.modules.cnd.makeproject.packaging.FileElement.FileType;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
@@ -111,7 +111,7 @@ public class PackagingConfiguration {
         else {
             assert false;
         }
-        FileElement elem = new FileElement(
+        PackagerFileElement elem = new PackagerFileElement(
                 FileType.FILE,
                 "${OUTPUT_PATH}" + suffix, // NOI18N
                 packageDir + "/${OUTPUT_BASENAME}" + suffix, // NOI18N
@@ -149,7 +149,7 @@ public class PackagingConfiguration {
         if (files.getValue().size() != 1) {
             return true;
         }
-        for (FileElement elem : (List<FileElement>)files.getValue()) {
+        for (PackagerFileElement elem : (List<PackagerFileElement>)files.getValue()) {
             if (!elem.isDefaultValue()) {
                 return true;
             }
