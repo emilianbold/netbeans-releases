@@ -69,9 +69,9 @@ public class FilterNodeTest extends NbTestCase {
     }
     
 //    public static FilterNodeTest suite() {
-//        return new FilterNodeTest("testFFNSnapshotAfterChangeOriginal");
+//        return new FilterNodeTest("testRemoveNotifyIsCalledLazy");
 //    }   
-//    
+
     /** Demonstrates a bug in FilterNode.changeOriginal.
      */
     public void testChangeOriginalLeafToArray () {
@@ -888,10 +888,91 @@ public class FilterNodeTest extends NbTestCase {
         assertEquals("B", fn.getChildren().getNodeAt(1).getName());
     }
     
-    public void testSnapshotConsistencyAfterChangeOriginal() {
+    public void testRemoveNotifyIsCalledLazy() {
+        doTestRemoveNotifyIsCalled(true);
+    }
+    
+    public void testRemoveNotifyIsCalledEager() {
+        doTestRemoveNotifyIsCalled(false);
+    }
+    
+    public void doTestRemoveNotifyIsCalled(boolean lazy) {
+        class FCH extends FilterNode.Children {
+            boolean remNotifyCalled;
+            public FCH(Node or) {
+                super(or);
+            }
+
+            @Override
+            protected void removeNotify() {
+                remNotifyCalled = true;
+                super.removeNotify();
+            }
+        }
+        AbstractNode a = new AbstractNode(new Keys(lazy, "a1", "a2"));
+        FCH fch = new FCH(a);
+        FilterNode fn = new FilterNode(a, fch);
+        Node n = fn.getChildren().getNodeAt(0);
+        assertEquals(2, fn.getChildren().getNodesCount());
+        assertEquals("a1", n.getName());
+        WeakReference<Node> ref = new WeakReference<Node>(n);
+        n = null;
+        assertGC("Should be released", ref);
+        assertTrue("Remove notify should be called", fch.remNotifyCalled);
+    }
+
+    public void testNodesAfterGCAfterChangeOriginalEagerToEager() {
+        doTestNodesAfterGCAfterChangeOriginal(false, false);
+    }
+
+    public void testNodesAfterGCAfterChangeOriginalLazyToLazy() {
+
+        doTestNodesAfterGCAfterChangeOriginal(true, true);
+    }
+
+    public void testNodesAfterGCAfterChangeOriginalLazyToEager() {
+
+        doTestNodesAfterGCAfterChangeOriginal(true, false);
+    }
+
+    public void testNodesAfterGCAfterChangeOriginalEagerToLazy() {
+        doTestNodesAfterGCAfterChangeOriginal(false, true);
+    }
+
+    public void doTestNodesAfterGCAfterChangeOriginal(boolean lazyA, boolean lazyB) {
+        AbstractNode a = new AbstractNode(new Keys(lazyA, "a1", "a2"));
+        AbstractNode b = new AbstractNode(new Keys(lazyB, "b1", "b2", "b3"));
+        FN fn = new FN(a);
+        Node[] nodes = fn.getChildren().getNodes();
+
+        fn.changeCh(b, true);
+        fn.getChildren().getNodes();
+
+        WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
+        WeakReference<Node> ref2 = new WeakReference<Node>(nodes[1]);
+        nodes = null;
+        assertGC("Should be released", ref);
+        assertGC("Should be released", ref2);
+
+        assertEquals(3, fn.getChildren().getNodesCount());
+        assertEquals("b1", fn.getChildren().getNodeAt(0).getName());
+        assertEquals("b2", fn.getChildren().getNodeAt(1).getName());
+        assertEquals("b3", fn.getChildren().getNodeAt(2).getName());
+    }
+
+    public void testSnapshotConsistencyAfterChangeOriginalEagerToEager() {
         doTestSnapshotConsistencyAfterChangeOriginal(false, false);
+    }
+
+    public void testSnapshotConsistencyAfterChangeOriginalEagerToLazy() {
         doTestSnapshotConsistencyAfterChangeOriginal(false, true);
+    }
+
+    public void testSnapshotConsistencyAfterChangeOriginalLazyToEager() {
         doTestSnapshotConsistencyAfterChangeOriginal(true, false);
+    }
+
+    public void testSnapshotConsistencyAfterChangeOriginalLazyToLazy() {
         doTestSnapshotConsistencyAfterChangeOriginal(true, true);
     }
 
@@ -944,12 +1025,22 @@ public class FilterNodeTest extends NbTestCase {
     }
 
     // issue #142915
-    public void testFFNSnapshotAfterChangeOriginal() {
+    public void testFFNSnapshotAfterChangeOriginalEagerToEager() {
         doTestFFNSnapshotAfterChangeOriginal(false, false);
+    }
+
+    public void testFFNSnapshotAfterChangeOriginalLazyToLazy() {
         doTestFFNSnapshotAfterChangeOriginal(true, true);
+    }
+
+    public void testFFNSnapshotAfterChangeOriginalLazyToEager() {
         doTestFFNSnapshotAfterChangeOriginal(true, false);
+    }
+
+    public void testFFNSnapshotAfterChangeOriginalEagerToLazy() {
         doTestFFNSnapshotAfterChangeOriginal(false, true);
     }
+
     public void doTestFFNSnapshotAfterChangeOriginal(boolean lazyA, boolean lazyB) {
 
         AbstractNode a = new AbstractNode(new Keys(lazyA, "a1", "a2"));
@@ -985,10 +1076,19 @@ public class FilterNodeTest extends NbTestCase {
         assertEquals("b3", ffn.getChildren().getNodeAt(2).getName());
     }
 
-    public void testFNSnapshotAfterChangeOriginal() {
+    public void testFNSnapshotAfterChangeOriginalEagerToEager() {
         doTestFNSnapshotAfterChangeOriginal(false, false);
+    }
+
+    public void testFNSnapshotAfterChangeOriginalLazyToLazy() {
         doTestFNSnapshotAfterChangeOriginal(true, true);
+    }
+
+    public void testFNSnapshotAfterChangeOriginalLazyToEager() {
         doTestFNSnapshotAfterChangeOriginal(true, false);
+    }
+
+    public void testFNSnapshotAfterChangeOriginalEagerToLazy() {
         doTestFNSnapshotAfterChangeOriginal(false, true);
     }
 

@@ -1470,7 +1470,7 @@ public class FilterNode extends Node {
             EntrySupport origSupport = original.getChildren().entrySupport();
 
             if (support.originalSupport() != origSupport) {
-                assert Children.MUTEX.isWriteAccess() : "Should be called only from changeOriginal() under write access"; // NOI18N
+                assert Children.MUTEX.isWriteAccess() : "Should be called only under write access"; // NOI18N
                 changeSupport(null);
                 return true;
             } else {
@@ -1493,6 +1493,10 @@ public class FilterNode extends Node {
         * @param ev info about the change
         */
         protected void filterChildrenAdded(NodeMemberEvent ev) {
+            if (checkSupportChanged()) {
+                // support was changed, we should be already updated
+                return;
+            }            
             filterSupport().filterChildrenAdded(ev);
         }
 
