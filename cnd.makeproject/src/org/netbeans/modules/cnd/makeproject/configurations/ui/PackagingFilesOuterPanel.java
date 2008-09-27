@@ -45,8 +45,8 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.packaging.PackagerDescriptor;
-import org.netbeans.modules.cnd.makeproject.packaging.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 
 /**
  *

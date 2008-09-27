@@ -37,72 +37,24 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.packaging;
+package org.netbeans.modules.cnd.makeproject.api;
 
-/**
- *
- * @author thp
- */
-public class PackagerInfoElement {
-    private String packager;
-    private String name;
-    private String value;
-    private boolean mandatory;
-    private boolean defaultValue;
-    
-    public PackagerInfoElement(String packager, String name, String value) {
-        this.packager = packager;
-        this.name = name;
-        this.value = value;
-        this.mandatory = false;
-        this.defaultValue = false;
-    }
-    
-    public PackagerInfoElement(String packager, String name, String value, boolean mandatory, boolean defaultValue) {
-        this.packager = packager;
-        this.name = name;
-        this.value = value;
-        this.mandatory = mandatory;
-        this.defaultValue = defaultValue;
-    }
+import org.netbeans.modules.cnd.makeproject.packaging.*;
+import java.util.List;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 
-    public String getPackager() {
-        return packager;
-    }
-
-    public void setPackager(String packager) {
-        this.packager = packager;
-    }
-    
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public boolean isMandatory() {
-        return mandatory;
-    }
-
-    public void setMandatory(boolean mandatory) {
-        this.mandatory = mandatory;
-    }
-
-    public boolean isDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(boolean defaultValue) {
-        this.defaultValue = defaultValue;
-    }
+public interface PackagerDescriptor {
+    public String getName();
+    public String getDisplayName();
+    public boolean hasInfoList();
+    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
+    public List<String> getOptionalInfoList();
+    public boolean isOutputAFolder();
+    public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
+    public String getOutputFileSuffix();
+    public String getDefaultTool();
+    public String getDefaultOptions();
+    public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
+    public boolean supportsGroupAndOwner();
 }

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.makeproject.packaging;
 
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;

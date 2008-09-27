@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.makeproject.packaging;
 
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.util.List;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;

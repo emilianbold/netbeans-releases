@@ -45,9 +45,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.packaging.PackagerDescriptor;
-import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
-import org.netbeans.modules.cnd.makeproject.packaging.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.openide.util.NbBundle;
 
 /**

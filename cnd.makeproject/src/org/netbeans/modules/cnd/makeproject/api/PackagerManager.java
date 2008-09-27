@@ -37,8 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.packaging;
+package org.netbeans.modules.cnd.makeproject.api;
 
+import org.netbeans.modules.cnd.makeproject.packaging.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,16 +89,6 @@ public class PackagerManager  {
             index++;
         }
         return 0;
-        
-    }
-    
-    public String getDisplayName(int n) {
-        if (n < 0 || n >= list.size()) {
-            assert false;
-            return null;
-        }
-        PackagerDescriptor packagerDescriptor = list.get(n);
-        return packagerDescriptor.getDisplayName();
     }
     
     public String[] getDisplayNames() {

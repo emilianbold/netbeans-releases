@@ -65,9 +65,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
-import org.netbeans.modules.cnd.makeproject.packaging.PackagerDescriptor;
-import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
-import org.netbeans.modules.cnd.makeproject.packaging.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 
 /**
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec

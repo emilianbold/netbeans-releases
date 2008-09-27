@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
-import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
