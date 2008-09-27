@@ -41,6 +41,8 @@
 
 package org.openide.nodes;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -861,13 +863,24 @@ public class FilterNodeTest extends NbTestCase {
     
         FN fn = new FN(a);
         assertFalse(fn.getChildren().isLazy());
-        assertEquals("a", fn.getChildren().getNodeAt(0).getName());
+        Node n0 = fn.getChildren().getNodeAt(0);
+        assertEquals("a", n0.getName());
         assertEquals("b", fn.getChildren().getNodeAt(1).getName());
         
         fn.changeCh(b, true);
         assertTrue(fn.getChildren().isLazy());
         assertEquals("la", fn.getChildren().getNodeAt(0).getName());
         assertEquals("lb", fn.getChildren().getNodeAt(1).getName());
+
+        Reference<Node> ref = new WeakReference<Node>(n0);
+        n0 = null;
+        assertGC("Old node can disappear", ref);
+
+        ((Keys)b.getChildren()).keys("la");
+        n0 = fn.getChildren().getNodeAt(0);
+        assertNotNull("There is 0th node", n0);
+        assertEquals("la", n0.getName());
+        assertEquals("Just one", 1, fn.getChildren().getNodesCount());
         
         fn.changeCh(c, true);
         assertFalse(fn.getChildren().isLazy());

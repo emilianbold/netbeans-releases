@@ -876,7 +876,7 @@ abstract class EntrySupport {
                     LOG_GET_ARRAY.fine("previous array: " + array + " caller: " + caller);
                 }
                 synchronized (LOCK) {
-                    if (array == caller) {
+                    if (array == caller && children.entrySupport == this) {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         array = EMPTY;
