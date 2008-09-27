@@ -200,13 +200,13 @@ public class ElementNode extends AbstractNode {
         List<Language> languages = LanguageRegistry.getInstance().getEmbeddedLanguages(doc, offset);
 
         // Look specifically within the
-        if (languages.size() > 1) {
-            for (Language language : languages) {
-                // Inefficient linear search because the children may not be
-                // ordered according to the source
-                Children ch = getChildren();
-                if ( ch instanceof ElementChildren ) {
-                    Node[] children = ch.getNodes();
+        if (languages.size() > 0) {
+            Children ch = getChildren();
+            if ( ch instanceof ElementChildren ) {
+                Node[] children = ch.getNodes();
+                for (Language language : languages) {
+                    // Inefficient linear search because the children may not be
+                    // ordered according to the source
                     for (int i = 0; i < children.length; i++) {
                         ElementNode c = (ElementNode) children[i];
                         if (c.getDescription() instanceof ElementScanningTask.MimetypeRootNode) {

@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
@@ -155,7 +156,7 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
     
     @Override
     public ParserResult getEmbeddedResult(String embeddedMimeType, int offset) {
-        if (embeddedResults.size() == 0) {
+        if (embeddedResults.get(embeddedMimeType) == null) {
             String mimeType = getPreferredMimeType();
 
 
@@ -195,6 +196,14 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
             SourceFileReader reader = new SourceFileReader() {
 
                 public CharSequence read(ParserFile file) throws IOException {
+                    if (text.length() == 0) {
+                        try {
+                            text = doc.getText(0, doc.getLength());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                            GsfTestBase.fail(ex.toString());
+                        }
+                    }
                     return text;
                 }
 

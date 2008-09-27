@@ -43,6 +43,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,7 +58,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,7 +75,7 @@ public class URLFileObject extends FileObject {
     private final URLFileSystem filesystem;
     private final URLFileObject parent;
     private transient URLContent cachedContent;
-    private final Object cacheLock = new Object();
+    private final Lock cacheLock = new Lock();
     private boolean cacheInvalid = false;
 
     private final String relativePath;
@@ -380,6 +380,13 @@ public class URLFileObject extends FileObject {
         FileEvent event = new FileEvent(this, this, true);
         for (FileChangeListener listener : listenersArr) {
             listener.fileChanged(event);
+        }
+    }
+
+    private static class Lock implements Serializable {
+        private static final long serialVersionUID = -109202138186342019L;
+
+        public Lock() {
         }
     }
 }
