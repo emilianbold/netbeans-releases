@@ -93,6 +93,38 @@ public class SVR4Packager implements PackagerDescriptor {
         return infoList;
     }
 
+    public List<String> getOptionalInfoList() {
+        List<String> entryComboBox = new ArrayList<String>();
+        
+        entryComboBox.add("BASEDIR"); // NOI18N == PackagingConfiguration.TYPE_SVR4_PACKAGE
+        entryComboBox.add("CLASSES"); // NOI18N
+        entryComboBox.add("DESC"); // NOI18N
+        entryComboBox.add("EMAIL"); // NOI18N
+        entryComboBox.add("HOTLINE"); // NOI18N
+        entryComboBox.add("INTONLY"); // NOI18N
+        entryComboBox.add("ISTATES"); // NOI18N
+        entryComboBox.add("MAXINST"); // NOI18N
+        entryComboBox.add("ORDER"); // NOI18N
+        entryComboBox.add("PSTAMP"); // NOI18N
+        entryComboBox.add("RSTATES"); // NOI18N
+        entryComboBox.add("SUNW_ISA"); // NOI18N
+        entryComboBox.add("SUNW_LOC"); // NOI18N
+        entryComboBox.add("SUNW_PKG_DIR"); // NOI18N
+        entryComboBox.add("SUNW_PKG_ALLZONES"); // NOI18N
+        entryComboBox.add("SUNW_PKG_HOLLOW"); // NOI18N
+        entryComboBox.add("SUNW_PKG_THISZONE"); // NOI18N
+        entryComboBox.add("SUNW_PKGLIST"); // NOI18N
+        entryComboBox.add("SUNW_PKGTYPE"); // NOI18N
+        entryComboBox.add("SUNW_PKGVERS"); // NOI18N
+        entryComboBox.add("SUNW_PRODNAME"); // NOI18N
+        entryComboBox.add("SUNW_PRODVERS"); // NOI18N
+        entryComboBox.add("ULIMIT"); // NOI18N
+        entryComboBox.add("VENDOR"); // NOI18N
+        entryComboBox.add("VSTOCK"); // NOI18N
+
+        return entryComboBox;
+    }
+    
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
@@ -117,6 +149,9 @@ public class SVR4Packager implements PackagerDescriptor {
         return packagingConfiguration.findInfoValueName("PKG"); // NOI18N
     }
    
+    public boolean supportsGroupAndOwner() {
+        return true;
+    }
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(PackagingConfiguration.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around

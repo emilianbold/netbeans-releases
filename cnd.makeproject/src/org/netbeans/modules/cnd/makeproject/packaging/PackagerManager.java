@@ -68,6 +68,18 @@ public class PackagerManager  {
         list.add(packagingDescriptor);
     }
     
+    public List<PackagerDescriptor> getPackagerList() {
+        return list;
+    }
+    
+    public PackagerDescriptor getPackager(String name) {
+        for (PackagerDescriptor packagerDescriptor : list) {
+            if (packagerDescriptor.getName().equals(name))
+                return packagerDescriptor;
+        }
+        return null;
+    }
+    
     public int getNameIndex(String name) {
         int index = 0;
         for (PackagerDescriptor packagerDescriptor : list) {

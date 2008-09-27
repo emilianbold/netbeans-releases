@@ -77,6 +77,19 @@ public class RPMPackager implements PackagerDescriptor {
         return infoList;
     }
 
+    public List<String> getOptionalInfoList() {
+        List<String> entryComboBox = new ArrayList<String>();
+        
+        entryComboBox.add("Patch"); // NOI18N
+        entryComboBox.add("%changelog"); // NOI18N
+        entryComboBox.add("%pre"); // NOI18N
+        entryComboBox.add("%post"); // NOI18N
+        entryComboBox.add("%preun"); // NOI18N
+        entryComboBox.add("%postun"); // NOI18N
+
+        return entryComboBox;
+    }
+    
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
@@ -101,6 +114,9 @@ public class RPMPackager implements PackagerDescriptor {
         return "/usr"; // NOI18N
     }
 
+    public boolean supportsGroupAndOwner() {
+        return true;
+    }
     
     /** Look up i18n strings here */
     private static String getString(String s) {

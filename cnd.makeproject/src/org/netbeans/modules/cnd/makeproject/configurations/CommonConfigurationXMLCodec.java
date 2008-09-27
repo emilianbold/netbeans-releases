@@ -65,7 +65,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackagerManager;
 
 /**
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec
@@ -643,8 +645,10 @@ public abstract class CommonConfigurationXMLCodec
             });
         }
 	xes.elementClose(PACK_FILES_LIST_ELEMENT);
-        String type = packagingConfiguration.getType().getValue();
-        if (type.equals("SVR4") || type.equals("RPM") || type.equals("Debian")) {
+//        String type = packagingConfiguration.getType().getValue();
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
+//        if (type.equals("SVR4") || type.equals("RPM") || type.equals("Debian")) {
+        if (packager.hasInfoList()) {
             xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
             List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(packagingConfiguration.getType().getValue());
             for (PackagerInfoElement elem : infoList) {

@@ -86,6 +86,19 @@ public class DebianPackager implements PackagerDescriptor {
         return infoList;
     }
 
+    public List<String> getOptionalInfoList() {
+        List<String> entryComboBox = new ArrayList<String>();
+        
+        entryComboBox.add("Section"); // NOI18N
+        entryComboBox.add("Priority"); // NOI18N
+        entryComboBox.add("Architecture"); // NOI18N
+        entryComboBox.add("Depends"); // NOI18N
+        entryComboBox.add("Maintainer"); // NOI18N
+        entryComboBox.add("Description"); // NOI18N
+
+        return entryComboBox;
+    }
+
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
@@ -108,6 +121,10 @@ public class DebianPackager implements PackagerDescriptor {
 
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return "/usr"; // NOI18N
+    }
+
+    public boolean supportsGroupAndOwner() {
+        return true;
     }
     
     /** Look up i18n strings here */

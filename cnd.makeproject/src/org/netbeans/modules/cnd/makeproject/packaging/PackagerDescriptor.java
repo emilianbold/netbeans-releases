@@ -48,10 +48,12 @@ public interface PackagerDescriptor {
     public String getDisplayName();
     public boolean hasInfoList();
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
+    public List<String> getOptionalInfoList();
     public boolean isOutputAFolder();
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
     public String getOutputFileSuffix();
     public String getDefaultTool();
     public String getDefaultOptions();
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
+    public boolean supportsGroupAndOwner();
 }

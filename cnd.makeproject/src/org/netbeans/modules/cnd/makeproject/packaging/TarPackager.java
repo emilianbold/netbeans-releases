@@ -68,6 +68,10 @@ public class TarPackager implements PackagerDescriptor {
         return null;
     }
 
+    public List<String> getOptionalInfoList() {
+        return null;
+    }
+    
     public String getDefaultOptions() {
         return "-v"; // NOI18N
     }
@@ -98,6 +102,10 @@ public class TarPackager implements PackagerDescriptor {
         return topDir;
     }
 
+    public boolean supportsGroupAndOwner() {
+        return false;
+    }
+    
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(PackagingConfiguration.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around

@@ -41,10 +41,13 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.packaging.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.packaging.PackagerManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,51 +62,60 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         initComponents();
         
         this.packagingConfiguration = packagingConfiguration;
-        if (packagingConfiguration.getType().getValue().equals("SVR4")) {
-            entryComboBox.addItem("BASEDIR"); // NOI18N == PackagingConfiguration.TYPE_SVR4_PACKAGE
-            entryComboBox.addItem("CLASSES"); // NOI18N
-            entryComboBox.addItem("DESC"); // NOI18N
-            entryComboBox.addItem("EMAIL"); // NOI18N
-            entryComboBox.addItem("HOTLINE"); // NOI18N
-            entryComboBox.addItem("INTONLY"); // NOI18N
-            entryComboBox.addItem("ISTATES"); // NOI18N
-            entryComboBox.addItem("MAXINST"); // NOI18N
-            entryComboBox.addItem("ORDER"); // NOI18N
-            entryComboBox.addItem("PSTAMP"); // NOI18N
-            entryComboBox.addItem("RSTATES"); // NOI18N
-            entryComboBox.addItem("SUNW_ISA"); // NOI18N
-            entryComboBox.addItem("SUNW_LOC"); // NOI18N
-            entryComboBox.addItem("SUNW_PKG_DIR"); // NOI18N
-            entryComboBox.addItem("SUNW_PKG_ALLZONES"); // NOI18N
-            entryComboBox.addItem("SUNW_PKG_HOLLOW"); // NOI18N
-            entryComboBox.addItem("SUNW_PKG_THISZONE"); // NOI18N
-            entryComboBox.addItem("SUNW_PKGLIST"); // NOI18N
-            entryComboBox.addItem("SUNW_PKGTYPE"); // NOI18N
-            entryComboBox.addItem("SUNW_PKGVERS"); // NOI18N
-            entryComboBox.addItem("SUNW_PRODNAME"); // NOI18N
-            entryComboBox.addItem("SUNW_PRODVERS"); // NOI18N
-            entryComboBox.addItem("ULIMIT"); // NOI18N
-            entryComboBox.addItem("VENDOR"); // NOI18N
-            entryComboBox.addItem("VSTOCK"); // NOI18N
+        
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
+        List<String> optionalEntries = packager.getOptionalInfoList();
+        if (optionalEntries != null) {
+            for (String entry : optionalEntries) {
+                entryComboBox.addItem(entry);
+            }
         }
-        else if (packagingConfiguration.getType().getValue().equals("RPM")) {
-            entryComboBox.addItem("Patch"); // NOI18N
-            entryComboBox.addItem("%changelog"); // NOI18N
-            entryComboBox.addItem("%pre"); // NOI18N
-            entryComboBox.addItem("%post"); // NOI18N
-            entryComboBox.addItem("%preun"); // NOI18N
-            entryComboBox.addItem("%postun"); // NOI18N
-        }
-        else if (packagingConfiguration.getType().getValue().equals("Debian")) {
-            entryComboBox.addItem("Section"); // NOI18N
-            entryComboBox.addItem("Priority"); // NOI18N
-            entryComboBox.addItem("Architecture"); // NOI18N
-            entryComboBox.addItem("Depends"); // NOI18N
-            entryComboBox.addItem("Maintainer"); // NOI18N
-            entryComboBox.addItem("Description"); // NOI18N
-        }
-        else
-            assert false;
+        
+//        if (packagingConfiguration.getType().getValue().equals("SVR4")) {
+//            entryComboBox.addItem("BASEDIR"); // NOI18N == PackagingConfiguration.TYPE_SVR4_PACKAGE
+//            entryComboBox.addItem("CLASSES"); // NOI18N
+//            entryComboBox.addItem("DESC"); // NOI18N
+//            entryComboBox.addItem("EMAIL"); // NOI18N
+//            entryComboBox.addItem("HOTLINE"); // NOI18N
+//            entryComboBox.addItem("INTONLY"); // NOI18N
+//            entryComboBox.addItem("ISTATES"); // NOI18N
+//            entryComboBox.addItem("MAXINST"); // NOI18N
+//            entryComboBox.addItem("ORDER"); // NOI18N
+//            entryComboBox.addItem("PSTAMP"); // NOI18N
+//            entryComboBox.addItem("RSTATES"); // NOI18N
+//            entryComboBox.addItem("SUNW_ISA"); // NOI18N
+//            entryComboBox.addItem("SUNW_LOC"); // NOI18N
+//            entryComboBox.addItem("SUNW_PKG_DIR"); // NOI18N
+//            entryComboBox.addItem("SUNW_PKG_ALLZONES"); // NOI18N
+//            entryComboBox.addItem("SUNW_PKG_HOLLOW"); // NOI18N
+//            entryComboBox.addItem("SUNW_PKG_THISZONE"); // NOI18N
+//            entryComboBox.addItem("SUNW_PKGLIST"); // NOI18N
+//            entryComboBox.addItem("SUNW_PKGTYPE"); // NOI18N
+//            entryComboBox.addItem("SUNW_PKGVERS"); // NOI18N
+//            entryComboBox.addItem("SUNW_PRODNAME"); // NOI18N
+//            entryComboBox.addItem("SUNW_PRODVERS"); // NOI18N
+//            entryComboBox.addItem("ULIMIT"); // NOI18N
+//            entryComboBox.addItem("VENDOR"); // NOI18N
+//            entryComboBox.addItem("VSTOCK"); // NOI18N
+//        }
+//        else if (packagingConfiguration.getType().getValue().equals("RPM")) {
+//            entryComboBox.addItem("Patch"); // NOI18N
+//            entryComboBox.addItem("%changelog"); // NOI18N
+//            entryComboBox.addItem("%pre"); // NOI18N
+//            entryComboBox.addItem("%post"); // NOI18N
+//            entryComboBox.addItem("%preun"); // NOI18N
+//            entryComboBox.addItem("%postun"); // NOI18N
+//        }
+//        else if (packagingConfiguration.getType().getValue().equals("Debian")) {
+//            entryComboBox.addItem("Section"); // NOI18N
+//            entryComboBox.addItem("Priority"); // NOI18N
+//            entryComboBox.addItem("Architecture"); // NOI18N
+//            entryComboBox.addItem("Depends"); // NOI18N
+//            entryComboBox.addItem("Maintainer"); // NOI18N
+//            entryComboBox.addItem("Description"); // NOI18N
+//        }
+//        else
+//            assert false;
     }
 
     /** This method is called from within the constructor to

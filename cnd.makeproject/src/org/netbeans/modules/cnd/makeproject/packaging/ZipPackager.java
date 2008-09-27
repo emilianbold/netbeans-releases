@@ -68,6 +68,10 @@ public class ZipPackager implements PackagerDescriptor {
         return null;
     }
 
+    public List<String> getOptionalInfoList() {
+        return null;
+    }
+    
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
@@ -98,6 +102,9 @@ public class ZipPackager implements PackagerDescriptor {
         return topDir;
     }
 
+    public boolean supportsGroupAndOwner() {
+        return false;
+    }
     
     /** Look up i18n strings here */
     private static String getString(String s) {

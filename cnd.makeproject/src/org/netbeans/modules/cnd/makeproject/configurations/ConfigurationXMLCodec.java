@@ -78,7 +78,6 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.netbeans.modules.cnd.makeproject.packaging.PackagerInfoElement;
-import org.netbeans.modules.cnd.makeproject.packaging.PackageDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -535,17 +534,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     int i;
                     i = new Integer(currentText).intValue();
                     if (i == 0)
-                        type = "Tar";
+                        type = "Tar"; // NOI18N
                     else if (i == 1) 
-                        type = "Zip";
+                        type = "Zip"; // NOI18N
                     else if (i == 2) 
-                        type = "SVR4";
+                        type = "SVR4"; // NOI18N
                     else if (i == 3) 
-                        type = "RPM";
+                        type = "RPM"; // NOI18N
                     else if (i == 4) 
-                        type = "Debian";
+                        type = "Debian"; // NOI18N
                     else
-                        type = "Tar";
+                        type = "Tar"; // NOI18N
                 
                 }
                 else {
