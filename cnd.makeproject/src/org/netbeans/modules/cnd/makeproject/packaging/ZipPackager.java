@@ -36,9 +36,10 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.packaging;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.util.List;
@@ -52,6 +53,7 @@ import org.openide.util.NbBundle;
  * @author thp
  */
 public class ZipPackager implements PackagerDescriptor {
+
     public static String PACKAGER_NAME = "Zip"; // NOI18N
 
     public String getName() {
@@ -61,11 +63,11 @@ public class ZipPackager implements PackagerDescriptor {
     public String getDisplayName() {
         return getString("Zip");
     }
-    
+
     public boolean hasInfoList() {
         return false;
     }
-    
+
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
@@ -73,7 +75,7 @@ public class ZipPackager implements PackagerDescriptor {
     public List<String> getOptionalInfoList() {
         return null;
     }
-    
+
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
@@ -85,18 +87,18 @@ public class ZipPackager implements PackagerDescriptor {
     public boolean isOutputAFolder() {
         return false;
     }
-    
+
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return packagingConfiguration.getOutputName();
     }
-    
+
     public String getOutputFileSuffix() {
         return "zip";  // NOI18N
     }
 
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String topDir = IpeUtils.getBaseName(packagingConfiguration.getOutputValue());
-        
+
         int i = topDir.lastIndexOf("."); // NOI18N
         if (i > 0) {
             topDir = topDir.substring(0, i);
@@ -107,7 +109,61 @@ public class ZipPackager implements PackagerDescriptor {
     public boolean supportsGroupAndOwner() {
         return false;
     }
-    
+
+    public ShellSciptWriter getShellFileWriter() {
+        return new ScriptWriter();
+    }
+
+    public class ScriptWriter implements ShellSciptWriter {
+
+        public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
+            writePackagingScriptBodyTarZip(bw, makeConfiguration);
+        }
+
+        private void writePackagingScriptBodyTarZip(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+            PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
+            List<FileElement> fileList = (List<FileElement>) packagingConfiguration.getFiles().getValue();
+            String output = packagingConfiguration.getOutputValue();
+            String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
+
+            bw.write("# Copy files and create directories and links\n"); // NOI18N
+            for (FileElement elem : fileList) {
+                bw.write("cd \"${TOP}\"\n"); // NOI18N
+                if (elem.getType() == FileElement.FileType.FILE) {
+                    String toDir = IpeUtils.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
+                    if (toDir != null && toDir.length() >= 0) {
+                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                    }
+                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
+                } else if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                    bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+                } else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                    String toDir = IpeUtils.getDirName(elem.getTo());
+                    String toName = IpeUtils.getBaseName(elem.getTo());
+                    if (toDir != null && toDir.length() >= 0) {
+                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                    }
+                    bw.write("cd " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                    bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
+                } else if (elem.getType() == FileElement.FileType.UNKNOWN) {
+                    // skip ???
+                } else {
+                    assert false;
+                }
+                bw.write("\n"); // NOI18N
+            }
+            bw.write("\n"); // NOI18N
+
+            bw.write("# Generate zip file\n"); // NOI18N
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write("rm -f " + output + "\n"); // NOI18N
+            bw.write("cd ${TMPDIR}\n"); // NOI18N
+            bw.write(packagingConfiguration.getToolValue() + " -r " + packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+        }
+    }
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(PackagingConfiguration.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around

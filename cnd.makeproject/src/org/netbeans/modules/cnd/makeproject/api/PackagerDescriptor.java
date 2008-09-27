@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
-import org.netbeans.modules.cnd.makeproject.packaging.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 
 public interface PackagerDescriptor {
+    public interface ShellSciptWriter {
+        public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException;
+    }
     public String getName();
     public String getDisplayName();
     public boolean hasInfoList();
@@ -57,4 +61,5 @@ public interface PackagerDescriptor {
     public String getDefaultOptions();
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
     public boolean supportsGroupAndOwner();
+    public ShellSciptWriter getShellFileWriter();
 }

@@ -36,15 +36,20 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.packaging;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
@@ -54,8 +59,8 @@ import org.openide.util.NbBundle;
  *
  * @author thp
  */
-        
 public class SVR4Packager implements PackagerDescriptor {
+
     public static String PACKAGER_NAME = "SVR4"; // NOI18N
 
     public String getName() {
@@ -65,20 +70,18 @@ public class SVR4Packager implements PackagerDescriptor {
     public String getDisplayName() {
         return getString("SCR4Package"); // FIXUP: typo...
     }
-    
+
     public boolean hasInfoList() {
         return true;
     }
-    
+
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String defArch;
         if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
             defArch = "i386"; // NOI18N
-        }
-        else if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
+        } else if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
             defArch = "sparc"; // NOI18N
-        }
-        else {
+        } else {
             // Anything else ?
             defArch = "i386"; // NOI18N
         }
@@ -91,13 +94,13 @@ public class SVR4Packager implements PackagerDescriptor {
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "BASEDIR", "/opt", false, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "CLASSES", "none", false, true)); // NOI18N
-    
+
         return infoList;
     }
 
     public List<String> getOptionalInfoList() {
         List<String> entryComboBox = new ArrayList<String>();
-        
+
         entryComboBox.add("BASEDIR"); // NOI18N == PackagingConfiguration.TYPE_SVR4_PACKAGE
         entryComboBox.add("CLASSES"); // NOI18N
         entryComboBox.add("DESC"); // NOI18N
@@ -126,7 +129,7 @@ public class SVR4Packager implements PackagerDescriptor {
 
         return entryComboBox;
     }
-    
+
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
@@ -138,11 +141,11 @@ public class SVR4Packager implements PackagerDescriptor {
     public boolean isOutputAFolder() {
         return true;
     }
-    
+
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
-    
+
     public String getOutputFileSuffix() {
         return null;
     }
@@ -150,10 +153,136 @@ public class SVR4Packager implements PackagerDescriptor {
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return packagingConfiguration.findInfoValueName("PKG"); // NOI18N
     }
-   
+
     public boolean supportsGroupAndOwner() {
         return true;
     }
+    
+    public ShellSciptWriter getShellFileWriter() {
+        return new ScriptWriter();
+    }
+
+    public class ScriptWriter implements ShellSciptWriter {
+
+        public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
+            writePackagingScriptBodySVR4(bw, makeConfiguration);
+        }
+
+        private List<String> findUndefinedDirectories(PackagingConfiguration packagingConfiguration) {
+            List<FileElement> fileList = packagingConfiguration.getFiles().getValue();
+            HashSet set = new HashSet();
+            ArrayList<String> list = new ArrayList<String>();
+
+            // Already Defined
+            for (FileElement elem : fileList) {
+                if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                    String path = packagingConfiguration.expandMacros(elem.getTo());
+                    if (path.endsWith("/")) { // NOI18N
+                        path = path.substring(0, path.length() - 1);
+                    }
+                    set.add(path);
+                }
+            }
+            // Do all sub dirrectories
+            for (FileElement elem : fileList) {
+                if (elem.getType() == FileElement.FileType.FILE || elem.getType() == FileElement.FileType.SOFTLINK) {
+                    String path = IpeUtils.getDirName(packagingConfiguration.expandMacros(elem.getTo()));
+                    String base = ""; // NOI18N
+                    if (path != null && path.length() > 0) {
+                        StringTokenizer tokenizer = new StringTokenizer(path, "/"); // NOI18N
+                        while (tokenizer.hasMoreTokens()) {
+                            if (base.length() > 0) {
+                                base += "/"; // NOI18N
+                            }
+                            base += tokenizer.nextToken();
+                            if (!set.contains(base)) {
+                                set.add(base);
+                                list.add(base);
+                            }
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+        private void writePackagingScriptBodySVR4(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+            PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
+            String packageName = packagingConfiguration.findInfoValueName("PKG"); // NOI18N // FIXUP: what is null????
+
+            bw.write("# Create pkginfo and prototype files\n"); // NOI18N
+            bw.write("PKGINFOFILE=${TMPDIR}/pkginfo\n"); // NOI18N
+            bw.write("PROTOTYPEFILE=${TMPDIR}/prototype\n"); // NOI18N
+            bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
+            bw.write("\n"); // NOI18N        
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("SVR4"); // NOI18N
+            for (PackagerInfoElement elem : infoList) {
+                bw.write("echo \'" + elem.getName() + "=\"" + packagingConfiguration.expandMacros(elem.getValue()) + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
+            }
+            bw.write("\n"); // NOI18N       
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write("echo \"i pkginfo=pkginfo\" >> $PROTOTYPEFILE\n"); // NOI18N
+            bw.write("\n"); // NOI18N     
+            List<String> dirList = findUndefinedDirectories(packagingConfiguration);
+            for (String dir : dirList) {
+                bw.write("echo \"");// NOI18N
+                bw.write("d"); // NOI18N
+                bw.write(" none"); // Classes // NOI18N
+                bw.write(" " + dir); // NOI18N
+                bw.write(" 0" + MakeOptions.getInstance().getDefExePerm()); // NOI18N
+                bw.write(" " + MakeOptions.getInstance().getDefOwner()); // NOI18N
+                bw.write(" " + MakeOptions.getInstance().getDefGroup()); // NOI18N
+                bw.write("\""); // NOI18N
+                bw.write(" >> $PROTOTYPEFILE\n"); // NOI18N
+
+            }
+
+            bw.write("\n"); // NOI18N
+            List<FileElement> fileList = packagingConfiguration.getFiles().getValue();
+            for (FileElement elem : fileList) {
+                bw.write("echo \"");// NOI18N
+                if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                    bw.write("d");// NOI18N
+                } else if (elem.getType() == FileElement.FileType.FILE) {
+                    bw.write("f");// NOI18N
+                } else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                    bw.write("s");// NOI18N
+                } else {
+                    assert false;
+                }
+                bw.write(" none"); // Classes // NOI18N
+                bw.write(" " + elem.getTo());// NOI18N
+                if (elem.getFrom().length() > 0) {
+                    String from = elem.getFrom();
+                    if (IpeUtils.isPathAbsolute(from)) {
+                        from = IpeUtils.toRelativePath(conf.getBaseDir(), from);
+                    }
+                    bw.write("=" + from);// NOI18N
+                }
+                if (elem.getType() != FileElement.FileType.SOFTLINK) {
+                    bw.write(" 0" + elem.getPermission());// NOI18N
+                    bw.write(" " + elem.getOwner());// NOI18N
+                    bw.write(" " + elem.getGroup());// NOI18N
+                }
+                bw.write("\""); // NOI18N
+                bw.write(" >> $PROTOTYPEFILE\n"); // NOI18N
+            }
+            bw.write("\n"); // NOI18N
+            bw.write("# Make package\n"); // NOI18N  
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+//        bw.write("pkgtrans -s ${TMPDIR} tmp.pkg " + packageName + "\n"); // NOI18N
+//        bw.write("checkReturnCode\n"); // NOI18N
+            bw.write("rm -rf " + packagingConfiguration.getOutputValue() + "/" + packageName + "\n"); // NOI18N
+            bw.write("mv ${TMPDIR}/" + packageName + " " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+            bw.write("echo Solaris SVR4: " + packagingConfiguration.getOutputValue() + "/" + packageName + "\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+        }
+    }
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(PackagingConfiguration.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around

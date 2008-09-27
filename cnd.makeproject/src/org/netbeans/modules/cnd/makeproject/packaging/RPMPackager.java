@@ -36,22 +36,25 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-        
 package org.netbeans.modules.cnd.makeproject.packaging;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.openide.util.NbBundle;
+
 /**
  *
  * @author thp
  */
-
 public class RPMPackager implements PackagerDescriptor {
+
     public static String PACKAGER_NAME = "RPM"; // NOI18N
 
     public String getName() {
@@ -61,11 +64,11 @@ public class RPMPackager implements PackagerDescriptor {
     public String getDisplayName() {
         return getString("RPM");
     }
-    
+
     public boolean hasInfoList() {
         return true;
     }
-    
+
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Summary", "Sumary...", true, true)); // NOI18N
@@ -75,13 +78,13 @@ public class RPMPackager implements PackagerDescriptor {
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Group", "Applications/System", true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "License", "BSD-type", true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "%description", "Description...", true, true)); // NOI18N
-    
+
         return infoList;
     }
 
     public List<String> getOptionalInfoList() {
         List<String> entryComboBox = new ArrayList<String>();
-        
+
         entryComboBox.add("Patch"); // NOI18N
         entryComboBox.add("%changelog"); // NOI18N
         entryComboBox.add("%pre"); // NOI18N
@@ -91,7 +94,7 @@ public class RPMPackager implements PackagerDescriptor {
 
         return entryComboBox;
     }
-    
+
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
@@ -103,11 +106,11 @@ public class RPMPackager implements PackagerDescriptor {
     public boolean isOutputAFolder() {
         return true;
     }
-    
+
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
-    
+
     public String getOutputFileSuffix() {
         return null;
     }
@@ -119,7 +122,127 @@ public class RPMPackager implements PackagerDescriptor {
     public boolean supportsGroupAndOwner() {
         return true;
     }
-    
+
+    public ShellSciptWriter getShellFileWriter() {
+        return new ScriptWriter();
+    }
+
+    public class ScriptWriter implements ShellSciptWriter {
+
+        public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
+            writePackagingScriptBodyRPM(bw, makeConfiguration);
+        }
+
+        private void writePackagingScriptBodyRPM(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+            PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
+            List<FileElement> fileList = (List<FileElement>) packagingConfiguration.getFiles().getValue();
+            String output = packagingConfiguration.getOutputValue();
+
+            bw.write("# Copy files and create directories and links\n"); // NOI18N
+            for (FileElement elem : fileList) {
+                bw.write("cd \"${TOP}\"\n"); // NOI18N
+                if (elem.getType() == FileElement.FileType.FILE) {
+                    String toDir = IpeUtils.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
+                    if (toDir != null && toDir.length() >= 0) {
+                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                    }
+                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
+                } else if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                    bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+                } else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                    String toDir = IpeUtils.getDirName(elem.getTo());
+                    String toName = IpeUtils.getBaseName(elem.getTo());
+                    if (toDir != null && toDir.length() >= 0) {
+                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                    }
+                    bw.write("cd " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                    bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
+                } else if (elem.getType() == FileElement.FileType.UNKNOWN) {
+                    // skip ???
+                } else {
+                    assert false;
+                }
+                bw.write("\n"); // NOI18N
+            }
+            bw.write("\n"); // NOI18N
+
+            bw.write("# Ensure proper rpm build environment\n"); // NOI18N
+            bw.write("RPMMACROS=~/.rpmmacros\n"); // NOI18N
+            bw.write("NBTOPDIR=~/.netbeans/6.5/cnd2/rpms\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+            bw.write("if [ ! -f ${RPMMACROS} ]\n"); // NOI18N
+            bw.write("then\n"); // NOI18N
+            bw.write("    touch ${RPMMACROS}\n"); // NOI18N
+            bw.write("fi\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+            bw.write("TOPDIR=`grep _topdir ${RPMMACROS}`\n"); // NOI18N
+            bw.write("if [ \"$TOPDIR\" == \"\" ]\n"); // NOI18N
+            bw.write("then\n"); // NOI18N
+            bw.write("    echo \"**********************************************************************************************************\"\n"); // NOI18N
+            bw.write("    echo Warning: rpm build environment updated:\n"); // NOI18N
+            bw.write("    echo \\\"%_topdir ${NBTOPDIR}\\\" added to ${RPMMACROS}\n"); // NOI18N
+            bw.write("    echo \"**********************************************************************************************************\"\n"); // NOI18N
+            bw.write("    echo %_topdir ${NBTOPDIR} >> ${RPMMACROS}\n"); // NOI18N
+            bw.write("fi  \n"); // NOI18N
+            bw.write("mkdir -p ${NBTOPDIR}/RPMS\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+
+            bw.write("# Create spec file\n"); // NOI18N
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write("SPEC_FILE=${TMPDIR}/../${OUTPUT_BASENAME}.spec\n"); // NOI18N
+            bw.write("rm -f ${SPEC_FILE}\n"); // NOI18N
+            bw.write("\n"); // NOI18N        
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write("echo " + "BuildRoot: ${TOP}/${TMPDIR} >> ${SPEC_FILE}\n"); // NOI18N
+            List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("RPM"); // NOI18N
+            for (PackagerInfoElement elem : infoList) {
+                if (elem.getName().startsWith("%")) { // NOI18N
+                    bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                    String value = elem.getValue();
+                    int i = 0;
+                    int j = value.indexOf("\\n"); // NOI18N 
+                    while (j >= 0) {
+                        bw.write("echo \'" + value.substring(i, j) + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                        i = j + 2;
+                        j = value.indexOf("\\n", i); // NOI18N 
+                    }
+                    if (i < value.length()) {
+                        bw.write("echo \'" + value.substring(i) + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                    }
+                    bw.write("echo " + " >> ${SPEC_FILE}\n"); // NOI18N 
+                } else {
+                    bw.write("echo " + elem.getName() + ": " + packagingConfiguration.expandMacros(elem.getValue()) + " >> ${SPEC_FILE}\n"); // NOI18N
+                }
+            }
+            bw.write("echo \'%files\' >> ${SPEC_FILE}\n"); // NOI18N 
+            for (FileElement elem : fileList) {
+                if (elem.getType() == FileElement.FileType.FILE || elem.getType() == FileElement.FileType.SOFTLINK) {
+                    bw.write("echo " + "\\\"/" + elem.getTo() + "\\\" >> ${SPEC_FILE}\n"); // NOI18N
+                }
+            }
+            bw.write("echo \'%dir\' >> ${SPEC_FILE}\n"); // NOI18N 
+            for (FileElement elem : fileList) {
+                if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                    bw.write("echo " + "/" + elem.getTo() + " >> ${SPEC_FILE}\n"); // NOI18N
+                }
+            }
+
+            bw.write("\n"); // NOI18N
+            bw.write("# Create RPM Package\n"); // NOI18N
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write("LOG_FILE=${TMPDIR}/../${OUTPUT_BASENAME}.log\n"); // NOI18N
+            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+            bw.write("cat ${LOG_FILE}\n"); // NOI18N
+            bw.write("RPM_PATH=`cat $LOG_FILE | grep .rpm | tail -1 |awk -F: '{ print $2 }'`\n"); // NOI18N
+            bw.write("RPM_NAME=`basename ${RPM_PATH}`\n"); // NOI18N
+            bw.write("mv ${RPM_PATH} " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+            bw.write("echo RPM: " + packagingConfiguration.getOutputValue() + "/" + "${RPM_NAME}" + "\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+        }
+    }
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(PackagingConfiguration.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around

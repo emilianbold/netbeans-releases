@@ -36,23 +36,26 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-        
 package org.netbeans.modules.cnd.makeproject.packaging;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.util.NbBundle;
+
 /**
  *
  * @author thp
  */
-
 public class DebianPackager implements PackagerDescriptor {
+
     public static String PACKAGER_NAME = "Debian"; // NOI18N
 
     public String getName() {
@@ -62,20 +65,18 @@ public class DebianPackager implements PackagerDescriptor {
     public String getDisplayName() {
         return getString("Debian");
     }
-    
+
     public boolean hasInfoList() {
         return true;
     }
-    
+
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String defArch;
         if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
             defArch = "i386"; // NOI18N
-        }
-        else if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
+        } else if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
             defArch = "sparc"; // NOI18N
-        }
-        else {
+        } else {
             // Anything else ?
             defArch = "i386"; // NOI18N
         }
@@ -90,7 +91,7 @@ public class DebianPackager implements PackagerDescriptor {
 
     public List<String> getOptionalInfoList() {
         List<String> entryComboBox = new ArrayList<String>();
-        
+
         entryComboBox.add("Section"); // NOI18N
         entryComboBox.add("Priority"); // NOI18N
         entryComboBox.add("Architecture"); // NOI18N
@@ -128,7 +129,95 @@ public class DebianPackager implements PackagerDescriptor {
     public boolean supportsGroupAndOwner() {
         return true;
     }
-    
+
+    public ShellSciptWriter getShellFileWriter() {
+        return new ScriptWriter();
+    }
+
+    public class ScriptWriter implements ShellSciptWriter {
+
+        public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
+            writePackagingScriptBodyDebian(bw, makeConfiguration);
+        }
+
+        private void writePackagingScriptBodyDebian(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+            PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
+            List<FileElement> fileList = (List<FileElement>) packagingConfiguration.getFiles().getValue();
+
+            bw.write("# Copy files and create directories and links\n"); // NOI18N
+            for (FileElement elem : fileList) {
+                bw.write("cd \"${TOP}\"\n"); // NOI18N
+                if (elem.getType() == FileElement.FileType.FILE) {
+                    String toDir = IpeUtils.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
+                    if (toDir != null && toDir.length() >= 0) {
+                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                    }
+                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
+                } else if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                    bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+                } else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                    String toDir = IpeUtils.getDirName(elem.getTo());
+                    String toName = IpeUtils.getBaseName(elem.getTo());
+                    if (toDir != null && toDir.length() >= 0) {
+                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                    }
+                    bw.write("cd " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                    bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
+                } else if (elem.getType() == FileElement.FileType.UNKNOWN) {
+                    // skip ???
+                } else {
+                    assert false;
+                }
+                bw.write("\n"); // NOI18N
+            }
+            bw.write("\n"); // NOI18N
+
+            bw.write("# Create control file\n"); // NOI18N
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write("CONTROL_FILE=${TMPDIR}/DEBIAN/control\n"); // NOI18N
+            bw.write("rm -f ${CONTROL_FILE}\n"); // NOI18N
+            bw.write("mkdir -p ${TMPDIR}/DEBIAN\n"); // NOI18N
+            bw.write("\n"); // NOI18N        
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("Debian"); // NOI18N
+            for (PackagerInfoElement elem : infoList) {
+                String value = elem.getValue();
+                int i = 0;
+                int j = value.indexOf("\\n"); // NOI18N 
+                while (j >= 0) {
+                    if (i == 0) {
+                        bw.write("echo \'" + elem.getName() + ": " + value.substring(i, j) + "\' >> ${CONTROL_FILE}\n"); // NOI18N 
+                    } else {
+                        bw.write("echo \'" + value.substring(i, j) + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+                    }
+                    i = j + 2;
+                    j = value.indexOf("\\n", i); // NOI18N 
+                }
+                if (i < value.length()) {
+                    if (i == 0) {
+                        bw.write("echo \'" + elem.getName() + ": " + value.substring(i) + "\' >> ${CONTROL_FILE}\n"); // NOI18N 
+                    } else {
+                        bw.write("echo \'" + value.substring(i) + "\' >> ${CONTROL_FILE}\n"); // NOI18N
+                    }
+                }
+            }
+
+            bw.write("\n"); // NOI18N
+            bw.write("# Create Debian Package\n"); // NOI18N
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write("cd \"${TMPDIR}/..\"\n"); // NOI18N
+            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " --build ${TMPDIRNAME}\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+            bw.write("cd \"${TOP}\"\n"); // NOI18N
+            bw.write("mkdir -p  " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
+            bw.write("mv ${TMPDIR}.deb " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+            bw.write("checkReturnCode\n"); // NOI18N
+
+            bw.write("echo Debian: " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+        }
+    }
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(PackagingConfiguration.class, s); // FIXUP: Using Bundl in .../api.configurations. Too latet to move bundles around
