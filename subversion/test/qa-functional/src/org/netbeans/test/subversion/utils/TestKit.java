@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.MenuElement;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -280,12 +279,12 @@ public final class TestKit {
         while (!handler.isFinished()) {
             i++;
             if (i > TIME_OUT) {
-                throw new TimeoutExpiredException("Text hasn't been found in reasonable time!");
+                throw new TimeoutExpiredException("Text [" + handler.message + "] hasn't been found in reasonable time!");
             }
             try {
                 Thread.sleep(500);
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                ex.printStackTrace();
             }
         }
         return true;
