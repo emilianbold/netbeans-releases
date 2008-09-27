@@ -1341,6 +1341,7 @@ public class FilterNode extends Node {
         
         private void changeSupport(Node newOriginal) {
             boolean init = entrySupport().isInitialized();
+            boolean changed = false;
             if (init && parent != null) {
                 List<Node> snapshot = entrySupport().createSnapshot();
                 if (snapshot.size() > 0) {
@@ -1351,12 +1352,15 @@ public class FilterNode extends Node {
                     if (newOriginal != null) {
                         this.original = newOriginal;
                     }
+                    changed = true;
                     entrySupport = null;
                     parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);
-                } else {
-                    entrySupport = null;
                 }
-            } else {
+            }
+            if (!changed) {
+                if (newOriginal != null) {
+                    this.original = newOriginal;
+                }
                 entrySupport = null;
             }
 
