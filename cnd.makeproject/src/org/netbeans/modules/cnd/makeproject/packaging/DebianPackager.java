@@ -180,7 +180,7 @@ public class DebianPackager implements PackagerDescriptor {
             bw.write("mkdir -p ${TMPDIR}/DEBIAN\n"); // NOI18N
             bw.write("\n"); // NOI18N        
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("Debian"); // NOI18N
+            List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(PACKAGER_NAME);
             for (PackagerInfoElement elem : infoList) {
                 String value = elem.getValue();
                 int i = 0;

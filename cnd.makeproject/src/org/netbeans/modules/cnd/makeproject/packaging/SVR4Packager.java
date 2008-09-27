@@ -217,7 +217,7 @@ public class SVR4Packager implements PackagerDescriptor {
             bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
             bw.write("\n"); // NOI18N        
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("SVR4"); // NOI18N
+            List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(PACKAGER_NAME);
             for (PackagerInfoElement elem : infoList) {
                 bw.write("echo \'" + elem.getName() + "=\"" + packagingConfiguration.expandMacros(elem.getValue()) + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
             }

@@ -195,7 +195,7 @@ public class RPMPackager implements PackagerDescriptor {
             bw.write("\n"); // NOI18N        
             bw.write("cd \"${TOP}\"\n"); // NOI18N
             bw.write("echo " + "BuildRoot: ${TOP}/${TMPDIR} >> ${SPEC_FILE}\n"); // NOI18N
-            List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("RPM"); // NOI18N
+            List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(PACKAGER_NAME);
             for (PackagerInfoElement elem : infoList) {
                 if (elem.getName().startsWith("%")) { // NOI18N
                     bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
