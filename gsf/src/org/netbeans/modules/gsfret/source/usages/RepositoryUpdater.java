@@ -145,7 +145,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger BUG_LOGGER = Logger.getLogger("ruby.indexerbug");
-    // Keep in sync with GsfTaskProvider
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
