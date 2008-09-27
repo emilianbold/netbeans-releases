@@ -699,17 +699,17 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
         bw.write("# Setup\n"); // NOI18N
         bw.write("cd \"${TOP}\"\n"); // NOI18N
-        if (packagingConfiguration.getType().getValue().equals("Tar") ||
-                packagingConfiguration.getType().getValue().equals("Zip")) {
+        if (packagingConfiguration.getType().getValue().equals("Tar") || // NOI18N
+                packagingConfiguration.getType().getValue().equals("Zip")) { // NOI18N
             bw.write("mkdir -p " + IpeUtils.getDirName(output) + "\n"); // NOI18N
         }
-        else if (packagingConfiguration.getType().getValue().equals("RPM")) {
+        else if (packagingConfiguration.getType().getValue().equals("RPM")) { // NOI18N
             bw.write("mkdir -p " + output + "\n"); // NOI18N
         }
-        else if (packagingConfiguration.getType().getValue().equals("Debian")) {
+        else if (packagingConfiguration.getType().getValue().equals("Debian")) { // NOI18N
             bw.write("mkdir -p " + IpeUtils.getDirName(output) + "\n"); // NOI18N
         }
-        else if (packagingConfiguration.getType().getValue().equals("SVR4")) {
+        else if (packagingConfiguration.getType().getValue().equals("SVR4")) { // NOI18N
             bw.write("mkdir -p " + output + "\n"); // NOI18N
         }
         else {
@@ -719,16 +719,16 @@ public class ConfigurationMakefileWriter {
         bw.write("mkdir -p ${TMPDIR}\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
-        if (packagingConfiguration.getType().getValue().equals("Tar") || packagingConfiguration.getType().getValue().endsWith("Zip")) {
+        if (packagingConfiguration.getType().getValue().equals("Tar") || packagingConfiguration.getType().getValue().endsWith("Zip")) { // NOI18N
             writePackagingScriptBodyTarZip(bw, conf);
         }
-        else if (packagingConfiguration.getType().getValue().equals("SVR4")) {
+        else if (packagingConfiguration.getType().getValue().equals("SVR4")) { // NOI18N
             writePackagingScriptBodySVR4(bw, conf);
         }
-        else if (packagingConfiguration.getType().getValue().equals("RPM")) {
+        else if (packagingConfiguration.getType().getValue().equals("RPM")) { // NOI18N
             writePackagingScriptBodyRPM(bw, conf);
         }
-        else if (packagingConfiguration.getType().getValue().equals("Debian")) {
+        else if (packagingConfiguration.getType().getValue().equals("Debian")) { // NOI18N
             writePackagingScriptBodyDebian(bw, conf);
         }
         else {
@@ -774,14 +774,14 @@ public class ConfigurationMakefileWriter {
         }
         bw.write("\n"); // NOI18N
         
-        if (packagingConfiguration.getType().getValue().equals("Zip")) {
+        if (packagingConfiguration.getType().getValue().equals("Zip")) { // NOI18N
             bw.write("# Generate zip file\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
             bw.write("rm -f " + output + "\n"); // NOI18N
             bw.write("cd ${TMPDIR}\n"); // NOI18N
             bw.write(packagingConfiguration.getToolValue() + " -r "+ packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n"); // NOI18N
         }
-        else if (packagingConfiguration.getType().getValue().equals("Tar")) {
+        else if (packagingConfiguration.getType().getValue().equals("Tar")) { // NOI18N
             bw.write("# Generate tar file\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
             bw.write("rm -f " + output + "\n"); // NOI18N
@@ -851,7 +851,7 @@ public class ConfigurationMakefileWriter {
         bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
-        List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("SVR4");
+        List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("SVR4"); // NOI18N
         for (PackagerInfoElement elem : infoList) {
             bw.write("echo \'" + elem.getName() + "=\"" + packagingConfiguration.expandMacros(elem.getValue()) + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
         }
@@ -989,7 +989,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
         bw.write("echo " + "BuildRoot: ${TOP}/${TMPDIR} >> ${SPEC_FILE}\n"); // NOI18N
-        List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("RPM");
+        List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("RPM"); // NOI18N
         for (PackagerInfoElement elem : infoList) {
             if (elem.getName().startsWith("%")) { // NOI18N
                 bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
@@ -1086,7 +1086,7 @@ public class ConfigurationMakefileWriter {
         bw.write("mkdir -p ${TMPDIR}/DEBIAN\n"); // NOI18N
         bw.write("\n"); // NOI18N        
         bw.write("cd \"${TOP}\"\n"); // NOI18N
-        List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("Debian");
+        List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList("Debian"); // NOI18N
         for (PackagerInfoElement elem : infoList) {
             String value = elem.getValue();
             int i = 0;

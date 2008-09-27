@@ -86,7 +86,6 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         // Add tabs
         String type = packagingConfiguration.getType().getValue();
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
-//        if (type.equals("SVR4") || type.equals("RPM") || type.equals("Debian")) {
         if (packager.hasInfoList()) {
             packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeaderSubList(type), packagingConfiguration));
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
@@ -111,33 +110,6 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             tabbedPane.setEnabledAt(1,true);
             tabbedPane.setSelectedIndex(1);
         }
-//        if (packagingConfiguration.getType().getValue().equals("Zip") || packagingConfiguration.getType().getValue().equals("Tar")) {
-//            // Add tabs
-//            tabbedPane.setEnabledAt(0,false);
-//            tabbedPane.setEnabledAt(1,true);
-//            tabbedPane.setSelectedIndex(1);
-//        }
-//        else if (packagingConfiguration.getType().getValue().equals("SVR4")) {
-//            // Add tabs
-//            tabbedPane.setEnabledAt(0,true);
-//            tabbedPane.setEnabledAt(1,true);
-//            tabbedPane.setSelectedIndex(0);
-//        }
-//        else if (packagingConfiguration.getType().getValue().equals("RPM")) {
-//            // Add tabs
-//            tabbedPane.setEnabledAt(0,true);
-//            tabbedPane.setEnabledAt(1,true);
-//            tabbedPane.setSelectedIndex(0);
-//        }
-//        else if (packagingConfiguration.getType().getValue().equals("Debian")) {
-//            // Add tabs
-//            tabbedPane.setEnabledAt(0,true);
-//            tabbedPane.setEnabledAt(1,true);
-//            tabbedPane.setSelectedIndex(0);
-//        }
-//        else {
-//            assert false;
-//        }
         
         //  See IZ 142846
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -153,9 +125,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private Object getPropertyValue() throws IllegalStateException {
-//        String type = packagingConfiguration.getType().getValue();
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
-//        if (type.equals("SVR4") || type.equals("RPM") || type.equals("Debian")) {
         if (packager.hasInfoList()) {
             List<PackagerInfoElement> oldList = packagingConfiguration.getInfo().getValue();
             List<PackagerInfoElement> newList = new ArrayList<PackagerInfoElement>();

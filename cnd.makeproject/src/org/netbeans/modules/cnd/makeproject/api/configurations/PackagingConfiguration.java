@@ -129,46 +129,6 @@ public class PackagingConfiguration {
                 infoList.addAll(packagerDescriptor.getDefaultInfoList(makeConfiguration, this));
             }
         }
-//        String defArch;
-//        if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
-//            defArch = "i386"; // NOI18N
-//        }
-//        else if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
-//            defArch = "sparc"; // NOI18N
-//        }
-//        else {
-//            // Anything else ?
-//            defArch = "i386"; // NOI18N
-//        }
-//        
-//        // Solaris SVR4
-//        List<PackagerInfoElement> headerList = getInfo().getValue();
-//        headerList.add(new PackagerInfoElement("SVR4", "PKG", getOutputName(), true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("SVR4", "NAME", "Package description ...", true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("SVR4", "ARCH", defArch, true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("SVR4", "CATEGORY", "application", true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("SVR4", "VERSION", "1.0", true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("SVR4", "BASEDIR", "/opt", false, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("SVR4", "PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("SVR4", "CLASSES", "none", false, true)); // NOI18N
-//        
-//        // RPM
-//        //List<InfoElement> rpmHeaderList = getRpmHeader().getValue();
-//        headerList.add(new PackagerInfoElement("RPM", "Summary", "Sumary...", true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("RPM", "Name", getOutputName(), true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("RPM", "Version", "1.0", true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("RPM", "Release", "1", true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("RPM", "Group", "Applications/System", true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("RPM", "License", "BSD-type", true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("RPM", "%description", "Description...", true, true)); // NOI18N
-//        
-//        // Debian
-//        //List<InfoElement> debianHeaderList = getDebianHeader().getValue();
-//        headerList.add(new PackagerInfoElement("Debian", "Package", getOutputName(), true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("Debian", "Version", "1.0", true, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("Debian", "Architecture", defArch, false, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("Debian", "Maintainer", System.getProperty("user.name"), false, true)); // NOI18N
-//        headerList.add(new PackagerInfoElement("Debian", "Description", "...", false, true)); // NOI18N
     }
     
     public List<PackagerInfoElement> getHeaderSubList(String packager) {
@@ -202,20 +162,6 @@ public class PackagingConfiguration {
                 return true;
             }
         }
-//        if (getType().getValue().equals("SVR4") && headerList.size() != 8) {
-//            return true;
-//        }
-//        else if (getType().getValue().equals("RPM") && headerList.size() != 7) {
-//            return true;
-//        }
-//        else if (getType().getValue().equals("Debian") && headerList.size() != 5) {
-//            return true;
-//        }
-//        for (PackagerInfoElement elem : headerList) {
-//            if (!elem.isDefaultValue()) {
-//                return true;
-//            }
-//        }
         return false;
     }
     
@@ -450,32 +396,6 @@ public class PackagingConfiguration {
             else {
                 return ""; // NOI18N
             }
-//            String val = null;
-//            
-//            if (getType().getValue().equals("RPM")) {
-//                val = "/usr"; // NOI18N
-//            }
-//            else if (getType().getValue().equals("Debian")) {
-//                val = "/usr"; // NOI18N
-//            }
-//            else if (getType().getValue().equals("SVR4")) {
-//                val = findInfoValueName("PKG"); // NOI18N
-//            }
-//            else if (getType().getValue().equals("Tar")) {
-//                val = IpeUtils.getBaseName(getOutputValue());
-//            }
-//            else if (getType().getValue().equals("Zip")) {
-//                val = IpeUtils.getBaseName(getOutputValue());
-//            }
-//            else {
-//                assert false;
-//            }
-//            
-//            int i = val.lastIndexOf("."); // NOI18N
-//            if (i > 0) {
-//                val = val.substring(0, i);
-//            }
-//            return val;
         }
     }
     
@@ -499,20 +419,6 @@ public class PackagingConfiguration {
         if (!packager.isOutputAFolder()) {
             outputPath += "/" + packager.getOutputFileName(makeConfiguration, this) + "." + packager.getOutputFileSuffix(); // NOI18N
         }
-        
-//        if (getType().getValue().equals("SVR4")) {
-//            // nothing
-//        } else if (getType().getValue().equals("RPM")) {
-//            // nothing
-//        } else if (getType().getValue().equals("Debian")) {
-//            outputPath += "/" + outputName + ".deb"; // NOI18N
-//        } else if (getType().getValue().equals("Tar")) {
-//            outputPath += "/" + outputName + ".tar"; // NOI18N
-//        } else if (getType().getValue().equals("Zip")) {
-//            outputPath += "/" + outputName + ".zip"; // NOI18N
-//        } else {
-//            assert false;
-//        }
 
         return outputPath;
     }
@@ -528,22 +434,6 @@ public class PackagingConfiguration {
     private String getToolDefault() {
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(getType().getValue());
         return packager.getDefaultTool();
-//        String tool = null;
-//        if (getType().getValue().equals("SVR4")) {
-//            tool = "pkgmk"; // NOI18N // FIXUP 
-//        } else if (getType().getValue().equals("RPM")) {
-//            tool = "rpmbuild"; // NOI18N
-//        } else if (getType().getValue().equals("Debian")) {
-//            tool = "dpkg-deb"; // NOI18N
-//        } else if (getType().getValue().equals("Tar")) {
-//            tool = "tar"; // NOI18N
-//        } else if (getType().getValue().equals("Zip")) {
-//            tool = "zip"; // NOI18N
-//        } else {
-//            assert false;
-//        }
-//
-//        return tool;
     }
 
     public String getOptionsValue() {
@@ -557,22 +447,6 @@ public class PackagingConfiguration {
     private String getOptionsDefault() {
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(getType().getValue());
         return packager.getDefaultOptions();
-//        String option = null;
-//        if (getType().getValue().equals("SVR4")) {
-//            option = ""; // NOI18N // FIXUP 
-//        } else if (getType().getValue().equals("RPM")) {
-//            option = ""; // NOI18N
-//        } else if (getType().getValue().equals("Debian")) {
-//            option = ""; // NOI18N
-//        } else if (getType().getValue().equals("Tar")) {
-//            option = "-v"; // NOI18N
-//        } else if (getType().getValue().equals("Zip")) {
-//            option = ""; // NOI18N
-//        } else {
-//            assert false;
-//        }
-//
-//        return option;
     }
 
     private class OutputNodeProp extends StringNodeProp {

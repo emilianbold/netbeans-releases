@@ -89,14 +89,11 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         
         // Hide some fields:
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
-//        if (packagingConfiguration.getType().getValue().equals("Tar") || packagingConfiguration.getType().getValue().equals("Zip")) {
         if (!packager.supportsGroupAndOwner()) {
             groupLabel.setEnabled(false);
             groupTextField.setEnabled(false);
             ownerLabel.setEnabled(false);
             ownerTextField.setEnabled(false);
-//            groupTextField.setText(""); // NOI18N
-//            ownerTextField.setText(""); // NOI18N
         }
         
         innerPanel.setOuterPanel(this);

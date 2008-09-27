@@ -645,9 +645,7 @@ public abstract class CommonConfigurationXMLCodec
             });
         }
 	xes.elementClose(PACK_FILES_LIST_ELEMENT);
-//        String type = packagingConfiguration.getType().getValue();
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
-//        if (type.equals("SVR4") || type.equals("RPM") || type.equals("Debian")) {
         if (packager.hasInfoList()) {
             xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
             List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(packagingConfiguration.getType().getValue());
