@@ -677,11 +677,11 @@ public class ConfigurationMakefileWriter {
         bw.write("# $1 directory path\n"); // NOI18N
         bw.write("# $2 permission (optional)\n"); // NOI18N
         bw.write("{\n"); // NOI18N
-        bw.write("    mkdir -p $1\n"); // NOI18N
+        bw.write("    mkdir -p \"$1\"\n"); // NOI18N
         bw.write("    checkReturnCode\n"); // NOI18N
         bw.write("    if [ \"$2\" != \"\" ]\n"); // NOI18N
         bw.write("    then\n"); // NOI18N
-        bw.write("      chmod $2 $1\n"); // NOI18N
+        bw.write("      chmod $2 \"$1\"\n"); // NOI18N
         bw.write("      checkReturnCode\n"); // NOI18N
         bw.write("    fi\n"); // NOI18N
         bw.write("}\n"); // NOI18N
