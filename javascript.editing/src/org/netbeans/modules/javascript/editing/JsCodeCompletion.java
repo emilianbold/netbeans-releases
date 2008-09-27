@@ -749,9 +749,11 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                             addElementClasses(proposals, request, prefix);
                         }
                     }
+
+                    return true;
                 }
 
-                return true;
+                break tokenLoop;
             } else if (id == JsTokenId.STRING_BEGIN) {
                 stringOffset = ts.offset() + token.length();
             } else if (!(id == JsTokenId.WHITESPACE ||

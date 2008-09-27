@@ -200,6 +200,10 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkCompletion("testfiles/completion/lib/test1.js", "\"f\\^oo\"", false);
     }
     
+    public void testCompletionStringCompletion3() throws Exception {
+        checkCompletion("testfiles/completion/lib/test2.js", "alert('^foo1", false);
+    }
+
     public void testCompletionRegexpCompletion1() throws Exception {
         checkCompletion("testfiles/completion/lib/test1.js", "/re^g/", false);
     }
