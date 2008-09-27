@@ -365,6 +365,19 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             Token<? extends TokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
                 if (JsUtils.isJsFile(fileObject) || JsUtils.isJsonFile(fileObject)) {
+                    if (doc.getLength() == 0) {
+                        // Special case: empty document - no token, but completion is valid
+                        completeKeywords(proposals, request);
+
+                        // We already know that searching with an empty prefix will
+                        // give too many matches. Rather than having completely random
+                        // stuff show up, show up things starting with "a" to give
+                        // impression that we're showing top of the list and mark truncated
+                        request.prefix = "a"; // NOI18N
+                        completionResult.setTruncated(true);
+
+                        completeFunctions(proposals, request);
+                    }
                     return completionResult;
                 }
 
@@ -448,6 +461,14 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             }
 
             // Try to complete methods
+            if (prefix.length() == 0 && !request.inCall) {
+                // We already know that searching with an empty prefix will
+                // give too many matches. Rather than having completely random
+                // stuff show up, show up things starting with "a" to give
+                // impression that we're showing top of the list and mark truncated
+                request.prefix = "a"; // NOI18N
+                completionResult.setTruncated(true);
+            }
             if (completeFunctions(proposals, request)) {
                 return completionResult;
             }
