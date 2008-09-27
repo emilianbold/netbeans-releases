@@ -29,6 +29,8 @@ package org.netbeans.test.mercurial.main.properties;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
@@ -37,6 +39,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.mercurial.operators.HgPropertiesOperator;
+import org.netbeans.test.mercurial.utils.MessageHandler;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -48,6 +51,7 @@ public class HgPropertiesTest extends JellyTestCase {
     public static final String PROJECT_NAME = "JavaApp";
     public PrintStream stream;
     String os_name;
+    static Logger log;
 
     public HgPropertiesTest(String name) {
         super(name);
@@ -55,9 +59,14 @@ public class HgPropertiesTest extends JellyTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
 
     protected boolean isUnix() {
@@ -81,8 +90,11 @@ public class HgPropertiesTest extends JellyTestCase {
             Thread.sleep(2000);
             
             // set hgProperty for file
+            MessageHandler mh = new MessageHandler("Scanning mercurial properties");
+            log.addHandler(mh);
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             HgPropertiesOperator hgpo = HgPropertiesOperator.invoke(node);
+            TestKit.waitText(mh);
             Thread.sleep(2000);
             
             // username, default-pull and default-push should be in the table.

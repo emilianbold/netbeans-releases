@@ -37,29 +37,29 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.packaging;
+package org.netbeans.modules.cnd.makeproject.api;
 
-/**
- *
- * @author thp
- */
-public class PackageDescriptor {
-    public static String[] NAMES = {
-        "Tar", // NOI18N
-        "Zip", // NOI18N
-        "SVR4", // NOI18N
-        "RPM", // NOI18N
-        "Debian" // NOI18N
-    };
-    
-    public static int getTypeFromName(String name) {
-        int type = 0;
-        for (int i = 0; i < NAMES.length; i++) {
-            if (NAMES[i].equals(name)) {
-                type = i;
-                break;
-            }
-        }
-        return type;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.util.List;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+
+public interface PackagerDescriptor {
+    public interface ShellSciptWriter {
+        public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException;
     }
+    public String getName();
+    public String getDisplayName();
+    public boolean hasInfoList();
+    public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
+    public List<String> getOptionalInfoList();
+    public boolean isOutputAFolder();
+    public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
+    public String getOutputFileSuffix();
+    public String getDefaultTool();
+    public String getDefaultOptions();
+    public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration);
+    public boolean supportsGroupAndOwner();
+    public ShellSciptWriter getShellFileWriter();
 }

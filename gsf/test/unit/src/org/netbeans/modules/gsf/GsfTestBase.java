@@ -2138,6 +2138,18 @@ public abstract class GsfTestBase extends NbTestCase {
         
         return sb.toString();
     }
+
+    private static org.netbeans.modules.gsf.Language getCompletableLanguage(Document doc, int offset) {
+        BaseDocument baseDoc = (BaseDocument)doc;
+        List<org.netbeans.modules.gsf.Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
+        for (org.netbeans.modules.gsf.Language l : list) {
+            if (l.getCompletionProvider() != null) {
+                return l;
+            }
+        }
+
+        return null;
+    }
     
     public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
         initializeClassPaths();
@@ -2157,7 +2169,10 @@ public abstract class GsfTestBase extends NbTestCase {
             ci.setCaretOffset(caretOffset);
         }
 
-        ParserResult pr = ci.getEmbeddedResult(ci.getPreferredMimeType(), 0);
+        //String targetMime = ci.getPreferredMimeType();
+        String targetMime = getCompletableLanguage(ci.getDocument(), caretOffset).getMimeType();
+
+        ParserResult pr = ci.getEmbeddedResult(targetMime, 0);
         assertNotNull(pr);
         
         CodeCompletionHandler cc = getCodeCompleter();

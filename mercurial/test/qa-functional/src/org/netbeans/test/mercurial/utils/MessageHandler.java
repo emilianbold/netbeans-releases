@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,78 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.test.mercurial.utils;
 
-package org.netbeans.modules.cnd.makeproject.packaging;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
  *
- * @author thp
+ * @author pvcs
  */
-public class InfoElement {
-    private int type;
-    private String name;
-    private String value;
-    private boolean mandatory;
-    private boolean defaultValue;
-    
-    public InfoElement(int type, String name, String value) {
-        this.type = type;
-        this.name = name;
-        this.value = value;
-        this.mandatory = false;
-        this.defaultValue = false;
-    }
-    
-    public InfoElement(int type, String name, String value, boolean mandatory, boolean defaultValue) {
-        this.type = type;
-        this.name = name;
-        this.value = value;
-        this.mandatory = mandatory;
-        this.defaultValue = defaultValue;
+public final class MessageHandler extends Handler {
+
+    String message;
+    boolean started = false;
+    boolean finished = false;
+
+    public MessageHandler(String message) {
+        this.message = message;
     }
 
-    public int getType() {
-        return type;
+    @Override
+    public void publish(LogRecord record) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+        if (started = false) {
+            if (record.getMessage().indexOf("Start - " + message) > -1) {
+                started = true;
+                finished = false;
+            }
+        }
+        if (!started) {
+            if (record.getMessage().indexOf("End - " + message) > -1) {
+                started = false;
+                finished = true;
+            }
+        }
     }
 
-    public void setType(int type) {
-        this.type = type;
-    }
-    
-    public String getName() {
-        return name;
+    @Override
+    public void flush() {
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public void close() throws SecurityException {
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public boolean isMandatory() {
-        return mandatory;
-    }
-
-    public void setMandatory(boolean mandatory) {
-        this.mandatory = mandatory;
-    }
-
-    public boolean isDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(boolean defaultValue) {
-        this.defaultValue = defaultValue;
+    public boolean isFinished() {
+        return finished;
     }
 }
