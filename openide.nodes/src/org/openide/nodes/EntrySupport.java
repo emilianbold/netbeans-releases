@@ -1070,6 +1070,7 @@ abstract class EntrySupport {
                                 EntryInfo info = entryToInfo.get(entry);
                                 if (info.currentNode() != null) {
                                     cnt++;
+                                    break;
                                 }
                                 if (info == who) {
                                     found = true;
@@ -1082,7 +1083,7 @@ abstract class EntrySupport {
                             inited = false;
                             initThread = null;
                             initInProgress = false;
-                            if (children != null) {
+                            if (children != null && children.entrySupport == this) {
                                 children.callRemoveNotify();
                             }
                         }
@@ -1475,7 +1476,14 @@ abstract class EntrySupport {
                             creatingNode = creating = true;
                         }
                     }
-                    Collection<Node> nodes = creating ? entry.nodes() : null;
+                    Collection<Node> nodes = Collections.emptyList();
+                    if (creating) {
+                        try {
+                            nodes = entry.nodes();
+                        } catch (RuntimeException ex) {
+                            NodeOp.warning(ex);
+                        }
+                    }
                     synchronized (LOCK) {
                         if (!creating) {
                             if (refNode != null) {
@@ -1487,14 +1495,12 @@ abstract class EntrySupport {
                             // node created by other thread was GCed meanwhile, try once again
                             continue;
                         }
-                        if (nodes.size() != 1) {
-                            LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
-                            if (nodes.size() == 0) {
-                                node = new DummyNode();
-                            } else {
-                                node = nodes.iterator().next();
-                            }
+                        if (nodes.size() == 0) {
+                            node = new DummyNode();
                         } else {
+                            if (nodes.size() > 1) {
+                                LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
+                            }
                             node = nodes.iterator().next();
                         }
                         refNode = new NodeRef(node, this);

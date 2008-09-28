@@ -83,7 +83,7 @@ public class ChildrenKeysTest extends NbTestCase {
     protected boolean lazy() {
         return false;
     }
-    
+
 //    public static ChildrenKeysTest suite() {
 //        return new ChildrenKeysTest("testEventsCausedBySetChildren");
 //    }
@@ -1773,6 +1773,46 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("b1", root.getChildren().getNodeAt(0).getName());
         assertEquals("b2", root.getChildren().getNodeAt(1).getName());
         assertEquals("b3", root.getChildren().getNodeAt(2).getName());
+    }
+
+    public void testNoRuntimeExceptionPropagateOut() throws Exception {
+
+        class K extends Keys {
+            boolean doThrow =true;
+
+            public K(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (doThrow) {
+                    doThrow = false;
+                    throw new IllegalStateException("something went wrong");
+                }
+                return super.createNodes(key);
+            }
+        }
+
+        final Children ch = new K(lazy(), "a1", "a2");
+        final Node root = createNode(ch);
+        Node[] nodes = null;
+        try {
+            nodes = root.getChildren().getNodes();
+        } catch (IllegalStateException e) {
+            fail("No exception should make it here");
+        }
+        assertEquals("Should be only 1", 1, nodes.length);
+        assertEquals("a2", nodes[0].getName());
+
+        /*WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
+        nodes = null;
+        assertGC("should be GCed", ref);
+
+        nodes = root.getChildren().getNodes();
+        assertEquals("Should be 2", 2, nodes.length);
+        assertEquals("a1", nodes[0].getName());
+        assertEquals("a2", nodes[1].getName());*/
     }
 
     @RandomlyFails // assumed to suffer from same random problem as testGetNodesFromTwoThreads57769; see Thread.sleep
