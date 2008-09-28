@@ -1458,6 +1458,17 @@ public class FilterNode extends Node {
             return original.getChildren().add(arr);
         }
 
+        @Override
+        void checkSupportValidity() {
+            if (entrySupport != null && !entrySupport.isInitialized()) {
+                FilterChildrenSupport support = (FilterChildrenSupport) entrySupport;
+                EntrySupport origSupport = original.getChildren().entrySupport();
+                if (support.originalSupport() != origSupport) {
+                    entrySupport = null;
+                }
+            }
+        }
+
         private FilterChildrenSupport filterSupport() {
             return (FilterChildrenSupport) entrySupport();
         }

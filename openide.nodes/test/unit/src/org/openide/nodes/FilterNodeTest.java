@@ -1110,5 +1110,39 @@ public class FilterNodeTest extends NbTestCase {
         assertEquals("b2", fn.getChildren().getNodeAt(1).getName());
         assertEquals("b3", fn.getChildren().getNodeAt(2).getName());
     }
+    
+    public void testFFNAfterFNChangeOriginalEagerToEager() {
+        doTestFFNAfterFNChangeOriginal(false, false);
+    }
+    public void testFFNAfterFNChangeOriginalLazyToLazy() {
+        doTestFFNAfterFNChangeOriginal(true, true);
+    }
+    public void testFFNAfterFNChangeOriginalEagerToLazy() {
+        doTestFFNAfterFNChangeOriginal(false, true);
+    }
+    public void testFFNAfterFNChangeOriginalLazyToEager() {
+        doTestFFNAfterFNChangeOriginal(true, false);
+    }
+
+    public void doTestFFNAfterFNChangeOriginal(boolean lazyA, boolean lazyB) {
+
+        AbstractNode a = new AbstractNode(new Keys(lazyA, "a1", "a2"));
+        AbstractNode b = new AbstractNode(new Keys(lazyB, "b1", "b2", "b3"));
+
+        FN fn = new FN(a);
+        FN ffn = new FN(fn);
+
+        // call isInit. to initialize support
+        ffn.getChildren().isInitialized();
+        assertEquals(lazyA, ffn.getChildren().isLazy());
+        
+        // fn is uninited, so change cannot propagate to FFN
+        fn.changeCh(b, true);
+
+        assertEquals("b1", ffn.getChildren().getNodeAt(0).getName());
+        assertEquals("b2", ffn.getChildren().getNodeAt(1).getName());
+        assertEquals("b3", ffn.getChildren().getNodeAt(2).getName());
+        assertEquals(lazyB, ffn.getChildren().isLazy());
+    }
 }
 

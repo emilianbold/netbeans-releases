@@ -137,12 +137,16 @@ public abstract class Children extends Object {
      */
     final EntrySupport entrySupport() {
         synchronized (Children.class) {
+            checkSupportValidity();
             if (entrySupport == null) {
                 entrySupport = createEntrySource();
                 postInitializeEntrySupport();
             }
             return entrySupport;
         }
+    }
+    
+    void checkSupportValidity() {
     }
     
     boolean lazySupport;
