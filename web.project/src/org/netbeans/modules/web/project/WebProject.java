@@ -50,8 +50,10 @@ import java.net.URI;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -82,7 +84,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
@@ -1865,8 +1866,14 @@ public final class WebProject implements Project, AntProjectListener {
                 destFile.delete();
                 LOGGER.log(Level.FINE, "Artifact jar successfully deleted");
             } catch (IOException ex) {
-                // FIXME null it out
                 LOGGER.log(Level.INFO, null, ex);
+                // try to zero it out at least
+                try {
+                    zeroOutArchive(destFile);
+                    LOGGER.log(Level.FINE, "Artifact jar successfully zeroed out");
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, "Could not zero out archive", ioe);
+                }
             }
 
             // fire event
@@ -1897,6 +1904,22 @@ public final class WebProject implements Project, AntProjectListener {
                 if (fl != null) {
                     fl.releaseLock();
                 }
+            }
+        }
+
+        private void zeroOutArchive(FileObject garbage) throws IOException {
+            OutputStream fileToOverwrite = garbage.getOutputStream();
+            try {
+                JarOutputStream jos = new JarOutputStream(fileToOverwrite);
+                try {
+                    jos.putNextEntry(new ZipEntry("META-INF/MANIFEST.MF")); // NOI18N
+                    // UTF-8 guaranteed on any platform
+                    jos.write("Manifest-Version: 1.0\n".getBytes("UTF-8")); // NOI18N
+                } finally {
+                    jos.close();
+                }
+            } finally {
+                fileToOverwrite.close();
             }
         }
     }
