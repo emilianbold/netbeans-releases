@@ -48,6 +48,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Form data loader bean info.
@@ -74,9 +75,9 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/form/resources/form.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/form/resources/form.gif"); // NOI18N
         } else {
-            return Utilities.loadImage("org/netbeans/modules/form/resources/form32.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/form/resources/form32.gif"); // NOI18N
         }
     }
 

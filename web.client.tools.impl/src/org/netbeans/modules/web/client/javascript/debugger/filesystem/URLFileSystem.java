@@ -172,13 +172,14 @@ public class URLFileSystem extends FileSystem {
                         if (displayName.length() <= MAX_SIZE) {
                             return displayName;
                         } else {
-                            String file = sourceURL.getFile();
+                            String path = sourceURL.getPath();
+                            String query = sourceURL.getQuery();
                             String protocol = sourceURL.getProtocol();
 
                             int lastSlashIndex = -1;
-                            if (file != null) {
-                                for (int i = file.length() - 2; i >= 0; i--) {
-                                    if (file.charAt(i) == '/') {
+                            if (path != null) {
+                                for (int i = path.length() - 2; i >= 0; i--) {
+                                    if (path.charAt(i) == '/') {
                                         lastSlashIndex = i;
                                         break;
                                     }
@@ -188,8 +189,17 @@ public class URLFileSystem extends FileSystem {
                             if (lastSlashIndex == -1) {
                                 return displayName;
                             } else {
-                                String truncatedName = protocol + "://..." + file.substring(lastSlashIndex);
-                                return truncatedName;
+                                StringBuffer truncatedName = new StringBuffer();
+                                truncatedName.append(protocol);
+                                truncatedName.append("://...");
+                                truncatedName.append(path.substring(lastSlashIndex));
+
+                                if (query != null && query.length() > 0) {
+                                    truncatedName.append("?");
+                                    truncatedName.append(query);
+                                }
+
+                                return truncatedName.toString();
                             }
                         }
                     }

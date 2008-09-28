@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.schema;
 import java.beans.*;
 import java.awt.Image;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 import org.openide.util.Utilities;
@@ -71,7 +72,7 @@ public class SchemaDataLoaderBeanInfo extends SimpleBeanInfo {
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor beanDescriptor = new BeanDescriptor  ( SchemaDataLoader.class , null );
         beanDescriptor.setDisplayName ( NbBundle.getMessage(SchemaDataLoaderBeanInfo.class, "LBL_SchemaDataLoader_name") );
-        beanDescriptor.setShortDescription ( NbBundle.getMessage(SchemaDataLoaderBeanInfo.class, "LBL_SchemaDataLoader_desc") );//GEN-HEADEREND:BeanDescriptor
+        beanDescriptor.setShortDescription ( NbBundle.getMessage(SchemaDataLoaderBeanInfo.class, "LBL_SchemaDataLoader_desc") );                              
         
         return beanDescriptor;
     }
@@ -158,7 +159,7 @@ public class SchemaDataLoaderBeanInfo extends SimpleBeanInfo {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
 
-            return Utilities.loadImage (ICON_DIR_BASE + "Schema_File.gif"); // NOI18N
+            return ImageUtilities.loadImage (ICON_DIR_BASE + "Schema_File.gif"); // NOI18N
         } 
 	
 	return null;

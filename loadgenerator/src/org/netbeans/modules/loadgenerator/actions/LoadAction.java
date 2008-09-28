@@ -50,6 +50,7 @@ import org.netbeans.modules.loadgenerator.api.EngineManager;
 import org.netbeans.modules.loadgenerator.api.EngineManagerException;
 import org.netbeans.modules.loadgenerator.spi.Engine;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -75,7 +76,7 @@ public class LoadAction extends AbstractAction {
   
   /** Creates a new instance of StopAction */
   public LoadAction(final Engine provider) {
-    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Start"), new ImageIcon(Utilities.loadImage(ICON)));
+    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Start"), new ImageIcon(ImageUtilities.loadImage(ICON)));
     
     this.provider = provider;
     this.provider.addPropertyChangeListener(Engine.STATE, WeakListeners.propertyChange(listener, provider));

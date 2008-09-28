@@ -47,6 +47,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -64,7 +65,7 @@ public class NodeUtils {
 
             @Override
             public Image getIcon(int arg0) {
-                return Utilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/wait.gif");
+                return ImageUtilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/wait.gif");
             }
         };
         nd.setName("Loading"); //NOI18N

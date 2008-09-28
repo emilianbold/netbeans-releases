@@ -61,6 +61,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
@@ -147,7 +148,7 @@ public final class View implements LogicalViewProvider {
         
         @Override
         public Image getIcon(int type) {
-            return Utilities.icon2Image(ProjectUtils.getInformation(p).getIcon());
+            return ImageUtilities.icon2Image(ProjectUtils.getInformation(p).getIcon());
         }
         
         @Override

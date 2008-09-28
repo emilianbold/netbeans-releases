@@ -2063,7 +2063,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         final Document document = info.getDocument();
         if (document == null) {
-            return null;
+            return CodeCompletionResult.NONE;
         }
 
         // TODO - move to LexUtilities now that this applies to the lexing offset?
@@ -2153,7 +2153,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             astLineEnd = AstUtilities.getAstOffset(info, Utilities.getRowEnd(doc, lexOffset));
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
-            return null;
+            return CodeCompletionResult.NONE;
         }
 
         final AstPath path = new AstPath(root, astOffset);

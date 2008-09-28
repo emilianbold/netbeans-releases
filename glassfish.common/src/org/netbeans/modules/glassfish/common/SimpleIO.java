@@ -53,6 +53,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -193,7 +194,7 @@ public class SimpleIO {
         
         public CancelAction() {
             super(NbBundle.getMessage(SimpleIO.class, "CTL_Cancel"), 
-                    new ImageIcon(Utilities.loadImage(ICON)));
+                    new ImageIcon(ImageUtilities.loadImage(ICON)));
             putValue(SHORT_DESCRIPTION, 
                     NbBundle.getMessage(SimpleIO.class, "LBL_CancelDesc"));
         }

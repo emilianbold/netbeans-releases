@@ -44,6 +44,7 @@ package org.netbeans.modules.editor.options;
 import java.awt.Image;
 import java.awt.Toolkit;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Children;
@@ -224,7 +225,7 @@ public class AnnotationTypesNode extends AbstractNode {
                 // Utilities.loadImage does not handle URLs.
                 // Toolkit.getImage would work, but U.lI does nicer caching.
                 if (iconURL.getProtocol().equals("nbresloc")) { // NOI18N
-                    return Utilities.loadImage(iconURL.getPath().substring(1));
+                    return ImageUtilities.loadImage(iconURL.getPath().substring(1));
                 } else {
                     return Toolkit.getDefaultToolkit().getImage(iconURL);
                 }

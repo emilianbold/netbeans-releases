@@ -41,8 +41,11 @@ package org.netbeans.modules.maven.j2ee.ear;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import org.apache.maven.profiles.Profile;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
@@ -51,7 +54,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -63,7 +68,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
     private Project project;
     private ModelHandle handle;
     private Ear module;
-    private ArrayList listeners;
+    private ComboBoxUpdater<Wrapper> listener;
 
     /**
      * Creates new form EjbRunCustomizerPanel
@@ -81,8 +86,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
     }
 
     private void initValues() {
-        listeners = new ArrayList();
-        listeners.add(new ComboBoxUpdater<Wrapper>(comServer, lblServer) {
+        listener = new ComboBoxUpdater<Wrapper>(comServer, lblServer) {
 
             public Wrapper getDefaultValue() {
                 Wrapper wr = null;
@@ -164,7 +168,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
                     handle.markAsModified(handle.getProfileModel());
                 }
             }
-        });
+        };
     }
 
     private Wrapper findWrapperByInstance(String instanceId) {
@@ -288,7 +292,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
             if (ExecutionChecker.DEV_NULL.equals(id)) {
                 return ExecutionChecker.DEV_NULL;
             }
-            return Deployment.getDefault().getServerID(id);
+            return POHImpl.privateGetServerId(id);
         }
 
         @Override
@@ -296,7 +300,15 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
             if (ExecutionChecker.DEV_NULL.equals(id)) {
                 return org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "MSG_No_Server");
             }
-            return Deployment.getDefault().getServerInstanceDisplayName(id);
+            ServerInstance si = Deployment.getDefault().getServerInstance(id);
+            if (si != null) {
+                try {
+                    return si.getServerDisplayName();
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(EarRunCustomizerPanel.class.getName()).log(Level.FINE, "", ex);
+                }
+            }
+            return "";
         }
     }
 }

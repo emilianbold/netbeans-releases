@@ -169,7 +169,7 @@ public class LineBreakpointsTest extends JellyTestCase {
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 73);
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:73", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:73");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -185,11 +185,11 @@ public class LineBreakpointsTest extends JellyTestCase {
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 52);
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:52", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:52");
             eo = new EditorOperator("MemoryView.java");
             Utilities.toggleBreakpoint(eo, 74);
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:74", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:74");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -205,7 +205,7 @@ public class LineBreakpointsTest extends JellyTestCase {
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 114);
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:114", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:114");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -221,7 +221,7 @@ public class LineBreakpointsTest extends JellyTestCase {
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 45);
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:45", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:45");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -237,7 +237,7 @@ public class LineBreakpointsTest extends JellyTestCase {
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 54);
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:54", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:54");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -253,7 +253,7 @@ public class LineBreakpointsTest extends JellyTestCase {
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 123);
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread Thread-0 stopped at MemoryView.java:123", 0);
+            Utilities.waitStatusText("Thread Thread-0 stopped at MemoryView.java:123");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -269,7 +269,7 @@ public class LineBreakpointsTest extends JellyTestCase {
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 154);
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:154", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:154");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -295,11 +295,11 @@ public class LineBreakpointsTest extends JellyTestCase {
             new JEditorPaneOperator(dialog, 0).setText("i > 0");
             dialog.ok();
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:63", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:63");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:63", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:63");
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:64", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:64");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -328,8 +328,8 @@ public class LineBreakpointsTest extends JellyTestCase {
             new JTextFieldOperator(dialog, 4).setText(breakpointHitText);
             dialog.ok();
             Utilities.startDebugger();
-//            int lines = Utilities.waitDebuggerConsole("Line breakpoint hit on examples.advanced.MemoryView:102", 0);
-//            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lines + 1);
+            Utilities.waitStatusText("Line breakpoint hit on examples.advanced.MemoryView:102");
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -340,21 +340,19 @@ public class LineBreakpointsTest extends JellyTestCase {
         try {
             int[] prelines = new int[]{33, 34, 37, 43, 49};
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            //start debugging
+            Utilities.startDebugger();
+            Utilities.waitStatusText("User program running");
             //toggle breakpoints
             for (int i = 0; i < prelines.length; i++) {
                 Utilities.toggleBreakpoint(eo, prelines[i]);
-            }
-            //start debugging
-            Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("User program running", 0);
-            for (int i = 0; i < prelines.length; i++) {
-                Utilities.waitDebuggerConsole("Invalid LineBreakpoint MemoryView.java : " + prelines[i], lines + 1);
+                Utilities.waitStatusText("Invalid LineBreakpoint MemoryView.java : " + prelines[i]);
             }
             int[] debuglines = new int[]{72, 81, 83, 95, 96, 105, 108, 122, 125, 153};
             //toggle breakpoints
             for (int i = 0; i < debuglines.length; i++) {
                 Utilities.toggleBreakpoint(eo, debuglines[i]);
-                Utilities.waitDebuggerConsole("Invalid LineBreakpoint MemoryView.java : " + debuglines[i], lines + 1);
+                Utilities.waitStatusText("Invalid LineBreakpoint MemoryView.java : " + debuglines[i]);
             }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -402,7 +400,7 @@ public class LineBreakpointsTest extends JellyTestCase {
                     return arg0.equals(arg1);
                 }
             };
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:64", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:64");
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
             jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
@@ -411,7 +409,7 @@ public class LineBreakpointsTest extends JellyTestCase {
             assertEquals("44", property.getValue());
             new ContinueAction().perform();
 
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:66", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:66");
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
             jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
@@ -420,7 +418,7 @@ public class LineBreakpointsTest extends JellyTestCase {
             assertEquals("46", property.getValue());
             new ContinueAction().perform();
 
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:65", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:65");
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
             jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());

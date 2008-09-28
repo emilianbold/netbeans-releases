@@ -1,0 +1,22 @@
+Code completion result for source line:
+$$('|ul.');
+(QueryType=COMPLETION, NameKind=PREFIX)
+TAG        a                                          <i>rails-index.html</i>
+TAG        body                                       <i>rails-index.html</i>
+TAG        div                                        <i>rails-index.html</i>
+TAG        form                                       <i>rails-index.html</i>
+TAG        h1                                         <i>rails-index.html</i>
+TAG        h2                                         <i>rails-index.html</i>
+TAG        h3                                         <i>rails-index.html</i>
+TAG        head                                       <i>rails-index.html</i>
+TAG        html                                       <i>rails-index.html</i>
+TAG        input                                      <i>rails-index.html</i>
+TAG        li                                         <i>rails-index.html</i>
+TAG        meta                                       <i>rails-index.html</i>
+TAG        ol                                         <i>rails-index.html</i>
+TAG        p                                          <i>rails-index.html</i>
+TAG        script                                     <i>rails-index.html</i>
+TAG        style                                      <i>rails-index.html</i>
+TAG        title                                      <i>rails-index.html</i>
+TAG        tt                                         <i>rails-index.html</i>
+TAG        ul                                         <i>rails-index.html</i>

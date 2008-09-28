@@ -79,6 +79,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -105,7 +106,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     public static final String TEMPLATES_FOLDER = "templatesFolder";        //NOI18N
     public static final String TARGET_TEMPLATE = "targetTemplate";          //NOI18N
     private static final String ATTR_INSTANTIATING_DESC = "instantiatingWizardURL"; //NOI18N
-    private static final Image PLEASE_WAIT_ICON = Utilities.loadImage ("org/netbeans/modules/project/ui/resources/wait.gif"); // NOI18N
+    private static final Image PLEASE_WAIT_ICON = ImageUtilities.loadImage ("org/netbeans/modules/project/ui/resources/wait.gif"); // NOI18N
     
     private Builder firer;
 

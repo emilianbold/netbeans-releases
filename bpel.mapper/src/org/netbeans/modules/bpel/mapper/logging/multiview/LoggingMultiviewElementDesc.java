@@ -26,6 +26,7 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.editors.api.BpelEditorConstants;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -61,7 +62,7 @@ public class LoggingMultiviewElementDesc
     }
 
     public Image getIcon() {
-        return Utilities.loadImage(
+        return ImageUtilities.loadImage(
                 "org/netbeans/modules/bpel/mapper/resources/mapper.png",//NOI18N
                 true);
     }

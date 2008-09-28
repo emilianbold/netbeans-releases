@@ -45,6 +45,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolderCategoryPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -65,8 +66,8 @@ public final class MidpInspectorSupport {
     
     private static final String ICON_PATH_COMMANDS = "org/netbeans/modules/vmd/midp/resources/components/category_commands_16.png"; // NOI18N
     private static final String ICON_PATH_ELEMENTS = "org/netbeans/modules/vmd/midp/resources/components/category_elements_16.png"; // NOI18N
-    private static final Image ICON_COMMANDS = Utilities.loadImage(ICON_PATH_COMMANDS);
-    private static final Image ICON_ELEMENTS = Utilities.loadImage(ICON_PATH_ELEMENTS);
+    private static final Image ICON_COMMANDS = ImageUtilities.loadImage(ICON_PATH_COMMANDS);
+    private static final Image ICON_ELEMENTS = ImageUtilities.loadImage(ICON_PATH_ELEMENTS);
     
     
     //Ordering inside of category by array property defined by propertyName

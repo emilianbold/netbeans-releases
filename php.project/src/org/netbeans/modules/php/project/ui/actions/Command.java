@@ -246,7 +246,7 @@ public abstract class Command {
         if (useWebRoot) {
             return getCommandUtils().getRelativeWebRootPath(fileForContext);
         }
-        return getCommandUtils().getRelativeWebRootPath(fileForContext);
+        return getCommandUtils().getRelativeSrcPath(fileForContext);
     }
 
     //or null

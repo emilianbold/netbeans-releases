@@ -43,6 +43,7 @@ package org.netbeans.modules.web.jsf.editor.jspel;
 import java.awt.Component;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -66,7 +67,7 @@ public class JSFResultItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(org.openide.util.Utilities.loadImage(BEAN_PATH));
+            return new ImageIcon(ImageUtilities.loadImage(BEAN_PATH));
         }
     }
 
@@ -80,7 +81,7 @@ public class JSFResultItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(org.openide.util.Utilities.loadImage(METHOD_PATH));
+            return new ImageIcon(ImageUtilities.loadImage(METHOD_PATH));
         }
     }
 
@@ -98,7 +99,7 @@ public class JSFResultItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(org.openide.util.Utilities.loadImage(BUNDLE_ICON_PATH));
+            return new ImageIcon(ImageUtilities.loadImage(BUNDLE_ICON_PATH));
         }
     }
 
@@ -112,7 +113,7 @@ public class JSFResultItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(org.openide.util.Utilities.loadImage(BUNDLE_ICON_PATH));
+            return new ImageIcon(ImageUtilities.loadImage(BUNDLE_ICON_PATH));
         }
     }
 }

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.mercurial.ui.status;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 
@@ -60,7 +61,7 @@ public class OpenVersioningAction extends ShowAllChangesAction {
 
     public OpenVersioningAction() {
         putValue("noIconInMenu", Boolean.FALSE); // NOI18N
-        setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/mercurial/resources/icons/versioning-view.png"))); // NOI18N
+        setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/mercurial/resources/icons/versioning-view.png"))); // NOI18N
     }
 
     public String getName() {

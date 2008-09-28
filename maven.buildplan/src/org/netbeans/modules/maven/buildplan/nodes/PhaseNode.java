@@ -47,6 +47,7 @@ import org.netbeans.modules.maven.buildplan.BuildPlanView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -64,7 +65,7 @@ public class PhaseNode extends AbstractNode{
 
     @Override
     public Image getIcon(int arg0) {
-        return Utilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/phase.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/phase.png");
     }
 
     @Override

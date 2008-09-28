@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,7 +75,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     PHPCompletionItem(ElementHandle element, CompletionRequest request) {
         this.request = request;
         this.element = element;
-        keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_KEYWORD_ICON));
+        keywordIcon = new ImageIcon(ImageUtilities.loadImage(PHP_KEYWORD_ICON));
     }
 
     public int getAnchorOffset() {
@@ -377,7 +378,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         private static ImageIcon icon() {
             if (INTERFACE_ICON == null) {
-                INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
+                INTERFACE_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_INTERFACE_ICON));
             }
             return INTERFACE_ICON;
         }
@@ -468,6 +469,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public String getCustomInsertTemplate() {
             return "return ${cursor};"; //NOI18N
         }
+    }
+
+    static class MagicMethodNameItem extends MagicMethodItem {
+        public MagicMethodNameItem(IndexedFunction function, CompletionRequest request) {
+            super(function, request);
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            return super.getNameAndFunctionBodyForTemplate();
+        }        
     }
 
     static class MagicMethodItem extends FunctionDeclarationItem {
@@ -641,15 +653,21 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
-        public final String getCustomInsertTemplate() {
+        public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            String modifierStr = getFunction().getModifiersString();
-            final String functionSignature = getFunction().getFunctionSignature();
+            String modifierStr = getFunction().getModifiersString();            
             if (modifierStr.length() != 0) {
                 modifierStr = modifierStr.replace("abstract","").trim();//NOI18N
                 template.append(modifierStr);
             }
             template.append(" ").append("function");//NOI18N
+            template.append(getNameAndFunctionBodyForTemplate());
+            return template.toString();
+        }
+
+        protected String getNameAndFunctionBodyForTemplate() {
+            StringBuilder template = new StringBuilder();
+            final String functionSignature = getFunction().getFunctionSignature();
             template.append(" ").append(functionSignature);//NOI18N
             template.append(" ").append("{\n");//NOI18N
             template.append(getFunctionBodyForTemplate());//NOI18N

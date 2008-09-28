@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.monitor.client;
 
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.*;
 import org.openide.util.Utilities;
 import org.openide.nodes.AbstractNode;
@@ -89,26 +90,26 @@ public class NestedNode extends AbstractNode {
         Image base;
 	// Get icon
 	if(method.equals(Constants.Http.GET)) {
-            base = Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/get.gif");
+            base = ImageUtilities.loadImage("org/netbeans/modules/web/monitor/client/icons/get.gif");
 	// Post icon
         } else if(method.equals(Constants.Http.POST)) {
-            base = Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/post.gif"); // NOI18N
+            base = ImageUtilities.loadImage("org/netbeans/modules/web/monitor/client/icons/post.gif"); // NOI18N
 	// Other 
         } else {
-            base = Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/other.gif"); // NOI18N
+            base = ImageUtilities.loadImage("org/netbeans/modules/web/monitor/client/icons/other.gif"); // NOI18N
         }
         
         Image badge;
         if (statusCode >= 400 || statusCode < 0) {
-            badge = Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/infoBadge.gif"); // NOI18N
+            badge = ImageUtilities.loadImage("org/netbeans/modules/web/monitor/client/icons/infoBadge.gif"); // NOI18N
         } else if (statusCode >= 300) {
-            badge = Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/warningBadge.gif"); // NOI18N
+            badge = ImageUtilities.loadImage("org/netbeans/modules/web/monitor/client/icons/warningBadge.gif"); // NOI18N
         } else if (statusCode >= 200) {
             return base;
         } else {
-            badge = Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/errorBadge.gif"); // NOI18N
+            badge = ImageUtilities.loadImage("org/netbeans/modules/web/monitor/client/icons/errorBadge.gif"); // NOI18N
         }
-        return Utilities.mergeImages(base, badge, 0, 0);
+        return ImageUtilities.mergeImages(base, badge, 0, 0);
     }
     
     public Image getOpenedIcon(int type) {

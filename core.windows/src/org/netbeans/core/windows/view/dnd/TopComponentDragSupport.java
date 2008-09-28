@@ -771,27 +771,27 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         String name = null;
         
         if(type == CURSOR_COPY) {
-            image = Utilities.loadImage(
+            image = ImageUtilities.loadImage(
                 "org/netbeans/core/resources/topComponentDragCopy.gif"); // NOI18N
             name = NAME_CURSOR_COPY;
         } else if(type == CURSOR_COPY_NO) {
-            image = Utilities.loadImage(
+            image = ImageUtilities.loadImage(
                 "org/netbeans/core/resources/topComponentDragCopyNo.gif"); // NOI18N
             name = NAME_CURSOR_COPY_NO;
         } else if(type == CURSOR_MOVE) {
-            image = Utilities.loadImage(
+            image = ImageUtilities.loadImage(
                 "org/netbeans/core/resources/topComponentDragMove.gif"); // NOI18N
             name = NAME_CURSOR_MOVE;
         } else if(type == CURSOR_MOVE_NO) {
-            image = Utilities.loadImage(
+            image = ImageUtilities.loadImage(
                 "org/netbeans/core/resources/topComponentDragMoveNo.gif"); // NOI18N
             name = NAME_CURSOR_MOVE_NO;
         } else if(type == CURSOR_COPY_NO_MOVE) {
-            image = Utilities.loadImage(
+            image = ImageUtilities.loadImage(
                 "org/netbeans/core/resources/topComponentDragCopyNo.gif"); // NOI18N
             name = NAME_CURSOR_COPY_NO_MOVE;
         } else if(type == CURSOR_MOVE_FREE) {
-            image = Utilities.loadImage(
+            image = ImageUtilities.loadImage(
                 "org/netbeans/core/windows/resources/topComponentDragMoveFreeArea.gif"); // NOI18N
             name = NAME_CURSOR_MOVE_FREE;
         } else {

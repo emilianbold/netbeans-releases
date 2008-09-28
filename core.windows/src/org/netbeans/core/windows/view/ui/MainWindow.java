@@ -281,14 +281,14 @@ public final class MainWindow extends JFrame {
     private static final String ICON_48 = "org/netbeans/core/startup/frame48.gif"; // NOI18N
     
     private static Image createIDEImage() {
-        return Utilities.loadImage(ICON_16, true);
+        return ImageUtilities.loadImage(ICON_16, true);
     }
     
     private static List<Image> createIDEImages() {
         List<Image> l = new ArrayList<Image>();
-        l.add(Utilities.loadImage(ICON_16, true));
-        l.add(Utilities.loadImage(ICON_32, true));
-        l.add(Utilities.loadImage(ICON_48, true));
+        l.add(ImageUtilities.loadImage(ICON_16, true));
+        l.add(ImageUtilities.loadImage(ICON_32, true));
+        l.add(ImageUtilities.loadImage(ICON_48, true));
         return l;
     }
     

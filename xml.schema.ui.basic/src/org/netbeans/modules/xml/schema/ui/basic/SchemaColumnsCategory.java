@@ -54,6 +54,7 @@ import org.netbeans.modules.xml.schema.ui.basic.search.ComponentTypeSearchProvid
 import org.netbeans.modules.xml.schema.ui.basic.search.NameSpaceSearchProvider;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ui.category.AbstractCategory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -117,7 +118,7 @@ public class SchemaColumnsCategory extends AbstractCategory {
     public Icon getIcon() {
         String url = NbBundle.getMessage(SchemaColumnsCategory.class,
                 "IMG_SchemaCategory_Categorized");
-        Image img = Utilities.loadImage(url);
+        Image img = ImageUtilities.loadImage(url);
         return new ImageIcon(img);
     }
 

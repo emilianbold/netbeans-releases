@@ -59,6 +59,7 @@ import org.netbeans.modules.web.core.syntax.completion.JavaJSPCompletionProvider
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.openide.util.ImageUtilities;
 
 
 /** Support for code completion of default JSP tags.
@@ -389,7 +390,7 @@ public class AttrSupports {
     /** Support for code completing of package and class. */
     public static class FilenameSupport extends AttributeValueSupport.Default {
         static final ImageIcon PACKAGE_ICON =
-                new ImageIcon(org.openide.util.Utilities.loadImage("org/openide/loaders/defaultFolder.gif")); // NOI18N
+                new ImageIcon(ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif")); // NOI18N
       
         public FilenameSupport(boolean tag, String longName, String attrName) {
             super(tag, longName, attrName);

@@ -221,7 +221,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     @Override
     public String toString() {
         ICombinedFragment cf= null;
-        if(getObject()!=null)
+        if(getObject()!=null && getObject().getFirstSubject() instanceof ICombinedFragment)
         {
             cf=(ICombinedFragment) getObject().getFirstSubject();
             return "CombinedFragmentWidget: operator: "+ cf.getOperator()+"; name: "+cf.getName()+"; num operands: "+cf.getOperands().size()+"; bounds: "+getBounds()+"; ////" + super.toString();

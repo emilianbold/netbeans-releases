@@ -97,6 +97,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.RequestProcessor;
@@ -143,7 +144,7 @@ import org.w3c.dom.Node;
  */
 public final class J2MEProject implements Project, AntProjectListener {
     
-    static final Icon J2ME_PROJECT_ICON = new ImageIcon(Utilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/mobile-project.png" )); // NOI18N
+    static final Icon J2ME_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/mobile-project.png" )); // NOI18N
     private static final URLStreamHandler COMPOSED_STREAM_HANDLER = new URLStreamHandler() {
         protected URLConnection openConnection(URL u) throws IOException {
             return new ComposedConnection(u);

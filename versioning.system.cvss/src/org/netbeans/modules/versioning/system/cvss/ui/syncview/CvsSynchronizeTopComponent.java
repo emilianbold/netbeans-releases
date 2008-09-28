@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.syncview;
 
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
@@ -71,7 +72,7 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     public CvsSynchronizeTopComponent() {
         putClientProperty("SlidingName", NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title")); //NOI18N 
         setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title"));
-        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/window-versioning.png", true));  // NOI18N
+        setIcon(ImageUtilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/window-versioning.png", true));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "ACSD_Synchronize_TopComponent"));
         syncPanel = new SynchronizePanel(this);

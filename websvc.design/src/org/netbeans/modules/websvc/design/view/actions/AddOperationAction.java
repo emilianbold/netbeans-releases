@@ -79,6 +79,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -99,7 +100,7 @@ public class AddOperationAction extends AbstractAction implements AddOperationCo
      */
     public AddOperationAction(Service service, FileObject implementationClass) {
         super(getName());
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/operation.png")));
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(AddOperationAction.class, "Hint_AddOperation"));
         putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddOperationAction.class, "LBL_AddOperation_mnem_pos")));

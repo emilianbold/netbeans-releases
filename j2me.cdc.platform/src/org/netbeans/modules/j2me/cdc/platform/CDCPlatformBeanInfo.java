@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2me.cdc.platform;
 
 import org.netbeans.modules.j2me.cdc.platform.platformdefinition.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -84,7 +85,7 @@ public class CDCPlatformBeanInfo extends SimpleBeanInfo {
 
     public Image getIcon(int iconKind) {
         if ((iconKind == BeanInfo.ICON_COLOR_16x16) || (iconKind == BeanInfo.ICON_MONO_16x16))
-            return Utilities.loadImage("org/netbeans/modules/j2me/cdc/platform/resources/cdcPlatform.png"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2me/cdc/platform/resources/cdcPlatform.png"); // NOI18N
         return null;
     }
 }

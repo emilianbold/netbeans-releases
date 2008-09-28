@@ -46,6 +46,7 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -100,6 +101,6 @@ public class DataconnectivitySettingsBeanInfo extends SimpleBeanInfo {
 
     /** Returns the designer icon */
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource.png"); // NOI18N
     }
 }

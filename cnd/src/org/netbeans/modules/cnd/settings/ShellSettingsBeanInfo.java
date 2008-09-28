@@ -46,6 +46,7 @@ import java.beans.BeanDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -89,6 +90,6 @@ public class ShellSettingsBeanInfo extends SimpleBeanInfo {
      */
     public Image getIcon(int type) {
 	// XXX this icon is wrong
-	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); //NOI18N // FIXUP
+	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); //NOI18N // FIXUP
     }
 }

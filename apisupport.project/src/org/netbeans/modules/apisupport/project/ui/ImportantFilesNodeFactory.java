@@ -71,6 +71,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -150,8 +151,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
         private Image getIcon(boolean opened) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/apisupport/project/resources/config-badge.gif", true);
-            return Utilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
+            Image badge = ImageUtilities.loadImage("org/netbeans/modules/apisupport/project/resources/config-badge.gif", true);
+            return ImageUtilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
         }
         
         public @Override String getDisplayName() {

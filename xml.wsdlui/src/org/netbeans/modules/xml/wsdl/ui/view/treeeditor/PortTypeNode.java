@@ -75,6 +75,7 @@ import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -90,7 +91,7 @@ public class PortTypeNode extends WSDLNamedElementNode<PortType> {
 
     private PortType mWSDLConstruct;
    
-    private static Image ICON  = Utilities.loadImage
+    private static Image ICON  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/portType.png");    
 
     private PortTypePropertyAdapter mPropertyAdapter;

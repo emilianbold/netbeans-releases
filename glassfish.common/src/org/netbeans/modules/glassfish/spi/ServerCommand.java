@@ -57,8 +57,6 @@ public abstract class ServerCommand {
 
     public static final char QUERY_SEPARATOR = '?'; // NOI18N
     public static final char PARAM_SEPARATOR = '&'; // NOI18N
-    public static final String EQUAL_NONQUOTED = "____EQUAL____"; // NOI18N
-    public static final String EQUAL_QUOTED = "%3D"; // NOI18N
 
     protected final String command;
     protected String query = null;

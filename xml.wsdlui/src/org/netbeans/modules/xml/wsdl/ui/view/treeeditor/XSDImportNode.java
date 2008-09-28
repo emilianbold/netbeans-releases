@@ -57,6 +57,7 @@ import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -73,7 +74,7 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class XSDImportNode extends ImportNode {
 
-    Image ICON  = Utilities.loadImage
+    Image ICON  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/import-include-redefine.png");
     
 

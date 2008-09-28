@@ -66,6 +66,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.keymap.DiagramInputkeyMapper;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
@@ -940,7 +941,7 @@ public class ZoomManager implements Scene.SceneListener
         if (zoomCursor == null)
         {
             zoomCursor = Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom");
+                        ImageUtilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom");
         }
         return zoomCursor;
     }
@@ -950,7 +951,7 @@ public class ZoomManager implements Scene.SceneListener
         if (zoomStopCursor == null)
         {
             zoomStopCursor = Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom-stop.gif")), "MarqueeZoomStop");
+                        ImageUtilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom-stop.gif")), "MarqueeZoomStop");
         }
         return zoomStopCursor;
     }

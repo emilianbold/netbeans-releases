@@ -54,6 +54,7 @@ import org.openide.nodes.AbstractNode;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.*;
 import org.openide.util.HelpCtx;
@@ -147,7 +148,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
     }
     
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/webservice.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/webservice.png");
     }
     
     public Image getOpenedIcon(int type){

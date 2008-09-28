@@ -64,6 +64,7 @@ import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -90,7 +91,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
     public ToggleBookmarkAction(JTextComponent component) {
         super(
             NbBundle.getMessage(ToggleBookmarkAction.class, ACTION_NAME), 
-            new ImageIcon(Utilities.loadImage(ACTION_ICON))
+            new ImageIcon(ImageUtilities.loadImage(ACTION_ICON))
         );
         putValue(SHORT_DESCRIPTION, getValue(NAME));
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N

@@ -5,4 +5,5 @@ Palette                    > Swing/AWT Components              S
                              Visual Web JSF 1.2 Components     2
                              Mobility Components               M
                              SVG Shapes                        G
+                             XML Schema Components             X
                              BPEL Activities                   B

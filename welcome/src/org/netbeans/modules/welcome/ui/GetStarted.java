@@ -69,6 +69,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -144,7 +145,7 @@ class GetStarted extends BackgroundPanel implements Constants {
                 Object imgKey = dob.getPrimaryFile().getAttribute("imageKey"); //NOI18N
                 if( null != imgKey ) {
                     String imgLocation = bundle.getString(imgKey.toString());
-                    Image img = Utilities.loadImage(imgLocation, true);
+                    Image img = ImageUtilities.loadImage(imgLocation, true);
                     JLabel lbl = new JLabel( new ImageIcon(img) );
                     lbl.setVerticalAlignment( SwingConstants.TOP );
                     panel.add( lbl, 

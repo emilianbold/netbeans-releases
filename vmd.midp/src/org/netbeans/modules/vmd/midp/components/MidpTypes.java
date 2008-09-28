@@ -42,6 +42,7 @@ package org.netbeans.modules.vmd.midp.components;
 
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -198,7 +199,7 @@ public final class MidpTypes {
     public static void registerIconResource (TypeID typeID, String iconResource) {
         if (iconResource == null)
             return;
-        iconsRegister.put (typeID, Utilities.loadImage (iconResource));
+        iconsRegister.put (typeID, ImageUtilities.loadImage (iconResource));
     }
 
     public static void registerIcon (TypeID typeID, Image icon) {

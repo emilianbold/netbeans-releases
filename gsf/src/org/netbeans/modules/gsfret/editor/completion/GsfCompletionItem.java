@@ -66,6 +66,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -371,7 +372,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
         }
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/gsfret/editor/completion/warning.png")); // NOI18N
+            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsfret/editor/completion/warning.png")); // NOI18N
         }
 
         public int getSortPriority() {

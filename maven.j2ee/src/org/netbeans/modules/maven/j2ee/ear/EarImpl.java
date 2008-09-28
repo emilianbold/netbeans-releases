@@ -361,10 +361,11 @@ class EarImpl implements EarImplementation,
     }
 
     public J2eeModule[] getModules() {
-        Iterator it = mavenproject.getMavenProject().getArtifacts().iterator();
-        List toRet = new ArrayList();
+        @SuppressWarnings("unchecked")
+        Iterator<Artifact> it = mavenproject.getMavenProject().getArtifacts().iterator();
+        List<J2eeModule> toRet = new ArrayList<J2eeModule>();
         while (it.hasNext()) {
-            Artifact elem = (Artifact) it.next();
+            Artifact elem = it.next();
             if ("war".equals(elem.getType()) || "ejb".equals(elem.getType())) {//NOI18N
 //                System.out.println("adding " + elem.getId());
                 //TODO probaby figure out the context root etc..
@@ -387,14 +388,15 @@ class EarImpl implements EarImplementation,
             }
         }
         //TODO need to also consult the pom file for potencial additional modules.
-        return (J2eeModule[])toRet.toArray(new J2eeModule[toRet.size()]);
+        return toRet.toArray(new J2eeModule[toRet.size()]);
     }
     
     public List<Project> getProjects() {
-        Iterator it = mavenproject.getMavenProject().getArtifacts().iterator();
+        @SuppressWarnings("unchecked")
+        Iterator<Artifact> it = mavenproject.getMavenProject().getArtifacts().iterator();
         List<Project> toRet = new ArrayList<Project>();
         while (it.hasNext()) {
-            Artifact elem = (Artifact) it.next();
+            Artifact elem = it.next();
             if ("war".equals(elem.getType()) || "ejb".equals(elem.getType())) {//NOI18N
                 File fil = elem.getFile();
                 FileObject fo = FileUtil.toFileObject(fil);
@@ -449,11 +451,11 @@ class EarImpl implements EarImplementation,
     // inspired by netbeans' webmodule codebase, not really sure what is the point
     // of the iterator..
     private static final class ContentIterator implements Iterator {
-        private ArrayList ch;
+        private ArrayList<FileObject> ch;
         private FileObject root;
         
         private ContentIterator(FileObject f) {
-            this.ch = new ArrayList();
+            this.ch = new ArrayList<FileObject>();
             ch.add(f);
             this.root = f;
         }
@@ -463,7 +465,7 @@ class EarImpl implements EarImplementation,
         }
         
         public Object next() {
-            FileObject f = (FileObject) ch.get(0);
+            FileObject f = ch.get(0);
             ch.remove(0);
             if (f.isFolder()) {
                 f.refresh();

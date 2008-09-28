@@ -79,6 +79,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -126,8 +127,8 @@ public class ModulesNodeFactory implements NodeFactory {
         }
 
         private Image getIcon(boolean opened) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/apisupport/project/suite/resources/module-badge.png", true);
-            return Utilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 9, 9);
+            Image badge = ImageUtilities.loadImage("org/netbeans/modules/apisupport/project/suite/resources/module-badge.png", true);
+            return ImageUtilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 9, 9);
         }
 
         public @Override Image getIcon(int type) {

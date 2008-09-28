@@ -57,6 +57,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -116,7 +117,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     static final class SuiteRootNode extends AbstractNode
             implements PropertyChangeListener {
         
-        private static final Image ICON = Utilities.loadImage(SuiteProject.SUITE_ICON_PATH, true);
+        private static final Image ICON = ImageUtilities.loadImage(SuiteProject.SUITE_ICON_PATH, true);
         
         private final SuiteProject suite;
         private final ProjectInformation info;

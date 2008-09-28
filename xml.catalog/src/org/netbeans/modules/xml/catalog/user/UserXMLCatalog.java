@@ -47,6 +47,7 @@ import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.filesystems.*;
@@ -138,7 +139,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
     }
 
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/xml/catalog/impl/xmlCatalog.gif", true); //NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/xml/catalog/impl/xmlCatalog.gif", true); //NOI18N
     }
 
     public void refresh() {

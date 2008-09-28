@@ -11,17 +11,18 @@ package org.netbeans.test.mercurial.main.commit;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.mercurial.operators.VersioningOperator;
+import org.netbeans.test.mercurial.utils.MessageHandler;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -34,6 +35,7 @@ public class IgnoreTest extends JellyTestCase {
     public File projectPath;
     public PrintStream stream;
     String os_name;
+    static Logger log;
     
     /** Creates a new instance of IgnoreTest */
     public IgnoreTest(String name) {
@@ -42,9 +44,14 @@ public class IgnoreTest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {        
-        os_name = System.getProperty("os.name");
         System.out.println("### "+getName()+" ###");
-        
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
     
    
@@ -55,6 +62,8 @@ public class IgnoreTest extends JellyTestCase {
         
     public void testIgnoreUnignoreFile() throws Exception {
         try {
+            MessageHandler mh = new MessageHandler("Ignoring");
+            log.addHandler(mh);
             
             TestKit.showStatusLabels();
             TestKit.prepareProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, PROJECT_NAME);
@@ -62,17 +71,17 @@ public class IgnoreTest extends JellyTestCase {
             Thread.sleep(1000);
             new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME).performPopupActionNoBlock("Versioning|Initialize Mercurial Project");
             
-            OutputOperator oo = OutputOperator.invoke();
-            
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
 
             TestKit.createNewElement(PROJECT_NAME, "javaappignunign", "NewClassIgnUnign");
+
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClassIgnUnign");
             node.select();
             node.performPopupAction("Mercurial|Toggle Ignore");
             String outputTabName=TestKit.getProjectAbsolutePath(PROJECT_NAME);
-            OutputTabOperator oto = new OutputTabOperator(outputTabName);
-            oto.waitText("INFO: End of Ignore");
+
+            TestKit.waitText(mh);
+
             Thread.sleep(1000);
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaappignunign|NewClassIgnUnign");
@@ -86,13 +95,16 @@ public class IgnoreTest extends JellyTestCase {
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaappignunign|NewClassIgnUnign");
             node.select();
+
             //unignore file
-            oto = new OutputTabOperator(outputTabName);
-            oto.clear();
+            mh = new MessageHandler("Ignoring");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaappignunign|NewClassIgnUnign");
             node.select();
             node.performPopupAction("Mercurial|Toggle Ignore");
-            oto.waitText("INFO: End of Unignore");
+            TestKit.waitText(mh);
             Thread.sleep(1000);
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaappignunign|NewClassIgnUnign");
             node.select();
@@ -105,8 +117,14 @@ public class IgnoreTest extends JellyTestCase {
             
             //verify content of Versioning view
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaappignunign|NewClassIgnUnign");
+
+            mh = new MessageHandler("Refreshing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             node.select();
             node.performPopupAction("Mercurial|Status");
+            TestKit.waitText(mh);
             Thread.sleep(1000);
             VersioningOperator vo = VersioningOperator.invoke();
             TableModel model = vo.tabFiles().getModel();

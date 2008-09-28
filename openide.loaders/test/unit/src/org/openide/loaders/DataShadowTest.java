@@ -47,8 +47,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -204,7 +204,8 @@ implements java.net.URLStreamHandlerFactory {
         URL u = DataShadow.readURL(shade.getPrimaryFile());
         assertEquals("DataShadow's URL must point to the Original", original.getPrimaryFile().getURL(), u);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1428
     public void testDeleteInvalidatesCreateCreates () throws Exception {
         doDeleteInvalidatesCreateCreates (true);
     }

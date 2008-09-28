@@ -43,6 +43,7 @@ package org.netbeans.modules.timers;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -64,7 +65,7 @@ public class TimeComponent extends TopComponent {
     public TimeComponent() {
         setName ("timers"); //NOI18N
         setDisplayName (NbBundle.getMessage ( TimeComponent.class, "LBL_TimeComponent" )); //NOI18N
-        setIcon(Utilities.loadImage(ICON_PATH));
+        setIcon(ImageUtilities.loadImage(ICON_PATH));
         
         setLayout(new GridBagLayout());
         

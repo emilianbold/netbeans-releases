@@ -100,6 +100,10 @@ public:
         hitCount++;
     }
 
+    void setHitCount(int hitCount){
+        this->hitCount = hitCount;
+    }
+
     int getHitCount(){
         return hitCount;
     }

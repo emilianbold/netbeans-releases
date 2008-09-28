@@ -49,6 +49,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 
@@ -137,46 +138,46 @@ public final class Icons {
     
         switch( elementKind ) {
         case FILE:
-            img = Utilities.loadImage( ICON_BASE + "emptyfile-icon" + PNG_EXTENSION );
+            img = ImageUtilities.loadImage( ICON_BASE + "emptyfile-icon" + PNG_EXTENSION );
             break;
         case ERROR:
-            img = Utilities.loadImage( ICON_BASE + "error-glyph" + GIF_EXTENSION );
+            img = ImageUtilities.loadImage( ICON_BASE + "error-glyph" + GIF_EXTENSION );
             break;
         case PACKAGE:
         case MODULE:
-            img = Utilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
+            img = ImageUtilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
             break;
         case TEST:
-            img = Utilities.loadImage( ICON_BASE + "test" + PNG_EXTENSION );
+            img = ImageUtilities.loadImage( ICON_BASE + "test" + PNG_EXTENSION );
             break;
         case CLASS:
-            img = Utilities.loadImage( ICON_BASE + "class" + PNG_EXTENSION );
+            img = ImageUtilities.loadImage( ICON_BASE + "class" + PNG_EXTENSION );
             break;
         case TAG:
-            img = Utilities.loadImage( ICON_BASE + "html_element" + PNG_EXTENSION );
+            img = ImageUtilities.loadImage( ICON_BASE + "html_element" + PNG_EXTENSION );
             break;
         case RULE:
-            img = Utilities.loadImage( ICON_BASE + "rule" + PNG_EXTENSION );
+            img = ImageUtilities.loadImage( ICON_BASE + "rule" + PNG_EXTENSION );
             break;
         case VARIABLE:
         case PROPERTY:
         case GLOBAL:
         case ATTRIBUTE:
         case FIELD:
-            img = Utilities.loadImage( getIconName( ICON_BASE + "field", PNG_EXTENSION, modifiers ) );
+            img = ImageUtilities.loadImage( getIconName( ICON_BASE + "field", PNG_EXTENSION, modifiers ) );
             break;
         case PARAMETER:
         case CONSTANT:
-            img = Utilities.loadImage(ICON_BASE + "constant" + PNG_EXTENSION );
+            img = ImageUtilities.loadImage(ICON_BASE + "constant" + PNG_EXTENSION );
             break;
         case CONSTRUCTOR:
-            img = Utilities.loadImage( getIconName( ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );
+            img = ImageUtilities.loadImage( getIconName( ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );
             break;
         case METHOD:
-            img = Utilities.loadImage( getIconName( ICON_BASE + "method", PNG_EXTENSION, modifiers ) );
+            img = ImageUtilities.loadImage( getIconName( ICON_BASE + "method", PNG_EXTENSION, modifiers ) );
             break;
         case DB:
-            img = Utilities.loadImage(ICON_BASE + "database" + GIF_EXTENSION);
+            img = ImageUtilities.loadImage(ICON_BASE + "database" + GIF_EXTENSION);
             break;
         default:   
                 img = null;

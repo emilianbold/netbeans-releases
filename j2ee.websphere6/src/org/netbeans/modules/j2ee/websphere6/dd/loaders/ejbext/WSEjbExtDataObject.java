@@ -59,6 +59,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.io.IOException;
 import javax.xml.parsers.*;
+import org.openide.util.ImageUtilities;
 
 
 public class WSEjbExtDataObject extends WSMultiViewDataObject {
@@ -118,7 +119,7 @@ public class WSEjbExtDataObject extends WSMultiViewDataObject {
             
         }
         public java.awt.Image getIcon() {
-            return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/websphere6/dd/resources/ws4.gif"); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/websphere6/dd/resources/ws4.gif"); //NOI18N
         }
     }
     

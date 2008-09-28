@@ -48,6 +48,7 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.MessageNewType;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -65,7 +66,7 @@ public class MessageFolderNode extends FolderNode {
     
     public MessageFolderNode(Definitions element, ChildFactory factory) {
         super(factory, element, Message.class);
-        BADGE_ICON = Utilities.loadImage
+        BADGE_ICON = ImageUtilities.loadImage
         ("org/netbeans/modules/xml/wsdl/ui/view/resources/folderBadge_envelope.png");
         mDef = element;
         this.setDisplayName(NbBundle.getMessage(MessageFolderNode.class, 

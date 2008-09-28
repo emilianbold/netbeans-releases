@@ -65,6 +65,7 @@ import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -149,7 +150,7 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
                 if (icon != null)
                 {
                     nodeIconWidget = new ImageWidget(getScene());
-                    nodeIconWidget.setImage(Utilities.icon2Image(icon));
+                    nodeIconWidget.setImage(ImageUtilities.icon2Image(icon));
                     nodeIconWidget.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 3));
                     classNameContainer.addChild(nodeIconWidget);
                 }

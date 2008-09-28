@@ -39,8 +39,6 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -121,7 +119,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                 interpreterTextField.setEditable(!selected);
                 String newValue = null;
                 if (selected) {
-                    newValue = PhpOptions.getInstance().getPhpInterpreter();
+                    newValue = getDefaultPhpInterpreter();
                 } else {
                     newValue = interpreterTextField.getText();
                 }
@@ -136,7 +134,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                         // #143315
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+                                interpreterTextField.setText(getDefaultPhpInterpreter());
                                 composeHint();
                             }
                         });
@@ -149,6 +147,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         composeHint();
     }
 
+    private String getDefaultPhpInterpreter() {
+        String phpInterpreter = PhpOptions.getInstance().getPhpInterpreter();
+        return phpInterpreter != null ? phpInterpreter : ""; //NOI18N
+    }
+
     private String initPhpInterpreterFields() {
         String phpInterpreter = getValue(PhpProjectProperties.INTERPRETER);
         boolean def = phpInterpreter == null || phpInterpreter.length() == 0;
@@ -156,7 +159,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         interpreterBrowseButton.setEnabled(!def);
         interpreterTextField.setEditable(!def);
         if (def) {
-            return PhpOptions.getInstance().getPhpInterpreter();
+            return getDefaultPhpInterpreter();
         }
         return phpInterpreter;
     }
@@ -196,7 +199,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText().trim();
 
-        String err = RunAsValidator.validateScriptFields(phpInterpreter, FileUtil.toFile(project.getProjectDirectory()), indexFile, args);
+        String err = RunAsValidator.validateScriptFields(phpInterpreter,
+                FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)), indexFile, args);
         category.setErrorMessage(err);
         category.setValid(err == null);
     }

@@ -81,6 +81,7 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -1155,7 +1156,7 @@ public class ActionFactory {
 
         public ToggleHighlightSearchAction() {
             super(BaseKit.toggleHighlightSearchAction, CLEAR_STATUS_TEXT);
-            putValue(Action.SMALL_ICON, new ImageIcon(org.openide.util.Utilities.loadImage(
+            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/editor/resources/toggle_highlight.png"))); // NOI18N
         }
 

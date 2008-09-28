@@ -45,6 +45,7 @@ import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -87,7 +88,7 @@ public abstract class AddActionItem extends AbstractAction {
     
     private AddActionItem(TypeID typeID, DesignComponent component, ComponentProducer producer) {
         String smallIcon = producer.getPaletteDescriptor ().getSmallIcon ();
-        Image image = smallIcon != null ? Utilities.loadImage(smallIcon) : null;
+        Image image = smallIcon != null ? ImageUtilities.loadImage(smallIcon) : null;
         putValue(TYPEID_KEY, typeID);
         putValue(Action.NAME, producer.getPaletteDescriptor().getDisplayName());
         if (image != null)

@@ -259,14 +259,14 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         public Image getIcon(int type) {
             Image original = super.getIcon( type );                
             return broken || brokenServerAction.isEnabled() 
-                    ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) 
+                    ? ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
                     : original;
         }
 
         public Image getOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);                
             return broken || brokenServerAction.isEnabled() 
-                    ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) 
+                    ? ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
                     : original;
         }            
 

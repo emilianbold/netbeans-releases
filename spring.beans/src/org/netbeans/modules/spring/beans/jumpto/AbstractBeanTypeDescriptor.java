@@ -46,6 +46,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -54,7 +55,7 @@ import org.openide.util.Utilities;
  */
 public abstract class AbstractBeanTypeDescriptor extends TypeDescriptor {
 
-    private static final Icon beanIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/spring/beans/resources/spring-bean.png")); // NOI18N
+    private static final Icon beanIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/spring/beans/resources/spring-bean.png")); // NOI18N
     
     private final String simpleName;
     private final FileObject fileObject;

@@ -46,6 +46,7 @@ import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
@@ -77,7 +78,7 @@ public class EditorViewDescription implements MultiViewDescription, Serializable
 
     public Image getIcon () {
         ProjectTypeInfo projectTypeInfo = ProjectTypeInfo.getProjectTypeInfoFor (context.getProjectType ());
-        return projectTypeInfo != null ? Utilities.loadImage (projectTypeInfo.getIconResource ()) : null;
+        return projectTypeInfo != null ? ImageUtilities.loadImage (projectTypeInfo.getIconResource ()) : null;
     }
 
     public HelpCtx getHelpCtx () {

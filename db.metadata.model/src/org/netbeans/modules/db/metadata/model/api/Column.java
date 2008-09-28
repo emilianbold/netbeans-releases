@@ -42,6 +42,7 @@ package org.netbeans.modules.db.metadata.model.api;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 
 /**
+ * Encapsulates a table column.
  *
  * @author Andrei Badea
  */

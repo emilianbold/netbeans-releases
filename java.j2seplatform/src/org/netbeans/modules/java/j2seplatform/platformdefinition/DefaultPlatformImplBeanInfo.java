@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -56,7 +57,7 @@ public class DefaultPlatformImplBeanInfo extends SimpleBeanInfo {
 
     public Image getIcon(int iconKind) {
         if ((iconKind == BeanInfo.ICON_COLOR_16x16) || (iconKind == BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/java/j2seplatform/resources/platform.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/java/j2seplatform/resources/platform.gif"); // NOI18N
         } else {
             return null;
         }

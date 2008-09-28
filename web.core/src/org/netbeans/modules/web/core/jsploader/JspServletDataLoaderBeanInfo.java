@@ -45,6 +45,7 @@ import java.beans.*;
 import java.awt.Image;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /** JSP/Servlet loader bean info.
 *
@@ -70,9 +71,9 @@ public class JspServletDataLoaderBeanInfo extends SimpleBeanInfo {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
                 (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
             // [PENDING] a different icon would be good
-            return org.openide.util.Utilities.loadImage("org/netbeans/modules/web/core/resources/jspObject.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/web/core/resources/jspObject.gif"); // NOI18N
         } else {
-            return org.openide.util.Utilities.loadImage ("org/netbeans/modules/web/core/resources/jspObject32.gif"); // NOI18N
+            return ImageUtilities.loadImage ("org/netbeans/modules/web/core/resources/jspObject32.gif"); // NOI18N
         }
     }
 

@@ -112,6 +112,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
@@ -666,11 +667,11 @@ public final class UIUtil {
         Image base = null;
         Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
         if (baseIcon != null) {
-            base = Utilities.icon2Image(baseIcon);
+            base = ImageUtilities.icon2Image(baseIcon);
         } else {
             base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
             if (base == null) { // fallback to our owns
-                base = Utilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, true);
+                base = ImageUtilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, true);
             }
         }
         assert base != null;

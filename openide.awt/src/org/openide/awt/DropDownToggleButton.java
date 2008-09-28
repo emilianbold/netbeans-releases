@@ -55,6 +55,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -287,7 +288,7 @@ class DropDownToggleButton extends JToggleButton {
             arrowIcons.remove( iconType );
         } else {
             regIcons.put( iconType, orig );
-            arrow = new ImageIcon(Utilities.icon2Image(new IconWithArrow( orig, false )));
+            arrow = new ImageIcon(ImageUtilities.icon2Image(new IconWithArrow( orig, false )));
             arrowIcons.put( iconType, arrow );
         }
         return arrow;

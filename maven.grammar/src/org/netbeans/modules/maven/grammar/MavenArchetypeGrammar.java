@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import org.jdom.Element;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
+import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 
 /**
@@ -63,8 +64,8 @@ public class MavenArchetypeGrammar extends AbstractSchemaBasedGrammar {
     }
     
 
-    protected List getDynamicCompletion(String path, HintContext hintCtx, Element lowestParent) {
-        return Collections.EMPTY_LIST;
+    protected List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, Element lowestParent) {
+        return Collections.<GrammarResult>emptyList();
     }
     
     

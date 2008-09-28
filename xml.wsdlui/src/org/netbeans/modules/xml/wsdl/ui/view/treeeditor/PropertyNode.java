@@ -48,6 +48,7 @@ import javax.swing.Action;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
@@ -59,7 +60,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class PropertyNode extends AbstractNode {
 
-    private Image ICON  = Utilities.loadImage
+    private Image ICON  = ImageUtilities.loadImage
          ("org/netbeans/modules/xml/wsdl/ui/view/resources/property.png");
 
 

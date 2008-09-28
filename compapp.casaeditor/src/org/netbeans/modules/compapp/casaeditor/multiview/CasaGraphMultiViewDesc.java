@@ -47,6 +47,7 @@ import java.io.ObjectOutput;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
@@ -82,7 +83,7 @@ public class CasaGraphMultiViewDesc extends Object
     }
     
     public java.awt.Image getIcon() {
-        return Utilities.loadImage(CasaDataObject.CASA_ICON_BASE_WITH_EXT);
+        return ImageUtilities.loadImage(CasaDataObject.CASA_ICON_BASE_WITH_EXT);
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

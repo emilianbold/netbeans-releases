@@ -43,6 +43,7 @@ package org.netbeans.modules.timers;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -54,7 +55,7 @@ public class OpenTimeComponentAction extends AbstractAction {
     
     public OpenTimeComponentAction() {
         super(NbBundle.getMessage(OpenTimeComponentAction.class, "CTL_OpenTimeComponentAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(TimeComponent.ICON_PATH)));
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(TimeComponent.ICON_PATH)));
     }
     
     public void actionPerformed(ActionEvent evt) {

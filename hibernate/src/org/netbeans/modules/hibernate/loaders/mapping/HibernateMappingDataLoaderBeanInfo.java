@@ -46,6 +46,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -67,7 +68,7 @@ public class HibernateMappingDataLoaderBeanInfo extends SimpleBeanInfo {
     @Override
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-mapping.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-mapping.png");
         } else {
             return null;
         }

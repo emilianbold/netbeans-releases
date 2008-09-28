@@ -70,6 +70,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -295,11 +296,11 @@ public final class JavaNode extends DataNode implements ChangeListener {
     
     private Image enhanceIcon(Image i) {
         if (isCompiled != null && !isCompiled.get()) {
-            i = Utilities.mergeImages(i, NEEDS_COMPILE, 16, 0);
+            i = ImageUtilities.mergeImages(i, NEEDS_COMPILE, 16, 0);
         }
         
         if (isExecutable != null && isExecutable.get()) {
-            i = Utilities.mergeImages(i, IS_EXECUTABLE_CLASS, 10, 6);
+            i = ImageUtilities.mergeImages(i, IS_EXECUTABLE_CLASS, 10, 6);
         }
         
         return i;

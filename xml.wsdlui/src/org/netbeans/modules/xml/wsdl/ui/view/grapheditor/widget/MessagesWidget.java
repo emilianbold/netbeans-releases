@@ -87,6 +87,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.FolderChildFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MessageFolderNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -450,7 +451,7 @@ public class MessagesWidget extends Widget implements
             new Color(0x888888), Color.WHITE);
     
     
-    private static final Image IMAGE  = Utilities.loadImage
+    private static final Image IMAGE  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/message.png"); // NOI18N   
     
     

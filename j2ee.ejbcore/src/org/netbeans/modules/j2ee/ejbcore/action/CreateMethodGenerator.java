@@ -120,7 +120,7 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
         }
         
         // local interface
-        if (generateLocal && local != null && localHome != null) {
+        if (generateLocal && local != null) {
             List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
             if (!methodModel.getExceptions().contains("javax.ejb.CreateException")) {
                 exceptions.add("javax.ejb.CreateException");
@@ -133,12 +133,13 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                     exceptions,
                     Collections.<Modifier>emptySet()
                     );
-            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, localHome);
-            addMethod(methodModelCopy, fileObject, localHome);
+            String iface = localHome != null ? localHome : local;
+            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, iface);
+            addMethod(methodModelCopy, fileObject, iface);
         }
         
         // remote interface
-        if (generateRemote && remote != null && remoteHome != null) {
+        if (generateRemote && remote != null) {
             List<String> exceptions = exceptions = new ArrayList<String>(methodModel.getExceptions());
             if (!methodModel.getExceptions().contains("javax.ejb.CreateException")) {
                 exceptions.add("javax.ejb.CreateException");
@@ -154,8 +155,9 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                     exceptions,
                     Collections.<Modifier>emptySet()
                     );
-            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, remoteHome);
-            addMethod(methodModelCopy, fileObject, remoteHome);
+            String iface = remoteHome != null ? remoteHome : remote;
+            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, iface);
+            addMethod(methodModelCopy, fileObject, iface);
         }
         
         // ejb class

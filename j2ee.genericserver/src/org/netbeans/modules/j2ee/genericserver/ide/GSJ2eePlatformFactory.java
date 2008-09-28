@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -109,7 +110,7 @@ public class GSJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         public java.awt.Image getIcon() {
-            return Utilities.loadImage("org/netbeans/modules/j2ee/genericserver/resources/GSInstanceIcon.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/genericserver/resources/GSInstanceIcon.gif"); // NOI18N
         }
         
         public String getDisplayName() {

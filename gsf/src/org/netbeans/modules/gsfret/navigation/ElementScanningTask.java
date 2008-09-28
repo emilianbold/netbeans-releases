@@ -58,6 +58,7 @@ import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.openide.util.ImageUtilities;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -292,7 +293,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
 
         public ImageIcon getCustomIcon() {
             String iconBase = language.getIconBase();
-            return  iconBase == null ? null : new ImageIcon(org.openide.util.Utilities.loadImage(iconBase));
+            return  iconBase == null ? null : new ImageIcon(ImageUtilities.loadImage(iconBase));
         }
 
         
