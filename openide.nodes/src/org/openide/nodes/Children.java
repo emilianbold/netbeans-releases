@@ -503,6 +503,14 @@ public abstract class Children extends Object {
         }
     }
 
+    static final int[] getSnapshotIdxs(List<Node> snapshot) {
+        int[] idxs = new int[snapshot.size()];
+        for (int i = 0; i < idxs.length; i++) {
+            idxs[i] = i;
+        }
+        return idxs;
+    }    
+    
     //
     // StateNotifications
     //
@@ -1318,10 +1326,7 @@ public abstract class Children extends Object {
                 if (init && parent != null) {
                     List<Node> snapshot = entrySupport.createSnapshot();
                     if (snapshot.size() > 0) {
-                        int[] idxs = new int[snapshot.size()];
-                        for (int i = 0; i < idxs.length; i++) {
-                            idxs[i] = i;
-                        }
+                        int[] idxs = getSnapshotIdxs(snapshot);
                         parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);
                     }
                 }

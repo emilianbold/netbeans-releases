@@ -1345,10 +1345,7 @@ public class FilterNode extends Node {
             if (init && parent != null) {
                 List<Node> snapshot = entrySupport().createSnapshot();
                 if (snapshot.size() > 0) {
-                    int[] idxs = new int[snapshot.size()];
-                    for (int i = 0; i < idxs.length; i++) {
-                        idxs[i] = i;
-                    }
+                    int[] idxs = getSnapshotIdxs(snapshot);
                     if (newOriginal != null) {
                         this.original = newOriginal;
                     }
