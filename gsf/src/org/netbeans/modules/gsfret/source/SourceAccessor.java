@@ -95,7 +95,7 @@ public abstract class SourceAccessor {
     
     protected abstract void runSpecialTaskImpl (CancellableTask<CompilationInfo> task, Source.Priority priority);
         
-    public abstract ParserTaskImpl createParserTask(Language language, ClasspathInfo cpInfo,/* DiagnosticListener<? super SourceFileObject> diagnosticListener,*/ String sourceLevel);
+    public abstract ParserTaskImpl createParserTask(Language language, ClasspathInfo cpInfo);
     
     
 //    /**
