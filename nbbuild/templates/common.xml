@@ -555,17 +555,28 @@ made subject to such option by the copyright holder.
         <test test.type="qa-functional"/>
     </target>
 
-    <target name="test-generate-html" depends="-do-test-generate-html,-test-browse-html"/>
+    <target name="test-generate-html">
+        <subant target="-test-browse-html" genericantfile="${ant.file}" inheritall="false">
+            <dirset dir="build/test" includes="unit/results, qa-functional/results"/>
+        </subant>
+    </target>
+
     <target name="-do-test-generate-html">
-        <junitreport todir="${test.results.dir}">
-            <fileset dir="${test.results.dir}">
+        <junitreport todir=".">
+            <fileset dir=".">
                 <include name="TEST-*.xml"/>
             </fileset>
-            <report format="frames" todir="${test.results.dir}/html"/>
+            <report format="frames" todir="html"/>
         </junitreport>
+        <makeurl file="${basedir}/html/index.html" property="test.report.url"/>
+        <echo>
+
+        Report URL: ${test.report.url}
+        </echo>
     </target>
-    <target name="-test-browse-html" if="netbeans.home">
-        <nbbrowse file="${test.results.dir}/html/index.html"/>
+
+    <target name="-test-browse-html" if="netbeans.home" depends="-do-test-generate-html">
+        <nbbrowse file="html/index.html"/>
     </target>
     <target name="test" depends="test-unit,test-qa-functional"/>
 
