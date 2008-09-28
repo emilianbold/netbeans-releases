@@ -175,6 +175,14 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 if(f != null && f.exists()) {
                     libraryList.add(ServerUtilities.fileToUrl(f));
                 }
+                else {// we are in the final V3 Prelude jar name structure
+                    // find the org.eclipse.persistence*.jar files and add them
+                    for (File candidate : new File(installRoot,"modules").listFiles()) {// NOI18N
+                        if (candidate.getName().indexOf("org.eclipse.persistence")!=-1) {// NOI18N
+                           libraryList.add(ServerUtilities.fileToUrl(candidate));
+                        }
+                    }
+                }
                 f = ServerUtilities.getJarName(installRoot, PERSISTENCE_API_JAR_MATCHER_1);
                 if(f != null && f.exists()) {
                     libraryList.add(ServerUtilities.fileToUrl(f));

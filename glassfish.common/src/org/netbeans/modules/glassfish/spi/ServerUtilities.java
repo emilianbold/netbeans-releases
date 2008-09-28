@@ -261,6 +261,15 @@ public final class ServerUtilities {
     public static List<String> filterByManifest(List<String> jarList, File parent, int depth) {
         if(parent.exists()) {
             int parentLength = parent.getPath().length();
+            /* modules/web/jsf-impl.jar was not seen (or added with wrong relative name).
+             * need to calculate size relative to the modules/ dir and not the subdirs
+             * notice: this works only for depth=0 or 1
+             * not need to make it work deeper anyway
+             * with this test, we now also return "web/jsf-impl.jar" which is correct
+             */
+            if (depth==1){
+                parentLength = parent.getParentFile().getPath().length();
+            }
             for(File candidate: parent.listFiles()) {
                 if(candidate.isDirectory()) {
                     if(depth < 1) {

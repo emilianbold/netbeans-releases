@@ -53,8 +53,10 @@ import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -73,6 +75,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
@@ -81,7 +84,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
 import org.netbeans.modules.j2ee.common.project.BinaryForSourceQueryImpl;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
@@ -120,7 +123,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -185,6 +187,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private final UpdateHelper updateHelper;
     private final EjbJarProvider ejbModule;
     private final CopyOnSaveSupport css;
+    private final ArtifactCopyOnSaveSupport artifactSupport;
+    private final DeployOnSaveSupport deployOnSaveSupport;
     private final EjbJar apiEjbJar;
     private WebServicesSupport apiWebServicesSupport;
     private JAXWSSupport apiJaxwsSupport;
@@ -287,6 +291,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         classPathExtender = new ClassPathExtender(classPathModifier, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
         css = new CopyOnSaveSupport();
+        artifactSupport = new ArtifactCopySupport();
+        deployOnSaveSupport = new DeployOnSaveSupportProxy();
         helper.addAntProjectListener(this);
         ProjectManager.mutex().postWriteRequest(
              new Runnable () {
@@ -374,7 +380,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     }
     
     public DeployOnSaveSupport getDeployOnSaveSupport() {
-        return css;
+        return deployOnSaveSupport;
     }
     
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
@@ -980,6 +986,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if (!Boolean.parseBoolean(disableDeployOnSave)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(ejbModule);
             }
+            artifactSupport.enableArtifactSynchronization(true);
             
             EjbJarLogicalViewProvider physicalViewProvider = EjbJarProject.this.getLookup().lookup(EjbJarLogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
@@ -1099,6 +1106,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 LOGGER.log(Level.INFO, null, e);
             }
             
+            artifactSupport.enableArtifactSynchronization(false);
             Deployment.getDefault().disableCompileOnSaveSupport(ejbModule);
             
             // unregister project's classpaths to GlobalPathRegistry
@@ -1124,6 +1132,19 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         }
     }
 
+    private class DeployOnSaveSupportProxy implements DeployOnSaveSupport {
+
+        public synchronized void addArtifactListener(ArtifactListener listener) {
+            css.addArtifactListener(listener);
+            artifactSupport.addArtifactListener(listener);
+        }
+
+        public synchronized void removeArtifactListener(ArtifactListener listener) {
+            css.removeArtifactListener(listener);
+            artifactSupport.removeArtifactListener(listener);
+        }
+    }
+    
     /**
      * This class handle copying of meta-inf resources to appropriate place in build
      * dir. This class is used in true Deploy On Save.
@@ -1354,7 +1375,37 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             return current;
         }
     }
-    
+
+    private class ArtifactCopySupport extends ArtifactCopyOnSaveSupport {
+
+        public ArtifactCopySupport() {
+            super("build.classes.dir", evaluator(), getAntProjectHelper()); // NOI18N
+        }
+
+        @Override
+        public Map<Item, String> getArtifacts() {
+            final AntProjectHelper helper = getAntProjectHelper();
+
+            ClassPathSupport cs = new ClassPathSupport(evaluator(), getReferenceHelper(), helper,
+                getUpdateHelper(), new ClassPathSupportCallbackImpl(helper));
+
+            Map<Item, String> result = new HashMap<Item, String>();
+            for (ClassPathSupport.Item item : cs.itemsList(
+                    helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ProjectProperties.JAVAC_CLASSPATH),
+                    ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES)) {
+
+                if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+                    String included = item.getAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT);
+                    if (Boolean.parseBoolean(included)) {
+                        result.put(item, "");
+                    }
+                }
+            }
+            return result;
+        }
+
+    }
+
     // List of primarily supported templates
     private static final String[] TYPES = new String[] {
         "java-classes",         // NOI18N
