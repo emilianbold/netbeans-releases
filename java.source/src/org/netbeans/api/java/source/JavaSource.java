@@ -2242,6 +2242,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public PositionConverter create(FileObject fo, int offset, int length, JTextComponent component) {
             return new PositionConverter(fo, offset, length, component);
         }
+
+        @Override
+        public long createTaggedCompilationController(JavaSource js, long currentTag, Object[] out) throws IOException {
+            return js.createTaggedController(currentTag, out);
+        }
     }
     
     
