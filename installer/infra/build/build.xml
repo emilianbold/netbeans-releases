@@ -274,19 +274,21 @@
              </and>
         </condition>
 
+        <set property="gf.ml.build.type" value="${gf.build.type}"/>
+
         <if property="do.build.jtb">
             <!-- For Java Tools Bundle Update 6 we use NB6.1ML but EN SJSAS -->
-            <set property="gf.build.type" value=""/>
+            <set property="gf.ml.build.type" value=""/>
         </if>
 
        
-        <if property="gf.build.type" value="">
+        <if property="gf.ml.build.type" value="">
             <set property="gf.build.suffix"
 	         value="en"/>
             <set property="sjsas.build.suffix"
 	         value="en"/>
         </if>
-        <if property="gf.build.type" value="ml">
+        <if property="gf.ml.build.type" value="ml">
             <set property="gf.build.suffix"
 		 value="ml"/>
             <set property="sjsas.build.suffix"
@@ -378,12 +380,12 @@
 	<set property="sjsas.milestone.number.real" value="04"/>
 	<set property="sjsas.build.type" value="fcs"/>
 	        	        
-	<if property="gf.build.type" value="">
+	<if property="gf.ml.build.type" value="">
         	<set property="glassfish.build.number" value="20080411"/>
 		<set property="sjsas.build.number"     value="20080411"/>
 	</if>
 
-	<if property="gf.build.type" value="ml">
+	<if property="gf.ml.build.type" value="ml">
 	        <set property="glassfish.build.number" value="20080515"/>
 	        <set property="sjsas.build.number"     value="20080515"/>
 	</if>
