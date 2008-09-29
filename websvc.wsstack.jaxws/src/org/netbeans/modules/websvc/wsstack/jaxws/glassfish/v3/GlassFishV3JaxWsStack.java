@@ -87,8 +87,8 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxWs.Feature.TESTER_PAGE || feature == JaxWs.Feature.WSIT /*||
-            feature == JaxWs.Feature.JSR109*/) {
+        if (feature == JaxWs.Feature.TESTER_PAGE || feature == JaxWs.Feature.WSIT ||
+            feature == JaxWs.Feature.JSR109) {
             return true;
         } else {
             return false;
