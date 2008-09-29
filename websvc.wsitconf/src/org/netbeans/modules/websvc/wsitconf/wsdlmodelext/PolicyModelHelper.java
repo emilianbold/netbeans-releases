@@ -341,6 +341,7 @@ public class PolicyModelHelper {
     }
 
     static void removePolicyForElement(WSDLComponent c) {
+        assert (c != null);
         WSDLModel model = c.getModel();
         if (model != null) {
             String policyUri = getPolicyUriForElement(c);
