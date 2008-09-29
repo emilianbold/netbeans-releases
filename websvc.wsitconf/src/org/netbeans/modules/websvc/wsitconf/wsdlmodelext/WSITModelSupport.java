@@ -365,7 +365,7 @@ public class WSITModelSupport {
     
     private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service) throws IOException, Exception {
         String wsdlLocation = service.getLocalWsdlFile();
-        FileObject wsdlFO = supp.getLocalWsdlFolderForService(service.getName(),false).getFileObject(File.separator + wsdlLocation);
+        FileObject wsdlFO = supp.getLocalWsdlFolderForService(service.getName(),false).getFileObject(wsdlLocation);
         return getModelFromFO(wsdlFO, true);
     }
     
