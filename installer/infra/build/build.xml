@@ -2482,7 +2482,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${jdk.output.dir}/jdk-6u10-${jdk.bundle.files.suffix}-windows${nb.build.suffix}.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.10.30"/>
+	    <component uid="jdk" version="1.6.0.10.33"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-windows-i586.exe"/>
@@ -2492,7 +2492,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${jdk.output.dir}/jdk-6u10-${jdk.bundle.files.suffix}-linux${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.10.30"/>
+	    <component uid="jdk" version="1.6.0.10.33"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-linux-i586.bin"/>
@@ -2502,7 +2502,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${jdk.output.dir}/jdk-6u10-${jdk.bundle.files.suffix}-solaris-x86${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.10.30"/>
+	    <component uid="jdk" version="1.6.0.10.33"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-solaris-i586.sh"/>
@@ -2512,7 +2512,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${jdk.output.dir}/jdk-6u10-${jdk.bundle.files.suffix}-solaris-sparc${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.10.30"/>
+	    <component uid="jdk" version="1.6.0.10.33"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-solaris-sparc.sh"/>
