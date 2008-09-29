@@ -307,7 +307,7 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
             LOGGER.log(Level.FINE, "Artifact jar successfully deleted");
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
-            if ("jar".equals(destFile.getExt())) {
+            if ("jar".equals(destFile.getExt())) { // NOI18N
                 // try to zero it out at least
                 try {
                     zeroOutArchive(destFile);
