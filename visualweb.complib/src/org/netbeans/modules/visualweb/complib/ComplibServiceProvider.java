@@ -99,6 +99,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -292,7 +293,7 @@ public class ComplibServiceProvider implements ComplibService {
 
         private Icon icon;
 
-        private static final Image defaultIconImage = Utilities
+        private static final Image defaultIconImage = ImageUtilities
                 .loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component.png");
 
         private ComponentInfo(String className, Complib complib) throws ComplibException {

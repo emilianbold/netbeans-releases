@@ -380,9 +380,13 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
             while (!stopped && proxy.isHttpQueueActive()) {
-                Message message = getNextMessage();
-                if (message != null) {
-                    handle(message);
+                try {
+                    Message message = getNextMessage();
+                    if (message != null) {
+                        handle(message);
+                    }
+                } catch (Exception ex) {
+                    Log.getLogger().log(Level.SEVERE, "Uncaught exception in http message handler", ex);
                 }
             }
             Log.getLogger().log(Level.FINEST, "Ending " + getName());   //NOI18N
@@ -424,9 +428,13 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
             while (!stopped && proxy.isSuspensionQueueActive()) {
-                Message message = getNextMessage();
-                if (message != null) {
-                    handle(message);
+                try {
+                    Message message = getNextMessage();
+                    if (message != null) {
+                        handle(message);
+                    }
+                } catch (Exception ex) {
+                    Log.getLogger().log(Level.SEVERE, "Uncaught exception in suspension point handler", ex);
                 }
             }
             Log.getLogger().log(Level.FINEST, "Ending " + getName());   //NOI18N

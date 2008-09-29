@@ -59,6 +59,7 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -77,13 +78,13 @@ public class Utils {
         if (internalBadgeIconName != null) {
             Image internalBadgeImg = 
                     new ImageIcon(clazz.getResource(internalBadgeIconName)).getImage();
-            ret = Utilities.mergeImages(ret, internalBadgeImg, 7, 7);
+            ret = ImageUtilities.mergeImages(ret, internalBadgeImg, 7, 7);
         }
         
         if (externalBadgeIconName != null) {
             Image externalBadgeImg = 
                     new ImageIcon(clazz.getResource(externalBadgeIconName)).getImage();
-            ret = Utilities.mergeImages(ret, externalBadgeImg, 15, 8);
+            ret = ImageUtilities.mergeImages(ret, externalBadgeImg, 15, 8);
         }
         
         return ret;

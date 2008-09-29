@@ -49,6 +49,7 @@ import java.awt.Rectangle;
 import javax.swing.Scrollable;
 import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Constants;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -65,7 +66,7 @@ abstract class AbstractTab extends BackgroundPanel implements Scrollable, Consta
     public AbstractTab() {
         super( new BorderLayout() );
         
-        this.bottomGradient = Utilities.loadImage( IMAGE_BOTTOM_GRADIENT );
+        this.bottomGradient = ImageUtilities.loadImage( IMAGE_BOTTOM_GRADIENT );
     }
 
     @Override

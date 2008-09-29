@@ -67,6 +67,7 @@ import org.netbeans.editor.*;
 
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -134,7 +135,7 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private ImageIcon resolveIcon(String res){
-        return new ImageIcon(org.openide.util.Utilities.loadImage (res));
+        return new ImageIcon(ImageUtilities.loadImage (res));
     }
 
     private void installTitleComponent() {

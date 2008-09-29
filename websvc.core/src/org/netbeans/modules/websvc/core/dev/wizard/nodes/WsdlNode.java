@@ -44,6 +44,7 @@ import java.awt.Image;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Node representing WS Service
@@ -62,7 +63,7 @@ public class WsdlNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/webservice.png"); //NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/webservice.png"); //NOI18N
     }
     
     @Override

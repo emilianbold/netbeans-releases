@@ -55,6 +55,7 @@ import junit.framework.TestCase;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -78,7 +79,7 @@ public final class RegisteredCategory extends OptionsCategory {
     @Override
     public Icon getIcon() {
         if (icon == null) {
-            Image image = Utilities.loadImage("org/netbeans/modules/options/resources/generalOptions.png");
+            Image image = ImageUtilities.loadImage("org/netbeans/modules/options/resources/generalOptions.png");
             icon = new ImageIcon(image);
         }
         return icon;

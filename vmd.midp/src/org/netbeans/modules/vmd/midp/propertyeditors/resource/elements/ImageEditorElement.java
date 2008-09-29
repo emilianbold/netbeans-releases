@@ -310,7 +310,12 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
 
     private FileObject getSourceFolder() {
         if (project == null) {
-            throw Debug.illegalState("Current project is null"); // NOI18N
+            if (documentReferences != null && documentReferences.get() != null) {
+                project = ProjectUtils.getProject(documentReferences.get());
+            }
+            if (project == null) {
+                throw Debug.illegalState("Current project is null"); // NOI18N
+            }
         }
         String projectID = ProjectUtils.getProjectID(project);
         return ProjectUtils.getSourceGroups(projectID).iterator().next().getRootFolder();

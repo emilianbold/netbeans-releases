@@ -52,6 +52,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -108,7 +109,7 @@ public class TSDiagramDataNode extends DataNode
     public Image getIcon(int i)
     {
         String imageFile = ImageUtil.DIAGRAM_ICON_DEFAULT;
-        return Utilities.loadImage(ImageUtil.IMAGE_FOLDER + imageFile);
+        return ImageUtilities.loadImage(ImageUtil.IMAGE_FOLDER + imageFile);
 
 //        int diagramType = IDiagramKind.DK_UNKNOWN;
 //        

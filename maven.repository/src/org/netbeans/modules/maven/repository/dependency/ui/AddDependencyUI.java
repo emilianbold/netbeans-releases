@@ -55,6 +55,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -213,7 +214,7 @@ public class AddDependencyUI extends javax.swing.JPanel implements ExplorerManag
 
         @Override
         public Image getIcon(int arg0) {
-            return Utilities.icon2Image(pi.getIcon());
+            return ImageUtilities.icon2Image(pi.getIcon());
         }
 
         @Override

@@ -70,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -222,7 +223,7 @@ public class Axis2ServiceChildren extends Children.Keys<OperationInfo> {
         @java.lang.Override
         public java.awt.Image getIcon(int type) {
             if (cachedIcon == null) {
-                cachedIcon = org.openide.util.Utilities.loadImage(OPERATION_ICON);
+                cachedIcon = ImageUtilities.loadImage(OPERATION_ICON);
             }
             return cachedIcon;
         }

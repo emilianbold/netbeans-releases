@@ -72,6 +72,7 @@ import org.netbeans.modules.sql.framework.ui.output.dataview.SourceTableDataPane
 import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -109,7 +110,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
 
         String nbBundle1 = mLoc.t("BUND167: Data Integrator Output");
         setName(nbBundle1.substring(15));
-        setIcon(Utilities.loadImage(ICON_RESOURCE));
+        setIcon(ImageUtilities.loadImage(ICON_RESOURCE));
         String nbBundle2 = mLoc.t("BUND167: Data Integrator Output");
         setToolTipText(nbBundle2.substring(15));
 

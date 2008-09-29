@@ -53,12 +53,13 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class SubResourceLocatorsNode extends AbstractNode { //implements PropertyChangeListener{
     private Project project;
-    private static final Image SUB_RESOURCE_LOCATORS_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/SubResourceLocators.png", true ); // NOI18N
+    private static final Image SUB_RESOURCE_LOCATORS_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/SubResourceLocators.png", true ); // NOI18N
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
     
@@ -101,7 +102,7 @@ public class SubResourceLocatorsNode extends AbstractNode { //implements Propert
     private Image computeIcon( boolean opened, int type ) {        
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, SUB_RESOURCE_LOCATORS_BADGE, 7, 7 );
+        image = ImageUtilities.mergeImages(image, SUB_RESOURCE_LOCATORS_BADGE, 7, 7 );
         return image;        
     }
 

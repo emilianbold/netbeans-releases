@@ -75,6 +75,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -90,7 +91,7 @@ import org.w3c.dom.NodeList;
  */
 public final class BluejProject implements Project, AntProjectListener {
     
-    private static final Icon BLUEJ_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/bluej/resources/bluejproject.png")); // NOI18N
+    private static final Icon BLUEJ_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/bluej/resources/bluejproject.png")); // NOI18N
 
     private static final String PROP_BLUEJ_HOME = "bluej.userlib"; //NOI18N
     

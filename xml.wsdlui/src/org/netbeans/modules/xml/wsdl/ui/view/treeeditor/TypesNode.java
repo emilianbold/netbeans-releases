@@ -56,6 +56,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.SchemaNewType;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -71,7 +72,7 @@ import org.openide.util.datatransfer.PasteType;
  */
 public class TypesNode extends WSDLElementNode<Types> {
 
-    private static final Image ICON  = Utilities.loadImage
+    private static final Image ICON  = ImageUtilities.loadImage
     ("org/netbeans/modules/xml/wsdl/ui/view/resources/schema_folder_badge_var3.png");
 
     protected Types mWSDLConstruct;
@@ -87,7 +88,7 @@ public class TypesNode extends WSDLElementNode<Types> {
     public Image getIcon(int type) {
         Image folderIcon = FolderNode.FolderIcon.getIcon(type);
         if (ICON != null) {
-            return Utilities.mergeImages(folderIcon, ICON, 8, 8);
+            return ImageUtilities.mergeImages(folderIcon, ICON, 8, 8);
         }
 
         return folderIcon;
@@ -97,7 +98,7 @@ public class TypesNode extends WSDLElementNode<Types> {
     public Image getOpenedIcon(int type) {
         Image folderIcon = FolderNode.FolderIcon.getOpenedIcon(type);
         if (ICON != null) {
-            return Utilities.mergeImages(folderIcon, ICON, 8, 8);
+            return ImageUtilities.mergeImages(folderIcon, ICON, 8, 8);
         }
 
         return folderIcon;

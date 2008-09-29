@@ -46,6 +46,7 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.model.*;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -185,7 +186,7 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
                     Widget sub;
                     if (paletteDescriptor != null) {
                         String smallIcon = paletteDescriptor.getSmallIcon ();
-                        Image image = smallIcon != null ? Utilities.loadImage(smallIcon) : null;
+                        Image image = smallIcon != null ? ImageUtilities.loadImage(smallIcon) : null;
                         sub = new RegistryWidget (scene, true, image, paletteDescriptor.getDisplayName ());
                     } else
                         sub = new RegistryWidget (scene, false, null, producer.getMainComponentTypeID ().toString ());
@@ -204,7 +205,7 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
                 RegistryWidget sub;
                 if (paletteDescriptor != null) {
                     String smallIcon = paletteDescriptor.getSmallIcon ();
-                    Image image = smallIcon != null ? Utilities.loadImage(smallIcon) : null;
+                    Image image = smallIcon != null ? ImageUtilities.loadImage(smallIcon) : null;
                     sub = new RegistryWidget (scene, true, image, paletteDescriptor.getDisplayName ());
                 } else
                     sub = new RegistryWidget (scene, false, null, componentDescriptor.getTypeDescriptor ().getThisType ().toString ());

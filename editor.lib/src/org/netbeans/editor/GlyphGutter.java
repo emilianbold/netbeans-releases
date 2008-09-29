@@ -79,6 +79,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -245,7 +246,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         if (editorUI == null)
             return ;
 
-        gutterButton = org.openide.util.Utilities.loadImage("org/netbeans/editor/resources/glyphbutton.gif");
+        gutterButton = ImageUtilities.loadImage("org/netbeans/editor/resources/glyphbutton.gif");
 
         setToolTipText ("");
         getAccessibleContext().setAccessibleName(NbBundle.getBundle(BaseKit.class).getString("ACSN_Glyph_Gutter")); // NOI18N

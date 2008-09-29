@@ -46,6 +46,7 @@ import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -105,9 +106,9 @@ public class EventHandlerSupport {
         public Image getIcon (DesignComponent component, InfoPresenter.IconType iconType) {
             switch (iconType) {
                 case COLOR_16x16:
-                    return Utilities.loadImage (DisplayableCD.ICON_PATH);
+                    return ImageUtilities.loadImage (DisplayableCD.ICON_PATH);
                 case COLOR_32x32:
-                    return Utilities.loadImage (DisplayableCD.LARGE_ICON_PATH);
+                    return ImageUtilities.loadImage (DisplayableCD.LARGE_ICON_PATH);
                 default:
                     return null;
             }

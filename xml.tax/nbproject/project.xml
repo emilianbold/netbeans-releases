@@ -69,7 +69,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <implementation-version/>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -145,7 +145,17 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.apisupport.project</friend>
+                <friend>org.netbeans.modules.xml.tools</friend>
+                <friend>org.netbeans.modules.xml.tools.java</friend>
+                <package>org.netbeans.tax</package>
+                <package>org.netbeans.tax.io</package>
+                <package>org.netbeans.tax.decl</package>
+                <package>org.netbeans.tax.event</package>
+                <package>org.netbeans.modules.xml.tax.cookies</package>
+                <package>org.netbeans.modules.xml.tax.parser</package>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/org-netbeans-tax.jar</runtime-relative-path>
             </class-path-extension>

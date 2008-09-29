@@ -62,6 +62,7 @@ import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -117,7 +118,7 @@ public class LocaleNodeCustomizer extends JPanel {
 
     /** Utility method. Gets icon for key item in key list. */    
     private static Icon getKeyIcon() {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/properties/propertiesKey.gif")); // NOI18N
+        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/properties/propertiesKey.gif")); // NOI18N
     }
     
     /** Gets locale which represents the entry. Utility method.

@@ -83,6 +83,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.Proper
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementEvent;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementListener;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -216,7 +217,7 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         constraints.fill = GridBagConstraints.BOTH;
         add(createUCAwarePanel(component), constraints);
 
-        icon = new ImageIcon(Utilities.loadImage(element.getIconPath()));
+        icon = new ImageIcon(ImageUtilities.loadImage(element.getIconPath()));
         componentsList.addFocusListener(new FocusListener() {
 
             public void focusGained(FocusEvent e) {

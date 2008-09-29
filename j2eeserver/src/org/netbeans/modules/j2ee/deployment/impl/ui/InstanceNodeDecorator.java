@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.actions.StartAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.StopAction;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -142,28 +143,28 @@ public class InstanceNodeDecorator extends FilterNode
         Image badge = null;        
         switch (si.getServerState()) {
             case ServerInstance.STATE_WAITING : 
-                badge = Utilities.loadImage(WAITING_ICON);
+                badge = ImageUtilities.loadImage(WAITING_ICON);
                 break;
             case ServerInstance.STATE_RUNNING : 
-                badge = Utilities.loadImage(RUNNING_ICON);
+                badge = ImageUtilities.loadImage(RUNNING_ICON);
                 break;
             case ServerInstance.STATE_DEBUGGING : 
-                badge = Utilities.loadImage(DEBUGGING_ICON);
+                badge = ImageUtilities.loadImage(DEBUGGING_ICON);
                 break;
             case ServerInstance.STATE_SUSPENDED : 
-                badge = Utilities.loadImage(SUSPENDED_ICON);
+                badge = ImageUtilities.loadImage(SUSPENDED_ICON);
                 break;
             case ServerInstance.STATE_PROFILING : 
-                badge = Utilities.loadImage(PROFILING_ICON);
+                badge = ImageUtilities.loadImage(PROFILING_ICON);
                 break;
             case ServerInstance.STATE_PROFILER_BLOCKING : 
-                badge = Utilities.loadImage(PROFILER_BLOCKING_ICON);
+                badge = ImageUtilities.loadImage(PROFILER_BLOCKING_ICON);
                 break;
             case ServerInstance.STATE_PROFILER_STARTING : 
-                badge = Utilities.loadImage(WAITING_ICON);
+                badge = ImageUtilities.loadImage(WAITING_ICON);
                 break;
         }
-        return badge != null ? Utilities.mergeImages(origImg, badge, 15, 8) : origImg;
+        return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
     }
     
     // StateListener implementation -------------------------------------------

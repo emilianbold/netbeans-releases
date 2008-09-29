@@ -54,6 +54,7 @@ import org.netbeans.modules.xml.wsdl.ui.search.ComponentNameSearchProvider;
 import org.netbeans.modules.xml.wsdl.ui.search.ComponentTypeSearchProvider;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ui.category.AbstractCategory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -114,7 +115,7 @@ public class WSDLColumnsCategory extends AbstractCategory {
     public Icon getIcon() {
         String url = NbBundle.getMessage(WSDLColumnsCategory.class,
                 "IMG_WsdlCategory_Column");
-        Image img = Utilities.loadImage(url);
+        Image img = ImageUtilities.loadImage(url);
         return new ImageIcon(img);
     }
 

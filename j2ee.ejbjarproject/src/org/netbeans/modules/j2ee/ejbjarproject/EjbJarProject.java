@@ -116,6 +116,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
@@ -170,7 +171,7 @@ import org.openide.util.Exceptions;
  */
 public class EjbJarProject implements Project, AntProjectListener, FileChangeListener {
     
-    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif")); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif")); // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(EjbJarProject.class.getName());
     
@@ -1014,6 +1015,22 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if (!props.containsKey(ProjectProperties.EXCLUDES)) {
                 props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
             }
+            
+            // configure DoS
+            if (!props.containsKey(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE)) {
+                boolean deployOnSaveEnabled = false;
+                try {
+                    String instanceId = ep.getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+                    if (instanceId != null) {
+                        deployOnSaveEnabled = Deployment.getDefault().getServerInstance(instanceId)
+                                .isDeployOnSaveSupported();
+                    }
+                } catch (InstanceRemovedException ex) {
+                    // false
+                }
+                props.setProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
+            }
+
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);            
             
             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

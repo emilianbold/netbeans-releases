@@ -67,6 +67,7 @@ import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.IndexedVariable;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
@@ -1817,10 +1818,13 @@ public final class RubyIndex {
                     if (!platform.hasRubyGemsInstalled()) {
                         continue;
                     }
-                    url = platform.getGemManager().getGemHomeUrl() + url.substring(GEM_URL.length());
-                    FileObject fo = URLMapper.findFileObject(new URL(url));
-                    if (fo != null) {
-                        return fo;
+                    GemManager gemManager = platform.getGemManager();
+                    if (gemManager != null) {
+                        url = gemManager.getGemHomeUrl() + url.substring(GEM_URL.length());
+                        FileObject fo = URLMapper.findFileObject(new URL(url));
+                        if (fo != null) {
+                            return fo;
+                        }
                     }
                 }
                 

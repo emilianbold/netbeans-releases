@@ -47,6 +47,7 @@ import java.awt.Image;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.Utils;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -61,8 +62,8 @@ class Stripe extends JPanel implements Constants {
     
     public Stripe( boolean isUpperStripe ) {
         this.isUpperStripe = isUpperStripe;
-        pattern = Utilities.loadImage( IMAGE_STRIPE_PATTERN );
-        border = Utilities.loadImage( isUpperStripe 
+        pattern = ImageUtilities.loadImage( IMAGE_STRIPE_PATTERN );
+        border = ImageUtilities.loadImage( isUpperStripe
                 ? IMAGE_STRIPE_BORDER_UPPER
                 : IMAGE_STRIPE_BORDER_LOWER );
         setPreferredSize(new Dimension(0,0));

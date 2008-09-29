@@ -55,6 +55,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -169,7 +170,7 @@ public abstract class WSCompletionItem  implements CompletionItem {
             this.displayPath = displayPath;
         }
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(FILE_ICON));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(FILE_ICON));
             return icon;      
         }
         protected String getLeftHtmlText() {
@@ -205,7 +206,7 @@ public abstract class WSCompletionItem  implements CompletionItem {
             this.itemType=itemType;
         }
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(ENUM_ICON));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(ENUM_ICON));
             return icon;
         }
         protected String getLeftHtmlText() {

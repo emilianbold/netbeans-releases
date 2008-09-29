@@ -81,7 +81,6 @@ import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.queries.SourceLevelQuery;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -145,7 +144,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger BUG_LOGGER = Logger.getLogger("ruby.indexerbug");
-    // Keep in sync with GsfTaskProvider
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
@@ -466,7 +464,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         if (fo == null) {
             return null;
         }
-        List<URL> clone = new ArrayList (this.scannedRoots);
+        List<URL> clone = new ArrayList<URL>(this.scannedRoots);
         for (URL root : clone) {
             FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null && FileUtil.isParentOf(rootFo,fo)) {
@@ -1443,6 +1441,20 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 // TODO - do I really need to pull out the keySet() here?
                 int indexedCount = stamps != null ? stamps.keySet().size() : 0;
                 if (seenCount != indexedCount) {
+                    // Special case: We generate some extra index entries for things
+                    // in jar files -- those shouldn't count
+                    int jarFileCount = 0;
+                    for (String url : stamps.keySet()) {
+                        if (url.startsWith("jar:")) { // NOI18N
+                            jarFileCount++;
+                        }
+                    }
+
+                    if (seenCount+jarFileCount == indexedCount) {
+                        // Yes, the discrepancy was just because of files in jar files
+                        continue;
+                    }
+
                     // We only count files that we've timestamped, thus we can
                     // never get a greater seen count than the number of files in
                     // the index.
@@ -1477,6 +1489,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 
                     for (String url : removed) {
                         try {
+                            if (url.startsWith("jar:")) { // NOI18N
+                                continue;
+                            }
                             cachingIndexer.remove(language, url);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -1517,7 +1532,6 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             ClasspathInfo cpInfo = ClasspathInfoAccessor.getInstance().create (fo, null/*filter*/, true, false);
             ClassPath.Entry entry = getClassPathEntry (cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),root);
             boolean scan = (entry == null || entry.includes(fo));
-            String sourceLevel = scan ? SourceLevelQuery.getSourceLevel(fo) : null;
             String rootString = root.toExternalForm();
             assert "file".equals(root.getProtocol()) : "Unexpected protocol of URL: " + root;   //NOI18N
         for (Language language : languages) {
@@ -1560,8 +1574,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     final CompilerListener listener = new CompilerListener ();
                     //final JavaFileManager fm = ClasspathInfoAccessor.getInstance().getFileManager(cpInfo);                
                     //JavaFileObject active = FileObjects.fileFileObject(fileFile, rootFile, filter);
-                    //JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
-                    ParserTaskImpl jt = SourceAccessor.getINSTANCE().createParserTask(language, cpInfo, sourceLevel);
+                    ParserTaskImpl jt = SourceAccessor.getINSTANCE().createParserTask(language, cpInfo);
                     //jt.setTaskListener(listener);
                     jt.setParseListener(listener);
                     //Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
@@ -1970,7 +1983,6 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 List<ParserFile> bigFiles = new LinkedList<ParserFile>();
                 int state = 0; // TODO: Document what these states mean
                 boolean isBigFile = false;
-                //final String sourceLevel = SourceLevelQuery.getSourceLevel(rootFo);
           allFiles:
                 while (!toCompile.isEmpty() || !bigFiles.isEmpty() || active != null) {
                     try {

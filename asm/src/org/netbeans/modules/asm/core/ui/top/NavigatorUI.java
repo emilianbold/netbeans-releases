@@ -56,6 +56,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.explorer.view.ListView;
 import org.openide.loaders.DataObject;
@@ -179,7 +180,7 @@ public class NavigatorUI extends javax.swing.JPanel implements
         
         @Override
         public Image getIcon(int type) {
-            return Utilities.loadImage(FUNC_ICON);
+            return ImageUtilities.loadImage(FUNC_ICON);
         }
         
         @Override

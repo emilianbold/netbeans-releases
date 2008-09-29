@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml.sync;
 
+import org.netbeans.modules.xml.util.Util;
 import java.util.Date;
 import java.io.*;
 

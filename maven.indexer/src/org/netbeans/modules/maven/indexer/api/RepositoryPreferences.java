@@ -138,9 +138,9 @@ public final class RepositoryPreferences {
      */
     public synchronized void addOrModifyRepositoryInfo(RepositoryInfo info) {
         try {
-            FileObject fo = getSystemFsRoot().getFileObject(info.getId());
+            FileObject fo = getSystemFsRoot().getFileObject(getFileObjectName(info.getId()));
             if (fo == null) {
-                fo = getSystemFsRoot().createData(info.getId());
+                fo = getSystemFsRoot().createData(getFileObjectName(info.getId()));
             }
             fo.setAttribute(KEY_TYPE, info.getType());
             fo.setAttribute(KEY_PATH, info.getRepositoryPath());
@@ -150,10 +150,17 @@ public final class RepositoryPreferences {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
+    private String getFileObjectName(String id) {
+        String toRet = id;
+        if (toRet.contains(".")) { //NOI18N
+            toRet = toRet + ".ext"; //NOI18N
+        }
+        return toRet;
+    }
     
     public void removeRepositoryInfo(RepositoryInfo info) {
-        FileObject fo = getSystemFsRoot().getFileObject(info.getId());
+        FileObject fo = getSystemFsRoot().getFileObject(getFileObjectName(info.getId()));
         if (fo != null) {
             synchronized (infoCache) {
                 infoCache.remove(fo);

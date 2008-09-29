@@ -43,6 +43,7 @@ package org.netbeans.modules.dbschema.jdbcimpl;
 
 import java.awt.Image;
 import java.beans.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 public class DBschemaDataLoaderBeanInfo extends SimpleBeanInfo {
@@ -60,9 +61,9 @@ public class DBschemaDataLoaderBeanInfo extends SimpleBeanInfo {
 
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage("org/netbeans/modules/dbschema/jdbcimpl/DBschemaDataIcon.gif"); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/dbschema/jdbcimpl/DBschemaDataIcon.gif"); //NOI18N
         } else {
-            return Utilities.loadImage("org/netbeans/modules/dbschema/jdbcimpl/DBschemaDataIcon32.gif"); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/dbschema/jdbcimpl/DBschemaDataIcon32.gif"); //NOI18N
         }
     }
 

@@ -49,6 +49,8 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JToolTip;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -535,7 +537,10 @@ public class GsfCompletionProvider implements CompletionProvider {
                 if (completer != null) {
                     CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, NameKind.EXACT_NAME, QueryType.DOCUMENTATION);
                     CodeCompletionResult result = completer.complete(context);
-                    assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
+                    if (result == null) {
+                        Logger.getLogger(this.getClass().getName()).log(Level.WARNING, completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null");
+                        result = CodeCompletionResult.NONE;
+                    }
 
                     if (result != CodeCompletionResult.NONE) {
                         for (CompletionProposal proposal : result.getItems()) {
@@ -582,7 +587,11 @@ public class GsfCompletionProvider implements CompletionProvider {
                     isCaseSensitive() ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX,
                     QueryType.COMPLETION);
             CodeCompletionResult result = completer.complete(context);
-            assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
+
+            if (result == null) {
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null");
+                result = CodeCompletionResult.NONE;
+            }
 
             if (result != CodeCompletionResult.NONE) {
                 if (result.isTruncated()) {

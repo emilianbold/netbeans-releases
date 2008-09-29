@@ -62,7 +62,7 @@ class RuntimeClassPathImpl extends AbstractProjectClassPathImpl {
     }
     
     URI[] createPath() {
-        List lst = new ArrayList();
+        List<URI> lst = new ArrayList<URI>();
         MavenProject prj = getMavenProject().getOriginalMavenProject();
         if (prj != null && prj.getBuild() != null) {
             File fil = new File(prj.getBuild().getOutputDirectory());
@@ -70,10 +70,9 @@ class RuntimeClassPathImpl extends AbstractProjectClassPathImpl {
             lst.add(fil.toURI());
         }
         try {
-            List srcs = getMavenProject().getOriginalMavenProject().getRuntimeClasspathElements();
-            Iterator it = srcs.iterator();
-            while (it.hasNext()) {
-                String str = (String)it.next();
+            @SuppressWarnings("unchecked")
+            List<String> srcs = getMavenProject().getOriginalMavenProject().getRuntimeClasspathElements();
+            for (String str : srcs) {
                 File fil = FileUtil.normalizeFile(new File(str));
                 lst.add(fil.toURI());
             }
@@ -81,7 +80,7 @@ class RuntimeClassPathImpl extends AbstractProjectClassPathImpl {
             ex.printStackTrace();
         }
         URI[] uris = new URI[lst.size()];
-        uris = (URI[])lst.toArray(uris);
+        uris = lst.toArray(uris);
         return uris;
     }
     

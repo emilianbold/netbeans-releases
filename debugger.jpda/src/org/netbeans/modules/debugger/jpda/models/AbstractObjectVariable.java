@@ -308,7 +308,16 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             boolean addQuotation = false;
             boolean addDots = false;
             StringReference sr;
-            if (v instanceof StringReference) {
+            if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
+                Method toStringMethod = ((ClassType) v.type ()).
+                    concreteMethodByName ("toString", "()Ljava/lang/String;");  // NOI18N
+                sr = (StringReference) debugger.invokeMethod (
+                    (ObjectReference) v,
+                    toStringMethod,
+                    new Value [0],
+                    maxLength + 1
+                );
+            } else if (v instanceof StringReference) {
                 sr = (StringReference) v;
                 addQuotation = true;
             } else {
@@ -322,34 +331,10 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             }
             if (sr == null) {
                 return null;
-            } else {
-                if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
-                    Method stringLengthMethod = ((ClassType) sr.type ()).
-                        concreteMethodByName ("length", "()I");  // NOI18N
-                    IntegerValue lengthValue = (IntegerValue) debugger.invokeMethod (
-                        sr,
-                        stringLengthMethod,
-                        new Value [0]
-                    );
-                    if (lengthValue.value() > maxLength) {
-                        Method subStringMethod = ((ClassType) sr.type ()).
-                            concreteMethodByName ("substring", "(II)Ljava/lang/String;");  // NOI18N
-                        if (subStringMethod != null) {
-                            sr = (StringReference) debugger.invokeMethod (
-                                sr,
-                                subStringMethod,
-                                new Value [] { v.virtualMachine().mirrorOf(0),
-                                               v.virtualMachine().mirrorOf(maxLength) }
-                            );
-                            addDots = true;
-                        }
-                    }
-                    
-                }
             }
             String str = sr.value();
-            if (addDots) {
-                str = str + "..."; // NOI18N
+            if (maxLength > 0 && maxLength < Integer.MAX_VALUE && str.length() > maxLength) {
+                str = str.substring(0, maxLength) + "..."; // NOI18N
             }
             if (addQuotation) {
                 str = "\"" + str + "\""; // NOI18N

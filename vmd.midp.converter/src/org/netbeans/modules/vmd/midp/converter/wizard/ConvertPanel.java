@@ -42,6 +42,7 @@
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -68,7 +69,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
     /** Creates new form ConvertPanel */
     public ConvertPanel() {
         initComponents();
-        ImageIcon warningMessage = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/warning.gif"));
+        ImageIcon warningMessage = new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/vmd/midp/resources/warning.gif"));
         finishIcon.setIcon (warningMessage); // NOI18N
         message.setIcon (warningMessage); // NOI18N
         startButton.setDefaultCapable(true);

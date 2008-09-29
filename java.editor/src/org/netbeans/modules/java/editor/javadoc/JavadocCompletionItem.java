@@ -69,6 +69,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -129,7 +130,7 @@ final class JavadocCompletionItem implements CompletionItem {
     }
     
     protected ImageIcon createIcon() {
-        return new ImageIcon(Utilities.loadImage(iconPath));
+        return new ImageIcon(ImageUtilities.loadImage(iconPath));
     }
     
     protected String getLeftHtmlText() {

@@ -1,0 +1,4 @@
+Code completion result for source line:
+x = getElementsByName('|');
+(QueryType=COMPLETION, NameKind=PREFIX)
+TAG        links                                      <i>rails-index.html</i>

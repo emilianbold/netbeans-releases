@@ -106,6 +106,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 
@@ -304,7 +305,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/spring/beans/resources/spring-bean.png")); // NOI18N
+            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/spring/beans/resources/spring-bean.png")); // NOI18N
         }
 
         @Override
@@ -420,7 +421,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(Utilities.loadImage(CLASS));
+            return new ImageIcon(ImageUtilities.loadImage(CLASS));
         }
 
         @Override
@@ -476,7 +477,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         
         @Override
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(PACKAGE));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(PACKAGE));
             return icon;            
         }
         
@@ -656,7 +657,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                         break;
                 }
             }
-            ImageIcon newIcon = new ImageIcon(org.openide.util.Utilities.loadImage(iconPath));
+            ImageIcon newIcon = new ImageIcon(ImageUtilities.loadImage(iconPath));
             icon[isStatic?1:0][level] = newIcon;
             return newIcon;            
         }
@@ -817,7 +818,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             Image base = null;
             Icon baseIcon = UIManager.getIcon(ICON_KEY_UIMANAGER); // #70263
             if (baseIcon != null) {
-                base = Utilities.icon2Image(baseIcon);
+                base = ImageUtilities.icon2Image(baseIcon);
             } else {
                 base = (Image) UIManager.get(ICON_KEY_UIMANAGER_NB); // #70263
                 if (base == null) { // fallback to our owns                
@@ -876,13 +877,13 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             if(cachedIcon == null) {
                 switch(propertyType) {
                     case READ_ONLY:
-                        cachedIcon = new ImageIcon(Utilities.loadImage(PROP_RO));
+                        cachedIcon = new ImageIcon(ImageUtilities.loadImage(PROP_RO));
                         break;
                     case READ_WRITE:
-                        cachedIcon = new ImageIcon(Utilities.loadImage(PROP_RW));
+                        cachedIcon = new ImageIcon(ImageUtilities.loadImage(PROP_RW));
                         break;
                     case WRITE_ONLY:
-                        cachedIcon = new ImageIcon(Utilities.loadImage(PROP_WO));
+                        cachedIcon = new ImageIcon(ImageUtilities.loadImage(PROP_WO));
                         break;
                 }
                 
@@ -963,7 +964,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(Utilities.loadImage(
+            return new ImageIcon(ImageUtilities.loadImage(
                     "org/netbeans/modules/spring/beans/resources/spring.png")); // NOI18N
         }
 

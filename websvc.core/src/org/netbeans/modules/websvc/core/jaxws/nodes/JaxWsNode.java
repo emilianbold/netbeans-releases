@@ -119,6 +119,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
@@ -249,35 +250,35 @@ public class JaxWsNode extends AbstractNode implements
             if (((JaxWsChildren) getChildren()).isModelGenerationFinished()) {
                 return getServiceImage();
             } else {
-                return org.openide.util.Utilities.mergeImages(getServiceImage(), getWaitingBadge(), 15, 8);
+                return ImageUtilities.mergeImages(getServiceImage(), getWaitingBadge(), 15, 8);
             }
         } else {
-            Image dirtyNodeImage = org.openide.util.Utilities.mergeImages(getServiceImage(), getErrorBadge(), 6, 6);
+            Image dirtyNodeImage = ImageUtilities.mergeImages(getServiceImage(), getErrorBadge(), 6, 6);
             if (((JaxWsChildren) getChildren()).isModelGenerationFinished()) {
                 return dirtyNodeImage;
             } else {
-                return org.openide.util.Utilities.mergeImages(dirtyNodeImage, getWaitingBadge(), 15, 8);
+                return ImageUtilities.mergeImages(dirtyNodeImage, getWaitingBadge(), 15, 8);
             }
         }
     }
 
     private java.awt.Image getServiceImage() {
         if (cachedServiceBadge == null) {
-            cachedServiceBadge = org.openide.util.Utilities.loadImage(SERVICE_BADGE);
+            cachedServiceBadge = ImageUtilities.loadImage(SERVICE_BADGE);
         }
         return cachedServiceBadge;
     }
 
     private java.awt.Image getErrorBadge() {
         if (cachedErrorBadge == null) {
-            cachedErrorBadge = org.openide.util.Utilities.loadImage(ERROR_BADGE);
+            cachedErrorBadge = ImageUtilities.loadImage(ERROR_BADGE);
         }
         return cachedErrorBadge;
     }
 
     private java.awt.Image getWaitingBadge() {
         if (cachedWaitingBadge == null) {
-            cachedWaitingBadge = org.openide.util.Utilities.loadImage(WAITING_BADGE);
+            cachedWaitingBadge = ImageUtilities.loadImage(WAITING_BADGE);
         }
         return cachedWaitingBadge;
     }

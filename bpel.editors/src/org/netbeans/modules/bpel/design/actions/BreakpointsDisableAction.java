@@ -46,6 +46,7 @@ import javax.swing.KeyStroke;
 import org.netbeans.modules.bpel.core.debugger.DebuggerHelper;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -58,7 +59,7 @@ public class BreakpointsDisableAction extends AbstractAction {
 
     //public static final String ACCELERATOR = "alt shift F10"; // NOI18N
     
-    private static final Icon ICON = new ImageIcon(Utilities.loadImage(
+    private static final Icon ICON = new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/bpel/design/actions/" + // NOI18N
             "resources/breakpoints_disable.png")); // NOI18N
     

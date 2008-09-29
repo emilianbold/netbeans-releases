@@ -133,6 +133,8 @@ Breakpoint *BreakpointManager::getUpdatableBreakpoint(tstring id) {
         //If already set in the engine, unset it, but do not delete in
         //our internal structures
         m_pScriptDebugger->removeBreakpoint(iter->second);
+        //Reset the hit count
+        iter->second->setHitCount(0);
         return iter->second;
     }
     return NULL;

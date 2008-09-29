@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.common.method.impl;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -100,6 +102,9 @@ public final class ParametersPanel extends javax.swing.JPanel {
         TableColumn typeTableColumn = table.getColumnModel().getColumn(COL_TYPE_INDEX);
         typeTableColumn.setCellEditor(new DefaultCellEditor(typeCombo));
 
+        // #147884 fix
+        typeCombo.addActionListener(new TypeComboListener(typeCombo));
+        
         table.setRowHeight(typeCombo.getPreferredSize().height);
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         
@@ -414,7 +419,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private static String chooseType(Object aValue, String typeName) {
         if (!(aValue instanceof String)) {
-            return "Object";  // NOI18N
+            return "*";  // NOI18N
         }
         String aValueString = ((String)aValue).trim();
         if (aValueString.equals("")) {  // NOI18N
@@ -450,4 +455,22 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     }
 
+    private class TypeComboListener implements ActionListener {
+        private JComboBox typeCombo;
+        
+        TypeComboListener(JComboBox combo) {
+            this.typeCombo = combo;
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow >= 0) {
+                String typeInModel = tableModel.getValueAt(selectedRow, COL_TYPE_INDEX).toString();
+                if ("*".equals(typeInModel) && typeCombo.getSelectedItem() != null) {  // NOI18N
+                    tableModel.setValueAt(typeCombo.getSelectedItem(), selectedRow, COL_TYPE_INDEX);
+                }
+            }
+        }
+    }
+    
 }

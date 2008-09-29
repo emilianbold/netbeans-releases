@@ -53,6 +53,7 @@ import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -87,17 +88,17 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         if (cookie.getFile() == null && cookie.getFileObject() == null) {
             // Script has been invalidated perhaps? Don't continue, we would
             // just get an NPE from the getParseException.
-            return Utilities.loadImage("org/apache/tools/ant/module/resources/AntIconError.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/apache/tools/ant/module/resources/AntIconError.gif"); // NOI18N
         }
         if (!cookie.isParsed()) {
             // Assume for now it is not erroneous.
-            return Utilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif"); // NOI18N
         }
         Throwable exc = cookie.getParseException();
         if (exc != null) {
-            return Utilities.loadImage("org/apache/tools/ant/module/resources/AntIconError.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/apache/tools/ant/module/resources/AntIconError.gif"); // NOI18N
         } else {
-            return Utilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif"); // NOI18N
         }
     }
     @Override

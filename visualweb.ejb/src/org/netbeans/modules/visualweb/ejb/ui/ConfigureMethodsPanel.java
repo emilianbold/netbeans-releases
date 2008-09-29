@@ -59,6 +59,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -96,12 +97,12 @@ public class ConfigureMethodsPanel extends JPanel{
                     MethodInfo method = ((EjbGroupTreeNodes.MethodNode)value).getMethod();
                     if( method.getReturnType().isCollection() && method.getReturnType().getElemClassName() == null )
                         // Show the warning icon to indicate to the user that extra info needed
-                        setIcon( new ImageIcon( Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/warning.png") ) );
+                        setIcon( new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/warning.png") ) );
                     else
-                        setIcon( new ImageIcon( Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/methodPublic.gif") ) );
+                        setIcon( new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/methodPublic.gif") ) );
                 } else {
                     // Must be session ejb node
-                    setIcon( new ImageIcon( Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/session_bean.png" ) ) );
+                    setIcon( new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/session_bean.png" ) ) );
                 }
             
                 return this;

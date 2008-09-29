@@ -65,6 +65,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceMa
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -143,10 +144,10 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Node
 
     private Node createDatasourceNode(String datasourceName){
         AbstractNode node = new AbstractNode(Children.LEAF){
-            final Image icon =  Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png"); // NOI18N
-            final Image disconnectedIcon =  Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png"); // NOI18N            
-            Image brokenBadgedImage = Utilities.mergeImages(icon, disconnectedIcon, 8, 0);
-            Image datasourceImage = Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource.png");  // NOI18N                        
+            final Image icon =  ImageUtilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png"); // NOI18N
+            final Image disconnectedIcon =  ImageUtilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png"); // NOI18N
+            Image brokenBadgedImage = ImageUtilities.mergeImages(icon, disconnectedIcon, 8, 0);
+            Image datasourceImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource.png");  // NOI18N
             String dispName;
             
             public Image getIcon(int type) {
@@ -221,7 +222,7 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Node
         node.setDisplayName(dsName);
         node.setShortDescription(dsName);
         
-        Image icon = Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource.png");  // NOI18N
+        Image icon = ImageUtilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource.png");  // NOI18N
         node.setIconBaseWithExtension("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource.png"); //NOI18N
         
         new ProjectDataSourceNode(nbProject);

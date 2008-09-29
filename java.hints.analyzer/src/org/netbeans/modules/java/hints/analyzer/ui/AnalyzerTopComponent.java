@@ -142,6 +142,7 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         );
 
         refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/hints/analyzer/ui/refresh.png"))); // NOI18N
+        refreshButton.setToolTipText(org.openide.util.NbBundle.getBundle(AnalyzerTopComponent.class).getString("AnalyzerTopComponent.refreshButton.toolTipText")); // NOI18N
         refreshButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         refreshButton.setContentAreaFilled(false);
         refreshButton.setMaximumSize(new java.awt.Dimension(24, 24));
@@ -154,6 +155,7 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(fixButton, org.openide.util.NbBundle.getMessage(AnalyzerTopComponent.class, "AnalyzerTopComponent.fixButton.text")); // NOI18N
+        fixButton.setToolTipText(org.openide.util.NbBundle.getBundle(AnalyzerTopComponent.class).getString("AnalyzerTopComponent.fixButton.toolTipText")); // NOI18N
         fixButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fixButtonActionPerformed(evt);
@@ -176,6 +178,7 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         });
 
         nextError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/hints/analyzer/ui/nextmatch.png"))); // NOI18N
+        nextError.setToolTipText(org.openide.util.NbBundle.getBundle(AnalyzerTopComponent.class).getString("AnalyzerTopComponent.nextError.toolTipText")); // NOI18N
         nextError.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         nextError.setContentAreaFilled(false);
         nextError.setMaximumSize(new java.awt.Dimension(24, 24));
@@ -188,6 +191,7 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         });
 
         previousError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/hints/analyzer/ui/prevmatch.png"))); // NOI18N
+        previousError.setToolTipText(org.openide.util.NbBundle.getBundle(AnalyzerTopComponent.class).getString("AnalyzerTopComponent.previousError.toolTipText")); // NOI18N
         previousError.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         previousError.setContentAreaFilled(false);
         previousError.setMaximumSize(new java.awt.Dimension(24, 24));

@@ -57,6 +57,7 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
@@ -116,12 +117,12 @@ public class JAXBWizardRootNode extends AbstractNode {
     }
         
     public Image getIcon(int type) {
-        return Utilities.loadImage(
+        return ImageUtilities.loadImage(
                 "org/netbeans/modules/xml/jaxb/resources/packageRoot.gif" ); // No I18N
     }
     
     public Image getOpenedIcon(int type) {
-        return Utilities.loadImage(
+        return ImageUtilities.loadImage(
                 "org/netbeans/modules/xml/jaxb/resources/packageRootOpen.gif" );// No I18N
     }
     

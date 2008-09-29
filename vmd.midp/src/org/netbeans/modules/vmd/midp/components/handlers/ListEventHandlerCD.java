@@ -48,6 +48,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.displayables.ListCode;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -88,7 +89,7 @@ public class ListEventHandlerCD extends ComponentDescriptor {
                 // info
                 InfoPresenter.createStatic (NbBundle.getMessage(ListEventHandlerCD.class, "NAME_ListEventHandler"), NbBundle.getMessage(ListEventHandlerCD.class, "TYPE_Action"), ICON_PATH), // NOI18N
                 // flow
-                new FlowEventHandlerPinBadgePresenter (Utilities.loadImage (ICON_PATH), 0) {
+                new FlowEventHandlerPinBadgePresenter (ImageUtilities.loadImage (ICON_PATH), 0) {
                     protected DesignEventFilter getEventFilter () {
                         return super.getEventFilter ().addParentFilter (getComponent (), 2, false);
                     }

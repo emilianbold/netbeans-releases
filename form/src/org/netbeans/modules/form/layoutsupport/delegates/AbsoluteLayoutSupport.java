@@ -47,6 +47,7 @@ import java.util.*;
 import java.lang.reflect.Constructor;
 
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import org.netbeans.lib.awtextra.AbsoluteLayout;
@@ -99,9 +100,9 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
         switch (type) {
             case BeanInfo.ICON_COLOR_16x16:
             case BeanInfo.ICON_MONO_16x16:
-                return Utilities.loadImage(iconURL);
+                return ImageUtilities.loadImage(iconURL);
             default:
-                return Utilities.loadImage(icon32URL);
+                return ImageUtilities.loadImage(icon32URL);
         }
     }
 

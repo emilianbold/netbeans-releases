@@ -44,7 +44,7 @@ import java.io.*;
 import java.util.*;
 import java.text.DateFormat;
 
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;

@@ -46,7 +46,9 @@ made subject to such option by the copyright holder.
     IMPORTANT:  This file modifies keybindings from DefaultKeyBindings.xml to make them work in Mac OS.
 -->
 <bindings>
-    <bind key="O-G" remove="true"/>
+    <bind actionName="goto-source" key="DS-B"/>
+    <bind actionName="fast-import" key="OS-I"/>
+    <bind actionName="fix-imports" key="DS-I"/>
     <bind key="OS-G" actionName="goto-declaration"/>
     <bind key="OS-UP" remove="true"/>
     <bind key="DOS-UP" actionName="select-element-next"/>

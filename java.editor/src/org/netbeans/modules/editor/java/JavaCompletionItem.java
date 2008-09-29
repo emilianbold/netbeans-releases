@@ -74,6 +74,7 @@ import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -430,7 +431,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(JAVA_KEYWORD));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(JAVA_KEYWORD));
             return icon;            
         }
         
@@ -555,7 +556,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(PACKAGE));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(PACKAGE));
             return icon;            
         }
         
@@ -637,7 +638,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(CLASS));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(CLASS));
             return icon;            
         }
 
@@ -886,7 +887,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(INTERFACE));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(INTERFACE));
             return icon;            
         }
         
@@ -905,7 +906,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(ENUM));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(ENUM));
             return icon;            
         }
     }
@@ -920,7 +921,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(ANNOTATION));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(ANNOTATION));
             return icon;            
         }
     }
@@ -1004,7 +1005,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(LOCAL_VARIABLE));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(LOCAL_VARIABLE));
             return icon;            
         }
 
@@ -1133,7 +1134,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         break;
                 }
             }
-            ImageIcon newIcon = new ImageIcon(org.openide.util.Utilities.loadImage(iconPath));
+            ImageIcon newIcon = new ImageIcon(ImageUtilities.loadImage(iconPath));
             icon[isStatic?1:0][level] = newIcon;
             return newIcon;            
         }
@@ -1314,7 +1315,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         break;
                 }
             }
-            ImageIcon newIcon = new ImageIcon(org.openide.util.Utilities.loadImage(iconPath));
+            ImageIcon newIcon = new ImageIcon(ImageUtilities.loadImage(iconPath));
             icon[isStatic?1:0][level] = newIcon;
             return newIcon;            
         }
@@ -1470,8 +1471,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String OVERRIDE_TEXT = NbBundle.getMessage(JavaCompletionItem.class, "override_Lbl");
         private static final String IMPLEMENT_TEXT = NbBundle.getMessage(JavaCompletionItem.class, "implement_Lbl");
         
-        private static ImageIcon implementBadge = new ImageIcon(org.openide.util.Utilities.loadImage(IMPL_BADGE_PATH));
-        private static ImageIcon overrideBadge = new ImageIcon(org.openide.util.Utilities.loadImage(OVRD_BADGE_PATH));
+        private static ImageIcon implementBadge = new ImageIcon(ImageUtilities.loadImage(IMPL_BADGE_PATH));
+        private static ImageIcon overrideBadge = new ImageIcon(ImageUtilities.loadImage(OVRD_BADGE_PATH));
         private static ImageIcon merged_icon[][] = new ImageIcon[2][4];
         
         
@@ -1499,7 +1500,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 return merged;
             }
             ImageIcon superIcon = super.getIcon();                        
-            merged = new ImageIcon( org.openide.util.Utilities.mergeImages(
+            merged = new ImageIcon( ImageUtilities.mergeImages(
                 superIcon.getImage(), 
                 implement ? implementBadge.getImage() : overrideBadge.getImage(), 
                 16 - 8, 
@@ -1655,14 +1656,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected ImageIcon getIcon() {
             if (merged_icons[setter ? 1 : 0] == null) {
                 if (superIcon == null)
-                    superIcon = new ImageIcon(org.openide.util.Utilities.loadImage(METHOD_PUBLIC));
+                    superIcon = new ImageIcon(ImageUtilities.loadImage(METHOD_PUBLIC));
                 if (setter) {
-                    ImageIcon setterBadge = new ImageIcon(org.openide.util.Utilities.loadImage(SETTER_BADGE_PATH));
-                    merged_icons[1] = new ImageIcon(org.openide.util.Utilities.mergeImages(superIcon.getImage(), 
+                    ImageIcon setterBadge = new ImageIcon(ImageUtilities.loadImage(SETTER_BADGE_PATH));
+                    merged_icons[1] = new ImageIcon(ImageUtilities.mergeImages(superIcon.getImage(),
                             setterBadge.getImage(), 16 - 8, 16 - 8));
                 } else {
-                    ImageIcon getterBadge = new ImageIcon(org.openide.util.Utilities.loadImage(GETTER_BADGE_PATH));
-                    merged_icons[0] = new ImageIcon(org.openide.util.Utilities.mergeImages(superIcon.getImage(), 
+                    ImageIcon getterBadge = new ImageIcon(ImageUtilities.loadImage(GETTER_BADGE_PATH));
+                    merged_icons[0] = new ImageIcon(ImageUtilities.mergeImages(superIcon.getImage(),
                             getterBadge.getImage(), 16 - 8, 16 - 8));
                 }
             }
@@ -1866,7 +1867,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     iconPath = CONSTRUCTOR_PUBLIC;
                     break;
             }
-            ImageIcon newIcon = new ImageIcon(org.openide.util.Utilities.loadImage(iconPath));
+            ImageIcon newIcon = new ImageIcon(ImageUtilities.loadImage(iconPath));
             icon[level] = newIcon;
             return newIcon;            
         }
@@ -2071,7 +2072,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }        
 
         protected ImageIcon getIcon() {
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(CONSTRUCTOR));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(CONSTRUCTOR));
             return icon;            
         }
 
@@ -2499,7 +2500,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(ATTRIBUTE));
+            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(ATTRIBUTE));
             return icon;            
         }
         
@@ -2694,7 +2695,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             if (iconPath == null)
                 return null;
-            ImageIcon newIcon = new ImageIcon(org.openide.util.Utilities.loadImage(iconPath));
+            ImageIcon newIcon = new ImageIcon(ImageUtilities.loadImage(iconPath));
             icon[isField ? 0 : 1][level - 1] = newIcon;
             return newIcon;            
         }
@@ -2939,7 +2940,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         protected ImageIcon getIcon() {
             if (icon == null) 
-                icon = new ImageIcon(org.openide.util.Utilities.loadImage(CONSTRUCTOR_PUBLIC));
+                icon = new ImageIcon(ImageUtilities.loadImage(CONSTRUCTOR_PUBLIC));
             return icon;            
         }
         

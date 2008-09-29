@@ -43,6 +43,7 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import org.netbeans.modules.xml.wsdl.model.Fault;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -56,7 +57,7 @@ import org.openide.util.Utilities;
 public class OperationFaultNode extends OperationParameterNode<Fault> {
     public OperationFaultNode(Fault wsdlConstruct) {
         super(wsdlConstruct);
-        ICON  = Utilities.loadImage
+        ICON  = ImageUtilities.loadImage
         ("org/netbeans/modules/xml/wsdl/ui/view/resources/fault.png");
     }
     

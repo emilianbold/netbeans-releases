@@ -46,6 +46,7 @@ import java.awt.Image;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Image data loader bean info.
@@ -66,9 +67,9 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
                 (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/image/imageObject.png"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/image/imageObject.png"); // NOI18N
         } else {
-            return Utilities.loadImage ("org/netbeans/modules/image/imageObject32.gif"); // NOI18N
+            return ImageUtilities.loadImage ("org/netbeans/modules/image/imageObject32.gif"); // NOI18N
         }
     }
 

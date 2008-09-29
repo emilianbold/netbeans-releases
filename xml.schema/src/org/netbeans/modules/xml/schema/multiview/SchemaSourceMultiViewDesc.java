@@ -49,6 +49,7 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.schema.SchemaEditorSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -82,7 +83,7 @@ public class SchemaSourceMultiViewDesc
     }
 
     public java.awt.Image getIcon() {
-        return Utilities.loadImage(SchemaDataObject.SCHEMA_ICON_BASE_WITH_EXT);
+        return ImageUtilities.loadImage(SchemaDataObject.SCHEMA_ICON_BASE_WITH_EXT);
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {

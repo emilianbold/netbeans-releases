@@ -47,6 +47,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 public class AsmDataLoaderBeanInfo extends SimpleBeanInfo {
@@ -64,7 +65,7 @@ public class AsmDataLoaderBeanInfo extends SimpleBeanInfo {
     
     @Override
     public Image getIcon(int type) {
-        return Utilities.loadImage(IMAGE_ICON_BASE);
+        return ImageUtilities.loadImage(IMAGE_ICON_BASE);
     }
     
 }

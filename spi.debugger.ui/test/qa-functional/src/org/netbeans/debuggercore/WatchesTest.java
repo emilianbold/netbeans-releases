@@ -121,7 +121,7 @@ public class WatchesTest extends JellyTestCase {
             Utilities.setCaret(op, 76);
             new RunToCursorAction().perform();
             Utilities.getDebugToolbar().waitComponentVisible(true);
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:76", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
         }
     }
     

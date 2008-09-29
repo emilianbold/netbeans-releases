@@ -50,6 +50,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
@@ -196,7 +197,7 @@ public class Utils {
 //    }
     
     public static ImageIcon getIcon (String iconBase) {
-        return new ImageIcon (Utilities.loadImage (iconBase+".gif"));
+        return new ImageIcon (ImageUtilities.loadImage (iconBase+".gif"));
     }
     
     /**

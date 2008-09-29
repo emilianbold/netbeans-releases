@@ -79,7 +79,7 @@ public class ThreadsTableModel implements TableModel, Constants {
         //    will throw UnknownTypeException - the value is used for tooltips
         //}
         if (row instanceof MonitorModel.ThreadWithBordel) 
-            row = ((MonitorModel.ThreadWithBordel) row).originalThread;
+            row = ((MonitorModel.ThreadWithBordel) row).getOriginalThread();
         if (row instanceof JPDAThreadGroup) {
             if (THREAD_STATE_COLUMN_ID.equals (columnID)) 
                 return "";
@@ -169,7 +169,7 @@ public class ThreadsTableModel implements TableModel, Constants {
     public boolean isReadOnly (Object row, String columnID) throws 
     UnknownTypeException {
         if (row instanceof MonitorModel.ThreadWithBordel) 
-            row = ((MonitorModel.ThreadWithBordel) row).originalThread;
+            row = ((MonitorModel.ThreadWithBordel) row).getOriginalThread();
         if (row instanceof JPDAThreadGroup) {
             if (THREAD_STATE_COLUMN_ID.equals (columnID)) 
                 return true;
@@ -189,7 +189,7 @@ public class ThreadsTableModel implements TableModel, Constants {
     public void setValueAt (Object row, String columnID, Object value) 
     throws UnknownTypeException {
         if (row instanceof MonitorModel.ThreadWithBordel) 
-            row = ((MonitorModel.ThreadWithBordel) row).originalThread;
+            row = ((MonitorModel.ThreadWithBordel) row).getOriginalThread();
         if (row instanceof JPDAThreadGroup) {
             if (THREAD_SUSPENDED_COLUMN_ID.equals (columnID)) {
                 if (((Boolean) value).booleanValue ())

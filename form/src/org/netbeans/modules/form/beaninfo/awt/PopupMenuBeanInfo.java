@@ -43,6 +43,7 @@ package org.netbeans.modules.form.beaninfo.awt;
 
 import java.awt.Image;
 import java.beans.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** A BeanInfo for java.awt.PopupMenu.
@@ -58,7 +59,7 @@ public class PopupMenuBeanInfo extends MenuItemBeanInfo {
 
     @Override
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/form/beaninfo/awt/popupmenu.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/form/beaninfo/awt/popupmenu.gif"); // NOI18N
     }
 
 }

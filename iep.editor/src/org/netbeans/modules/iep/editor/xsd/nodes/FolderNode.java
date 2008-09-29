@@ -12,6 +12,7 @@ import javax.swing.ImageIcon;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -52,8 +53,8 @@ public class FolderNode extends AbstractSchemaArtifactNode {
     protected Image badgeImage(Image main) {
         Image rv = main;
         if (badge != null) {
-            Image badgeImage = Utilities.loadImage(badge);
-            rv = Utilities.mergeImages(main, badgeImage, 8, 8);
+            Image badgeImage = ImageUtilities.loadImage(badge);
+            rv = ImageUtilities.mergeImages(main, badgeImage, 8, 8);
         }
         return rv;
     }

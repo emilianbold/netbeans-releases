@@ -40,14 +40,14 @@
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.util.List;
-import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 
 /**
  *
  * @author thp
  */
 public class PackagingFiles4Panel extends PackagingFilesPanel {
-    public PackagingFiles4Panel(List<FileElement> fileList, String baseDir) {
+    public PackagingFiles4Panel(List<PackagerFileElement> fileList, String baseDir) {
         super(fileList, baseDir);
     }
     

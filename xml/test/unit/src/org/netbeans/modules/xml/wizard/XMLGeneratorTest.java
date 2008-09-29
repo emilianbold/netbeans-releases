@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.xml.wizard;
 
+import org.netbeans.modules.xml.wizard.XMLContentAttributes;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;

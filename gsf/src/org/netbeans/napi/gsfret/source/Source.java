@@ -86,8 +86,6 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.platform.JavaPlatformManager;
-import org.netbeans.modules.gsfpath.api.queries.SourceLevelQuery;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.ParseEvent;
 import org.netbeans.modules.gsf.api.ParseListener;
@@ -234,7 +232,6 @@ public final class Source {
     private final FileChangeListener fileChangeListener;
     private DocListener listener;
     private PropertyChangeListener dataObjectListener;
-    private String sourceLevel;
 
     private final ClasspathInfo classpathInfo;
     private CompilationInfo currentInfo;
@@ -781,7 +778,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         //assert diagnosticListener == null;
         Language language = compilationInfo.getLanguage();
         assert language != null;
-        ParserTaskImpl javacTask = createParserTask(language, compilationInfo, getClasspathInfo(), /*diagnosticListener,*/ sourceLevel, false);
+        ParserTaskImpl javacTask = createParserTask(language, compilationInfo, getClasspathInfo(), /*diagnosticListener,*/ false);
 //        Context context = javacTask.getContext();
 //        Messager.preRegister(context, null);
 //        ErrorHandlingJavadocEnter.preRegister(context);
@@ -792,7 +789,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         return javacTask;
     }
 
-    private static ParserTaskImpl createParserTask(Language language, final CompilationInfo currentInfo, final ClasspathInfo cpInfo, /*final DiagnosticListener<? super SourceFileObject> diagnosticListener,*/ final String sourceLevel, final boolean backgroundCompilation) {
+    private static ParserTaskImpl createParserTask(Language language, final CompilationInfo currentInfo, final ClasspathInfo cpInfo, /*final DiagnosticListener<? super SourceFileObject> diagnosticListener,*/ final boolean backgroundCompilation) {
         ParserTaskImpl jti = new ParserTaskImpl(language);
 
         return jti;
@@ -926,21 +923,32 @@ long vsStart = System.currentTimeMillis();
                                 if (translations.size() > 0) {
                                     history = EditHistory.getCombinedEdits(translations.iterator().next().getEditVersion(), source.editHistory);
                                 }
-                                IncrementalEmbeddingModel.UpdateState updated = incrementalModel.update(history, translations);
-                                if (updated == IncrementalEmbeddingModel.UpdateState.COMPLETED) {
-                                    // No need to parse - nothing else to be done for this mime type
-                                    ParserResult result = source.recentParseResult.get(language.getMimeType());
-                                    if (result != null) {
-                                        currentInfo.addEmbeddingResult(language.getMimeType(), result);
-                                        result.setUpdateState(ParserResult.UpdateState.NO_CHANGE);
-                                        continue;
+                                if (history != null) {
+                                    IncrementalEmbeddingModel.UpdateState updated = incrementalModel.update(history, translations);
+                                    if (updated == IncrementalEmbeddingModel.UpdateState.COMPLETED) {
+                                        // No need to parse - nothing else to be done for this mime type
+                                        ParserResult result = source.recentParseResult.get(language.getMimeType());
+                                        for (TranslatedSource translated : translations) {
+                                            translated.setEditVersion(source.editHistory.getVersion());
+                                        }
+                                        if (result != null) {
+                                            currentInfo.addEmbeddingResult(language.getMimeType(), result);
+                                            result.setUpdateState(ParserResult.UpdateState.NO_CHANGE);
+                                            continue;
+                                        }
+                                    } else if (updated == IncrementalEmbeddingModel.UpdateState.FAILED) {
+                                        // Force update!
+                                        translations = null;
+                                    } else {
+                                        assert updated == IncrementalEmbeddingModel.UpdateState.UPDATED;
+                                        // Continue to parse below
+                                        for (TranslatedSource translated : translations) {
+                                            translated.setEditVersion(source.editHistory.getVersion());
+                                        }
                                     }
-                                } else if (updated == IncrementalEmbeddingModel.UpdateState.FAILED) {
-                                    // Force update!
-                                    translations = null;
                                 } else {
-                                    assert updated == IncrementalEmbeddingModel.UpdateState.UPDATED;
-                                    // Continue to parse below
+                                    // Force update
+                                    translations = null;
                                 }
                             }
                         }
@@ -979,11 +987,13 @@ long parseStart = System.currentTimeMillis();
                                 ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                                 if (previousResult != null) {
                                     EditHistory history = EditHistory.getCombinedEdits(previousResult.getEditVersion(), source.editHistory);
-                                    ParserResult ir = incrementalParser.parse(file, reader, translatedSource, history, previousResult);
-                                    if (ir != null) {
-                                        ParserResult.UpdateState state = ir.getUpdateState();
-                                        if (state != ParserResult.UpdateState.FAILED) {
-                                            result = ir;
+                                    if (history != null) {
+                                        ParserResult ir = incrementalParser.parse(file, reader, translatedSource, history, previousResult);
+                                        if (ir != null) {
+                                            ParserResult.UpdateState state = ir.getUpdateState();
+                                            if (state != ParserResult.UpdateState.FAILED) {
+                                                result = ir;
+                                            }
                                         }
                                     }
                                 }
@@ -993,7 +1003,7 @@ long parseStart = System.currentTimeMillis();
                                 parser.parseFiles(job);
                                 result = resultHolder[0];
                             }
-                            if (incrementalParser != null) {
+                            if (incrementalParser != null || (incremental && translations != null)) {
                                 // Hmm, this will only work correctly for the FIRST element if the collections are > 1
                                 source.recentParseResult.put(language.getMimeType(), result);
                                 result.setEditVersion(source.editHistory.getVersion());
@@ -1022,11 +1032,13 @@ long parseStart = System.currentTimeMillis();
                             ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                             if (previousResult != null) {
                                 EditHistory history = EditHistory.getCombinedEdits(previousResult.getEditVersion(), source.editHistory);
-                                result = incrementalParser.parse(file, reader, null, history, previousResult);
-                                if (result != null) {
-                                    ParserResult.UpdateState state = result.getUpdateState();
-                                    if (state == ParserResult.UpdateState.FAILED) {
-                                        result = null;
+                                if (history != null) {
+                                    result = incrementalParser.parse(file, reader, null, history, previousResult);
+                                    if (result != null) {
+                                        ParserResult.UpdateState state = result.getUpdateState();
+                                        if (state == ParserResult.UpdateState.FAILED) {
+                                            result = null;
+                                        }
                                     }
                                 }
                             }
@@ -1608,10 +1620,6 @@ if(parseTime > 0) {
     }
 
     private static CompilationInfo createCurrentInfo (final Source js, final FileObject fo, final Object/*FilterListener*/ filterListener, final ParserTaskImpl javac) throws IOException {
-        if (js.sourceLevel == null && fo != null)
-            js.sourceLevel = SourceLevelQuery.getSourceLevel(fo);
-        if (js.sourceLevel == null)
-            js.sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         CompilationInfo info = new CompilationInfo (js, fo, javac);
 
         //TimesCollector.getDefault().reportReference(fo, CompilationInfo.class.toString(), "[M] CompilationInfo", info);     //NOI18N
@@ -1655,13 +1663,9 @@ if(parseTime > 0) {
         }
 
         @Override
-        public ParserTaskImpl createParserTask(Language language, ClasspathInfo cpInfo, /*DiagnosticListener<? super SourceFileObject> diagnosticListener,*/ String sourceLevel) {
-            if (sourceLevel == null)
-                sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
-//            return Source.createParserTask(cpInfo, diagnosticListener, sourceLevel, true);
-//            throw new RuntimeException("Not yet implemented - I need the CompilationInfo here so I can pass in the language etc.");
+        public ParserTaskImpl createParserTask(Language language, ClasspathInfo cpInfo) {
             boolean backgroundCompilation = true; // Is this called from anywhere else?
-            return Source.createParserTask(language, null, cpInfo, sourceLevel, backgroundCompilation);
+            return Source.createParserTask(language, null, cpInfo, backgroundCompilation);
         }
 
         @Override

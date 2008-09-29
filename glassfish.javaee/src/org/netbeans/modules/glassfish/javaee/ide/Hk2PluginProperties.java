@@ -162,7 +162,8 @@ public class Hk2PluginProperties {
         File serverDir = new File(getGlassfishRoot());
 
         try {
-            File javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), "javax.javaee-10.0");
+            File javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), 
+                    "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER);
             Logger.getLogger("glassfish.javaee").log(Level.FINER,
                     "JavaEE jar is " + (javaEEJar != null ? javaEEJar.getAbsolutePath() : "null"));
             if(javaEEJar != null && javaEEJar.exists()) {

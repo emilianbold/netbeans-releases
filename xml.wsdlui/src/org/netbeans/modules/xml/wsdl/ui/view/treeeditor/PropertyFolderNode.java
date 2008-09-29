@@ -50,6 +50,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.IWSDLPanelConstants;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
@@ -62,7 +63,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class PropertyFolderNode extends AbstractNode {
 
-    private static final Image ICON  = Utilities.loadImage
+    private static final Image ICON  = ImageUtilities.loadImage
          ("org/netbeans/modules/xml/wsdl/ui/view/resources/propertyFolder.png");
     
     

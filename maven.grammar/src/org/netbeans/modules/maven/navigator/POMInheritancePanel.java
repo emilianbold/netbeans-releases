@@ -68,6 +68,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -262,7 +263,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
     
     private static class POMNode extends AbstractNode {
         
-        private Image icon = Utilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
+        private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private boolean readonly = false;
         private POMNode(File key, Model mdl, Lookup lkp) {
             super( Children.LEAF, lkp);

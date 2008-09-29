@@ -46,6 +46,7 @@ import java.io.File;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -74,16 +75,16 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
     
     public Image getIcon(int type){
         if (realNode!=null)
-            return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup.png");
         else 
-            return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup_invalid.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup_invalid.png");
     }
     
     public Image getOpenedIcon(int type){
         if (realNode!=null)
-            return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup.png");
         else
-            return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup_invalid.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup_invalid.png");
     }
     
     public Action[] getActions(boolean context) {

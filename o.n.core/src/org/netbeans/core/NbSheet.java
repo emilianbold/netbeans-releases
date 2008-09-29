@@ -68,6 +68,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -128,7 +129,7 @@ public final class NbSheet extends TopComponent {
         setLayout (new BorderLayout ());
         add(propertySheet, BorderLayout.CENTER);
 
-        setIcon (Utilities.loadImage("org/netbeans/core/resources/frames/properties.gif", true)); // NOI18N
+        setIcon (ImageUtilities.loadImage("org/netbeans/core/resources/frames/properties.gif", true)); // NOI18N
 
         // #36738 Component has to have a name from begining.
         updateTitle();

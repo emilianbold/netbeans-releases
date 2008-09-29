@@ -1,0 +1,18 @@
+Code completion result for source line:
+alert('|foo1 ' + foo1);
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    \ \<i>ooo</i>: The latin chara             null
+KEYWORD    \" Double Quote (\u0022)                   null
+KEYWORD    \' Single Quote (\u0027)                   null
+KEYWORD    \0 The NUL character (\u0000)              null
+KEYWORD    \\ Backslash (\u005C)                      null
+KEYWORD    \b Backspace (0x08)                        null
+KEYWORD    \c \c<i>X</i>: The control cha             null
+KEYWORD    \f Form feed (\u000C)                      null
+KEYWORD    \n Newline (\u000A)                        null
+KEYWORD    \r Carriage return (\u000D)                null
+KEYWORD    \t Tab (\u0009)                            null
+KEYWORD    \u \u<i>xxxx</i>: The Unicode              null
+KEYWORD    \v Vertical tab (\u000B)                   null
+KEYWORD    \x \x<i>nn</i>: The latin char             null

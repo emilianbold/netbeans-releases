@@ -56,12 +56,12 @@ public final class Archetype {
     /**
      * @deprecated has no meaning anymore.
      */
-    public final boolean archetypeNg;
+    public @Deprecated final boolean archetypeNg;
     
     /** Creates a new instance of Archetype 
      * @deprecated isArchetypeNg is not used anymore.
      */
-    public Archetype(boolean deletable, boolean isArchetypeNg) {
+    public @Deprecated Archetype(boolean deletable, boolean isArchetypeNg) {
         this.deletable = deletable;
         archetypeNg = isArchetypeNg;
         artifactId = "";
