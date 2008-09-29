@@ -60,16 +60,17 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">
+        <set property="pp.inside.dir" value="portalpack201"/>
         <move todir="${data.directory}">
-            <fileset dir="${data.directory}/portalpack20">
+            <fileset dir="${data.directory}/${pp.inside.dir}">
                 <include name="**/*"/>
             </fileset>
         </move>
         
         <delete includeemptydirs="true">
             <fileset dir="${data.directory}">
-                <include name="portalpack20"/>
-                <include name="portalpack20/**"/>
+                <include name="${pp.inside.dir}"/>
+                <include name="${pp.inside.dir}/**"/>
             </fileset>
         </delete>
 

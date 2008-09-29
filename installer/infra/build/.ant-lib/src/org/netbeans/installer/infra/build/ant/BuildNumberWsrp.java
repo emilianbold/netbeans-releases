@@ -107,12 +107,23 @@ public class BuildNumberWsrp extends Task {
             final Matcher matcher = PATTERN.matcher(contents);
             
             if (matcher.find()) {
-                final String milestoneNumber =
+                final String macroNumber =
                         matcher.group(1);                              // NOMAGI
+                final String microNumber =
+                        matcher.group(2);                              // NOMAGI
+
+                final String milestoneNumber =
+                        matcher.group(3);                              // NOMAGI
                 
                 final String buildNumber = FORMAT_OUT.format(
-                        FORMAT_IN.parse(matcher.group(2))); // NOMAGI
-                
+                        FORMAT_IN.parse(matcher.group(4))); // NOMAGI
+
+                getProject().setProperty(
+                        prefix + MACRO_NUMBER_SUFFIX,
+                        macroNumber);
+                getProject().setProperty(
+                        prefix + MICRO_NUMBER_SUFFIX,
+                        microNumber);                
                 getProject().setProperty(
                         prefix + MILESTONE_NUMBER_SUFFIX,
                         milestoneNumber);
@@ -136,7 +147,7 @@ public class BuildNumberWsrp extends Task {
      * Pattern for which to look in the input file.
      */
     private static final Pattern PATTERN = Pattern.compile(
-            "wsrp-1_0-fcs-bin-b([0-9]+)-([A-Za-z0-9_]+).zip");//NOI18N
+            "wsrp-([0-9]+)_([0-9]+)-beta-bin-b([0-9]+)-([A-Za-z0-9_]+).zip");//NOI18N
     
     /**
      * Date format used in the input file.
@@ -161,4 +172,15 @@ public class BuildNumberWsrp extends Task {
      */
     private static final String BUILD_NUMBER_SUFFIX =
             ".build.number"; // NOI18N
+    /**
+     * Macro number property suffix.
+     */
+    private static final String MACRO_NUMBER_SUFFIX =
+            ".macro.number"; // NOI18N
+    /**
+     * Micro number property suffix.
+     */
+    private static final String MICRO_NUMBER_SUFFIX =
+            ".micro.number"; // NOI18N
+
 }
