@@ -1799,7 +1799,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             // if everything went ok, and the option is enabled,
             // create a suite for the folder .
             if (!results.isAbborted()
-                    && !mySuite.isEmpty()
+//                    && !mySuite.isEmpty()
                     && JUnitSettings.getDefault().isGenerateSuiteClasses()) {
                 createSuiteTest(srcFileObj,
                                 (String) null,
@@ -1876,12 +1876,12 @@ public final class DefaultPlugin extends JUnitPlugin {
                 testFile = testDataObj.getPrimaryFile();
             }
             
-//            List<String> processedClasses;
-//            JavaSource testSrc = JavaSource.forFileObject(testFile);
+            List<String> processedClasses;
+            //JavaSource testSrc = JavaSource.forFileObject(testFile);
             try {
-//                processedClasses = testCreator.createTestSuite(classesToInclude,
-//                                                               testSrc,
-//                                                               isNew);
+                processedClasses = testCreator.createTestSuite(classesToInclude,
+                                                               testFile,
+                                                               isNew);
                 if (testDataObj == null) {
                     testDataObj = DataObject.find(testFile);
                 }
@@ -1892,13 +1892,13 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
 
             // add the suite class to the list of members of the parent
-//            if ((parentSuite != null) && !processedClasses.isEmpty()) {
-//                for (String simpleClassName : processedClasses) {
-//                    parentSuite.add(dotPkg.length() != 0
-//                                    ? dotPkg + '.' + simpleClassName
-//                                    : simpleClassName);
-//                }
-//            }
+            if ((parentSuite != null) && !processedClasses.isEmpty()) {
+                for (String simpleClassName : processedClasses) {
+                    parentSuite.add(dotPkg.length() != 0
+                                    ? dotPkg + '.' + simpleClassName
+                                    : simpleClassName);
+                }
+            }
             return testDataObj;
         } catch (IOException ioe) {
             throw new CreationError(ioe);
