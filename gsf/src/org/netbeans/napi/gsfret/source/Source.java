@@ -76,6 +76,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.swing.event.CaretEvent;
@@ -1891,10 +1892,29 @@ if(parseTime > 0) {
      */
     private static void dumpSource(CompilationInfo info, Throwable exc) {
         String dumpDir = System.getProperty("netbeans.user") + "/var/log/"; //NOI18N
-        String src = info.getText();
+        String src = null;
+        try {
+            src = info.getText();
+        } catch (IllegalStateException ise) {
+            Document doc = info.getDocument();
+            if (doc != null) {
+                try {
+                    src = doc.getText(0, doc.getLength());
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        if (src == null) {
+            src = "";
+        }
         FileObject file = info.getFileObject();
-        String fileName = FileUtil.getFileDisplayName(info.getFileObject());
-        String origName = file.getName();
+        String origName = "unknown";
+        String fileName = origName;
+        if (file != null) {
+            fileName = FileUtil.getFileDisplayName(file);
+            origName = file.getNameExt();
+        }
         File f = new File(dumpDir + origName + ".dump"); // NOI18N
         boolean dumpSucceeded = false;
         int i = 1;
@@ -1930,8 +1950,12 @@ if(parseTime > 0) {
                 Logger.getLogger("global").log(Level.INFO, "Error when writing parser dump file!", ioe); // NOI18N
             }
         }
+        String language = "ruby";
+        if (info.getLanguage() != null) {
+            language = info.getLanguage().getDisplayName();
+        }
         if (dumpSucceeded) {
-            Throwable t = Exceptions.attachMessage(exc, "An error occurred during parsing of \'" + fileName + "\'. Please report a bug against ruby and attach dump file '"  // NOI18N
+            Throwable t = Exceptions.attachMessage(exc, "An error occurred during parsing of \'" + fileName + "\'. Please report a bug against " + language + " and attach dump file '"  // NOI18N
                     + f.getAbsolutePath() + "'."); // NOI18N
             Exceptions.printStackTrace(t);
         } else {

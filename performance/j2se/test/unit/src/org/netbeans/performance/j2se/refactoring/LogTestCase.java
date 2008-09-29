@@ -221,7 +221,7 @@ public class LogTestCase extends NbTestCase {
     }
     
     public FileObject openProject(String projectName) throws IOException {
-        File projectsDir = FileUtil.normalizeFile(new File("/tmp/"));
+        File projectsDir = FileUtil.normalizeFile(new File("c:/temp/"));
         FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
         FileObject projdir = projectsDirFO.getFileObject(projectName);
         Project p = ProjectManager.getDefault().findProject(projdir);

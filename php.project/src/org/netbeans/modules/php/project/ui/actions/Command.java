@@ -287,6 +287,13 @@ public abstract class Command {
         return PhpProjectProperties.RunAsType.REMOTE.equals(runAs);
     }
 
+    protected boolean isPhpFileSelected(FileObject file) {
+        if (file == null) {
+            return false;
+        }
+        return CommandUtils.isPhpFile(file);
+    }
+
     protected String getRemoteConfigurationName() {
         return ProjectPropertiesSupport.getRemoteConnection(project);
     }

@@ -1380,9 +1380,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return ;
         }
         setState (STATE_RUNNING);
-        synchronized (currentThreadAndFrameLock) {
-            currentThread.resume();
-        }
+        currentThread.resume();
     }
 
     public void notifyToBeResumedAll() {

@@ -44,6 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -87,7 +88,11 @@ public class RunSingleCommand extends RunCommand {
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return fileForContext(context) != null;
+        FileObject file = fileForContext(context);
+        if (isScriptSelected(false)) {
+            return isPhpFileSelected(file);
+        }
+        return file != null;
     }
 
     @Override

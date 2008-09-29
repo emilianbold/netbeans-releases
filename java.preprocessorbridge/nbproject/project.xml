@@ -13,6 +13,14 @@
                         <specification-version>7.0</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.18</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>com.ptc.rbinfohandler</friend>
@@ -22,6 +30,7 @@
                 <friend>org.netbeans.modules.mobility.project</friend>
                 <friend>org.netbeans.modules.scala.editing</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
+                <package>org.netbeans.modules.java.preprocessorbridge.api</package>
                 <package>org.netbeans.modules.java.preprocessorbridge.spi</package>
             </friend-packages>
         </data>

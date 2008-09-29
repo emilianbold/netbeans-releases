@@ -58,13 +58,13 @@ public final class MessageHandler extends Handler {
     @Override
     public void publish(LogRecord record) {
 //        throw new UnsupportedOperationException("Not supported yet.");
-        if (started = false) {
+        if (started == false) {
             if (record.getMessage().indexOf("Start - " + message) > -1) {
                 started = true;
                 finished = false;
             }
         }
-        if (!started) {
+        if (started) {
             if (record.getMessage().indexOf("End - " + message) > -1) {
                 started = false;
                 finished = true;
