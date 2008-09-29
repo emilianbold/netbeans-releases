@@ -410,6 +410,12 @@ public final class RubyParser implements Parser {
     
     protected void notifyError(Context context, ID id,
         Severity severity, String description, int offset, Sanitize sanitizing, Object[] data) {
+        if (description.startsWith(", ")) { // Such as ", unexpected kTHEN"
+            description = description.substring(2);
+        }
+        if (description.startsWith("unexpected k")) {
+            description = "Unexpected keyword " + description.substring(12);
+        }
         // Replace a common but unwieldy JRuby error message with a shorter one
         if (description.startsWith("syntax error, expecting	")) { // NOI18N
             int start = description.indexOf(" but found "); // NOI18N
@@ -419,6 +425,15 @@ public final class RubyParser implements Parser {
             assert end != -1;
             String found = description.substring(start, end);
             description = NbBundle.getMessage(RubyParser.class, "UnexpectedError", found);
+        }
+
+        if (description.length() > 0) {
+            // Capitalize sentences
+            char firstChar = description.charAt(0);
+            char upcasedChar = Character.toUpperCase(firstChar);
+            if (firstChar != upcasedChar) {
+                description = upcasedChar + description.substring(1);
+            }
         }
         
         Error error = new RubyError(description, id, context.file.getFileObject(), offset, offset, severity, data);
@@ -618,7 +633,6 @@ public final class RubyParser implements Parser {
         return positions;
     }
 
-    @SuppressWarnings("unchecked")
     public static RubyElement resolveHandle(CompilationInfo info, ElementHandle handle) {
         if (handle instanceof AstElement) {
             AstElement element = (AstElement)handle;

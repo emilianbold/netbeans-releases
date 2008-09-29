@@ -41,7 +41,6 @@
 package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -155,7 +154,6 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
     }
 
     /** Find unused local and dynamic variables */
-    @SuppressWarnings("unchecked")
     private void annotate(Node node, Map<OffsetRange,Set<ColoringAttributes>> highlights, AstPath path,
         List<String> parameters, boolean isParameter) {
         switch (node.nodeId) {
@@ -203,7 +201,7 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
             parameters = AstUtilities.getDefArgs(def, true);
 
             if ((parameters != null) && (parameters.size() > 0)) {
-                List<String> unused = new ArrayList();
+                List<String> unused = new ArrayList<String>();
 
                 for (String parameter : parameters) {
                     boolean isUsed = isUsedInMethod(node, parameter, true);
@@ -265,18 +263,18 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
 
     private void annotateParameters(MethodDefNode node,
         Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> usedParameterNames) {
-        List<Node> nodes = (List<Node>)node.childNodes();
+        List<Node> nodes = node.childNodes();
 
         for (Node c : nodes) {
             if (c.nodeId == NodeType.ARGSNODE) {
                 ArgsNode an = (ArgsNode)c;
 
                 if (an.getRequiredArgsCount() > 0) {
-                    List<Node> args = (List<Node>)an.childNodes();
+                    List<Node> args = an.childNodes();
 
                     for (Node arg : args) {
                         if (arg instanceof ListNode) { // Many specific types
-                            List<Node> args2 = (List<Node>)arg.childNodes();
+                            List<Node> args2 = arg.childNodes();
 
                             for (Node arg2 : args2) {
                                 if (arg2.nodeId == NodeType.ARGUMENTNODE) {
@@ -330,18 +328,18 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
 
     private void annotateUnusedParameters(MethodDefNode node,
         Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
-        List<Node> nodes = (List<Node>)node.childNodes();
+        List<Node> nodes = node.childNodes();
 
         for (Node c : nodes) {
             if (c.nodeId == NodeType.ARGSNODE) {
                 ArgsNode an = (ArgsNode)c;
 
                 if (an.getRequiredArgsCount() > 0) {
-                    List<Node> args = (List<Node>)an.childNodes();
+                    List<Node> args = an.childNodes();
 
                     for (Node arg : args) {
                         if (arg instanceof ListNode) { // Check subclasses
-                            List<Node> args2 = (List<Node>)arg.childNodes();
+                            List<Node> args2 = arg.childNodes();
 
                             for (Node arg2 : args2) {
                                 if (arg2.nodeId == NodeType.ARGUMENTNODE) {
