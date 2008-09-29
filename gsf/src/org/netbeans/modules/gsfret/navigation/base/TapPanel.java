@@ -214,6 +214,9 @@ public final class TapPanel extends javax.swing.JPanel {
 
     public void paintBorder (Graphics g) {
         Color c = armed ? UIManager.getColor ( "List.selectionBackground" ) : getBackground (); //NOI18N
+        if (c == null) {
+            c = getBackground();
+        }
         int x = 0;
         int y = orientation == UP ? 1 + ( getHeight () - minimumHeight ) : 0;
         int w = getWidth ();

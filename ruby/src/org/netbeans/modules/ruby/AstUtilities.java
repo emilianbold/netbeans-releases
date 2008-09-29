@@ -694,19 +694,19 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      */
     public static List<String> getDefArgs(MethodDefNode node, boolean namesOnly) {
         // TODO - do anything special about (&), blocks, argument lists (*), etc?
-        List<Node> nodes = (List<Node>)node.childNodes();
+        List<Node> nodes = node.childNodes();
 
         // TODO - use AstElement.getParameters?
         for (Node c : nodes) {
             if (c instanceof ArgsNode) {
                 ArgsNode an = (ArgsNode)c;
 
-                List<Node> args = (List<Node>)an.childNodes();
+                List<Node> args = an.childNodes();
                 List<String> parameters = new ArrayList<String>();
 
                 for (Node arg : args) {
                     if (arg instanceof ListNode) {
-                        List<Node> args2 = (List<Node>)arg.childNodes();
+                        List<Node> args2 = arg.childNodes();
 
                         for (Node arg2 : args2) {
                             if (arg2 instanceof ArgumentNode) {
@@ -781,11 +781,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         switch (node.nodeId) {
         case FCALLNODE: {
             Node argsNode = ((FCallNode)node).getArgsNode();
+            if (argsNode == null) {
+                return -1;
+            }
 
             return findArgumentIndex(argsNode, offset);
         }
         case CALLNODE: {
             Node argsNode = ((CallNode)node).getArgsNode();
+            if (argsNode == null) {
+                return -1;
+            }
 
             return findArgumentIndex(argsNode, offset);
         }
@@ -810,6 +816,8 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             if ((offset >= pos.getStartOffset()) && (offset <= pos.getEndOffset())) {
                 return getConstantArgs(acn);
             }
+            
+            return -1;
         }
         case HASHNODE: 
             // Everything gets glommed into the same hash parameter offset
@@ -1227,7 +1235,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             // Here I'm only handling named nodes; there may be others
             Node receiver = ((CallNode)node).getReceiverNode();
 
-            if (receiver != null) {
+            if (receiver != null && !receiver.isInvisible()) {
                 start = receiver.getPosition().getEndOffset() + 1; // end of "Foo::bar" + "."
             }
         }
@@ -1241,7 +1249,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
     public static OffsetRange getFunctionNameRange(Node node) {
         // TODO - enforce MethodDefNode and call getNameNode on it!
-        for (Node child : (List<Node>)node.childNodes()) {
+        for (Node child : node.childNodes()) {
             if (child instanceof ArgumentNode) {
                 OffsetRange range = AstUtilities.getRange(child);
 
@@ -1250,7 +1258,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         }
 
         if (node instanceof MethodDefNode) {
-            for (Node child : (List<Node>)node.childNodes()) {
+            for (Node child : node.childNodes()) {
                 if (child instanceof ConstNode) {
                     ISourcePosition pos = child.getPosition();
                     int end = pos.getEndOffset();
@@ -1459,7 +1467,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
         for (Node child : list) {
             if (child instanceof ListNode) {
-                List<Node> symbols = (List<Node>)child.childNodes();
+                List<Node> symbols = child.childNodes();
                 List<SymbolNode> symbolList = new ArrayList<SymbolNode>(symbols.size());
 
                 for (Node symbol : symbols) {
@@ -1590,11 +1598,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 // method defined to be private
                 // Iterate over arguments and add symbols...
                 if (Arity.callHasArguments(node)) {
-                    List<Node> params = (List<Node>)node.childNodes();
+                    List<Node> params = node.childNodes();
 
                     for (Node param : params) {
                         if (param instanceof ListNode) {
-                            List<Node> params2 = (List<Node>)param.childNodes();
+                            List<Node> params2 = param.childNodes();
 
                             for (Node param2 : params2) {
                                 if (param2 instanceof SymbolNode) {
@@ -1614,11 +1622,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 // method defined to be private
                 // Iterate over arguments and add symbols...
                 if (Arity.callHasArguments(node)) {
-                    List<Node> params = (List<Node>)node.childNodes();
+                    List<Node> params = node.childNodes();
 
                     for (Node param : params) {
                         if (param instanceof ListNode) {
-                            List<Node> params2 = (List<Node>)param.childNodes();
+                            List<Node> params2 = param.childNodes();
 
                             for (Node param2 : params2) {
                                 if (param2 instanceof SymbolNode) {
@@ -1639,11 +1647,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
                     return access;
                 } else {
-                    List<Node> params = (List<Node>)node.childNodes();
+                    List<Node> params = node.childNodes();
 
                     for (Node param : params) {
                         if (param instanceof ListNode) {
-                            List<Node> params2 = (List<Node>)param.childNodes();
+                            List<Node> params2 = param.childNodes();
 
                             for (Node param2 : params2) {
                                 if (param2 instanceof SymbolNode) {

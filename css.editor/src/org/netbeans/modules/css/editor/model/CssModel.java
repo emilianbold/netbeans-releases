@@ -48,6 +48,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
@@ -183,6 +184,7 @@ public final class CssModel {
                     SimpleNode root = ((CSSParserResult) presult).root();
                     if (containsErrors(presult)) {
                         support.firePropertyChange(MODEL_INVALID, rules, null);
+                        rules = Collections.EMPTY_LIST;
                         return;
                     }
 
@@ -213,6 +215,7 @@ public final class CssModel {
 
         if (containsErrors(presult)) {
             support.firePropertyChange(MODEL_INVALID, rules, null);
+            rules = Collections.EMPTY_LIST;
             return;
         }
 
