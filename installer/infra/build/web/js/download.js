@@ -638,6 +638,38 @@ function add_download_tab(name, url) {
    download_tabs_number++;
 }
 
+function write_files_list(title,directory) {
+    document.write('<h1>' + title + '</h1>');
+    document.write('<ul>');
+    var lst = get_file_list(directory);
+    for(var i=0;i<lst.length;i++) {
+        var item_display_name = lst[i];
+        var item_link = "javascript: download_file(\'" + directory + lst[i] + "\')";
+        document.write('<li><a href="' + item_link  + '">' + item_display_name + '</a></li>');
+    }
+    document.write('</ul><br>');
+}
+
+function open_zip_link() {
+    var overriden_language=get_overridden_language();
+    var zip_url = ZIP_PAGE;
+    if(overriden_language!=DEFAULT_LANGUAGE) {
+        zip_url += "?" + PAGELANG_SEP + overriden_language;
+    }
+    window.location = zip_url; 
+}
+
+function download_file(filename) {
+    var download_url = START_PAGE;
+    download_url += "?filename=" + filename;
+
+    var overriden_language=get_overridden_language();
+    if(overriden_language!=DEFAULT_LANGUAGE) {
+        download_url += "&" + PAGELANG_SEP + overriden_language;
+    }
+    window.location = download_url;
+}
+
 function download(option) {
     var select = document.getElementById("platform_select");
     var platform = select.options[select.selectedIndex].value;

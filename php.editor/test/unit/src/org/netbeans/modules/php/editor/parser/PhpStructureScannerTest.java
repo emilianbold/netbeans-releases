@@ -85,6 +85,10 @@ public class PhpStructureScannerTest extends ParserTestBase{
         performTest("issue142644");
     }
 
+    public void testIssue148558() throws Exception {
+        performTest("issue148558");
+    }
+
     public void testPHPDocTagProperty() throws Exception {
         performTest("propertyTag");
     }

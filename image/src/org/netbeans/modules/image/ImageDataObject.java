@@ -114,23 +114,16 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     }
     
     /** Gets image open support. */
-    private ImageOpenSupport getOpenSupport() {
+    private synchronized ImageOpenSupport getOpenSupport() {
         if(openSupport == null) {
-            synchronized(this) {
-                if(openSupport == null)
-                    openSupport = new ImageOpenSupport(getPrimaryEntry());
-            }
+            openSupport = new ImageOpenSupport(getPrimaryEntry());
         }
-        
         return openSupport;
     }
 
-    protected ImagePrintSupport getPrintSupport(){
+    protected synchronized ImagePrintSupport getPrintSupport(){
         if(printSupport == null) {
-            synchronized(this) {
-                if(printSupport == null)
-                    printSupport = new ImagePrintSupport( this );
-            }
+            printSupport = new ImagePrintSupport( this );
         }
         return printSupport;
     }

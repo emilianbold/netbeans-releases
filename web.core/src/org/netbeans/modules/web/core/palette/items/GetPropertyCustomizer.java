@@ -84,14 +84,14 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
     public boolean showDialog() {
         dialogOK = false;
 
-        String displayName = "";
+        String displayName = "";  // NOI18N
         try {
             displayName = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.resources.Bundle").getString("NAME_jsp-GetProperty"); // NOI18N
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
 
-        descriptor = new DialogDescriptor(this, NbBundle.getMessage(GetPropertyCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {
+        descriptor = new DialogDescriptor(this, NbBundle.getMessage(GetPropertyCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {   // NOI18N
 
             public void actionPerformed(ActionEvent e) {
                 if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
@@ -112,15 +112,12 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
     private void addDocumentListener(JComboBox beanNameCb) {
         JTextComponent com = (JTextComponent) beanNameCb.getEditor().getEditorComponent();
         com.getDocument().addDocumentListener(new DocumentListener() {
-
             public void insertUpdate(DocumentEvent arg0) {
                 updateProperties();
             }
-
             public void removeUpdate(DocumentEvent arg0) {
                 updateProperties();
             }
-
             public void changedUpdate(DocumentEvent arg0) {
                 updateProperties();
             }
@@ -156,7 +153,7 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
         if (currentBean == null) {
             propertyNameCb.setModel(new DefaultComboBoxModel());
         } else {
-            String[] pref = {"get", "is"};
+            String[] pref = {"get", "is"};  // NOI18N
             propertyNameCb.setModel(new DefaultComboBoxModel(JSPPaletteUtilities.getTypeProperties(target, currentBean.getFqcn(), pref).toArray()));
         }
     }

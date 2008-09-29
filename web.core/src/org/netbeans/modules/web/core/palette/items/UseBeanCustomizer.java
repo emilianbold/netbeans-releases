@@ -49,6 +49,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.core.palette.MsgHelper;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -64,9 +65,9 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
     private DialogDescriptor descriptor = null;
     private boolean dialogOK = false;
     PageInfo.BeanData[] beanData = null;
-
     UseBean useBean;
     JTextComponent target;
+    MsgHelper msgHelper;
             
     /** Creates new form TABLECustomizerPanel */
     public UseBeanCustomizer(UseBean useBean, JTextComponent target) {
@@ -74,51 +75,46 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         this.target = target;
         
         initComponents();
+        msgHelper = new MsgHelper(errorMessage, UseBeanCustomizer.class);
+        
         jComboBox2.setModel(new DefaultComboBoxModel(UseBean.scopes));
         jComboBox2.setSelectedIndex(useBean.getScopeIndex());
         jTextField2.getDocument().addDocumentListener(new DocumentListener(){
-
             public void insertUpdate(DocumentEvent arg0) {
                 validateInput();
             }
-
             public void removeUpdate(DocumentEvent arg0) {
                 validateInput();
             }
-
             public void changedUpdate(DocumentEvent arg0) {
                 validateInput();
             }
         });
         jTextField1.getDocument().addDocumentListener(new DocumentListener(){
-
             public void insertUpdate(DocumentEvent arg0) {
                 validateInput();
             }
-
             public void removeUpdate(DocumentEvent arg0) {
                 validateInput();
             }
-
             public void changedUpdate(DocumentEvent arg0) {
                 validateInput();
             }
         });
-        
     }
     
     public boolean showDialog(PageInfo.BeanData[] beanData) {
         this.beanData = beanData;
         dialogOK = false;
         
-        String displayName = "";
+        String displayName = ""; // NOI18N
         try {
             displayName = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.resources.Bundle").getString("NAME_jsp-UseBean"); // NOI18N
         }
         catch (Exception e) {}
         
         descriptor = new DialogDescriptor
-                (this, NbBundle.getMessage(UseBeanCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
+                (this, NbBundle.getMessage(UseBeanCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,   // NOI18N
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -149,33 +145,29 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
     }
     
     private void validateInput() {
-        if(jTextField2.getText().equals("")) {
-            String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_Empty_ID"); // NOI18N
+        if (jTextField2.getText().length() < 1) {
+            msgHelper.setInfoMsg("Error_Empty_ID"); // NOI18N
             descriptor.setValid(false);
-            errorMessage.setText(msg);
             return;
         }
-        if(JSPPaletteUtilities.idExists(jTextField2.getText(), beanData)) {   
-            String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_not_uniq_ID"); // NOI18N
+        if (JSPPaletteUtilities.idExists(jTextField2.getText(), beanData)) {
+            msgHelper.setErrorMsg("Error_not_uniq_ID"); // NOI18N
             descriptor.setValid(false);
-            errorMessage.setText(msg);
             return;
         }
-        if(jTextField1.getText().equals("")) {
-            String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_Empty_class"); // NOI18N
+        if (jTextField1.getText().length() < 1) {
+            msgHelper.setInfoMsg("Error_Empty_class"); // NOI18N
             descriptor.setValid(false);
-            errorMessage.setText(msg);
             return;
         }
-        if(!JSPPaletteUtilities.typeExists(target, jTextField1.getText())) {
-            String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_No_Such_class"); // NOI18N
+        if (!JSPPaletteUtilities.typeExists(target, jTextField1.getText())) {
+            msgHelper.setErrorMsg("Error_No_Such_class"); // NOI18N
             descriptor.setValid(false);
-            errorMessage.setText(msg);
             return;
         }
- 
+
+        msgHelper.setErrorMsg(null);
         descriptor.setValid(true);
-        errorMessage.setText("");
     }
     
     /** This method is called from within the constructor to
