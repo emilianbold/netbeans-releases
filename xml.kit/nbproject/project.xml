@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.xml.refactoring</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
