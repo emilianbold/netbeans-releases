@@ -489,8 +489,12 @@ public class PackagingConfiguration {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            if (c == '_') 
+            if (c == '_') {
                 continue;
+            }
+            else if (c == ' ') {
+                continue;
+            }
             stringBuilder.append(c);
         }
         return stringBuilder.toString();
