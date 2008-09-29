@@ -586,12 +586,10 @@ public final class TreeViewTest extends NbTestCase {
         }      
     }
 
-    @RandomlyFails // NB-Core-Build #1404
     public void testPartialNodeSelectionEager() throws Exception {
         doTestPartialNodeSelection(false);
     }
 
-    @RandomlyFails // just guessing based on ...Eager failure and use of Thread.sleep
     public void testPartialNodeSelectionLazy() throws Exception {
         doTestPartialNodeSelection(true);
     }

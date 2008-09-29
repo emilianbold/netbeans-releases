@@ -1,0 +1,151 @@
+Code completion result for source line:
+
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     abort() : void                             XMLHttpRequest
+METHOD     abs(x) : Number                            Math
+METHOD     acos(x) : Number                           Math
+METHOD     add(HTMLElement element, HTMLE             HTMLSelectElement
+METHOD     addColorStop(Number offset, St             CanvasGradient
+METHOD     addEventListener(String type,              EventTarget
+METHOD     addEventListener(type, listene             Element
+METHOD     addEventListener(type, listene             Window
+METHOD     addRange(range) : void                     Selection
+METHOD     adoptNode(externalNode) : Node             Document
+METHOD     alert(String message) : void               Window
+METHOD     anchor(nameAttribute) : String             String
+METHOD     appendChild(Node newChild) : N             Node
+METHOD     appendChild(child) : void                  Element
+METHOD     appendData(String arg) : void              CharacterData
+METHOD     appendMedium(String newMedium)             MediaList
+METHOD     apply(thisArg, argArray) : voi             Function
+METHOD     arc(Number x, Number y, Number             CanvasRenderingContext2D
+METHOD     arcTo(Number x1, Number y1, Nu             CanvasRenderingContext2D
+METHOD     asin(x) : Number                           Math
+METHOD     atan(x) : Number                           Math
+METHOD     atan2(y, x) : Number                       Math
+METHOD     atob(encodedData) : void                   Window
+KEYWORD    abstract                                   null
+KEYWORD    boolean                                    null
+KEYWORD    break                                      null
+KEYWORD    byte                                       null
+KEYWORD    case                                       null
+KEYWORD    catch                                      null
+KEYWORD    char                                       null
+KEYWORD    class                                      null
+KEYWORD    const                                      null
+KEYWORD    continue                                   null
+KEYWORD    debugger                                   null
+KEYWORD    default                                    null
+KEYWORD    delete                                     null
+KEYWORD    do                                         null
+KEYWORD    double                                     null
+KEYWORD    else                                       null
+KEYWORD    enum                                       null
+KEYWORD    export                                     null
+KEYWORD    extends                                    null
+KEYWORD    false                                      null
+KEYWORD    final                                      null
+KEYWORD    finally                                    null
+KEYWORD    float                                      null
+KEYWORD    for                                        null
+KEYWORD    function                                   null
+KEYWORD    goto                                       null
+KEYWORD    if                                         null
+KEYWORD    implements                                 null
+KEYWORD    import                                     null
+KEYWORD    in                                         null
+KEYWORD    instanceof                                 null
+KEYWORD    int                                        null
+KEYWORD    interface                                  null
+KEYWORD    long                                       null
+KEYWORD    native                                     null
+KEYWORD    new                                        null
+KEYWORD    null                                       null
+KEYWORD    package                                    null
+KEYWORD    private                                    null
+KEYWORD    protected                                  null
+KEYWORD    public                                     null
+KEYWORD    return                                     null
+KEYWORD    short                                      null
+KEYWORD    static                                     null
+KEYWORD    super                                      null
+KEYWORD    switch                                     null
+KEYWORD    synchronized                               null
+KEYWORD    this                                       null
+KEYWORD    throw                                      null
+KEYWORD    throws                                     null
+KEYWORD    transient                                  null
+KEYWORD    true                                       null
+KEYWORD    try                                        null
+KEYWORD    typeof                                     null
+KEYWORD    undefined                                  null
+KEYWORD    var                                        null
+KEYWORD    void                                       null
+KEYWORD    volatile                                   null
+KEYWORD    while                                      null
+KEYWORD    with                                       null
+PROPERTY   aLink : String                             HTMLBodyElement
+PROPERTY   abbr : String                              HTMLTableCellElement
+PROPERTY   accept : String                            HTMLInputElement
+PROPERTY   acceptCharset                              Form
+PROPERTY   acceptCharset : String                     HTMLFormElement
+PROPERTY   accessKey : String                         HTMLAnchorElement
+PROPERTY   accessKey : String                         HTMLAreaElement
+PROPERTY   accessKey : String                         HTMLButtonElement
+PROPERTY   accessKey : String                         HTMLInputElement
+PROPERTY   accessKey : String                         HTMLLabelElement
+PROPERTY   accessKey : String                         HTMLLegendElement
+PROPERTY   accessKey : String                         HTMLTextAreaElement
+PROPERTY   action                                     Form
+PROPERTY   action : String                            HTMLFormElement
+PROPERTY   align                                      Table
+PROPERTY   align                                      TableRow
+PROPERTY   align : String                             HTMLAppletElement
+PROPERTY   align : String                             HTMLDivElement
+PROPERTY   align : String                             HTMLHRElement
+PROPERTY   align : String                             HTMLHeadingElement
+PROPERTY   align : String                             HTMLIFrameElement
+PROPERTY   align : String                             HTMLImageElement
+PROPERTY   align : String                             HTMLInputElement
+PROPERTY   align : String                             HTMLLegendElement
+PROPERTY   align : String                             HTMLObjectElement
+PROPERTY   align : String                             HTMLParagraphElement
+PROPERTY   align : String                             HTMLTableCaptionElement
+PROPERTY   align : String                             HTMLTableCellElement
+PROPERTY   align : String                             HTMLTableColElement
+PROPERTY   align : String                             HTMLTableElement
+PROPERTY   align : String                             HTMLTableRowElement
+PROPERTY   align : String                             HTMLTableSectionElement
+PROPERTY   alinkColor                                 Document
+PROPERTY   alt : String                               HTMLAppletElement
+PROPERTY   alt : String                               HTMLAreaElement
+PROPERTY   alt : String                               HTMLImageElement
+PROPERTY   alt : String                               HTMLInputElement
+PROPERTY   altKey                                     Event
+PROPERTY   altKey : Boolean                           MouseEvent
+PROPERTY   anchorNode                                 Selection
+PROPERTY   anchorOffset                               Selection
+PROPERTY   anchors                                    Document
+PROPERTY   anchors : HTMLCollection                   HTMLDocument
+PROPERTY   applets                                    Document
+PROPERTY   applets : HTMLCollection                   HTMLDocument
+PROPERTY   archive : String                           HTMLAppletElement
+PROPERTY   archive : String                           HTMLObjectElement
+PROPERTY   areas : HTMLCollection                     HTMLMapElement
+PROPERTY   arguments                                  Function
+PROPERTY   arity                                      Function
+PROPERTY   attrChange : Number                        MutationEvent
+PROPERTY   attrName : String                          MutationEvent
+PROPERTY   attributes                                 Element
+PROPERTY   attributes : NamedNodeMap                  Node
+PROPERTY   availHeight                                Screen
+PROPERTY   availHeight                                Window
+PROPERTY   availLeft                                  Screen
+PROPERTY   availLeft                                  Window
+PROPERTY   availTop                                   Screen
+PROPERTY   availTop                                   Window
+PROPERTY   availWidth                                 Screen
+PROPERTY   availWidth                                 Window
+PROPERTY   axis : String                              HTMLTableCellElement
+PROPERTY   azimuth : String                           CSS2Properties

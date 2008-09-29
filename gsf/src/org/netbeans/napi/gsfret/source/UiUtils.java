@@ -221,7 +221,7 @@ public final class UiUtils {
                             try {
                                 OffsetRange range = parser.getPositionManager().getOffsetRange(info, handle);
  
-                                if (range != OffsetRange.NONE) {
+                                if (range != OffsetRange.NONE && range != null) {
                                     result[0] = new DeclarationLocation(fileObject, range.getStart());
                                 }
                             } catch (IllegalArgumentException iae) {

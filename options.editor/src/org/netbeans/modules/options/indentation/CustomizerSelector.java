@@ -95,7 +95,7 @@ public final class CustomizerSelector {
     }
 
     public synchronized void setSelectedMimeType(String mimeType) {
-        assert getMimeTypes().contains(mimeType);
+        assert getMimeTypes().contains(mimeType) : "'" + mimeType + "' is not among " + getMimeTypes(); //NOI18N
 
         if (selectedMimeType == null || !selectedMimeType.equals(mimeType)) {
             String old = selectedMimeType;

@@ -48,6 +48,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.web.core.palette.MsgHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -69,6 +70,7 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
     private String stmtACSD;
     private String helpID;
     private boolean mayVariableNameBeEmpty;
+    private MsgHelper msgHelper;
 
     /**************************************************************************/
     public SQLStmtCustomizer(SQLStmt stmt, JTextComponent target,
@@ -93,6 +95,7 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         this.mayVariableNameBeEmpty = mayVariableNameBeEmpty;
         
         initComponents();
+        msgHelper = new MsgHelper(errorMessage, SQLStmtCustomizer.class);
 
         jTextField1.setText(stmt.getVariable());
         if (!mayVariableNameBeEmpty) {
@@ -110,24 +113,21 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         }
         
         jComboBox2.setModel(new DefaultComboBoxModel(SQLStmt.scopes));
-        jComboBox2.setSelectedIndex(stmt.getScopeIndex());
-        
+        jComboBox2.setSelectedIndex(stmt.getScopeIndex());        
         jTextField2.setText(stmt.getDataSource());
-        
         jTextArea1.setText(stmt.getStmt());
     }
     
     /**************************************************************************/
     private void validateInput() {
-        if(jTextField1.getText().trim().length() == 0) {
-            String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_Empty_VariableName"); // NOI18N
+        if (jTextField1.getText().trim().length() < 1) {
+            msgHelper.setInfoMsg("Error_Empty_VariableName"); // NOI18N
             descriptor.setValid(false);
-            errorMessage.setText(msg);
             return;
         }
-        
+
+        msgHelper.setErrorMsg(null);
         descriptor.setValid(true);
-        errorMessage.setText("");
     }
     
     /**************************************************************************/
@@ -135,7 +135,7 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         dialogOK = false;
         
         descriptor = new DialogDescriptor
-                (this, NbBundle.getMessage(SQLStmtCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
+                (this, NbBundle.getMessage(SQLStmtCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,  // NOI18N
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {

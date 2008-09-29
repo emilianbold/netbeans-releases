@@ -66,7 +66,7 @@ abstract class EntrySupport {
     private static final Reference<ChildrenArray> EMPTY = new WeakReference<ChildrenArray>(null);
 
     /** children we are attached to */
-    public final Children children;
+    public Children children;
 
     /** array of children Reference (ChildrenArray) */
     Reference<ChildrenArray> array = EMPTY;
@@ -876,7 +876,7 @@ abstract class EntrySupport {
                     LOG_GET_ARRAY.fine("previous array: " + array + " caller: " + caller);
                 }
                 synchronized (LOCK) {
-                    if (array == caller) {
+                    if (array == caller && children.entrySupport == this) {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         array = EMPTY;
@@ -1065,11 +1065,12 @@ abstract class EntrySupport {
                         int cnt = 0;
                         boolean found = false;
                         cnt += snapshotCount;
-                        if (who != null) {
+                        if (cnt == 0) {
                             for (Entry entry : visibleEntries) {
                                 EntryInfo info = entryToInfo.get(entry);
                                 if (info.currentNode() != null) {
                                     cnt++;
+                                    break;
                                 }
                                 if (info == who) {
                                     found = true;
@@ -1082,7 +1083,9 @@ abstract class EntrySupport {
                             inited = false;
                             initThread = null;
                             initInProgress = false;
-                            children.callRemoveNotify();
+                            if (children != null && children.entrySupport == this) {
+                                children.callRemoveNotify();
+                            }
                         }
                     }
                 } finally {
@@ -1473,7 +1476,14 @@ abstract class EntrySupport {
                             creatingNode = creating = true;
                         }
                     }
-                    Collection<Node> nodes = creating ? entry.nodes() : null;
+                    Collection<Node> nodes = Collections.emptyList();
+                    if (creating) {
+                        try {
+                            nodes = entry.nodes();
+                        } catch (RuntimeException ex) {
+                            NodeOp.warning(ex);
+                        }
+                    }
                     synchronized (LOCK) {
                         if (!creating) {
                             if (refNode != null) {
@@ -1485,14 +1495,12 @@ abstract class EntrySupport {
                             // node created by other thread was GCed meanwhile, try once again
                             continue;
                         }
-                        if (nodes.size() != 1) {
-                            LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
-                            if (nodes.size() == 0) {
-                                node = new DummyNode();
-                            } else {
-                                node = nodes.iterator().next();
-                            }
+                        if (nodes.size() == 0) {
+                            node = new DummyNode();
                         } else {
+                            if (nodes.size() > 1) {
+                                LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
+                            }
                             node = nodes.iterator().next();
                         }
                         refNode = new NodeRef(node, this);

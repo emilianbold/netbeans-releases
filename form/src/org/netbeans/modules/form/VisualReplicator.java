@@ -342,6 +342,8 @@ public class VisualReplicator {
                     container = visualMetaCont.getContainerDelegate((Container)contClone);
                 }
                 else container = (Container)contClone;
+            } else {
+                return;
             }
         }
 

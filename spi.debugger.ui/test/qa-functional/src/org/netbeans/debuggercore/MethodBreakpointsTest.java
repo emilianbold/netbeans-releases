@@ -190,7 +190,7 @@ public class MethodBreakpointsTest extends JellyTestCase {
             setBreakpointType(dialog, "Method");
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -206,7 +206,7 @@ public class MethodBreakpointsTest extends JellyTestCase {
             setBreakpointType(dialog, "Method");
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:154", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:154");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -222,19 +222,19 @@ public class MethodBreakpointsTest extends JellyTestCase {
             setBreakpointType(dialog, "Method");
             dialog.ok();
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:39", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:39");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:114", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:114");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:50", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:50");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:51", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:51");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:121", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:121");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:79", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:79");
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -259,13 +259,13 @@ public class MethodBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:50", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:50");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:76", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:79", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:79");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:109");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -286,9 +286,9 @@ public class MethodBreakpointsTest extends JellyTestCase {
             Utilities.toggleBreakpoint(eo, 104);
 
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -304,13 +304,13 @@ public class MethodBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname, 0);
+            Utilities.waitStatusText("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname);
             dialog = Utilities.newBreakpoint(104);
             setBreakpointType(dialog, "Method");
             wrongname = "wrong2";
             new JTextFieldOperator(dialog, 0).setText(wrongname);
             dialog.ok();
-            //lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname, lines + 1);
+            Utilities.waitStatusText("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

@@ -81,7 +81,7 @@ public final class ToolchainManager {
     private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
     private static final ToolchainManager instance = new ToolchainManager();
     private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
-    private Logger log = Logger.getLogger("cnd.toolchain.logger");
+    private Logger log = Logger.getLogger("cnd.toolchain.logger"); // NOI18N
     
     static final ToolchainManager getInstance(){
         return instance;

@@ -157,14 +157,14 @@ public class RefactoringTest extends JellyTestCase {
             result = TestKit.compareThem(expected, actual, false);
             assertEquals("Wrong status in Versioning View", 3, result);
 
-            mh = new MessageHandler("Refreshing");
-            TestKit.removeHandlers(log);
-            log.addHandler(mh);
+//            mh = new MessageHandler("Refreshing");
+//            TestKit.removeHandlers(log);
+//            log.addHandler(mh);
 
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
             CommitOperator cmo = CommitOperator.invoke(node);
 
-            TestKit.waitText(mh);
+//            TestKit.waitText(mh);
 
             mh = new MessageHandler("Committing");
             TestKit.removeHandlers(log);

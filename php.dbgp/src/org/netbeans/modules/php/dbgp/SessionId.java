@@ -186,18 +186,8 @@ public class SessionId {
         }
     }
 
-    public FileObject getFileObjectByRemote( String uri ){
-        FileObject retval = null;
+    private FileObject convertToFileObject(String uri) {
         if (uri != null) {
-            if (uri.equals(getFileUri())) {
-                retval = getDebugFile();
-            } else if (myRemoteBase != null && myLocalBase != null && uri.startsWith(myRemoteBase)) {
-                String relativePath = uri.substring(myRemoteBase.length());
-                relativePath = relativePath.replace(myRemoteSeparator, File.separator);
-                retval = myLocalBase.getFileObject(relativePath);
-            }
-        }   
-        if (retval == null) {
             try {
                 URL url = new URI(uri).toURL();
                 if ("file".equals(url.getProtocol())) { //NOI18N
@@ -210,7 +200,24 @@ public class SessionId {
                 Exceptions.printStackTrace(ex);
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
-            }            
+            }
+        }
+        return null;
+    }
+
+    public FileObject getFileObjectByRemote( String uri ){
+        FileObject retval = null;
+        if (uri != null) {
+            if (uri.equals(getFileUri())) {
+                retval = getDebugFile();
+            } else if (myRemoteBase != null && myLocalBase != null && uri.startsWith(myRemoteBase)) {
+                String relativePath = uri.substring(myRemoteBase.length());
+                relativePath = relativePath.replace(myRemoteSeparator, File.separator);
+                retval = myLocalBase.getFileObject(relativePath);
+            } 
+        }   
+        if (retval == null) {
+            retval = convertToFileObject(uri);
         }
         return retval;
     }
@@ -256,7 +263,10 @@ public class SessionId {
         else {
             String name = getSessionFileObject().getNameExt();
             if ( !name.equals( fileName )) {
-                assert false;
+                String fileUri = getFileUri();
+                FileObject tmpDebugFile = fileUri != null ? convertToFileObject(fileUri) : null;
+                myDebugFile = tmpDebugFile != null ? tmpDebugFile : myDebugFile;                
+                assert tmpDebugFile != null : fileUri;
                 return;
             }
             localFolder = getSessionFileObject().getParent();
@@ -296,8 +306,6 @@ public class SessionId {
             return;
         }
         assert indx+1 < remoteFolder.length();
-        String folderName = remoteFolder.substring( indx +1 );
-        String localName = localFolder.getNameExt();
         setupBases( localFolder.getParent() , remoteFolder.substring( 0, indx), fileName);
     }
     

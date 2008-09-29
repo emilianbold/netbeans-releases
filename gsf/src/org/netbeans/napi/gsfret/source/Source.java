@@ -76,6 +76,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.swing.event.CaretEvent;
@@ -86,8 +87,6 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.platform.JavaPlatformManager;
-import org.netbeans.modules.gsfpath.api.queries.SourceLevelQuery;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.ParseEvent;
 import org.netbeans.modules.gsf.api.ParseListener;
@@ -234,7 +233,6 @@ public final class Source {
     private final FileChangeListener fileChangeListener;
     private DocListener listener;
     private PropertyChangeListener dataObjectListener;
-    private String sourceLevel;
 
     private final ClasspathInfo classpathInfo;
     private CompilationInfo currentInfo;
@@ -781,7 +779,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         //assert diagnosticListener == null;
         Language language = compilationInfo.getLanguage();
         assert language != null;
-        ParserTaskImpl javacTask = createParserTask(language, compilationInfo, getClasspathInfo(), /*diagnosticListener,*/ sourceLevel, false);
+        ParserTaskImpl javacTask = createParserTask(language, compilationInfo, getClasspathInfo(), /*diagnosticListener,*/ false);
 //        Context context = javacTask.getContext();
 //        Messager.preRegister(context, null);
 //        ErrorHandlingJavadocEnter.preRegister(context);
@@ -792,7 +790,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         return javacTask;
     }
 
-    private static ParserTaskImpl createParserTask(Language language, final CompilationInfo currentInfo, final ClasspathInfo cpInfo, /*final DiagnosticListener<? super SourceFileObject> diagnosticListener,*/ final String sourceLevel, final boolean backgroundCompilation) {
+    private static ParserTaskImpl createParserTask(Language language, final CompilationInfo currentInfo, final ClasspathInfo cpInfo, /*final DiagnosticListener<? super SourceFileObject> diagnosticListener,*/ final boolean backgroundCompilation) {
         ParserTaskImpl jti = new ParserTaskImpl(language);
 
         return jti;
@@ -1623,10 +1621,6 @@ if(parseTime > 0) {
     }
 
     private static CompilationInfo createCurrentInfo (final Source js, final FileObject fo, final Object/*FilterListener*/ filterListener, final ParserTaskImpl javac) throws IOException {
-        if (js.sourceLevel == null && fo != null)
-            js.sourceLevel = SourceLevelQuery.getSourceLevel(fo);
-        if (js.sourceLevel == null)
-            js.sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         CompilationInfo info = new CompilationInfo (js, fo, javac);
 
         //TimesCollector.getDefault().reportReference(fo, CompilationInfo.class.toString(), "[M] CompilationInfo", info);     //NOI18N
@@ -1670,13 +1664,9 @@ if(parseTime > 0) {
         }
 
         @Override
-        public ParserTaskImpl createParserTask(Language language, ClasspathInfo cpInfo, /*DiagnosticListener<? super SourceFileObject> diagnosticListener,*/ String sourceLevel) {
-            if (sourceLevel == null)
-                sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
-//            return Source.createParserTask(cpInfo, diagnosticListener, sourceLevel, true);
-//            throw new RuntimeException("Not yet implemented - I need the CompilationInfo here so I can pass in the language etc.");
+        public ParserTaskImpl createParserTask(Language language, ClasspathInfo cpInfo) {
             boolean backgroundCompilation = true; // Is this called from anywhere else?
-            return Source.createParserTask(language, null, cpInfo, sourceLevel, backgroundCompilation);
+            return Source.createParserTask(language, null, cpInfo, backgroundCompilation);
         }
 
         @Override
@@ -1902,10 +1892,29 @@ if(parseTime > 0) {
      */
     private static void dumpSource(CompilationInfo info, Throwable exc) {
         String dumpDir = System.getProperty("netbeans.user") + "/var/log/"; //NOI18N
-        String src = info.getText();
+        String src = null;
+        try {
+            src = info.getText();
+        } catch (IllegalStateException ise) {
+            Document doc = info.getDocument();
+            if (doc != null) {
+                try {
+                    src = doc.getText(0, doc.getLength());
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        if (src == null) {
+            src = "";
+        }
         FileObject file = info.getFileObject();
-        String fileName = FileUtil.getFileDisplayName(info.getFileObject());
-        String origName = file.getName();
+        String origName = "unknown";
+        String fileName = origName;
+        if (file != null) {
+            fileName = FileUtil.getFileDisplayName(file);
+            origName = file.getNameExt();
+        }
         File f = new File(dumpDir + origName + ".dump"); // NOI18N
         boolean dumpSucceeded = false;
         int i = 1;
@@ -1941,8 +1950,12 @@ if(parseTime > 0) {
                 Logger.getLogger("global").log(Level.INFO, "Error when writing parser dump file!", ioe); // NOI18N
             }
         }
+        String language = "ruby";
+        if (info.getLanguage() != null) {
+            language = info.getLanguage().getDisplayName();
+        }
         if (dumpSucceeded) {
-            Throwable t = Exceptions.attachMessage(exc, "An error occurred during parsing of \'" + fileName + "\'. Please report a bug against ruby and attach dump file '"  // NOI18N
+            Throwable t = Exceptions.attachMessage(exc, "An error occurred during parsing of \'" + fileName + "\'. Please report a bug against " + language + " and attach dump file '"  // NOI18N
                     + f.getAbsolutePath() + "'."); // NOI18N
             Exceptions.printStackTrace(t);
         } else {
