@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.websvc.manager.ui;
 
-import org.netbeans.swing.outline.RowModel;
+import org.netbeans.modules.websvc.manager.swing.outline.RowModel;
 import org.openide.util.NbBundle;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -52,12 +52,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 public class TypeRowModel implements RowModel {
     private ClassLoader classLoader;
-    
+
     /** Creates a new instance of TypeRowModel */
     public TypeRowModel(ClassLoader loader) {
         this.classLoader = loader;
     }
-    
+
     public Class getColumnClass(int column) {
         switch(column) {
          //   case 0: return String.class;
@@ -66,11 +66,11 @@ public class TypeRowModel implements RowModel {
             default: return String.class;
         }
     }
-    
+
     public int getColumnCount() {
         return 2;
     }
-    
+
     public String getColumnName(int column) {
         switch(column) {
            // case 0: return NbBundle.getMessage(this.getClass(), "PARAM_CLASS");
@@ -78,9 +78,9 @@ public class TypeRowModel implements RowModel {
             case 1: return NbBundle.getMessage(this.getClass(), "PARAM_VALUE");
             default: return "";
         }
-        
+
     }
-    
+
     public Object getValueFor(Object inNode, int column) {
         if(null == inNode) return null;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)inNode;
@@ -91,14 +91,14 @@ public class TypeRowModel implements RowModel {
             case 1: return data.getTypeValue();
             default: return "";
         }
-        
+
     }
-    
+
     public boolean isCellEditable(Object inNode, int column) {
         if(null == inNode) return false;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)inNode;
         if(null == node.getUserObject()) return false;
-        
+
         TypeNodeData data = (TypeNodeData)node.getUserObject();
         switch(column) {
             case 0: return false;
@@ -106,7 +106,7 @@ public class TypeRowModel implements RowModel {
                 if (!data.isAssignable()) {
                     return false;
                 }
-                
+
                 String typeClass = data.getTypeClass();
                 if (ReflectionHelper.isSimpleType(typeClass, classLoader)) {
                     if (typeClass.equalsIgnoreCase("java.util.Calendar")) { // NOI18N
@@ -121,14 +121,14 @@ public class TypeRowModel implements RowModel {
                 }
             default: return false;
         }
-        
+
     }
-    
+
     public void setValueFor(Object inNode, int column, Object value) {
         if(null == inNode) return;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)inNode;
         if(null == node.getUserObject()) return;
-        
+
         TypeNodeData data = (TypeNodeData)node.getUserObject();
         /**
          * Make sure they are only trying to edit the value column
@@ -136,14 +136,14 @@ public class TypeRowModel implements RowModel {
         if(column != 1) {
             return;
         }
-        
+
         data.setTypeValue(value);
         /**
          * If this node's parent is a ArrayTypeTreeNode, StructureTypeTreeNode, or HolderTypeTreeNode,
          * update this value on the parent's
          * value.
          */
-        
+
         DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) node.getParent();
         if(null != parentNode && parentNode instanceof ListTypeTreeNode) {
             ((ListTypeTreeNode)parentNode).updateValueFromChildren(data);
@@ -153,13 +153,13 @@ public class TypeRowModel implements RowModel {
              */
             ((StructureTypeTreeNode)parentNode).updateValueFromChildren(data);
         } else if(null != parentNode && parentNode instanceof HolderTypeTreeNode) {
-            
+
             ((HolderTypeTreeNode)parentNode).updateValueFromChildren(data);
-        }  
-        
-        
-        
-        
+        }
+
+
+
+
     }
-    
+
 }

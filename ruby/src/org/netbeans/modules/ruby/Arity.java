@@ -215,7 +215,7 @@ public final class Arity {
 
         Arity arity = new Arity(0, 0);
 
-        List<Node> nodes = (List<Node>)method.childNodes();
+        List<Node> nodes = method.childNodes();
 
         for (Node c : nodes) {
             if (c instanceof ArgsNode) {

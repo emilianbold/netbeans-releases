@@ -1098,6 +1098,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
          *  (but I also have to search for methods that are OVERRIDING the class... so I've gotta work a little harder!)
          * @todo Arity matching on the methods to preclude methods that aren't overriding or aliasing!
          */
+        @SuppressWarnings("fallthrough")
         private void find(AstPath path, RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name, boolean upperCase) {
             /* TODO look for both old and new and attempt to fix
              if (node instanceof AliasNode) {

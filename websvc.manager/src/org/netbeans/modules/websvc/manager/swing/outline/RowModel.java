@@ -45,7 +45,7 @@
  * Created on January 28, 2004, 11:07 PM
  */
 
-package org.netbeans.swing.outline;
+package org.netbeans.modules.websvc.manager.swing.outline;
 
 /** A model for the rows in an Outline.  This is passed the object in
  * column 0 of an Outline table (the tree column), and provides objects

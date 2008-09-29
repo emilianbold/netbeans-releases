@@ -49,6 +49,8 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 public class RelationshipRole {
     
     private String roleName;
+    // The Java package the entity is in. Need to remember it - see issue 139804
+    private String entityPkgName; 
     private String entityName;
     private String fieldName;
     private boolean many;
@@ -93,6 +95,14 @@ public class RelationshipRole {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public String getEntityPkgName() {
+        return entityPkgName;
+    }
+
+    public void setEntityPkgName(String pkgName) {
+        this.entityPkgName = pkgName;
     }
 
     public String getEntityName() {

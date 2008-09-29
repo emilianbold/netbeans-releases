@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-/*
- * ExtTreeExpansionListener.java
  *
- * Created on February 1, 2004, 6:59 PM
- */
-
-package org.netbeans.swing.outline;
-
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeWillExpandListener;
-import javax.swing.tree.ExpandVetoException;
-
-/** A trivial extension to TreeWillExpandListener, to allow listeners to be
- * notified if another TreeWillExpandListener vetos a pending expansion.
- * If a TreeExpansionListener added to an instance of TreePathSupport implements
- * this interface, it will be notified by the TreePathSupport if some other
- * listener vetos expanding a node.
- * <p>
- * This interface is primarily used to avoid memory leaks if a TreeWillExpandListener
- * constructs some data structure (like a TableModelEvent that is a translation
- * of a TreeExpansionEvent) for use when the expansion actually occurs, to notify
- * it that the pending TableModelEvent will never be fired.  It is not of much
- * interest to the rest of the world.
+ * Contributor(s):
  *
- * @author  Tim Boudreau
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-public interface ExtTreeWillExpandListener extends TreeWillExpandListener {
-    
-    public void treeExpansionVetoed (TreeExpansionEvent event, 
-        ExpandVetoException exception);
-    
+package org.netbeans.modules.maven.indexer;
+
+import java.util.Collection;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
+import org.openide.modules.ModuleInstall;
+import org.openide.util.Lookup;
+
+/**
+ * Manages a module's lifecycle. Remember that an installer is optional and
+ * often not needed at all.
+ */
+public class Installer extends ModuleInstall {
+
+    @Override
+    public void close() {
+        super.close();
+        Collection<? extends RepositoryIndexerImplementation> res = Lookup.getDefault().lookupAll(RepositoryIndexerImplementation.class);
+        for (RepositoryIndexerImplementation impl : res) {
+            if (impl.getType().equals(RepositoryPreferences.TYPE_NEXUS)) {
+                ((NexusRepositoryIndexserImpl)impl).shutdownAll();
+            }
+        }
+    }
+
 }

@@ -193,7 +193,7 @@ public class Hk2PluginProperties {
                 // Prelude doesn't have the javax.javaee jar, since it is not a
                 // complete Java EE 5 implementation.
                 File modulesDir = new File(serverDir.getAbsolutePath() + File.separatorChar + ServerUtilities.GFV3_MODULES_DIR_NAME);
-                jars = ServerUtilities.filterByManifest(jars, modulesDir, 0);
+                jars = ServerUtilities.filterByManifest(jars, modulesDir, 0, true);
             }
 
             for (String jarStr : jars) {

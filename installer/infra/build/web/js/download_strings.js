@@ -61,6 +61,8 @@ var SINGLE_NOT_AVAILABLE_BUNDLE   = "{0} is not available for {1}";
 var MULTIPLE_NOT_AVAILABLE_ZIP    = "{0} are not available in {1}";
 var MULTIPLE_NOT_AVAILABLE_BUNDLE = "{0} are not available for {1}";
 
+var ZIP_FILES_LIST_NAME             = "Zip Files";
+var MODULE_CLUSTERS_FILES_LIST_NAME = "Module Clusters";
 
 var NOTE_SOLARIS = "Note: Java ME is only available for Windows and Linux. <br>The UML Pack is available on the Update Center.";
 var NOTE_MACOSX  = "Note: Java ME is only available for Windows and Linux. <br>The UML Pack is available on the Update Center.";
@@ -101,6 +103,7 @@ var DOWNLOAD_BUTTON_HIGHLIGHT = "download_h.gif";
 
 // DO NOT TRANSLATE
 var START_PAGE = "start.html";
+var ZIP_PAGE   = "zip.html";
 
 var LEGAL_INFO_HEADER = "Important Legal Information:";
 
