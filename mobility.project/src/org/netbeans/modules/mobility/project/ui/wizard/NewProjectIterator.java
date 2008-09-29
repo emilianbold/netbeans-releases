@@ -79,6 +79,10 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
     static Object create() {
         return new NewProjectIterator();
     }
+
+    static {
+        ClassPreloader.start(); //#147403 - preload some classes 
+    }
     
     public void addChangeListener(@SuppressWarnings("unused")
 	final javax.swing.event.ChangeListener changeListener) {
