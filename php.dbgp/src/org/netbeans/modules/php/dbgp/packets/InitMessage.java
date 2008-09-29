@@ -98,10 +98,9 @@ public class InitMessage extends DbgpMessage {
         DbgpResponse response = session.sendSynchronCommand(command);
         assert response instanceof FeatureGetResponse;
         FeatureGetResponse featureGetResponse = (FeatureGetResponse)response;
-        String size = featureGetResponse.getDetails();
         Integer maxSize = 0;
         try {
-            maxSize = Integer.parseInt(size);
+            maxSize = featureGetResponse != null ? Integer.parseInt(featureGetResponse.getDetails()) : 0;
         }
         catch( NumberFormatException e ) {
             // just skip 
@@ -115,7 +114,7 @@ public class InitMessage extends DbgpMessage {
             response = session.sendSynchronCommand(setCommand);
             assert response instanceof FeatureSetResponse;
             FeatureSetResponse setResponse = (FeatureSetResponse) response;
-            if ( !setResponse.isSuccess() ) {
+            if (setResponse != null &&  !setResponse.isSuccess() ) {
                 DbgpMessage.setMaxDataSize( maxSize );
             }
         }

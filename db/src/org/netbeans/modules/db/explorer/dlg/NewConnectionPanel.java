@@ -40,17 +40,14 @@
  */
 
 package org.netbeans.modules.db.explorer.dlg;
-import java.awt.Color;
 import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
@@ -123,6 +120,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         initComponents();
         initAccessibility();
         initFieldMap();
+
+        // sets up colors and icons
+        errorInfoPanel.setup();
 
         DatabaseExplorerInternalUIs.connect(templateComboBox, JDBCDriverManager.getDefault(), driverClass);
 
