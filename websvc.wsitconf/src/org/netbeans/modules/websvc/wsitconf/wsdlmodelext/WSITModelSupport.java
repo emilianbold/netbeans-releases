@@ -770,12 +770,16 @@ public class WSITModelSupport {
         for (BindingOperation bo : b.getBindingOperations()) {
             BindingInput bi = bo.getBindingInput();
             BindingOutput bout = bo.getBindingOutput();
-            PolicyModelHelper.removePolicyForElement(bo);
-            PolicyModelHelper.removePolicyForElement(bi);
-            PolicyModelHelper.removePolicyForElement(bout);
+            if (bi != null) {
+                PolicyModelHelper.removePolicyForElement(bi);
+            }
+            if (bout != null) {
+                PolicyModelHelper.removePolicyForElement(bout);
+            }
             for (BindingFault bf : bo.getBindingFaults()) {
                 PolicyModelHelper.removePolicyForElement(bf);
             }
+            PolicyModelHelper.removePolicyForElement(bo);
         }
 
         // --------------------
