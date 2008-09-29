@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
@@ -85,6 +86,13 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
 public class RubySemanticAnalyzer implements SemanticAnalyzer {
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
+    private static final Set<String> JAVA_PREFIXES = new HashSet<String>();
+    static {
+        JAVA_PREFIXES.add("java"); // NOI18N
+        JAVA_PREFIXES.add("javax"); // NOI18N
+        JAVA_PREFIXES.add("org"); // NOI18N
+        JAVA_PREFIXES.add("com"); // NOI18N
+    }
 
     public RubySemanticAnalyzer() {
     }
@@ -154,6 +162,7 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
     }
 
     /** Find unused local and dynamic variables */
+    @SuppressWarnings("fallthrough")
     private void annotate(Node node, Map<OffsetRange,Set<ColoringAttributes>> highlights, AstPath path,
         List<String> parameters, boolean isParameter) {
         switch (node.nodeId) {
@@ -239,9 +248,14 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
             break;
         }
         
-        case FCALLNODE:
+        case VCALLNODE:
+            // FALLTHROUGH!
+            if (JAVA_PREFIXES.contains(((INameNode)node).getName())) {
+                // Skip highlighting "org" in "org.foo.Bar" etc.
+                break;
+            }
         //case CALLNODE:
-        case VCALLNODE: {
+        case FCALLNODE: {
             // CallNode seems overly aggressive - it will show all operators for example
             OffsetRange range = AstUtilities.getCallRange(node);
             highlights.put(range, ColoringAttributes.METHOD_SET);
