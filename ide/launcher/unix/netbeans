@@ -124,7 +124,7 @@ heap_size () {
         mem=`expr $mem / 1024`
         ;;
     SunOS*)
-        mem=`/usr/sbin/prtconf | grep Memory | tr -dc '[0-9]'`
+        mem=`/usr/sbin/prtconf | grep Memory | /usr/bin/tr -dc '[0-9]'`
         ;;
     Darwin*)
         mem=`/usr/sbin/sysctl hw.memsize | tr -d [:alpha:][:space:].:`
@@ -133,6 +133,9 @@ heap_size () {
         *) 
         ;;
     esac
+    if [ -z "$mem" ] ; then
+        mem=640
+    fi
     mem=`expr $mem / 5`
     if [ $mem -gt 512 ] ; then
         mem=512

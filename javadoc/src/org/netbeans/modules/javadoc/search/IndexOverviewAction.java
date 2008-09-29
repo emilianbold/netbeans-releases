@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.javadoc.search;
 
-import javax.swing.JPopupMenu;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;

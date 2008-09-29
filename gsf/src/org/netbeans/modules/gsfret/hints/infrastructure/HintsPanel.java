@@ -279,14 +279,18 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         if ( data instanceof FileObject ) {
             FileObject fo = ((FileObject)data);            
             renderer.setText( getFileObjectLocalizedName(fo) );
-            renderer.setSelected( logic.isSelected((DefaultMutableTreeNode)value));
+            if (logic != null) {
+                renderer.setSelected( logic.isSelected((DefaultMutableTreeNode)value));
+            }
         }
         else if ( data instanceof UserConfigurableRule ) {
             UserConfigurableRule treeRule = (UserConfigurableRule)data;
             renderer.setText( treeRule.getDisplayName() );            
-            
-            Preferences node = logic.getCurrentPrefernces(treeRule);                        
-            renderer.setSelected( HintsSettings.isEnabled(manager, treeRule, node));
+
+            if (logic != null) {
+                Preferences node = logic.getCurrentPrefernces(treeRule);
+                renderer.setSelected( HintsSettings.isEnabled(manager, treeRule, node));
+            }
         }
         else {
             renderer.setText( value.toString() );
