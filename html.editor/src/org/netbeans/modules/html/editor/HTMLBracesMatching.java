@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
@@ -94,9 +95,9 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
             if (!testMode && MatcherContext.isTaskCanceled()) {
                 return null;
             }
-            TokenHierarchy th = TokenHierarchy.get(context.getDocument());
-            List<TokenSequence> tsl = th.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
-            for (TokenSequence ts : tsl) {
+                TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(context.getDocument());
+                TokenHierarchy th = TokenHierarchy.get(context.getDocument());
+                
                 if (ts.language() == HTMLTokenId.language()) {
                     ts.move(context.getSearchOffset());
                     //if (context.isSearchingBackward() ? ts.movePrevious() : ts.moveNext()) {
@@ -114,6 +115,7 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                     return null;
                                 } else if (t2.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
                                     //find end
+                                    int tagNameEnd = -1;
                                     while (ts.moveNext()) {
                                         Token t3 = ts.token();
                                         if (!tokenInTag(t3) || t3.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
@@ -123,8 +125,14 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                                 //do no match empty tags
                                                 return null;
                                             } else {
-                                                return new int[]{t2.offset(th), t3.offset(th) + t3.length()};
+                                                int from = t2.offset(th);
+                                                int to = t3.offset(th) + t3.length();
+                                                return new int[]{from, to, 
+                                                                 from, tagNameEnd,
+                                                                 to - 1, to};
                                             }
+                                        } else if(t3.id() == HTMLTokenId.TAG_OPEN || t3.id() == HTMLTokenId.TAG_CLOSE) {
+                                            tagNameEnd = t3.offset(th) + t3.length();
                                         }
                                     }
                                     break;
@@ -140,8 +148,6 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         }
                     }
                 }
-            }
-
             return null;
         } finally {
             ((AbstractDocument) context.getDocument()).readUnlock();
@@ -193,9 +199,9 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                             if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
                                 Element element = result.dtd().getElement(origin.name().toUpperCase());
                                 if(element != null && (element.hasOptionalEnd() || element.isEmpty())) {
-                                    ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()};
+                                    ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()}; //match nothing, origin will be yellow  - workaround
                                 } else {
-                                    ret[0] = null;
+                                    ret[0] = null; //no match
                                 }
                             } else {
                                 //last element must be the matching tag
@@ -207,14 +213,14 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                             if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
                                 Element element = result.dtd().getElement(origin.name().toUpperCase());
                                 if(element != null && element.hasOptionalStart()) {
-                                    ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()};
+                                    ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()}; //match nothing, origin will be yellow  - workaround
                                 } else {
-                                    ret[0] = null;
+                                    ret[0] = null; //no match
                                 }
                             } else {
                                 //first element must be the matching tag
                                 AstNode openTag = parent.children().get(0);
-                                ret[0] = translate(new int[]{openTag.startOffset(), openTag.endOffset()}, result.getTranslatedSource());
+                                ret[0] = translate(new int[]{openTag.startOffset(), openTag.startOffset() + openTag.name().length() + 1 /* open tag symbol '<' length */, openTag.endOffset() - 1, openTag.endOffset() }, result.getTranslatedSource());
                             }
                         } else if (origin.type() == AstNode.NodeType.COMMENT) {
                             int so = origin.startOffset();
@@ -240,7 +246,11 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
         if(source == null) {
             return match;
         } else {
-            return new int[]{source.getLexicalOffset(match[0]), source.getLexicalOffset(match[1] - 1) + 1};
+            int [] translation = new int[match.length];
+            for(int i = 0; i < match.length; i++) {
+                translation[i] = source.getLexicalOffset(match[i]);
+            }
+            return translation;
         }
     }
             

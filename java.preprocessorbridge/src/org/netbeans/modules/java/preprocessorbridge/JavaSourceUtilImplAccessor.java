@@ -1,4 +1,4 @@
-    /*
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
@@ -36,46 +36,38 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.test.mercurial;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.mercurial.main.archeology.AnnotationsTest;
-import org.netbeans.test.mercurial.main.commit.CloneTest;
-import org.netbeans.test.mercurial.main.commit.CommitDataTest;
-import org.netbeans.test.mercurial.main.commit.CommitUiTest;
-import org.netbeans.test.mercurial.main.commit.IgnoreTest;
-import org.netbeans.test.mercurial.main.commit.InitializeTest;
-import org.netbeans.test.mercurial.main.delete.DeleteUpdateTest;
-import org.netbeans.test.mercurial.main.properties.HgPropertiesTest;
-import org.netbeans.test.mercurial.utils.hgExistsChecker;
+package org.netbeans.modules.java.preprocessorbridge;
+
+import java.io.IOException;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author tester
+ * @author Tomas Zezula
  */
-public class hgStableTest extends JellyTestCase {
-
-    public hgStableTest(String name) {
-        super(name);
+public abstract class JavaSourceUtilImplAccessor {
+    
+    private static volatile JavaSourceUtilImplAccessor impl;
+    
+    public static void setInstance (final JavaSourceUtilImplAccessor _impl) {
+        assert _impl != null;
+        impl = _impl;
     }
-
-    public static Test suite() {
-        if (hgExistsChecker.check(false)) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
-                    .addTest(CommitDataTest.class, "testCommitFile", "testRecognizeMimeType")
-                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                    .addTest(CloneTest.class, "testCloneProject")
-                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
-                    .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
-                    .addTest(AnnotationsTest.class, "testShowAnnotations")
-                    .addTest(HgPropertiesTest.class, "testHgPropertiesTest")
-                    .enableModules(".*")
-                    .clusters(".*"));
-        } else {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+    
+    public static synchronized JavaSourceUtilImplAccessor getInstance () {
+        if (impl == null) {
+            try {
+                Class.forName(JavaSourceUtilImpl.class.getName(), true, JavaSourceUtilImpl.class.getClassLoader());
+            } catch (ClassNotFoundException cnfe) {
+                Exceptions.printStackTrace(cnfe);
+            }
         }
+        
+        return impl;
     }
+    
+    public abstract long createTaggedCompilationController (JavaSourceUtilImpl spi, FileObject fo, long currentTag, Object[] out) throws IOException;
 }

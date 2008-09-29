@@ -1,4 +1,4 @@
-    /*
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
@@ -36,46 +36,43 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.test.mercurial;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.mercurial.main.archeology.AnnotationsTest;
-import org.netbeans.test.mercurial.main.commit.CloneTest;
-import org.netbeans.test.mercurial.main.commit.CommitDataTest;
-import org.netbeans.test.mercurial.main.commit.CommitUiTest;
-import org.netbeans.test.mercurial.main.commit.IgnoreTest;
-import org.netbeans.test.mercurial.main.commit.InitializeTest;
-import org.netbeans.test.mercurial.main.delete.DeleteUpdateTest;
-import org.netbeans.test.mercurial.main.properties.HgPropertiesTest;
-import org.netbeans.test.mercurial.utils.hgExistsChecker;
+package org.netbeans.modules.java.preprocessorbridge.spi;
+
+import java.io.IOException;
+import org.netbeans.modules.java.preprocessorbridge.JavaSourceUtilImplAccessor;
+import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author tester
+ * SPI interface provided by java.source to java.preprocessorbridge, used by JavaSourceUtil
+ * @author Tomas Zezula 
+ * @since 1.5
  */
-public class hgStableTest extends JellyTestCase {
-
-    public hgStableTest(String name) {
-        super(name);
+public abstract class JavaSourceUtilImpl {
+    
+    static {
+        JavaSourceUtilImplAccessor.setInstance(new MyAccessor());
     }
+    
+    private static final String EXPECTED_PACKAGE = "org.netbeans.modules.java.source";  //NOI18N
+    
+    protected JavaSourceUtilImpl () {
+        super ();
+        final String implPackage = this.getClass().getPackage().getName();
+        if (!EXPECTED_PACKAGE.equals(implPackage)) {
+            throw new IllegalArgumentException ();
+        }
+    }
+    
+    protected abstract long createTaggedCompilationController (FileObject file, long currenTag, Object[] out) throws IOException;
 
-    public static Test suite() {
-        if (hgExistsChecker.check(false)) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
-                    .addTest(CommitDataTest.class, "testCommitFile", "testRecognizeMimeType")
-                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                    .addTest(CloneTest.class, "testCloneProject")
-                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
-                    .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
-                    .addTest(AnnotationsTest.class, "testShowAnnotations")
-                    .addTest(HgPropertiesTest.class, "testHgPropertiesTest")
-                    .enableModules(".*")
-                    .clusters(".*"));
-        } else {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+    
+    private static class MyAccessor extends JavaSourceUtilImplAccessor {
+
+        @Override
+        public long createTaggedCompilationController(JavaSourceUtilImpl spi, FileObject fo, long currentTag, Object[] out) throws IOException {
+            assert spi != null;
+            return spi.createTaggedCompilationController(fo, currentTag, out);
         }
     }
 }

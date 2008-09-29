@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Stack;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,12 +95,13 @@ public class StatFilesTest extends NbTestCase {
 
     public void testToFileObject() throws IOException {
         File workDir = getWorkDir();
+        assertGC("NamingFactory not cleared.", new WeakReference(NamingFactory.fromFile(workDir)));
         monitor.reset();
         monitor();
         assertNotNull(FileUtil.toFileObject(workDir));
-        int expectedCount = 4;
+        int expectedCount = 5;
         if(Utilities.isWindows()) {
-            expectedCount = 2;
+            expectedCount = 3;
         }
         monitor.getResults().assertResult(expectedCount, StatFiles.ALL);
         monitor.getResults().assertResult(expectedCount, StatFiles.READ);
@@ -108,6 +110,7 @@ public class StatFilesTest extends NbTestCase {
     /** Tests it is not neccessary to create FileObjects for the whole path. */
     public void testGetFileObject23() throws IOException {
         File workDir = getWorkDir();
+        assertGC("NamingFactory not cleared.", new WeakReference(NamingFactory.fromFile(workDir)));
         File rootFile = null;
         Stack<String> stack = new Stack<String>();
         while (workDir != null) {
@@ -122,7 +125,7 @@ public class StatFilesTest extends NbTestCase {
         FileObject root = FileUtil.toFileObject(rootFile);
         monitor.reset();
         assertNotNull(root.getFileObject(relativePath));
-        monitor.getResults().assertResult(1, StatFiles.ALL);
+        monitor.getResults().assertResult(2, StatFiles.ALL);
     }
 
     public void testGetCachedChildren() throws IOException {
@@ -209,30 +212,33 @@ public class StatFilesTest extends NbTestCase {
 
     public void testIssueFileObject() throws IOException {
         FileObject parent = FileBasedFileSystem.getFileObject(testFile).getParent();
+        assertGC("NamingFactory not cleared.", new WeakReference(NamingFactory.fromFile(testFile)));
 
         //parent exists with cached info + testFile not exists
         monitor.reset();
         assertGC("", new WeakReference(FileBasedFileSystem.getFileObject(testFile)));
         assertNotNull(FileBasedFileSystem.getFileObject(testFile));
-        monitor.getResults().assertResult(1, StatFiles.ALL);
-        monitor.getResults().assertResult(1, StatFiles.READ);
+        monitor.getResults().assertResult(2, StatFiles.ALL);
+        monitor.getResults().assertResult(2, StatFiles.READ);
 
         //parent not exists + testFile not exists
         monitor.reset();
         parent = null;
         assertGC("", new WeakReference(parent));
         assertGC("", new WeakReference(FileBasedFileSystem.getFileObject((testFile))));
+        assertGC("NamingFactory not cleared.", new WeakReference(NamingFactory.fromFile(testFile)));
         assertNotNull(FileBasedFileSystem.getFileObject((testFile)));
-        monitor.getResults().assertResult(2, StatFiles.ALL);
-        monitor.getResults().assertResult(2, StatFiles.READ);
+        monitor.getResults().assertResult(3, StatFiles.ALL);
+        monitor.getResults().assertResult(3, StatFiles.READ);
 
 
         parent = FileBasedFileSystem.getFileObject((testFile)).getParent();
+        assertGC("NamingFactory not cleared.", new WeakReference(NamingFactory.fromFile(testFile)));
         monitor.reset();
         FileObject fobj = FileBasedFileSystem.getFileObject((testFile));
         assertNotNull(fobj);
-        monitor.getResults().assertResult(1, StatFiles.ALL);
-        monitor.getResults().assertResult(1, StatFiles.READ);
+        monitor.getResults().assertResult(2, StatFiles.ALL);
+        monitor.getResults().assertResult(2, StatFiles.READ);
 
         monitor.reset();
         File tFile = testFile.getParentFile();

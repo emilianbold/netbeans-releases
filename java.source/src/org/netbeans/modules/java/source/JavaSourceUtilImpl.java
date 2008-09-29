@@ -1,4 +1,4 @@
-    /*
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
@@ -36,46 +36,24 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.test.mercurial;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.mercurial.main.archeology.AnnotationsTest;
-import org.netbeans.test.mercurial.main.commit.CloneTest;
-import org.netbeans.test.mercurial.main.commit.CommitDataTest;
-import org.netbeans.test.mercurial.main.commit.CommitUiTest;
-import org.netbeans.test.mercurial.main.commit.IgnoreTest;
-import org.netbeans.test.mercurial.main.commit.InitializeTest;
-import org.netbeans.test.mercurial.main.delete.DeleteUpdateTest;
-import org.netbeans.test.mercurial.main.properties.HgPropertiesTest;
-import org.netbeans.test.mercurial.utils.hgExistsChecker;
+package org.netbeans.modules.java.source;
+
+import java.io.IOException;
+import org.netbeans.api.java.source.JavaSource;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author tester
+ * @author Tomas Zezula
  */
-public class hgStableTest extends JellyTestCase {
+public class JavaSourceUtilImpl extends org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl {
 
-    public hgStableTest(String name) {
-        super(name);
+    @Override
+    protected long createTaggedCompilationController(FileObject file, long currenTag, Object[] out) throws IOException {
+        assert file != null;
+        final JavaSource js = JavaSource.forFileObject(file);
+        return JavaSourceAccessor.getINSTANCE().createTaggedCompilationController(js, currenTag, out);
     }
 
-    public static Test suite() {
-        if (hgExistsChecker.check(false)) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
-                    .addTest(CommitDataTest.class, "testCommitFile", "testRecognizeMimeType")
-                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                    .addTest(CloneTest.class, "testCloneProject")
-                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
-                    .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
-                    .addTest(AnnotationsTest.class, "testShowAnnotations")
-                    .addTest(HgPropertiesTest.class, "testHgPropertiesTest")
-                    .enableModules(".*")
-                    .clusters(".*"));
-        } else {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-        }
-    }
 }

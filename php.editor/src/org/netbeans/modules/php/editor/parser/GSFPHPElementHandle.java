@@ -256,7 +256,7 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
         }
 
         public String getName() {
-            if (name != null) {
+            if (name == null) {
                 List<Expression> parameters = invocation.getParameters();
                 if (parameters.size() == 2 && parameters.get(0) instanceof Scalar && parameters.get(1) instanceof Scalar) {
                     Scalar value = (Scalar)parameters.get(0);

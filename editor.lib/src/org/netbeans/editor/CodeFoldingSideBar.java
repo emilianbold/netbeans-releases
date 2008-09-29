@@ -130,6 +130,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             });
         }
     };
+    private final Listener listener = new Listener();
     
     private boolean enabled = false;
     
@@ -173,34 +174,13 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         super();
         this.component = component;
 
-        FoldingMouseListener listener = new FoldingMouseListener();
         addMouseListener(listener);
+
         FoldHierarchy foldHierarchy = FoldHierarchy.get(component);
-        foldHierarchy.addFoldHierarchyListener(new SideBarFoldHierarchyListener());
+        foldHierarchy.addFoldHierarchyListener(WeakListeners.create(FoldHierarchyListener.class, listener, foldHierarchy));
+
         Document doc = getDocument();
-        doc.addDocumentListener( new DocumentListener() {
-                public void insertUpdate(DocumentEvent evt) {
-                    if (!(evt instanceof BaseDocumentEvent)) return;
-                    
-                    BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
-                    if (bevt.getLFCount() > 0) { // one or more lines inserted
-                        repaint();
-                    }    
-                }
-                
-                public void removeUpdate(DocumentEvent evt) {
-                    if (!(evt instanceof BaseDocumentEvent)) return;
-                    
-                    BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
-                    if (bevt.getLFCount() > 0) { // one or more lines removed
-                        repaint();
-                    }    
-                }
-                
-                public void changedUpdate(DocumentEvent evt) {
-                }
-                
-            });
+        doc.addDocumentListener(WeakListeners.document(listener, doc));
         setOpaque(true);
         
         prefs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(Preferences.class);
@@ -272,13 +252,16 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         
         for (int i = 0; i < fold.getFoldCount(); i++) {
             Fold childFold = fold.getFold(i);
-            int startViewIndex = rootView.getViewIndex(childFold.getStartOffset(), Position.Bias.Forward);
-            int endViewIndex = rootView.getViewIndex(childFold.getEndOffset(), Position.Bias.Forward);
-            if (endViewIndex >= startIndex && startViewIndex <= endIndex && startViewIndex <= endViewIndex &&
-                level < 20 // #90931 - prevent stack overflow by a max fold nesting level
-            ) {
+// XXX: the same as below, plus #90931 was most likely caused by a wrong FoldManager implementation
+// and there have been fixes in both the codefolding infra and eg XmlFoldManager to prevent excessive
+// fold nesting.
+//            int startViewIndex = rootView.getViewIndex(childFold.getStartOffset(), Position.Bias.Forward);
+//            int endViewIndex = rootView.getViewIndex(childFold.getEndOffset(), Position.Bias.Forward);
+//            if (endViewIndex >= startIndex && startViewIndex <= endIndex && startViewIndex <= endViewIndex &&
+//                level < 20 // #90931 - prevent stack overflow by a max fold nesting level
+//            ) {
                 collectPaintInfos(rootView, childFold, map, level + 1, startIndex, endIndex);
-            }
+//            }
         }
         int foldStartOffset = fold.getStartOffset();
         int foldEndOffset = fold.getEndOffset();
@@ -682,28 +665,48 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         }
     }
     
-    /** Listening on clicking on folding marks */
-    class FoldingMouseListener extends MouseAdapter {
-        
-        public FoldingMouseListener(){
-            super();
+    private final class Listener extends MouseAdapter implements FoldHierarchyListener, DocumentListener {
+    
+        public Listener(){
         }
 
-        private Mark getClickedMark(MouseEvent e){
-            if (e == null || !SwingUtilities.isLeftMouseButton(e)) {
-                return null;
-            }
+        // --------------------------------------------------------------------
+        // FoldHierarchyListener implementation
+        // --------------------------------------------------------------------
 
-            int x = e.getX();
-            int y = e.getY();
-            for (Mark mark : visibleMarks) {
-                if (x >= mark.x && x <= (mark.x + mark.size) && y >= mark.y && y <= (mark.y + mark.size)) {
-                    return mark;
-                }
-            }
-            return null;
+        public void foldHierarchyChanged(FoldHierarchyEvent evt) {
+            refresh();
         }
-        
+
+        // --------------------------------------------------------------------
+        // DocumentListener implementation
+        // --------------------------------------------------------------------
+
+        public void insertUpdate(DocumentEvent evt) {
+            if (!(evt instanceof BaseDocumentEvent)) return;
+
+            BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
+            if (bevt.getLFCount() > 0) { // one or more lines inserted
+                refresh();
+            }
+        }
+
+        public void removeUpdate(DocumentEvent evt) {
+            if (!(evt instanceof BaseDocumentEvent)) return;
+
+            BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
+            if (bevt.getLFCount() > 0) { // one or more lines removed
+                refresh();
+            }
+        }
+
+        public void changedUpdate(DocumentEvent evt) {
+        }
+
+        // --------------------------------------------------------------------
+        // MouseListener implementation
+        // --------------------------------------------------------------------
+
         @Override
         public void mousePressed (MouseEvent e) {
             Mark mark = getClickedMark(e);
@@ -720,14 +723,26 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             e.consume();
         }
 
-    }
+        // --------------------------------------------------------------------
+        // private implementation
+        // --------------------------------------------------------------------
 
-    class SideBarFoldHierarchyListener implements FoldHierarchyListener{
-    
-        public SideBarFoldHierarchyListener(){
+        private Mark getClickedMark(MouseEvent e){
+            if (e == null || !SwingUtilities.isLeftMouseButton(e)) {
+                return null;
+            }
+
+            int x = e.getX();
+            int y = e.getY();
+            for (Mark mark : visibleMarks) {
+                if (x >= mark.x && x <= (mark.x + mark.size) && y >= mark.y && y <= (mark.y + mark.size)) {
+                    return mark;
+                }
+            }
+            return null;
         }
-        
-        public void foldHierarchyChanged(FoldHierarchyEvent evt) {
+
+        private void refresh() {
             BaseDocument bdoc = Utilities.getDocument(component);
             if (bdoc != null) {
                 bdoc.readLock();
@@ -746,7 +761,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             }
             repaint();
         }
-    }
+    } // End of Listener class
     
     @Override
     public AccessibleContext getAccessibleContext() {
