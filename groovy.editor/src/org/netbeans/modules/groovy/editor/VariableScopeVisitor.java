@@ -42,22 +42,16 @@
 package org.netbeans.modules.groovy.editor;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.VariableScope;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ClosureListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
@@ -65,16 +59,11 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.syntax.Types;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.AstUtilities.FakeASTNode;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
@@ -82,158 +71,37 @@ import org.netbeans.modules.gsf.api.OffsetRange;
  *
  * @author Martin Adamek
  */
-public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
+public final class VariableScopeVisitor extends TypeVisitor {
 
-    private final SourceUnit sourceUnit;
-    private final AstPath path;
-    private final ASTNode leaf;
-    private final ASTNode leafParent;
     private final Set<ASTNode> occurrences = new HashSet<ASTNode>();
-    private final BaseDocument doc;
-    private final int cursorOffset;
-    // see getLastType(), fallback to java.lang.Object
-    private ClassNode lastType = new ClassNode(Object.class);
-    // flag saying if visiting reached the node that we are investigating
-    private boolean lastTypeFound = false;
+    private final ASTNode leafParent;
 
     public VariableScopeVisitor(SourceUnit sourceUnit, AstPath path, BaseDocument doc, int cursorOffset) {
-        this.sourceUnit = sourceUnit;
-        this.path = path;
-        this.leaf = path.leaf();
+        super(sourceUnit, path, doc, cursorOffset);
         this.leafParent = path.leafParent();
-        this.doc = doc;
-        this.cursorOffset = cursorOffset;
     }
 
     public Set<ASTNode> getOccurrences() {
         return occurrences;
     }
 
-    /**
-     * Tries to guess the type from the last assignment expression before actual
-     * position of the leaf
-     *
-     * @return non-null type, java.lang.Object as a fallback
-     */
-    public ClassNode getLastType() {
-        return lastType;
-    }
-
-    public void collect() {
-
-        lastType = new ClassNode(Object.class);
-        lastTypeFound = false;
-
-        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, cursorOffset);
-        if (ts == null) {
-            return;
-        }
-        Token<? extends GroovyTokenId> token = ts.token();
-        if (token == null) {
-            return;
-        }
-        if (token.id() != GroovyTokenId.IDENTIFIER) {
-            // cursor is not positioned on identifier
-            return;
-        }
-
-        if (leaf instanceof Variable) {
-            Variable variable = (Variable) leaf;
-            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-                ASTNode scope = it.next();
-                if (scope instanceof ClosureExpression) {
-                    VariableScope variableScope = ((ClosureExpression) scope).getVariableScope();
-                    if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
-                        visitClosureExpression((ClosureExpression) scope);
-                        return;
-                    }
-                } else if (scope instanceof MethodNode) {
-                    if (collectMethodOrConstructor((MethodNode) scope, variable)) {
-                        return;
-                    }
-                } else if (scope instanceof ConstructorNode) {
-                    if (collectMethodOrConstructor((ConstructorNode) scope, variable)) {
-                        return;
-                    }
-                } else if (scope instanceof ForStatement) {
-                    VariableScope variableScope = ((ForStatement) scope).getVariableScope();
-                    if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
-                        visitForLoop((ForStatement) scope);
-                        return;
-                    }
-                } else if (scope instanceof BlockStatement) {
-                    VariableScope variableScope = ((BlockStatement) scope).getVariableScope();
-                    if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
-                        visitBlockStatement((BlockStatement) scope);
-                        return;
-                    }
-                } else if (scope instanceof ClosureListExpression) {
-                    VariableScope variableScope = ((ClosureListExpression) scope).getVariableScope();
-                    if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
-                        visitClosureListExpression((ClosureListExpression) scope);
-                        return;
-                    }
-                }
-            }
-        }
-
-        ModuleNode moduleNode = (ModuleNode) path.root();
-        for (Object object : moduleNode.getClasses()) {
-            visitClass((ClassNode)object);
-        }
-        // XXX it seems to me that this is not needed, it is just causing whole visitor
-        // to run twice, but it needs to be checked again for scripts maybe?
-//        for (Object object : moduleNode.getMethods()) {
-//            visitMethod((MethodNode)object);
-//        }
-//        visitBlockStatement(moduleNode.getStatementBlock());
-    }
-
-    private boolean collectMethodOrConstructor(MethodNode method, Variable variable) {
-        VariableScope variableScope = method.getVariableScope();
-        if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
-            // method is declaring given variable, let's visit only the method,
-            // but we need to check also parameters as those are not part of method visit
-            for (Parameter parameter : method.getParameters()) {
-                if (parameter.getName().equals(variable.getName())) {
-                    occurrences.add(parameter);
-                    break;
-                }
-            }
-            // call super method to avoid additional scope checks in our implementation
-            super.visitMethod(method);
-            return true;
-        }
-        return false;
-    }
-
     @Override
-    protected SourceUnit getSourceUnit() {
-        return sourceUnit;
-    }
-
-    @Override
-    public void visitBinaryExpression(BinaryExpression expression) {
-        // have a look at assignment and try to get type from its right side
-        Expression leftExpression = expression.getLeftExpression();
-        if (leftExpression == leaf) {
-            lastTypeFound = true;
-        }
-        if (!lastTypeFound && expression.getOperation().isA(Types.EQUAL) && sameVariableName(leaf, leftExpression)) {
-            Expression rightExpression = expression.getRightExpression();
-            if (rightExpression instanceof ConstantExpression) {
-                // the simple thing - integers, Strings, ...
-                lastType = ((ConstantExpression) rightExpression).getType();
-            } else if (rightExpression instanceof ConstructorCallExpression) {
-                lastType = ((ConstructorCallExpression) rightExpression).getType();
-            } else {
-                // other assignement we don't support yet, fallback to java.lang.Object
-                lastType = new ClassNode(Object.class);
+    protected void visitParameters(Parameter[] parameters, Variable variable) {
+        // method is declaring given variable, let's visit only the method,
+        // but we need to check also parameters as those are not part of method visit
+        for (Parameter parameter : parameters) {
+            if (parameter.getName().equals(variable.getName())) {
+                occurrences.add(parameter);
+                break;
             }
         }
-        super.visitBinaryExpression(expression);
     }
 
+    protected boolean isValidToken(Token<? extends GroovyTokenId> token) {
+        // cursor must be positioned on identifier, otherwise occurences doesn't make sense
+        return token.id() == GroovyTokenId.IDENTIFIER;
+    }
+    
     @Override
     public void visitVariableExpression(VariableExpression variableExpression) {
         if (leaf instanceof Variable && ((Variable) leaf).getName().equals(variableExpression.getName())) {
@@ -504,11 +372,6 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
             }
         }
         return OffsetRange.NONE;
-    }
-
-    private static boolean sameVariableName(ASTNode node1, ASTNode node2) {
-        return node1 instanceof VariableExpression && node2 instanceof VariableExpression &&
-                ((VariableExpression) node1).getName().equals(((VariableExpression) node2).getName());
     }
 
 }

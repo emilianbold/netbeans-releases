@@ -2086,6 +2086,17 @@ public class CodeCompleter implements CodeCompletionHandler {
             return null;
         }
 
+        // experimental type inference
+        if (closest instanceof VariableExpression) {
+            ModuleNode moduleNode = (ModuleNode) realPath.root();
+            TypeVisitor typeVisitor = new TypeVisitor(moduleNode.getContext(), realPath, request.doc, astOffset);
+            typeVisitor.collect();
+            ClassNode guessedType = typeVisitor.getGuessedType();
+            if (guessedType != null) {
+                return guessedType;
+            }
+        }
+
         ClassNode declClass = null;
 
         // Loop the path till we find something usefull.
