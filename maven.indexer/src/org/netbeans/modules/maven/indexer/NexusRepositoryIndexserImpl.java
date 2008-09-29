@@ -92,6 +92,8 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -494,12 +496,19 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
     
 
     public File getDefaultIndexLocation() {
-        File repo = new File(repository.getBasedir(), ".index/nexus"); //NOI18N
-        if (!repo.exists()) {
-            repo.mkdirs();
+        String userdir = System.getProperty("netbeans.user"); //NOI18N
+        File cacheDir;
+        if (userdir != null) {
+            cacheDir = new File(new File(new File(userdir, "var"), "cache"), "mavenindex");//NOI18N
+        } else {
+            File root = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            cacheDir = new File(root, "mavenidex");//NOI18N
         }
-        return repo;
+        cacheDir.mkdirs();
+        return cacheDir;
     }
+
+
 
     public Set<String> getGroups(List<RepositoryInfo> repos) {
         return filterGroupIds("", repos);
