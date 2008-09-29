@@ -56,12 +56,11 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.ruby.elements.Element;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.MethodElement;
 import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
@@ -170,17 +169,17 @@ class RDocFormatter {
 
             int n = sb.length();
             if (sb.length() > 1 && sb.charAt(sb.length()-1) == '\n') {
-                if (RubyUtils.endsWith(sb, "</pre>\n") || RubyUtils.endsWith(sb, "</h1>\n") ||
-                    RubyUtils.endsWith(sb, "</h2>\n") || RubyUtils.endsWith(sb, "</h3>\n") ||
-                    RubyUtils.endsWith(sb, "</h4>\n") || RubyUtils.endsWith(sb, "</h5>\n") ||
-                    RubyUtils.endsWith(sb, "</ul>\n") || RubyUtils.endsWith(sb, "</ol>\n") ||
-                    RubyUtils.endsWith(sb, "</table>\n") || RubyUtils.endsWith(sb, "<hr>\n")) {
+                if (GsfUtilities.endsWith(sb, "</pre>\n") || GsfUtilities.endsWith(sb, "</h1>\n") ||
+                    GsfUtilities.endsWith(sb, "</h2>\n") || GsfUtilities.endsWith(sb, "</h3>\n") ||
+                    GsfUtilities.endsWith(sb, "</h4>\n") || GsfUtilities.endsWith(sb, "</h5>\n") ||
+                    GsfUtilities.endsWith(sb, "</ul>\n") || GsfUtilities.endsWith(sb, "</ol>\n") ||
+                    GsfUtilities.endsWith(sb, "</table>\n") || GsfUtilities.endsWith(sb, "<hr>\n")) {
                     // No need for a separator
                     return;
                 }
             }
             if (sb.length() > 0) {
-                if (!(n > 4 && RubyUtils.endsWith(sb, "<br>"))) {
+                if (!(n > 4 && GsfUtilities.endsWith(sb, "<br>"))) {
                     sb.append("<br>");
                 }
                 sb.append("<br>");
@@ -255,7 +254,7 @@ class RDocFormatter {
 
             if (!inVerbatim) {
                 // Chomp off preceeding <br> to make output leaner
-                if (RubyUtils.endsWith(sb, "<br>")) {
+                if (GsfUtilities.endsWith(sb, "<br>")) {
                     sb.setLength(sb.length()-4);
                 }
                 inVerbatim = true;
@@ -279,7 +278,7 @@ class RDocFormatter {
 
             if (i <= 6) {
                 // Chomp off preceeding <br> to make output leaner
-                if (RubyUtils.endsWith(sb, "<br>")) {
+                if (GsfUtilities.endsWith(sb, "<br>")) {
                     sb.setLength(sb.length()-4);
                 }
                 sb.append("<h"); // NOI18N

@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -235,7 +236,7 @@ public class CompilerSetManager {
     private void init() {
         if (hkey.equals(LOCALHOST)) {
             platform = computeLocalPlatform();
-            initCompilerSets(Path.getPathWithDefaultCompilerLocations());
+            initCompilerSets(Path.getPath());
             state = STATE_COMPLETE;
         } else {
             log.fine("CSM.init: initializing remote compiler set for: " + hkey);
@@ -253,6 +254,10 @@ public class CompilerSetManager {
 
     public boolean isUninitialized() {
         return state == STATE_UNINITIALIZED;
+    }
+
+    public boolean isComplete() {
+        return state == STATE_COMPLETE;
     }
 
     public synchronized void initialize(boolean save) {
@@ -281,6 +286,17 @@ public class CompilerSetManager {
             }
         }
         return platform == -1 ? PlatformTypes.PLATFORM_NONE : platform;
+    }
+    
+    private String getPlatformName(int platform) {
+        switch (platform) {
+        case PlatformTypes.PLATFORM_LINUX : return "linux" ; // NOI18N
+        case PlatformTypes.PLATFORM_SOLARIS_SPARC : return "sun_sparc"; // NOI18N
+        case PlatformTypes.PLATFORM_SOLARIS_INTEL : return "sun_intel"; // NOI18N
+        case PlatformTypes.PLATFORM_WINDOWS : return "windows"; // NOI18N
+        case PlatformTypes.PLATFORM_MACOSX : return "mac"; // NOI18N
+        default: return "none"; // NOI18N
+        }
     }
 
     public void waitForCompletion() {
@@ -337,6 +353,7 @@ public class CompilerSetManager {
     private void initCompilerSets(ArrayList<String> dirlist) {
         Set<CompilerFlavor> flavors = new HashSet<CompilerFlavor>();
         initKnownCompilers(getPlatform(), flavors);
+        dirlist = appendDefaultLocations(getPlatform(), dirlist);
         for (String path : dirlist) {
             if (path.equals("/usr/ucb")) { // NOI18N
                 // Don't look here.
@@ -359,6 +376,28 @@ public class CompilerSetManager {
             }
         }
         completeCompilerSets();
+    }
+
+    /**
+     * Since many toolchains have default locations, append them to the path (on a per-platform basis)
+     * if they aren't already in the list.
+     *
+     * @param platform The platform we're running on
+     * @param dirlist An ArrayList of the current PATH
+     * @return A possibly modified ArrayList
+     */
+    private ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
+        for(ToolchainDescriptor d : ToolchainManager.getInstance().getToolchains(platform)) {
+            Map<String, String> map = d.getDefaultLocations();
+            if (map != null) {
+                String pname = getPlatformName(platform);
+                String dir = map.get(pname);
+                if (dir != null && !dirlist.contains(dir)) {
+                    dirlist.add(dir);
+                }
+            }
+        }
+        return dirlist;
     }
 
     private void initDefaltCompilerSet() {
@@ -454,6 +493,8 @@ public class CompilerSetManager {
         }
         return cs;
     }
+    
+    
     /** Initialize remote CompilerSets */
     private synchronized void initRemoteCompilerSets(final String key, boolean connect) {
         if (state == STATE_COMPLETE) {
@@ -482,6 +523,7 @@ public class CompilerSetManager {
                         String data = provider.getNextCompilerSetData();
                         add(parseCompilerSetString(key, platform, data));
                     }
+                    completeCompilerSets(platform);
                     List<CompilerSet> setsCopy;
                     if (sets instanceof ArrayList) {
                         setsCopy = (List<CompilerSet>)((ArrayList<CompilerSet>)sets).clone();
@@ -573,6 +615,36 @@ public class CompilerSetManager {
             add(CompilerSet.createEmptyCompilerSet(getPlatform()));
         } else {
             initDefaltCompilerSet();
+        }
+        
+        completeCompilerSets(getPlatform());
+    }
+    
+    private void completeCompilerSets(int platform) {
+        // Make sure 'SunStudio' set exists if just one other Sun Studio set found.
+        CompilerSet sun = getCompilerSet("SunStudio"); // NOI18N
+        if (sun == null) {
+            // find 'best' Sun set and copy it
+            sun = getCompilerSet("SunStudioExpress"); // NOI18N
+            if (sun == null)
+                sun = getCompilerSet("SunStudio_13"); // NOI18N
+            if (sun == null)
+                sun = getCompilerSet("SunStudio_12"); // NOI18N
+            if (sun == null)
+                sun = getCompilerSet("SunStudio_11"); // NOI18N
+            if (sun == null)
+                sun = getCompilerSet("SunStudio_10"); // NOI18N
+            if (sun == null)
+                sun = getCompilerSet("SunStudio_9"); // NOI18N
+            if (sun == null)
+                sun = getCompilerSet("SunStudio_8"); // NOI18N
+            if (sun != null) {
+                sun = sun.createCopy();
+                sun.setName("SunStudio"); // NOI18N
+                sun.setFlavor(CompilerFlavor.toFlavor("SunStudio", platform)); // NOI18N
+                sun.setAutoGenerated(true);
+                add(sun);
+            }
         }
     }
 

@@ -53,6 +53,7 @@ import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -124,7 +125,7 @@ public class CommonMessagePanel extends javax.swing.JPanel {
         jTextArea2.setToolTipText(errorMsg);
         jTextArea2.setForeground (nbErrorForeground);
         jTextArea2.repaint();
-        jLabel1.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/common/resources/error.gif")));
+        jLabel1.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/common/resources/error.gif")));
         jLabel1.setToolTipText(errorMsg);
         mValidState = false;
     }
@@ -135,7 +136,7 @@ public class CommonMessagePanel extends javax.swing.JPanel {
         jLabel1.setToolTipText(warningMsg);
         jTextArea2.setForeground (nbWarningForeground);
         jTextArea2.repaint();
-        Image image = Utilities.loadImage ("org/netbeans/modules/xml/wsdl/ui/view/common/resources/warning.gif");
+        Image image = ImageUtilities.loadImage ("org/netbeans/modules/xml/wsdl/ui/view/common/resources/warning.gif");
         jLabel1.setIcon(new ImageIcon (image));
         mValidState = true;
     }

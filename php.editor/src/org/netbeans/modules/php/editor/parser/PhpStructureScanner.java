@@ -54,13 +54,16 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.ClassDeclarationHandle;
+import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.FieldsFromTagProperty;
 import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.FunctionDeclarationHandle;
 import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.InterfaceDeclarationHandle;
 import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.MethodDeclarationHandle;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -91,7 +94,7 @@ public class PhpStructureScanner implements StructureScanner {
         Program program = Utils.getRoot(info);
         final List<StructureItem> items = new ArrayList<StructureItem>();
         if (program != null) {
-            program.accept(new StructureVisitor(items));
+            program.accept(new StructureVisitor(items, program));
             return items;
         }
         return Collections.emptyList();
@@ -154,9 +157,11 @@ public class PhpStructureScanner implements StructureScanner {
         final List<StructureItem> items;
         private List<StructureItem> children = null;
         private String className;
+        private final Program program;
 
-        public StructureVisitor(List<StructureItem> items) {
+        public StructureVisitor(List<StructureItem> items, Program program) {
             this.items = items;
+            this.program = program;
         }
 
         @Override
@@ -173,6 +178,9 @@ public class PhpStructureScanner implements StructureScanner {
                 children = new ArrayList<StructureItem>();
                 className = cldec.getName().getName();
                 super.visit(cldec);
+                for (PHPDocPropertyTag tag : Utils.getPropertyTags(program, cldec)) {
+                    children.add(new PHPFieldFromPropertyTagItem(new FieldsFromTagProperty(info, tag), "0"));
+                }
                 PHPStructureItem item = new PHPClassStructureItem(new GSFPHPElementHandle.ClassDeclarationHandle(info, cldec), children); //NOI18N
                 items.add(item);
                 children = null;
@@ -277,6 +285,32 @@ public class PhpStructureScanner implements StructureScanner {
                 this.children = Collections.emptyList();
             }
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            boolean thesame = false;
+            if (obj instanceof PHPStructureItem) {
+                PHPStructureItem item = (PHPStructureItem)obj;
+                if (item.getName() != null && this.getName() != null) {
+                    thesame = item.elementHandle.getName().equals(elementHandle.getName())
+                            && item.elementHandle.getASTNode().getStartOffset() == elementHandle.getASTNode().getStartOffset();
+                }
+            }
+            return thesame;
+        }
+
+        @Override
+        public int hashCode() {
+            //int hashCode = super.hashCode();
+            int hashCode = 11;
+            if (getName() != null) {
+                hashCode = 31 * getName().hashCode() + hashCode;
+            }
+            hashCode = (int) (31 * getPosition() + hashCode);
+            return hashCode;
+        }
+
+
 
         public String getName() {
             return elementHandle.getName();
@@ -445,6 +479,20 @@ public class PhpStructureScanner implements StructureScanner {
 
     }
 
+    private class PHPFieldFromPropertyTagItem extends PHPStructureItem {
+
+        private FieldsFromTagProperty tagElement;
+        
+        public PHPFieldFromPropertyTagItem(FieldsFromTagProperty elementHandle, String sortPrefix) {
+            super(elementHandle, null, sortPrefix);
+            this.tagElement = elementHandle;
+        }
+
+        public String getHtml(HtmlFormatter formatter) {
+            return tagElement.getName();
+        }
+    }
+
     private class PHPFunctionStructureItem extends PHPStructureItem {
 
         public PHPFunctionStructureItem(GSFPHPElementHandle elementHandle) {
@@ -488,7 +536,7 @@ public class PhpStructureScanner implements StructureScanner {
         @Override
         public ImageIcon getCustomIcon() {
             if (INTERFACE_ICON == null) {
-                INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
+                INTERFACE_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_INTERFACE_ICON));
             }
             return INTERFACE_ICON;
         }

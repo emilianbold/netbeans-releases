@@ -53,7 +53,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -271,10 +270,9 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
         DialogDescriptor desc = new DialogDescriptor(inner, NbBundle.getMessage(WebFrameworksPanel.class, "LBL_SelectWebExtension_DialogTitle")); //NOI18N
         Object res = DialogDisplayer.getDefault().notify(desc);
         if (res.equals(NotifyDescriptor.YES_OPTION)) {
-            List newFrameworks = panel.getSelectedFrameworks();
+            List<WebFrameworkProvider> newFrameworks = panel.getSelectedFrameworks();
             WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-            for(int i = 0; i < newFrameworks.size(); i++) {
-                WebFrameworkProvider framework = (WebFrameworkProvider) newFrameworks.get(i);
+            for (WebFrameworkProvider framework : newFrameworks) {
                 if (!((DefaultListModel) jListFrameworks.getModel()).contains(framework))
                     ((DefaultListModel) jListFrameworks.getModel()).addElement(framework);
 

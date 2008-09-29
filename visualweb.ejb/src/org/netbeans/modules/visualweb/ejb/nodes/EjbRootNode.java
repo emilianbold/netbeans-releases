@@ -53,6 +53,7 @@ import java.awt.Image;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -77,11 +78,11 @@ public class EjbRootNode extends AbstractNode {
     }
     
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/ejb_modul_project.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/ejb_modul_project.png");
     }
     
     public Image getOpenedIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/ejb_modul_project.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/ejb_modul_project.png");
     }
     
     // Create the popup menu:

@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.persistence.wizard.library;
 
 import junit.framework.TestCase;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibraryPanel;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -61,10 +62,10 @@ public class PersistenceLibraryPanelTest extends TestCase {
     public void testIconsArePresent() {
 
         String warning = PersistenceLibraryPanel.WARNING_GIF;
-        assertNotNull("Could not find an image in path " + warning, Utilities.loadImage(warning));
+        assertNotNull("Could not find an image in path " + warning, ImageUtilities.loadImage(warning));
 
         String error = PersistenceLibraryPanel.ERROR_GIF;
-        assertNotNull("Could not find an image in path " + error, Utilities.loadImage(error));
+        assertNotNull("Could not find an image in path " + error, ImageUtilities.loadImage(error));
         
     }
     

@@ -104,6 +104,21 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
         customEditor = new CustomEditor();
     }
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.removeAll();
+            customEditor = null;
+        }
+        radioButton = null;
+        valueState = null;
+        if (inplaceEditor != null) {
+            inplaceEditor.cleanUp();
+            inplaceEditor = null;
+        }
+    }
+
     public JComponent getCustomEditorComponent() {
         return customEditor;
     }
@@ -160,6 +175,9 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
 
     @Override
     public void paintValue(Graphics gfx, Rectangle box) {
+        if(inplaceEditor == null) {
+            return;
+        }
         JComponent _component = inplaceEditor.getComponent();
         _component.setSize(box.width, box.height);
         _component.doLayout();
@@ -280,6 +298,12 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
 
         public CustomEditor() {
             initComponents();
+        }
+
+        void cleanUp() {
+            checkBox.removeActionListener(this);
+            checkBox = null;
+            this.removeAll();
         }
 
         private void initComponents() {

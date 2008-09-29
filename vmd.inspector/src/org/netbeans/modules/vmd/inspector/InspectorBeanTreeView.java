@@ -54,6 +54,7 @@ import javax.swing.JPopupMenu;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -65,8 +66,8 @@ final class InspectorBeanTreeView extends BeanTreeView {
 
     public InspectorBeanTreeView(final ExplorerManager explorerManager) {
         final JPopupMenu popupMenu = new JPopupMenu();
-        Image collapseImage = Utilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/collapse-all.png"); //NOI18N
-        Image expandImage = Utilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/expand-all.png"); //NOI18N
+        Image collapseImage = ImageUtilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/collapse-all.png"); //NOI18N
+        Image expandImage = ImageUtilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/expand-all.png"); //NOI18N
         this.setAllowedDragActions(DnDConstants.ACTION_COPY_OR_MOVE);
         
         popupMenu.add( new MenuAction(NbBundle.getMessage(InspectorBeanTreeView.class, "CTL_InspectorExpandAction" ), expandImage) { //NOI18N

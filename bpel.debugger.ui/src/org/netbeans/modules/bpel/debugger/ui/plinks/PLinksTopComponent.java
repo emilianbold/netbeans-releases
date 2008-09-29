@@ -24,6 +24,7 @@ import java.awt.BorderLayout;
 import javax.swing.JComponent;
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -41,7 +42,7 @@ public class PLinksTopComponent extends TopComponent {
     private transient PLinksViewListener myListener;
     
     public PLinksTopComponent() {
-        setIcon(Utilities.loadImage((
+        setIcon(ImageUtilities.loadImage((
                 PLinksNodeModel.PARTNER_LINK_ICON + ".gif"))); // NOI18N
         // Remember the location of the component when closed.
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N

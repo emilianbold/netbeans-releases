@@ -41,6 +41,7 @@ public class CustomersConverter {
         this.entities = entities;
         this.uri = uri;
         this.expandLevel = expandLevel;
+        getCustomer();
     }
 
     /**

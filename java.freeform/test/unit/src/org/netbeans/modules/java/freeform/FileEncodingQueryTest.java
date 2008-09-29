@@ -38,12 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.java.freeform;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -54,7 +56,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * 
  * @author Milan Kubec
  */
 public class FileEncodingQueryTest extends NbTestCase {
@@ -64,8 +65,14 @@ public class FileEncodingQueryTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+    }
+
+    @Override
+    protected int timeOut() {
+        return 300000;
     }
     
     public void testFileEncodingQuery() throws Exception {
@@ -90,7 +97,7 @@ public class FileEncodingQueryTest extends NbTestCase {
         libsrcDir.mkdir();
         File libFile = createFileInPackage(libsrcDir, "yetanotherpackage", "ClassC.java");
         
-        ArrayList sources = new ArrayList();
+        List<JavaProjectGenerator.SourceFolder> sources = new ArrayList<JavaProjectGenerator.SourceFolder>();
         AntProjectHelper helper = FreeformProjectGenerator.createProject(prjBase, prjBase, projectName, null);
         
         JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
@@ -125,21 +132,19 @@ public class FileEncodingQueryTest extends NbTestCase {
         assertNotNull("Project was not created", p);
         assertEquals("Project folder is incorrect", prjDir, p.getProjectDirectory());
         
-        FileEncodingQuery feq = p.getLookup().lookup(FileEncodingQuery.class);
-        
-        Charset cset = feq.getEncoding(FileUtil.toFileObject(srcFile));
+        Charset cset = FileEncodingQuery.getEncoding(FileUtil.toFileObject(srcFile));
         assertEquals("ISO-8859-1", cset.name());
         
-        cset = feq.getEncoding(FileUtil.toFileObject(testFile));
+        cset = FileEncodingQuery.getEncoding(FileUtil.toFileObject(testFile));
         assertEquals("ISO-8859-2", cset.name());
         
         // file not under any src root
         File lonelyFile = new File(prjBase, "testfile.txt");
         lonelyFile.createNewFile();
-        cset = feq.getEncoding(FileUtil.toFileObject(lonelyFile));
+        cset = FileEncodingQuery.getEncoding(FileUtil.toFileObject(lonelyFile));
         assertEquals("ISO-8859-3", cset.name());
         
-        cset = feq.getEncoding(FileUtil.toFileObject(libFile));
+        cset = FileEncodingQuery.getEncoding(FileUtil.toFileObject(libFile));
         assertEquals("ISO-8859-3", cset.name());
         
     }

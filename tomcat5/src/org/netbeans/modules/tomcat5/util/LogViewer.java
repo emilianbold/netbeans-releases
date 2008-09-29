@@ -230,10 +230,11 @@ public class LogViewer extends Thread {
             }
         } else {
             if (line.contains("java.lang.LinkageError: JAXB 2.0 API")) { // NOI18N
-                File file = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+                File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+                File jaxbApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
                 File endoresedDir = tomcatManager.getTomcatProperties().getJavaEndorsedDir();
-                if (file != null) {
-                    writer.println(NbBundle.getMessage(LogViewer.class, "MSG_WSSERVLET11", file.getParent(), endoresedDir));
+                if (jaxwsApi != null && jaxbApi != null) {
+                    writer.println(NbBundle.getMessage(LogViewer.class, "MSG_WSSERVLET11", jaxwsApi.getParent(), jaxbApi.getParent(), endoresedDir));
                 } else {
                     writer.println(NbBundle.getMessage(LogViewer.class, "MSG_WSSERVLET11_NOJAR", endoresedDir));
                 }

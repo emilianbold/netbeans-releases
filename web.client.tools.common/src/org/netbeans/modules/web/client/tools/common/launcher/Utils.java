@@ -58,7 +58,7 @@ public class Utils {
     public static String getDebuggerLauncherURI(int port, String sessionId) {
         File tmpFolder = FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir")));
         FileObject tmpFolderFileObject = FileUtil.toFileObject(tmpFolder);
-        FileObject tmpdebuggerDotHtmlFileObject;
+        FileObject tmpFileObject;
         try {
             String fileName = "modules.ext.debugger---"
                     // Must match with port paramater name in
@@ -71,17 +71,19 @@ public class Utils {
                     + "netbeans-debugger-session-id="
                     + sessionId;
             // XXX #131857 If the file is already there, reuse it.
-            tmpdebuggerDotHtmlFileObject = tmpFolderFileObject.getFileObject(fileName);
-            if (tmpdebuggerDotHtmlFileObject == null) {
-                tmpdebuggerDotHtmlFileObject = FileUtil.copyFile(
+            tmpFileObject = tmpFolderFileObject.getFileObject(fileName);
+            if (tmpFileObject == null) {
+                tmpFileObject = FileUtil.copyFile(
                         getDebuggerLauncherFileObject(),
                         tmpFolderFileObject,
                         fileName);
             }
-            File tmpdebuggerDotHtmlFile = FileUtil.toFile(tmpdebuggerDotHtmlFileObject);
+            File tmpdebuggerDotHtmlFile = FileUtil.toFile(tmpFileObject);
             tmpdebuggerDotHtmlFile.deleteOnExit();
             
-            if (!(new File(tmpFolder, "netbeans.jpg")).exists()) { // NOI18N               
+            fileName = "netbeans.jpg";
+            tmpFileObject = tmpFolderFileObject.getFileObject(fileName);
+            if (tmpFileObject == null) { // NOI18N               
                 // Copy the logo
                 FileUtil.toFile(FileUtil.copyFile(
                         getNetBeansLogoFileObject(),

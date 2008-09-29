@@ -394,7 +394,8 @@ public class OptionsOperator extends NbDialogOperator {
         final StringComparator comparator = this.getComparator();
         new JLabelOperator(this, new ComponentChooser() {
             public boolean checkComponent(Component comp) {
-                if(comp.getClass().getName().equals("org.netbeans.modules.options.OptionsPanel$CategoryButton")) { // NOI18N
+                if(comp.getClass().getName().equals("org.netbeans.modules.options.OptionsPanel$CategoryButton")||// NOI18N
+                        comp.getClass().getName().equals("org.netbeans.modules.options.OptionsPanel$NimbusCategoryButton")) { // NOI18N
                     if(((JLabel)comp).getText() != null) {
                         return comparator.equals(((JLabel)comp).getText(), name);
                     }

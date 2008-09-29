@@ -9595,6 +9595,7 @@ class CUP$ASTPHP5Parser$actions {
   }
 
   /** Method with the actual generated action code. */
+  @SuppressWarnings({"unchecked", "fallthrough"})
   public final java_cup.runtime.Symbol CUP$ASTPHP5Parser$do_action(
     int                        CUP$ASTPHP5Parser$act_num,
     java_cup.runtime.lr_parser CUP$ASTPHP5Parser$parser,

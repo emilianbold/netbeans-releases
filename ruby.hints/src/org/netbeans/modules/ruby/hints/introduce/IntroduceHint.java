@@ -61,7 +61,7 @@ import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyFormatter;
-import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubySelectionRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
@@ -155,7 +155,7 @@ public class IntroduceHint extends RubySelectionRule {
             
             // Adjust the fix range to be right around the dot so that the light bulb ends up
             // on the same line as the caret and alt-enter works
-            JTextComponent target = NbUtilities.getPaneFor(info.getFileObject());
+            JTextComponent target = GsfUtilities.getPaneFor(info.getFileObject());
             if (target != null) {
                 int dot = target.getCaret().getDot();
                 if (start == dot) {

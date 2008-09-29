@@ -46,6 +46,7 @@ import java.beans.*;
 import java.util.*;
 import java.lang.reflect.Method;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import org.netbeans.modules.form.layoutsupport.*;
@@ -86,9 +87,9 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
         switch (type) {
             case BeanInfo.ICON_COLOR_16x16:
             case BeanInfo.ICON_MONO_16x16:
-                return Utilities.loadImage(iconURL);
+                return ImageUtilities.loadImage(iconURL);
             default:
-                return Utilities.loadImage(icon32URL);
+                return ImageUtilities.loadImage(icon32URL);
         }
     }
 

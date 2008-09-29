@@ -43,6 +43,7 @@ package org.netbeans.modules.form.beaninfo.awt;
 
 import java.awt.Image;
 import java.beans.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Base class for awt components - toolbars, checkboxes...
@@ -94,7 +95,7 @@ public class ComponentBeanInfo extends SimpleBeanInfo {
         @Override
         public Image getIcon(int type) {
             if (iconName == null) return null;
-            return Utilities.loadImage("org/netbeans/modules/form/beaninfo/awt/" + iconName + ".gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/form/beaninfo/awt/" + iconName + ".gif"); // NOI18N
         }
 
         @Override

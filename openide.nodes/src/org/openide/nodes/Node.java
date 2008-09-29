@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -54,6 +54,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -268,6 +269,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * @exception CloneNotSupportedException if the children cannot be cloned
     *    in spite of implementing <code>Cloneable</code>
     */
+    @Override
     protected Object clone() throws CloneNotSupportedException {
         Node n = (Node) super.clone();
         Children hier2;
@@ -366,6 +368,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * @exception IllegalArgumentException if the new name cannot represent
     *    a valid node name
     */
+    @Override
     public void setName(String s) {
         String name = super.getName();
 
@@ -378,6 +381,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     /** Set the display name. Fires a property change event.
     * @param s the new name
     */
+    @Override
     public void setDisplayName(String s) {
         String displayName = super.getDisplayName();
 
@@ -391,6 +395,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * <p>This description may be used for tool tips, etc.
     * @param s the new description
     */
+    @Override
     public void setShortDescription(String s) {
         String descr = super.getShortDescription();
 
@@ -443,23 +448,38 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      */
     protected final void setChildren(final Children ch) {
         Children.MUTEX.postWriteRequest(new Runnable() { public void run() {
-            Node[] oldNodes = null;
 
-            if (hierarchy.isInitialized()) {
-                oldNodes = hierarchy.getNodes();
+            List<Node> prevSnapshot = null;
+            boolean wasInited = hierarchy.isInitialized();
+            boolean wasLeaf = hierarchy == Children.LEAF;
+
+            if (wasInited && !wasLeaf) {
+                prevSnapshot = hierarchy.snapshot();
             }
+
             hierarchy.detachFrom();
 
-            boolean wasLeaf = hierarchy == Children.LEAF;
+            if (prevSnapshot != null && prevSnapshot.size() > 0) {
+                // set children to LEAF during firing 
+                // (cur. snapshot is empty and we should be consistent with children)
+                hierarchy = Children.LEAF;
+                int[] idxs = Children.getSnapshotIdxs(prevSnapshot);
+                // fire remove event
+                fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), prevSnapshot);
+            }
 
             hierarchy = ch;
             hierarchy.attachTo(Node.this);
 
-            if ((oldNodes != null) && !wasLeaf) {
-                fireSubNodesChange(false, oldNodes, oldNodes);
-                Node[] arr = hierarchy.getNodes();
-                if (arr.length > 0) {
-                    fireSubNodesChange(true, arr, null);
+            if (wasInited && hierarchy != Children.LEAF) {
+                // init new children if old was inited
+                hierarchy.getNodesCount();
+
+                // fire add event
+                List<Node> snapshot = hierarchy.snapshot();
+                if (snapshot.size() > 0) {
+                    int[] idxs = Children.getSnapshotIdxs(snapshot);
+                    fireSubNodesChangeIdx(true, idxs, null, snapshot, null);
                 }
             }
 
@@ -1181,6 +1201,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * @param obj object to compare
      * @return true if the obj is <code>==</code> or is filter node of this node
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof FilterNode) {
             return ((FilterNode) obj).equals(this);
@@ -1197,6 +1218,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         return NbBundle.getBundle(Node.class).getString(resName);
     }
 
+    @Override
     public String toString() {
         return super.toString() + "[Name=" + getName() + ", displayName=" + getDisplayName() + "]"; // NOI18N
     }
@@ -1262,6 +1284,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         /* Compares just the names.
          * @param propertySet The object to compare to
          */
+        @Override
         public boolean equals(Object propertySet) {
             if (!(propertySet instanceof PropertySet)) {
                 return false;
@@ -1274,6 +1297,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
          *
          * @return int hashcode
          */
+        @Override
         public int hashCode() {
             return getName().hashCode();
         }

@@ -25,6 +25,7 @@ import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationDesc;
 import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationDescType;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -103,7 +104,7 @@ public class TransformationDescNode extends AbstractNode {
 
     public Image getIcon(int type) {
         // TODO m
-        return Utilities.loadImage(TransformationDescType.OUTPUT.equals(tDesc.getType()) ?
+        return ImageUtilities.loadImage(TransformationDescType.OUTPUT.equals(tDesc.getType()) ?
                 OUTPUT_ICON 
                 : INPUT_ICON);
     }

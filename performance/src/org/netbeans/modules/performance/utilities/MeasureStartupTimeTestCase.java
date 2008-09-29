@@ -49,8 +49,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.Hashtable;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Assert;
 
 
 /**
@@ -317,13 +319,45 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
      */
     protected static File getIdeHome() throws IOException {
         String nbHome = System.getProperty("netbeans.dest.dir");
-        File ideHome = new File(nbHome);
+        File ideHome;
+        if (nbHome != null) {
+            ideHome = new File(nbHome);
+        } else {
+            ideHome = findPlatform().getParentFile();
+        }
         if (!ideHome.isDirectory()) {
             throw new IOException("Cannot found netbeans.dest.dir - supplied value is "+nbHome);
         }
         return ideHome;
     }
-    
+
+    private static File findPlatform() {
+        try {
+            Class<?> lookup = Class.forName("org.openide.util.Lookup"); // NOI18N
+            File util = new File(lookup.getProtectionDomain().getCodeSource().getLocation().toURI());
+            Assert.assertTrue("Util exists: " + util, util.exists());
+
+            return util.getParentFile().getParentFile();
+        } catch (Exception ex) {
+            try {
+                File nbjunit = new File(MeasureStartupTimeTestCase.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                File harness = nbjunit.getParentFile().getParentFile();
+                Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
+                TreeSet<File> sorted = new TreeSet<File>();
+                for (File p : harness.getParentFile().listFiles()) {
+                    if (p.getName().startsWith("platform")) {
+                        sorted.add(p);
+                    }
+                }
+                Assert.assertFalse("Platform shall be found in " + harness.getParent(), sorted.isEmpty());
+                return sorted.last();
+            } catch (Exception ex2) {
+                Assert.fail("Cannot find utilities JAR: " + ex + " and: " + ex2);
+            }
+            return null;
+        }
+    }
+
     /** Get User directory
      * @param n number of the userdir
      * @throws IOException

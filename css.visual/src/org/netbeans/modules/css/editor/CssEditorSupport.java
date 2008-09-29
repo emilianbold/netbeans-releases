@@ -110,7 +110,15 @@ public class CssEditorSupport {
             //detach myself from the source so next UI changes are not propagated to the 
             //document until the parser finishes. Then new listener will be added
             if(selected != null) {
+                d("css style data listener - detachinf from rule content.");
                 selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
+            }
+            
+            //remove caret listener, new one will be added one the written test is parsed
+            if (caretListenerRegistered) {
+                editorPane.removeCaretListener(CARET_LISTENER);
+                d("removed caret listener");
+                caretListenerRegistered = false;
             }
             
             final NbEditorDocument doc = (NbEditorDocument) document;
@@ -132,24 +140,22 @@ public class CssEditorSupport {
                         try {
                             if (oldRule != null && newRule == null) {
                                 //remove the old rule line - maybe we should just cut the exact part?!?!
-                                int offset = oldRule.key().offset();
-                                int lineStart = Utilities.getRowStart(doc, offset);
-
-                                //do not remove the rule opening bracket if we are on it's line
-                                int ruleOpenBracketOffset = myRule.getRuleOpenBracketOffset();
-                                if (lineStart <= ruleOpenBracketOffset) {
-                                    lineStart = ruleOpenBracketOffset + 1;
+                                int start = oldRule.key().offset();
+                                int end = oldRule.value().offset() + oldRule.value().name().length();
+                                
+                                //cut off also the semicolon if there is any
+                                end = oldRule.semicolonOffset() != -1 ? oldRule.semicolonOffset() + 1 : end; 
+                                
+                                doc.remove(start, end - start);
+                                
+                                //check if the line is empty and possibly remove it
+                                if(Utilities.isRowWhite(doc, start)) {
+                                    int lineStart = Utilities.getRowStart(doc, start);
+                                    int lineOffset = Utilities.getLineOffset(doc, start);
+                                    int nextLineStart = Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
+                                    
+                                    doc.remove(lineStart, nextLineStart - lineStart);
                                 }
-
-                                int lineEnd = Utilities.getRowEnd(doc, offset) + LINE_SEPARATOR.length();
-
-                                //do not remove the rule closing bracket if we are on it's line
-                                int ruleCloseBracketOffset = myRule.getRuleCloseBracketOffset();
-                                if (lineEnd > ruleCloseBracketOffset) {
-                                    lineEnd = ruleCloseBracketOffset;
-                                }
-
-                                doc.remove(lineStart, lineEnd - lineStart);
 
                             } else if (oldRule == null && newRule != null) {
                                 //add the new rule at the end of the rule block:
@@ -272,6 +278,9 @@ public class CssEditorSupport {
         public void caretUpdate(CaretEvent ce) {
             Object source = ce.getSource();
             if (source instanceof JEditorPane) {
+                if(!caretListenerRegistered) {
+                    return ;
+                }
                 d("caret event; dot=" + ce.getDot());
                 RULE_UPDATE.setPane(((JEditorPane) source));
                 RULE_UPDATE_TASK.schedule(RULE_UPDATE_DELAY);

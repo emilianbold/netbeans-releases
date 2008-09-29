@@ -86,6 +86,7 @@ import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
@@ -468,14 +469,14 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                     NbBundle.getMessage(NavigatorContent.class, "LBL_ShowAttributes"),     //NOI18N
                     NbBundle.getMessage(NavigatorContent.class, "LBL_ShowAttributesTip"),     //NOI18N
                     showAttributes,
-                    new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/a.png")), //NOI18N
+                    new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/a.png")), //NOI18N
                     null
                     );
             desc.addFilter(CONTENT_FILTER,
                     NbBundle.getMessage(NavigatorContent.class, "LBL_ShowContent"),     //NOI18N
                     NbBundle.getMessage(NavigatorContent.class, "LBL_ShowContentTip"),     //NOI18N
                     showContent,
-                    new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/content.png")), //NOI18N
+                    new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/content.png")), //NOI18N
                     null
                     );
             

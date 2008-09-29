@@ -51,6 +51,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
@@ -72,7 +73,8 @@ public final class ServerUtilities {
     public static final int ACTION_TIMEOUT = 10000;
     public static final TimeUnit ACTION_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     public static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
-    public static final String GFV3_PREFIX_JAR_NAME = "glassfish-10.0"; // NOI18N"
+    public static final String GFV3_VERSION_MATCHER = "(?:-[0-9]+(?:\\.[0-9]+(?:_[0-9]+|)|).*|).jar"; // NOI18N
+    public static final String GFV3_JAR_MATCHER = "glassfish" + GFV3_VERSION_MATCHER; // NOI18N
     static public final String PROP_FIRST_RUN = "first_run";
     
     
@@ -167,21 +169,19 @@ public final class ServerUtilities {
     
      /**
      * Returns the fqn jar name with the correct version 
-     * If jarNamePrefix is ""glassfish-10.0" the the return value
-     * will be INSTALL/modules/glassfish-10.0-SNAPSHOT.jar"
      * 
      * @return the File with full path of the jar or null
      */
-   public static File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
+    public static File getJarName(String glassfishInstallRoot, String jarNamePattern) {
         File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
-        int subindex = jarNamePrefix.lastIndexOf("/");
+        int subindex = jarNamePattern.lastIndexOf("/");
         if(subindex != -1) {
-            String subdir = jarNamePrefix.substring(0, subindex);
-            jarNamePrefix = jarNamePrefix.substring(subindex+1);
+            String subdir = jarNamePattern.substring(0, subindex);
+            jarNamePattern = jarNamePattern.substring(subindex+1);
             modulesDir = new File(modulesDir, subdir);
         }
-        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
-        
+        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePattern));
+
         if(candidates != null && candidates.length > 0) {
             return candidates[0]; // the first one
         } else {
@@ -191,14 +191,14 @@ public final class ServerUtilities {
    
     private static class VersionFilter implements FileFilter {
        
-        private String nameprefix;
+        private final Pattern pattern;
         
-        public VersionFilter(String nameprefix) {
-            this.nameprefix = nameprefix;
+        public VersionFilter(String namePattern) {
+            pattern = Pattern.compile(namePattern);
         }
         
         public boolean accept(File file) {
-            return file.getName().startsWith(nameprefix);
+            return pattern.matcher(file.getName()).matches();
         }
         
     }
@@ -246,7 +246,7 @@ public final class ServerUtilities {
      * @return true if the directory appears to be the root of a TP2 installation.
      */    
     static public boolean isTP2(String gfRoot) {
-        return ServerUtilities.getJarName(gfRoot, ServerUtilities.GFV3_PREFIX_JAR_NAME).getName().indexOf("-tp-2-") > -1; // NOI18N
+        return ServerUtilities.getJarName(gfRoot, ServerUtilities.GFV3_JAR_MATCHER).getName().indexOf("-tp-2-") > -1; // NOI18N
     }
   
     /**
@@ -261,6 +261,15 @@ public final class ServerUtilities {
     public static List<String> filterByManifest(List<String> jarList, File parent, int depth) {
         if(parent.exists()) {
             int parentLength = parent.getPath().length();
+            /* modules/web/jsf-impl.jar was not seen (or added with wrong relative name).
+             * need to calculate size relative to the modules/ dir and not the subdirs
+             * notice: this works only for depth=0 or 1
+             * not need to make it work deeper anyway
+             * with this test, we now also return "web/jsf-impl.jar" which is correct
+             */
+            if (depth==1){
+                parentLength = parent.getParentFile().getPath().length();
+            }
             for(File candidate: parent.listFiles()) {
                 if(candidate.isDirectory()) {
                     if(depth < 1) {

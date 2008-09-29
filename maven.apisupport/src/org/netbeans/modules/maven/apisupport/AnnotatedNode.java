@@ -60,8 +60,8 @@ import org.openide.util.RequestProcessor;
  */
 class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener {
     
-    private Set files;
-    private Set fileSystemListeners;
+    private Set<FileObject> files;
+    private Set<FileStatusListener> fileSystemListeners;
     private RequestProcessor.Task task;
     private volatile boolean iconChange;
     private volatile boolean nameChange;
@@ -75,16 +75,16 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         super(children, lookup);
     }
     
-    protected final void setFiles(final Set files) {
-        fileSystemListeners = new HashSet();
+    protected final void setFiles(final Set<FileObject> files) {
+        fileSystemListeners = new HashSet<FileStatusListener>();
         this.files = files;
         if (files == null) {
             return;
         }
-        Iterator it = files.iterator();
-        Set hookedFileSystems = new HashSet();
+        Iterator<FileObject> it = files.iterator();
+        Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
         while (it.hasNext()) {
-            FileObject fo = (FileObject) it.next();
+            FileObject fo = it.next();
             try {
                 FileSystem fs = fo.getFileSystem();
                 if (hookedFileSystems.contains(fs)) {
@@ -114,7 +114,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         Image annotatedImg = img;
         if (files != null && files.iterator().hasNext()) {
             try {
-                FileObject fo = (FileObject) files.iterator().next();
+                FileObject fo = files.iterator().next();
                 annotatedImg = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -127,7 +127,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         String annotatedName = name;
         if (files != null && files.iterator().hasNext()) {
             try {
-                FileObject fo = (FileObject) files.iterator().next();
+                FileObject fo = files.iterator().next();
                 annotatedName = fo.getFileSystem().getStatus().annotateName(name, files);
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -143,9 +143,9 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         
         boolean changed = false;
         if (forceAnnotation || ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange()))) {
-            Iterator it = files.iterator();
+            Iterator<FileObject> it = files.iterator();
             while (it.hasNext()) {
-                FileObject fo = (FileObject) it.next();
+                FileObject fo = it.next();
                 if (event.hasChanged(fo)) {
                     iconChange |= event.isIconChange();
                     nameChange |= event.isNameChange();

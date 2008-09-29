@@ -127,12 +127,12 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
         PHPIndex index = PHPIndex.get(i);
         List<IndexedElement> l = new LinkedList<IndexedElement>();
         Collection<IndexedConstant> flds = null;        
-        for (IndexedClass indexedClass : index.getClassAncestors(null, className)) {
-            flds = getFields(index, indexedClass.getName(), field, modifiers);
+        for (String clazzName : index.getClassAncestors(null, className)) {
+            flds = getFields(index, clazzName, field, modifiers);
             if (!flds.isEmpty()) {
                 break;
             } else {
-                if (insideClsName.equals(indexedClass.getName())) {
+                if (insideClsName.equals(clazzName)) {
                     modifiers = BodyDeclaration.Modifier.PUBLIC | BodyDeclaration.Modifier.PROTECTED;
                 } else {
                     modifiers = BodyDeclaration.Modifier.PUBLIC;
@@ -189,7 +189,7 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
     private Collection<IndexedConstant> getFields(PHPIndex index, String clsName, Variable field, int modifiers) {
         Collection<IndexedConstant> retval = new ArrayList<IndexedConstant>();
         final String varName = extractVariableName(field);
-        Collection<IndexedConstant> flds = index.getProperties(null, clsName,varName, NameKind.PREFIX, modifiers);
+        Collection<IndexedConstant> flds = index.getFields(null, clsName,varName, NameKind.PREFIX, modifiers);
         for (IndexedConstant indexedConstant : flds) {
             String fldName = indexedConstant.getName();
             fldName = fldName.charAt(0) == '$' ? fldName.substring(1) : fldName;//NOI18N

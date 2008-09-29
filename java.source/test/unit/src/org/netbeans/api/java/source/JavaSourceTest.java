@@ -183,7 +183,7 @@ public class JavaSourceTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new NbTestSuite(JavaSourceTest.class);
 //        TestSuite suite = new NbTestSuite ();
-//        suite.addTest(new JavaSourceTest("testRegisterSameTask"));
+//        suite.addTest(new JavaSourceTest("testCreateTaggedController"));
         return suite;
     }
     
@@ -1496,6 +1496,69 @@ public class JavaSourceTest extends NbTestCase {
         } finally {
             logger.removeHandler(handler);
         }
+    }
+    
+    public void testCreateTaggedController () throws Exception {
+        FileObject testFile1 = createTestFile ("Test1");
+        ClassPath bootPath = createBootPath ();
+        ClassPath compilePath = createCompilePath ();
+        JavaSource js1 = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), testFile1);
+
+        final Object[] result = new Object[1];
+        final long res1 = js1.createTaggedController(-1, result);
+        assertTrue (result[0] instanceof CompilationController);
+        ((CompilationController)result[0]).getTrees();        
+        Thread.sleep(500);
+        
+        final long res2 = js1.createTaggedController(-1, result);
+        assertTrue (result[0] instanceof CompilationController);
+        assertEquals(res1, res2);
+        
+        
+        final DataObject dobj = DataObject.find(testFile1);        
+        final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
+        final StyledDocument doc = ec.openDocument();                
+        doc.putProperty(Language.class, JavaTokenId.language());
+        TokenHierarchy h = TokenHierarchy.get(doc);
+        TokenSequence ts = h.tokenSequence(JavaTokenId.language());        
+        NbDocument.runAtomic (doc,
+            new Runnable () {
+                public void run () {                        
+                    try {                                                
+                        doc.insertString(0," ",null);
+                    } catch (BadLocationException ble) {
+                        ble.printStackTrace(System.out);
+                    }                 
+                }
+        });
+        
+        final long res3 = js1.createTaggedController(-1, result);
+        assertTrue (result[0] instanceof CompilationController);
+        assertFalse(res2 == res3);
+        Thread.sleep(500);
+        
+        final long res4 = js1.createTaggedController(-1, result);
+        assertTrue (result[0] instanceof CompilationController);
+        assertEquals(res3, res4);
+        
+        NbDocument.runAtomic (doc,
+            new Runnable () {
+                public void run () {                        
+                    try {                                                
+                        doc.insertString(0," ",null);
+                    } catch (BadLocationException ble) {
+                        ble.printStackTrace(System.out);
+                    }                 
+                }
+        });
+        final long res5 = js1.createTaggedController(-1, result);
+        assertTrue (result[0] instanceof CompilationController);
+        assertFalse(res4 == res5);
+        Thread.sleep(500);
+        
+        final long res6 = js1.createTaggedController(-1, result);
+        assertTrue (result[0] instanceof CompilationController);
+        assertEquals(res5, res6);
     }
 
     private static class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {

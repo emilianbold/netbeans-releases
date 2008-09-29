@@ -22,6 +22,7 @@ package org.netbeans.modules.soa.ui.axinodes;
 import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -105,6 +106,6 @@ public enum NodeType {
         } else {
             fileName = IMAGE_FOLDER_NAME + name + "_" + mult + ".png"; // NOI18N
         }
-        return Utilities.loadImage(fileName);
+        return ImageUtilities.loadImage(fileName);
     }
 }

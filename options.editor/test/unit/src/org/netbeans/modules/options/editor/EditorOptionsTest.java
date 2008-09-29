@@ -163,6 +163,7 @@ public class EditorOptionsTest extends NbTestCase {
         while (it.hasNext ()) {
             OptionsPanelController pc = (OptionsPanelController) it.next ();
             JComponent c = pc.getComponent (masterLookup);
+            pc.update();
             pc.applyChanges ();
         }
     }
@@ -187,6 +188,7 @@ public class EditorOptionsTest extends NbTestCase {
         while (it.hasNext ()) {
             OptionsPanelController pc = (OptionsPanelController) it.next ();
             JComponent c = pc.getComponent (masterLookup);
+            pc.update();
             pc.cancel ();
         }
     }
@@ -252,5 +254,3 @@ public class EditorOptionsTest extends NbTestCase {
         ).allInstances ());
     }
 }
-
-

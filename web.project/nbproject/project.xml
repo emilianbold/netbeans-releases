@@ -157,7 +157,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.30</specification-version>
+                        <specification-version>1.32</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -218,7 +218,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>4</release-version>
-                        <specification-version>1.52</specification-version>
+                        <specification-version>1.53</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -258,6 +258,15 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.junit</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.options.editor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -454,7 +463,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.14</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -47,6 +47,7 @@ import javax.swing.Icon;
 import javax.swing.UIManager;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 public class DriverListNode extends DatabaseNode {
@@ -100,7 +101,7 @@ public class DriverListNode extends DatabaseNode {
 
         if (obj instanceof Icon) {
             Icon icon = (Icon)obj;
-            return Utilities.icon2Image(icon);
+            return ImageUtilities.icon2Image(icon);
         }
 
         return null;

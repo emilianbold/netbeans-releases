@@ -18,7 +18,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Component id="pathLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="272" max="32767" attributes="0"/>
+              <EmptySpace pref="278" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
@@ -42,7 +42,7 @@
                           <Component id="progressBar" min="-2" pref="146" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="pathTextComboBox" pref="246" max="32767" attributes="0"/>
+                  <Component id="pathTextComboBox" pref="265" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="chooserButton" min="-2" pref="79" max="-2" attributes="0"/>

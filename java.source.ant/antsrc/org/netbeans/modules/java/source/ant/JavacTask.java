@@ -44,6 +44,7 @@ package org.netbeans.modules.java.source.ant;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Javac;
@@ -67,16 +68,40 @@ public class JavacTask extends Javac {
                               || Boolean.valueOf(p.getProperty("deploy.on.save"));
         
         if (ensureBuilt) {
-            for (String path : getSrcdir().list()) {
+            String[] srcdir = getSrcdir().list();
+            boolean noBin = false;
+            boolean wasBuilt = false;
+            
+            for (String path : srcdir) {
                 File f = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), path);
                 
                 try {
-                    if (!BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL(), false)) {
-                        throw new UserCancel();
+                    Boolean built = BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL(), false);
+
+                    if (built == null) {
+                        noBin = true;
+                        
+                        if (wasBuilt) {
+                            throw new BuildException("Cannot build classfiles for source directories: " + Arrays.asList(srcdir));
+                        }
+                    } else {
+                        wasBuilt = true;
+
+                        if (noBin) {
+                            throw new BuildException("Cannot build classfiles for source directories: " + Arrays.asList(srcdir));
+                        }
+                        
+                        if (!built) {
+                            throw new UserCancel();
+                        }
                     }
                 } catch (IOException ex) {
                     throw new BuildException(ex);
                 }
+            }
+
+            if (!wasBuilt) {
+                super.execute();
             }
         } else {
             if (HideOverrideTaskWarning.cleanBuild.get() && getSrcdir() != null) {

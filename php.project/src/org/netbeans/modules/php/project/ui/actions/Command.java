@@ -246,7 +246,7 @@ public abstract class Command {
         if (useWebRoot) {
             return getCommandUtils().getRelativeWebRootPath(fileForContext);
         }
-        return getCommandUtils().getRelativeWebRootPath(fileForContext);
+        return getCommandUtils().getRelativeSrcPath(fileForContext);
     }
 
     //or null
@@ -285,6 +285,13 @@ public abstract class Command {
     protected boolean isRemoteConfigSelected(boolean showCustomizer) {
         PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project, showCustomizer);
         return PhpProjectProperties.RunAsType.REMOTE.equals(runAs);
+    }
+
+    protected boolean isPhpFileSelected(FileObject file) {
+        if (file == null) {
+            return false;
+        }
+        return CommandUtils.isPhpFile(file);
     }
 
     protected String getRemoteConfigurationName() {

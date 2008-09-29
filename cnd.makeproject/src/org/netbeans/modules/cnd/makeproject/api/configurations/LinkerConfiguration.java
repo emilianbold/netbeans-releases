@@ -82,7 +82,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	output = new StringConfiguration(null, ""); // NOI18N
 	additionalLibs = new VectorConfiguration(null);
 	dynamicSearch = new VectorConfiguration(null);
-	stripOption = new LinkerStripConfigurtion(null, false); // NOI18N
+	stripOption = new LinkerStripConfiguration(null, false); // NOI18N
 	picOption = new BooleanConfiguration(null, true, "", "-Kpic"); // NOI18N
 	norunpathOption = new BooleanConfiguration(null, true, "", "-norunpath"); // NOI18N
 	nameassignOption = new BooleanConfiguration(null, true);
@@ -453,8 +453,8 @@ public class LinkerConfiguration implements AllOptionsProvider {
         }
     }
     
-    private class LinkerStripConfigurtion extends BooleanConfiguration {
-        public LinkerStripConfigurtion(BooleanConfiguration master, boolean def) {
+    private class LinkerStripConfiguration extends BooleanConfiguration {
+        public LinkerStripConfiguration(BooleanConfiguration master, boolean def) {
             super(master, def);
         }
 
@@ -472,6 +472,22 @@ public class LinkerConfiguration implements AllOptionsProvider {
             } else {
                 return ""; // NOI18N
             }
+        }
+
+        // Clone and Assign
+        @Override
+        public void assign(BooleanConfiguration conf) {
+            setDirty(getDirty() || getValue() != conf.getValue());
+            setValue(conf.getValue());
+            setModified(conf.getValue());
+        }
+
+        @Override
+        public LinkerStripConfiguration clone() {
+            LinkerStripConfiguration clone = new LinkerStripConfiguration(getMaster(), getDefault());
+            clone.setValue(getValue());
+            clone.setModified(getModified());
+            return clone;
         }
     }
     

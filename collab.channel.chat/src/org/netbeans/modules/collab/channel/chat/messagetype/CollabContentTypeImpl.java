@@ -14,6 +14,7 @@ import java.beans.BeanInfo;
 import java.util.*;
 
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.filesystems.*;
 
@@ -48,7 +49,7 @@ public final class CollabContentTypeImpl extends CollabContentType {
 
     private static Object create(org.openide.filesystems.FileObject fo) {
         String displayName = fo.getName();
-        Image icon = Utilities.loadImage("org/netbeans/modules/collab/channel/chat/resources/chat_bubble.png");
+        Image icon = ImageUtilities.loadImage("org/netbeans/modules/collab/channel/chat/resources/chat_bubble.png");
 
         try {
             FileSystem.Status status = fo.getFileSystem ().getStatus ();

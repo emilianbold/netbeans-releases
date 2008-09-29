@@ -185,7 +185,7 @@ final class Analyzer {
 
         String jdText = javac.getElements().getDocComment(elm);
         // create hint descriptor + prepare javadoc
-        if (jdText == null) {
+        if (jdText == null || jdText.length() == 0 && null == JavadocUtilities.findTokenSequence(javac, elm)) {
             if (!createJavadocKind)
                 return errors;
 

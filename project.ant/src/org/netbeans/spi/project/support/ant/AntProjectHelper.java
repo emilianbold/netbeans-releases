@@ -140,7 +140,7 @@ public final class AntProjectHelper {
         };
     }
     
-    private static final RequestProcessor RP = new RequestProcessor("AntProjectHelper.RP"); // NOI18N
+    private static RequestProcessor RP;
     
     /**
      * Project base directory.
@@ -457,8 +457,14 @@ public final class AntProjectHelper {
             action.run();
         } else {
             // Not safe to acquire a new lock, so run later in read access.
-            RP.post(new RunnableImpl(action));
+            rp().post(new RunnableImpl(action));
         }
+    }
+    private static synchronized RequestProcessor rp() {
+        if (RP == null) {
+            RP = new RequestProcessor("AntProjectHelper.RP"); // NOI18N
+        }
+        return RP;
     }
 
     /**

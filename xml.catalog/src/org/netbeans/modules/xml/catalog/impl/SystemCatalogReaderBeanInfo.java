@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.catalog.impl;
 import java.beans.*;
 import java.awt.Image;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -107,7 +108,7 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
 
-            return Utilities.loadImage (ICON_DIR_BASE + "sysCatalog.gif"); // NOI18N
+            return ImageUtilities.loadImage (ICON_DIR_BASE + "sysCatalog.gif"); // NOI18N
         } else {
             return null;
         }

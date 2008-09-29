@@ -132,6 +132,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -149,7 +150,7 @@ import org.w3c.dom.Text;
  */
 public final class AppClientProject implements Project, AntProjectListener, FileChangeListener {
     
-    private static final Icon CAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif")); // NOI18N
+    private static final Icon CAR_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif")); // NOI18N
     
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;

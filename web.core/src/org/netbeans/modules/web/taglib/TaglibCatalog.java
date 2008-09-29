@@ -44,6 +44,7 @@ package org.netbeans.modules.web.taglib;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -136,7 +137,7 @@ public class TaglibCatalog implements CatalogReader, CatalogDescriptor, org.xml.
      * @return icon representing current state or null
      */
     public java.awt.Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/web/taglib/resources/TaglibCatalog.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/web/taglib/resources/TaglibCatalog.gif"); // NOI18N
     }
     
     /**

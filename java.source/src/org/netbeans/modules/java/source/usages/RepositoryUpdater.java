@@ -159,6 +159,7 @@ import org.openide.util.Utilities;
 public class RepositoryUpdater implements PropertyChangeListener, FileChangeListener, ClassPathRootsListener.ClassPathRootsChangedListener {
         
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
+    private static final Logger ACTIVITY_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName()+".activity");  //NOI18N
     private static final Set<String> warnedIgnoredRoots = Collections.synchronizedSet(new HashSet<String>());
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
@@ -1274,6 +1275,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         public void run (final CompilationInfo nullInfo) throws IOException {
+            ACTIVITY_LOGGER.finest("START");    //NOI18N
             try {
             ClassIndexManager.getDefault().writeLock (new ClassIndexManager.ExceptionAction<Void> () {
                 
@@ -1607,6 +1609,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 //Never thrown
                 Exceptions.printStackTrace(e);
             }
+            finally {
+                ACTIVITY_LOGGER.finest("FINISHED");    //NOI18N
+            }
         }
         
         private void findDependencies (final URL rootURL, final Stack<URL> cycleDetector, final Map<URL,List<URL>> depGraph,
@@ -1726,6 +1731,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         return true;
                     }
                     final URL rootURL = it.next();
+                    updateProgress (rootURL);
                     try {
                         it.remove();
                         final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(rootURL,false);                                        
@@ -1784,6 +1790,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         it.remove();                                                                                
                         if (!oldRoots.remove(rootURL) && !RepositoryUpdater.this.scannedRoots.contains(rootURL)) {
                             long startT = System.currentTimeMillis();
+                            updateProgress (rootURL);
                             updateFolder (rootURL,rootURL, true, false);
                             long time = System.currentTimeMillis() - startT;                        
                             if (PERF_TEST) {
@@ -1810,6 +1817,28 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 csst += System.currentTimeMillis() - cst;
             }
             return true;
+        }
+        
+        private void updateProgress (final URL url) {
+            assert url != null;
+            if (handle == null) {
+                return;
+            }            
+            URL tmp = FileUtil.getArchiveFile(url);
+            if (tmp == null) {
+                tmp = url;
+            }
+            try {
+                if ("file".equals(tmp.getProtocol())) {
+                    final File file = new File(new URI(tmp.toString()));                    
+                    handle.progress(file.getAbsolutePath());
+                }
+                else {
+                    handle.progress(tmp.toString());
+                }
+            } catch (URISyntaxException ex) {
+                handle.progress(tmp.toString());
+            }            
         }
         
         private void parseFiles(URL root, final File classCache, boolean isInitialCompilation,
@@ -3025,6 +3054,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             if (LOGGER.isLoggable(Level.FINER)) {
                                 LOGGER.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo) + " " + cpInfo.toString());    //NOI18N
                             }
+                        }
+                        if (LOGGER.isLoggable(Level.FINEST)) {
+                            LOGGER.finest("Parsing file: " + activeTuple.jfo.toUri());   //NOI18N
                         }
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {activeTuple.jfo});
                         if (listener.lowMemory.getAndSet(false)) {

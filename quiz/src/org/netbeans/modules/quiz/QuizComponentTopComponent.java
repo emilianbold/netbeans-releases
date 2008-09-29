@@ -60,6 +60,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -88,7 +89,7 @@ final class QuizComponentTopComponent extends TopComponent implements HyperlinkL
         initComponents();
         setName(NbBundle.getMessage(QuizComponentTopComponent.class, "CTL_QuizComponentTopComponent"));
         setToolTipText(NbBundle.getMessage(QuizComponentTopComponent.class, "HINT_QuizComponentTopComponent"));
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
     }
 
     /** This method is called from within the constructor to

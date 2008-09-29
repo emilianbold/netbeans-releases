@@ -221,9 +221,11 @@ public class ELExpression {
         String beanName = extractBeanName();
         
         BeanData[] allBeans = sup.getBeanData();
-        for (BeanData beanData : allBeans) {
-            if (beanData.getId().equals(beanName)){
-                return beanData.getClassName();
+        if (allBeans != null) {
+            for (BeanData beanData : allBeans) {
+                if (beanData.getId().equals(beanName)) {
+                    return beanData.getClassName();
+                }
             }
         }
         

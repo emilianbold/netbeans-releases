@@ -418,10 +418,10 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         logRecord.setResourceBundle(NbBundle.getBundle(PhpProjectProperties.class));
         logRecord.setResourceBundleName(PhpProjectProperties.class.getPackage().getName() + ".Bundle"); // NOI18N
         logRecord.setParameters(new Object[] {
-            FileUtil.isParentOf(projectDir, sourceDir),
+            FileUtil.isParentOf(projectDir, sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
             activeRunAsType,
             Integer.toString(numOfConfigs),
-            copyFiles
+            copyFiles ? "COPY_FILES_YES" : "COPY_FILES_NO" // NOI18N
         });
         Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
     }

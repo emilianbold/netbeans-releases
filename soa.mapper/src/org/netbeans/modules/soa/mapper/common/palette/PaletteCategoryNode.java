@@ -30,6 +30,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.soa.mapper.common.ui.palette.IPaletteCategory;
@@ -246,9 +247,9 @@ public class PaletteCategoryNode
 
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16)
                 || (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            return org.openide.util.Utilities.loadImage(mIconURL);
+            return ImageUtilities.loadImage(mIconURL);
         } else {
-            return org.openide.util.Utilities.loadImage(mIcon32URL);
+            return ImageUtilities.loadImage(mIcon32URL);
         }
     }
 

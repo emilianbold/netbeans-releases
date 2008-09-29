@@ -42,14 +42,20 @@ var ZIP_FILES_PREFIX            = "{nb.zip.files.prefix}";
 var BUNDLE_FILES_PREFIX         = "{nb.bundle.files.prefix}";
 var BOUNCER_PRODUCT_PREFIX      = "{nb.bundle.files.prefix}";
 
+var COMMUNITY_BUILD             = "{community.mlbuild}";
+var ADD_MORE_REDIRECT_VALUE     = "{enable.languages.redirect}";
+var MORE_LANGUAGES_REDIRECT_URL = "{alternative.languages.page.url}";
+
 var BUILD_LOCATION = "";
 
 var LOAD_OMNITURE_CODE = 0;
 var LOAD_GOOGLE_ANALYTICS_CODE = 0;
 var USE_BOUNCER = 0;
 
+var BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
-var SOURCES_AND_BINARIES_URL = BUILD_LOCATION + "/zip/";
+//var SOURCES_AND_BINARIES_URL = "javascript: open_zip_link()";
+var SOURCES_AND_BINARIES_URL = BUILD_LOCATION + "zip/";
 
 function add_download_tabs() {
 	add_download_tab("6.1", "http://download.netbeans.org/netbeans/6.1/final/");

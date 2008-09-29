@@ -60,6 +60,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -465,9 +466,22 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoPort")); // NOI18N
                     return false;
                 }
+                
+                if (findServiceInProject(service.getName())) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
+                            NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_ServiceNameExists", service.getName()));
+                    return false; // Service name exists 
+                }
             } else {
                 if (wsdlServiceHandler != null && wsdlServiceHandler.getServiceName() != null && wsdlServiceHandler.getPortName() != null) {
-                    return true;
+                    if (findServiceInProject(wsdlServiceHandler.getServiceName())) {
+                        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                                NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_ServiceNameExists", wsdlServiceHandler.getServiceName()));
+                        return false; // Service name exists                        
+                    } else {
+                        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+                        return true;
+                    }
                 } else {
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoPort")); // NOI18N
                     return false;
@@ -626,5 +640,17 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         public String getDescription() {
             return NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_WsdlFilterDescription"); // NOI18N
         }
+    }
+    
+    private boolean findServiceInProject(String serviceName) {
+        JAXWSSupport support = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
+        for (Object o:support.getServices()) {
+            Service s = (Service)o;
+            if (s.getWsdlUrl() != null && 
+                    serviceName.equals(s.getServiceName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

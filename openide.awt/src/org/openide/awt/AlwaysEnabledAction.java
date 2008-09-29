@@ -14,6 +14,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
@@ -21,13 +22,35 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class AlwaysEnabledAction extends AbstractAction implements PropertyChangeListener {
-    private Map map;
+final class AlwaysEnabledAction extends AbstractAction
+implements PropertyChangeListener, ContextAwareAction {
+    private final Map map;
     private ActionListener delegate;
+    private final Lookup context;
+    private final Object equals;
 
     public AlwaysEnabledAction(Map m) {
         super();
         this.map = m;
+        this.context = null;
+        this.equals = this;
+    }
+
+    private AlwaysEnabledAction(Map m, ActionListener delegate, Lookup context, Object equals) {
+        super();
+        this.map = m;
+        this.delegate = bindToContext(delegate, context);
+        this.context = context;
+        this.equals = equals;
+    }
+
+    private static ActionListener bindToContext(ActionListener a, Lookup context) {
+        if (context != null) {
+            if (a instanceof ContextAwareAction) {
+                return ((ContextAwareAction)a).createContextAwareInstance(context);
+            }
+        }
+        return a;
     }
 
     private ActionListener getDelegate() {
@@ -36,7 +59,7 @@ final class AlwaysEnabledAction extends AbstractAction implements PropertyChange
             if (!(listener instanceof ActionListener)) {
                 throw new NullPointerException();
             }
-            delegate = (ActionListener)listener;
+            delegate = bindToContext((ActionListener)listener, context);
             if (delegate instanceof Action) {
                 ((Action)delegate).addPropertyChangeListener(this);
             }
@@ -124,9 +147,38 @@ final class AlwaysEnabledAction extends AbstractAction implements PropertyChange
         return null;
     }
 
+
+    @Override
+    public int hashCode() {
+        if (equals == this) {
+            return super.hashCode();
+        }
+        return equals.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof AlwaysEnabledAction) {
+            final AlwaysEnabledAction other = (AlwaysEnabledAction) obj;
+            if (this.equals.equals(other.equals)) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == delegate) {
             firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
         }
+    }
+
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new AlwaysEnabledAction(map, delegate, actionContext, equals);
     }
 }

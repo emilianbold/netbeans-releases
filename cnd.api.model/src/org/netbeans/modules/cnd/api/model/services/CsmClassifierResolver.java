@@ -86,18 +86,27 @@ public abstract class CsmClassifierResolver {
      */  
     private static final class Default extends CsmClassifierResolver {
         private final Lookup.Result<CsmClassifierResolver> res;
-
+        private static final boolean FIX_SERVICE = true;
+        private CsmClassifierResolver fixedResolver;
         Default() {
             res = Lookup.getDefault().lookupResult(CsmClassifierResolver.class);
         }
 
         private CsmClassifierResolver getService(){
-            for (CsmClassifierResolver service : res.allInstances()) {
-                return service;
+            CsmClassifierResolver service = fixedResolver;
+            if (service == null) {
+                for (CsmClassifierResolver selector : res.allInstances()) {
+                    service = selector;
+                    break;
+                }
+                if (FIX_SERVICE && service != null) {
+                    // I see that it is ugly solution, but NB core cannot fix performance of FolderInstance.waitFinished()
+                    fixedResolver = service;
+                }
             }
-            return null;
+            return service;
         }
-        
+
         @Override
         public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
             CsmClassifierResolver service = getService();

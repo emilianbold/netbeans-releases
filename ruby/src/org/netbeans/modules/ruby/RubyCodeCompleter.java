@@ -180,7 +180,10 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class RubyCodeCompleter implements CodeCompletionHandler {
-    /** Another good logical parameter would be SINGLE_WHITESPACE which would insert a whitespace separator IF NEEDED */
+
+    // Another good logical parameter would be SINGLE_WHITESPACE which would
+    // insert a whitespace separator IF NEEDED
+
     /** Live code template parameter: require the given file, if not already done so */
     private static final String KEY_REQUIRE = "require"; // NOI18N
 
@@ -216,174 +219,140 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
     /** Default name values for ATTR_UNUSEDLOCAL and friends */
     private static final String ATTR_DEFAULTS = "defaults"; // NOI18N
+
     private static final String[] RUBY_BUILTIN_VARS =
         new String[] {
             // Predefined variables
             "__FILE__", "__LINE__", "STDIN", "STDOUT", "STDERR", "ENV", "ARGF", "ARGV", "DATA",
-            "RUBY_VERSION", "RUBY_RELEASE_DATE", "RUBY_PLATFORM", "$DEBUG", "$FILENAME",
-            "$LOAD_PATH", "$stderr", "$stdin", "$stdout", "$VERBOSE",
+            "RUBY_VERSION", "RUBY_RELEASE_DATE", "RUBY_PLATFORM",
         };
+    
     private static final String[] RUBY_REGEXP_WORDS =
         new String[] {
-            // Dbl-space lines to keep formatter from collapsing pairs into a block
             "^", "Start of line",
-            
             "$", "End of line",
-            
             "\\A", "Beginning of string",
-            
             "\\z", "End of string",
-            
             "\\Z", "End of string (except \\n)",
-            
             "\\w", "Letter or digit; same as [0-9A-Za-z]",
-            
             "\\W", "Neither letter or digit",
-            
             "\\s", "Space character; same as [ \\t\\n\\r\\f]",
-            
             "\\S", "Non-space character",
-            
             "\\d", "Digit character; same as [0-9]",
-            
             "\\D", "Non-digit character",
-            
             "\\b", "Backspace (0x08) (only if in a range specification)",
-            
             "\\b", "Word boundary (if not in a range specification)",
-            
             "\\B", "Non-word boundary",
-            
             "*", "Zero or more repetitions of the preceding",
-            
             "+", "One or more repetitions of the preceding",
-            
             "{m,n}", "At least m and at most n repetitions of the preceding",
-            
             "?", "At most one repetition of the preceding; same as {0,1}",
-            
             "|", "Either preceding or next expression may match",
-            
             "()", "Grouping",
-            
             "[:alnum:]", "Alphanumeric character class",
-            
             "[:alpha:]", "Uppercase or lowercase letter",
-            
             "[:blank:]", "Blank and tab",
-            
             "[:cntrl:]", "Control characters (at least 0x00-0x1f,0x7f)",
-            
             "[:digit:]", "Digit",
-            
             "[:graph:]", "Printable character excluding space",
-            
             "[:lower:]", "Lowecase letter",
-            
             "[:print:]", "Any printable letter (including space)",
-            
             "[:punct:]", "Printable character excluding space and alphanumeric",
-            
             "[:space:]", "Whitespace (same as \\s)",
-            
             "[:upper:]", "Uppercase letter",
-            
             "[:xdigit:]", "Hex digit (0-9, a-f, A-F)",
         };
+
     private static final String[] RUBY_PERCENT_WORDS =
         new String[] {
-            // Dbl-space lines to keep formatter from collapsing pairs into a block
             "%q", "String (single-quoting rules)",
-            
             "%Q", "String (double-quoting rules)",
-            
             "%r", "Regular Expression",
-            
             "%x", "Commands",
-            
             "%W", "String Array (double quoting rules)",
-            
             "%w", "String Array (single quoting rules)",
-            
             "%s", "Symbol",
         };
+    
     private static final String[] RUBY_STRING_PAIRS =
         new String[] {
-            // Dbl-space lines to keep formatter from collapsing pairs into a block
             "(", "(delimiters)",
-            
             "{", "{delimiters}",
-            
             "[", "[delimiters]",
-            
             "x", "<i>x</i>delimiters<i>x</i>",
         };
+
+    // Cf. http://en.wikibooks.org/wiki/Ruby_Programming/Syntax/Variables_and_Constants
     private static final String[] RUBY_DOLLAR_VARIABLES =
         new String[] {
-            // From http://www.ruby-doc.org/docs/UsersGuide/rg/globalvars.html
-            "$!", "Latest error message",
-            
-            "$@", "Location of error",
-            
-            "$_", "String last read by gets",
-            
-            "$.", "Line number last read by interpreter",
-            
-            "$&", "String last matched by regexp",
-            
-            "$~", "The last regexp match, as an array of subexpressions",
-            
-            "$n", "The nth subexpression in the last match (same as $~[n])",
-            
-            "$=", "Case-insensitivity flag",
-            
-            "$/", "Input record separator",
-            
-            "$\\", "Output record separator",
-            
-            "$0", "The name of the ruby script file",
-            
-            "$*", "The command line arguments",
-            
-            "$$", "Interpreter's process ID",
-            
-            "$?", "Exit status of last executed child process",
+            "$!",         "The exception information message set by 'raise'.",
+            "$@",         "Array of backtrace of the last exception thrown.",
+
+            "$&",         "The string matched by the last successful pattern match in this scope.",
+            "$`",         "The string to the left  of the last successful match.",
+            "$'",         "The string to the right of the last successful match.",
+            "$+",         "The last bracket matched by the last successful match.",
+            "$n",         "The Nth group of the last successful regexp match.",
+            "$~",         "The information about the last match in the current scope.",
+
+            "$=",         "The flag for case insensitive, nil by default.",
+            "$/",         "The input record separator, newline by default.",
+            "$\\",         "The output record separator for the print and IO#write. Default is nil.",
+            "$,",         "The output field separator for the print and Array#join.",
+            "$;",         "The default separator for String#split.",
+
+            "$.",         "The current input line number of the last file that was read.",
+            "$<",         "The virtual concatenation file of the files given on command line.",
+            "$>",         "The default output for print, printf. $stdout by default.",
+            "$_",         "The last input line of string by gets or readline.",
+
+            "$0",         "Contains the name of the script being executed. May be assignable.",
+            "$*",         "Command line arguments given for the script sans args.",
+            "$$",         "The process number of the Ruby running this script.",
+            "$?",         "The status of the last executed child process.",
+            "$:",         "Load path for scripts and binary modules by load or require.",
+
+            "$\"",        "The array contains the module names loaded by require.",
+            "$DEBUG",     "The status of the -d switch.",
+            "$FILENAME",  "Current input file from $&lt;. Same as $&lt;.filename.",
+            "$LOAD_PATH", "The alias to the $:.",
+            "$stderr",    "The current standard error output.",
+            "$stdin",     "The current standard input.",
+            "$stdout",    "The current standard output.",
+            "$VERBOSE",   "The verbose flag, which is set by the -v switch.",
+            "$-0",        "The alias to $/.",
+            "$-a",        "True if option -a (\"autosplit\" mode) is set. Read-only variable.",
+            "$-d",        "The alias to $DEBUG.",
+            "$-F",        "The alias to $;.",
+            "$-i",        "If in-place-edit mode is set, this variable holds the extension, otherwise nil.",
+            "$-I",        "The alias to $:.",
+            "$-l",        "True if option -l is set (\"line-ending processing\" is on). Read-only variable.",
+            "$-p",        "True if option -p is set (\"loop\" mode is on). Read-only variable.",
+            "$-v",        "The alias to $VERBOSE.",
+            "$-w",        "True if option -w is set.",
         };
+    
     private static final String[] RUBY_QUOTED_STRING_ESCAPES =
         new String[] {
             "\\a", "Bell/alert (0x07)",
-            
             "\\b", "Backspace (0x08)",
-            
             "\\x", "\\x<i>nn</i>: Hex <i>nn</i>",
-            
             "\\e", "Escape (0x1b)",
-            
             "\\c", "Control-<i>x</i>",
-            
             "\\C-", "Control-<i>x</i>",
-            
             "\\f", "Formfeed (0x0c)",
-            
             "\\n", "Newline (0x0a)",
-            
             "\\M-", "\\M-<i>x</i>: Meta-<i>x</i>",
-            
             "\\r", "Return (0x0d)",
-            
             "\\M-\\C-", "Meta-control-<i>x</i>",
-            
             "\\s", "Space (0x20)",
-            
             "\\", "\\nnn Octal <i>nnn</i>",
-            
             //"\\", "<i>x</i>",
             "\\t", "Tab (0x09)",
-            
             "#{", "#{expr}: Value of expr",
-            
             "\\v", "Vertical tab (0x0b)",
         };
+
     private static ImageIcon keywordIcon;
     private static ImageIcon symbolIcon;
     private static final Set<String> selectionTemplates = new HashSet<String>();
@@ -973,7 +942,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     // Try with the LHS + current FQN recursively. E.g. if we're in
                     // Test::Unit when there's a call to Foo.x, we'll try
                     // Test::Unit::Foo, and Test::Foo
-                    while (methods.size() == 0) {
+                    while (methods.isEmpty()) {
                         methods = index.getInheritedMethods(fqn + "::" + type, prefix, kind);
 
                         int f = fqn.lastIndexOf("::");
@@ -988,7 +957,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     // Add methods in the class (without an FQN)
                     Set<IndexedMethod> m = index.getInheritedMethods(type, prefix, kind);
 
-                    if (m.size() > 0) {
+                    if (!m.isEmpty()) {
                         methods.addAll(m);
                     }
                 }
@@ -996,7 +965,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
             // Try just the method call (e.g. across all classes). This is ignoring the 
             // left hand side because we can't resolve it.
-            if ((methods.size() == 0)) {
+            if ((methods.isEmpty())) {
                 methods = index.getMethods(prefix, null, kind);
             }
 
@@ -1008,8 +977,13 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     continue;
                 }
 
-                // We can only call static methods
-                if (skipInstanceMethods && !method.isStatic()) {
+                // We can only call static methods. And module class is a special case (#110267)
+                if (skipInstanceMethods && !method.isStatic() && !method.doesBelongToModule()) {
+                    continue;
+                }
+
+                // Do not offer instance methods of Module class as instance methods (issue #110267)
+                if (!skipInstanceMethods && method.doesBelongToModule()) {
                     continue;
                 }
 
@@ -1151,10 +1125,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                         if (commentBlock != OffsetRange.NONE) {
                             try {
                                 String text = doc.getText(commentBlock.getStart(), commentBlock.getLength());
-                                if (text.startsWith("=begin\n")) { // NOI18N
-                                    if (text.endsWith("=end")) { // NOI18N
-                                        text = text.substring("=begin\n".length(), text.length()-"=end".length()); // NOI18N
-                                    }
+                                if (text.startsWith("=begin\n") && text.endsWith("=end")) { // NOI18N
+                                    text = text.substring("=begin\n".length(), text.length() - "=end".length()); // NOI18N
                                 }
                                 Element element = new CommentElement(text);
                                 ClassItem item = new ClassItem(element, anchor, request);
@@ -1370,12 +1342,12 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             if (callLineStart != -1 && currentLineStart == callLineStart) {
                 // We know the method call
                 targetMethod = callMethod;
-                if (targetMethod != null) {
+                // if (targetMethod != null) {
                     // Somehow figure out the argument index
                     // Perhaps I can keep the node tree around and look in it
                     // (This is all trying to deal with temporarily broken
                     // or ambiguous calls.
-                }
+                // }
             }
             // Compute the argument index
 
@@ -1662,7 +1634,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
         
         List<String> params = targetMethod.getParameters();
-        if (params == null || params.size() == 0) {
+        if (params == null || params.isEmpty()) {
             return false;
         }
 
@@ -2050,7 +2022,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     private void completeDbColumns(List<CompletionProposal> proposals, IndexedMethod target, CompletionRequest request, boolean isLastArg) {
         // Add in the eligible database tables found in this project
         // Assumes this is a Rails project
-        Set<String> tables = request.index.getDatabaseTables(request.prefix, request.kind);
+//        Set<String> tables = request.index.getDatabaseTables(request.prefix, request.kind);
         
         // TODO
 //        for (String table : tables) {
@@ -2091,7 +2063,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         final Document document = info.getDocument();
         if (document == null) {
-            return null;
+            return CodeCompletionResult.NONE;
         }
 
         // TODO - move to LexUtilities now that this applies to the lexing offset?
@@ -2181,7 +2153,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             astLineEnd = AstUtilities.getAstOffset(info, Utilities.getRowEnd(doc, lexOffset));
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
-            return null;
+            return CodeCompletionResult.NONE;
         }
 
         final AstPath path = new AstPath(root, astOffset);
@@ -2619,7 +2591,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                         // Look for documentation
                         List<String> rdoc = AstUtilities.gatherDocumentation(info, doc, node);
 
-                        if ((rdoc != null) && (rdoc.size() > 0)) {
+                        if (rdoc != null && !rdoc.isEmpty()) {
                             return Collections.singletonList(candidate);
                         }
                     }
@@ -2636,9 +2608,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         RubyDeclarationFinder finder = new RubyDeclarationFinder();
         IndexedElement candidate = null;
 
-        if (classes.size() > 0) {
+        if (!classes.isEmpty()) {
             candidate = finder.findBestClassMatch(classes, path, path.leaf(), index);
-        } else if (methods.size() > 0) {
+        } else if (!methods.isEmpty()) {
             candidate = finder.findBestMethodMatch(name, methods, doc, astOffset, lexOffset, path,
                     path.leaf(), index);
         }
@@ -2928,7 +2900,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         String fqn = obj.getSignature();
         Set<?extends IndexedElement> result = obj.getIndex().getDocumented(fqn);
 
-        if ((result == null) || (result.size() == 0)) {
+        if ((result == null) || (result.isEmpty())) {
             return null;
         } else if (result.size() == 1) {
             return result.iterator().next();
@@ -3068,7 +3040,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 if (name.equals(className)) {
                     comments = AstUtilities.gatherDocumentation(info, baseDoc, clz);
 
-                    if ((comments != null) && (comments.size() > 0)) {
+                    if ((comments != null) && (!comments.isEmpty())) {
                         break;
                     }
                 }
@@ -3077,7 +3049,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             comments = AstUtilities.gatherDocumentation(info, baseDoc, node);
         }
 
-        if ((comments == null) || (comments.size() == 0)) {
+        if ((comments == null) || (comments.isEmpty())) {
             return null;
         }
         
@@ -3127,8 +3099,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 }
                 formatter.appendLine(text);
             }
-            String html = formatter.toHtml();
-            return html;
+            return formatter.toHtml();
         }
         
         List<String> comments = getComments(info, element);
@@ -3161,8 +3132,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
-        if (link.indexOf("#") != -1 && elementHandle.getMimeType().equals(RubyMimeResolver.RUBY_MIME_TYPE)) {
-            final RubyParser parser = new RubyParser();
+        if (link.indexOf('#') != -1 && elementHandle.getMimeType().equals(RubyMimeResolver.RUBY_MIME_TYPE)) {
             if (link.startsWith("#")) {
                 // Put the current class etc. in front of the method call if necessary
                 Element surrounding = RubyParser.resolveHandle(null, elementHandle);
@@ -3471,7 +3441,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         List<String> params = method.getParameters();
 
-        if ((params != null) && (params.size() > 0)) {
+        if ((params != null) && (!params.isEmpty())) {
             return new ParameterInfo(params, index, anchorOffset);
         }
 
@@ -3532,6 +3502,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return element.getKind();
         }
 
+        @Override
         public ImageIcon getIcon() {
             return null;
         }
@@ -3571,7 +3542,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     private class MethodItem extends RubyCompletionItem {
-        private IndexedMethod method;
+
+        private final IndexedMethod method;
+
         MethodItem(IndexedMethod element, int anchorOffset, CompletionRequest request) {
             super(element, anchorOffset, request);
             this.method = element;
@@ -3593,7 +3566,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
             Collection<String> parameters = method.getParameters();
 
-            if ((parameters != null) && (parameters.size() > 0)) {
+            if ((parameters != null) && (!parameters.isEmpty())) {
                 formatter.appendHtml("("); // NOI18N
 
                 Iterator<String> it = parameters.iterator();
@@ -3828,7 +3801,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
             if (element instanceof IndexedElement) {
                 List<String> comments = getComments(null, element);
-                if (comments != null && comments.size() > 0) {
+                if (comments != null && !comments.isEmpty()) {
                     // Look through the comment, attempting to identify
                     // a usage of the current method and determine whether it
                     // is using parentheses or not.
@@ -3888,6 +3861,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     private class KeywordItem extends RubyCompletionItem {
+        
         private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
         private final String keyword;
         private final String description;
@@ -3909,15 +3883,21 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            if (description != null) {
-                //formatter.appendText(description);
-                formatter.appendHtml(description);
+        public String getRhsHtml(final HtmlFormatter formatter) {
+            return null;
+        }
 
-                return formatter.getText();
-            } else {
-                return null;
+        @Override
+        public String getLhsHtml(final HtmlFormatter formatter) {
+            ElementKind kind = getKind();
+            formatter.name(kind, true);
+            formatter.appendText(keyword);
+            formatter.appendText(" "); // NOI18N
+            formatter.name(kind, false);
+            if (description != null) {
+                formatter.appendHtml(description);
             }
+            return formatter.getText();
         }
 
         @Override
@@ -4076,9 +4056,10 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
     }
     
-    private class CallItem extends MethodItem {   
-        private IndexedMethod method;
-        private int index;
+    private class CallItem extends MethodItem {
+
+        private final IndexedMethod method;
+        private final int index;
         
         CallItem(IndexedMethod method, int parameterIndex, int anchorOffset, CompletionRequest request) {
             super(method, anchorOffset, request);
@@ -4104,7 +4085,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
             List<String> parameters = method.getParameters();
 
-            if ((parameters != null) && (parameters.size() > 0)) {
+            if ((parameters != null) && (!parameters.isEmpty())) {
                 formatter.appendHtml("("); // NOI18N
 
                 if (index > 0 && index < parameters.size()) {
@@ -4149,8 +4130,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
     /** Methods/attributes inferred from ActiveRecord migrations */
     private class DbItem extends RubyCompletionItem {
-        private String name;
-        private String type;
+        
+        private final String name;
+        private final String type;
         
         DbItem(String name, String type, int anchorOffset, CompletionRequest request) {
             super(null, anchorOffset, request);
@@ -4241,10 +4223,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 return QueryType.NONE;
             }
             ts.move(offset);
-            if (!ts.moveNext()) {
-                if (!ts.movePrevious()) {
-                    return QueryType.NONE;
-                }
+            if (!ts.moveNext() && !ts.movePrevious()) {
+                return QueryType.NONE;
             }
             if (ts.offset() == offset && !ts.movePrevious()) {
                 return QueryType.NONE;

@@ -212,8 +212,8 @@ public class ForkedJavaOverride extends Java {
                                     if (len > 0 && str.charAt(len - 1) == '\r') {
                                         str = str.substring(0, len - 1);
                                     }
-                                    // skip stack traces (hyperlinks are created by StandardLogger), everything else write directly
-                                    if (logLevel != Project.MSG_WARN || !STACK_TRACE.matcher(str).matches()) {
+                                    // skip stack traces (hyperlinks are created by JavaAntLogger), everything else write directly
+                                    if (!STACK_TRACE.matcher(str).matches()) {
                                         ow.println(str);
                                     }
                                     log(str, logLevel);
@@ -241,10 +241,12 @@ public class ForkedJavaOverride extends Java {
 
         private synchronized void maybeFlush() {
             try {
-                currentLine.writeTo(out);
-                out.flush();
-                String str = currentLine.toString(encoding);
-                ow.write(str);
+                if (currentLine.size() > 0) {
+                    currentLine.writeTo(out);
+                    out.flush();
+                    String str = currentLine.toString(encoding);
+                    ow.write(str);
+                }
             } catch (IOException x) {
                 // probably safe to ignore
             } catch (ThreadDeath d) {

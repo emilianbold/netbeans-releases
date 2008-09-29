@@ -24,6 +24,7 @@ import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModel
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.cookies.SaveCookie;
@@ -228,7 +229,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         //        original.destroy();
         //        pc.pageName2Node.remove(getDisplayName());
     }
-    private static final Image ABSTRACTNODE = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/abstract.gif"); // NOI18N
+    private static final Image ABSTRACTNODE = ImageUtilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/abstract.gif"); // NOI18N
 
     public Image getIcon(int type) {
         if (!isDataNode()) {

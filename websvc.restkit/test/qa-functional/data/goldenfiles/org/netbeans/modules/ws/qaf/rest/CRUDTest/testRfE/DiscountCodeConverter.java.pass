@@ -14,8 +14,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.ws.rs.core.UriBuilder;
 import javax.persistence.EntityManager;
-import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.Customer;
+import java.util.Collection;
 
 /**
  *
@@ -44,6 +44,7 @@ public class DiscountCodeConverter {
         this.entity = entity;
         this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getDiscountCode() + "/").build() : uri;
         this.expandLevel = expandLevel;
+        getCustomerCollection();
     }
 
     /**

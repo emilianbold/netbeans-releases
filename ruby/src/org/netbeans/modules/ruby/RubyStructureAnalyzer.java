@@ -80,6 +80,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -1245,6 +1246,22 @@ public class RubyStructureAnalyzer implements StructureScanner {
                             if (id == RubyTokenId.WHITESPACE) {
                                 // Empty tag
                                 return DEFAULT_LABEL;
+                            }
+
+                            // Treat <%h specially!
+                            if (id == RubyTokenId.IDENTIFIER && TokenUtilities.equals(t.token().text(), "h")) { // NOI18N
+                                if (!t.moveNext()) {
+                                    // Just a <%h%>
+                                    int end = t.offset() + t.token().length();
+                                    return createName(doc, begin, end);
+                                }
+                                // Skip any whitespace after this one
+                                while (t.token().id() == RubyTokenId.WHITESPACE) {
+                                    if (!t.moveNext()) {
+                                        break;
+                                    }
+                                }
+                                id = t.token().id();
                             }
 
                             if (id == RubyTokenId.STRING_BEGIN || id == RubyTokenId.QUOTED_STRING_BEGIN || id == RubyTokenId.REGEXP_BEGIN) {

@@ -67,6 +67,7 @@ import org.netbeans.progress.spi.InternalHandle;
 import org.netbeans.progress.spi.ProgressEvent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -303,7 +304,7 @@ public class ListComponent extends JPanel {
                Image icon = (Image)UIManager.get("nb.progress.cancel.icon");
                if (icon == null) {
                    // for custom L&F?
-                   icon = Utilities.loadImage("org/netbeans/progress/module/resources/buton.png");
+                   icon = ImageUtilities.loadImage("org/netbeans/progress/module/resources/buton.png");
                }
                putValue(Action.SMALL_ICON, new ImageIcon(icon));
            }

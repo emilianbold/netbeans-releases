@@ -68,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -212,7 +213,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                     Icon openedIcon;
                     if ("jar".equals(roots[i].getURL().getProtocol())) { //NOI18N
                         file = FileUtil.getArchiveFile (roots[i]);
-                        icon = openedIcon = new ImageIcon (Utilities.loadImage(ARCHIVE_ICON));
+                        icon = openedIcon = new ImageIcon (ImageUtilities.loadImage(ARCHIVE_ICON));
                     }
                     else {
                         file = roots[i];

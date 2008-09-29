@@ -50,6 +50,7 @@ import java.awt.Image;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** BeanInfo for jaxws service loader.
@@ -74,10 +75,10 @@ public final class JaxWsDataLoaderBeanInfo extends SimpleBeanInfo {
     @Override
     public Image getIcon(final int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png"); // NOI18N
+            return ImageUtilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png"); // NOI18N
         }
         else {
-            return Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png"); // NOI18N
+            return ImageUtilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png"); // NOI18N
         }
     }
     

@@ -46,6 +46,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -70,7 +71,7 @@ public final class Advanced extends OptionsCategory {
     public Icon getIcon () {
         if (icon == null)
             icon = new ImageIcon (
-                Utilities.loadImage 
+                ImageUtilities.loadImage
                     ("org/netbeans/modules/options/resources/advanced.png")
             );
         return icon;

@@ -99,6 +99,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -292,7 +293,7 @@ public class ComplibServiceProvider implements ComplibService {
 
         private Icon icon;
 
-        private static final Image defaultIconImage = Utilities
+        private static final Image defaultIconImage = ImageUtilities
                 .loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component.png");
 
         private ComponentInfo(String className, Complib complib) throws ComplibException {
@@ -1230,18 +1231,29 @@ public class ComplibServiceProvider implements ComplibService {
     public void replaceProjectComplib(Project project, ExtensionComplib origComplib,
         ExtensionComplib newComplib) throws IOException, ComplibException {
         ExtensionComplib projectComplib = null;
+        Exception exception = null;
         try {
             if (origComplib != null) {
                 removeComplibFromProject0(project, origComplib);
             }
             projectComplib = copyComplibToProject(newComplib, project);
         } catch (IOException e) {
+            exception = e;
             throw e;
         } catch (ComplibException e) {
+            exception = e;
             throw e;
         } finally {
-            // Notify listeners that the set of complibs changed
-            firePaletteChanged(new ComplibEvent(projectComplib));
+            if (projectComplib == null) {
+                if (exception == null) {
+                    IdeUtil.logWarning("org.netbeans.modules.visualweb.complib.ComplibServiceProivder: could not call firePaletteChanged due to null projectComplib"); //NOI18N
+                } else {
+                    IdeUtil.logWarning("org.netbeans.modules.visualweb.complib.ComplibServiceProivder: could not call firePaletteChanged due to null projectComplib and exception [" + exception + "]", exception); //NOI18N
+                }
+            } else {
+                // Notify listeners that the set of complibs changed
+                firePaletteChanged(new ComplibEvent(projectComplib));
+            }
         }
     }
 

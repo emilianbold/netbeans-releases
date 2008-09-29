@@ -298,10 +298,11 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         if (null != props) {
             this.password = props.getProperty(InstanceProperties.PASSWORD_ATTR);
         }
-        if (password.equals("")){//it means we did not stored the password. Get it from the static in memory cache if available
+        if ("".equals(password)) { // NOI18N
+            //it means we did not stored the password. Get it from the static in memory cache if available
             password = (String) passwordForURI.get(uri+platformRoot);
             if (this.password==null) {
-                this.password="";
+                this.password=""; // NOI18N
             }
             
         }
@@ -1269,13 +1270,30 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             // most common problem: a v3 instance and a v2 instance are installed
             // on one machine and share the admin port... so only one can execute
             // at a time
-            if (e.getMessage().contains("remotejmx")) {
-                goodUserNamePassword = false;
-                return;
-            }
-            
-            if(!e.getMessage().contains("500")){//not an internal error, so user/password error!!!
-                maybeRunningButWrongUserName =true ;
+            String mess = e.getMessage();
+            if (null != mess) {
+                if (mess.contains("remotejmx")) {
+                    goodUserNamePassword = false;
+                    return;
+                }
+
+                // if v3 is running on the admin port we see an invalid stream
+                // header message in the exception.  The message includes a hex
+                // value, so we check for that first. less likely to be localized...
+                //
+                if (mess.contains("3C21444F")) {
+                    goodUserNamePassword = false;
+                    return;
+                }
+
+                if (mess.contains("invalid stream header")) {
+                    goodUserNamePassword = false;
+                    return;
+                }
+
+                if(!mess.contains("500")){//not an internal error, so user/password error!!!
+                    maybeRunningButWrongUserName =true ;
+                }
             }
             
             String serverTitle = getInstanceDisplayName();

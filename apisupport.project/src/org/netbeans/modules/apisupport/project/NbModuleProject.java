@@ -88,6 +88,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -129,7 +130,7 @@ public final class NbModuleProject implements Project {
             "org/netbeans/modules/apisupport/project/resources/module.png"; // NOI18N
     
     private static final Icon NB_PROJECT_ICON = new ImageIcon(
-            Utilities.loadImage(NB_PROJECT_ICON_PATH));
+            ImageUtilities.loadImage(NB_PROJECT_ICON_PATH));
     
     public static final String SOURCES_TYPE_JAVAHELP = "javahelp"; // NOI18N
     static final String[] COMMON_TEST_TYPES = {"unit", "qa-functional"}; // NOI18N

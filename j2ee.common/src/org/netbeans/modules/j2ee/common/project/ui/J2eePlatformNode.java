@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
@@ -84,11 +85,11 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
     private static final String DEFAULT_ICON = "org/netbeans/modules/j2ee/common/project/ui/resources/j2eeServer.gif"; //NOI18N
     private static final String BROKEN_PROJECT_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
     
-    private static final Icon icon = new ImageIcon(Utilities.loadImage(ARCHIVE_ICON));
+    private static final Icon icon = new ImageIcon(ImageUtilities.loadImage(ARCHIVE_ICON));
     
-    private static final Image brokenIcon = Utilities.mergeImages(
-            Utilities.loadImage(DEFAULT_ICON),
-            Utilities.loadImage(BROKEN_PROJECT_BADGE), 
+    private static final Image brokenIcon = ImageUtilities.mergeImages(
+            ImageUtilities.loadImage(DEFAULT_ICON),
+            ImageUtilities.loadImage(BROKEN_PROJECT_BADGE),
             8, 0);
 
     private final PropertyEvaluator evaluator;

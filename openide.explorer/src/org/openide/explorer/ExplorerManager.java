@@ -51,6 +51,7 @@ import java.beans.*;
 import java.io.*;
 
 import java.util.*;
+import java.util.ArrayList;
 
 
 /**
@@ -204,8 +205,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
     /** Set the set of selected nodes.
     * @param value the nodes to select; empty (not <code>null</code>) if none are to be selected
     * @exception PropertyVetoException when the given nodes cannot be selected
-    * @throws IllegalArgumentException if <code>null</code> is given, or if any elements
-    *                                  of the selection are not within the current root context
+    * @throws IllegalArgumentException if <code>null</code> is given (array or any element in array)
     */
     public final void setSelectedNodes(final Node[] value)
     throws PropertyVetoException {
@@ -213,55 +213,60 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             public PropertyVetoException veto;
             private boolean doFire;
             private Node[] oldValue;
+            private Node[] newValue;
 
-            /** @return false if no further processing is needed */
-            private boolean checkArgumentIsValid() {
+            /** selects only nodes under root context */
+            private void checkAndSet() {
                 if (value == null) {
                     throw new IllegalArgumentException(getString("EXC_NodeCannotBeNull"));
                 }
 
                 if (equalNodes(value, selectedNodes)) {
-                    return false;
+                    return;
                 }
 
+                List<Node> validNodes = null;
                 for (int i = 0; i < value.length; i++) {
                     if (value[i] == null) {
                         throw new IllegalArgumentException(getString("EXC_NoElementOfNodeSelectionMayBeNull"));
                     }
                     
-                    // exception means sanity check failed (supplied nodes are not under root)
-                    // the reason could be that they were deleted meanwhile, so fail gracefuly in production builds
-                    try {
-                        checkUnderRoot(value[i], "EXC_NodeSelectionCannotContainNodes");
-                    } catch (IllegalArgumentException e) {
-                        boolean dontFailGracefully = false;
-                        assert dontFailGracefully = true;
-                        if (dontFailGracefully) {
-                            throw e;
-                        } else {
-                            return false;
+                    if (!isUnderRoot(value[i])) {
+                        if (validNodes == null) {
+                            validNodes = new ArrayList<Node>(value.length);
+                            for (int j = 0; j < i; j++) {
+                                validNodes.add(value[i]);
+                            }
                         }
+                    } else if (validNodes != null) {
+                        validNodes.add(value[i]);
                     }
                 }
+                if (validNodes != null) {
+                    newValue = validNodes.toArray(new Node[validNodes.size()]);
+                    if (equalNodes(newValue, selectedNodes)) {
+                        return;
+                    }                    
+                } else {
+                    newValue = value;
+                }
 
-                if ((value.length != 0) && (vetoableSupport != null)) {
+                if ((newValue.length != 0) && (vetoableSupport != null)) {
                     try {
                         // we send the vetoable change event only for non-empty selections
-                        vetoableSupport.fireVetoableChange(PROP_SELECTED_NODES, selectedNodes, value);
+                        vetoableSupport.fireVetoableChange(PROP_SELECTED_NODES, selectedNodes, newValue);
                     } catch (PropertyVetoException ex) {
                         veto = ex;
-
-                        return false;
+                        return;
                     }
                 }
-
-                return true;
+                updateSelection();
             }
 
             private void updateSelection() {
                 oldValue = selectedNodes;
                 addRemoveListeners(false);
-                selectedNodes = value;
+                selectedNodes = newValue;
                 addRemoveListeners(true);
 
                 doFire = true;
@@ -274,9 +279,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             }
 
             public void run() {
-                if (checkArgumentIsValid()) {
-                    updateSelection();
-                }
+                checkAndSet();
             }
         }
 

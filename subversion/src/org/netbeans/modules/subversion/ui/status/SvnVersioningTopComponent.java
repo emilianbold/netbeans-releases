@@ -77,7 +77,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         putClientProperty("SlidingName", NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
         
         setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
-        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/versioning-view.png"));  // NOI18N
+        setIcon(ImageUtilities.loadImage("org/netbeans/modules/subversion/resources/icons/versioning-view.png"));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title"));
         syncPanel = new VersioningPanel(this);

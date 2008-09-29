@@ -104,8 +104,15 @@ public final class SyntaxParser {
         return parser;
     }
 
-    /** Creates a new instance of SyntaxParser parsing the immutable source. */
+    /** Creates a new instance of SyntaxParser parsing the immutable source. 
+     * 
+     * @param source A non null sequence of characters - parser input
+     */
     public static List<SyntaxElement> parseImmutableSource(final CharSequence source) {
+        if(source == null) {
+            throw new NullPointerException("Parser source cannot be null!");
+        }
+        
         SyntaxParser parser = new SyntaxParser(source);
 
         parser.parserSource = new ParserSource() {

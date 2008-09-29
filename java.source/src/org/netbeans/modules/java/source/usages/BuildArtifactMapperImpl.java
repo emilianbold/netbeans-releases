@@ -198,11 +198,11 @@ public class BuildArtifactMapperImpl {
     }
     
     @SuppressWarnings("deprecation")
-    public static boolean ensureBuilt(URL sourceRoot, boolean cleanCompletely) throws IOException {
+    public static Boolean ensureBuilt(URL sourceRoot, boolean cleanCompletely) throws IOException {
         File targetFolder = getTarget(sourceRoot);
         
         if (targetFolder == null) {
-            return false;
+            return null;
         }
         
         try {

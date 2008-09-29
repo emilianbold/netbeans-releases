@@ -208,7 +208,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
                     Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
-                            ((MonitorModel.ThreadWithBordel) nodes[i]).originalThread : nodes[i];
+                            ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
                     if (node instanceof JPDAThread)
                         ((JPDAThread) node).suspend ();
                     else
@@ -238,7 +238,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
                     Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
-                            ((MonitorModel.ThreadWithBordel) nodes[i]).originalThread : nodes[i];
+                            ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
                     if (node instanceof JPDAThread)
                         ((JPDAThread) node).resume ();
                     else
@@ -254,7 +254,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_Interrupt_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
+                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).getOriginalThread();
                 if (node instanceof JPDAThread)
                     return !((JPDAThread) node).isSuspended ();
                 else
@@ -265,7 +265,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
                     Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
-                            ((MonitorModel.ThreadWithBordel) nodes[i]).originalThread : nodes[i];
+                            ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
                     if (node instanceof JPDAThread) {
                         ((JPDAThread) node).interrupt();
                     }

@@ -61,6 +61,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -198,9 +199,9 @@ public final class FreeformProject implements Project {
         
         public Icon getIcon() {
             if (usesAntScripting()) {
-                return new ImageIcon(Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/freeform-project.png", true)); // NOI18N
+                return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/ant/freeform/resources/freeform-project.png", true)); // NOI18N
             } else {
-                return new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true)); // NOI18N
+                return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true)); // NOI18N
             }
         }
         

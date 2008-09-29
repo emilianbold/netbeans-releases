@@ -49,7 +49,11 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.Widget.Dependency;
+import org.netbeans.modules.uml.drawingarea.view.CollapsibleWidgetManager;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -68,12 +72,12 @@ public class IterateSelectAction extends WidgetAction.Adapter
             Widget toSelect = null;
             if(event.getKeyCode() == KeyEvent.VK_UP)
             {
-                toSelect = findPreviousSelectedWidget(widget);
+                toSelect = findPreviousSelectedWidget(getTargetWidget(widget));
                 retVal = State.CONSUMED;
             }
             else if(event.getKeyCode() == KeyEvent.VK_DOWN)
             {
-                toSelect = findNextSelectedWidget(widget);
+                toSelect = findNextSelectedWidget(getTargetWidget(widget));
                 retVal = State.CONSUMED;
                 
             }
@@ -169,22 +173,48 @@ public class IterateSelectAction extends WidgetAction.Adapter
     public List < Widget > getAllSelectableWidgets(Widget widget)
     {
         ArrayList < Widget > retVal = new ArrayList < Widget >();
-        
-        if(widget.getLookup().lookup(Selectable.class) != null)
+        Lookup lookup = widget.getLookup();
+        if(lookup != null && lookup.lookup(Selectable.class) != null)
         {
-            retVal.add(widget);
+            if (widget.isVisible())
+            {
+                retVal.add(widget);
+            }
         }
         
-        for(Widget child : widget.getChildren())
+        for (Widget child : widget.getChildren())
         {
-            List < Widget > selectables = getAllSelectableWidgets(child);
-            if(selectables.size() > 0)
+            // Do not process collapsed compartments
+            if (child instanceof CollapsibleWidgetManager &&
+                    ((CollapsibleWidgetManager)child).isCompartmentCollapsed())
+            {   
+                continue;
+            }
+            List<Widget> selectables = getAllSelectableWidgets(child); 
+            if (selectables.size() > 0)
             {
                 retVal.addAll(selectables);
+            }
+            //now get all node labels 
+            for (Dependency dep : widget.getDependencies())
+            {
+                if (dep instanceof LabelWidget)
+                {
+                    List<Widget> nodeLabels = getAllSelectableWidgets((Widget) dep);
+                    if (nodeLabels.size() > 0)
+                    {
+                        retVal.addAll(nodeLabels);
+                    }
+                }
             }
         }
         
         return retVal;
+    }
+
+    protected Widget getTargetWidget(Widget widget)
+    {
+        return widget;
     }
     
     public class WidgetLocationComparator implements Comparator < Widget >

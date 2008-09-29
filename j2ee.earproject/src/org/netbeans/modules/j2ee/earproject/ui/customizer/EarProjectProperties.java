@@ -937,7 +937,7 @@ public final class EarProjectProperties {
                     storeProperties();
                     //Delete COS mark
                     if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
-                        DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir"); // NOI18N
+                        DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, null, true); // NOI18N
                     }
                     return true;
                 }

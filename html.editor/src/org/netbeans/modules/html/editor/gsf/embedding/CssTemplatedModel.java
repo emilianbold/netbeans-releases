@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.css.gsf.api.CssEmbeddingModelUtils;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
@@ -82,13 +83,6 @@ public class CssTemplatedModel extends CssModel {
         return model;
     }
 
-    private static final String PREFIX = "GENERATED_";
-    private static final String POSTFIX = ";";
-    
-    private static final String TEMPLATING = PREFIX + "CODE" + POSTFIX;
-    
-    private static final String FIXED_SELECTOR = PREFIX + "SLTR";
-    
     private CssParserAccess.CssParserResult cachedParserResult = null;
     
     private CssTemplatedModel(Document doc) {
@@ -212,21 +206,23 @@ public class CssTemplatedModel extends CssModel {
                                     //repair the code from the selector list beginning to first left curly bracket
                                     int from = siblingBefore.startOffset();
                                     int curlyBracketIndex = buff.indexOf("{", from);
-                                    if(curlyBracketIndex > 0) {
-                                        //test if there is a generated virtual code
-                                        String selectorListText = buff.substring(from, curlyBracketIndex);
-                                        int idx = selectorListText.indexOf(TEMPLATING);
-                                        if(idx >= 0) {
-                                            StringBuilder fixedText = new StringBuilder(selectorListText);
-                                            clear(fixedText, idx, idx + TEMPLATING.length());
-                                            clearAndWrite(buff, from, curlyBracketIndex, fixedText.toString());
-                                            cleared[0] = true;
-                                        } else {
-                                            //probably not necessary?!?! should be covered by the 'true' if block
-                                            clearAndWrite(buff, from, curlyBracketIndex, FIXED_SELECTOR);
-                                            cleared[0] = true;
-                                        }
+                                    if(curlyBracketIndex == -1) {
+                                        //no curly bracket found - this likely means that we are at the end of the css
+                                        //code and the bracket is simply missing
+                                        curlyBracketIndex = buff.length();
                                     }
+                                        
+                                    //test if there is a generated virtual code
+                                    String selectorListText = buff.substring(from, curlyBracketIndex);
+                                    int idx = selectorListText.indexOf(CssEmbeddingModelUtils.getGeneratedCodeIdentifier());
+                                    if(idx >= 0) {
+                                        StringBuilder text = new StringBuilder(selectorListText);
+                                        //remove all semicolons in the text - just the generated identifier(s) will be left
+                                        String fixedText = text.toString().replace(';', 'E');
+                                        clearAndWrite(buff, from, curlyBracketIndex, fixedText);
+                                        cleared[0] = true;
+                                    }
+
                                     
                                 }
                             }
@@ -349,7 +345,7 @@ public class CssTemplatedModel extends CssModel {
         int to = node.endOffset();
 
         //fast hack, I should rather use the templating ranges
-        return buff.substring(from, to).contains(PREFIX);
+        return CssEmbeddingModelUtils.containsGeneratedCode(buff.substring(from, to));
     }
     
     private void clear(StringBuilder buff, int from, int to) {
@@ -412,7 +408,7 @@ public class CssTemplatedModel extends CssModel {
                     int sourceEnd = ts.offset();
 
                     int generatedStart = buffer.length();
-                    buffer.append(TEMPLATING); //NOI18N
+                    buffer.append(CssEmbeddingModelUtils.getGeneratedCodeIdentifier()); //NOI18N
                     int generatedEnd = buffer.length();
 
                     templatingBlocks.add(new OffsetRange(generatedStart, generatedEnd));

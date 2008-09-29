@@ -48,6 +48,7 @@ import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.ErrorManager;
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -65,7 +66,7 @@ public final class JarDataLoaderBeanInfo extends SimpleBeanInfo {
     }
     
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/java/jarloader/jar.gif", true);
+        return ImageUtilities.loadImage("org/netbeans/modules/java/jarloader/jar.gif", true);
     }
     
 }

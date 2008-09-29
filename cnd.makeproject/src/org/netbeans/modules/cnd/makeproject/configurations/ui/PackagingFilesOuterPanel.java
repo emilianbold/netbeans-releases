@@ -45,6 +45,8 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 
 /**
  *
@@ -86,13 +88,12 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         ownerTextField.setText(MakeOptions.getInstance().getDefOwner()); // NOI18N
         
         // Hide some fields:
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
+        if (!packager.supportsGroupAndOwner()) {
             groupLabel.setEnabled(false);
             groupTextField.setEnabled(false);
             ownerLabel.setEnabled(false);
             ownerTextField.setEnabled(false);
-//            groupTextField.setText(""); // NOI18N
-//            ownerTextField.setText(""); // NOI18N
         }
         
         innerPanel.setOuterPanel(this);

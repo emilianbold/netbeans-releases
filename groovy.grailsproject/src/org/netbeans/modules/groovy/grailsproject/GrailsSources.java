@@ -77,6 +77,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
     public static final List KNOWN_FOLDERS = Arrays.asList(
             "grails-app", // NOI18N
             "lib", // NOI18N
+            "plugins", // NOI18N
             "scripts", // NOI18N
             "src", // NOI18N
             "test", // NOI18N
@@ -118,40 +119,33 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
     }
 
     public SourceGroup[] getSourceGroups(String type) {
+        List<Group> result = new ArrayList<Group>();
         if (Sources.TYPE_GENERIC.equals(type)) {
-            return new SourceGroup[] {
-                new Group(projectDir, projectDir.getName())
-            };
+            addGroup(projectDir, projectDir.getName(), result);
         } else if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type)) {
-            return new SourceGroup[] {
-                new Group(projectDir.getFileObject("src/java"), NbBundle.getMessage(GrailsSources.class, "LBL_SrcJava"))
-            };
+            addGroup(projectDir.getFileObject("src/java"), NbBundle.getMessage(GrailsSources.class, "LBL_SrcJava"), result);
         } else if (GroovySources.SOURCES_TYPE_GROOVY.equals(type)) {
-            return new SourceGroup[] {
-                createGroup(SourceCategory.GRAILSAPP_CONF, "LBL_grails-app_conf"),
-                createGroup(SourceCategory.GRAILSAPP_CONTROLLERS, "LBL_grails-app_controllers"),
-                createGroup(SourceCategory.GRAILSAPP_DOMAIN, "LBL_grails-app_domain"),
-                createGroup(SourceCategory.GRAILSAPP_SERVICES, "LBL_grails-app_services"),
-                createGroup(SourceCategory.GRAILSAPP_TAGLIB, "LBL_grails-app_taglib"),
-                createGroup(SourceCategory.GRAILSAPP_UTILS, "LBL_grails-app_utils"),
-                createGroup(SourceCategory.SCRIPTS, "LBL_scripts"),
-                createGroup(SourceCategory.SRC_GROOVY, "LBL_SrcGroovy"),
-                createGroup(SourceCategory.TEST_INTEGRATION, "LBL_IntegrationTests"),
-                createGroup(SourceCategory.TEST_UNIT, "LBL_UnitTests")
-            };
+            addGroup(SourceCategory.GRAILSAPP_CONF, "LBL_grails-app_conf", result);
+            addGroup(SourceCategory.GRAILSAPP_CONTROLLERS, "LBL_grails-app_controllers", result);
+            addGroup(SourceCategory.GRAILSAPP_DOMAIN, "LBL_grails-app_domain", result);
+            addGroup(SourceCategory.GRAILSAPP_SERVICES, "LBL_grails-app_services", result);
+            addGroup(SourceCategory.GRAILSAPP_TAGLIB, "LBL_grails-app_taglib", result);
+            addGroup(SourceCategory.GRAILSAPP_UTILS, "LBL_grails-app_utils", result);
+            addGroup(SourceCategory.SCRIPTS, "LBL_scripts", result);
+            addGroup(SourceCategory.SRC_GROOVY, "LBL_SrcGroovy", result);
+            addGroup(SourceCategory.TEST_INTEGRATION, "LBL_IntegrationTests", result);
+            addGroup(SourceCategory.TEST_UNIT, "LBL_UnitTests", result);
         } else if (GroovySources.SOURCES_TYPE_GRAILS.equals(type)) {
-            return new SourceGroup[] {
-                createGroup(SourceCategory.LIB, "LBL_lib"),
-                createGroup(SourceCategory.GRAILSAPP_I18N, "LBL_grails-app_i18n"),
-                createGroup(SourceCategory.WEBAPP, "LBL_web-app"),
-                createGroup(SourceCategory.GRAILSAPP_VIEWS, "LBL_grails-app_views")
-            };
+            addGroup(SourceCategory.LIB, "LBL_lib", result);
+            addGroup(SourceCategory.GRAILSAPP_I18N, "LBL_grails-app_i18n", result);
+            addGroup(SourceCategory.WEBAPP, "LBL_web-app", result);
+            addGroup(SourceCategory.GRAILSAPP_VIEWS, "LBL_grails-app_views", result);
         } else if (GroovySources.SOURCES_TYPE_GRAILS_UNKNOWN.equals(type)) {
-            List<SourceGroup> result = new ArrayList<SourceGroup>();
+            addGroup(SourceCategory.PLUGINS, "LBL_Plugins", result);
             for (FileObject child : projectDir.getChildren()) {
                 if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS.contains(child.getName())) {
                     String name = child.getName();
-                    result.add(new Group(child, Character.toUpperCase(name.charAt(0)) + name.substring(1)));
+                    addGroup(child, Character.toUpperCase(name.charAt(0)) + name.substring(1), result);
                 }
             }
             FileObject grailsAppFo = projectDir.getFileObject("grails-app");
@@ -159,14 +153,12 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
                 for (FileObject child : grailsAppFo.getChildren()) {
                     if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
                         String name = child.getName();
-                        result.add(new Group(child, Character.toUpperCase(name.charAt(0)) + name.substring(1)));
+                        addGroup(child, Character.toUpperCase(name.charAt(0)) + name.substring(1), result);
                     }
                 }
             }
-            return result.toArray(new SourceGroup[result.size()]);
         }
-        return new SourceGroup[] {};
-
+        return result.toArray(new SourceGroup[result.size()]);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -192,8 +184,17 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
         changeSupport.fireChange();
     }
 
-    private Group createGroup(SourceCategory SourceCategory, String label) {
-        return new Group(projectDir.getFileObject(SourceCategory.getRelativePath()), NbBundle.getMessage(GrailsSources.class, label));
+    private void addGroup(FileObject fileObject, String displayName, List<Group> list) {
+        if (fileObject != null) {
+            list.add(new Group(fileObject, displayName));
+        }
+    }
+
+    private void addGroup(SourceCategory sourceCategory, String bundleLabel, List<Group> list) {
+        FileObject fileObject = projectDir.getFileObject(sourceCategory.getRelativePath());
+        if (fileObject != null) {
+            list.add(new Group(fileObject, NbBundle.getMessage(GrailsSources.class, bundleLabel)));
+        }
     }
 
     private final class Group implements SourceGroup {

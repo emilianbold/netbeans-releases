@@ -74,6 +74,7 @@ import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.util.Cancellable;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -107,7 +108,7 @@ final class TaskListTopComponent extends TopComponent {
 //        statusBarPanel.setMinimumSize(new JLabel("dummy").getPreferredSize());
         setName(NbBundle.getMessage(TaskListTopComponent.class, "CTL_TaskListTopComponent")); //NOI18N
         setToolTipText(NbBundle.getMessage(TaskListTopComponent.class, "HINT_TaskListTopComponent")); //NOI18N
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         
         tableScroll.addMouseListener( new MouseAdapter() {
             @Override
@@ -455,7 +456,7 @@ final class TaskListTopComponent extends TopComponent {
         toolbar.add( toggleFilter );
         //grouping & other butons
         toolbar.addSeparator();
-        final JToggleButton toggleGroups = new JToggleButton( new ImageIcon(Utilities.loadImage( "org/netbeans/modules/tasklist/ui/resources/groups.png" )) ); //NOI18N
+        final JToggleButton toggleGroups = new JToggleButton( new ImageIcon(ImageUtilities.loadImage( "org/netbeans/modules/tasklist/ui/resources/groups.png" )) ); //NOI18N
         toggleGroups.addItemListener( new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 switchTableModel( e.getStateChange() == ItemEvent.SELECTED );

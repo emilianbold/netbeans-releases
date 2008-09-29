@@ -62,10 +62,11 @@ public class StartDebuggerTestSuite extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(StartDebuggerTest.class, 
-                    "testDebugMainProject",
-                    "testDebugProject",
-                    "testDebugFile",
-                    "testRunDebuggerStepInto",
-                    "testRunDebuggerRunToCursor").enableModules(".*").clusters(".*"));
+                "testDebugProject",
+                "testDebugFile",
+                "testRunDebuggerStepInto",
+                "testRunDebuggerRunToCursor",
+                "testDebugMainProject")
+                .enableModules(".*").clusters(".*"));
     } 
 }

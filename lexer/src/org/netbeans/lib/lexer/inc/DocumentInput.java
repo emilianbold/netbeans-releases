@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.lexer.LanguageManager;
+import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.spi.lexer.*;
 
 /**
@@ -136,12 +137,22 @@ extends MutableTextInput<D> implements DocumentListener {
     }
 
     public void insertUpdate(DocumentEvent e) {
-        tokenHierarchyControl().textModified(e.getOffset(), 0, null, e.getLength());
+        textModified(e.getOffset(), 0, null, e.getLength());
     }
 
     public void removeUpdate(DocumentEvent e) {
-        tokenHierarchyControl().textModified(e.getOffset(), e.getLength(),
+        textModified(e.getOffset(), e.getLength(),
                 DocumentUtilities.getModificationText(e), 0);
+    }
+
+    private void textModified(int offset, int length, CharSequence removedText,
+    int insertedLength) {
+        try {
+            tokenHierarchyControl().textModified(offset, length, removedText, insertedLength);
+        } catch (RuntimeException e) {
+            // Log the exception and attempt to recover by recreating the token hierarchy
+            LexerApiPackageAccessor.get().tokenHierarchyOperation(tokenHierarchyControl().tokenHierarchy()).recreateAfterError(e);
+        }
     }
 
 }

@@ -64,6 +64,7 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -92,17 +93,17 @@ public class RegionUtilities {
     public static final int VERTICAL_EXPANSION_GAP   = 60;
     
 
-    public static final Image IMAGE_DELETE_16_ICON = Utilities.loadImage(
+    public static final Image IMAGE_DELETE_16_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/palette/resources/delete16.png");      // NOI18N
-    public static final Image IMAGE_EDIT_16_ICON = Utilities.loadImage(
+    public static final Image IMAGE_EDIT_16_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/palette/resources/edit16.png");        // NOI18N
-    public static final Image IMAGE_HIDE_16_ICON = Utilities.loadImage(
+    public static final Image IMAGE_HIDE_16_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/palette/resources/hide16.png");        // NOI18N
-    public static final Image IMAGE_WS_POLICY_16_ICON = Utilities.loadImage(
+    public static final Image IMAGE_WS_POLICY_16_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/palette/resources/WSpolicy16.png");    // NOI18N
-    public static final Image IMAGE_ERROR_BADGE_ICON = Utilities.loadImage(
+    public static final Image IMAGE_ERROR_BADGE_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/palette/resources/badge_error.png");    // NOI18N
-    public static final Image IMAGE_WARNING_BADGE_ICON = Utilities.loadImage(
+    public static final Image IMAGE_WARNING_BADGE_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/palette/resources/badge_warning.png");    // NOI18N
     
     public enum Directions {

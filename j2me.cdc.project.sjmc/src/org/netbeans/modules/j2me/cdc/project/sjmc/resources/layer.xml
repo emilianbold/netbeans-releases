@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Buildsystem">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="nbproject">
+                <folder name="build-impl.xml">
+                    <folder name="init-subtargets">
+                        <file name="sjmc-init" url="sjmc-init">
+                            <attr name="position" intvalue="710"/>
+                        </file>
+                    </folder>
+                    <folder name="run-subtargets">
+                        <file name="sjmc-run" url="sjmc-run">
+                            <attr name="position" intvalue="410"/>
+                        </file>
+                    </folder>
+                    <folder name="debug-subtargets">
+                        <file name="sjmc-debug" url="sjmc-debug">
+                            <attr name="position" intvalue="410"/>
+                        </file>
+                    </folder>
+                    <folder name="clean-subtargets">
+                        <file name="clean-sjmc" url="clean-sjmc">
+                            <attr name="position" intvalue="1310"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="CDC">
+            <file name="MediaXlet.java" url="MediaXlet_java">
+                <attr name="position" intvalue="420"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/sjmc/resources/MediaXlet.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.sjmc.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/sjmc/resources/class.gif"/>
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="CDC/SJMC"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="MainTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="sjmc">
+                <!-- todo change the template -->
+                <attr name="templateName" stringvalue="Templates/CDC/MediaXlet.java"/>
+                <attr name="templateType" stringvalue="xlet"/>
+            </file>
+        </folder>
+    </folder>    
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="sjmc-ant-utils.xml" url="Utils.xml"/>
+        </folder>
+    </folder>    
+</filesystem>

@@ -40,6 +40,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <iostream>
 
@@ -66,5 +67,7 @@ int main(int argc, char**argv) {
             std::cout << i << ": " << argv[i] << std::endl;
         }
     }
+    int status;
+    wait(&status);
     return 0;
 }

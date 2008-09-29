@@ -86,6 +86,12 @@ public class WSDLReferenceDecorator extends AbstractReferenceDecorator {
                 return NbBundle.getMessage(WSDLReferenceDecorator.class,
                         "LBL_ReferenceDecorator_NoModel");
             }
+            
+            if (model.getState() == Model.State.NOT_WELL_FORMED) {
+                return NbBundle.getMessage(SchemaReferenceDecorator.class,
+                        "LBL_ReferenceDecorator_NoModel");
+            }
+            
             Model componentModel = customizer.getComponentModel();
             if (model.equals(componentModel)) {
                 return NbBundle.getMessage(WSDLReferenceDecorator.class,

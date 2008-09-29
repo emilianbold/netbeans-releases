@@ -65,10 +65,12 @@ import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -201,7 +203,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+                return new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
             }
             return projectIcon;
         }
@@ -217,7 +219,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
                 // TODO - embedding context?
                 try {
                     int offset = AstUtilities.getRange(node, (BaseDocument) element.getDocument()).getStart();
-                    NbUtilities.open(element.getFileObject(), offset, element.getName());
+                    GsfUtilities.open(element.getFileObject(), offset, element.getName());
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }

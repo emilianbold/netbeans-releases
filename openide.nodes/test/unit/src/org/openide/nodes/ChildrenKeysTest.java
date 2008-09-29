@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -82,9 +83,9 @@ public class ChildrenKeysTest extends NbTestCase {
     protected boolean lazy() {
         return false;
     }
-    
+
 //    public static ChildrenKeysTest suite() {
-//        return new ChildrenKeysTest("testRefreshKey");
+//        return new ChildrenKeysTest("testEventsCausedBySetChildren");
 //    }
 
     @Override
@@ -1600,7 +1601,220 @@ public class ChildrenKeysTest extends NbTestCase {
         Node n = listener.snapshot.get(0);
         assertEquals("1st is c", "c", n.getName());
     }
+
+    public void testOldSnapshotIsUpdated() throws InterruptedException {
+
+        class K extends Keys {
+
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+
+            @Override
+            protected void removeNotify() {
+                super.removeNotify();
+            }
+            
+        }
+        
+        class Listener extends NodeAdapter {
+            int cnt;
+            @Override
+            public void childrenAdded(final NodeMemberEvent ev) {
+                cnt++;
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                cnt++;
+            }
+        }
+
+        K ch = new K();
+        Node root = createNode(ch);
+        root.getChildren().getNodesCount();
+        List<Node> snapshot = root.getChildren().snapshot();
+        ch.keys("a", "-a", "b");
+        Node[] nodes = root.getChildren().getNodes();
+
+        Listener listener = new Listener();
+        root.addNodeListener(listener);
+
+        WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
+        nodes = null;
+        try {
+            assertGC("", ref);
+        } catch (Error ex) {
+            if (lazy()) {
+                fail("Lazy node should be GCed");
+            }
+            // OK, default (eager) are GCed only before removeNotify()
+        }
+        ch.keys("b");
+        assertEquals(1, listener.cnt);
+    }
     
+    public void testOriginalSnapshotIsHeldByFilterNode() throws InterruptedException {
+
+        class K extends Keys {
+            boolean removeNot;
+
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+
+            @Override
+            protected void removeNotify() {
+                removeNot = true;
+                super.removeNotify();
+            }
+            
+        }
+
+        K ch = new K();
+        Node root = new FilterNode(createNode(ch));
+        root.getChildren().getNodesCount();
+        List<Node> snapshot = root.getChildren().snapshot();
+        List<Node> origSnapshot = ch.snapshot();
+        ch.keys("a", "-a", "b");
+
+        origSnapshot = null;
+        Node[] nodes = root.getChildren().getNodes();
+        WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
+        nodes = null;
+        try {
+            assertGC("", ref);
+        } catch (Error ex) {
+            if (lazy()) {
+                fail("Lazy node should be GCed");
+            }
+            // OK, default (eager) are GCed only before removeNotify()
+        }
+        if (ch.removeNot) {
+            fail("Original snapshot should be held by FilterNode to prevent removeNotify");
+        }
+    }
+    
+    public void testEventSnapshotConsistencyAfterSetChildrenToSameLaziness() {
+        doTestEventSnapshotConsistencyAfterSetChildren(lazy(), lazy());
+    }
+    public void testEventSnapshotConsistencyAfterSetChildrenToOppositeLaziness() {
+        doTestEventSnapshotConsistencyAfterSetChildren(lazy(), !lazy());
+    }
+
+    public void doTestEventSnapshotConsistencyAfterSetChildren(boolean lazy1, boolean lazy2) {
+        class Listener extends NodeAdapter {
+            List<Node> state;
+
+            public Listener(List<Node> state) {
+                this.state = new ArrayList<Node>(state.size());
+                for (int i = 0; i < state.size(); i++) {
+                    this.state.add(null);
+                }
+            }
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                List<Node> snapshot = ev.getSnapshot();
+                ListIterator<Node> it = state.listIterator();
+                int[] indxs = ev.getDeltaIndices();
+
+                int current = 0;
+                int inIndxs = 0;
+
+                while (inIndxs < indxs.length) {
+                    while (current++ < indxs[inIndxs]) {
+                        it.next();
+                    }
+                    it.add(null);
+                    inIndxs++;
+                }
+                assertEquals("State size must be same as new snapshot", state.size(), snapshot.size());
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                List<Node> snapshot = ev.getSnapshot();
+                int[] idxs = ev.getDeltaIndices();
+                for (int i = idxs.length - 1; i >= 0; i--) {
+                    state.remove(idxs[i]);
+                }
+                assertEquals("State size must be same as new snapshot.", state.size(), snapshot.size());
+            }
+        }
+
+        Children ch1 = new Keys(lazy1, "a1", "a2");
+        Children ch2 = new Keys(lazy2, "b1", "b2", "b3");
+        Node root = createNode(ch1);
+        root.getChildren().getNodesCount();
+        Listener listner = new Listener(root.getChildren().snapshot());
+        root.addNodeListener(listner);
+
+        assertEquals("a1", root.getChildren().getNodeAt(0).getName());
+        assertEquals("a2", root.getChildren().getNodeAt(1).getName());
+        
+        root.setChildren(ch2);
+        assertEquals("b1", root.getChildren().getNodeAt(0).getName());
+        assertEquals("b2", root.getChildren().getNodeAt(1).getName());
+        assertEquals("b3", root.getChildren().getNodeAt(2).getName());
+    }
+
+    public void testNoRuntimeExceptionPropagateOut() throws Exception {
+
+        class K extends Keys {
+            boolean doThrow =true;
+
+            public K(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (doThrow) {
+                    doThrow = false;
+                    throw new IllegalStateException("something went wrong");
+                }
+                return super.createNodes(key);
+            }
+        }
+
+        final Children ch = new K(lazy(), "a1", "a2");
+        final Node root = createNode(ch);
+        Node[] nodes = null;
+        try {
+            nodes = root.getChildren().getNodes();
+        } catch (IllegalStateException e) {
+            fail("No exception should make it here");
+        }
+        assertEquals("Should be only 1", 1, nodes.length);
+        assertEquals("a2", nodes[0].getName());
+
+        /*WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
+        nodes = null;
+        assertGC("should be GCed", ref);
+
+        nodes = root.getChildren().getNodes();
+        assertEquals("Should be 2", 2, nodes.length);
+        assertEquals("a1", nodes[0].getName());
+        assertEquals("a2", nodes[1].getName());*/
+    }
+
     @RandomlyFails // assumed to suffer from same random problem as testGetNodesFromTwoThreads57769; see Thread.sleep
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
         final Ticker tick = new Ticker();

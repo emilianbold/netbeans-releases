@@ -51,6 +51,7 @@ import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -78,7 +79,7 @@ public class XSLTDataLoaderBeanInfo extends SimpleBeanInfo {
 
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage(PATH_TO_IMAGE);
+            return ImageUtilities.loadImage(PATH_TO_IMAGE);
         } else {
             return null;
         }

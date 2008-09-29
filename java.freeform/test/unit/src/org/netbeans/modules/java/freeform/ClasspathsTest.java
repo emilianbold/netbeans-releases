@@ -108,6 +108,9 @@ public class ClasspathsTest extends TestBase {
         super.setUp();
         assertNotNull("Must have built ant/freeform unit tests first, INCLUDING copying non-*.java resources to the classes build directory",
             ClasspathsTest.class.getResource("/META-INF/services/org.openide.modules.InstalledFileLocator"));
+        Method m = GlobalPathRegistry.class.getDeclaredMethod("clear");
+        m.setAccessible(true);
+        m.invoke(GlobalPathRegistry.getDefault());
     }
     
     public void testSourcePath() throws Exception {
@@ -191,7 +194,7 @@ public class ClasspathsTest extends TestBase {
             return null;
         }
     }
-    
+
     public void testGlobalPathRegistryUsage() throws Exception {
         GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
         assertEquals("no BOOT classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.BOOT));

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.versioning.util;
 
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
@@ -85,7 +86,7 @@ public class VersioningOutputTopComponent extends TopComponent implements Extern
     public VersioningOutputTopComponent() {
         // XXX - please rewrite to regular API when available - see issue #55955
         putClientProperty("SlidingName", NbBundle.getMessage(VersioningOutputTopComponent.class, "CTL_VersioningOutput_Title")); //NOI18N 
-        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/util/resources/window-versioning.png"));  // NOI18N
+        setIcon(ImageUtilities.loadImage("org/netbeans/modules/versioning/util/resources/window-versioning.png"));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VersioningOutputTopComponent.class, "CTL_VersioningOutput_Title"));  // NOI18N
         updateName();

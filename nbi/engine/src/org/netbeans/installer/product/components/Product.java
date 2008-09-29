@@ -1057,7 +1057,8 @@ public final class Product extends RegistryNode implements StatusInterface {
                     icon,
                     installLocation,
                     uninstallCommand,
-                    modifyCommand);
+                    modifyCommand,
+                    configurationLogic.getAdditionalSystemIntegrationInfo());
         } else {
             return new ApplicationDescriptor(
                     key,
@@ -1065,7 +1066,8 @@ public final class Product extends RegistryNode implements StatusInterface {
                     icon,
                     installLocation,
                     uninstallCommand,
-                    null);
+                    null,
+                    configurationLogic.getAdditionalSystemIntegrationInfo());
         }
     }
     

@@ -60,18 +60,18 @@ public class CommitUiTest extends JellyTestCase{
     
     public void testInvokeCloseCommit() throws Exception {
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        try {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        } finally {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
-        }
-        
-        timeout = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
-        } finally {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
-        }
+//        try {
+//            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+//        } finally {
+//            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
+//        }
+//
+//        timeout = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
+//        try {
+//            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
+//        } finally {
+//            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
+//        }
         
         try {
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());

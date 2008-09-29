@@ -94,6 +94,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ExtensibilityElementsFol
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -104,7 +105,7 @@ public class CollaborationsWidget extends Widget
 
     private final WSDLModel mModel;
     private final Widget mCollaborationContentWidget;
-    private Image IMAGE = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/grapheditor/palette/resources/partnerlinkTypesFolder.png");
+    private Image IMAGE = ImageUtilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/grapheditor/palette/resources/partnerlinkTypesFolder.png");
     public static final Border MAIN_BORDER = new FilledBorder(1, 1, 8, 8, new Color(0x888888), Color.WHITE);
     private final ImageLabelWidget mLabelWidget;
     private final Widget mHeaderWidget;

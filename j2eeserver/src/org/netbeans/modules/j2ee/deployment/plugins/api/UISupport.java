@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -90,11 +91,11 @@ public final class UISupport {
     public static Image getIcon(ServerIcon serverIcon) {
         switch (serverIcon) {
             case EJB_ARCHIVE :
-                return Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/ejb.png"); // NOI18N
+                return ImageUtilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/ejb.png"); // NOI18N
             case WAR_ARCHIVE :
-                return Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/war.png"); // NOI18N
+                return ImageUtilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/war.png"); // NOI18N
             case EAR_ARCHIVE :
-                return Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/ear.png"); // NOI18N
+                return ImageUtilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/ear.png"); // NOI18N
             default :
                 return computeIcon(serverIcon);
         }
@@ -112,15 +113,15 @@ public final class UISupport {
         }
         Image badge;
         if (serverIcon == ServerIcon.EJB_FOLDER || serverIcon == ServerIcon.EJB_OPENED_FOLDER) {
-            badge = Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/ejbBadge.png"); // NOI18N
+            badge = ImageUtilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/ejbBadge.png"); // NOI18N
         } else if (serverIcon == ServerIcon.WAR_FOLDER || serverIcon == ServerIcon.WAR_OPENED_FOLDER) {
-            badge = Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/warBadge.png"); // NOI18N
+            badge = ImageUtilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/warBadge.png"); // NOI18N
         } else if (serverIcon == ServerIcon.EAR_FOLDER || serverIcon == ServerIcon.EAR_OPENED_FOLDER) {
-            badge = Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/earBadge.png" ); // NOI18N
+            badge = ImageUtilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/earBadge.png" ); // NOI18N
         } else {
             return null;
         }
-        return Utilities.mergeImages(folder, badge, 7, 7);
+        return ImageUtilities.mergeImages(folder, badge, 7, 7);
     }
     
     /**

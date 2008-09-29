@@ -73,6 +73,8 @@ made subject to such option by the copyright holder.
             <file name="CurrentPCLinePart.xml" url="CurrentPCLinePart.xml"/>
             <file name="CurrentPC2.xml" url="CurrentPC2.xml"/>
             <file name="CurrentPC2LinePart.xml" url="CurrentPC2LinePart.xml"/>
+            <file name="CurrentPC2_BP.xml" url="CurrentPC2_BP.xml"/>
+            <file name="CurrentPC2_DBP.xml" url="CurrentPC2_DBP.xml"/>
         </folder>
     </folder>
     <folder name="Loaders">

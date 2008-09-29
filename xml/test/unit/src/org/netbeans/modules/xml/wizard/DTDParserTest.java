@@ -47,7 +47,7 @@
 
 package org.netbeans.modules.xml.wizard;
 
-import org.netbeans.modules.xml.wizard.DTDParser;
+import org.netbeans.modules.xml.wizard.impl.DTDParser;
 import java.io.*;
 import java.net.URL;
 import java.util.*;

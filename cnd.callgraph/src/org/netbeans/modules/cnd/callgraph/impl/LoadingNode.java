@@ -44,6 +44,7 @@ import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -60,7 +61,7 @@ public class LoadingNode extends AbstractNode implements Call {
     
     @Override
     public Image getIcon(int param) {
-        return Utilities.loadImage("org/netbeans/modules/cnd/callgraph/resources/waitNode.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/callgraph/resources/waitNode.gif"); // NOI18N
     }
 
     public void open() {

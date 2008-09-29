@@ -198,9 +198,29 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertBreak("try {\n    \n} catch (Exception $exc) {^",
                 "try {\n    \n} catch (Exception $exc) {\n    ^\n}");
     }
+    public void testInsertBreakAfterTry() throws Exception {
+        insertBreak("try {^\n} catch (Exception $ex) {\n}",
+                "try {\n    ^\n} catch (Exception $ex) {\n}");
+    }
     public void testInsertBreakAfterForEach() throws Exception {
         insertBreak("foreach ($array_variable as $number_variable => $variable) {^",
                 "foreach ($array_variable as $number_variable => $variable) {\n    ^\n}");
+    }
+
+    public void testInsertBreakInArray1() throws Exception {
+        insertBreak("array(^)", "array(\n    ^\n)");
+    }
+
+    public void testInsertBreakInArray2() throws Exception {
+        insertBreak("array(^\n)", "array(\n    ^\n)");
+    }
+
+    public void testInsertBreakInArray3() throws Exception {
+        insertBreak("array(\n    'a',^\n)", "array(\n    'a',\n    ^\n)");
+    }
+
+    public void testInsertBreakInArray4() throws Exception {
+        insertBreak("function a() {\n    array(\n        'a',^\n    )\n}", "function a() {\n    array(\n        'a',\n        ^\n    )\n}");
     }
 
     public void testNoMatchInComments() throws Exception {

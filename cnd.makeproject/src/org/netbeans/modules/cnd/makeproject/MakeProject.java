@@ -97,6 +97,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.ExtensionList;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -113,7 +114,7 @@ import org.w3c.dom.Text;
  */
 public final class MakeProject implements Project, AntProjectListener {
 
-    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
+    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N

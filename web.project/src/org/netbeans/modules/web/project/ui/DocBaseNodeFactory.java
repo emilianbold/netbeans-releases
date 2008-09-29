@@ -84,6 +84,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -283,7 +284,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
     }
 
     private static abstract class BaseNode extends FilterNode {
-        private static Image WEB_PAGES_BADGE = Utilities.loadImage( "org/netbeans/modules/web/project/ui/resources/webPagesBadge.gif" ); //NOI18N
+        private static Image WEB_PAGES_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/web/project/ui/resources/webPagesBadge.gif" ); //NOI18N
         /**
          * The MIME type of Java files.
          */
@@ -314,7 +315,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
             Image image;
 
             image = opened ? getDataFolderNodeDelegate().getOpenedIcon(type) : getDataFolderNodeDelegate().getIcon(type);
-            image = Utilities.mergeImages(image, WEB_PAGES_BADGE, 7, 7);
+            image = ImageUtilities.mergeImages(image, WEB_PAGES_BADGE, 7, 7);
 
             return image;        
         }

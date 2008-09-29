@@ -43,6 +43,7 @@ package org.openide.explorer.propertysheet;
 import java.awt.BorderLayout;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -123,7 +124,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         jsc.getViewport().setOpaque(false);
 
         if (!PropUtils.psNoHelpButton) {
-            Image help = Utilities.loadImage("org/openide/resources/propertysheet/propertySheetHelp.png", true); //NOI18N
+            Image help = ImageUtilities.loadImage("org/openide/resources/propertysheet/propertySheetHelp.png", true); //NOI18N
 
             btn = new JButton(new ImageIcon(help));
             btn.addActionListener(this);

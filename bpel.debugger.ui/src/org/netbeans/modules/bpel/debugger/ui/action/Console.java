@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -41,7 +42,7 @@ public class Console extends AbstractAction {
       putValue(NAME,NbBundle.getMessage(Process.class, "LBL_ConsoleView"));// NOI18N
       putValue(
         SMALL_ICON,
-        new ImageIcon (Utilities.loadImage (
+        new ImageIcon (ImageUtilities.loadImage (
         "org/netbeans/modules/bpel/debugger/ui/" + // NOI18N
         "resources/image/console.gif"))); // NOI18N
     }

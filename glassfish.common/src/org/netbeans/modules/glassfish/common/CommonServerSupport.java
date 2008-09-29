@@ -117,7 +117,6 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         }
 
         ip.put(JVM_MODE, NORMAL_MODE);
-        ip.put(DEBUG_PORT, "8787");
         properties.putAll(ip);
         
         // XXX username/password handling at some point.

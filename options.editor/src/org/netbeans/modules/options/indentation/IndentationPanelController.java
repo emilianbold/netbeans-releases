@@ -117,11 +117,13 @@ public final class IndentationPanelController implements PreferencesCustomizer, 
     }
 
     public HelpCtx getHelpCtx () {
+        HelpCtx ctx = null;
+
         if (delegate != null) {
-            return delegate.getHelpCtx();
-        } else {
-            return new HelpCtx ("netbeans.optionsDialog.editor.identation"); //NOI18N
+            ctx = delegate.getHelpCtx();
         }
+
+        return ctx != null ? ctx : new HelpCtx ("netbeans.optionsDialog.editor.identation"); //NOI18N
     }
     
     // ------------------------------------------------------------------------

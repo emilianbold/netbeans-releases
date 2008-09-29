@@ -39,17 +39,13 @@
 package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import org.netbeans.api.visual.action.CycleFocusProvider;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.util.Util;
-import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  *
@@ -60,7 +56,7 @@ public class CycleObjectSceneSelectProvider implements CycleFocusProvider
 
     public boolean switchPreviousFocus(Widget widget)
     {
-        Scene scene = widget.getScene();
+            Scene scene = widget.getScene();
         return scene instanceof ObjectScene && switchFocus((ObjectScene) scene, false);
     }
 
@@ -120,21 +116,24 @@ public class CycleObjectSceneSelectProvider implements CycleFocusProvider
         {
             for (Object o : scene.getObjects())
             {
-                Comparable ic = scene.getIdentityCode(o);
-                if (forwardDirection)
+                // Fix issue 147878. Made sure that we only select nodes and edges
+                if ((graphScene.isNode(o) == true) || (graphScene.isEdge(o) == true))
                 {
-                    if (bestIdentityCode == null || bestIdentityCode.compareTo(ic) > 0)
+                    Comparable ic = scene.getIdentityCode(o);
+                    if (forwardDirection)
                     {
-                        bestObject = o;
-                        bestIdentityCode = ic;
-                    }
-                }
-                else
-                {
-                    if (bestIdentityCode == null || bestIdentityCode.compareTo(ic) < 0)
+                        if (bestIdentityCode == null || bestIdentityCode.compareTo(ic) > 0)
+                        {
+                            bestObject = o;
+                            bestIdentityCode = ic;
+                        }
+                    } else
                     {
-                        bestObject = o;
-                        bestIdentityCode = ic;
+                        if (bestIdentityCode == null || bestIdentityCode.compareTo(ic) < 0)
+                        {
+                            bestObject = o;
+                            bestIdentityCode = ic;
+                        }
                     }
                 }
             }

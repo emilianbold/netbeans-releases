@@ -29,6 +29,7 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 
 import org.openide.loaders.DataLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.ErrorManager;
@@ -112,7 +113,7 @@ public class BPELDataLoaderBeanInfo extends SimpleBeanInfo {
     /** {@inheritDoc} */
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage( PATH_TO_IMAGE );
+            return ImageUtilities.loadImage( PATH_TO_IMAGE );
         } else {
             return null;
         }

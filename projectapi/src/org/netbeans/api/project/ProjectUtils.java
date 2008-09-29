@@ -58,6 +58,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -226,7 +227,7 @@ public class ProjectUtils {
         }
         
         public Icon getIcon() {
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/projectapi/resources/empty.gif")); // NOI18N
+            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/projectapi/resources/empty.gif")); // NOI18N
         }
         
         public void addPropertyChangeListener(PropertyChangeListener listener) {

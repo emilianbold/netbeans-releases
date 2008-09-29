@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
@@ -189,6 +190,7 @@ public abstract class IndexedElement extends PHPElement {
     }
 
     @Override
+    @CheckForNull // see issue #147457
     public FileObject getFileObject() {
         if ((fileObject == null) && (fileUrl != null)) {
             fileObject = PHPIndex.getFileObject(fileUrl);

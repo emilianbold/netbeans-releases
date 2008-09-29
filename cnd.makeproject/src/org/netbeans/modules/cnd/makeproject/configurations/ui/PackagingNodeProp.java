@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
@@ -75,7 +75,9 @@ public class PackagingNodeProp extends PropertySupport {
     }
     
     public void setValue(Object v) {
-        packagingConfiguration = (PackagingConfiguration) v; // FIXUP
+        if (v != null) {
+            packagingConfiguration = (PackagingConfiguration) v; // FIXUP
+        }
     }
     
 //    public void restoreDefaultValue() {
@@ -125,10 +127,10 @@ public class PackagingNodeProp extends PropertySupport {
                 val = getString("FilesTextZero");
             }
             else if (noFiles == 1) {
-                val = getString("FilesTextOne", "" + noFiles, ((FileElement)packagingConfiguration.getFiles().getValue().get(0)).getTo()); // NOI18N
+                val = getString("FilesTextOne", "" + noFiles, ((PackagerFileElement)packagingConfiguration.getFiles().getValue().get(0)).getTo()); // NOI18N
             }
             else {
-                val = getString("FilesTextMany", "" + noFiles, ((FileElement)packagingConfiguration.getFiles().getValue().get(0)).getTo() + ", ..."); // NOI18N
+                val = getString("FilesTextMany", "" + noFiles, ((PackagerFileElement)packagingConfiguration.getFiles().getValue().get(0)).getTo() + ", ..."); // NOI18N
             }
             return val;
         }

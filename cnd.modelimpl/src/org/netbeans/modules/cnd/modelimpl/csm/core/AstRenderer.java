@@ -232,7 +232,7 @@ public class AstRenderer {
                     if( renderNSP(token, currentNamespace, container, file) ) {
                         break;
                     }
-                    if( renderVariable(token, currentNamespace, container) ) {
+                    if( renderVariable(token, currentNamespace, container, false) ) {
                         break;
                     }
                     if( renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
@@ -907,7 +907,7 @@ public class AstRenderer {
                 if (child != null){
                     if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION){
                         //static variable definition
-                        return renderVariable(ast, null, container);
+                        return renderVariable(ast, null, container, false);
                     } else {
                         //method forward declaratin
                         try {
@@ -1114,7 +1114,7 @@ public class AstRenderer {
      * @param container1 container to add created variable into (may be null)
      * @param container2 container to add created variable into (may be null)
      */
-    public boolean renderVariable(AST ast, MutableDeclarationsContainer namespaceContainer, MutableDeclarationsContainer container2) {
+    public boolean renderVariable(AST ast, MutableDeclarationsContainer namespaceContainer, MutableDeclarationsContainer container2, boolean functionParameter) {
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         AST typeAST = ast.getFirstChild();
         AST tokType = typeAST;
@@ -1193,24 +1193,31 @@ public class AstRenderer {
                                     }
                                 }
                             }
-                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static);
+                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, false);
                             ptrOperator = null;
                             break;
                     }
                 }
                 if( ! hasVariables ) {
                     // unnamed parameter
-                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static);
+                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, false);
                 }
                 return true;
             }
+            
+            if(functionParameter && nextToken != null &&
+                    nextToken.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                processVariable(nextToken, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, true);
+            }
+
+            
         }
         return false;
     }
     
     protected void processVariable(AST varAst, AST ptrOperator, AST offsetAst,  AST classifier, 
                                 MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, 
-                                FileImpl file, boolean _static) {
+                                FileImpl file, boolean _static, boolean inFunctionParameters) {
         int arrayDepth = 0;
         String name = "";
             AST qn = null;
@@ -1247,7 +1254,7 @@ public class AstRenderer {
                     break;
             }
         }
-        CsmType type = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth);
+        CsmType type = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, null, inFunctionParameters);
         if (isScopedId(qn)){
             // This is definition of global namespace variable or definition of static class variable
             // TODO What about global variable definitions:
@@ -1347,7 +1354,7 @@ public class AstRenderer {
 	    }
 	}
 	AstRendererEx renderer = new AstRendererEx();
-	renderer.renderVariable(ast, null, null);
+	renderer.renderVariable(ast, null, null, true);
 	return result;
     }
     

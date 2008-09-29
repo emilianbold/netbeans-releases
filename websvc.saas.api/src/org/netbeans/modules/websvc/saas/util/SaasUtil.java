@@ -85,6 +85,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -492,7 +493,7 @@ public class SaasUtil {
             if (url != null) {
                 return new ImageIcon(url).getImage();
             }
-            return Utilities.loadImage(path);
+            return ImageUtilities.loadImage(path);
         }
         return null;
     }

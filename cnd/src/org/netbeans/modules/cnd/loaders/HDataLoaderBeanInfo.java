@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.beans.*;
 import org.openide.ErrorManager;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Description of {@link HDataLoader}.
@@ -69,6 +70,6 @@ public class HDataLoaderBeanInfo extends SimpleBeanInfo {
 
     @Override
     public Image getIcon(int type) {
-	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/HDataIcon.gif");  // NOI18N
+	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/HDataIcon.gif");  // NOI18N
     }
 }

@@ -53,6 +53,7 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -90,7 +91,7 @@ public class CasaSourceMultiViewDesc implements MultiViewDescription, Serializab
     }
 
     public Image getIcon() {
-        return Utilities.loadImage(CasaDataObject.CASA_ICON_BASE_WITH_EXT);
+        return ImageUtilities.loadImage(CasaDataObject.CASA_ICON_BASE_WITH_EXT);
     }
 
     public HelpCtx getHelpCtx() {

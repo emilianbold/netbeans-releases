@@ -37,6 +37,7 @@
 var BUNDLED_SERVERS_GROUP_NAME = "Bundled&nbsp;servers";
                                                    
 var NETBEANS_DOWNLOAD_BUNDLES_MSG = "NetBeans IDE Download Bundles";
+var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG = "NetBeans IDE Download Bundles in community contributed languages";
 var NETBEANS_PACKS_MSG 		  = "Supported&nbsp;technologies";
 
 var JDK_DOWNLOAD_LINK    = "http://java.sun.com/javase/downloads/index.jsp";
@@ -60,11 +61,16 @@ var SINGLE_NOT_AVAILABLE_BUNDLE   = "{0} is not available for {1}";
 var MULTIPLE_NOT_AVAILABLE_ZIP    = "{0} are not available in {1}";
 var MULTIPLE_NOT_AVAILABLE_BUNDLE = "{0} are not available for {1}";
 
+var ZIP_FILES_LIST_NAME             = "Zip Files";
+var MODULE_CLUSTERS_FILES_LIST_NAME = "Module Clusters";
 
 var NOTE_SOLARIS = "Note: Java ME is only available for Windows and Linux. <br>The UML Pack is available on the Update Center.";
 var NOTE_MACOSX  = "Note: Java ME is only available for Windows and Linux. <br>The UML Pack is available on the Update Center.";
 var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers. The UML Pack is available on the Update Center.";
 var NOTE_OTHER   = "Note: The UML Pack is available on the Update Center.";
+
+var MORE_LANGUAGES    = "More Languages...";
+var COMMUNITY_MESSAGE = "The NetBeans Community has contributed to the language(s) that can be downloaded from this page";
 
 var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE Download";
 var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE Download";
@@ -97,6 +103,7 @@ var DOWNLOAD_BUTTON_HIGHLIGHT = "download_h.gif";
 
 // DO NOT TRANSLATE
 var START_PAGE = "start.html";
+var ZIP_PAGE   = "zip.html";
 
 var LEGAL_INFO_HEADER = "Important Legal Information:";
 

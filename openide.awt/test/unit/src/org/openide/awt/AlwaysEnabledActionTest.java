@@ -52,6 +52,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -74,6 +77,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         myIconResourceCounter = 0;
         myListenerCalled = 0;
         myListenerCounter = 0;
+        MyAction.last = null;
     }
     
     @Override
@@ -115,10 +119,12 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         
         
         assertEquals("No icon in menu", Boolean.TRUE, a.getValue("noIconInMenu"));
-        
-        if (a instanceof ContextAwareAction) {
-            fail("Should not be context sensitive, otherwise it would have to implement equal correctly: " + a);
-        }
+
+        assertContextAware(a);
+    }
+
+    private void assertContextAware(Action a) {
+        assertTrue("We want context aware actions", a instanceof ContextAwareAction);
     }
 
 
@@ -170,9 +176,70 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         assertEquals("Value taken from delegate", "Ahoj", a.getValue(Action.NAME));
 
 
+        assertContextAware(a);
+    }
+
+    public void testContextAwareDelegate() throws Exception {
+        myListenerCounter = 0;
+        myIconResourceCounter = 0;
+        Action a = readAction("testContextDelegate.instance");
+
+        assertNotNull("Action created", a);
+        assertEquals("No myListener called", 0, myListenerCounter);
+        assertEquals("No myIconURL called", 0, myIconResourceCounter);
+
+        Object name = a.getValue(a.NAME);
+        Object mnem = a.getValue(a.MNEMONIC_KEY);
+        Object smallIcon = a.getValue(a.SMALL_ICON);
+        //Object icon = a.getValue(a.ICON)
+
+        assertEquals("Right localized name", "Icon &Name Action", name);
+        assertEquals("Mnemonic is N", Character.valueOf('N'), mnem);
+        assertNotNull("small icon present", smallIcon);
+
+        assertEquals("once icon called", 1, myIconResourceCounter);
+
+
+        Object base = a.getValue("iconBase");
+        assertEquals("iconBase attribute is delegated", 2, myIconResourceCounter);
+
+        assertTrue("Always enabled", a.isEnabled());
+        a.setEnabled(false);
+        assertTrue("Still Always enabled", a.isEnabled());
+
+        assertNull("No real action created yet", MyAction.last);
+
+        InstanceContent ic = new InstanceContent();
+        Lookup lkp = new AbstractLookup(ic);
         if (a instanceof ContextAwareAction) {
-            fail("Should not be context sensitive, otherwise it would have to implement equal correctly: " + a);
+            a = ((ContextAwareAction)a).createContextAwareInstance(lkp);
+        } else {
+            fail("Should be context sensitive: " + a);
         }
+        assertEquals("No clone created yet", 0, MyContextAction.clones);
+
+        a.actionPerformed(new ActionEvent(this, 0, "kuk"));
+
+        assertEquals("Clone created", 1, MyContextAction.clones);
+        assertSame("Lookup used", lkp, MyContextAction.lkp);
+
+        assertEquals("Action not invoked as it is disabled", 0, myListenerCalled);
+        assertNotNull("real action created", MyAction.last);
+        a.addPropertyChangeListener(this);
+        assertFalse("Disabled", a.isEnabled());
+        MyAction.last.setEnabled(true);
+        assertEquals("Change in a property delivered", 1, changeCounter);
+        assertTrue("enabled now", a.isEnabled());
+        a.actionPerformed(new ActionEvent(this, 0, "kuk"));
+        assertEquals("Action invoked as no longer disabled", 1, myListenerCalled);
+
+        assertEquals("No icon in menu", Boolean.TRUE, a.getValue("noIconInMenu"));
+
+        assertEquals("Right localized name", "Icon &Name Action", a.getValue(Action.NAME));
+        MyAction.last.putValue(MyAction.NAME, "Ahoj");
+        assertEquals("Next Change in a property delivered", 2, changeCounter);
+        assertEquals("Value taken from delegate", "Ahoj", a.getValue(Action.NAME));
+
     }
     
     private static int myListenerCounter;
@@ -184,6 +251,10 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     private static ActionListener myAction() {
         myListenerCounter++;
         return new MyAction();
+    }
+    private static ActionListener myContextAction() {
+        myListenerCounter++;
+        return new MyContextAction();
     }
     private static int myIconResourceCounter;
     private static String myIconResource() {
@@ -225,6 +296,17 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
 
         public void actionPerformed(ActionEvent e) {
             myListenerCalled++;
+        }
+    }
+    private static class MyContextAction extends MyAction
+    implements ContextAwareAction {
+        static int clones;
+        static Lookup lkp;
+
+        public Action createContextAwareInstance(Lookup actionContext) {
+            clones++;
+            lkp = actionContext;
+            return new MyContextAction();
         }
     }
 

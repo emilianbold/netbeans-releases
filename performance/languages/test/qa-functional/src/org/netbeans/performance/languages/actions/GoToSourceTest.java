@@ -156,7 +156,7 @@ public class GoToSourceTest extends org.netbeans.modules.performance.utilities.P
         return projectsTab.getProjectRootNode(projectName);
     }
 
-    public void testNavigateToAFunctionViaNavigator() {
+    public void test_PHP_NavigateToAFunctionViaNavigator() {
         testProject = Projects.PHP_PROJECT;
         fileName = "php20kb.php";
         nodePath = "Source Files";

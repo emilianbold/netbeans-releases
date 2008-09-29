@@ -289,6 +289,9 @@ public class Utils {
             return true;
         }
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        if (javaSource == null) {
+            return false;
+        }
         final boolean[] result = new boolean[] { false };
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {

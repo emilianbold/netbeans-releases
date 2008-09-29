@@ -58,7 +58,6 @@ public class ForEachCustomizer extends javax.swing.JPanel {
     private Dialog dialog = null;
     private DialogDescriptor descriptor = null;
     private boolean dialogOK = false;
-
     ForEach forEach;
     JTextComponent target;
             
@@ -72,14 +71,14 @@ public class ForEachCustomizer extends javax.swing.JPanel {
     public boolean showDialog() {
         dialogOK = false;
         
-        String displayName = "";
+        String displayName = "";  // NOI18N
         try {
             displayName = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.resources.Bundle").getString("NAME_jsp-ForEach"); // NOI18N
         }
         catch (Exception e) {}
         
         descriptor = new DialogDescriptor
-                (this, NbBundle.getMessage(ForEachCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
+                (this, NbBundle.getMessage(ForEachCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,  // NOI18N
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {

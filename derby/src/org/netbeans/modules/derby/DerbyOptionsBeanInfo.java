@@ -48,6 +48,7 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -81,9 +82,9 @@ public class DerbyOptionsBeanInfo extends SimpleBeanInfo {
         Image image = null;
         
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            image = Utilities.loadImage("org/netbeans/modules/derby/resources/optionsIcon16.png"); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/derby/resources/optionsIcon16.png"); // NOI18N
         } else if (type == BeanInfo.ICON_COLOR_32x32) {
-            image = Utilities.loadImage("org/netbeans/modules/derby/resources/optionsIcon32.png"); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/derby/resources/optionsIcon32.png"); // NOI18N
         }
         
         return image != null ? image : super.getIcon(type);

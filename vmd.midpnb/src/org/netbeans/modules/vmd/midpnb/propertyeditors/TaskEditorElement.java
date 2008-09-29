@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -51,14 +50,24 @@ import javax.swing.*;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 
 /**
  *
  * @author Anton Chechel
  */
-public class TaskEditorElement extends PropertyEditorResourceElement {
+public class TaskEditorElement extends PropertyEditorResourceElement implements CleanUp {
 
     private WeakReference<DesignComponent> component;
+
+    public void clean(DesignComponent component) {
+        this.component = null;
+        gotoButton = null;
+        jScrollPane1 = null;
+        jTextArea1 = null;
+        taskLabel = null;
+        this.removeAll();
+    }
 
     public TaskEditorElement() {
         initComponents();
@@ -75,12 +84,12 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
     public List<String> getPropertyValueNames() {
         return Arrays.asList(SimpleCancellableTaskCD.PROP_CODE);
     }
-    
+
     @Override
     public String getResourceNameSuggestion() {
         return "task"; // NOI18N
     }
-    
+
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         boolean enableGoTo = true;
         if (wrapper != null) {

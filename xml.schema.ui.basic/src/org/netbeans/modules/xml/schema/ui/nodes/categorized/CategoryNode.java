@@ -77,6 +77,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -554,8 +555,8 @@ public class CategoryNode extends AbstractNode
 	private Image badgeImage(Image main) {
 	    Image rv = main;
 	    if (badge != null) {
-		Image badgeImage = Utilities.loadImage(badge);
-		rv = Utilities.mergeImages(main, badgeImage, 8, 8);
+		Image badgeImage = ImageUtilities.loadImage(badge);
+		rv = ImageUtilities.mergeImages(main, badgeImage, 8, 8);
 	    }
 	    return rv;
 	}

@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
  */
 @SuppressWarnings("deprecation")
 public class CPExtenderLookupMerger implements LookupMerger<ProjectClassPathExtender> {
-    
+
     private CPExtender fallback;
     private Extender instance;
     
@@ -82,7 +82,6 @@ public class CPExtenderLookupMerger implements LookupMerger<ProjectClassPathExte
         private Lookup context;
         
         private Extender() {
-            this.context = context;
         }
         private void setLookup(Lookup context) {
             this.context = context;

@@ -544,11 +544,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         public void setName(String name) {
             // #140308 - get attributtes before rename and set them for renamed FileObject
             FileObject fo = this.getLookup().lookup(FileObject.class);
-            FileObject parentFO = fo.getParent();
             final HashMap<String, Object> attributes = getAttributes(fo);
             super.setName(name);
             try {
-                setAttributes(parentFO.getFileObject(name), attributes);
+                setAttributes (fo, attributes);
             } catch (IOException ex) {
                 Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ex);
             }

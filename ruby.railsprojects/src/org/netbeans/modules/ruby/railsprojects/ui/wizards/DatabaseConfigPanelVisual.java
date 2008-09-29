@@ -135,7 +135,7 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         useJdbc = new javax.swing.JCheckBox();
         databaseAccessConfLabel = new javax.swing.JLabel();
 
-        setPreferredSize(new java.awt.Dimension(226, 100));
+        setPreferredSize(null);
 
         ideConnectionsPanel.setLayout(new java.awt.BorderLayout());
 
@@ -164,44 +164,47 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .addContainerGap()
-                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, databaseAccessConfLabel)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .addContainerGap()
-                            .add(useIDEConnections))
-                        .add(layout.createSequentialGroup()
-                            .addContainerGap()
-                            .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .addContainerGap()
-                            .add(useRailsAdapter))
-                        .add(layout.createSequentialGroup()
-                            .addContainerGap()
-                            .add(adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)))
-                    .add(useJdbc))
+                .addContainerGap()
+                .add(useRailsAdapter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(databaseAccessConfLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                        .add(85, 85, 85))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
+                .add(0, 0, 0))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(useIDEConnections, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
+                .add(32, 32, 32))
+            .add(layout.createSequentialGroup()
+                .add(useJdbc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(databaseAccessConfLabel)
-                .add(1, 1, 1)
-                .add(useIDEConnections)
+                .add(databaseAccessConfLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(useIDEConnections, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 110, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(useRailsAdapter)
+                .add(useRailsAdapter, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(useJdbc)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(useJdbc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         useIDEConnections.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ACSD_ConfigureUsingIDEConnections")); // NOI18N

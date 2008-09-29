@@ -42,6 +42,7 @@ import java.awt.Image;
 import org.apache.maven.lifecycle.model.MojoBinding;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -63,7 +64,7 @@ public class ExecutionNode extends AbstractNode {
 
     @Override
     public Image getIcon(int arg0) {
-        return Utilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/executionId.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/executionId.png");
     }
 
     @Override

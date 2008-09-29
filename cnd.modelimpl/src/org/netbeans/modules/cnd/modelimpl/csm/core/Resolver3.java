@@ -159,7 +159,7 @@ public class Resolver3 implements Resolver {
     }
 
     public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
-        if (isRecursionOnResolving(offset)) {
+        if (isRecursionOnResolving(INFINITE_RECURSION)) {
             return null;
         }
         Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);

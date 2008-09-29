@@ -62,6 +62,15 @@ public class Utils {
         }
         return false;
     }
+    
+    public static boolean isFloat(String value){
+        try{
+            Float.parseFloat(value);
+            return true;
+        }catch(Exception exc){
+        }
+        return false;
+    }
 
     public static int getInteger(String strValue){
         if(strValue == null) return -1;

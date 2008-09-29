@@ -10,6 +10,8 @@
 package org.netbeans.test.subversion.main.branches;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -24,6 +26,7 @@ import org.netbeans.test.subversion.operators.MergeOriginOperator;
 import org.netbeans.test.subversion.operators.MergeTwoRepoOperator;
 import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 
@@ -39,6 +42,7 @@ public class MergeUiTest extends JellyTestCase {
     public static final String PROJECT_NAME = "SVNApplication";
     public File projectPath;
     String os_name;
+    static Logger log;
 
     /** Creates a new instance of MergeUiTest */
     public MergeUiTest(String name) {
@@ -47,8 +51,14 @@ public class MergeUiTest extends JellyTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
         System.out.println("### " + getName() + " ###");
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
 
     protected boolean isUnix() {
@@ -71,6 +81,9 @@ public class MergeUiTest extends JellyTestCase {
 
     public void testInvokeCloseMerge() throws Exception {
         try {
+            MessageHandler mh = new MessageHandler("Committing");
+            log.addHandler(mh);
+
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
@@ -90,6 +103,7 @@ public class MergeUiTest extends JellyTestCase {
             Thread.sleep(1000);
             CommitStepOperator cso = new CommitStepOperator();
             cso.finish();
+            TestKit.waitText(mh);
 
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             MergeOperator mo = MergeOperator.invoke(projNode);
@@ -137,6 +151,8 @@ public class MergeUiTest extends JellyTestCase {
             rbo.ok();
             assertEquals("Wrong folder selection!!!", "tags", moo.getRepositoryFolder());
             moo.cancel();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }

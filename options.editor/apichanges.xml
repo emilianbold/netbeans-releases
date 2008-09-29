@@ -107,6 +107,26 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="project.formatting.category.provider">
+      <api name="spi"/>
+      <summary>Adding 'allowedMimeTypes' filter to the project formatting settings customizer</summary>
+      <version major="1" minor="10"/>
+      <date day="25" month="9" year="2008"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+        <p>
+            Adding <code>FormattingCustomizerPanel.createCategoryProvider</code> method
+            for modules that add 'Formatting' node to their project properties dialog.
+            The method recognizes 'allowedMimeTypes' XML layer attribute, which should
+            contain the comma separated list of mime types, which formatting settings
+            customizers should be made available for the project. If the attribute is
+            not specified all registered customizers are shown. If the attribute specifies
+            an empty list only the 'All Languages' customizer is shown.
+        </p>
+      </description>
+  </change>
+
   <change id="FontsColorsController.added">
       <api name="spi"/>
       <summary>Creating friends SPI and adding FontsColorsController</summary>

@@ -91,7 +91,7 @@ public class Util {
         "oracle.jdbc.OracleDriver",
         "oracle.jdbc.driver.OracleDriver",
         "com.pointbase.jdbc.jdbcUniversalDriver",
-        "org.postgresql:Driver",
+        "org.postgresql.Driver",
         "com.sun.sql.jdbc.sqlserver.SQLServerDriver",
         "com.sun.sql.jdbc.sybase.SybaseDriver"
     };

@@ -53,11 +53,12 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class HttpMethodsNode extends AbstractNode { //implements PropertyChangeListener{
-    private static final Image HTTP_METHODS_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/httpmethods.png", true ); // NOI18N
+    private static final Image HTTP_METHODS_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/httpmethods.png", true ); // NOI18N
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
     
@@ -101,7 +102,7 @@ public class HttpMethodsNode extends AbstractNode { //implements PropertyChangeL
     private Image computeIcon( boolean opened, int type ) {        
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, HTTP_METHODS_BADGE, 7, 7 );
+        image = ImageUtilities.mergeImages(image, HTTP_METHODS_BADGE, 7, 7 );
         return image;        
     }
 
