@@ -44,8 +44,8 @@ package org.netbeans.modules.websvc.manager.ui;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.table.TableCellEditor;
-import org.netbeans.swing.outline.OutlineModel;
-import org.netbeans.swing.outline.NodeRowModel;
+import org.netbeans.modules.websvc.manager.swing.outline.OutlineModel;
+import org.netbeans.modules.websvc.manager.swing.outline.NodeRowModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.Calendar;
 import java.util.Date;
@@ -71,22 +71,22 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
     Component lastComponent;
     String type;
     private ClassLoader classLoader;
-    
+
     /** Creates a new instance of TypeCellRenderer */
     public TypeCellEditor(ClassLoader loader) {
         super(new JTextField());
         this.setClickCountToStart(1);
         this.classLoader = loader;
     }
-    
+
     public void cancelCellEditing() {
         return;
     }
-    
+
     public boolean stopCellEditing() {
         return super.stopCellEditing();
     }
-    
+
     /**
      * return the value of the last component.
      */
@@ -102,22 +102,22 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
                 return ((JComboBox)lastComponent).getSelectedItem();
             } else return null;
         }
-        
+
     }
-    
-    
-    
+
+
+
     public java.awt.Component getTableCellEditorComponent(javax.swing.JTable table, Object value, boolean isSelected, int row, int column) {
         /**
          * We need to create the correct editing component for the type of field we have.
          *  JavaSimpleTypes all except Date and Calendar - JTextField()
          *  JavaEnumerationType - JComboBox
          */
-        
+
         /**
          *  First, we need to get the JavaType for the node of the object to be edited.
          */
-        
+
         NodeRowModel rowModel = ((OutlineModel)table.getModel()).getRowNodeModel();
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)rowModel.getNodeForRow(row);
         /**
@@ -127,11 +127,11 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
             JTextField txtField = new JTextField();
             txtField.setText((String)value);
             lastComponent = (Component)txtField;
-            
+
         } else {
             TypeNodeData data = (TypeNodeData)node.getUserObject();
             type = data.getTypeClass();
-            
+
             if (ReflectionHelper.isSimpleType(type, classLoader)) {
                 /**
                  * If the type is boolean or Boolean, create a JComboBox with true,false
@@ -142,13 +142,13 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
                     lastComponent = (Component)combo;
                     combo.addItem(new Boolean(true));
                     combo.addItem(new Boolean(false));
-                    
+
                     /**
                      * Set the value as the current Enumeration value.
                      */
-                    
+
                     Object parameterValue = data.getTypeValue();
-                    
+
                     combo.setSelectedItem(parameterValue);
                     combo.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -156,7 +156,7 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
                         }
                     });
                 } else {
-                    
+
                     JTextField txtField = new JTextField();
                     /**
                      * figure out what kind of simple field this is to set the value.
@@ -166,7 +166,7 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
                     }
                     lastComponent = (Component)txtField;
                 }
-                
+
             } else if (ReflectionHelper.isEnumeration(type, classLoader)) {
                 try {
                     JComboBox combo = new JComboBox();
@@ -191,20 +191,20 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
                 }
             }
         }
-        
+
         return lastComponent;
     }
-    
+
     private void comboActionPerformed(ActionEvent evt) {
         JComboBox combo = (JComboBox)evt.getSource();
         this.fireEditingStopped();
-        
+
     }
-    
+
     private Object createValue(String inValue) {
         Object returnValue = null;
         String currentType = type;
-        
+
         if(currentType.equalsIgnoreCase("int") ||
         currentType.equalsIgnoreCase("java.lang.Integer")) {
             try {
@@ -285,9 +285,9 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
                 returnValue = new Date();
             }
         }
-        
+
         return returnValue;
-        
+
     }
-    
+
 }
