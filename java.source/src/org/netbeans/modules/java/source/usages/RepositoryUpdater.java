@@ -1731,6 +1731,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         return true;
                     }
                     final URL rootURL = it.next();
+                    updateProgress (rootURL);
                     try {
                         it.remove();
                         final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(rootURL,false);                                        
@@ -1789,6 +1790,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         it.remove();                                                                                
                         if (!oldRoots.remove(rootURL) && !RepositoryUpdater.this.scannedRoots.contains(rootURL)) {
                             long startT = System.currentTimeMillis();
+                            updateProgress (rootURL);
                             updateFolder (rootURL,rootURL, true, false);
                             long time = System.currentTimeMillis() - startT;                        
                             if (PERF_TEST) {
@@ -1815,6 +1817,28 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 csst += System.currentTimeMillis() - cst;
             }
             return true;
+        }
+        
+        private void updateProgress (final URL url) {
+            assert url != null;
+            if (handle == null) {
+                return;
+            }            
+            URL tmp = FileUtil.getArchiveFile(url);
+            if (tmp == null) {
+                tmp = url;
+            }
+            try {
+                if ("file".equals(tmp.getProtocol())) {
+                    final File file = new File(new URI(tmp.toString()));                    
+                    handle.progress(file.getAbsolutePath());
+                }
+                else {
+                    handle.progress(tmp.toString());
+                }
+            } catch (URISyntaxException ex) {
+                handle.progress(tmp.toString());
+            }            
         }
         
         private void parseFiles(URL root, final File classCache, boolean isInitialCompilation,
