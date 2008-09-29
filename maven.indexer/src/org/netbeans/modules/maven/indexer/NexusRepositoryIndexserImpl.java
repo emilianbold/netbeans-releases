@@ -72,7 +72,6 @@ import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
-import org.aspectj.lang.annotation.SuppressAjWarnings;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
@@ -104,7 +103,6 @@ import org.openide.util.lookup.Lookups;
 import org.sonatype.nexus.index.ArtifactAvailablility;
 import org.sonatype.nexus.index.ArtifactContextProducer;
 import org.sonatype.nexus.index.ArtifactInfo;
-import org.sonatype.nexus.index.ArtifactInfoGroup;
 import org.sonatype.nexus.index.FlatSearchRequest;
 import org.sonatype.nexus.index.FlatSearchResponse;
 import org.sonatype.nexus.index.GGrouping;
@@ -128,6 +126,7 @@ import org.sonatype.nexus.index.updater.IndexUpdater;
 public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementation,
         BaseQueries, ChecksumQueries, ArchetypeQueries, DependencyInfoQueries,
         ClassesQuery, GenericFindQuery {
+    private static final String MAVENINDEX_PATH = "mavenindex";
 
     private ArtifactRepository repository;
     private NexusIndexer indexer;
@@ -499,10 +498,10 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         String userdir = System.getProperty("netbeans.user"); //NOI18N
         File cacheDir;
         if (userdir != null) {
-            cacheDir = new File(new File(new File(userdir, "var"), "cache"), "mavenindex");//NOI18N
+            cacheDir = new File(new File(new File(userdir, "var"), "cache"), MAVENINDEX_PATH);//NOI18N
         } else {
             File root = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
-            cacheDir = new File(root, "mavenidex");//NOI18N
+            cacheDir = new File(root, MAVENINDEX_PATH);//NOI18N
         }
         cacheDir.mkdirs();
         return cacheDir;
