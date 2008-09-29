@@ -141,9 +141,9 @@ class ShowSQLDialog extends javax.swing.JDialog {
         dispose();                                        
     }//GEN-LAST:event_jButton1ActionPerformed
                                         
-    // Variables declaration - do not modify//GEN-BEGIN:variables                                             
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JEditorPane jEditorPane1;
     private javax.swing.JScrollPane jScrollPane1;
-    // End of variables declaration//GEN-END:variables                   
+    // End of variables declaration//GEN-END:variables
 }
