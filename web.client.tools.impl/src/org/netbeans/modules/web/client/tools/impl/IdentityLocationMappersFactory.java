@@ -153,7 +153,7 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
             try {
                 urlPath = hostUri.toURL().toExternalForm();
             } catch (MalformedURLException mue) {
-                Log.getLogger().log(Level.INFO, "URI mapping failed due to URI->URL conversion", mue);
+                Log.getLogger().log(Level.FINE, "URI mapping failed due to URI->URL conversion: " + hostUri.toString());
                 urlPath = null;
             }
 
