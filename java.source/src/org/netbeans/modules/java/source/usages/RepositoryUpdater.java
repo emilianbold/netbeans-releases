@@ -3055,6 +3055,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 LOGGER.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo) + " " + cpInfo.toString());    //NOI18N
                             }
                         }
+                        if (LOGGER.isLoggable(Level.FINEST)) {
+                            LOGGER.finest("Parsing file: " + activeTuple.jfo.toUri());   //NOI18N
+                        }
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {activeTuple.jfo});
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
