@@ -298,6 +298,8 @@ public class RubyRenameHandler implements InstantRenamer {
                             } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
                                 if (((LocalAsgnNode)arg2).getName().equals(name)) {
                                     OffsetRange range = AstUtilities.getRange(arg2);
+                                    // Adjust end offset to only include the left hand size
+                                    range = new OffsetRange(range.getStart(), range.getStart() + name.length());
                                     range = LexUtilities.getLexerOffsets(info, range);
                                     if (range != OffsetRange.NONE) {
                                         ranges.add(range);
