@@ -1438,32 +1438,29 @@ public class CodeCompleter implements CodeCompletionHandler {
         // travel back on the token string till the token is neither a
         // DOT nor an IDENTIFIER
 
-        boolean remainingTokens = false;
+        Token<? extends GroovyTokenId> token = null;
+        boolean remainingTokens = true;
         while (ts.isValid() && (remainingTokens = ts.movePrevious()) && ts.offset() >= 0) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
             // LOG.log(Level.FINEST, "LexerToken(back): {0}", t.text().toString());
             if (!(t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER)) {
                 break;
+            } else {
+                token = t;
             }
         }
 
         // now we are travelling in the opposite direction to construct
         // the result
 
-
         StringBuffer buf = new StringBuffer();
         Token<? extends GroovyTokenId> lastToken = null;
 
         // if we reached the beginning in the previous iteration we have to get
         // the first token too (without call to moveNext())
-        if (!remainingTokens && ts.isValid() && ts.offset() < position) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-
-            // LOG.log(Level.FINEST, "LexerToken(fwd): {0}", t.text().toString());
-            if (t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER) {
-                buf.append(t.text().toString());
-                lastToken = t;
-            }
+        if (!remainingTokens && token != null && ts.isValid()) {
+            buf.append(token.text().toString());
+            lastToken = token;
         }
 
         // iterate the rest of the sequence
