@@ -90,7 +90,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 }
                 if (node instanceof CallStackFrame) {
                     CallStackFrame f = (CallStackFrame) node;
-                    return //f.getThread() == debugger.getCurrentThread() &&
+                    return !DebuggingTreeModel.isMethodInvoking(f.getThread()) &&//f.getThread() == debugger.getCurrentThread() &&
                            !f.equals(debugger.getCurrentCallStackFrame());
                 }
                 return false;
@@ -118,6 +118,11 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
+                if (node instanceof JPDAThread) {
+                    return !DebuggingTreeModel.isMethodInvoking((JPDAThread) node);
+                } else if (node instanceof CallStackFrame) {
+                    return !DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread());
+                }
                 return true;
             }
             public void perform (Object[] nodes) {
@@ -148,6 +153,8 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
             public boolean isEnabled (Object node) {
                 if (!(node instanceof CallStackFrame)) {
                     return false;
+                } else if (DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread())) {
+                    return false;
                 }
                 return isGoToSourceSupported ((CallStackFrame) node);
             }
@@ -165,6 +172,9 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 // TODO: Check whether this frame is deeper then the top-most
+                if (node instanceof CallStackFrame) {
+                    return !DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread());
+                }
                 return true;
             }
             public void perform (final Object[] nodes) {
