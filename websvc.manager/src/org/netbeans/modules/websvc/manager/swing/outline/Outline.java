@@ -45,7 +45,7 @@
  * Created on January 27, 2004, 6:59 PM
  */
 
-package org.netbeans.swing.outline;
+package org.netbeans.modules.websvc.manager.swing.outline;
 
 import java.awt.Font;
 import java.awt.FontMetrics;

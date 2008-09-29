@@ -154,7 +154,6 @@ public class ParseTreeWalker {
     //                }
     //            }
     //            
-    //            @SuppressWarnings(value = "unchecked")
     //            List<Node> list = root.childNodes();
     //
     //            //for (Node child : list) {

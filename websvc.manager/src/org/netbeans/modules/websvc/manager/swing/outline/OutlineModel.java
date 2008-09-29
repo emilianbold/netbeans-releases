@@ -45,7 +45,7 @@
  * Created on January 27, 2004, 6:53 PM
  */
 
-package org.netbeans.swing.outline;
+package org.netbeans.modules.websvc.manager.swing.outline;
 
 import javax.swing.table.TableModel;
 import javax.swing.tree.AbstractLayoutCache;
