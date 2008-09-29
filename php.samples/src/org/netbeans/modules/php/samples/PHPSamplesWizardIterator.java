@@ -40,6 +40,7 @@ import org.xml.sax.InputSource;
 
 public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
 
+    private static final boolean DO_NOT_OPEN_README_HTML = Boolean.getBoolean("org.netbeans.modules.php.samples.donotopenreadmehtml"); // NOI18N
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
@@ -89,14 +90,16 @@ public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/In
             ProjectChooser.setProjectsFolder(parent);
         }
 
-        // Open readme.html in a browser
-        File urlTempF = File.createTempFile("phpSamplesReadme", ".url"); // NOI18N
+        if (!DO_NOT_OPEN_README_HTML) {
+            // Open readme.html in a browser
+            File urlTempF = File.createTempFile("phpSamplesReadme", ".url"); // NOI18N
 
-        urlTempF.deleteOnExit();
-        FileObject readmeURL = FileUtil.toFileObject(FileUtil.normalizeFile(urlTempF));
-        writeLines(readmeURL, dir.getFileObject("readme.html").getURL().toString()); // NOI18N
+            urlTempF.deleteOnExit();
+            FileObject readmeURL = FileUtil.toFileObject(FileUtil.normalizeFile(urlTempF));
+            writeLines(readmeURL, dir.getFileObject("readme.html").getURL().toString()); // NOI18N
 
-        resultSet.add(readmeURL);
+            resultSet.add(readmeURL);
+        }
 
         return resultSet;
     }
