@@ -84,6 +84,10 @@ public class PackagerManager  {
     }
     
     public void addPackagingDescriptor(PackagerDescriptor packagingDescriptor) {
+        PackagerDescriptor packagerDescriptor = getPackager(packagingDescriptor.getName());
+        if (packagerDescriptor != null) {
+            return; // Already there...
+        }
         list.add(packagingDescriptor);
     }
     

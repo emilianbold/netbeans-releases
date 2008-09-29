@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -179,6 +180,12 @@ public class PackagingConfiguration {
     }
 
     public void setType(StringConfiguration type) {
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(type.getValue());
+        if (packager == null) {
+            // Doesn't exist. Switch to a dummy packager...
+            packager = new DummyPackager(type.getValue());
+            PackagerManager.getDefault().addPackagingDescriptor(packager);
+        }
         this.type = type;
     }
 
