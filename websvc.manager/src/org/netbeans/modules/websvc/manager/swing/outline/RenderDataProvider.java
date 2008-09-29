@@ -45,7 +45,7 @@
  * Created on January 29, 2004, 12:01 AM
  */
 
-package org.netbeans.swing.outline;
+package org.netbeans.modules.websvc.manager.swing.outline;
 
 import java.awt.Color;
 import javax.swing.Icon;

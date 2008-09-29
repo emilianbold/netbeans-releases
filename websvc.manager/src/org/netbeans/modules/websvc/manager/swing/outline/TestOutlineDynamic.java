@@ -45,7 +45,7 @@
  * Created on February 1, 2004, 12:53 PM
  */
 
-package org.netbeans.swing.outline;
+package org.netbeans.modules.websvc.manager.swing.outline;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;

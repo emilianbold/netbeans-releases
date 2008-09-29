@@ -45,7 +45,7 @@
  * Created on January 28, 2004, 7:02 PM
  */
 
-package org.netbeans.swing.outline;
+package org.netbeans.modules.websvc.manager.swing.outline;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -40,7 +40,7 @@
  */
 
 
-package org.netbeans.swing.outline;
+package org.netbeans.modules.websvc.manager.swing.outline;
 
 /**
  * This interface provides information about nodes as they related to rows.
