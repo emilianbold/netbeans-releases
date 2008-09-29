@@ -83,6 +83,8 @@ import org.openide.awt.Mnemonics;
  */
 public class ParametersPanel extends JPanel implements ProgressListener, ChangeListener, InvalidationListener {
     private static final Logger LOGGER = Logger.getLogger(ParametersPanel.class.getName());
+    /** @see #result */
+    private final Object RESULT_LOCK = new Object();
     // refactoring elements that will be returned as a result of showDialog method
     private RefactoringSession result;
     
@@ -812,12 +814,16 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     public void invalidateObject() {
     }
 
-    private synchronized RefactoringSession getResult() {
-        return result;
+    private RefactoringSession getResult() {
+        synchronized (RESULT_LOCK) {
+            return result;
+        }
     }
 
-    private synchronized RefactoringSession putResult(RefactoringSession session) {
-        this.result = session;
+    private RefactoringSession putResult(RefactoringSession session) {
+        synchronized (RESULT_LOCK) {
+            this.result = session;
+        }
         return session;
     }
     
