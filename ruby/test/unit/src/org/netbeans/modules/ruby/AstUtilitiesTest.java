@@ -47,14 +47,20 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jruby.nb.ast.AliasNode;
+import org.jruby.nb.ast.AssignableNode;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.DStrNode;
 import org.jruby.nb.ast.DefnNode;
 import org.jruby.nb.ast.IterNode;
+import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.StrNode;
 import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.openide.filesystems.FileObject;
@@ -93,7 +99,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertNotNull(node);
         assertEquals("lazy_initialize", ((INameNode)node).getName());
     }
-    
+
     public void testFindbySignatureInstance() throws Exception {
         Node root = getRootNode("testfiles/ape.rb");
         Node node = AstUtilities.findBySignature(root, "Ape#@dialogs");
@@ -128,7 +134,7 @@ public class AstUtilitiesTest extends RubyTestBase {
             "feed",
             "html",
             "crumbs",
-            "escaper", 
+            "escaper",
             "categories",
             "names",
             "validator",
@@ -136,20 +142,20 @@ public class AstUtilitiesTest extends RubyTestBase {
         });
         assertEquals(expected, requires);
     }
-    
+
     public void testGetMethodName() {
         String testFile = "testfiles/ape.rb";
         FileObject fileObject = getTestFile(testFile);
         String text = readFile(fileObject);
-        
+
         int offset = 0;
         String method = AstUtilities.getMethodName(fileObject, offset);
         assertNull(method);
-        
+
         offset = text.indexOf("@w.text! lines[-1]");
         method = AstUtilities.getMethodName(fileObject, offset);
         assertEquals("report_li", method);
-        
+
         offset = text.indexOf("step[1 .. -1].each { |li| report_li(nil, nil, li) }");
         method = AstUtilities.getMethodName(fileObject, offset);
         assertEquals("report_html", method);
@@ -159,10 +165,10 @@ public class AstUtilitiesTest extends RubyTestBase {
         String testFile = "testfiles/new_test.rb";
         FileObject fileObject = getTestFile(testFile);
         String text = readFile(fileObject);
-        
+
         int offset = 0;
         String test = null;
-        
+
         offset = text.indexOf("something should happen to me okay?");
         test = AstUtilities.getTestName(fileObject, offset);
         assertEquals("test_something_should_happen_to_me_okay?", test);
@@ -175,7 +181,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         test = AstUtilities.getTestName(fileObject, offset);
         assertEquals("test_something_should_happen_to_me_okay?", test);
     }
-    
+
     public void testAddNodesByType() {
         Node root = getRootNode("testfiles/unused.rb");
         List<Node> result = new ArrayList<Node>();
@@ -183,7 +189,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertEquals(1, result.size());
         assertTrue(result.get(0) instanceof IterNode);
     }
-    
+
     public void testAddNodesByType2() {
         Node root = getRootNode("testfiles/top_level.rb");
         List<Node> result = new ArrayList<Node>();
@@ -191,7 +197,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertEquals(2, result.size());
         assertTrue(result.get(0) instanceof DefnNode);
     }
-    
+
     private void addAllNodes(Node node, List<Node> list, Node parent, Map<Node,Node> parents) {
         try {
             node.getPosition().getStartOffset();
@@ -203,7 +209,7 @@ public class AstUtilitiesTest extends RubyTestBase {
 
         list.add(node);
         parents.put(node, parent);
-        
+
         List<Node> children = node.childNodes();
         assertNotNull(children);
 
@@ -217,9 +223,9 @@ public class AstUtilitiesTest extends RubyTestBase {
             addAllNodes(child, list, node, parents);
         }
     }
-    
+
     // Make sure we don't bomb out analyzing any of these files
-    public void testStress() throws Exception {
+    public void testStress() throws Throwable {
         List<FileObject> files = findJRubyRubyFiles();
         for (FileObject file : files) {
             CompilationInfo info = getInfo(file);
@@ -236,19 +242,60 @@ public class AstUtilitiesTest extends RubyTestBase {
             if (root == null) {
                 continue;
             }
+
+            AstUtilities.getClasses(root);
+            AstUtilities.getRequires(root);
+
             for (Node node : allNodes) {
                 try {
                     node.getPosition().getStartOffset();
                     node.getPosition().getEndOffset();
-                    
+
                     // Known exceptions - broken for getNameRange/getRange
                     if (node instanceof StrNode || node instanceof DStrNode) {
                         // See AstOffsetTest.testStringOffset1
                         continue;
                     }
-                    
+
+                    AstUtilities.getFunctionNameRange(node);
                     AstUtilities.getNameRange(node);
-                    AstUtilities.getRange(node);
+                    OffsetRange nodeRange = AstUtilities.getRange(node);
+
+                    // 147800
+                    if (AstUtilities.isCall(node)) {
+                        AstUtilities.getCallRange(node);
+                        AstUtilities.getCallName(node);
+
+                        for (int offset = nodeRange.getStart(); offset <= nodeRange.getEnd(); offset++) {
+                            AstUtilities.findArgumentIndex(node, offset);
+                        }
+                    }
+
+                    if (node instanceof AliasNode) {
+                        AliasNode an = (AliasNode)node;
+                        AstUtilities.getAliasOldRange(an);
+                        AstUtilities.getAliasNewRange(an);
+                    }
+
+                    if (AstUtilities.isAttr(node)) {
+                        AstUtilities.getAttrSymbols(node);
+                    }
+
+                    if (node instanceof MethodDefNode) {
+                        AstUtilities.getDefName(node);
+                    }
+
+                    if (node instanceof Colon2Node) {
+                        AstUtilities.getFqn((Colon2Node)node);
+                    }
+
+                    if (node instanceof AssignableNode) {
+                        AstUtilities.getLValueRange((AssignableNode)node);
+                    }
+
+                    if (node instanceof ClassNode) {
+                        AstUtilities.getSuperclass((ClassNode)node);
+                    }
                 } catch (Throwable t) {
                     Node parent = parents.get(node);
                     OffsetRange parentOffset = parent != null ? AstUtilities.getRange(parent) : OffsetRange.NONE;
@@ -256,5 +303,98 @@ public class AstUtilitiesTest extends RubyTestBase {
                 }
             }
         }
+    }
+
+    public void testFindArguments1() throws Exception {
+
+        GsfTestCompilationInfo info = getInfo("testfiles/ape.rb");
+        assertNotNull(info);
+        String text = info.getText();
+        int caretOffset = getCaretOffset(text, "might_^fail(uri, requested_e_coll, requested_m_coll)");
+        Node root = AstUtilities.getRoot(info);
+        AstPath path = new AstPath(root, caretOffset);
+        Node call = path.leaf();
+        assertTrue(AstUtilities.isCall(call));
+
+        caretOffset = getCaretOffset(text, "might_fail(^uri, requested_e_coll, requested_m_coll)");
+        assertEquals(0, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "might_fail(uri^, requested_e_coll, requested_m_coll)");
+        assertEquals(0, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "might_fail(uri,^ requested_e_coll, requested_m_coll)");
+        assertEquals(1, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "might_fail(uri, requested_e_coll^, requested_m_coll)");
+        assertEquals(1, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "might_fail(uri, requested_e_coll,^ requested_m_coll)");
+        assertEquals(2, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "might_fail(uri, requested_e_coll, requested_m_coll^)");
+        assertEquals(2, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "might_fail(uri, requested_e_coll, requested_m_coll)^");
+        assertEquals(-1, AstUtilities.findArgumentIndex(call, caretOffset));
+    }
+
+    public void testFindArguments2() throws Exception {
+        GsfTestCompilationInfo info = getInfo("testfiles/rubygems.rb");
+        assertNotNull(info);
+        String text = info.getText();
+        //int caretOffset = 2755; // "new" call from failed earlier test
+        int caretOffset = getCaretOffset(text, "MUTEX = Mutex.^new");
+
+        Node root = AstUtilities.getRoot(info);
+        AstPath path = new AstPath(root, caretOffset);
+        Node call = path.leaf();
+        assertTrue(AstUtilities.isCall(call));
+
+        assertEquals(-1, AstUtilities.findArgumentIndex(call, caretOffset));
+        assertEquals(-1, AstUtilities.findArgumentIndex(call, caretOffset+3));
+    }
+
+    public void testFindArguments3() throws Exception {
+        GsfTestCompilationInfo info = getInfo("testfiles/rubygems.rb");
+        assertNotNull(info);
+        String text = info.getText();
+        //int caretOffset = 2755; // "new" call from failed earlier test
+        int caretOffset = getCaretOffset(text, "Gem.ac^tivate(gem_name, *version_requirements)");
+
+        Node root = AstUtilities.getRoot(info);
+        AstPath path = new AstPath(root, caretOffset);
+        Node call = path.leaf();
+        assertTrue(AstUtilities.isCall(call));
+
+        caretOffset = getCaretOffset(text, "Gem.^activate(gem_name, *version_requirements)");
+        assertEquals(-1, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "Gem.activate(^gem_name, *version_requirements)");
+        assertEquals(0, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "Gem.activate(gem_name^, *version_requirements)");
+        assertEquals(0, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "Gem.activate(gem_name,^ *version_requirements)");
+        assertEquals(1, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "Gem.activate(gem_name, ^*version_requirements)");
+        assertEquals(1, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "Gem.activate(gem_name, *^version_requirements)");
+        assertEquals(1, AstUtilities.findArgumentIndex(call, caretOffset));
+
+        caretOffset = getCaretOffset(text, "Gem.activate(gem_name, *version_requirements^)");
+        assertEquals(1, AstUtilities.findArgumentIndex(call, caretOffset));
+
+
+        caretOffset = getCaretOffset(text, "Gem::Dependency.^new(gem, version_requirements)");
+        caretOffset = getCaretOffset(text, "Gem::ConfigFile.^new []");
+        caretOffset = getCaretOffset(text, "StringIO.^new data");
+        caretOffset = getCaretOffset(text, "Gem::Dependency.^new gem, requirements");
+
+        // TODO - make sure I add up nested calls correctly, e.g.
+        //   foo(bar, baz(boo(bazy)))
+        // TODO - test argscatnode - missing fallthrough node!
     }
 }
