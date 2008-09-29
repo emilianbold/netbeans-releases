@@ -801,10 +801,12 @@ public class JsParser implements IncrementalParser {
         } catch (IllegalStateException ise) {
             // See issue #128983 for a way to get the compiler to assert for example
             runtimeException = ise;
+            //throw ise;
         } catch (RuntimeException re) {
             //notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
             // XXX TODO - record this somehow
             runtimeException = re;
+            //throw re;
         }
         if (root != null) {
             setParentRefs(root, null);
