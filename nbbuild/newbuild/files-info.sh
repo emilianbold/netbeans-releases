@@ -85,7 +85,7 @@ while [ $# != 0 ] ; do
 			echo "... size : $size"
 			md5=`$alg "$nextfile" | sed "s/ .*//g"`
 			echo "...  md5 : $md5"
-			echo "file_names["$counter"]=\"$name\";" >> "$output_file"
+			echo "file_names["$counter"]=\"$1/$name\";" >> "$output_file"
 			echo "file_sizes["$counter"]=$size;" >> "$output_file"
 			echo "file_md5s["$counter"]=\"$md5\";" >> "$output_file"
 			counter=`expr $counter + 1`
