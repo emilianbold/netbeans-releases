@@ -124,7 +124,12 @@ public class DebugSingleCommand extends DebugCommand {
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return fileForContext(context) != null && XDebugStarterFactory.getInstance() != null;
+        FileObject file = fileForContext(context);
+        boolean enabled = file != null;
+        if (isScriptSelected(false)) {
+            enabled = isPhpFileSelected(file);
+        }
+        return enabled && XDebugStarterFactory.getInstance() != null;
     }
 
     @Override

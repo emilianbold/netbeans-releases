@@ -229,6 +229,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         String name = t.getName();
         JPDABreakpoint breakpoint = t.getCurrentBreakpoint();
+        if (DebuggingTreeModel.isMethodInvoking(t)) {
+            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_Invoking_Method", name);
+        }
         if (breakpoint != null) {
             return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_Breakpoint", name, breakpoint.toString());
         }
@@ -456,6 +459,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) node;
+            if (DebuggingTreeModel.isMethodInvoking(sf.getThread())) {
+                return "";
+            }
             return CallStackNodeModel.getCSFToolTipText(sf);
         }
         if (node instanceof JPDAThreadGroup) {
@@ -512,12 +518,20 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);
         }
-        ModelEvent event = new ModelEvent.NodeChanged(this, node,
-                ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
-                ModelEvent.NodeChanged.ICON_MASK |
-                ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK |
-                ModelEvent.NodeChanged.CHILDREN_MASK |
-                ModelEvent.NodeChanged.EXPANSION_MASK);
+        ModelEvent event;
+        if (node instanceof JPDAThread && DebuggingTreeModel.isMethodInvoking((JPDAThread) node)) {
+            event = new ModelEvent.NodeChanged(this, node,
+                    ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
+                    ModelEvent.NodeChanged.ICON_MASK |
+                    ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK);
+        } else {
+            event = new ModelEvent.NodeChanged(this, node,
+                    ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
+                    ModelEvent.NodeChanged.ICON_MASK |
+                    ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK |
+                    ModelEvent.NodeChanged.CHILDREN_MASK |
+                    ModelEvent.NodeChanged.EXPANSION_MASK);
+        }
         for (ModelListener ml : ls) {
             ml.modelChanged (event);
         }
@@ -597,6 +611,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         public void propertyChange(PropertyChangeEvent evt) {
             JPDAThread t = tr.get();
             if (t != null) {
+                //if (DebuggingTreeModel.isMethodInvoking(t)) return ;
                 if (JPDAThread.PROP_BREAKPOINT.equals(evt.getPropertyName()) &&
                     t.isSuspended() && t.getCurrentBreakpoint() != null) {
                     synchronized (this) {

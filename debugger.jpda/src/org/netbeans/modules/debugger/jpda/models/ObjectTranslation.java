@@ -46,7 +46,6 @@ import com.sun.jdi.Mirror;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
@@ -120,7 +119,7 @@ public final class ObjectTranslation {
                 if (o instanceof LocalVariable && (v == null || v instanceof Value)) {
                     LocalVariable lv = (LocalVariable) o;
                     org.netbeans.api.debugger.jpda.LocalVariable local;
-                    if (v instanceof ObjectReference) {
+                    if (v instanceof ObjectReference || v == null) {
                         local = new ObjectLocalVariable (
                             debugger, 
                             (ObjectReference) v, 

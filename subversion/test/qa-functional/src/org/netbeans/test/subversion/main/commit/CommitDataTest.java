@@ -137,9 +137,11 @@ public class CommitDataTest extends JellyTestCase {
             TestKit.waitForScanFinishedAndQueueEmpty();
             
             TestKit.createNewElement(PROJECT_NAME, "javaapp", "NewClass");
+
             mh = new MessageHandler("Refreshing");
             TestKit.removeHandlers(log);
             log.addHandler(mh);
+
             Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
             nodeFile.performPopupAction("Subversion|Show Changes");
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
@@ -154,14 +156,14 @@ public class CommitDataTest extends JellyTestCase {
             
             //invoke commit action but exlude the file from commit
             start = System.currentTimeMillis();
-            mh = new MessageHandler("Refreshing");
-            TestKit.removeHandlers(log);
-            log.addHandler(mh);
+//            mh = new MessageHandler("Refreshing");
+//            TestKit.removeHandlers(log);
+//            log.addHandler(mh);
             
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
             CommitOperator cmo = CommitOperator.invoke(nodeFile);
 
-            TestKit.waitText(mh);
+//            TestKit.waitText(mh);
 
             end = System.currentTimeMillis();
             //print message to log file.
@@ -259,6 +261,7 @@ public class CommitDataTest extends JellyTestCase {
             
             TestKit.createNewPackage(PROJECT_NAME, "xx");
             Node nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
+
             nodePack.performPopupAction("Subversion|Show Changes");
             nodeIDE = (org.openide.nodes.Node) nodePack.getOpenideNode();
             status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());

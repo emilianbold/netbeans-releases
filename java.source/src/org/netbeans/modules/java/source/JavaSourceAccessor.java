@@ -119,6 +119,9 @@ public abstract class JavaSourceAccessor {
      * Expert: Private API for indentation engine only!
      */
     public abstract CompilationController createCompilationController (JavaSource js) throws IOException;
+    
+    
+    public abstract long createTaggedCompilationController (JavaSource js, long currentTag, Object[] out) throws IOException;
 
     public abstract void revalidate(JavaSource js); 
     
