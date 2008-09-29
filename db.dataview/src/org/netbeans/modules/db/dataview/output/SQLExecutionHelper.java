@@ -517,7 +517,11 @@ class SQLExecutionHelper {
             stmt = conn.createStatement();
         }
         int pageSize = dataView.getDataViewPageContext().getPageSize();
-        stmt.setFetchSize(pageSize);
+        try {
+            stmt.setFetchSize(pageSize);
+        } catch (SQLException e) {
+            // ignore -  used only as a hint to the driver to optimize
+        }
 
         if (dataView.isLimitSupported() && select && sql.toUpperCase().indexOf(LIMIT_CLAUSE) == -1) {
             stmt.setMaxRows(pageSize);
