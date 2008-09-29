@@ -99,8 +99,8 @@ public class PluginProperties  {
     public static final String COBUNDLE_DEFAULT_INSTALL_PATH ="AS9.0";  //NOI18N
     public static final String COBUNDLE_DEFAULT_INSTALL_PATH2 ="AS8.2";  //NOI18N
     
+    public static final String REMOVED_DEFAULT_GFV2 = "removedDefaultGFV2"; //NOI18N
 
-    
     static private PluginProperties thePluginProperties=null;
 
     public static PluginProperties getDefault(){
@@ -175,6 +175,10 @@ public class PluginProperties  {
                 needToRegisterDefaultServer = true;
             }
             NbPreferences.forModule(PluginProperties.class).putBoolean(PROP_FIRST_RUN, true);
+        } else {
+            if (!NbPreferences.forModule(PluginProperties.class).getBoolean(REMOVED_DEFAULT_GFV2, false)) {
+                needToRegisterDefaultServer = true;
+            }
         }
 
         if (needToRegisterDefaultServer){
@@ -552,12 +556,13 @@ public class PluginProperties  {
                                     displayName = NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V2");  // NOI18N
                                 }
                             }
-                            if (i!=0) {//not the first one, but other possible domains
-                                displayName = domainsList[i].getName();
-                            }
+
                             Repository rep = (Repository)Lookup.getDefault().lookup(Repository.class);
                             FileObject dir = rep.getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
                             FileObject instanceFOs[] = dir.getChildren();
+
+                            displayName = generateDisplayName(displayName, instanceFOs);
+
                             FileObject instanceFO = null;
                             for (int j = 0; j < instanceFOs.length; j++) {
                                 if (dmUrl.equals(instanceFOs[j].getAttribute(InstanceProperties.URL_ATTR))) {
@@ -640,4 +645,29 @@ public class PluginProperties  {
                 index++;
             }
         }
-    }}
+    }
+
+    //Fix for 144222- picked up from the IDE codebase to mimic behaviour in Add Server wizard first panel
+    private static String generateDisplayName(String serverName, FileObject[] instanceFOs) {
+        String name;
+        int count = 0;
+
+        do {
+            name = serverName;
+            if (count != 0){
+                name += " (" + String.valueOf(count) + ")"; //NOI18N
+            }
+            count++;
+        } while (displayNameExists(name, instanceFOs) != false);
+        return name;
+    }
+
+    private static boolean displayNameExists(String serverName, FileObject[] instanceFOs) {
+        for (int j = 0; j < instanceFOs.length; j++) {
+            if (serverName.equals(instanceFOs[j].getAttribute(InstanceProperties.DISPLAY_NAME_ATTR))) {
+                return true;
+            }
+        }
+        return false;
+    }
+ }
