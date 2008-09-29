@@ -301,6 +301,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         }
     }
 
+
     //always call from mutex.writeAccess
     private void unloadIndexingContext(final Set<String> repos) throws IOException {
         assert MUTEX.isWriteAccess();
@@ -362,6 +363,25 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
         }
 
     }
+
+    public void shutdownAll() {
+        LOGGER.finer("Shutting Down All Contexts");//NOI18N
+        try {
+            MUTEX.writeAccess(new Mutex.ExceptionAction<Object>() {
+                public Object run() throws Exception {
+                    for (IndexingContext ic : indexer.getIndexingContexts().values()) {
+                        LOGGER.finer(" Shutting Down:" + ic.getId());//NOI18N
+                        indexer.removeIndexingContext(ic, false);
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+
 
 //    //to be used from external command line tols like mevenide/netbeans/maven-repo-utils
 //    // just comment out, questionalble if ever to be used.
