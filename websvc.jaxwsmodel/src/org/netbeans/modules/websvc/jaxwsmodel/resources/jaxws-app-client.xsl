@@ -70,7 +70,6 @@ made subject to such option by the copyright holder.
                 <xsl:variable name="wsname" select="@name"/>
                 <xsl:variable name="package_name" select="jaxws:package-name"/>
                 <xsl:variable name="wsdl_url" select="jaxws:local-wsdl-file"/>
-                <xsl:variable name="wsdl_url_actual" select="jaxws:wsdl-url"/>
                 <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
                 <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
                 <xsl:variable name="wsimportoptions" select="jaxws:wsimport-options"/>
@@ -94,7 +93,6 @@ made subject to such option by the copyright holder.
                             package="{$package_name}"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
                             wsdl="${{wsdl-{$wsname}}}"
-                            wsdlLocation="{$wsdl_url_actual}"
                             catalog="{$catalog}">
                             <xsl:if test="$wsimportoptions">
                                 <xsl:for-each select="$wsimportoptions/jaxws:wsimport-option">
@@ -139,7 +137,6 @@ made subject to such option by the copyright holder.
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
                             wsdl="${{wsdl-{$wsname}}}"
-                            wsdlLocation="{$wsdl_url_actual}"
                             catalog="{$catalog}">
                             <xsl:if test="$wsimportoptions">
                                 <xsl:for-each select="$wsimportoptions/jaxws:wsimport-option">

@@ -287,6 +287,7 @@ made subject to such option by the copyright holder.
         of your module will customize the main window toolbars.
         -->
         <folder name="Clipboard">
+            <attr name="position" intvalue="200"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-CutAction.instance">
                 <attr name="position" intvalue="100"/>
@@ -299,6 +300,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <folder name="UndoRedo">
+            <attr name="position" intvalue="300"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-UndoAction.instance">
                 <attr name="position" intvalue="400"/>
@@ -308,12 +310,14 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <folder name="File">
+            <attr name="position" intvalue="100"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-SaveAllAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>
         <folder name="Memory">
+            <attr name="position" intvalue="600"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-GarbageCollectAction.instance">
                 <attr name="position" intvalue="100"/>

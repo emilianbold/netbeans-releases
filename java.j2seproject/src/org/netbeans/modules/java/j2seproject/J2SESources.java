@@ -160,7 +160,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {                
                 if (!externalRootsRegistered) {
-                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, false);
                     externalRootsRegistered = true;
                 }
             }

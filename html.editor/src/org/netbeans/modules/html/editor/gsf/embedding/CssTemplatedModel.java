@@ -269,8 +269,8 @@ public class CssTemplatedModel extends CssModel {
                                     int curlyBracketIndex = buff.indexOf("{", from);
                                     if(curlyBracketIndex == -1) {
                                         //no curly bracket found - this likely means that we are at the end of the css
-                                        //code and the bracket is simply missing
-                                        curlyBracketIndex = buff.length();
+                                        //code and the bracket is simply missing - do not fix
+                                        return ;
                                     }
                                         
                                     //test if there is a generated virtual code

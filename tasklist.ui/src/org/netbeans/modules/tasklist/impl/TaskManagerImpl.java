@@ -130,6 +130,9 @@ public class TaskManagerImpl extends TaskManager {
                 }
                 scope = Accessor.getEmptyScope();
                 filter = TaskFilter.EMPTY;
+
+                taskList.clear();
+                taskCache.clear();
                 
                 setWorkingStatus( false );
             } else {

@@ -176,7 +176,7 @@ public class GSFPHPParser implements Parser {
                     }
                 }
                 if (ok) {
-                    result = new PHPParseResult(this, context.getFile(), program);
+                    result = new PHPParseResult(this, context.getFile(), program, true);
                 }
                 else {
                     result = sanitize(context, sanitizing, errorHandler);
@@ -421,7 +421,7 @@ public class GSFPHPParser implements Parser {
                 statements.add(error);
                 Program emptyProgram = new Program(0, end, statements, Collections.EMPTY_LIST);
 
-                return new PHPParseResult(this, context.getFile(), emptyProgram);
+                return new PHPParseResult(this, context.getFile(), emptyProgram, false);
         }
         
     }

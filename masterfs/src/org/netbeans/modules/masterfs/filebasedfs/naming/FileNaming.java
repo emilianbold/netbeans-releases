@@ -43,6 +43,7 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
@@ -65,7 +66,7 @@ public interface FileNaming {
 
     Integer getId(boolean recompute);
 
-    boolean rename(String name);
-    boolean rename(String name, ProvidedExtensions.IOHandler handler);
+    boolean rename(String name) throws IOException;
+    boolean rename(String name, ProvidedExtensions.IOHandler handler) throws IOException;
     
 }

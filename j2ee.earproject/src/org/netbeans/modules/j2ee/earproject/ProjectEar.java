@@ -56,6 +56,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -607,6 +610,8 @@ public final class ProjectEar extends J2eeApplicationProvider
 
         private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
 
+        
+        
         public DeployOnSaveSupportProxy() {
             super();
         }
@@ -645,7 +650,7 @@ public final class ProjectEar extends J2eeApplicationProvider
         public void artifactsUpdated(Iterable<Artifact> artifacts) {
             List<Artifact> recomputed = new ArrayList<Artifact>();
             for (Artifact artifact : artifacts) {
-                if (artifact.isReferencedLibrary()) {
+                if (artifact.isReferencedLibrary() && artifact.isRelocatable()) {
                     // FIXME manifest ant TLD magic
                     File buildDir = project.getAntProjectHelper().resolveFile(
                             project.evaluator().getProperty(EarProjectProperties.BUILD_DIR));
@@ -669,6 +674,5 @@ public final class ProjectEar extends J2eeApplicationProvider
                 listener.artifactsUpdated(recomputed);
             }
         }
-
     }
 }

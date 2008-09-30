@@ -82,30 +82,4 @@ public class insert extends GeneralPHP
     eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
     Sleep( 1000 );
   }
-
-  private class dummyClick implements Runnable
-  {
-    private JListOperator list;
-    private int index, count;
-    public dummyClick( JListOperator l, int i, int j )
-    {
-      list = l;
-      index = i;
-      count = j;
-    }
-
-    public void run( )
-    {
-      list.clickOnItem( index, count );
-    }
-  }
-
-  protected void ClickListItemNoBlock(
-      JListOperator jlList,
-      int iIndex,
-      int iCount
-    )
-  {
-    ( new Thread( new dummyClick( jlList, iIndex, iCount ) ) ).start( );
-  }
 }
