@@ -79,7 +79,7 @@ public class WsimportOptionsPanel extends javax.swing.JPanel {
             reservedOptions = new ArrayList<String>();
             reservedOptions.add("destdir");
             reservedOptions.add("wsdl");
-            reservedOptions.add("wsdlLocation");
+            reservedOptions.add("sourcedestdir");
             reservedOptions.add("catalog");
         }
         return reservedOptions;

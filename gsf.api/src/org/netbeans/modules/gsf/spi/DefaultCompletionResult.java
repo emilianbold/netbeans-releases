@@ -74,6 +74,9 @@ public class DefaultCompletionResult extends CodeCompletionResult {
 
     public void setTruncated(boolean truncated) {
         this.truncated = truncated;
+        if (truncated) {
+            this.filterable = false;
+        }
     }
     
     public boolean isFilterable() {
