@@ -562,6 +562,59 @@ public final class SourcesHelperTest extends NbTestCase {
         assertExcluded("but that does not apply to other children", gg1, "javax/lang/Foo.java");
         // </editor-fold>
     }
+    
+    public void testMinimalSubfolders () throws Exception {
+        scratch = TestUtil.makeScratchDir(this); // have our own setup
+        maindir = scratch.createFolder("dir");
+        projdir = maindir.createFolder("proj-dir");
+        src1dir = maindir.createFolder("src1");
+        
+        // <editor-fold desc="create files in group #1">
+        FileUtil.createData(src1dir, "com/sun/tools/javac/Main.java");
+        FileUtil.createData(src1dir, "com/sun/tools/internal/ws/processor/model/java/JavaArrayType.java");
+        FileUtil.createData(src1dir, "sun/tools/javac/Main.java");
+        FileUtil.createData(src1dir, "sunw/io/Serializable.java");
+        FileUtil.createData(src1dir, "java/lang/Byte.java");
+        FileUtil.createData(src1dir, "java/text/resources/Messages.properties");
+        FileUtil.createData(src1dir, "java/text/resources/Messages_zh.properties");
+        FileUtil.createData(src1dir, "java/text/resources/Messages_zh_TW.properties");
+        FileUtil.createData(src1dir, "java/text/resources/x_y/z.properties");
+        // </editor-fold>
+        
+        // <editor-fold desc="other setup #1">
+        h = ProjectGenerator.createProject(projdir, "test");
+        project = ProjectManager.getDefault().findProject(projdir);
+        EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src1.dir", "../src1");
+        // </editor-fold>
+        // <editor-fold desc="includes & excludes">
+        p.setProperty("src1.includes", "com/sun/tools/**");
+        // </editor-fold>
+        // <editor-fold desc="other setup #2">
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        ProjectManager.getDefault().saveProject(project);
+        //minimalSubfolders = true
+        sh = new SourcesHelper(h, h.getStandardPropertyEvaluator());
+        sh.addPrincipalSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "Sources #1", null, null);
+        sh.addTypedSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "java", "Packages #1", null, null);
+        sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, true);
+        Sources s = sh.createSources();
+        SourceGroup[] groups = s.getSourceGroups("java");
+        SourceGroup g1 = groups[0];
+        assertEquals("Packages #1", g1.getDisplayName());
+        assertNull(FileOwnerQuery.getOwner(src1dir));
+        //minimalSubfolders = false
+        sh = new SourcesHelper(h, h.getStandardPropertyEvaluator());
+        sh.addPrincipalSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "Sources #1", null, null);
+        sh.addTypedSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "java", "Packages #1", null, null);
+        sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, false);
+        s = sh.createSources();
+        groups = s.getSourceGroups("java");
+        g1 = groups[0];
+        assertEquals("Packages #1", g1.getDisplayName());
+        assertEquals(project, FileOwnerQuery.getOwner(src1dir));
+    }
+    
     private static void assertIncluded(String message, SourceGroup g, String resource) {
         FileObject f = g.getRootFolder().getFileObject(resource);
         assertNotNull(resource, f);
