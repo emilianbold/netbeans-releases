@@ -68,12 +68,30 @@ public class TestSession {
     private final SessionType sessionType;
     private final String name;
     private final SessionResult result;
+    /*
+     * The message to display when this session is starting.
+     */
+    private String startingMsg;
 
     public TestSession(String name, FileLocator fileLocator, SessionType sessionType) {
         this.name = name;
         this.fileLocator = fileLocator;
         this.sessionType = sessionType;
         this.result = new SessionResult();
+    }
+
+    /**
+     * @see #startingMsg
+     */
+    public void setStartingMsg(String startingMsg) {
+        this.startingMsg = startingMsg;
+    }
+
+    /**
+     * @see #startingMsg
+     */
+    String getStartingMsg() {
+        return startingMsg;
     }
 
     /**
