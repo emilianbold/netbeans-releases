@@ -168,7 +168,7 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
             
             if (range[0] == null || range[1] == null)
                 continue;
-            
+
             descs.add(ErrorDescriptionFactory.createErrorDescription(errorKind2Severity.get(d.getKind()), desc, ehm, doc, range[0], range[1]));
         }
         
@@ -371,14 +371,18 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
             
             int column = 0;
             int length = text.length();
-            
+
             while (column < text.length() && Character.isWhitespace(text.charAt(column)))
                 column++;
-            
+
             while (length > 0 && Character.isWhitespace(text.charAt(length - 1)))
                 length--;
-            
-            startOffset = lineOffset + column;
+
+            if(length == 0) //whitespace only
+                startOffset = lineOffset;
+            else
+                startOffset = lineOffset + column;
+
             endOffset = lineOffset + length;
         }
         
