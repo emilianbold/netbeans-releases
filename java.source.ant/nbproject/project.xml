@@ -47,7 +47,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.19</specification-version>
+                        <specification-version>1.22</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -109,6 +109,21 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.source</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <public-packages/>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>

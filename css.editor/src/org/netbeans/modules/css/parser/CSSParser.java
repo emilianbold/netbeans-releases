@@ -2421,9 +2421,9 @@ try {StringBuffer sb = new StringBuffer();
  try {ParseException e = generateParseException();
     //System.err.println( "** error_skipblock **\n" + e.toString() );
 
-  Token t;
+  Token t = getToken(0);
   int nesting = 0;
-  do {
+  while ((t.kind != RBRACE) || (nesting > 0)) {
     t = getNextToken();
     if( t.kind == LBRACE )
       nesting++;
@@ -2432,7 +2432,7 @@ try {StringBuffer sb = new StringBuffer();
     else if( t.kind == EOF )
       break;
   }
-  while ((t.kind != RBRACE) || (nesting > 0));/*@bgen(jjtree)*/
+  /*@bgen(jjtree)*/
  } finally {
    if (jjtc000) {
      jjtree.closeNodeScope(jjtn000, true);

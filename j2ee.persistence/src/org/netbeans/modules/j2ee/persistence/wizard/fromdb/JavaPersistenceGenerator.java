@@ -657,8 +657,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     generateMember((EntityMember)object);
                 }
                 afterMembersGenerated();
-                for (Object object : entityClass.getRoles()) {
-                    generateRelationship((RelationshipRole)object);
+                for (RelationshipRole roleObject : entityClass.getRoles()) {
+                    generateRelationship(roleObject);
                 }
                 finish();
 
@@ -910,7 +910,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 String memberName = role.getFieldName();
 
                 // XXX getRelationshipFieldType() does not work well when entity classes
-                // are not all generated to the same package
+                // are not all generated to the same package - fixed in issue 139804
                 String typeName = getRelationshipFieldType(role, entityClass.getPackage());
                 TypeMirror fieldType = copy.getElements().getTypeElement(typeName).asType();
                 if (role.isToMany()) {
@@ -1099,8 +1099,17 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private String getRelationshipFieldType(RelationshipRole role, String pkg) {
                 RelationshipRole rA = role.getParent().getRoleA();
                 RelationshipRole rB = role.getParent().getRoleB();
-                RelationshipRole otherRole = role.equals(rA) ? rB : rA;                
-                return pkg.length() == 0 ? otherRole.getEntityName() : pkg + "." + otherRole.getEntityName(); // NOI18N
+                RelationshipRole otherRole = role.equals(rA) ? rB : rA;
+                
+                // To address issue 139804
+                // First, check if the entity package name is set in the role.
+                // If yes, then that's the package
+                // If no, then default to the passed in pkg
+                if(role.getEntityPkgName() != null) {
+                    return otherRole.getEntityPkgName() + "." + otherRole.getEntityName(); // NOI18N
+                } else {
+                    return pkg.length() == 0 ? otherRole.getEntityName() : pkg + "." + otherRole.getEntityName(); // NOI18N
+                }
             }
 
             private void makeReadOnlyIfNecessary(List<String> pkColumnNames, String testColumnName, List<ExpressionTree> attrs) {

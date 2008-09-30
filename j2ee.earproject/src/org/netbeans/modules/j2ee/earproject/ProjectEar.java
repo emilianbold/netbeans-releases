@@ -110,7 +110,9 @@ public final class ProjectEar extends J2eeApplicationProvider
         J2eeApplicationImplementation {
     
     public static final String FILE_DD        = "application.xml";//NOI18N
-    
+
+    private static final Logger LOGGER = Logger.getLogger(ProjectEar.class.getName());
+
     private final EarProject project;
     
     private PropertyChangeSupport propertyChangeSupport;
@@ -120,7 +122,7 @@ public final class ProjectEar extends J2eeApplicationProvider
     private Application application;
     private MetadataModel<ApplicationMetadata> metadataModel;
     
-    private DeployOnSaveSupport deployOnSaveSupport;
+    private final DeployOnSaveSupport deployOnSaveSupport = new DeployOnSaveSupportProxy();
     
     ProjectEar (EarProject project) { // ], AntProjectHelper helper) {
         this.project = project;
@@ -514,36 +516,11 @@ public final class ProjectEar extends J2eeApplicationProvider
     public  J2eeModuleProvider[] getChildModuleProviders() {
         return mods.values().toArray(new J2eeModuleProvider[mods.size()]);
     }
-
+   
     @Override
     public DeployOnSaveSupport getDeployOnSaveSupport() {
-        synchronized (this) {
-            if (deployOnSaveSupport == null) {
-                deployOnSaveSupport = new DeployOnSaveSupport() {
-
-                    public void addArtifactListener(ArtifactListener listener) {
-                        for (J2eeModuleProvider provider : getChildModuleProviders()) {
-                            DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
-                            if (support != null) {
-                                support.addArtifactListener(listener);
-                            }
-                        }
-                    }
-
-                    public void removeArtifactListener(ArtifactListener listener) {
-                        for (J2eeModuleProvider provider : getChildModuleProviders()) {
-                            DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
-                            if (support != null) {
-                                support.removeArtifactListener(listener);
-                            }
-                        }
-                    }
-                };
-            }
-            return deployOnSaveSupport;
-        }
+        return deployOnSaveSupport;
     }
-    
     
     public File getDeploymentConfigurationFile(String name) {
         String path = getConfigSupport().getContentRelativePath(name);
@@ -588,8 +565,7 @@ public final class ProjectEar extends J2eeApplicationProvider
             owner = FileOwnerQuery.getOwner(childFO);
         }
         if (owner == null) {
-            Logger.getLogger("global").log(Level.INFO,
-                                           "Unable to add module to the Enterpise Application. Owner project not found."); // NOI18N
+            LOGGER.log(Level.INFO, "Unable to add module to the Enterpise Application. Owner project not found."); // NOI18N
         } else {
             EarProjectProperties.addJ2eeSubprojects(project, new Project [] {owner});
         }
@@ -620,5 +596,79 @@ public final class ProjectEar extends J2eeApplicationProvider
             }
             return propertyChangeSupport;
         }
+    }
+
+    /**
+     * This class is proxying events from child listeners and perform
+     * <i>library-inclusion-in-manifest</i> (out of EJB and WEB) logic. Soo ugly but
+     * inevitable :(
+     */
+    private class DeployOnSaveSupportProxy implements ArtifactListener, DeployOnSaveSupport {
+
+        private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
+
+        public DeployOnSaveSupportProxy() {
+            super();
+        }
+
+        public synchronized void addArtifactListener(ArtifactListener listner) {
+            boolean register = listeners.isEmpty();
+            if (listner != null) {
+                listeners.add(listner);
+            }
+
+            if (register) {
+                for (J2eeModuleProvider provider : getChildModuleProviders()) {
+                    DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
+                    if (support != null) {
+                        support.addArtifactListener(this);
+                    }
+                }
+            }
+        }
+
+        public synchronized void removeArtifactListener(ArtifactListener listener) {
+            if (listener != null) {
+                listeners.remove(listener);
+            }
+
+            if (listeners.isEmpty()) {
+                for (J2eeModuleProvider provider : getChildModuleProviders()) {
+                    DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
+                    if (support != null) {
+                        support.removeArtifactListener(this);
+                    }
+                }
+            }
+        }
+
+        public void artifactsUpdated(Iterable<Artifact> artifacts) {
+            List<Artifact> recomputed = new ArrayList<Artifact>();
+            for (Artifact artifact : artifacts) {
+                if (artifact.isReferencedLibrary()) {
+                    // FIXME manifest ant TLD magic
+                    File buildDir = project.getAntProjectHelper().resolveFile(
+                            project.evaluator().getProperty(EarProjectProperties.BUILD_DIR));
+                    File destFile = new File(buildDir, artifact.getFile().getName());
+                    try {
+                        FileUtil.createData(destFile);
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, "Could not prepare data file", ex);
+                        continue;
+                    }
+                    recomputed.add(artifact.distributionPath(destFile));
+                } else {
+                    recomputed.add(artifact);
+                }
+            }
+            List<ArtifactListener> toFire = null;
+            synchronized (this) {
+                toFire = new ArrayList<ArtifactListener>(listeners);
+            }
+            for (ArtifactListener listener : toFire) {
+                listener.artifactsUpdated(recomputed);
+            }
+        }
+
     }
 }

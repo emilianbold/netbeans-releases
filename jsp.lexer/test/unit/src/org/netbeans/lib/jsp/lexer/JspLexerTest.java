@@ -86,5 +86,23 @@ public class JspLexerTest extends NbTestCase {
         compareReferenceFiles();
     }
     
+     public void test146930() {
+        TokenHierarchy th = TokenHierarchy.create("<${}", JspTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+        
+        assertTrue(ts.moveNext());
+        
+        assertEquals("<", ts.token().text().toString());
+        assertEquals(JspTokenId.TEXT, ts.token().id());
+        
+        assertTrue(ts.moveNext());
+        
+        assertEquals("${}", ts.token().text().toString());
+        assertEquals(JspTokenId.EL, ts.token().id());
+        
+        assertFalse(ts.moveNext());
+    }
+    
     
 }

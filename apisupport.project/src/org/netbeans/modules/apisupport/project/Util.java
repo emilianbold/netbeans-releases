@@ -129,10 +129,9 @@ public final class Util {
      * @param parent a parent element
      * @param name the intended local name
      * @param namespace the intended namespace (or null)
-     * @return the one child element with that name, or null if none or more than one
+     * @return the first child element with that name, or null if none
      */
     public static Element findElement(Element parent, String name, String namespace) {
-        Element result = null;
         NodeList l = parent.getChildNodes();
         for (int i = 0; i < l.getLength(); i++) {
             if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
@@ -140,15 +139,11 @@ public final class Util {
                 if ((namespace == null && name.equals(el.getTagName())) ||
                         (namespace != null && name.equals(el.getLocalName()) &&
                         namespace.equals(el.getNamespaceURI()))) {
-                    if (result == null) {
-                        result = el;
-                    } else {
-                        return null;
-                    }
+                    return el;
                 }
             }
         }
-        return result;
+        return null;
     }
     
     /**

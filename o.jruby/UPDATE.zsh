@@ -16,6 +16,14 @@
 #
 # You can invoke this script with the extra parameter "local" to only update the local zip files (preindexed)
 # or "native" to only update the native zips, or "both" to update everything.
+#
+# To try debugging this, set up the properties in GsfModuleInstaller.java's restored method, for example like this:
+# System.setProperty("gsf.preindexing", "true");
+# System.setProperty("netbeans.full.hack=true", "true");
+# System.setProperty("ruby.interpreter", "/Users/tor/dev/ruby/install/ruby-1.8.5/bin/ruby");
+# System.setProperty("gsf.preindexing.projectpath=", "/Users/tor/NetBeansProjects/RailsPreindexProject");
+#
+
 
 #
 # Configure the following parameters:
@@ -25,7 +33,8 @@ NBHGHOME=~/netbeans/hg/main
 NATIVERUBYHOME=/Users/tor/dev/ruby/install/ruby-1.8.5/
 #NATIVERUBYHOME=/home/tor/dev/ruby-1.8.5
 VMFLAGS=-J-Xmx1024m
-INDEXING_PROJECT=/Users/tor/NetBeansProjects/RailsApplication1
+# -ANY- Rails project will do, I chose a recent one to avoid getting Rails version mismatch warning dialogs
+INDEXING_PROJECT=/Users/tor/NetBeansProjects/RailsPreindexProject
 
 # You probably don't want to change these:
 NB=$NBHGHOME/nbbuild/netbeans/bin/netbeans
@@ -54,7 +63,7 @@ if test ! -f $CLUSTERS/extra/modules/org-netbeans-modules-gsf-tools.jar ; then
   exit 0
 fi
 
-find $CLUSTERS . -name "netbeans-index*.zip" -exec rm {} \;
+find $CLUSTERS -name "netbeans-index*.zip" -exec rm {} \;
 rm -rf $RUBY/preindexed/lib
 rm -rf $GSF/preindexed-javascript/lib
 

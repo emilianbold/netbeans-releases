@@ -48,6 +48,75 @@ import java.io.File;
  */
 public interface ArtifactListener {
 
-    public void artifactsUpdated(Iterable<File> artifacts);
+    public void artifactsUpdated(Iterable<Artifact> artifacts);
 
+    public static final class Artifact {
+
+        private final File file;
+
+        private final File distributionPath;
+
+        private final boolean library;
+
+        public Artifact(File file, File distributionPath, boolean library) {
+            this.file = file;
+            this.distributionPath = distributionPath;
+            this.library = library;
+        }
+
+        public static Artifact forFile(File file) {
+            return new Artifact(file, null, false);
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public Artifact referencedLibrary() {
+            return new Artifact(this.file, null, true);
+        }
+
+        public boolean isReferencedLibrary() {
+            return library;
+        }
+
+        public Artifact distributionPath(File distributionPath) {
+            return new Artifact(this.file, distributionPath, this.library);
+        }
+
+        public File getDistributionPath() {
+            return distributionPath;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Artifact other = (Artifact) obj;
+            if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+                return false;
+            }
+            if (this.distributionPath != other.distributionPath && (this.distributionPath == null || !this.distributionPath.equals(other.distributionPath))) {
+                return false;
+            }
+            if (this.library != other.library) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 59 * hash + (this.file != null ? this.file.hashCode() : 0);
+            hash = 59 * hash + (this.distributionPath != null ? this.distributionPath.hashCode() : 0);
+            hash = 59 * hash + (this.library ? 1 : 0);
+            return hash;
+        }
+        
+    }
 }

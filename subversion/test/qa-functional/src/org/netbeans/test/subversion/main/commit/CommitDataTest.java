@@ -81,9 +81,9 @@ public class CommitDataTest extends JellyTestCase {
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(CommitDataTest.class).addTest(
-                    "testCommitFile"
-//                    "testCommitPackage",
-//                    "testRecognizeMimeType"
+                    "testCommitFile",
+                    "testCommitPackage",
+                    "testRecognizeMimeType"
                  )
                  .enableModules(".*")
                  .clusters(".*")
