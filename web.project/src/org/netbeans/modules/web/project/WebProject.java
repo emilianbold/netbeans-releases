@@ -1516,9 +1516,9 @@ public final class WebProject implements Project, AntProjectListener {
             return true;
         }
 
-        private void fireArtifactChange(Iterable<File> files) {
+        private void fireArtifactChange(Iterable<ArtifactListener.Artifact> artifacts) {
             for (ArtifactListener listener : listeners) {
-                listener.artifactsUpdated(files);
+                listener.artifactsUpdated(artifacts);
             }
         }
 
@@ -1533,7 +1533,7 @@ public final class WebProject implements Project, AntProjectListener {
                     toDelete.delete();
                 }
             }
-            fireArtifactChange(Collections.singleton(deleted));
+            fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(deleted)));
         }
 
         private void handleCopyFileToDestDir(FileObject fo) throws IOException {
@@ -1597,7 +1597,7 @@ public final class WebProject implements Project, AntProjectListener {
                                 fl.releaseLock();
                             }
                             File file = FileUtil.toFile(destFile);
-                            fireArtifactChange(Collections.singleton(file));
+                            fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
                         }
                     }
                 }

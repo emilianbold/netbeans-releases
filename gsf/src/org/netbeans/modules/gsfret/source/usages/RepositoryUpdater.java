@@ -144,7 +144,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger BUG_LOGGER = Logger.getLogger("ruby.indexerbug");
-    private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
+    private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn .hg"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
     //private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
@@ -1717,90 +1717,54 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 
         private class It implements Iterator<File> {
 
-            private final List<File> toDo = new LinkedList<File> ();
+            private final LinkedList<File> toDo = new LinkedList<File>();
 
-            public It (File root) {
-                
-                
-//                // Special case: Rails on some systems (such as debian)
-//                // creates symbolic links in the vendor directory back into Rails;
-//                // I don't want to visit these links. 
-//                // Arguably I should do this for all dirs - but it's a performance issue,
-//                // and one I want to investigate more closely before making large changes;
-//                // this specific fix addresses a serious recorded issue (93019)
-//                if (root.getName().equals("vendor")) { // NOI18N
-//                    ArrayList<File> list = new ArrayList<File>();
-//                    for (File f : root.listFiles()) {
-//                        
-//                        // Skip vendor/rails - this is really a library which should
-//                        // be matching other installations.
-//                        // Ugh... I shouldn't skip it if I don't have it in the gems!
-//                        if (skipVendorRails && f.getName().equals("rails")) { // NOI18N
-//                            continue;
-//                        }
-//
-//                        try {
-//                            // See JDK issue 4042001 - need symbolic link support.
-//                            // Workaround which will work in this scenario is a
-//                            // to compare canonical paths with absolute paths
-//                            if (f.getAbsolutePath().equals(f.getCanonicalPath())) {
-//                                list.add(f);
-//                            }
-//                        } catch (IOException ioe) {
-//                            Exceptions.printStackTrace(ioe);
-//                        }
-//                    }
-//                    this.toDo.addAll(list);
-//                } else {
-                    // Normal path
-                    
-                    File[] files = root.listFiles();
-                    if (files != null && files.length > 0) {
-                        this.toDo.addAll(java.util.Arrays.asList(files));
-                    }
-//                }
+            public It(File root) {
+                File[] files = root.listFiles();
+                if (files != null && files.length > 0) {
+                    this.toDo.addAll(java.util.Arrays.asList(files));
+                }
             }
 
             public boolean hasNext() {
                 while (!toDo.isEmpty()) {
-                    File f = toDo.remove (0);   
+                    File f = toDo.peek();
                     final String name = f.getName();
-                    if (f.isDirectory() && !ignoredDirectories.contains(name)/* && Utilities.isJavaIdentifier(name)*/) {
+                    if (f.isDirectory() && !ignoredDirectories.contains(name)) {
+                        f = toDo.removeFirst();
+                        assert f.isDirectory();
                         File[] content = f.listFiles();
                         if (content != null) {
-                            for (int i=0,j=0;i<content.length;i++) {
+                            for (int i = 0; i < content.length; i++) {
                                 f = content[i];
-                                if (f.isFile()) {
-                                    this.toDo.add(j++,f);
+                                if (f == null) {
+                                    continue;
                                 }
-                                else {
-                                    this.toDo.add(f);
+                                if (f.isFile()) {
+                                    this.toDo.addFirst(f);
+                                } else {
+                                    this.toDo.addLast(f);
                                 }
                             }
                         }
-                    }                    
-                    else { // XXX How do I decide if it's a reasonable name?
-//                        System.out.println("Should we scan " + name + "?");
-//                    else if (name.endsWith('.'+JavaDataLoader.JAVA_EXTENSION) && !PACKAGE_INFO.equals(name) && f.length()>0) { //NOI18N
-                        toDo.add(0,f);
+                    } else {
                         return true;
-                    }                                        
+                    }
                 }
                 return false;
             }
 
             public File next() {
-                return toDo.remove (0);
+                return toDo.removeFirst();
             }
 
             public void remove() {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
     BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker throwing exception 1 ");
 }
-                throw new UnsupportedOperationException ();
+                throw new UnsupportedOperationException();
             }
-
-        }            
+        }
     }
     
     

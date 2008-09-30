@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
@@ -171,7 +172,7 @@ public class ServerFileDistributor extends ServerProgress {
     }
 
     public DeploymentChangeDescriptor distributeOnSave(TargetModule targetModule, ModuleChangeReporter mcr,
-            Iterable<File> artifacts) throws IOException {
+            Iterable<Artifact> artifacts) throws IOException {
 
         long lastDeployTime = targetModule.getTimestamp();
         TargetModuleID[] childModules = targetModule.getChildTargetModuleID();
@@ -246,7 +247,7 @@ public class ServerFileDistributor extends ServerProgress {
     }
 
     // files are already there
-    private AppChanges _distributeOnSave(TargetModuleID target, Iterable<File> artifacts) throws IOException {
+    private AppChanges _distributeOnSave(TargetModuleID target, Iterable<Artifact> artifacts) throws IOException {
         AppChanges mc = createModuleChangeDescriptor(target);
         setStatusDistributeRunning(NbBundle.getMessage(
             ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
@@ -256,7 +257,8 @@ public class ServerFileDistributor extends ServerProgress {
         File destDir = FileUtil.toFile(contentDirectory);
         assert destDir != null;
 
-        for (File fsFile : artifacts) {
+        for (Artifact artifact : artifacts) {
+            File fsFile = artifact.getFile();
             FileObject file = FileUtil.toFileObject(FileUtil.normalizeFile(fsFile));
             if (file != null && !file.isFolder()) {
                 String relative = FileUtil.getRelativePath(contentDirectory, file);
@@ -331,7 +333,7 @@ public class ServerFileDistributor extends ServerProgress {
         }
     }
 
-    private AppChanges _distributeOnSave(File destDir, TargetModuleID target, Iterable<File> artifacts) throws IOException {
+    private AppChanges _distributeOnSave(File destDir, TargetModuleID target, Iterable<Artifact> artifacts) throws IOException {
         AppChanges mc = createModuleChangeDescriptor(target);
 
         setStatusDistributeRunning(NbBundle.getMessage(ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
@@ -351,10 +353,21 @@ public class ServerFileDistributor extends ServerProgress {
             FileObject contentDirectory = getJ2eeModule(target).getContentDirectory();
             assert contentDirectory != null;
 
-            for (File fsFile : artifacts) {
+            for (Artifact artifact : artifacts) {
+                File fsFile = artifact.getFile();
+                File altDistPath = artifact.getDistributionPath();
+
                 FileObject file = FileUtil.toFileObject(FileUtil.normalizeFile(fsFile));
-                if (file != null) {
-                    String relative = FileUtil.getRelativePath(contentDirectory, file);
+
+                FileObject checkFile = null;
+                if (altDistPath != null) {
+                    checkFile = FileUtil.toFileObject(FileUtil.normalizeFile(altDistPath));
+                } else {
+                    checkFile = file;
+                }
+
+                if (checkFile != null && file != null) {
+                    String relative = FileUtil.getRelativePath(contentDirectory, checkFile);
                     if (relative != null) {
                         FileObject targetFO = (FileObject) destMap.get(relative);
                         if (file.isFolder()) {
