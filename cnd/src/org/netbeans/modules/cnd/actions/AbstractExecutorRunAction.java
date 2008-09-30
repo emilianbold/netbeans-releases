@@ -79,7 +79,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     protected static String getDevelopmentHost(FileObject fileObject) {
         Project project = FileOwnerQuery.getOwner(fileObject);
 
-        String developmentHost = CompilerSetManager.LOCALHOST;
+        String developmentHost = CompilerSetManager.getDefaultDevelopmentHost();
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {
