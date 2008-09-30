@@ -439,12 +439,15 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
             {
                 HashMap<String, String> map = new HashMap();
                 //write sourceEnd info
-                IAssociationEnd sourceEnd = getSourceEnd();         
+                IAssociationEnd sourceEnd = getSourceEnd();   
                 //create a hashmap with labelKeys, and typeInfos
                 map.clear();
                 map.put("End Name_SOURCE", NAME);
                 map.put("Multiplicity_SOURCE", MULTIPLICITY);
-                writeAssociationEnd(edgeWriter, manager, sourceEnd,map);
+                if (sourceEnd != null)
+                {
+                    writeAssociationEnd(edgeWriter, manager, sourceEnd, map);
+                }               
                 
                 //write targetEnd Info
                 IAssociationEnd targetEnd = getTargetEnd();         
@@ -452,7 +455,10 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
                 map.clear();
                 map.put("End Name_TARGET", NAME);
                 map.put("Multiplicity_TARGET", MULTIPLICITY);
-                writeAssociationEnd(edgeWriter, manager, targetEnd,map);
+                if (targetEnd != null)
+                {
+                    writeAssociationEnd(edgeWriter, manager, targetEnd, map);
+                }                
                 
                 //now write the association name
                 writeAssociationChild(edgeWriter, manager, "Name_EDGE", NAME);
@@ -472,6 +478,8 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
 
     private void writeAssociationEnd(EdgeWriter edgeWriter, LabelManager manager, IAssociationEnd aEnd, HashMap<String, String> keyMap)
     {
+        if (aEnd == null)
+            return;
         // set values and begin associationEnd graph node
         setValues(edgeWriter, this.getLocation(),
                 this.getBounds().getSize(), "AssociationEndPEID",
