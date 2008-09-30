@@ -283,7 +283,7 @@ public class Mercurial {
                     knownRoot = foldersToRoot.get(file);
                 }
                 if(knownRoot != null) {
-                    addFoldersToRoot(folders, file);
+                    addFoldersToRoot(folders, knownRoot);
                     return knownRoot;
                 }
                 folders.add(file);
