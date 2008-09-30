@@ -41,9 +41,11 @@
 package org.netbeans.modules.php.dbgp.packets;
 
 import org.netbeans.modules.php.dbgp.DebugSession;
+import org.netbeans.modules.php.dbgp.DebugSession.IDESessionBridge;
 import org.netbeans.modules.php.dbgp.DebuggerOptions;
 import org.netbeans.modules.php.dbgp.SessionProgress;
 import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
+import org.netbeans.modules.php.dbgp.models.ThreadsModel;
 import org.w3c.dom.Node;
 
 
@@ -81,9 +83,14 @@ public class StatusResponse extends DbgpResponse {
             StackGetCommand getCommand = new StackGetCommand( 
                     session.getTransactionId() );
             session.sendCommandLater( getCommand );
-            
-            session.getBridge().setSuspended( true );
-            session.getBridge().getThreadsModel().updateSession( session );
+            IDESessionBridge bridge = session.getBridge();
+            if (bridge != null) {
+                bridge.setSuspended( true );
+                ThreadsModel threadsModel = bridge.getThreadsModel();
+                if (threadsModel != null) {
+                    threadsModel.updateSession( session );
+                }
+            }
         }
         else if ( (getStatus() == Status.STOPPING || getStatus() == Status.STOPPED)
                 && getReason() == Reason.OK ) 
