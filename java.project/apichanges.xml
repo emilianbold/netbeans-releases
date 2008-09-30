@@ -133,10 +133,11 @@ is the proper place.
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    Class <code>JavaRunner</code> added.
+                    Classes <code>JavaRunner</code> and <code>JavaRunnerImplementation</code> added.
                 </p>
             </description>
             <class package="org.netbeans.api.java.project.runner" name="JavaRunner"/>
+            <class package="org.netbeans.spi.java.project.runner" name="JavaRunnerImplementation"/>
             <issue number="138504"/>
         </change>
         
