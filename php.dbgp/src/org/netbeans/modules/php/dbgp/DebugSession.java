@@ -205,6 +205,7 @@ public class DebugSession implements Runnable {
                 myEngine.set(engine);
             }
         }
+        assert myEngine.get() != null;
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         for (Session session : sessions) {
             SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);

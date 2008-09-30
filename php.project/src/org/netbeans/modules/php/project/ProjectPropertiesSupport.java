@@ -138,11 +138,10 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
-     * Will show the customizer if the property is unknown.
      * @return run as type or <code>null</code>.
      */
     public static PhpProjectProperties.RunAsType getRunAs(PhpProject project) {
-        return getRunAs(project, true);
+        return getRunAs(project, false);
     }
 
     /**

@@ -107,14 +107,17 @@ made subject to such option by the copyright holder.
              org/netbeans/core/ui/resources/Standard.xml also, and sync
              the changes if appropriate -->
         <file name="Standard.xml" url="Standard.xml">
+            <attr name="position" intvalue="800"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
         </file>
         <file name="Debugging.xml" url="Debugging.xml">
+            <attr name="position" intvalue="900"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
         </file>
 
         <!-- quick search enabled for ide in toolbar by default -->
         <folder name="QuickSearch">
+            <attr name="position" intvalue="700"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
             <file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
