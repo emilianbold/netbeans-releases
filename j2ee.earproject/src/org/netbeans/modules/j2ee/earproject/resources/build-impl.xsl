@@ -217,9 +217,9 @@ is divided into following sections:
                     Default value is stored to differentiate the case
                     when this hasn't been called at all.
                     -->
-                    <xsl:attribute name="property">build.disable.deploy.on.save</xsl:attribute>
+                    <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
                     <xsl:attribute name="else">false</xsl:attribute>
-                    <istrue value="${{disable.deploy.on.save}}"/>
+                    <isfalse value="${{disable.deploy.on.save}}"/>
                 </condition>         
             </target>
             
@@ -617,16 +617,17 @@ to simulate
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
                 <!--
-                If build.disable.deploy.on.save is not set init-cos hasn't
+                If build.deploy.on.save is not set init-cos hasn't
                 been called so we are running the old style build.
                 -->
                 <condition>
-                    <xsl:attribute name="property">build.disable.deploy.on.save</xsl:attribute>
-                    <not><isset property="build.disable.deploy.on.save"/></not>
+                    <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
+                    <xsl:attribute name="value">false</xsl:attribute>
+                    <not><isset property="build.deploy.on.save"/></not>
                 </condition>
                 <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">                   
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
-                    <property name="disable.deploy.on.save" value="${{build.disable.deploy.on.save}}"/>
+                    <property name="deploy.on.save" value="${{build.deploy.on.save}}"/>
                 </ant>
             </xsl:for-each>
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
