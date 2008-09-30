@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.ButtonGroup" name="inputModeButtonGroup">
+    </Component>
+  </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
@@ -15,46 +19,62 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="errorInfoPanel" alignment="0" pref="654" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="additionalPropsLabel" alignment="1" max="32767" attributes="1"/>
-                          <Component id="templateLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="hostLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="portLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="databaseLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="passwordLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="userLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="instanceLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="serverNameLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="dsnLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="tnsLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="serviceLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="sidLabel" alignment="0" pref="119" max="32767" attributes="1"/>
-                          <Component id="showUrlCheckBox" alignment="1" min="-2" pref="125" max="-2" attributes="1"/>
+                  <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="inputModelLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="templateLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="hostLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="portLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="databaseLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="passwordLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="userLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="instanceLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="serverNameLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="dsnLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="tnsLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="serviceLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="sidLabel" alignment="0" pref="119" max="32767" attributes="1"/>
+                          </Group>
+                          <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="additionalPropsLabel" alignment="1" max="32767" attributes="1"/>
+                              <Component id="showUrlCheckBox" alignment="0" pref="125" max="32767" attributes="1"/>
+                              <Component id="directUrlLabel" alignment="0" max="32767" attributes="1"/>
+                          </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="urlField" pref="519" max="32767" attributes="1"/>
-                          <Component id="additionalPropsField" pref="519" max="32767" attributes="1"/>
-                          <Component id="templateComboBox" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="hostField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="portField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="databaseField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="sidField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="serviceField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="tnsField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="dsnField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="serverNameField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="instanceField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="userField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="passwordField" alignment="1" pref="519" max="32767" attributes="1"/>
-                          <Component id="passwordCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="directUrlScroll" pref="539" max="32767" attributes="0"/>
+                          <Component id="urlField" alignment="0" pref="539" max="32767" attributes="1"/>
+                          <Component id="additionalPropsField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Group type="102" attributes="0">
+                              <Component id="fieldInputCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="directInputCheckBox" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="templateComboBox" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="hostField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="portField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="databaseField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="sidField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="serviceField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="tnsField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="dsnField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="serverNameField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="instanceField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="userField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="passwordField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="passwordCheckBox" pref="400" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="139" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                   </Group>
+                  <Component id="errorInfoPanel" alignment="0" pref="674" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -64,6 +84,12 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="inputModelLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="fieldInputCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="directInputCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="templateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="templateComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -125,19 +151,26 @@
               </Group>
               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
               <Component id="passwordCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="additionalPropsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="additionalPropsField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="showUrlCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="directUrlScroll" min="-2" pref="84" max="-2" attributes="0"/>
+                  <Component id="directUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="errorInfoPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="52" max="32767" attributes="0"/>
+              <EmptySpace pref="161" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -148,7 +181,9 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionShowJDBCURL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
-        <Property name="toolTipText" type="java.lang.String" value="Check this to show or hide the JDBC URL"/>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionShowJDBCURLAllyDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[3, 0, 1, 1]"/>
         </Property>
@@ -405,9 +440,98 @@
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionRememberPasswordA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[3, 0, 1, 1]"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="org.netbeans.modules.db.util.ErrorInfoPanel" name="errorInfoPanel">
     </Component>
+    <Component class="javax.swing.JLabel" name="inputModelLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="fieldInputCheckBox"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewCOnnectionInputMode" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="fieldInputCheckBox">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="inputModeButtonGroup"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionFieldEntryMode" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionFieldEntryModeA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fieldInputCheckBoxActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="directInputCheckBox">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="inputModeButtonGroup"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDirectUrlEntryMode" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDirectUrlEntryModeA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="directInputCheckBoxActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="directUrlLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="directUrlField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDirectURL" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="directUrlScroll">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTextArea" name="directUrlField">
+          <Properties>
+            <Property name="columns" type="int" value="20"/>
+            <Property name="lineWrap" type="boolean" value="true"/>
+            <Property name="rows" type="int" value="5"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionJDBCURLA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="jPanel1">
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <EmptySpace min="0" pref="674" max="32767" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <EmptySpace min="0" pref="19" max="32767" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+    </Container>
   </SubComponents>
 </Form>
