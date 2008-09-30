@@ -40,41 +40,43 @@
 package org.netbeans.spi.java.project.runner;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
-import org.netbeans.api.java.project.runner.ProjectRunner;
+import org.netbeans.api.java.project.runner.JavaRunner;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
- * Implementation of {@link ProjectRunner}. Looked-up in the default {@link Lookup}.
+ * Implementation of {@link JavaRunner}. Looked-up in the default {@link Lookup}.
  *
- * @since 1.19
+ * @since 1.22
  * 
  * @author Jan Lahoda
  */
-public interface ProjectRunnerImplementation {
+public interface JavaRunnerImplementation {
 
     /**
-     * Implementation of {@link ProjectRunner#isSupported(java.lang.String, org.openide.filesystems.FileObject)}.
+     * Implementation of {@link JavaRunner#isSupported(java.lang.String, java.util.Map)}.
      * 
      * @param command command name
      * @param toRun either the file that would be executed, or the project folder
      * @return true if and only if the given command is supported for given file/folder
      *
-     * @since 1.19
+     * @since 1.22
      */
-    public boolean isSupported(String command, FileObject file);
+    public boolean isSupported(String command, Map<String, ?> properties);
 
     /**
-     * Implementation of {@link ProjectRunner#execute(java.lang.String, java.util.Properties, org.openide.filesystems.FileObject)}.
+     * Implementation of {@link JavaRunner#execute(java.lang.String, java.util.Map)}.
      *
      * @param command command to execute
      * @param props properties
      * @param toRun file to run
      * @throws java.io.IOException if execution fails
      *
-     * @since 1.19
+     * @since 1.22
      */
-    public void execute(String command, Properties props, FileObject toRun) throws IOException;
+    public ExecutorTask execute(String command, Map<String, ?> properties) throws IOException;
     
 }

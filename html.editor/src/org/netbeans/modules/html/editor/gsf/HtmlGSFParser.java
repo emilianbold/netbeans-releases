@@ -63,6 +63,7 @@ import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultError;
+import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -72,6 +73,10 @@ import org.openide.util.NbBundle;
  */
 public class HtmlGSFParser implements Parser, PositionManager {
 
+    public HtmlGSFParser() {
+        NbReaderProvider.setupReaders(); //initialize DTD registry
+    }
+    
     /** logger for timers/counters */
     private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
     private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());
@@ -111,7 +116,7 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 final DTD dtd = result.dtd();
                 AstNodeUtils.visitChildren(result.root(),
                         new AstNodeVisitor() {
-
+                            
                             public void visit(AstNode node) {
                                 if (node.type() == AstNode.NodeType.UNMATCHED_TAG) {
                                     AstNode unmatched = node.children().get(0);

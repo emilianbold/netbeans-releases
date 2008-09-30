@@ -139,7 +139,11 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         antHelper.addAntProjectListener(this);
     }
 
-    public abstract Map<ClassPathSupport.Item, String> getArtifacts();
+    protected abstract Map<ClassPathSupport.Item, String> getArtifacts();
+
+    protected ArtifactListener.Artifact filterArtifact(ArtifactListener.Artifact artifact) {
+        return artifact;
+    }
 
     public final synchronized void reload() {
         Map<File, String> toRemove  = new HashMap<File, String>(listeningTo);
@@ -243,7 +247,7 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         }
 
         Iterable<ArtifactListener.Artifact> iterable = Collections.singleton(
-                ArtifactListener.Artifact.forFile(file).referencedLibrary());
+                filterArtifact(ArtifactListener.Artifact.forFile(file).referencedLibrary()));
         for (ArtifactListener listener : toFire) {
             listener.artifactsUpdated(iterable);
         }
