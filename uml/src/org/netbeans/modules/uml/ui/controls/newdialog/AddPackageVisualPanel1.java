@@ -405,35 +405,35 @@ public final class AddPackageVisualPanel1 extends JPanel
         else
         {        
             JavaRequestProcessor p = new JavaRequestProcessor();
-            if (!p.checkIfCorrectLanguage(mDetails.getNamespace()))
-                return;
-
-            if ( p.invalidPackage(getPackageName()) )
+            if (p.checkIfCorrectLanguage(mDetails.getNamespace()))
             {
-                errorType = INVALID_PACKAGE_NAME;
-                valid = false;
-            }
-            else  // check if package name already exist in the current namespace
-            {
-                IElementLocator pElementLocator = new ElementLocator();
-                String ns = (String)getPackageNamespace();
-                INamespace namespace = NewDialogUtilities.getNamespace(ns);
-                ETList<INamedElement> pFoundElements =
-                        pElementLocator.findByName(namespace, getPackageName());
-
-                if (pFoundElements != null)
+                if (p.invalidPackage(getPackageName()))
                 {
-                    int count = pFoundElements.getCount();
-                    for (int i = 0 ; i < count ; i++)
-                    {
-                        INamedElement pFoundElement = pFoundElements.get(i);
+                    errorType = INVALID_PACKAGE_NAME;
+                    valid = false;
+                } else  // check if package name already exist in the current namespace
 
-                        if (pFoundElement != null)
+                {
+                    IElementLocator pElementLocator = new ElementLocator();
+                    String ns = (String) getPackageNamespace();
+                    INamespace namespace = NewDialogUtilities.getNamespace(ns);
+                    ETList<INamedElement> pFoundElements =
+                            pElementLocator.findByName(namespace, getPackageName());
+
+                    if (pFoundElements != null)
+                    {
+                        int count = pFoundElements.getCount();
+                        for (int i = 0; i < count; i++)
                         {
-                            if (pFoundElement.getElementType().equals("Package"))
+                            INamedElement pFoundElement = pFoundElements.get(i);
+
+                            if (pFoundElement != null)
                             {
-                                errorType = PACKAGE_NAME_CONFLICT;
-                                valid = false;
+                                if (pFoundElement.getElementType().equals("Package"))
+                                {
+                                    errorType = PACKAGE_NAME_CONFLICT;
+                                    valid = false;
+                                }
                             }
                         }
                     }

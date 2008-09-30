@@ -67,3 +67,4 @@ cvs@web.netbeans.org=web.core/*,css.visual/*,el.lexer/*,web.examples/*,web.freef
 cvs@websvc.netbeans.org=websvc.*/*,j2ee.dd.webservice/*
 cvs@xml.netbeans.org=api.xml/*,editor.structure/*,libs.jxpath/*,o.n.xml.libs.jxpath/*,visdev.prefuse/*,xml*/*,xsl/*
 cvs@xtest.netbeans.org=xtest/*,nbjunit/*,nbjunit.ide/*
+cvs@ajax.netbeans.org=web.client.*/*

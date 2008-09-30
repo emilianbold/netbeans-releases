@@ -48,7 +48,6 @@ import java.net.URLEncoder;
 import java.util.*;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -60,8 +59,8 @@ import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.*;
-import org.openide.util.HelpCtx;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -248,7 +247,14 @@ public class J2MEActionProvider implements ActionProvider {
                     } else return;
                 }
                 try {
-                    ActionUtils.runTarget(findBuildXml(), targetNames, p);
+                    FileObject buildScript = findBuildXml();
+                    if (buildScript != null) {
+                        ActionUtils.runTarget(buildScript, targetNames, p);
+                    } else {
+                        StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage(J2MEActionProvider.class,
+                                "MSG_NO_BUILD_SCRIPT")); //NOI18N
+                    }
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(e);
                 }

@@ -39,9 +39,8 @@
 
 package org.netbeans.modules.cnd.makeproject;
 
-import java.net.MalformedURLException;
+import java.io.File;
 import java.net.URI;
-import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -49,7 +48,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 
 /**
  * FileOwnerQuery dealing with files that are not in the project directory.
@@ -61,19 +59,20 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
 
     public Project getOwner(URI uri) {
         try {
-            URL url = uri.toURL();
-            FileObject fo = URLMapper.findFileObject(url);
-            if (fo != null) {
-                return getOwner(fo);
+            if ("file".equals(uri.getScheme())) { // NOI18N
+                return getOwner(new File(uri));
             }
-        } catch (MalformedURLException e) {
-            // silently ignore
-        }
+        } catch (IllegalArgumentException x) {/* skip it */}
         return null;
     }
 
     public Project getOwner(FileObject fo) {
-        String path = FileUtil.toFile(fo).getAbsolutePath();
+        File f = FileUtil.toFile(fo);
+        return f != null ? getOwner(f) : null;
+    }
+
+    private Project getOwner(File f) {
+        String path = f.getAbsolutePath();
         for (Project project : OpenProjects.getDefault().getOpenProjects()) {
             ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (provider != null) {

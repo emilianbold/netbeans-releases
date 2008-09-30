@@ -57,7 +57,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -78,7 +77,6 @@ implements CloneableEditorSupport.Env {
     /** the content of lookup of support */
     private InstanceContent ic;
 
-    @RandomlyFails // NB-Core-Build #1437
     public void testDocCanBeGCdWhenNotModifiedButOpened() throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();
@@ -89,10 +87,10 @@ implements CloneableEditorSupport.Env {
         
         assertGC ("Document can dissapear", ref, Collections.singleton(support));
 
-        assertFalse ("Document is not loaded", support.isDocumentLoaded ());
         assertTrue ("Can be closed without problems", support.close ());
+        assertFalse ("Document is not loaded", support.isDocumentLoaded ());
     }
-
+    
     public void testDocumentIsNotGCedIfModified () throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();
