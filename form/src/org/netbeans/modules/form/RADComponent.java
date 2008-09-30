@@ -362,7 +362,7 @@ public class RADComponent {
         return false;
     }
 
-    Object createDefaultDeserializedInstance() throws IOException, ClassNotFoundException {
+    Object createDefaultDeserializedInstance() throws Exception {
         FileObject formFile = FormEditor.getFormDataObject(getFormModel()).getFormFile();
         String serFile = (String)getAuxValue(JavaCodeGenerator.AUX_SERIALIZE_TO);
         if (serFile == null) {
@@ -380,8 +380,14 @@ public class RADComponent {
         try {
             instance = Beans.instantiate(sourcePath.getClassLoader(true), serName);
         } catch (ClassNotFoundException cnfe) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, cnfe);
             ClassPath executionPath = ClassPath.getClassPath(formFile, ClassPath.EXECUTE);
-            instance = Beans.instantiate(executionPath.getClassLoader(true), serName);
+            try {
+                instance = Beans.instantiate(executionPath.getClassLoader(true), serName);
+            } catch (ClassNotFoundException cnfex) {
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, cnfex);
+                instance = createBeanInstance();
+            }
         }
         return instance;
     }
