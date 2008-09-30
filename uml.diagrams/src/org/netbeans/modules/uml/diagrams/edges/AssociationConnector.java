@@ -147,6 +147,7 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
             updateAssociationEnds(element);
         }
 
+        showQualifiers(element);
         setControlPointShape(PointShape.SQUARE_FILLED_BIG);
     }
 
@@ -233,6 +234,61 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
         }
     }
 
+    private void showQualifiers(IAssociation element)
+    {
+         for (IAssociationEnd curEnd : element.getEnds())
+        {
+            if (isSourceEnd(this, curEnd) == true)
+            {
+                if(curEnd.getQualifiers().size() > 0)
+                {
+                    QualifierLabelWidget qualifier = showSourceQualifier((GraphScene)getScene());
+                    qualifier.refreshQualifiers(curEnd);
+                }
+            }
+            else
+            {
+                if(curEnd.getQualifiers().size() > 0)
+                {
+                    QualifierLabelWidget qualifier = showTargetQualifier((GraphScene)getScene());
+                    qualifier.refreshQualifiers(curEnd);
+                }
+            }
+        }
+    }
+
+    private QualifierLabelWidget showSourceQualifier(GraphScene scene)
+    {
+        QualifierLabelWidget qualifier;
+        if (sourceQualifier == null)
+        {
+            sourceQualifier = new QualifierLabelWidget(scene);
+            addChild(sourceQualifier);
+            setConstraint(sourceQualifier, LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_SOURCE, 0);
+            sourceLocationResolver = new DirectRoutingAnchorResolver(sourceQualifier, true);
+            AnchorShape shape = AnchorShapeFactory.createAdjustableAnchorShape(getSourceAnchorShape(), sourceLocationResolver);
+            setSourceAnchorShape(shape);
+        }
+        qualifier = sourceQualifier;
+        return qualifier;
+    }
+
+    private QualifierLabelWidget showTargetQualifier(GraphScene scene)
+    {
+        QualifierLabelWidget qualifier;
+        if (targetQualifier == null)
+        {
+            targetQualifier = new QualifierLabelWidget(scene);
+            addChild(targetQualifier);
+            setConstraint(targetQualifier, LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_TARGET, -1);
+            targetLocationResolver = new DirectRoutingAnchorResolver(targetQualifier, false);
+            AnchorShape shape = AnchorShapeFactory.createAdjustableAnchorShape(getTargetAnchorShape(), targetLocationResolver);
+            setTargetAnchorShape(shape);
+        }
+        qualifier = targetQualifier;
+        return qualifier;
+    }
+
     private void updateQualifier(PropertyChangeEvent evt)
     {
         GraphScene scene = (GraphScene)getScene();
@@ -242,45 +298,11 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
         
         if(isSourceEnd(this, (IAssociationEnd) evt.getSource()) == true)
         {
-            
-            if(sourceQualifier == null)
-            {
-                sourceQualifier = new QualifierLabelWidget(scene);
-                
-                addChild(sourceQualifier);
-                
-                setConstraint(sourceQualifier, 
-                              LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_SOURCE,
-                              0);
-
-                sourceLocationResolver = new DirectRoutingAnchorResolver(sourceQualifier, true);
-
-                AnchorShape shape = 
-                        AnchorShapeFactory.createAdjustableAnchorShape(getSourceAnchorShape(), 
-                                                                       sourceLocationResolver);
-                setSourceAnchorShape(shape);
-            }
-            qualifier = sourceQualifier;
+            qualifier = showSourceQualifier(scene);
         }
         else
         {
-            if(targetQualifier == null)
-            {
-                targetQualifier = new QualifierLabelWidget(scene);
-
-                addChild(targetQualifier);
-                
-                setConstraint(targetQualifier, 
-                              LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_TARGET,
-                              -1);
-                
-                targetLocationResolver = new DirectRoutingAnchorResolver(targetQualifier, false);
-                AnchorShape shape = 
-                        AnchorShapeFactory.createAdjustableAnchorShape(getTargetAnchorShape(), 
-                                                                       targetLocationResolver);
-                setTargetAnchorShape(shape);
-            }
-            qualifier = targetQualifier;
+            qualifier = showTargetQualifier(scene);
         }
         
         qualifier.propertyChange(evt);
