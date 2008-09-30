@@ -199,6 +199,7 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Toolbars">
         <folder name="Debug">
+            <attr name="position" intvalue="500"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.javascript.debugger.api.Bundle"/>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
