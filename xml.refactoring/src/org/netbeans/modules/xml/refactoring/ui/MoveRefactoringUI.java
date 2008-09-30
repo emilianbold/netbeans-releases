@@ -72,6 +72,7 @@ import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import prefuse.data.Graph;
@@ -209,7 +210,7 @@ public class MoveRefactoringUI implements org.netbeans.modules.refactoring.spi.u
 
     public Icon getCustomIcon() {
          return new ImageIcon(
-            Utilities.loadImage(
+            ImageUtilities.loadImage(
             "org/netbeans/modules/xml/refactoring/resources/"+
             "graphical_view_refactoring.png"));
     }

@@ -77,6 +77,7 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.Mode;
@@ -219,7 +220,7 @@ final class ResultView extends TopComponent {
         //PENDING - icons, accessible names, accessible descriptions
         JToolBar toolBar = new JToolBar(SwingConstants.VERTICAL);
         btnDisplayContext = new JToggleButton();
-        btnDisplayContext.setIcon(new ImageIcon(Utilities.loadImage(
+        btnDisplayContext.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/context.gif", true))); //NOI18N
         btnDisplayContext.setToolTipText(
                 NbBundle.getMessage(getClass(), "TOOLTIP_ShowContext"));//NOI18N
@@ -227,10 +228,10 @@ final class ResultView extends TopComponent {
                 NbBundle.getMessage(getClass(), "ACSD_ShowContext"));   //NOI18N
         btnDisplayContext.setSelected(SHOW_CONTEXT_BY_DEFAULT);
         btnPrev = new JButton();
-        btnPrev.setIcon(new ImageIcon(Utilities.loadImage(
+        btnPrev.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/prev.png", true)));    //NOI18N
         btnNext = new JButton();
-        btnNext.setIcon(new ImageIcon(Utilities.loadImage(
+        btnNext.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/next.png", true)));    //NOI18N
         toolBar.add(btnDisplayContext);
         toolBar.add(new JToolBar.Separator());
@@ -308,7 +309,7 @@ final class ResultView extends TopComponent {
                                            "TITLE_SEARCH_RESULTS"));    //NOI18N
         setToolTipText(NbBundle.getMessage(ResultView.class,
                                            "TOOLTIP_SEARCH_RESULTS"));  //NOI18N
-        setIcon(Utilities.loadImage(
+        setIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/find.gif"));           //NOI18N
         
         initAccessibility();

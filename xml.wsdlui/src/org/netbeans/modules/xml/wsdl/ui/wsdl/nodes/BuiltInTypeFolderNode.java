@@ -58,6 +58,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -71,7 +72,7 @@ import org.openide.util.Utilities;
  */
 public class BuiltInTypeFolderNode extends AbstractNode {
     
-    private static final Image ICON  = Utilities.loadImage
+    private static final Image ICON  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/simpleType_badge.png");
     
     
@@ -86,13 +87,13 @@ public class BuiltInTypeFolderNode extends AbstractNode {
     @Override
     public Image getIcon(int type) {
         Image icon = FolderNode.FolderIcon.getIcon(type);
-        return Utilities.mergeImages(icon, ICON, 8, 8);
+        return ImageUtilities.mergeImages(icon, ICON, 8, 8);
     }
     
     @Override
     public Image getOpenedIcon(int type) {
         Image icon = FolderNode.FolderIcon.getOpenedIcon(type);
-        return Utilities.mergeImages(icon, ICON, 8, 8);
+        return ImageUtilities.mergeImages(icon, ICON, 8, 8);
     }
     
     public static class BuiltInTypeNodeChildren extends Children.Keys<GlobalSimpleType> {

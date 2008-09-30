@@ -45,6 +45,7 @@ import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 
 import java.awt.Image;
+import org.openide.util.ImageUtilities;
 
 
 /**
@@ -53,7 +54,7 @@ import java.awt.Image;
  */
 public class CasaDataNode extends DataNode {
 
-    private static Image icon = org.openide.util.Utilities.loadImage(
+    private static Image icon = ImageUtilities.loadImage(
             CasaDataObject.CASA_ICON_BASE_WITH_EXT);
     
     private CasaDataObject obj = null;

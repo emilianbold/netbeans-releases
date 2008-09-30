@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.ddloaders.web;
 
 import org.openide.loaders.*;
 import org.openide.nodes.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import java.beans.*;
 
@@ -74,15 +75,15 @@ public class DDDataNode extends DataNode {
     }
     
     private static final java.awt.Image ERROR_BADGE = 
-        org.openide.util.Utilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/web/resources/error-badge.gif" ); //NOI18N
+        ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/web/resources/error-badge.gif" ); //NOI18N
     private static final java.awt.Image WEB_XML = 
-        org.openide.util.Utilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif" ); //NOI18N
+        ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif" ); //NOI18N
     
     public java.awt.Image getIcon(int type) {
         if (dataObject.getSaxError()==null)
             return WEB_XML;
         else 
-            return org.openide.util.Utilities.mergeImages(WEB_XML, ERROR_BADGE, 6, 6);
+            return ImageUtilities.mergeImages(WEB_XML, ERROR_BADGE, 6, 6);
     }
     
     public String getShortDescription() {

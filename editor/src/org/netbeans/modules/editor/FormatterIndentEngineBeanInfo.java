@@ -45,6 +45,7 @@ import java.beans.*;
 import java.awt.Image;
 import java.lang.reflect.Method;
 import org.netbeans.editor.LocaleSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** BeanInfo for the FormatterIndentEngine class
@@ -212,7 +213,7 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
     }
     
     private Image getDefaultIcon(String iconResource){
-        return Utilities.loadImage(iconResource);
+        return ImageUtilities.loadImage(iconResource);
     }
 
     public Image getIcon(int type) {

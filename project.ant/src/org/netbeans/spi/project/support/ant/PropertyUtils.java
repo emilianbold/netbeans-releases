@@ -270,6 +270,8 @@ public class PropertyUtils {
                         Properties props = new Properties();
                         props.load(is);
                         return NbCollections.checkedMapByFilter(props, String.class, String.class, true);
+                    } catch (IllegalArgumentException iae) {
+                        Logger.getLogger(PropertyUtils.class.getName()).log(Level.WARNING, "Property file: " + properties.getPath(), iae);
                     } finally {
                         is.close();
                     }

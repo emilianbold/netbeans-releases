@@ -58,6 +58,7 @@ import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import javax.swing.*;
 import java.awt.*;
@@ -76,7 +77,7 @@ import org.openide.filesystems.FileObject;
 public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresenter {
 
     private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
-    private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
+    private static final Icon ICON_BROKEN = new ImageIcon(ImageUtilities.loadImage(ICON_BROKEN_PATH));
     private JPanel view;
     private JLabel state;
     private JLabel image;

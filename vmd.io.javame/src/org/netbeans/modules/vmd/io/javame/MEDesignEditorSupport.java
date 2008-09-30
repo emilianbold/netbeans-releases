@@ -66,6 +66,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -266,7 +267,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
         IOUtils.runInAWTNoBlocking(new Runnable() {
             public void run() {
                 ProjectTypeInfo projectTypeInfo = ProjectTypeInfo.getProjectTypeInfoFor (IOSupport.getDataObjectContext (dataObject).getProjectType ());
-                tc.setIcon (projectTypeInfo != null ? Utilities.loadImage (projectTypeInfo.getIconResource ()) : null);
+                tc.setIcon (projectTypeInfo != null ? ImageUtilities.loadImage (projectTypeInfo.getIconResource ()) : null);
 
                 String displayName = messageName();
                 if (! displayName.equals(tc.getDisplayName()))

@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingNewType;
 import org.openide.nodes.ChildFactory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -72,7 +73,7 @@ public class BindingFolderNode extends FolderNode {
         this.setDisplayName(NbBundle.
                     getMessage(BindingFolderNode.class, 
                                "BINDING_FOLDER_NODE_NAME"));
-        BADGE_ICON  = Utilities.loadImage
+        BADGE_ICON  = ImageUtilities.loadImage
         ("org/netbeans/modules/xml/wsdl/ui/view/resources/binding_badge.png");
     }
 

@@ -44,6 +44,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -149,7 +150,7 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
         if (this.nodeDelegate != null){
             return this.nodeDelegate.getIcon(type);
         }
-        return Utilities.loadImage( 
+        return ImageUtilities.loadImage(
                 "org/netbeans/modules/xml/jaxb/resources/XML_file.png" );//NOI18N
     }
     
@@ -158,7 +159,7 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
             return this.nodeDelegate.getOpenedIcon(type);
         }
         
-        return Utilities.loadImage( 
+        return ImageUtilities.loadImage(
                 "org/netbeans/modules/xml/jaxb/resources/XML_file.png" );//NOI18N  
     }
  }

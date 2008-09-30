@@ -50,6 +50,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -133,8 +134,8 @@ class WebAppFilterNode extends FilterNode {
     public java.awt.Image getIcon(int param) {
         java.awt.Image retValue = super.getIcon(param);
         if (isTopLevelNode) {
-            retValue = Utilities.mergeImages(retValue, 
-                                             Utilities.loadImage("org/netbeans/modules/maven/j2ee/web/webPagesBadge.png"), //NOI18N
+            retValue = ImageUtilities.mergeImages(retValue,
+                                             ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/web/webPagesBadge.png"), //NOI18N
                                              8, 8);
         } 
         return retValue;
@@ -144,8 +145,8 @@ class WebAppFilterNode extends FilterNode {
     public java.awt.Image getOpenedIcon(int param) {
         java.awt.Image retValue = super.getOpenedIcon(param);
         if (isTopLevelNode) {
-            retValue = Utilities.mergeImages(retValue, 
-                                             Utilities.loadImage("org/netbeans/modules/maven/j2ee/web/webPagesBadge.png"), //NOI18N
+            retValue = ImageUtilities.mergeImages(retValue,
+                                             ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/web/webPagesBadge.png"), //NOI18N
                                              8, 8);
         } 
         return retValue;

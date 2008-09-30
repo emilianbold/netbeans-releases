@@ -68,6 +68,7 @@ import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -84,7 +85,7 @@ public class DocumentationNode extends WSDLElementNode<Documentation> {
 
     protected Documentation mWSDLConstruct;
     
-    Image ICON  =Utilities.loadImage
+    Image ICON  =ImageUtilities.loadImage
          ("org/netbeans/modules/xml/wsdl/ui/view/resources/documentation.png");
     
     private DocumentationPropertyAdapter mPropertyAdapter;

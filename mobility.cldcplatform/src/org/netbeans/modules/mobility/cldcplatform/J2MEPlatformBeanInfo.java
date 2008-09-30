@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.mobility.cldcplatform;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -77,7 +78,7 @@ public class J2MEPlatformBeanInfo extends SimpleBeanInfo {
     
     public Image getIcon(final int iconKind) {
         if ((iconKind == BeanInfo.ICON_COLOR_16x16) || (iconKind == BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/mobility/cldcplatform/resources/platform.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/mobility/cldcplatform/resources/platform.gif"); // NOI18N
         } 
         return null;
     }

@@ -68,6 +68,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -158,16 +159,16 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
              */
             try {
                 if(portletSupport.isInitialPage(PortletModeType.VIEW, fo)) {
-                    returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/initialviewpage.png"); // NOI18N
+                    returnImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/initialviewpage.png"); // NOI18N
                     setShortDescription(NbBundle.getMessage(JsfJspDataNode.class, "LBL_InitialViewShortDesc"));
                 } else if(portletSupport.isInitialPage(PortletModeType.EDIT, fo)) {
-                    returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/initialeditpage.png"); // NOI18N
+                    returnImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/initialeditpage.png"); // NOI18N
                     setShortDescription(NbBundle.getMessage(JsfJspDataNode.class, "LBL_InitialEditShortDesc"));                    
                 } else if(portletSupport.isInitialPage(PortletModeType.HELP, fo)) {
-                    returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/initialhelppage.png"); // NOI18N
+                    returnImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/initialhelppage.png"); // NOI18N
                     setShortDescription(NbBundle.getMessage(JsfJspDataNode.class, "LBL_InitialHelpShortDesc"));                    
                 } else {
-                    returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"); // NOI18N
+                    returnImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"); // NOI18N
                 }
             } catch (JsfPortletSupportException jpse) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, jpse);
@@ -175,18 +176,18 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
             
         } else {
             if (fo.getExt().compareToIgnoreCase("jspf") == 0) { // NOI18N
-                returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspfObject.png"); // NOI18N
+                returnImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspfObject.png"); // NOI18N
                 setShortDescription(NbBundle.getMessage(JsfJspDataNode.class, "LBL_JsfJspFragmentShortDesc"));                    
             } else {
                 if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                    returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"); // NOI18N
+                    returnImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"); // NOI18N
                 } else {
-                    returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject32.gif"); // NOI18N
+                    returnImage = ImageUtilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject32.gif"); // NOI18N
                 }
 	   
                 if (JsfProjectUtils.isStartPage(getDataObject().getPrimaryFile())) {
-                    Image startPageBadge = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/startpagebadge.png"); // NOI18N
-                    returnImage = Utilities.mergeImages(returnImage, startPageBadge, returnImage.getWidth(null),
+                    Image startPageBadge = ImageUtilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/startpagebadge.png"); // NOI18N
+                    returnImage = ImageUtilities.mergeImages(returnImage, startPageBadge, returnImage.getWidth(null),
                             returnImage.getHeight(null) - startPageBadge.getHeight(null) + 1 );
                 }
             }

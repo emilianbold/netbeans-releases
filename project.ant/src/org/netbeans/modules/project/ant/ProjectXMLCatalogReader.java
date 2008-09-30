@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
@@ -121,7 +122,7 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
     public void addCatalogListener(CatalogListener l) {}
 
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true);
+        return ImageUtilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true);
     }
 
     public void refresh() {}

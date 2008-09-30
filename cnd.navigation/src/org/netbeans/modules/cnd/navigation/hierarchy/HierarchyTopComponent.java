@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.navigation.classhierarchy.ClassHierarchyPanel;
 import org.netbeans.modules.cnd.navigation.includeview.IncludeHierarchyPanel;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -76,7 +77,7 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
         initComponents();
         setName(NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_HierarchyTopComponent")); // NOI18N
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
     }
 
     void setClass(CsmClass decl, boolean setClose) {

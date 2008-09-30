@@ -255,7 +255,7 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
          * @return the platform icon
          */
         public Image getIcon() {
-            return Utilities.loadImage(ICON);
+            return ImageUtilities.loadImage(ICON);
         }
         
         /**

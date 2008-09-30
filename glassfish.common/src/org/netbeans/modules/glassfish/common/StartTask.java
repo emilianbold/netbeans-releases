@@ -254,7 +254,7 @@ public class StartTask extends BasicTask<OperationState> {
                 File.separatorChar + "bin" + File.separatorChar + "java";
         }
         String serverHome = ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-        File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_PREFIX_JAR_NAME);
+        File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_JAR_MATCHER);
         if(jar == null) {
             fireOperationStateChanged(OperationState.FAILED, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
             return null;

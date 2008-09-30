@@ -44,6 +44,7 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -71,7 +72,7 @@ public final class MidpInspectorSVGButtonSupport {
     public static final TypeID TYPEID_CATEGORY_SVG_BUTTONS = new TypeID(TypeID.Kind.PRIMITIVE, "#CategorySVGButtons");  //NOI18N
     
     private static final String ICON_PATH_CATEGORY = "org/netbeans/modules/vmd/midp/resources/components/category_elements_16.png"; // NOI18N                                         
-    private static final Image ICON_CATEGORY = Utilities.loadImage(ICON_PATH_CATEGORY);
+    private static final Image ICON_CATEGORY = ImageUtilities.loadImage(ICON_PATH_CATEGORY);
     
     
     

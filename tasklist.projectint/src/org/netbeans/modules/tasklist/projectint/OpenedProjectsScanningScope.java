@@ -57,6 +57,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -98,7 +99,7 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
         return new OpenedProjectsScanningScope( 
                 NbBundle.getBundle( MainProjectScanningScope.class ).getString( "LBL_OpenedProjectsScope" ), //NOI18N
                 NbBundle.getBundle( MainProjectScanningScope.class ).getString( "HINT_OpenedProjectsScope" ), //NOI18N
-                Utilities.loadImage( "org/netbeans/modules/tasklist/projectint/opened_projects_scope.png" ) //NOI18N
+                ImageUtilities.loadImage( "org/netbeans/modules/tasklist/projectint/opened_projects_scope.png" ) //NOI18N
                 );
     }
     

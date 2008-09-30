@@ -22,6 +22,7 @@ import java.awt.Image;
 import javax.swing.Action;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -32,7 +33,7 @@ import org.openide.util.Utilities;
  */
 public class XsltTransformationsNode extends FilterNode {
     
-    private static Image ICON = Utilities.loadImage("org/netbeans/modules/xslt/project/resources/transformations.gif");
+    private static Image ICON = ImageUtilities.loadImage("org/netbeans/modules/xslt/project/resources/transformations.gif");
     
     public XsltTransformationsNode(DataObject dObj) {
         super(dObj.getNodeDelegate());

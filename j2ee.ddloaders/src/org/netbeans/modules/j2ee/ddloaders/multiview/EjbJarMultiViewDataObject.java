@@ -73,6 +73,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -581,7 +582,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         
         public Image getIcon() {
-            return Utilities.loadImage(Utils.ICON_BASE_DD_VALID + ".gif"); //NOI18N
+            return ImageUtilities.loadImage(Utils.ICON_BASE_DD_VALID + ".gif"); //NOI18N
         }
         
         public String preferredID() {

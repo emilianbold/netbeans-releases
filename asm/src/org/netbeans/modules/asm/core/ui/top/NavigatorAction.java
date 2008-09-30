@@ -44,6 +44,7 @@ package org.netbeans.modules.asm.core.ui.top;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -55,7 +56,7 @@ public class NavigatorAction extends AbstractAction {
     
     public NavigatorAction() {
         super(NbBundle.getMessage(NavigatorAction.class, "CTL_NavigatorAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(NavigatorTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(NavigatorTopComponent.ICON_PATH, true)));
     }
     
     public void actionPerformed(ActionEvent evt) {

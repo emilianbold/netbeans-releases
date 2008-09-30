@@ -249,7 +249,7 @@ public class ClearcaseAnnotator extends VCSAnnotator {
         }
         if (modified && !allExcluded) {
             Image badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeModified, true), toolTipModified); // NOI18N
-            return Utilities.mergeImages(icon, badge, 16, 9);
+            return ImageUtilities.mergeImages(icon, badge, 16, 9);
         } else {
             return null;
         }

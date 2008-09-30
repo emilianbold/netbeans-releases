@@ -53,7 +53,6 @@ import java.util.Enumeration;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
@@ -118,7 +117,6 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
         return (DES)cookie;
     }
 
-    @RandomlyFails // #136179
     public void testSaveThrowsException() throws IOException, BadLocationException, Exception {
         fileObject.canWrite = true;
         

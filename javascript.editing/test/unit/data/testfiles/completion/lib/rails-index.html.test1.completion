@@ -1,0 +1,14 @@
+Code completion result for source line:
+$('|search-text').value = '';
+(QueryType=COMPLETION, NameKind=PREFIX)
+TAG        about                                      <i>rails-index.html</i>
+TAG        about-content                              <i>rails-index.html</i>
+TAG        content                                    <i>rails-index.html</i>
+TAG        footer                                     <i>rails-index.html</i>
+TAG        getting-started                            <i>rails-index.html</i>
+TAG        header                                     <i>rails-index.html</i>
+TAG        page                                       <i>rails-index.html</i>
+TAG        search                                     <i>rails-index.html</i>
+TAG        search-text                                <i>rails-index.html</i>
+TAG        sidebar                                    <i>rails-index.html</i>
+TAG        sidebar-items                              <i>rails-index.html</i>

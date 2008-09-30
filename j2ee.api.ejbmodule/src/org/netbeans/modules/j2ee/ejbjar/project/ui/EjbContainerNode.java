@@ -52,6 +52,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -100,8 +101,8 @@ public class EjbContainerNode extends AbstractNode {
         } else {
             image = iconDelegate != null ? iconDelegate.getIcon(type) : super.getIcon(type);
         }
-        Image badge = Utilities.loadImage(EJB_BADGE);
-        return Utilities.mergeImages(image, badge, 7, 7);
+        Image badge = ImageUtilities.loadImage(EJB_BADGE);
+        return ImageUtilities.mergeImages(image, badge, 7, 7);
     }
     
     private Node getIconDelegate() {

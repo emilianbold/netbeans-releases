@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -80,7 +81,7 @@ public class FunctionRootNode extends AbstractNode {
     
     private Image mergeBadge(Image original) {
         if (isCalls) {
-            return Utilities.mergeImages(original, CallNode.downBadge, 0, 0);
+            return ImageUtilities.mergeImages(original, CallNode.downBadge, 0, 0);
         }
         return original;
     }

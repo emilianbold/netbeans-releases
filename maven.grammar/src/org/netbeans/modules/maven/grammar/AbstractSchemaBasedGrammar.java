@@ -117,8 +117,8 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @param path is slash separated path string
      * @return the actual completion nodes or empty list
      */
-    protected List getDynamicCompletion(String path, HintContext hintCtx, org.jdom.Element lowestParent) {
-        return Collections.EMPTY_LIST;
+    protected List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, org.jdom.Element lowestParent) {
+        return Collections.<GrammarResult>emptyList();
     }
 
     /**
@@ -126,12 +126,13 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @param path is slash separated path string
      * @return null, if no such offering exists or the actual completion nodes..
      */
-    protected Enumeration getDynamicValueCompletion(String path, HintContext virtualTextCtx, org.jdom.Element el) {
+    protected Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext virtualTextCtx, org.jdom.Element el) {
         return null;
     }
     
     
     protected final org.jdom.Element findElement(org.jdom.Element parent, String name) {
+        @SuppressWarnings("unchecked")
         List<org.jdom.Element> childs = parent.getChildren("element", parent.getNamespace()); //NOI18N
         for (org.jdom.Element el : childs) {
             if (name.equals(el.getAttributeValue("name"))) { //NOI18N
@@ -153,6 +154,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
 
     
     protected final org.jdom.Element findTypeContent(final String type, org.jdom.Element docRoot) {
+        @SuppressWarnings("unchecked")
         List<org.jdom.Element> lst = docRoot.getContent(new Filter() {
             public boolean matches(Object match) {
                 if (match instanceof org.jdom.Element) {
@@ -173,7 +175,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
     
 
     
-      private void processElement(String matches, org.jdom.Element childEl, Vector suggestions) {
+      private void processElement(String matches, org.jdom.Element childEl, Vector<GrammarResult> suggestions) {
         String childRefAttr = childEl.getAttributeValue("ref"); //NOI18N
         if (childRefAttr == null) {
             // if ref not defined, go check name attribute..
@@ -234,7 +236,8 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
     }
 
     
-    protected final void processSequence(String matches, org.jdom.Element seqEl, Vector suggestions) {
+    protected final void processSequence(String matches, org.jdom.Element seqEl, Vector<GrammarResult> suggestions) {
+        @SuppressWarnings("unchecked")
         List<org.jdom.Element> availables = seqEl.getContent(new DefinitionContentElementFilter());
         for (org.jdom.Element childEl : availables) {
             processElement(matches, childEl, suggestions);
@@ -252,8 +255,8 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (ATTRIBUTE_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.
      */
-    public Enumeration queryAttributes(HintContext ownerElementCtx) {
-        return Enumerations.empty();
+    public Enumeration<GrammarResult> queryAttributes(HintContext ownerElementCtx) {
+        return Enumerations.<GrammarResult>empty();
     }
 
     /**
@@ -275,7 +278,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.
      */
-    public Enumeration queryElements(HintContext virtualElementCtx) {
+    public Enumeration<GrammarResult> queryElements(HintContext virtualElementCtx) {
         String start = virtualElementCtx.getCurrentPrefix();
         
         Node parentNode = virtualElementCtx.getParentNode();
@@ -293,7 +296,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
             org.jdom.Element schemaParent = schemaDoc.getRootElement();
             Iterator<String> it = parentNames.iterator();
             String path = ""; //NOI18N
-            Vector toReturn = new Vector();
+            Vector<GrammarResult> toReturn = new Vector<GrammarResult>();
             while (it.hasNext() && schemaParent != null) {
                 String str = it.next();
                 path = path + "/" + str; //NOI18N
@@ -320,7 +323,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
             }
             return toReturn.elements();
         } else {
-            return Enumerations.empty();
+            return Enumerations.<GrammarResult>empty();
         }
     }
 
@@ -331,8 +334,8 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @param prefix prefix filter
      * @return enumeration of <code>GrammarResult</code>s (ENTITY_REFERENCE_NODEs)
      */
-    public Enumeration queryEntities(String prefix) {
-        return Enumerations.empty();
+    public Enumeration<GrammarResult> queryEntities(String prefix) {
+        return Enumerations.<GrammarResult>empty();
     }
 
     /**
@@ -340,12 +343,16 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @param prefix prefix filter
      * @return enumeration of <code>GrammarResult</code>s (NOTATION_NODEs)
      */
-    public Enumeration queryNotations(String prefix) {
-        return Enumerations.empty();
+    public Enumeration<GrammarResult> queryNotations(String prefix) {
+        return Enumerations.<GrammarResult>empty();
     }
 
-    
-    public Enumeration queryValues(HintContext virtualTextCtx) {
+    /**
+     * @inherited
+     * @param virtualTextCtx
+     * @return
+     */
+    public Enumeration<GrammarResult> queryValues(HintContext virtualTextCtx) {
         Node parentNode = virtualTextCtx.getParentNode();
         List<String> parentNames = new ArrayList<String>();
         if (virtualTextCtx.getCurrentPrefix().length() == 0) {
@@ -364,7 +371,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
                 path = path + "/" + str; //NOI18N
                 org.jdom.Element el = findElement(schemaParent, str);
                 if (!it.hasNext()) {
-                    Enumeration en = getDynamicValueCompletion(path, virtualTextCtx, el);
+                    Enumeration<GrammarResult> en = getDynamicValueCompletion(path, virtualTextCtx, el);
                     if (en != null) {
                         return en;
                     }
@@ -384,15 +391,15 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
                 }                
             }
         }
-        return Enumerations.empty();
+        return Enumerations.<GrammarResult>empty();
     }
 
 
     /**
      * for subclasses that  have a given list of possible values in the element's text content. 
      */
-    protected final Enumeration createTextValueList(String[] values, HintContext context) {
-        Collection elems = new ArrayList();
+    protected final Enumeration<GrammarResult> createTextValueList(String[] values, HintContext context) {
+        Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
         for (String value :  values) {
             if (value.startsWith(context.getCurrentPrefix())) {
                 elems.add(new MyTextElement(value, context.getCurrentPrefix()));
@@ -455,10 +462,12 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
             return Node.ELEMENT_NODE;
         }
         
+        @Override
         public String getNodeName() {
             return name;
         }
         
+        @Override
         public String getTagName() {
             return name;
         }
@@ -479,14 +488,17 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
             return Node.TEXT_NODE;
         }
         
+        @Override
         public String getNodeName() {
             return name;
         }
         
+        @Override
         public String getTagName() {
             return name;
         }
         
+        @Override
         public String getNodeValue() {
             return name.substring(prefix.length());
         }
@@ -509,33 +521,40 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
             return Node.ELEMENT_NODE;
         }
         
+        @Override
         public String getNodeName() {
             return name;
         }
         
+        @Override
         public String getTagName() {
             return name;
         }
         
+        @Override
         public String getDisplayName() {
             return display;
         }
 
+        @Override
         public NodeList getChildNodes() {
             return list;
         }
      /**
      * @return false
      */
+        @Override
     public boolean hasChildNodes() {
         return true;
     }
+        @Override
     public org.w3c.dom.Node getLastChild() {
         return list.item(list.getLength() - 1);
     }
     /**
      * @return null
      */
+        @Override
     public org.w3c.dom.Node getFirstChild() {
         return list.item(0);
     }

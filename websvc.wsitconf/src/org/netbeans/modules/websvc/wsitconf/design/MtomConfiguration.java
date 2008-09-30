@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -151,7 +152,7 @@ public class MtomConfiguration  implements WSConfiguration{
     }
 
     public Image getIcon() {
-        return Utilities.loadImage
+        return ImageUtilities.loadImage
                 ("org/netbeans/modules/websvc/wsitconf/resources/designer-mtom.gif"); // NOI18N   
     }
 

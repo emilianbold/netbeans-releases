@@ -47,6 +47,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -80,7 +81,7 @@ public class ArtifactNode extends AbstractNode {
 
     @Override
     public Image getIcon(int arg0) {
-        Image badge = Utilities.loadImage("org/netbeans/modules/maven/hints/ArtifactBadge.png", true); //NOI18N
+        Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/hints/ArtifactBadge.png", true); //NOI18N
 
         return badge;
     }

@@ -50,6 +50,7 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.grammar.AbstractSchemaBasedGrammar.MyTextElement;
 import org.jdom.Element;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
+import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.ErrorManager;
 import org.w3c.dom.Node;
@@ -71,11 +72,11 @@ public class MavenAssemblyGrammar extends AbstractSchemaBasedGrammar {
     }
     
     @Override
-    protected Enumeration getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element element) {
+    protected Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element element) {
         if ("/assembly/dependencySets/dependencySet/includes/include".equals(path) || //NOI18N
             "/assembly/dependencySets/dependencySet/excludes/exclude".equals(path)) { //NOI18N
             //TODO could be nice to filter out the dependencies that are already being used..
-            List toRet = new ArrayList();
+            List<GrammarResult> toRet = new ArrayList<GrammarResult>();
             MavenProject project = getMavenProject();
             if (project != null) {
                 Node previous;

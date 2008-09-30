@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -349,7 +350,7 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
             messageLabel.setIcon(null);
         } else {
             messageLabel.setText(msg);
-            messageLabel.setIcon(new ImageIcon(Utilities.loadImage(
+            messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(
                     "org/netbeans/modules/xml/xam/ui/resources/error.gif"))); // NOI18N
         }
     }

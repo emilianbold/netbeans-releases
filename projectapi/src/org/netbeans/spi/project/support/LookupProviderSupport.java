@@ -153,8 +153,7 @@ public final class LookupProviderSupport {
         }
         
         
-        private void doDelegate(Collection<? extends LookupProvider> providers) {
-            synchronized (results) { // do not synch on this; conflicts with ProxyLookup synch
+        private synchronized void doDelegate(Collection<? extends LookupProvider> providers) {
             //unregister listeners from the old results:
             for (Lookup.Result<?> r : results) {
                 r.removeLookupListener(this);
@@ -206,7 +205,6 @@ public final class LookupProviderSupport {
             lkp = Lookups.exclude(lkp, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
             Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
             setLookups(fixed, lkp);
-        }
         }
     }
     

@@ -81,7 +81,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/xmlObject.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/XMLWizard.html"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.xml.wizard.XMLWizardIterator.singleton"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.xml.wizard.impl.XMLWizardIterator.singleton"/>
                 <attr name="templateCategory" stringvalue="XML"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
@@ -92,7 +92,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/dtdObject.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/emptyDTD.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xml.wizard.DTDWizardIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xml.wizard.impl.DTDWizardIterator"/>
                 <attr name="templateCategory" stringvalue="XML"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>

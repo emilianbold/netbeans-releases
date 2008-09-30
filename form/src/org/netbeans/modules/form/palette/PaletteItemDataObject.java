@@ -45,6 +45,7 @@ import java.util.*;
 import java.io.*;
 import java.beans.*;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
@@ -293,7 +294,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
         
         @Override
         public java.awt.Image getIcon(final int type) {
-            return Utilities.loadImage(iconURL);
+            return ImageUtilities.loadImage(iconURL);
         }
         
     }
@@ -371,7 +372,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
                     if (icon32 == null && isItemValid())
                         icon32 = paletteItem.getIcon(type);
                     if (icon32 == null)
-                        icon32 = Utilities.loadImage("org/netbeans/modules/form/resources/palette/unknown32.gif"); // NOI18N
+                        icon32 = ImageUtilities.loadImage("org/netbeans/modules/form/resources/palette/unknown32.gif"); // NOI18N
                 }
                 return icon32;
             }
@@ -381,7 +382,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
                     if (icon16 == null && isItemValid())
                         icon16 = paletteItem.getIcon(type);
                     if (icon16 == null)
-                        icon16 = Utilities.loadImage("org/netbeans/modules/form/resources/palette/unknown.gif"); // NOI18N
+                        icon16 = ImageUtilities.loadImage("org/netbeans/modules/form/resources/palette/unknown.gif"); // NOI18N
                 }
                 return icon16;
             }

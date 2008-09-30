@@ -66,6 +66,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -79,7 +80,7 @@ import org.openide.util.actions.Presenter;
  */
 public abstract class MainMenuAction extends GlobalContextAction implements Presenter.Menu, ChangeListener {
 
-    public static final Icon BLANK_ICON = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/resources/empty.gif"));
+    public static final Icon BLANK_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/editor/resources/empty.gif"));
     public boolean menuInitialized = false;
     /** icon of the action, null means no icon */
     private final Icon forcedIcon;

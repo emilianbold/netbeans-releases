@@ -45,6 +45,7 @@ import java.awt.Image;
 import javax.swing.Action;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Utilities;
 import java.util.Collection;
@@ -103,7 +104,7 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
         Image badge = cmvs.getBadge(method, interfaces);
         Image icon = cmvs.getIcon(method, interfaces);
         if(badge != null){
-            return Utilities.mergeImages(icon, badge, 7,7);
+            return ImageUtilities.mergeImages(icon, badge, 7,7);
         }
         return icon;
     }

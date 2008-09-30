@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.palette.Utils;
 import org.netbeans.modules.palette.ui.PalettePanel;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
@@ -72,7 +73,7 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
     private PaletteTopComponent() {
         setName(Utils.getBundleString("CTL_Component_palette"));  // NOI18N
         setToolTipText(Utils.getBundleString("HINT_PaletteComponent"));
-        setIcon(Utilities.loadImage("org/netbeans/modules/palette/resources/palette.png")); // NOI18N
+        setIcon(ImageUtilities.loadImage("org/netbeans/modules/palette/resources/palette.png")); // NOI18N
         
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(505, 88));

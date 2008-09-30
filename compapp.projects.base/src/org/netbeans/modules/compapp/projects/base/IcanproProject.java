@@ -56,6 +56,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -73,7 +74,7 @@ import org.w3c.dom.Text;
  */
 public final class IcanproProject implements Project, AntProjectListener {
 
-    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/compapp/projects/base/ui/resources/icanproProjectIcon.gif")); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/compapp/projects/base/ui/resources/icanproProjectIcon.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
 
     private final AntProjectHelper helper;

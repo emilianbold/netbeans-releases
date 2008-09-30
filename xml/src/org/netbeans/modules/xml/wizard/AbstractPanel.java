@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml.wizard;
 
+import org.netbeans.modules.xml.wizard.impl.SchemaPanel;
 import java.util.*;
 import java.beans.*;
 
@@ -48,7 +49,6 @@ import javax.swing.event.*;
 
 import org.openide.*;
 import org.openide.util.HelpCtx;
-import java.net.URL;
 import javax.swing.event.ChangeListener;
 
 

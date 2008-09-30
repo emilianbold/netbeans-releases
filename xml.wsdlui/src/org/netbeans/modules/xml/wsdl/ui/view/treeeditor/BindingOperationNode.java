@@ -70,6 +70,7 @@ import org.netbeans.modules.xml.xam.Reference;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -87,7 +88,7 @@ public class BindingOperationNode extends WSDLExtensibilityElementNode<BindingOp
     public BindingOperationNode(BindingOperation wsdlConstruct) {
         super(wsdlConstruct, new BindingOperationNewTypesFactory());
         // Must set the icon to something to honor getIcon() contract.
-        ICON = Utilities.loadImage(
+        ICON = ImageUtilities.loadImage(
                 "org/netbeans/modules/xml/wsdl/ui/view/resources/bindingoperation.png");
         if (wsdlConstruct.getOperation() != null) {
             Operation operation = wsdlConstruct.getOperation().get();
@@ -104,19 +105,19 @@ public class BindingOperationNode extends WSDLExtensibilityElementNode<BindingOp
     
     private void setIcon(Operation operation){
         if (operation instanceof RequestResponseOperation) {
-            ICON = Utilities.loadImage
+            ICON = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/requestresponse_operation.png");
         } else if (operation instanceof OneWayOperation) {
-            ICON = Utilities.loadImage
+            ICON = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/oneway_operation.png");
         } else if (operation instanceof NotificationOperation) {
-            ICON = Utilities.loadImage
+            ICON = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/notification_operation.png");
         } else if (operation instanceof SolicitResponseOperation) {
-            ICON =    Utilities.loadImage
+            ICON =    ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/solicitresponse_operation.png");
         } else {
-            ICON = Utilities.loadImage
+            ICON = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindingoperation.png");
         }
     }

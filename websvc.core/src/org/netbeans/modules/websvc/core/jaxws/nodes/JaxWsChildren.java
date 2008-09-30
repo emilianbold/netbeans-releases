@@ -81,6 +81,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -368,7 +369,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                 @java.lang.Override
                 public java.awt.Image getIcon(int type) {
                     if (cachedIcon == null) {
-                        cachedIcon = org.openide.util.Utilities.loadImage(OPERATION_ICON);
+                        cachedIcon = ImageUtilities.loadImage(OPERATION_ICON);
                     }
                     return cachedIcon;
                 }

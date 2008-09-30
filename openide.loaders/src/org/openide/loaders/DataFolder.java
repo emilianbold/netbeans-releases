@@ -1126,7 +1126,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
         if (obj instanceof Icon) {
             Icon icon = (Icon)obj;
-            return Utilities.icon2Image(icon);
+            return ImageUtilities.icon2Image(icon);
         }
 
         return null;

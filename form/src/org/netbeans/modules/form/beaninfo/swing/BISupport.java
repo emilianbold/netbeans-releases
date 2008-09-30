@@ -44,6 +44,7 @@ package org.netbeans.modules.form.beaninfo.swing;
 import java.awt.Image;
 import java.beans.*;
 import java.util.ResourceBundle;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -84,9 +85,9 @@ abstract class BISupport extends SimpleBeanInfo {
     @Override
     public Image getIcon(int type) {
         if (type == ICON_COLOR_32x32 || type == ICON_MONO_32x32)
-            return Utilities.loadImage("org/netbeans/modules/form/beaninfo/swing/" + icon + "32.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/form/beaninfo/swing/" + icon + "32.gif"); // NOI18N
         else
-            return Utilities.loadImage("org/netbeans/modules/form/beaninfo/swing/" + icon + ".gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/form/beaninfo/swing/" + icon + ".gif"); // NOI18N
     }
 
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {

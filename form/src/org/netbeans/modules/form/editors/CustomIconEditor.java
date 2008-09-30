@@ -67,6 +67,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -91,7 +92,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
     private boolean ignoreNull;
     private boolean ignoreCombo;
 
-    private Icon packageIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/form/resources/package.gif")); // NOI18N
+    private Icon packageIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/form/resources/package.gif")); // NOI18N
 
     public CustomIconEditor(IconEditor prEd) {
         propertyEditor = prEd;

@@ -65,6 +65,7 @@ import org.openide.DialogDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -104,7 +105,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
     public String getDisplayName() {
         return PAGEFLOW;
     }
-    private static final Image JSFConfigIcon = org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
+    private static final Image JSFConfigIcon = ImageUtilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
 
     public Image getIcon() {
         //        return PageFlowImage;

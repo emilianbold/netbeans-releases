@@ -850,11 +850,11 @@ public final class SingleModuleProperties extends ModuleProperties {
      * really slow. The {@link AssertionError} will be thrown if you try to do
      * so.
      */
-    SortedSet getModuleCategories() {
+    SortedSet<String> getModuleCategories() {
         assert !SwingUtilities.isEventDispatchThread() :
             "SingleModuleProperties.getModuleCategories() cannot be called from EDT"; // NOI18N
         if (modCategories == null && !reloadModuleListInfo()) {
-            return new TreeSet();
+            return new TreeSet<String>();
         }
         return modCategories;
     }

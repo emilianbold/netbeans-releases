@@ -335,11 +335,11 @@ class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, Modu
     // inspired by netbeans' webmodule codebase, not really sure what is the point
     // of the iterator..
     private static final class ContentIterator implements Iterator {
-        private ArrayList ch;
+        private ArrayList<FileObject> ch;
         private FileObject root;
         
         private ContentIterator(FileObject f) {
-            this.ch = new ArrayList();
+            this.ch = new ArrayList<FileObject>();
             ch.add(f);
             this.root = f;
         }
@@ -349,7 +349,7 @@ class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, Modu
         }
         
         public Object next() {
-            FileObject f = (FileObject) ch.get(0);
+            FileObject f = ch.get(0);
             ch.remove(0);
             if (f.isFolder()) {
                 f.refresh();

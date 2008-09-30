@@ -44,6 +44,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -99,7 +100,7 @@ public final class MessageUtils {
          */
         ERROR  {
             protected Icon getIcon() {
-                return new ImageIcon(Utilities.loadImage(
+                return new ImageIcon(ImageUtilities.loadImage(
                         "org/netbeans/modules/j2ee/common/project/ui/resources/error.gif")); // NOI18N
             }
 
@@ -117,7 +118,7 @@ public final class MessageUtils {
          */
         WARNING {
             protected Icon getIcon() {
-                return new ImageIcon(Utilities.loadImage(
+                return new ImageIcon(ImageUtilities.loadImage(
                         "org/netbeans/modules/j2ee/common/project/ui/resources/warning.gif")); // NOI18N
             }
 

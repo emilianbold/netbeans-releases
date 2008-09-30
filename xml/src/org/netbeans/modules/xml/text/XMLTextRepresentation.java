@@ -47,7 +47,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JViewport;
 import javax.swing.text.StyledDocument;
 
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.*;
 import org.openide.cookies.*;
 

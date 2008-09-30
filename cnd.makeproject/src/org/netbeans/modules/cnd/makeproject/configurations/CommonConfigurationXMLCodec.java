@@ -64,8 +64,10 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
-import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 
 /**
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec
@@ -73,6 +75,8 @@ import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 
 /**
  * Change History:
+ * V51
+ *   Now storing package type as name and not int
  * V50 - 09.10.08 - NB 6.5
  *   Moved source encoding (SOURCE_ENCODING_ELEMENT) to project.xml
  * V49 - 09.02.08 - NB 6.5
@@ -140,7 +144,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 50;
+    public final static int CURRENT_VERSION = 51;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -616,7 +620,7 @@ public abstract class CommonConfigurationXMLCodec
             return;
         }
 	xes.elementOpen(PACK_ELEMENT);
-        xes.element(PACK_TYPE_ELEMENT, "" + packagingConfiguration.getType().getValue()); // NOI18N
+        xes.element(PACK_TYPE_ELEMENT, "" + packagingConfiguration.getName()); // NOI18N
 	if (packagingConfiguration.getVerbose().getModified())
 	    xes.element(VERBOSE_ELEMENT, "" + packagingConfiguration.getVerbose().getValue()); // NOI18N
 	if (packagingConfiguration.getOutput().getModified())
@@ -628,8 +632,8 @@ public abstract class CommonConfigurationXMLCodec
         if (packagingConfiguration.getTopDir().getModified())
 	    xes.element(PACK_TOPDIR_ELEMENT, packagingConfiguration.getTopDir().getValue());
 	xes.elementOpen(PACK_FILES_LIST_ELEMENT);
-        List<FileElement> filesList = packagingConfiguration.getFiles().getValue();
-        for (FileElement elem : filesList) {
+        List<PackagerFileElement> filesList = packagingConfiguration.getFiles().getValue();
+        for (PackagerFileElement elem : filesList) {
             xes.element(PACK_FILE_LIST_ELEMENT,
                     new AttrValuePair[] {
                         new AttrValuePair(TYPE_ATTR, "" + elem.getType().toString()), // NOI18N
@@ -641,36 +645,11 @@ public abstract class CommonConfigurationXMLCodec
             });
         }
 	xes.elementClose(PACK_FILES_LIST_ELEMENT);
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
+        if (packager.hasInfoList()) {
             xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
-            List<InfoElement> infoList = packagingConfiguration.getSvr4Header().getValue();
-            for (InfoElement elem : infoList) {
-                xes.element(PACK_INFO_LIST_ELEMENT,
-                        new AttrValuePair[] {
-                            new AttrValuePair(NAME_ATTR, "" + elem.getName()), // NOI18N
-                            new AttrValuePair(VALUE_ATTR, "" + elem.getValue()), // NOI18N
-                            new AttrValuePair(MANDATORY_ATTR, "" + elem.isMandatory()), // NOI18N
-                });
-            }
-            xes.elementClose(PACK_INFOS_LIST_ELEMENT);
-        }
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
-            List<InfoElement> infoList = packagingConfiguration.getRpmHeader().getValue();
-            for (InfoElement elem : infoList) {
-                xes.element(PACK_INFO_LIST_ELEMENT,
-                        new AttrValuePair[] {
-                            new AttrValuePair(NAME_ATTR, "" + elem.getName()), // NOI18N
-                            new AttrValuePair(VALUE_ATTR, "" + elem.getValue()), // NOI18N
-                            new AttrValuePair(MANDATORY_ATTR, "" + elem.isMandatory()), // NOI18N
-                });
-            }
-            xes.elementClose(PACK_INFOS_LIST_ELEMENT);
-        }
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-            xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
-            List<InfoElement> infoList = packagingConfiguration.getDebianHeader().getValue();
-            for (InfoElement elem : infoList) {
+            List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(packagingConfiguration.getType().getValue());
+            for (PackagerInfoElement elem : infoList) {
                 xes.element(PACK_INFO_LIST_ELEMENT,
                         new AttrValuePair[] {
                             new AttrValuePair(NAME_ATTR, "" + elem.getName()), // NOI18N

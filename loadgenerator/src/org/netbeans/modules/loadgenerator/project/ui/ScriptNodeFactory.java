@@ -70,6 +70,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -144,7 +145,7 @@ public class ScriptNodeFactory implements NodeFactory {
 
   private static final class ScriptNode extends org.openide.nodes.AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
 
-    private static final Image LOADGEN_FILES_BADGE = Utilities.loadImage("org/netbeans/modules/loadgenerator/project/ui/resources/loadgen_badge.png", true); // NOI18N
+    private static final Image LOADGEN_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/loadgenerator/project/ui/resources/loadgen_badge.png", true); // NOI18N
     private Node projectNode;
 
     // icon badging >>>
@@ -194,7 +195,7 @@ public class ScriptNodeFactory implements NodeFactory {
       Image image;
 
       image = opened ? getDataFolderNodeDelegate().getOpenedIcon(type) : getDataFolderNodeDelegate().getIcon(type);
-      image = Utilities.mergeImages(image, LOADGEN_FILES_BADGE, 8, 8);
+      image = ImageUtilities.mergeImages(image, LOADGEN_FILES_BADGE, 8, 8);
 
       return image;
     }

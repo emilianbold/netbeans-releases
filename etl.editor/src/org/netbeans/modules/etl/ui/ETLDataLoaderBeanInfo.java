@@ -45,6 +45,7 @@ import java.beans.SimpleBeanInfo;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Description of {@link WSDLDataLoader}.
@@ -110,9 +111,9 @@ public class ETLDataLoaderBeanInfo extends SimpleBeanInfo {
 
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage ("org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png");
+            return ImageUtilities.loadImage ("org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png");
         } else {
-            return Utilities.loadImage ("org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png");
+            return ImageUtilities.loadImage ("org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png");
         }
     }
 

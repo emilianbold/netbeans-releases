@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.netbeans.modules.php.editor.codegen.Property;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -71,7 +72,7 @@ public abstract class CheckNode extends DefaultMutableTreeNode {
 
         @Override
         public Image getIcon() {
-            return org.openide.util.Utilities.loadImage(ICON_BASE + "class" + ICON_EXTENSION); //NOI18N
+            return ImageUtilities.loadImage(ICON_BASE + "class" + ICON_EXTENSION); //NOI18N
         }
     }
 
@@ -98,7 +99,7 @@ public abstract class CheckNode extends DefaultMutableTreeNode {
             } else if (BodyDeclaration.Modifier.isProtected(property.getModifier())) {
                 name = "fieldProtected";               //NOI18N
             }
-            return org.openide.util.Utilities.loadImage(ICON_BASE + name + ICON_EXTENSION);
+            return ImageUtilities.loadImage(ICON_BASE + name + ICON_EXTENSION);
         }
     }
 }

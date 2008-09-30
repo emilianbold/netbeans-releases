@@ -49,6 +49,7 @@ import org.openide.nodes.Children;
 import javax.swing.Action;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.WeakListeners;
@@ -99,7 +100,7 @@ public class CMPFieldNode extends AbstractNode implements PropertyChangeListener
     }
     
     public Image getIcon(int type) {
-        return Utilities.loadImage(CMP_FIELD_ICON);
+        return ImageUtilities.loadImage(CMP_FIELD_ICON);
     }
     
     public boolean canDestroy(){

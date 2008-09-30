@@ -56,6 +56,7 @@ import org.netbeans.modules.diff.builtin.visualizer.*;
 
 import org.openide.actions.CopyAction;
 import org.openide.actions.SaveAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
@@ -132,8 +133,8 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         // TODO Get icons for these buttons
         firstConflictButton.setVisible(false);
         lastConflictButton.setVisible(false);
-        prevConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif", true)));
-        nextConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif", true)));
+        prevConflictButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif", true)));
+        nextConflictButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif", true)));
         //prevConflictButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
         //nextConflictButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/next.gif")));
         //setTitle(org.openide.util.NbBundle.getBundle(DiffComponent.class).getString("DiffComponent.title"));

@@ -50,6 +50,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.model.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -77,7 +78,7 @@ public class ComponentWidget extends Widget {
         ComponentDescriptor descriptor = component.getComponentDescriptor ();
         Color validityColor = descriptor != null ? Color.WHITE : Color.MAGENTA;
         PaletteDescriptor paletteDescriptor = descriptor != null ? descriptor.getPaletteDescriptor () : null;
-        Image image = paletteDescriptor != null ? Utilities.loadImage(paletteDescriptor.getSmallIcon()) : null;
+        Image image = paletteDescriptor != null ? ImageUtilities.loadImage(paletteDescriptor.getSmallIcon()) : null;
 
         setLayout (org.netbeans.modules.vmd.structure.document.ComponentWidget.LAYOUT);
 
