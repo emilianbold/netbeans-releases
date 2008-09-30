@@ -193,6 +193,9 @@ public class Utils {
             if (set == null) {
                 return null;
             }
+            if (line < 0 || set.getLines().size() < line) {
+                return null;
+            }
             return set.getOriginal(line - 1);
         }        
     }
