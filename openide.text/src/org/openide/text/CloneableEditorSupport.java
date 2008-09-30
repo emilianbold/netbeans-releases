@@ -158,6 +158,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * and set to false when document loading is finished. It helps to reset doc reference to weak just once. */
     private boolean isStrongSet = false;
 
+    private int counterGetDocument = 0;
+    private int counterOpenDocument = 0;
+    private int counterPrepareDocument = 0;
+
     /** Non default MIME type used to editing */
     private String mimeType;
 
@@ -503,6 +507,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         return propertyChangeSupport;
     }
 
+    private boolean canReleaseDoc () {
+        if ((counterGetDocument == 0) && (counterOpenDocument == 0) && (counterPrepareDocument == 0)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     //
     // EditorCookie implementation
     // 
@@ -524,12 +536,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             switch (documentStatus) {
             case DOCUMENT_NO:
                 documentStatus = DOCUMENT_LOADING;
+                counterPrepareDocument++;
                 Task t = prepareDocument(false);
                 //Check for null is workaround for issue #144722
                 if (t != null) {
                     t.addTaskListener(new TaskListener() {
                         public void taskFinished(Task task) {
-                            if (isStrongSet) {
+                            counterPrepareDocument--;
+                            if (isStrongSet && canReleaseDoc()) {
                                 isStrongSet = false;
                                 CloneableEditorSupport.this.doc.setStrong(false);
                             }
@@ -537,7 +551,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         }
                     });
                 } else {
-                    if (isStrongSet) {
+                    counterPrepareDocument--;
+                    if (isStrongSet && canReleaseDoc()) {
                         isStrongSet = false;
                         if (this.doc != null) {
                             this.doc.setStrong(false);
@@ -741,12 +756,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.openDocument();
         }
         synchronized (getLock()) {
-            StyledDocument doc = openDocumentCheckIOE();
-            if (isStrongSet) {
-                isStrongSet = false;
-                this.doc.setStrong(false);
+            try {
+                counterOpenDocument++;
+                StyledDocument doc = openDocumentCheckIOE();
+                return doc;
+            } finally {
+                counterOpenDocument--;
+                if (isStrongSet && canReleaseDoc()) {
+                    isStrongSet = false;
+                    this.doc.setStrong(false);
+                }
             }
-            return doc;
         }
     }
 
@@ -830,14 +850,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     }
 
                     try {
+                        counterGetDocument++;
                         StyledDocument doc = openDocumentCheckIOE();
-                        if (isStrongSet) {
-                            isStrongSet = false;
-                            this.doc.setStrong(false);
-                        }
                         return doc;
                     } catch (IOException e) {
                         return null;
+                    } finally {
+                        counterGetDocument--;
+                        if (isStrongSet && canReleaseDoc()) {
+                            isStrongSet = false;
+                            this.doc.setStrong(false);
+                        }
                     }
                 }
             }
@@ -1993,7 +2016,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         notifyClosed();
-
+        
         return true;
     }
 
@@ -2036,11 +2059,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         if (positionManager != null) {
             positionManager.documentClosed();
-
+            
             documentStatus = DOCUMENT_NO;
             fireDocumentChange(getDoc(), true);
         }
-
+        
         documentStatus = DOCUMENT_NO;
         setDoc(null, false);
         kit = null;
