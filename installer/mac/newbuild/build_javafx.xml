@@ -212,10 +212,18 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="no">
             <arg value="-c"/>
             <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
-                sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//;
-                s/'\$${buildnumber}'/'${buildnumber}'/' 
+                sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//' 
                 > ${resources.full.dir}/Localizable.strings"/>
-        </exec>         
+        </exec>
+
+        <loadfile property="Localizable.strings.content" srcFile="${resources.full.dir}/Localizable.strings">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </loadfile>
+
+	<echo message="${Localizable.strings.content}" file="${resources.full.dir}/Localizable.strings" append="false"/>
+
         <native2ascii encoding="UTF-16" src="${resources.full.dir}" dest="${mpkg.file}/Contents/Resources/${locale.dir}.lproj" 
                       reverse="true" includes="Localizable.strings"/>                        
     </target>     

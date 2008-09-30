@@ -269,6 +269,10 @@ public class RhtmlModelTest extends RubyTestBase {
         checkEruby("testfiles/dashes.rhtml");
     }
 
+    public void testEruby146875() throws Exception {
+        checkEruby("testfiles/issue146875.erb");
+    }
+
     public void testPositions1() throws Exception {
         checkPositionTranslations("testfiles/conv.rhtml", "<li><%=^ link_to", "^ %></li>");
     }

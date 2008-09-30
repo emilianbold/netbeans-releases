@@ -40,6 +40,7 @@
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
 import java.io.File;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -58,14 +59,17 @@ public interface ArtifactListener {
 
         private final boolean library;
 
-        public Artifact(File file, File distributionPath, boolean library) {
+        private final boolean relocatable;
+
+        public Artifact(File file, File distributionPath, boolean library, boolean relocatable) {
             this.file = file;
             this.distributionPath = distributionPath;
             this.library = library;
+            this.relocatable = relocatable;
         }
 
         public static Artifact forFile(File file) {
-            return new Artifact(file, null, false);
+            return new Artifact(FileUtil.normalizeFile(file), null, false, false);
         }
 
         public File getFile() {
@@ -73,7 +77,7 @@ public interface ArtifactListener {
         }
 
         public Artifact referencedLibrary() {
-            return new Artifact(this.file, null, true);
+            return new Artifact(this.file, this.distributionPath, true, this.relocatable);
         }
 
         public boolean isReferencedLibrary() {
@@ -81,11 +85,19 @@ public interface ArtifactListener {
         }
 
         public Artifact distributionPath(File distributionPath) {
-            return new Artifact(this.file, distributionPath, this.library);
+            return new Artifact(this.file, distributionPath, this.library, this.relocatable);
         }
 
         public File getDistributionPath() {
             return distributionPath;
+        }
+
+        public Artifact relocatable() {
+            return new Artifact(this.file, this.distributionPath, this.library, true);
+        }
+
+        public boolean isRelocatable() {
+            return relocatable;
         }
 
         @Override
@@ -117,6 +129,6 @@ public interface ArtifactListener {
             hash = 59 * hash + (this.library ? 1 : 0);
             return hash;
         }
-        
+
     }
 }

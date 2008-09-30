@@ -51,6 +51,9 @@ import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -59,6 +62,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
@@ -162,6 +166,8 @@ public final class WebProject implements Project, AntProjectListener {
     private static final Logger LOGGER = Logger.getLogger(WebProject.class.getName());
     
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
+    
+    private static final Pattern TLD_PATTERN = Pattern.compile("(META-INF/.*\\.tld)|(META-INF/tlds/.*\\.tld)");
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -1661,6 +1667,42 @@ public final class WebProject implements Project, AntProjectListener {
             return result;
         }
 
+        @Override
+        protected Artifact filterArtifact(Artifact artifact) {
+            if (containsTLD(artifact.getFile())) {
+                return artifact;
+            }
+
+            return artifact.relocatable();
+        }
+
+        private boolean containsTLD(File f) {
+            if (f.exists() && f.isFile() && f.canRead()) {
+                ZipFile zip = null;
+                try {
+                    zip = new ZipFile(f);
+                    for (Enumeration entries = zip.entries(); entries.hasMoreElements();) {
+                        String zipEntryName = ((ZipEntry) entries.nextElement()).getName();
+                        if (TLD_PATTERN.matcher(zipEntryName).matches()) {
+                            return true;
+                        }
+                    }
+                    return false;
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                } finally {
+                    if (zip != null) {
+                        try {
+                            zip.close();
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 
     public boolean isJavaEE5(Project project) {

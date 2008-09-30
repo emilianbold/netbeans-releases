@@ -76,14 +76,15 @@ public abstract class AbstractVariableNode extends AbstractModelNode
      * @see org.netbeans.modules.php.dbgp.models.VariableNode#getName()
      */
     public String getName() {
-        AbstractModelNode node = getParent();
-        if ( node instanceof ArrayVariableNode ) {
+        Property property = getProperty();
+        String propertyName = property != null ? property.getName()  : null;
+        if ( getParent() instanceof ArrayVariableNode ) {
             StringBuilder builder = new StringBuilder("[");
-            builder.append(getProperty().getName());
+            builder.append(propertyName);
             builder.append("]");
             return builder.toString();
         }
-        return getProperty().getName();
+        return propertyName;
     }
 
     /* (non-Javadoc)
