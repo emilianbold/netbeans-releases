@@ -149,7 +149,7 @@ public final class GrailsProject implements Project {
 
         public Icon getIcon() {
             Image image = ImageUtilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
-            return new ImageIcon(image);
+            return image == null ? null : new ImageIcon(image);
         }
 
         public String getName() {
