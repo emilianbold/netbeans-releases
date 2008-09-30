@@ -108,7 +108,8 @@ TOKEN[text="%>"; tokenId=SYMBOL2; offset=859]
 TOKEN[text="
 
         "; tokenId=TEXT; offset=861]
-TOKEN[text="<jsp:useBean"; tokenId=TAG; offset=871]
+TOKEN[text="<"; tokenId=SYMBOL; offset=871]
+TOKEN[text="jsp:useBean"; tokenId=TAG; offset=872]
 TOKEN[text=" "; tokenId=WHITESPACE; offset=883]
 TOKEN[text="id"; tokenId=ATTRIBUTE; offset=884]
 TOKEN[text="="; tokenId=SYMBOL; offset=886]
@@ -145,7 +146,8 @@ TOKEN[text="<%-- html comments --%>"; tokenId=COMMENT; offset=1147]
 TOKEN[text="
         <!--
         "; tokenId=TEXT; offset=1170]
-TOKEN[text="<jsp:include"; tokenId=TAG; offset=1192]
+TOKEN[text="<"; tokenId=SYMBOL; offset=1192]
+TOKEN[text="jsp:include"; tokenId=TAG; offset=1193]
 TOKEN[text=" "; tokenId=WHITESPACE; offset=1204]
 TOKEN[text="page"; tokenId=ATTRIBUTE; offset=1205]
 TOKEN[text="="; tokenId=SYMBOL; offset=1209]
@@ -166,7 +168,8 @@ TOKEN[text="%>"; tokenId=SYMBOL2; offset=1305]
 TOKEN[text="
         -->
         "; tokenId=TEXT; offset=1307]
-TOKEN[text="<jsp:include"; tokenId=TAG; offset=1328]
+TOKEN[text="<"; tokenId=SYMBOL; offset=1328]
+TOKEN[text="jsp:include"; tokenId=TAG; offset=1329]
 TOKEN[text=" "; tokenId=WHITESPACE; offset=1340]
 TOKEN[text="page"; tokenId=ATTRIBUTE; offset=1341]
 TOKEN[text="="; tokenId=SYMBOL; offset=1345]

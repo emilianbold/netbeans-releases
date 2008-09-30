@@ -91,6 +91,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     
     private static final String[] DEFAULT_WSIMPORT_OPTIONS = {"extension", "verbose"};  //NOI18N
     private static final String XNOCOMPILE_OPTION = "xnocompile"; //NOI18N
+    private static final String WSDL_LOCATION = "wsdlLocation"; //NOI18N
     
     Project project;
     private FileObject clientArtifactsFolder;
@@ -202,15 +203,20 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                 if (catalog!=null) client.setCatalogFile(CATALOG_FILE);
                 
                 WsimportOptions wsimportOptions = client.getWsImportOptions();
+                WsimportOption wsimportOption = null;
                 if (wsimportOptions != null) {
                     for (String option:DEFAULT_WSIMPORT_OPTIONS) {
-                        WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
+                        wsimportOption = wsimportOptions.newWsimportOption();
                         wsimportOption.setWsimportOptionName(option);
                         wsimportOption.setWsimportOptionValue("true"); //NOI18N
                         wsimportOptions.addWsimportOption(wsimportOption);
                     }
+                    wsimportOption = wsimportOptions.newWsimportOption();
+                    wsimportOption.setWsimportOptionName(WSDL_LOCATION);
+                    wsimportOption.setWsimportOptionValue(wsdlUrl);
+                    wsimportOptions.addWsimportOption(wsimportOption);
                     if (isXnocompile(project)) {
-                        WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
+                        wsimportOption = wsimportOptions.newWsimportOption();
                         wsimportOption.setWsimportOptionName(XNOCOMPILE_OPTION);
                         wsimportOption.setWsimportOptionValue("true"); //NOI18N
                         wsimportOptions.addWsimportOption(wsimportOption);

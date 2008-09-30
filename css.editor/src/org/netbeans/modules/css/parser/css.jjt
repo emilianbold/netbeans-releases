@@ -178,16 +178,7 @@ void styleSheetRuleList() :{} {
   ( charsetRule() )?
   ( <S> | <CDO> | <CDC> )*
   ( importRule() ( <S> | <CDO> | <CDC> )* )*
-  ( rulesTail )
-}
-
-void rulesTail() :{} {
-try {
-     ( ( styleRule() | mediaRule() | pageRule() | fontFaceRule() | unknownRule() ) ( <S> | <CDO> | <CDC> )* )*
-    } catch(ParseException e) {
-        reportError(e);
-        error_skipblock();
-    }
+  ( ( styleRule() | mediaRule() | pageRule() | fontFaceRule() | unknownRule() ) ( <S> | <CDO> | <CDC> )* )*
 }
 
 //
@@ -702,9 +693,9 @@ void error_skipblock() {
     ParseException e = generateParseException();
     //System.err.println( "** error_skipblock **\n" + e.toString() );
 
-  Token t;
+  Token t = getToken(0);
   int nesting = 0;
-  do {
+  while ((t.kind != RBRACE) || (nesting > 0)) {
     t = getNextToken();
     if( t.kind == LBRACE )
       nesting++;
@@ -713,7 +704,6 @@ void error_skipblock() {
     else if( t.kind == EOF )
       break;
   }
-  while ((t.kind != RBRACE) || (nesting > 0));
 }
 
 JAVACODE
