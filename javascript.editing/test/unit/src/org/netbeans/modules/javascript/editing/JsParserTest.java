@@ -179,4 +179,8 @@ public class JsParserTest extends JsTestBase {
     public void test120499() throws Exception {
         checkParseTree("testfiles/issue120499.js", "__UNK^NOWN__", Token.NAME);
     }
+
+    public void test148423() throws Exception {
+        checkParseTree("testfiles/issue148423.js", "__UNK^NOWN__", Token.STRING);
+    }
 }
