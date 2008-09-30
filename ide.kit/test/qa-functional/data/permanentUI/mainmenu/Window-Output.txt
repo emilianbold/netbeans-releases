@@ -2,6 +2,7 @@ Output                  > Output                O
                           Search Results        S
                           Find Usages Results   F
                           JUnit Test Results    J
+                          Ruby Test Results     T
                           Versioning Output     V
                           Refactoring Preview   R
                           Analyzer              A

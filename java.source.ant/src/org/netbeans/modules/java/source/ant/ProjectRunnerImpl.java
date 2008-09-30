@@ -46,6 +46,12 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,15 +62,16 @@ import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.java.project.runner.ProjectRunnerImplementation;
+import org.netbeans.spi.java.project.runner.JavaRunnerImplementation;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
@@ -76,66 +83,158 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
 
+import static org.netbeans.api.java.project.runner.JavaRunner.*;
+
 /**
  *
  * @author Jan Lahoda
  */
-public class ProjectRunnerImpl implements ProjectRunnerImplementation{
+public class ProjectRunnerImpl implements JavaRunnerImplementation{
 
     private static final Logger LOG = Logger.getLogger(ProjectRunnerImpl.class.getName());
     
-    public boolean isSupported(String command, FileObject file) {
-        return locateScript(command) != null && checkRunSupported(file);
+    public boolean isSupported(String command, Map<String, ?> properties) {
+        return locateScript(command) != null;
     }
 
-    public void execute(String command, Properties props, FileObject toRun) throws IOException {
-        Project project = FileOwnerQuery.getOwner(toRun);
-        ClassPath exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
-        ClassPath boot = ClassPath.getClassPath(toRun, ClassPath.BOOT);
-        ClassPath source = ClassPath.getClassPath(toRun, ClassPath.SOURCE);
-        JavaPlatform foundPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-
-        for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
-            if (boot.entries().equals(p.getBootstrapLibraries().entries())) {
-                LOG.log(Level.FINE, "found platform={0}", p.getDisplayName());
-                foundPlatform = p;
-                break;
-            }
-        }
-
-        LOG.log(Level.FINE, "using platform={0}", foundPlatform.getDisplayName());
-        LOG.log(Level.FINE, "execute classpath={0}", exec);
-
-        String cp = exec.toString(ClassPath.PathConversionMode.FAIL);
-
-        Properties antProps = (Properties) props.clone();
-
-        antProps.setProperty("classpath", cp);
-        antProps.setProperty("classname", source.getResourceName(toRun, '.', false));
-        if (antProps.get("work.dir") == null && project != null) {                //NOI18N
-            FileObject projDirectory = project.getProjectDirectory();
-            assert projDirectory != null;
-            File file = FileUtil.toFile(projDirectory);
-            if (file != null) {
-                antProps.setProperty("work.dir", file.getAbsolutePath());       //NOI18N
-            }
-        }
-        antProps.setProperty("platform.java", FileUtil.toFile(foundPlatform.findTool("java")).getAbsolutePath());
+    public ExecutorTask execute(String command, Map<String, ?> properties) throws IOException {
+        String[] projectName = new String[1];
+        Properties antProps = computeProperties(properties, projectName);
         
         FileObject script = buildScript(command);
-        String projectName = project != null ? ProjectUtils.getInformation(project).getDisplayName() : "";
-        AntProjectCookie apc = new FakeAntProjectCookie(AntScriptUtils.antProjectCookieFor(script), projectName);
+        AntProjectCookie apc = new FakeAntProjectCookie(AntScriptUtils.antProjectCookieFor(script), projectName[0]);
         AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
-        Properties p = execenv.getProperties();
-        p.putAll(antProps);
-        execenv.setProperties(p);
+        Properties props = execenv.getProperties();
+        props.putAll(antProps);
+        execenv.setProperties(props);
 
-        AntTargetExecutor.createTargetExecutor(execenv).execute(apc, null);
+        return AntTargetExecutor.createTargetExecutor(execenv).execute(apc, null);
     }
 
-    private static boolean checkRunSupported(FileObject file) {
-        //XXX: finish
-        return true;
+    static Properties computeProperties(Map<String, ?> properties, String[] projectNameOut) {
+        properties = new HashMap<String, Object>(properties);
+        FileObject toRun = getValue(properties, PROP_EXECUTE_FILE, FileObject.class);
+        String workDir = getValue(properties, PROP_WORK_DIR, String.class);
+        String className = getValue(properties, PROP_CLASSNAME, String.class);
+        ClassPath exec = getValue(properties, PROP_EXECUTE_CLASSPATH, ClassPath.class);
+        String javaTool = getValue(properties, PROP_PLATFORM_JAVA, String.class);
+        String projectName = getValue(properties, PROP_PROJECT_NAME, String.class);
+        Iterable<String> runJVMArgs = getMultiValue(properties, PROP_RUN_JVMARGS, String.class);
+        Iterable<String> args = getMultiValue(properties, PROP_APPLICATION_ARGS, String.class);
+        if (workDir == null) {
+            Parameters.notNull("toRun", toRun);
+            Project project = FileOwnerQuery.getOwner(toRun);
+            if (project != null) {
+                //NOI18N
+                FileObject projDirectory = project.getProjectDirectory();
+                assert projDirectory != null;
+                File file = FileUtil.toFile(projDirectory);
+                if (file != null) {
+                    workDir = file.getAbsolutePath(); //NOI18N
+                }
+            }
+        }
+        if (className == null) {
+            Parameters.notNull("toRun", toRun);
+            ClassPath source = ClassPath.getClassPath(toRun, ClassPath.SOURCE);
+            className = source.getResourceName(toRun, '.', false);
+        }
+        if (exec == null) {
+            Parameters.notNull("toRun", toRun);
+            exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
+        }
+        if (javaTool == null) {
+            JavaPlatform p = getValue(properties, PROP_PLATFORM, JavaPlatform.class);
+
+            if (p == null) {
+                p = JavaPlatform.getDefault();
+            }
+            
+            javaTool = FileUtil.toFile(p.findTool("java")).getAbsolutePath();
+        }
+        if (projectName == null) {
+            Project project = getValue(properties, "project", Project.class);
+            if (project != null) {
+                projectName = ProjectUtils.getInformation(project).getDisplayName();
+            }
+            if (projectName == null && toRun != null) {
+                project = FileOwnerQuery.getOwner(toRun);
+                if (project != null) {
+                    //NOI18N
+                    projectName = ProjectUtils.getInformation(project).getDisplayName();
+                }
+            }
+            if (projectName == null) {
+                projectName = "";
+            }
+        }
+
+        LOG.log(Level.FINE, "execute classpath={0}", exec);
+        String cp = exec.toString(ClassPath.PathConversionMode.FAIL);
+        Properties antProps = new Properties();
+        antProps.setProperty("classpath", cp);
+        antProps.setProperty("classname", className);
+        antProps.setProperty("platform.java", javaTool);
+        antProps.setProperty("work.dir", workDir);
+        antProps.setProperty("run.jvmargs", toOneLine(runJVMArgs));
+        antProps.setProperty("application.args", toOneLine(args));
+
+        for (Entry<String, ?> e : properties.entrySet()) {
+            if (e.getValue() instanceof String) {
+                antProps.setProperty(e.getKey(), (String) e.getValue());
+            }
+        }
+        
+        projectNameOut[0] = projectName;
+        
+        return antProps;
+    }
+
+    private static <T> T getValue(Map<String, ?> properties, String name, Class<T> type) {
+        Object v = properties.remove(name);
+
+        if (v instanceof FileObject && type == String.class) {
+            FileObject f = (FileObject) v;
+            File file = FileUtil.toFile(f);
+
+            v = file.getAbsolutePath();
+        }
+
+        if (v instanceof File && type == String.class) {
+            v = ((File) v).getAbsolutePath();
+        }
+
+        return type.cast(v);
+    }
+
+    private static <T> Iterable<T> getMultiValue(Map<String, ?> properties, String name, Class<T> type) {
+        Iterable v = (Iterable) properties.remove(name);
+        List<T>  result = new LinkedList<T>();
+
+        if (v == null) {
+            return Collections.emptyList();
+        }
+        
+        for (Object o : v) {
+            result.add(type.cast(o));
+        }
+
+        return result;
+    }
+
+    private static String toOneLine(Iterable<String> it) {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+
+        for (String s : it) {
+            if (!first) {
+                result.append(' ');
+            }
+            first = false;
+            result.append(s);
+        }
+
+        return result.toString();
     }
 
     private static URL locateScript(String actionName) {

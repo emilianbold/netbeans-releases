@@ -220,6 +220,7 @@ public final class RubyPlatformManager {
                     props.setProperty(Info.GEM_HOME, gemHome);
                     props.setProperty(Info.GEM_PATH, gemHome);
                     props.setProperty(Info.GEM_VERSION, "1.0.1 (1.0.1)"); // NOI18N
+                    props.setProperty(Info.RUBY_LIB_DIR, new File(new File(hardcodedRuby).getParentFile().getParentFile(), "lib" + File.separator + "ruby" + File.separator + "1.8").getPath()); // NOI18N
                     info = new Info(props);
                 }
 
