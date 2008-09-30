@@ -76,7 +76,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
     private FixImportsHelper helper = new FixImportsHelper();
 
     public FixImportsAction() {
-        super("fix-groovy-imports", 0); // NOI18N
+        super(NbBundle.getMessage(ImportChooserInnerPanel.class, "fix-groovy-imports"), 0); // NOI18N
     }
 
     @Override
