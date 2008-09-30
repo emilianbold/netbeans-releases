@@ -47,16 +47,10 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -98,11 +92,8 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
     private static final Logger LOG = Logger.getLogger(PHPFormatter.class.getName());
     
-    private final DocSyncedCodeStyle codeStyle;
-    
     public PHPFormatter() {
-        LOG.fine("PHP Formatter: " + this);
-        this.codeStyle = new DocSyncedCodeStyle();
+        LOG.fine("PHP Formatter: " + this); //NOI18N
     }
     
     public boolean needsParserResult() {
@@ -119,11 +110,11 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
     
     public int indentSize() {
-        return codeStyle.getIndentSize();
+        return CodeStyle.get((Document) null).getIndentSize();
     }
     
     public int hangingIndentSize() {
-        return codeStyle.getContinuationIndentSize();
+        return CodeStyle.get((Document) null).getContinuationIndentSize();
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -523,6 +514,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
             int end = endOffset;
             
+            CodeStyle codeStyle = CodeStyle.get(doc);
             int iSize = codeStyle.getIndentSize();
             int hiSize = codeStyle.getContinuationIndentSize();
 
@@ -591,74 +583,4 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
     }
 
-//    /**
-//     * Ensure that the editor-settings for tabs match our code style, since the
-//     * primitive "doc.getFormatter().changeRowIndent" calls will be using
-//     * those settings
-//     */
-//    private static void syncOptions(BaseDocument doc, CodeStyle style) {
-//        org.netbeans.editor.Formatter formatter = doc.getFormatter();
-//        if (formatter.getSpacesPerTab() != style.getIndentSize()) {
-//            formatter.setSpacesPerTab(style.getIndentSize());
-//        }
-//    }
-    
-    private static final class DocSyncedCodeStyle extends CodeStyle {
-        private DocSyncedCodeStyle() {
-            super(null);
-        }
-        
-        private int rightMargin = 80;
-        private Class kitClass;
-        
-        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
-        private Class getEditorKitClass() {
-            if(kitClass == null) {
-                EditorKit kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class); // NOI18N
-                if (kit != null) {
-                    kitClass = kit.getClass();
-                } else {
-                    kitClass = BaseKit.class;
-                }
-            }
-            return kitClass;
-        }
-
-        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
-        private int getSpacesPerTab() {
-            Integer sp = (Integer) Settings.getValue(getEditorKitClass(), SettingsNames.SPACES_PER_TAB);
-            int indent = 4;
-            if (sp != null && sp.intValue() >= 0) {
-                indent = sp.intValue();
-            }
-            return indent;
-        }
-        
-        @Override
-        public int getIndentSize() {
-            return getSpacesPerTab();
-        }
-
-        @Override
-        public int getContinuationIndentSize() {
-            return getSpacesPerTab();
-        }
-
-        @Override
-        public boolean reformatComments() {
-            // This isn't used in JavaScript yet
-            return false;
-        }
-
-        @Override
-        public boolean indentHtml() {
-            // This isn't used in JavaScript yet
-            return false;
-        }
-
-        @Override
-        public int getRightMargin() {
-            return rightMargin;
-        }
-    }
 }
