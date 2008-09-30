@@ -162,9 +162,9 @@ public class Resolver3 implements Resolver {
         if (isRecursionOnResolving(INFINITE_RECURSION)) {
             return null;
         }
-        Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
+        Set<CharSequence> set = new HashSet<CharSequence>(100);
         while (true) {
-            set.add(orig);
+            set.add(orig.getQualifiedName());
             if (CsmKindUtilities.isClassForwardDeclaration(orig)){
                 CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
                 CsmClass definition;
@@ -190,7 +190,7 @@ public class Resolver3 implements Resolver {
                     // have to stop with current 'orig' value
                     break;
                 }
-                if (set.contains(resovedClassifier)) {
+                if (set.contains(resovedClassifier.getQualifiedName())) {
                     // try to recover from this error
                     resovedClassifier = findOtherClassifier(orig);
                     if (resovedClassifier == null) {
