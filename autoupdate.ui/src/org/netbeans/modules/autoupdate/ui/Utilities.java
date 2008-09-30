@@ -460,7 +460,7 @@ public class Utilities {
         return System.getProperty (PLUGIN_MANAGER_FIRST_CLASS_MODULES);
     }
     
-    private static Collection<String> getFirstClassModules () {
+    public static Collection<String> getFirstClassModules () {
         if (first_class_modules != null) {
             return first_class_modules;
         }
