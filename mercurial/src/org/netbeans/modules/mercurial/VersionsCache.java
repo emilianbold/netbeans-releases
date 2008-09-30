@@ -75,7 +75,7 @@ public class VersionsCache {
     public File getFileRevision(File base, String revision) throws IOException {
         if(revision.equals("-1")) return null; // NOI18N
         
-        File repository = Mercurial.getInstance().getTopmostManagedParent(base);
+        File repository = Mercurial.getInstance().getRepositoryRoot(base);
         if (Setup.REVISION_BASE.equals(revision)) {
             try {
                 File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
