@@ -631,8 +631,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private void autoCompleteInClassContext(CompilationInfo info, int caretOffset, List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
         Document document = info.getDocument();
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
+        TokenHierarchy<?> th = TokenHierarchy.get(document);
+        TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence(PHPTokenId.language());
+        assert tokenSequence != null;
+        
         tokenSequence.move(caretOffset);
         boolean offerMagicAndInherited = true;
         if (!(!tokenSequence.moveNext() && !tokenSequence.movePrevious())) {

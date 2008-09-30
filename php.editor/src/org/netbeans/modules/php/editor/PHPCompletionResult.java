@@ -93,8 +93,9 @@ public class PHPCompletionResult extends DefaultCompletionResult {
                         builder.append(includePath);
                         builder.append("\";\n"); //NOI18N
 
-                        TokenHierarchy th = TokenHierarchy.get(doc);
-                        TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
+                        TokenHierarchy<?> th = TokenHierarchy.get(doc);
+                        TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence(PHPTokenId.language());
+                        assert tokenSequence != null;
                         tokenSequence.moveStart();
 
                         while (tokenSequence.moveNext()) {
