@@ -138,10 +138,5 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JTextField" name="widthText1">
-      <Events>
-        <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="widthText1FocusGained"/>
-      </Events>
-    </Component>
   </SubComponents>
 </Form>

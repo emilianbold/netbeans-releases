@@ -100,7 +100,6 @@ public class ResizeElementsPanel extends javax.swing.JPanel
         widthLabel = new javax.swing.JLabel();
         widthText = new javax.swing.JTextField();
         statusLabel = new javax.swing.JLabel();
-        widthText1 = new javax.swing.JTextField();
 
         heightLabel.setLabelFor(heightText);
         org.openide.awt.Mnemonics.setLocalizedText(heightLabel, org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "LBL_HeightLabel")); // NOI18N
@@ -125,12 +124,6 @@ public class ResizeElementsPanel extends javax.swing.JPanel
         statusLabel.setForeground(new java.awt.Color(255, 0, 0));
         statusLabel.setText("<error status>");
         statusLabel.setMaximumSize(new java.awt.Dimension(573, 54));
-
-        widthText1.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                widthText1FocusGained(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -188,10 +181,6 @@ public class ResizeElementsPanel extends javax.swing.JPanel
     {//GEN-HEADEREND:event_heightTextFocusGained
         heightText.selectAll();
     }//GEN-LAST:event_heightTextFocusGained
-
-private void widthText1FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_widthText1FocusGained
-// TODO add your handling code here:
-}//GEN-LAST:event_widthText1FocusGained
 
     public int getResizeHeight()
     {
@@ -328,7 +317,6 @@ private void widthText1FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:e
     private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel widthLabel;
     private javax.swing.JTextField widthText;
-    private javax.swing.JTextField widthText1;
     // End of variables declaration//GEN-END:variables
    
 }
