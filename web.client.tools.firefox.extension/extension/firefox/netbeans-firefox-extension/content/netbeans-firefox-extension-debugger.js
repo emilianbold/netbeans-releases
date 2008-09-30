@@ -2044,14 +2044,20 @@
         } else {
             NetBeans.Logger.log(message + " fileName: " + error.fileName + " lineNumber: + " + error.line, logType);
         }
-        if ( features.suspendOnErrors )
+        if ( features.suspendOnErrors ) {
+            this.ignoreNextThrow = true;
             return -1;
+        }
         return RETURN_CONTINUE;
     }
 
     this.onThrow = function(frame, rv)
     {
         var needSuspend = features.suspendOnExceptions;
+        if (this.ignoreNextThrow) {
+            delete this.ignoreNextThrow;
+            return false;
+        }
         return needSuspend;
     }
 
