@@ -48,6 +48,7 @@ import org.netbeans.modules.uml.diagrams.anchors.DiamondAnchorShape;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -251,11 +252,9 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
                 setConstraint(sourceQualifier, 
                               LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_SOURCE,
                               0);
-                
-                sourceLocationResolver = 
-                        AnchorShapeFactory.createWidgetResolver(this, 
-                                                                AnchorShapeFactory.ConnectionEnd.SOURCE, 
-                                                                sourceQualifier);
+
+                sourceLocationResolver = new DirectRoutingAnchorResolver(sourceQualifier, true);
+
                 AnchorShape shape = 
                         AnchorShapeFactory.createAdjustableAnchorShape(getSourceAnchorShape(), 
                                                                        sourceLocationResolver);
@@ -275,10 +274,7 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
                               LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_TARGET,
                               -1);
                 
-                targetLocationResolver = 
-                        AnchorShapeFactory.createWidgetResolver(this, 
-                                                                AnchorShapeFactory.ConnectionEnd.TARGET, 
-                                                                targetQualifier);
+                targetLocationResolver = new DirectRoutingAnchorResolver(targetQualifier, false);
                 AnchorShape shape = 
                         AnchorShapeFactory.createAdjustableAnchorShape(getTargetAnchorShape(), 
                                                                        targetLocationResolver);
@@ -760,5 +756,196 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
     public String getWidgetID()
     {
         return UMLWidgetIDString.ASSOCIATIONCONNECTORWIDGET.toString();
+    }
+
+    /**
+     * The DirectRoutingAnchorResolver is used to determine the cut off distance
+     * where the anchor shape should be placed.  The distance is calucated from
+     * where the edge enters the related widget to the intersection point where
+     * the edge will exist the AnchorShape.
+     *
+     * This resolver assumes a direct routing.
+     */
+    private class DirectRoutingAnchorResolver implements AnchorShapeLocationResolver
+    {
+        private boolean source = true;
+        private Widget decoratorWidget;
+
+        public DirectRoutingAnchorResolver(Widget widget, boolean source)
+        {
+            this.source = source;
+            this.decoratorWidget = widget;
+        }
+
+        public int getEndLocation()
+        {
+            Point start = getRelatedControlPoint();
+            Point end = getNextControlPoint();
+
+            Point intersection = null;
+            for (Line2D curLine : findPossibleLines())
+            {
+                if(curLine == null)
+                {
+                    // We did not find the correct side.
+                    break;
+                }
+
+
+                if (Line2D.linesIntersect(start.x, start.y,
+                                          end.x, end.y,
+                                          curLine.getX1(), curLine.getY1(),
+                                          curLine.getX2(), curLine.getY2()) == true)
+                {
+                    intersection = calculateIntersect(start.x, start.y,
+                                                      end.x, end.y,
+                                                      curLine.getX1(), curLine.getY1(),
+                                                      curLine.getX2(), curLine.getY2());
+
+                    break;
+                }
+            }
+            if (intersection == null)
+            {
+                intersection = start;
+            }
+            return (int) Point.distance(start.x, start.y, intersection.x, intersection.y);
+        }
+
+        /**
+         * Find the possible boundaries that the edge can cross.  Basically the
+         * edge can not cross the boundary that is connected to the related
+         * widget.
+         *
+         * @return An array of lines that are used to calculate the intersection
+         *         point.
+         */
+        protected Line2D[] findPossibleLines()
+        {
+            Rectangle bounds = decoratorWidget.convertLocalToScene(decoratorWidget.getBounds());
+            
+            Widget relatedWidget = getSourceAnchor().getRelatedWidget();
+            if(source == false)
+            {
+                relatedWidget = getTargetAnchor().getRelatedWidget();
+            }
+
+            Rectangle relatedBounds = relatedWidget.convertLocalToScene(relatedWidget.getClientArea());
+            Line2D[] retVal = new Line2D[3];
+            int right = bounds.x + bounds.width;
+            int bottom = bounds.y + bounds.height;
+
+            int relatedRight = relatedBounds.x + relatedBounds.width;
+            int relatedBottom = relatedBounds.y + relatedBounds.height;
+
+            if(right <= relatedBounds.x)
+            {
+                // LEFT
+                retVal[0] = new Line2D.Float(bounds.x, bounds.y, right, bounds.y);
+                retVal[1] = new Line2D.Float(bounds.x, bounds.y, bounds.x, bottom);
+                retVal[2] = new Line2D.Float(bounds.x, bottom, right, bottom);
+            }
+            else if (bounds.x >= relatedRight)
+            {
+                // RIGHT
+                retVal[0] = new Line2D.Float(bounds.x, bounds.y, right, bounds.y);
+                retVal[1] = new Line2D.Float(right, bounds.y, right, bottom);
+                retVal[2] = new Line2D.Float(bounds.x, bottom, right, bottom);
+            }
+            else if (bounds.y >= relatedBottom)
+            {
+                // BOTTOM
+                retVal[0] = new Line2D.Float(bounds.x, bottom, right, bottom);
+                retVal[1] = new Line2D.Float(bounds.x, bounds.y, bounds.x, bottom);
+                retVal[2] = new Line2D.Float(right, bounds.y, right, bottom);
+            }
+            else if (bottom <= relatedBounds.y)
+            {
+                // TOP
+                retVal[0] = new Line2D.Float(bounds.x, bounds.y, right, bounds.y);
+                retVal[1] = new Line2D.Float(bounds.x, bounds.y, bounds.x, bottom);
+                retVal[2] = new Line2D.Float(right, bounds.y, right, bottom);
+            }
+            return retVal;
+        }
+
+        /**
+         * Calculates the point where the edge will intersect with a line.
+         *
+         * @param x1 Edge start x
+         * @param y1 Edge start Y
+         * @param x2 Edge end x
+         * @param y2 Edge end y
+         * @param x3 Line start x
+         * @param y3 Line start y
+         * @param x4 Line end x
+         * @param y4 Line end y
+         * @return
+         */
+        public Point calculateIntersect(double x1, double y1,
+                                        double x2, double y2,
+                                        double x3, double y3,
+                                        double x4, double y4)
+        {
+            double line1Slope = calculateSlope(x1, y1, x2, y2);
+            double line2Slope = calculateSlope(x3, y3, x4, y4);
+            double line1c = calculateCoeffient(x1, y1, line1Slope);
+            double line2c = calculateCoeffient(x3, y3, line2Slope);
+            double x = (line2c - line1c) / (line1Slope - line2Slope);
+
+            // Check if one of the lines is vertical.  If a line is
+            // vertical then the intersection will of occur on the
+            // horizonal X position.
+            if (Double.isInfinite(line1c) == true)
+            {
+                x = (int) x1;
+            } else if (Double.isInfinite(line2c) == true)
+            {
+                x = (int) x3;
+            }
+            double y = line1Slope * x + line1c;
+            Point retVal = new Point((int) x, (int) y);
+            return retVal;
+        }
+
+        private double calculateSlope(double x1, double y1, double x2, double y2)
+        {
+            double retVal = 0;
+            
+//            if((x2 - x1) != 0)
+            {
+                retVal = (y2 - y1) / (x2 - x1);
+            }
+            return retVal;
+        }
+
+        private double calculateCoeffient(double x, double y, double slope)
+        {
+            return y - (x * slope);
+        }
+
+        private Point getNextControlPoint()
+        {
+            Point retVal = getControlPoint(1);
+
+            if(source == false)
+            {
+                retVal = getControlPoint(getControlPoints().size() - 2);
+            }
+
+            return retVal;
+        }
+
+        private Point getRelatedControlPoint()
+        {
+            Point retVal = getFirstControlPoint();
+
+            if(source == false)
+            {
+                retVal = getLastControlPoint();
+            }
+
+            return retVal;
+        }
     }
 }

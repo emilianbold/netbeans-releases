@@ -263,7 +263,20 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
 
     public void remove()
     {
+        Widget sourceWidget = getSourceAnchor().getRelatedWidget();
+        Widget targetWidget = getTargetAnchor().getRelatedWidget();
         scene.removeEdge(getObject());
+        
+        // Fixed iz #139489 and 148365
+        // removed entries on source and target widget that are attatched to this edge.
+        if (sourceWidget != null && sourceWidget instanceof UMLNodeWidget)
+        {
+            ((UMLNodeWidget)sourceWidget).removeAttachedEntries(this);
+        }
+         if (targetWidget != null && targetWidget instanceof UMLNodeWidget)
+        {
+            ((UMLNodeWidget)targetWidget).removeAttachedEntries(this);
+        }
     }
 
     public void refresh(boolean resizetocontent)
@@ -276,8 +289,6 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         }
     }
     abstract public void initialize(IPresentationElement element);
-
-
 
     ///////////// 
     // Accessible
