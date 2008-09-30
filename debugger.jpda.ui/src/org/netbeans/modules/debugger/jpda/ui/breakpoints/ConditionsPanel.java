@@ -169,7 +169,11 @@ public class ConditionsPanel extends javax.swing.JPanel {
     public void setupConditionPaneContext(String url, int line) {
         WatchPanel.setupContext(tfCondition, url, line);
     }
-    
+
+    public void setupConditionPaneContext() {
+        WatchPanel.setupContext(tfCondition);
+    }
+
     private String getFilterStr(String[] filter) {
         if (filter == null || filter.length == 0) {
             return "";
