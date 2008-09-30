@@ -830,6 +830,7 @@ public class AssociateDialogUI extends javax.swing.JDialog implements IAssociate
         m_Status = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle(org.openide.util.NbBundle.getMessage(AssociateDialogUI.class, "IDS_PROJNAME2")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(m_FindButton, org.openide.util.NbBundle.getMessage(AssociateDialogUI.class, "AssociateDialogUI.m_FindButton.text")); // NOI18N
         m_FindButton.addActionListener(new java.awt.event.ActionListener() {
@@ -950,7 +951,7 @@ public class AssociateDialogUI extends javax.swing.JDialog implements IAssociate
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(m_SearchElementsRadio)
                     .add(m_SearchDescriptionsRadio))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(43, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -996,7 +997,7 @@ public class AssociateDialogUI extends javax.swing.JDialog implements IAssociate
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(findLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(m_FindCombo, 0, 372, Short.MAX_VALUE))
+                                .add(m_FindCombo, 0, 379, Short.MAX_VALUE))
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(jPanel1Layout.createSequentialGroup()
