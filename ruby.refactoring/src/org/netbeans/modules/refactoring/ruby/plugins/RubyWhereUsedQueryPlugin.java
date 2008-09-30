@@ -536,6 +536,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
          *  (but I also have to search for methods that are OVERRIDING the class... so I've gotta work a little harder!)
          * @todo Arity matching on the methods to preclude methods that aren't overriding or aliasing!
          */
+        @SuppressWarnings("fallthrough")
         private void find(AstPath path, RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name, boolean upperCase) {
             /*if (node instanceof ArgumentNode) {
                 if (((ArgumentNode)node).getName().equals(name)) {

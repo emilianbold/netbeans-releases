@@ -490,14 +490,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
         if (rightExpressionBoundary < tokenSequence.offset()){
-            String errorMsg = String.format("caretOffset=%d, leftExpressionBoundary=%d," +
-                    " rightExpressionBoundary=%d, tokenSequence:\n%s",
-                    request.anchor, leftExpressionBoundary, rightExpressionBoundary, tokenSequence.toString()); //NOI18N
+            if (LOGGER.isLoggable(Level.FINE)){
+                String errorMsg = String.format("Error finding expression boundary: " +
+                        "caretOffset=%d, leftExpressionBoundary=%d," +
+                        " rightExpressionBoundary=%d, tokenSequence:\n%s",
+                        request.anchor, leftExpressionBoundary, rightExpressionBoundary, tokenSequence.toString()); //NOI18N
 
-            LOGGER.severe(errorMsg);
-            throw new IllegalStateException("Error finding expression boundary," +
-                    " please report a bug and attach the log file." +
-                    " WARNING: the log file will contain the content of edited document");
+                LOGGER.fine(errorMsg);
+            }
+
+            return null;
         }
 
         return findLHSExpressionType_recursive(tokenSequence, request,
@@ -565,13 +567,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
         if (rightExpressionBoundary < tokenSequence.offset()){
-            String errorMsg = String.format("caretOffset=%d, rightExpressionBoundary=%d, tokenSequence:\n%s",
-                    request.anchor, rightExpressionBoundary, tokenSequence.toString()); //NOI18N
+            if (LOGGER.isLoggable(Level.FINE)){
+                String errorMsg = String.format("Error finding expression boundary: caretOffset=%d, " +
+                        "rightExpressionBoundary=%d, tokenSequence:\n%s",
+                        request.anchor, rightExpressionBoundary, tokenSequence.toString()); //NOI18N
 
-            LOGGER.severe(errorMsg);
-            throw new IllegalStateException("Error finding expression boundary," +
-                    " please report a bug and attach the log file." +
-                    " WARNING: the log file will contain the content of edited document");
+                LOGGER.fine(errorMsg);
+            }
+            
+            return null;
         }
         
         return findLHSExpressionType_recursive(tokenSequence, request,

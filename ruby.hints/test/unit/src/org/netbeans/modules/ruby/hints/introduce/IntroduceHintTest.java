@@ -261,4 +261,10 @@ public class IntroduceHintTest extends HintTestBase {
 //        applyHint(this, hint, "testfiles/wrong-extract-method.rb",
 //                "^attr_accessor :x", "helper :all^", "Extract Method...");
 //    }
+
+//
+//    public void testMethodNotVariable() throws Exception {
+//        // BUG: It seems to pull up extract variable here instead!!!
+//        checkHints(new IntroduceHint(), "testfiles/boot.rb", "^self.class.load_rubygems", "load_rails_gem^");
+//    }
 }

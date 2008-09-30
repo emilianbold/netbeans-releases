@@ -19,7 +19,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="messageLabel" alignment="1" pref="540" max="32767" attributes="0"/>
+                  <Component id="messageLabel" alignment="1" pref="544" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="databaseNameLabel" min="-2" max="-2" attributes="0"/>
@@ -29,14 +29,13 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="databaseNameTextField" pref="298" max="32767" attributes="0"/>
-                          <Component id="passwordTextField" pref="298" max="32767" attributes="0"/>
-                          <Component id="userTextField" alignment="0" pref="298" max="32767" attributes="0"/>
-                          <Component id="databaseLocationTextField" pref="298" max="32767" attributes="0"/>
+                          <Component id="databaseNameTextField" pref="290" max="32767" attributes="0"/>
+                          <Component id="passwordTextField" pref="290" max="32767" attributes="0"/>
+                          <Component id="userTextField" alignment="0" pref="290" max="32767" attributes="0"/>
+                          <Component id="databaseLocationTextField" pref="290" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="propertiesButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
