@@ -89,10 +89,10 @@ implements CloneableEditorSupport.Env {
         
         assertGC ("Document can dissapear", ref, Collections.singleton(support));
 
-        assertFalse ("Document is not loaded", support.isDocumentLoaded ());
         assertTrue ("Can be closed without problems", support.close ());
+        assertFalse ("Document is not loaded", support.isDocumentLoaded ());
     }
-
+    
     public void testDocumentIsNotGCedIfModified () throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();
