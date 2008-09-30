@@ -18,8 +18,8 @@ TAG_CLOSE_SYMBOL  ">", st=0
 TAG_OPEN_SYMBOL  "<", la=1, st=8000
 TAG_OPEN        "li", la=1, st=9000
 WS              " ", la=1, st=9000
-ARGUMENT        "style", la=1, st=12000,style
-OPERATOR        "=", st=14000,style
+ARGUMENT        "style", la=1, st=12000
+OPERATOR        "=", st=14000
 VALUE           ""foo"", st=9000
 TAG_CLOSE_SYMBOL  ">", st=0
 TEXT            "hello", la=1, st=0
@@ -30,8 +30,8 @@ TEXT            "\n", la=1, st=0
 TAG_OPEN_SYMBOL  "<", la=1, st=8000
 TAG_OPEN        "span", la=1, st=9000
 WS              " ", la=1, st=9000
-ARGUMENT        "onklikk", la=1, st=12000,onklikk
-OPERATOR        "=", st=14000,onklikk
+ARGUMENT        "onklikk", la=1, st=12000
+OPERATOR        "=", st=14000
 VALUE           ""hello"", st=9000
 TAG_CLOSE_SYMBOL  "/>", st=0
 ----- EOF -----
