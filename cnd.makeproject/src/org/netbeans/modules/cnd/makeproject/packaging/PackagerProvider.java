@@ -48,15 +48,14 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptorProvider;
  *
  * @author thp
  */
-public class PackagersProvider implements PackagerDescriptorProvider {
-
-    public List<PackagerDescriptor> getPackagerDescriptorProvider() {
+public class PackagerProvider implements PackagerDescriptorProvider {
+    public List<PackagerDescriptor> getPackagerDescriptorProviderList() {
         ArrayList<PackagerDescriptor> list = new ArrayList<PackagerDescriptor>();
+        list.add(new TarPackager());
         list.add(new ZipPackager());
         list.add(new SVR4Packager());
         list.add(new RPMPackager());
         list.add(new DebianPackager());
         return list;
     }
-
 }

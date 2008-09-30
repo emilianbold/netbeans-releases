@@ -57,26 +57,18 @@ public class PackagerManager  {
         if (instance == null) {
             instance = new PackagerManager();
             list = new ArrayList<PackagerDescriptor>();
-            instance.addDefaultPackagers();
-            instance.addCustomPackagers();
+            instance.addRegisteredPackagers();
         }
         return instance;
     }
     
     /*
-     * Hard-coded
-     */
-    private void addDefaultPackagers() {
-        addPackagingDescriptor(new TarPackager());
-    }
-    
-    /*
      * Installed via services
      */
-    private void addCustomPackagers() {
+    private void addRegisteredPackagers() {
         Set<PackagerDescriptorProvider> set = getPackagerDescriptorProviders();
         for (PackagerDescriptorProvider packagerDescriptorProvider : set) {
-            List<PackagerDescriptor> list = packagerDescriptorProvider.getPackagerDescriptorProvider();
+            List<PackagerDescriptor> list = packagerDescriptorProvider.getPackagerDescriptorProviderList();
             for (PackagerDescriptor packagerDescriptor : list) {
                 addPackagingDescriptor(packagerDescriptor);
             }

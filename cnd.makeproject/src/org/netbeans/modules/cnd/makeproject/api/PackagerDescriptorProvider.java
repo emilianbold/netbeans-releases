@@ -41,5 +41,5 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.util.List;
 
 public interface PackagerDescriptorProvider {
-    public List<PackagerDescriptor> getPackagerDescriptorProvider();
+    public List<PackagerDescriptor> getPackagerDescriptorProviderList();
 }
