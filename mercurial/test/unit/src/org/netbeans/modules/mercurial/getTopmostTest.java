@@ -144,6 +144,36 @@ public class getTopmostTest extends NbTestCase {
         assertEquals(r2, tm2);
     }
 
+    public void testGetRepositoryRootDeeperFile() throws HgException, IOException {
+        File r1   = createFolder(  "r1");
+        File hgr1 = createFolder(r1,  ".hg");
+        File r1f1 = createFile(r1,    "f1");
+        File r2   = createFolder(r1,  "r2");
+        File hgr2 = createFolder(r2,     ".hg");
+        File r2fo1 = createFolder(r2,       "f01");
+        File r2fo1fo2 = createFolder(r2,       "f02");
+        File r2fo1fo2f1 = createFile(r2fo1,       "f1");
+
+        // test
+        File rr = Mercurial.getInstance().getRepositoryRoot(r2);
+        assertEquals(r2, rr);
+        rr = Mercurial.getInstance().getRepositoryRoot(r2fo1fo2);
+        assertEquals(r2, rr);
+        rr = Mercurial.getInstance().getRepositoryRoot(r2fo1);
+        assertEquals(r2, rr);
+        rr = Mercurial.getInstance().getRepositoryRoot(r2fo1fo2f1);
+        assertEquals(r2, rr);
+
+        rr = Mercurial.getInstance().getRepositoryRoot(r2);
+        assertEquals(r2, rr);
+        rr = Mercurial.getInstance().getRepositoryRoot(r2fo1fo2);
+        assertEquals(r2, rr);
+        rr = Mercurial.getInstance().getRepositoryRoot(r2fo1);
+        assertEquals(r2, rr);
+        rr = Mercurial.getInstance().getRepositoryRoot(r2fo1fo2f1);
+        assertEquals(r2, rr);                      
+    }
+
     public void testFoldersToRootOverflow() throws Exception {
         File r1   = createFolder(  "r1");
         File hgr1 = createFolder(r1,  ".hg");
