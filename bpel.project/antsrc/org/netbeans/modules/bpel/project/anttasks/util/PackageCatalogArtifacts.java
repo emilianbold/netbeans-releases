@@ -160,62 +160,67 @@ public class PackageCatalogArtifacts {
                 // The URI leads us to the sources directory -- just correct 
                 // it and proceed
                 if (location.startsWith("src/")) {
+                    String localUri = location;
+                    
+                    Util.copyFile(
+                            new File(projectDirectory, location), 
+                            new File(buildDirectory, METAINF + localUri));
+                    
                     printToCatalog(
                             catalogWriter, 
                             systemId, 
-                            "../" + location.substring("src/".length()));
+                            localUri);
                 } else 
 
                 // The URI leads to the nbproject directory -- it is a
                 // resource fetched by the retriever -- copy it
                 if (location.startsWith(retrieverPathPrefix)) {
-                    String localUri = "_references/_cache/" + 
+                    String localUri = "src/_references/_cache/" + 
                             location.substring(retrieverPathPrefix.length());
 
                     localUri = localUri.replace("../", "__/").replace("//", "/");
 
                     Util.copyFile(
                             new File(projectDirectory, location), 
-                            new File(buildDirectory,  localUri));
+                            new File(buildDirectory, METAINF + localUri));
 
                     printToCatalog(
                             catalogWriter, 
                             systemId, 
-                            "../" + localUri);
+                            localUri);
                 } else 
 
                 // The URI leads to the retrieved directory -- it is a
                 // resource fetched by the retriever -- copy it
                 if (location.startsWith(retrieverPathPrefix2)) {
-                    String localUri = "_references/_retrieved/" + 
+                    String localUri = "src/_references/_retrieved/" + 
                             location.substring(retrieverPathPrefix2.length());
 
                     localUri = localUri.replace("../", "__/").replace("//", "/");
 
                     Util.copyFile(
                             new File(projectDirectory, location), 
-                            new File(buildDirectory, localUri));
+                            new File(buildDirectory, METAINF + localUri));
 
                     printToCatalog(
                             catalogWriter, 
                             systemId, 
-                            "../" + localUri);
+                            localUri);
                 } else
 
-                // We cannot hanle any other relative paths, throw an exception
                 {
-                    String localUri = "_references/_relative/" + location;
+                    String localUri = "src/_references/_relative/" + location;
 
                     localUri = localUri.replace("../", "__/").replace("//", "/");
 
                     Util.copyFile(
                             new File(projectDirectory, location), 
-                            new File(buildDirectory, localUri));
+                            new File(buildDirectory, METAINF + localUri));
 
                     printToCatalog(
                             catalogWriter, 
                             systemId, 
-                            "../" + localUri);
+                            localUri);
                 }
             } else 
 
@@ -263,18 +268,18 @@ public class PackageCatalogArtifacts {
                     FileUtil.toFile(refdProject.getProjectDirectory()), refdFile);
 
             String localUri = 
-                    "_references/_projects/" + refdProjectDirName + "/" + refdFilePath;
+                    "src/_references/_projects/" + refdProjectDirName + "/" + refdFilePath;
 
             localUri = localUri.replace("../", "__/").replace("//", "/");
 
             Util.copyFile(
                     refdFile, 
-                    new File(buildDirectory, localUri));
+                    new File(buildDirectory, METAINF + localUri));
 
             printToCatalog(
                     catalogWriter, 
                     namespace, 
-                    "../" + localUri);
+                    localUri);
 
             processImports(refdFile, refdProject, buildDirectory, catalogWriter);
         } catch (IOException e) {
@@ -317,7 +322,7 @@ public class PackageCatalogArtifacts {
                         // it and proceed
                         if (location.startsWith("src/")) {
                             String localUri = 
-                                    "_references/_projects/" + projectDirname + 
+                                    "src/_references/_projects/" + projectDirname + 
                                     "/" + location;
                                     
                             localUri = localUri.replace("../", "__/").replace("//", "/");
@@ -326,12 +331,12 @@ public class PackageCatalogArtifacts {
                             
                             Util.copyFile(
                                     refdFile, 
-                                    new File(buildDirectory,  localUri));
+                                    new File(buildDirectory, METAINF + localUri));
                                     
                             printToCatalog(
                                     catalogWriter, 
                                     systemId, 
-                                    "../" + localUri);
+                                    localUri);
                             
                             processImports(
                                     refdFile, project, buildDirectory, catalogWriter);
@@ -341,7 +346,7 @@ public class PackageCatalogArtifacts {
                         // resource fetched by the retriever -- copy it
                         if (location.startsWith(retrieverPathPrefix)) {
                             String localUri = 
-                                    "_references/_projects/" + projectDirname + 
+                                    "src/_references/_projects/" + projectDirname + 
                                     "/_references/_cache/" + 
                                     location.substring(retrieverPathPrefix.length());
                                     
@@ -351,12 +356,12 @@ public class PackageCatalogArtifacts {
                             
                             Util.copyFile(
                                     refdFile, 
-                                    new File(buildDirectory,  localUri));
+                                    new File(buildDirectory, METAINF + localUri));
                                     
                             printToCatalog(
                                     catalogWriter, 
                                     systemId, 
-                                    "../" + localUri);
+                                    localUri);
                             
                             processImports(
                                     refdFile, project, buildDirectory, catalogWriter);
@@ -366,7 +371,7 @@ public class PackageCatalogArtifacts {
                         // resource fetched by the retriever -- copy it
                         if (location.startsWith(retrieverPathPrefix2)) {
                             String localUri = 
-                                    "_references/_projects/" + projectDirname + 
+                                    "src/_references/_projects/" + projectDirname + 
                                     "/_references/_retrieved/" + 
                                     location.substring(retrieverPathPrefix2.length());
                                     
@@ -376,12 +381,12 @@ public class PackageCatalogArtifacts {
                             
                             Util.copyFile(
                                     refdFile, 
-                                    new File(buildDirectory, localUri));
+                                    new File(buildDirectory, METAINF + localUri));
                                     
                             printToCatalog(
                                     catalogWriter, 
                                     systemId, 
-                                    "../" + localUri);
+                                    localUri);
                             
                             processImports(
                                     refdFile, project, buildDirectory, catalogWriter);
@@ -390,7 +395,7 @@ public class PackageCatalogArtifacts {
                         // Any other relative path
                         {
                             String localUri = 
-                                    "_references/_projects/" + projectDirname + 
+                                    "src/_references/_projects/" + projectDirname + 
                                     "/_references/_relative/" + location;
                                     
                             localUri = localUri.replace("../", "__/").replace("//", "/");
@@ -399,12 +404,12 @@ public class PackageCatalogArtifacts {
                             
                             Util.copyFile(
                                     refdFile, 
-                                    new File(buildDirectory, localUri));
+                                    new File(buildDirectory, METAINF + localUri));
                                     
                             printToCatalog(
                                     catalogWriter, 
                                     systemId, 
-                                    "../" + localUri);
+                                    localUri);
                             
                             processImports(
                                     refdFile, project, buildDirectory, catalogWriter);
@@ -441,27 +446,27 @@ public class PackageCatalogArtifacts {
                                 Util.getRelativePath(projectDirectory, refdFile);
                         if (!refdFileRelativePath.startsWith("..")) {
                             String localUri = 
-                                    "_references/_projects/" + projectDirname + "/" +
+                                    "src/_references/_projects/" + projectDirname + "/" +
                                     refdFileRelativePath;
                             
                             Util.copyFile(
                                     refdFile, 
-                                    new File(buildDirectory, localUri));
+                                    new File(buildDirectory, METAINF + localUri));
                         } else {
                             String localUri = 
-                                    "_references/_projects/" + projectDirname + 
+                                    "src/_references/_projects/" + projectDirname + 
                                     "/_references/_relative/" + location;
                                     
                             localUri = localUri.replace("../", "__/").replace("//", "/");
                             
                             Util.copyFile(
                                     refdFile, 
-                                    new File(buildDirectory, localUri));
+                                    new File(buildDirectory, METAINF + localUri));
                                     
                             printToCatalog(
                                     catalogWriter, 
                                     systemId, 
-                                    "../" + localUri);
+                                    localUri);
                         }
                         
                         processImports(refdFile, project, buildDirectory, catalogWriter);
@@ -564,5 +569,8 @@ public class PackageCatalogArtifacts {
         }
         
     }
-    
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    private static final String METAINF = "META-INF/";
 }
