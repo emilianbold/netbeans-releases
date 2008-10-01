@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -54,14 +53,17 @@ import org.netbeans.modules.glassfish.spi.OperationStateListener;
  * @author Peter Williams
  */
 public class StopTask extends BasicTask<OperationState> {
-    
+
+    private final CommonServerSupport support;
+
     /**
      * 
-     * @param dm 
-     * @param startServer 
+     * @param support common support object for the server instance being stopped
+     * @param stateListener state monitor to track start progress
      */
-    public StopTask(Map<String, String> properties, OperationStateListener... stateListener) {
-        super(properties, stateListener);
+    public StopTask(CommonServerSupport support, OperationStateListener... stateListener) {
+        super(support.getInstanceProperties(), stateListener);
+        this.support = support;
     }
     
     /**
@@ -116,7 +118,7 @@ public class StopTask extends BasicTask<OperationState> {
         while(System.currentTimeMillis() - start < STOP_TIMEOUT) {
             // Send the 'completed' event and return when the server is stopped
             if(!CommonServerSupport.isRunning(host, port)) {
-                ip.put(GlassfishModule.DEBUG_PORT, "");
+                support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "", true);
                 try {
                     Thread.sleep(1000); // flush the process
                 } catch (InterruptedException e) {

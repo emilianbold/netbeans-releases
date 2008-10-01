@@ -1115,6 +1115,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         warnIfNotInEDT();
         
         boolean opened = topComponentIsOpened(tc);
+        boolean inCloseAll = tc.getClientProperty("inCloseAll") != null;
+        tc.putClientProperty("inCloseAll", null);
+
         if(!opened) {
             return;
         }
@@ -1126,7 +1129,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 topComponentClose( tc );
             } else {
                 TopComponent recentTc = null;
-                if( mode.getKind() == Constants.MODE_KIND_EDITOR ) {
+                if( mode.getKind() == Constants.MODE_KIND_EDITOR && !inCloseAll ) {
                     //an editor document is being closed so let's find the most recent editor to select
                     recentTc = central.getRecentTopComponent( mode, tc );
                 }
