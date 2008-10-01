@@ -281,15 +281,16 @@ public class PropertyElementManager implements IPropertyElementManager
                                if (validVals != null )
                                {
                                    tokenizer = new StringTokenizer(validVals, "|");
-                                   i = 0;
+                                   int j = 0;
                                    while(tokenizer.hasMoreTokens()) 
                                    {
                                        String token = tokenizer.nextToken();
                                        if (token != null && token.equals(val)) 
                                        {
+                                           i = j;
                                            break;
                                        }
-                                       i++;
+                                       j++;
                                    }
                                }
                            }
@@ -1271,7 +1272,7 @@ public class PropertyElementManager implements IPropertyElementManager
                  interpretElementValue(newElement);
                  pEle.setValue(newElement.getValue());
              }
-         }
+         } 
       }
       return 0;
    }
