@@ -289,6 +289,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue147575.php",
                 "while(1)$this->factory()->^", false);
     }
+    public void test140784() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue140784.php",
+                "return $this->teacher->^", false);
+    }
 
     /* TEMPORARILY DISABLED
     public void test136744_1() throws Exception {

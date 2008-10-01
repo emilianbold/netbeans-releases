@@ -145,10 +145,15 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     
     private synchronized void tearDown() {
         if (content != null) {
-            remove(content);
+            final JPanel tempContent = content;
             content = null;
             hfw = null;
             clc = null;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    remove(tempContent);
+                }
+            });
         }
     }
     
@@ -177,14 +182,13 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
                                 cc = hfw.getClassesController();
                                 content = cc.getPanel();
                                 clc = cc.getClassesListController();
+                                java.awt.Component header = cc.getClassesListController().getPanel().getComponent(0);
+                                header.setVisible(false);
+                                cc.getClassesListController().setColumnVisibility(3, false);
+                                add(content, "Center");
                             }
-                            java.awt.Component header = cc.getClassesListController().getPanel().getComponent(0);
-                            header.setVisible(false);
-                            cc.getClassesListController().setColumnVisibility(3, false);
-                            add(content, "Center");
                             repaint();
                             revalidate();
-                            //System.err.println("  Added content "+content);
                         }
                     });
                 }

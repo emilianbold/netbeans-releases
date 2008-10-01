@@ -274,7 +274,9 @@ public final class DeployOnSaveManager {
         public void artifactsUpdated(Iterable<File> artifacts) {
             Set<Artifact> realArtifacts = new HashSet<Artifact>();
             for (File file : artifacts) {
-                realArtifacts.add(Artifact.forFile(file));
+                if (file != null) {
+                    realArtifacts.add(Artifact.forFile(file));
+                }
             }
             DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, realArtifacts);
         }

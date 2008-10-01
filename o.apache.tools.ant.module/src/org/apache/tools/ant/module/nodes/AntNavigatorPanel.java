@@ -121,7 +121,7 @@ public final class AntNavigatorPanel implements NavigatorPanel {
                                     try {
                                         manager.setSelectedNodes(new Node[] {children[0]});
                                     } catch (PropertyVetoException e) {
-                                        assert false : e;
+                                        // #146284 - happens sometimes; why? Ignore...
                                     }
                                 }
                             }

@@ -38,7 +38,13 @@
  */
 package org.netbeans.modules.uml.drawingarea.support;
 
+import org.netbeans.modules.uml.core.IApplication;
+import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
+import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
+import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 
 /**
  *
@@ -47,21 +53,64 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 public class ModelElementBridge
 {
     private IElement element = null;
+    private String modelElementID = "";
+    private String projectID = "";
     
     public ModelElementBridge(IElement element)
     {
-        this.element = element;
+        setElement(element);
     }
 
     public IElement getElement()
     {
-        return element;
+        IElement retVal = element;
+        
+        // When the model element has been transformed the element that is being
+        // held onto is no longer valid.  Therefore find the elment again.
+        
+        if(element.getXMIID() == null)
+        {
+            IProject project = getProject();
+            if (project != null)
+            {
+                IElementLocator locator = new ElementLocator();
+                retVal = locator.findElementByID(project, modelElementID);
+            }
+        }
+        
+        return retVal;
     }
 
     public void setElement(IElement element)
     {
         this.element = element;
+        this.modelElementID = element.getXMIID();
+        this.projectID = element.getTopLevelId();
     }
     
-    
+    /**
+    * Retrieves the project assoicated with the proxy.  The project associated
+    * with the proxy is specified by the Top Level id.
+    *
+    * @return The project.
+    */
+   protected IProject getProject()
+   {
+      IProject retVal = null;
+      
+      if(projectID.length() > 0)
+      {
+         ICoreProduct product = ProductRetriever.retrieveProduct();
+         if(product != null)
+         {
+            IApplication app = product.getApplication();
+            if(app != null)
+            {
+               retVal = app.getProjectByID(projectID);
+            }
+         }
+      }
+      
+      return retVal;
+   }
 }
