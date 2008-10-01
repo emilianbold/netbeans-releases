@@ -141,6 +141,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.xslt.tmap</friend>
                 <friend>org.netbeans.modules.scheduler.ui</friend>
                 <friend>org.netbeans.modules.dm.di.core</friend>
+                <friend>org.netbeans.modules.xml.wsdlui.api</friend>
                 <package>org.netbeans.modules.xml.validation</package>
                 <package>org.netbeans.modules.xml.validation.ui</package>
             </friend-packages>
