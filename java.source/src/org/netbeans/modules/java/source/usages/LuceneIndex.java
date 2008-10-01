@@ -850,7 +850,12 @@ class LuceneIndex extends Index {
 
     public boolean isValid (boolean tryOpen) throws IOException {  
         checkPreconditions();
-        boolean res = IndexReader.indexExists(this.directory);
+        boolean res = false;
+        try {
+            res = IndexReader.indexExists(this.directory);
+        } catch (IOException e) {
+            return res;
+        }
         if (res && tryOpen) {
             try {
                 getReader();
