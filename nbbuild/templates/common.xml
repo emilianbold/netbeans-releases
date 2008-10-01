@@ -519,6 +519,7 @@ made subject to such option by the copyright holder.
     </macrodef>
     <macrodef name="test">
         <attribute name="test.type"/>
+        <attribute name="disable.apple.ui" default="false"/>
         <sequential>
             <property name="test.config" value="default"/>
             <property name="test.config.default.includes" value="**/*Test.class"/>
@@ -535,7 +536,7 @@ made subject to such option by the copyright holder.
                 <syspropertyset refid="test.@{test.type}.properties"/>
                 <jvmarg line="${test.run.args}"/>
                 <!--needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
-                <sysproperty key="apple.awt.UIElement" value="true"/>
+                <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
                 <formatter type="brief" usefile="false"/>
                 <formatter type="xml"/>
             </junit>
@@ -543,7 +544,7 @@ made subject to such option by the copyright holder.
         </sequential>
     </macrodef>
     <target name="test-unit" depends="init,test-init,test-build" if="exists.test.unit.src.dir">
-        <test test.type="unit"/>
+        <test test.type="unit" disable.apple.ui="true"/>
     </target>
     <target name="test-qa-functional" depends="init,test-init,test-build" if="exists.test.qa-functional.src.dir">
         <test test.type="qa-functional"/>

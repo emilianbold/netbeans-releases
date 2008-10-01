@@ -89,16 +89,14 @@ public class StructureAnalyzer implements StructureScanner {
     private Map<AstClassElement, Set<FieldNode>> fields;
     private List<AstMethodElement> methods;
     
-    private GroovyParserResult result;
-    
-    Logger LOG = Logger.getLogger(StructureAnalyzer.class.getName());
+    private static final Logger LOG = Logger.getLogger(StructureAnalyzer.class.getName());
 
     public AnalysisResult analyze(GroovyParserResult result) {
         return scan(result);
     }
 
     public List<? extends StructureItem> scan(CompilationInfo info) {
-        this.result = AstUtilities.getParseResult(info);
+        GroovyParserResult result = AstUtilities.getParseResult(info);
 
         AnalysisResult ar = result.getStructure();
         List<?extends AstElement> elements = ar.getElements();
@@ -370,11 +368,11 @@ public class StructureAnalyzer implements StructureScanner {
 
     }
 
-    private class GroovyStructureItem implements StructureItem {
-        AstElement node;
-        ElementKind kind;
-        CompilationInfo info;
-        BaseDocument doc;
+    private static class GroovyStructureItem implements StructureItem {
+        private final AstElement node;
+        private final ElementKind kind;
+        private final CompilationInfo info;
+        private final BaseDocument doc;
 
         private GroovyStructureItem(AstElement node, CompilationInfo info) {
             this.node = node;
@@ -392,7 +390,7 @@ public class StructureAnalyzer implements StructureScanner {
 
             if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
                 // Append parameters
-                AstMethodElement jn = (AstMethodElement)node;
+                AstMethodElement jn = (AstMethodElement) node;
 
                 Collection<String> parameters = jn.getParameters();
 
@@ -483,10 +481,6 @@ public class StructureAnalyzer implements StructureScanner {
 
         @Override
         public boolean equals(Object o) {
-            if (o == null) {
-                return false;
-            }
-
             if (!(o instanceof GroovyStructureItem)) {
                 // System.out.println("- not a desc");
                 return false;

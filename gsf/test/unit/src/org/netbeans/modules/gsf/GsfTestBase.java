@@ -147,7 +147,6 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
-import org.netbeans.modules.gsf.GsfEditorKitFactory.GsfEditorKit;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
@@ -1714,6 +1713,11 @@ public abstract class GsfTestBase extends NbTestCase {
 
     protected void configureIndenters(final BaseDocument document, final Formatter formatter,
             final CompilationInfo compilationInfo, boolean indentOnly) throws BadLocationException {
+        configureIndenters(document, formatter, compilationInfo, indentOnly, getPreferredMimeType());
+    }
+
+    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
+            final CompilationInfo compilationInfo, boolean indentOnly, String mimeType) throws BadLocationException {
         ReformatTask.Factory reformatFactory = new ReformatTask.Factory() {
             public ReformatTask createTask(Context context) {
                 final Context ctx = context;
@@ -1748,7 +1752,6 @@ public abstract class GsfTestBase extends NbTestCase {
 
         };
 
-        String mimeType = getPreferredMimeType();
         MockServices.setServices(MockMimeLookup.class);
         if (indentOnly) {
             MockMimeLookup.setInstances(MimePath.parse(mimeType), indentFactory);
@@ -1763,6 +1766,7 @@ public abstract class GsfTestBase extends NbTestCase {
         configureIndenters(document, formatter, compilationInfo, indentOnly);
 
 //        formatter.reformat(doc, startPos, endPos, getInfoForText(source, "unittestdata"));
+        @SuppressWarnings("deprecation")
         final org.netbeans.editor.Formatter f = document.getFormatter();
         try {
             f.reformatLock();
@@ -1823,6 +1827,25 @@ public abstract class GsfTestBase extends NbTestCase {
         assertDescriptionMatches(file, after, false, ".formatted");
     }
 
+    protected BaseKit getEditorKit(String mimeType) {
+        org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        assertNotNull(language);
+        if (!language.useCustomEditorKit()) {
+            GsfEditorKitFactory factory = new GsfEditorKitFactory(language);
+            return factory.kit();
+        }
+        fail("Must override getEditorKit() for useCustomEditorKit languages");
+        return null;
+    }
+
+    protected void toggleComment(String text, String expected) throws Exception {
+        JEditorPane pane = getPane(text);
+
+        runKitAction(pane, "toggle-comment", "");
+
+        String toggled = pane.getText();
+        assertEquals(expected, toggled);
+    }
 
     protected JEditorPane getPane(String text) throws Exception {
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -1847,11 +1870,7 @@ public abstract class GsfTestBase extends NbTestCase {
 
         JEditorPane pane = new JEditorPane();
         pane.setContentType(getPreferredMimeType());
-        org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
-        if (!language.useCustomEditorKit()) {
-            GsfEditorKitFactory factory = new GsfEditorKitFactory(language);
-            pane.setEditorKit(factory.kit());
-    }
+        pane.setEditorKit(getEditorKit(getPreferredMimeType()));
         pane.setText(text);
 
         BaseDocument bdoc = (BaseDocument)pane.getDocument();
@@ -1864,9 +1883,8 @@ public abstract class GsfTestBase extends NbTestCase {
             assertTrue(sourceEndPos != -1);
             pane.setSelectionStart(sourceStartPos);
             pane.setSelectionEnd(sourceEndPos);
-        } else {
-            //assertTrue(caretPos != -1);
-            //pane.getCaret().setDot(caretPos);
+        } else if (caretPos != -1) {
+            pane.getCaret().setDot(caretPos);
         }
         pane.getCaret().setSelectionVisible(true);
 
@@ -1874,7 +1892,7 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     protected void runKitAction(JEditorPane jt, String actionName, String cmd) {
-        GsfEditorKit kit = (GsfEditorKit)jt.getEditorKit();
+        BaseKit kit = (BaseKit)jt.getEditorKit();
         Action a = kit.getActionByName(actionName);
         assertNotNull(a);
         a.actionPerformed(new ActionEvent(jt, 0, cmd));

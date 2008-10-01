@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Executing pack200 in ${appdir}"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value='sh ${basedir}/../pack200.sh ${appdir}'/>
+            <arg value='sh ${basedir}/../pack200.sh ${appdir} ${VerifyFile.class.name} ${VerifyFile.classpath}'/>
         </exec>
 
         

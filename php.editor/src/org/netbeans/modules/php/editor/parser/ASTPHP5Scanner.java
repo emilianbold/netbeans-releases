@@ -47,7 +47,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.php.editor.*;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
-import java.io.IOException;
 import java_cup.runtime.*;
 
 
@@ -1337,7 +1336,7 @@ public class ASTPHP5Scanner implements Scanner {
   private boolean zzEOFDone;
 
   /* user code: */
-    private final List commentList = new LinkedList();
+    private final List<Comment> commentList = new LinkedList<Comment>();
     private String heredoc = null;
     private String nowdoc = null;
     private int nowdoc_len  = 0;

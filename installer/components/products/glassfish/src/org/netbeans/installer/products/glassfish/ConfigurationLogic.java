@@ -321,7 +321,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     directory,
                     DOMAINS_DOMAIN1_IMQ_SUBDIR).getAbsolutePath();
             final String contents = StringUtils.format(
-                    IMQENV_CONF_ADDITION,
+                    SystemUtils.isWindows() ? IMQENV_CONF_ADDITION_WINDOWS : IMQENV_CONF_ADDITION_UNIX,
                     javaHomeString,
                     imqVarHomeString);
 
@@ -966,9 +966,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String DOMAINS_DOMAIN1_IMQ_SUBDIR =
             "domains/" + DOMAIN_NAME + "/imq"; // NOI18N
     
-    public static final String IMQENV_CONF_ADDITION =
+    public static final String IMQENV_CONF_ADDITION_WINDOWS =
             "        set IMQ_DEFAULT_JAVAHOME={0}\n" + // NOI18N
             "        set IMQ_DEFAULT_VARHOME={1}\n"; // NOI18N
+    public static final String IMQENV_CONF_ADDITION_UNIX =
+            "        IMQ_DEFAULT_JAVAHOME={0}\n" + // NOI18N
+            "        IMQ_DEFAULT_VARHOME={1}\n"; // NOI18N
     
     public static final String IMQENV_CONF =
             "imq/etc/imqenv.conf"; // NOI18N

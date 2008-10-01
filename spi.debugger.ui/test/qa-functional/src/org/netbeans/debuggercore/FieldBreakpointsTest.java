@@ -55,7 +55,9 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -95,8 +97,8 @@ public class FieldBreakpointsTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(FieldBreakpointsTest.class).addTest(
-                    "testFieldBreakpointPrefilledValues",
                     "testFieldBreakpointCreation",
+                    "testFieldBreakpointPrefilledValues",
                     "testFieldBreakpointFunctionalityAccess",
                     "testFieldBreakpointFunctionalityModification",
                     "testConditionalFieldBreakpointFunctionality",
@@ -127,31 +129,16 @@ public class FieldBreakpointsTest extends JellyTestCase {
     /**
      *
      */
-    public void testFieldBreakpointPrefilledValues() throws Throwable {
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
-        EditorOperator eo = new EditorOperator("MemoryView.java");
-
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            setBreakpointType(dialog, "Field");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
-            assertEquals("Field Name was not set to correct value.", "msgMemory", new JTextFieldOperator(dialog, 0).getText());
-            dialog.cancel();
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
-    }
-
-    /**
-     *
-     */
     public void testFieldBreakpointCreation() throws Throwable {
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
             setBreakpointType(dialog, "Field");
+            new JTextFieldOperator(dialog, 1).setText("examples.advanced.MemoryView");
+            new JTextFieldOperator(dialog, 0).setText("msgMemory");
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Field_Breakpoint_Type_Access"));
             dialog.ok();
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
@@ -166,11 +153,29 @@ public class FieldBreakpointsTest extends JellyTestCase {
     /**
      *
      */
+    public void testFieldBreakpointPrefilledValues() throws Throwable {
+        try {
+            NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
+            setBreakpointType(dialog, "Field");
+            new EventTool().waitNoEvent(500);
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 1).getText());
+            assertEquals("Field Name was not set to correct value.", "msgMemory", new JTextFieldOperator(dialog, 0).getText());
+            dialog.cancel();
+        } catch (Throwable th) {
+            Utilities.captureScreen(this);
+            throw th;
+        }
+    }
+
+    /**
+     *
+     */
     public void testFieldBreakpointFunctionalityAccess() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
             setBreakpointType(dialog, "Field");
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Field_Breakpoint_Type_Access"));
+            new EventTool().waitNoEvent(500);
             dialog.ok();
             Utilities.startDebugger();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
@@ -203,7 +208,7 @@ public class FieldBreakpointsTest extends JellyTestCase {
             setBreakpointType(dialog, "Field");
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Field_Breakpoint_Type_Access"));
             new JCheckBoxOperator(dialog, 0).changeSelection(true);
-            new JEditorPaneOperator(dialog, 1).setText("UPDATE_TIME >= 1001");
+            new JEditorPaneOperator(dialog, 0).setText("UPDATE_TIME >= 1001");
             dialog.ok();
 
             EditorOperator eo = new EditorOperator("MemoryView.java");

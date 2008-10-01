@@ -243,13 +243,10 @@ is divided into following sections:
             <!-- COS feature - used in run-deploy -->
             <target name="-init-cos">
                 <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="unless">deploy.on.save</xsl:attribute>
                 <condition>
-                    <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
-                    <xsl:attribute name="value">
-                        <xsl:call-template name="createPath">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
-                        </xsl:call-template>
-                    </xsl:attribute>
+                    <xsl:attribute name="property">deploy.on.save</xsl:attribute>
+                    <xsl:attribute name="value">true</xsl:attribute>
                     <isfalse value="${{disable.deploy.on.save}}"/>
                 </condition>         
             </target>

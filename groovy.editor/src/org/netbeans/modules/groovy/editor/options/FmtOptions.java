@@ -42,17 +42,7 @@ package org.netbeans.modules.groovy.editor.options;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.openide.util.Exceptions;
-
-import org.openide.util.NbPreferences;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 
 /**
  *
@@ -61,21 +51,14 @@ import org.openide.util.NbPreferences;
  */
 public class FmtOptions {
 
-    public static final String expandTabToSpaces = "expandTabToSpaces"; //NOI18N
-    public static final String tabSize = "tabSize"; //NOI18N
-    public static final String indentSize = "indentSize"; //NOI18N
+    public static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
+    public static final String tabSize = SimpleValueNames.TAB_SIZE;
+    public static final String spacesPerTab = SimpleValueNames.SPACES_PER_TAB;
+    public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
     public static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
     public static final String reformatComments = "reformatComments"; //NOI18N
     public static final String indentHtml = "indentHtml"; //NOI18N
-    public static final String rightMargin = "rightMargin"; //NOI18N
-    
-    static CodeStyleProducer codeStyleProducer;
-        
-    public static Preferences lastValues;
-    
-    private static Class<? extends EditorKit> kitClass;
-
-    private static final String DEFAULT_PROFILE = "default"; // NOI18N
+    public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
     
     private FmtOptions() {}
 
@@ -91,71 +74,6 @@ public class FmtOptions {
         return defaults.get(key);
     }
     
-    public static Preferences getPreferences(String profileId) {
-        return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
-    }
-
-    public static boolean getGlobalExpandTabToSpaces() {
-        org.netbeans.editor.Formatter f = (org.netbeans.editor.Formatter)Settings.getValue(getKitClass(), "formatter");
-        if (f != null)
-            return f.expandTabs();
-        return getDefaultAsBoolean(expandTabToSpaces);
-    }
-    
-    public static int getGlobalTabSize() {
-        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TAB_SIZE);
-        return i != null ? i.intValue() : getDefaultAsInt(tabSize);
-    }
-
-    public static int getGlobalRightMargin() {
-        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TEXT_LIMIT_WIDTH);
-        return i != null ? i.intValue() : getDefaultAsInt(rightMargin);
-    }
-    
-    public static Class<? extends EditorKit> getKitClass() {
-        if (kitClass == null) {
-            EditorKit kit = MimeLookup.getLookup(MimePath.get(GroovyTokenId.GROOVY_MIME_TYPE)).lookup(EditorKit.class);
-            kitClass = kit != null ? kit.getClass() : EditorKit.class;
-        }
-        return kitClass;
-    }
-    
-    
-    public static void flush() {
-        try {
-            getPreferences( getCurrentProfileId()).flush();
-        }
-        catch(BackingStoreException e) {
-            Exceptions.printStackTrace(e);
-        }
-    }
-    
-    public static String getCurrentProfileId() {
-        return DEFAULT_PROFILE;
-    }
-    
-    public static CodeStyle createCodeStyle(Preferences p) {
-        CodeStyle.getDefault(null);
-        return codeStyleProducer.create(p);
-    }
-    
-    public static boolean isInteger(String optionID) {
-        String value = defaults.get(optionID);
-        
-        try {
-            Integer.parseInt(value);
-            return true;            
-        } catch (NumberFormatException numberFormatException) {
-            Exceptions.printStackTrace(numberFormatException);
-            return false;
-        }
-    }
-    
-    public static String getLastValue(String optionID) {
-        Preferences p = lastValues == null ? getPreferences(getCurrentProfileId()) : lastValues;
-        return p.get(optionID, getDefaultAsString(optionID));
-    }
- 
     // Private section ---------------------------------------------------------
     
     private static final String TRUE = "true";      // NOI18N
@@ -184,15 +102,5 @@ public class FmtOptions {
             defaults.put(strings[0], strings[1]);
         }
 
-    }
- 
-    
-    // Support section ---------------------------------------------------------
-      
-   
-    public static interface CodeStyleProducer {
-        
-        public CodeStyle create( Preferences preferences );
-    
     }
 }

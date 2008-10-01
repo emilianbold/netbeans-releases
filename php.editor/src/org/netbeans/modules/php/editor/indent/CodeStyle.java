@@ -42,8 +42,9 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
 
+import javax.swing.text.Document;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
 
 /** 
@@ -54,39 +55,21 @@ import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
  * 
  * @author Dusan Balek
  */
-public /*final*/ class CodeStyle {
-    
-    private static CodeStyle INSTANCE;
+public final class CodeStyle {
 
-    static {
-        FmtOptions.codeStyleProducer = new Producer();
-    }
-    
     private Preferences preferences;
-    
-    protected CodeStyle(Preferences preferences) {
+
+    private CodeStyle(Preferences preferences) {
         this.preferences = preferences;
     }
 
     /** For testing purposes only */
-    public static CodeStyle getTestStyle(Preferences prefs) {
+    public static CodeStyle get(Preferences prefs) {
         return new CodeStyle(prefs);
     }
-    
-    public synchronized static CodeStyle getDefault(Project project) {
-        
-        if ( FmtOptions.codeStyleProducer == null ) {
-            FmtOptions.codeStyleProducer = new Producer();
-        }
-        
-        if (INSTANCE == null) {
-            INSTANCE = create();
-        }
-        return INSTANCE;
-    }
-    
-    static CodeStyle create() {
-        return new CodeStyle(FmtOptions.getPreferences(FmtOptions.getCurrentProfileId()));
+
+    public static CodeStyle get(Document doc) {
+        return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
     }
     
     // General tabs and indents ------------------------------------------------
@@ -108,16 +91,6 @@ public /*final*/ class CodeStyle {
     }
     
     public int getRightMargin() {
-        return preferences.getInt(rightMargin, getGlobalRightMargin());
+        return preferences.getInt(rightMargin, getDefaultAsInt(rightMargin));
     }
-
-    // Communication with non public packages ----------------------------------
-    
-    private static class Producer implements FmtOptions.CodeStyleProducer {
-
-        public CodeStyle create(Preferences preferences) {
-            return new CodeStyle(preferences);
-        }
-        
-    } 
 }
