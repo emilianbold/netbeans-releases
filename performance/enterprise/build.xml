@@ -28,7 +28,7 @@
         <os family="unix"/>
     </condition>
 
-    <property name="test.run.args" value="-client -Xss2m -Xms32m -Xmx512m -XX:PermSize=32m -XX:MaxPermSize=200m -Xverify:none -ea -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot;"/>
+    <property name="test.run.args" value="-client -Xss2m -Xms32m -Xmx512m -XX:PermSize=32m -XX:MaxPermSize=200m -Xverify:none -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot;"/>
     <target name="test" description="Uses test-single to run each suite in different VM">
         <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseSetupTest*"/>

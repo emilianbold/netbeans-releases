@@ -422,7 +422,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     private void revert(final File file, String revision) {
-        final File root = Mercurial.getInstance().getTopmostManagedParent(file);
+        final File root = Mercurial.getInstance().getRepositoryRoot(file);
         if(root == null) return;
         
         File[] files = new File [1];
@@ -526,7 +526,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         String revision = al.getRevision();
         if (revision.equals(recentRevision) == false) {
             recentRevision = revision;
-            File file = Mercurial.getInstance().getTopmostManagedParent(getCurrentFile());
+            File file = Mercurial.getInstance().getRepositoryRoot(getCurrentFile());
             recentFile = new File(file, al.getFileName());
             recentRevisionCanBeRolledBack = al.canBeRolledBack();
             repaint();
