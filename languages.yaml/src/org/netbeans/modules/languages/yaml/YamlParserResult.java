@@ -68,7 +68,7 @@ public class YamlParserResult extends ParserResult {
         return null;
     }
 
-    public List<? extends StructureItem> getItems() {
+    public synchronized List<? extends StructureItem> getItems() {
         if (items == null) {
             items = new YamlScanner().scanStructure(this);
         }
