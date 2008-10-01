@@ -101,6 +101,7 @@ public class SimpleDialogPanel extends JPanel {
             } else { // text area
                 jTextComponents[i] = new JTextArea();
                 ((JTextArea)jTextComponents[i]).setRows(3);
+                ((JTextArea)jTextComponents[i]).setColumns(size);
             }
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 1;
