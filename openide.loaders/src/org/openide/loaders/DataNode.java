@@ -851,12 +851,22 @@ public class DataNode extends AbstractNode {
         public void annotationChanged (FileStatusEvent ev) {
             // #16541: listen for changes in both primary and secondary files
             boolean thisChanged = false;
-            Iterator it = obj.files().iterator();
-            while (it.hasNext()) {
-                FileObject fo = (FileObject)it.next();
-                if (ev.hasChanged(fo)) {
-                    thisChanged = true;
-                    break;
+            if (getDataObject() instanceof MultiDataObject) {
+                MultiDataObject multi = (MultiDataObject)getDataObject();
+                for (FileObject fo : multi.getSecondary().keySet()) {
+                    if (ev.hasChanged(fo)) {
+                        thisChanged = true;
+                        break;
+                    }
+                }
+            } else {
+                Iterator it = obj.files().iterator();
+                while (it.hasNext()) {
+                    FileObject fo = (FileObject)it.next();
+                    if (ev.hasChanged(fo)) {
+                        thisChanged = true;
+                        break;
+                    }
                 }
             }
             if (thisChanged) {
@@ -999,8 +1009,7 @@ public class DataNode extends AbstractNode {
         }
         
         public boolean isEmpty() {
-            lazyInitialization();
-            return obj_files.isEmpty();
+            return false;
         }
         
         public Iterator<FileObject> iterator() {
