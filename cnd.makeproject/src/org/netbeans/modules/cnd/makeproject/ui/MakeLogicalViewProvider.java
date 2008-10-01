@@ -564,7 +564,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // TODO: not clear if we need to call the following method at all
             // but we need to remove remembering the output to prevent memory leak;
             // I think it could be removed
-            getMakeConfigurationDescriptor().getLogicalFolders();
+            if (gotMakeConfigurationDescriptor()) {
+                getMakeConfigurationDescriptor().getLogicalFolders();
+            }
 
             List actions = new ArrayList();
             // Add standard actions
@@ -766,13 +768,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         return makeConfigurationDescriptor;
     }
 
     private boolean gotMakeConfigurationDescriptor() {
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         return pdp.gotDescriptor();
     }
     
@@ -969,7 +971,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         public Transferable paste() throws IOException {
-            if (!(getMakeConfigurationDescriptor().okToChange())) {
+            if (!gotMakeConfigurationDescriptor() || !(getMakeConfigurationDescriptor().okToChange())) {
                 return null;
             }
             Item item = viewItemNode.getItem();
@@ -1509,7 +1511,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         protected void performAction(Node[] activatedNodes) {
-            if (!(getMakeConfigurationDescriptor().okToChange())) {
+            if (!gotMakeConfigurationDescriptor() || !(getMakeConfigurationDescriptor().okToChange())) {
                 return;
             }
             InstanceContent ic = new InstanceContent();
