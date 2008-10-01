@@ -1132,7 +1132,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 }
                 mode.close(tc);
                 if( null != recentTc )
-                    recentTc.requestActive();
+                    mode.setSelectedTopComponent(recentTc);
             }
         }
     }
