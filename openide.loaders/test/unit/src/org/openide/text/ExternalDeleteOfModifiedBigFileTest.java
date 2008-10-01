@@ -65,7 +65,7 @@ import org.openide.util.Mutex;
  *
  * @author Jaroslav Tulach
  */
-public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
+public class ExternalDeleteOfModifiedBigFileTest extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
@@ -73,7 +73,7 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
     private EditorCookie edit;
     
     
-    public ExternalDeleteOfModifiedFileTest (java.lang.String testName) {
+    public ExternalDeleteOfModifiedBigFileTest (java.lang.String testName) {
         super(testName);
     }
     
@@ -154,6 +154,7 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         arr = getPanes();
         assertNull("Now everything is closed", arr);
     }
+
     private JEditorPane[] getPanes() {
         return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane[]>() {
             public JEditorPane[] run() {

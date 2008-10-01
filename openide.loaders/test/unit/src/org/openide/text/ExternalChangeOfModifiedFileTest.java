@@ -40,9 +40,9 @@
  */
 
 package org.openide.text;
-import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Stack;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
@@ -51,21 +51,22 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
-import org.openide.DialogDescriptor;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
+import org.openide.util.UserQuestionException;
 
-/** Modified editor shall not be closed when its file is externally removed.
+/** Modified editor shall not be closed when its file is externally changed.
  *
  * @author Jaroslav Tulach
  */
-public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
+public class ExternalChangeOfModifiedFileTest extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
@@ -73,8 +74,13 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
     private EditorCookie edit;
     
     
-    public ExternalDeleteOfModifiedFileTest (java.lang.String testName) {
+    public ExternalChangeOfModifiedFileTest (java.lang.String testName) {
         super(testName);
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new NbTestSuite(ExternalChangeOfModifiedFileTest.class);
+        return suite;
     }
     
     @Override
@@ -84,7 +90,7 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 20000;
+        return 0;//20000;
     }
 
     @Override
@@ -109,8 +115,10 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
     public void testModifyTheFileAndThenPreventItToBeSavedOnFileDisappear() throws Exception {
         Document doc = edit.openDocument();
         
-        doc.insertString(0, "Ahoj", null);
-        assertTrue("Modified", edit.isModified());
+        assertFalse("Not Modified", edit.isModified());
+
+        doc.insertString(0, "Base change\n", null);
+        edit.saveDocument();
         
         edit.open();
         waitEQ();
@@ -124,36 +132,63 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         }
         CloneableEditor ce = (CloneableEditor)c;
 
-        // select close
-        DD.toReturn.push(DialogDescriptor.CANCEL_OPTION);
-        
-        java.io.File f = FileUtil.toFile(obj.getPrimaryFile());
-        assertNotNull("There is file behind the fo", f);
-        f.delete();
-        obj.getPrimaryFile().getParent().refresh();
+        // to change timestamps
+        Thread.sleep(1000);
 
-        waitEQ();
-        
-        assertNotNull ("Text message was there", DD.message);
-        assertEquals("Ok/cancel type", DialogDescriptor.OK_CANCEL_OPTION, DD.type);
-        
+        java.io.File f = FileUtil.toFile(obj.getPrimaryFile());
+        FileOutputStream os = new FileOutputStream(f);
+        os.write("Ahoj\n".getBytes());
+        os.close();
+
+        // to change timestamps
+        Thread.sleep(1000);
+
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "Internal change\n", null);
+
         String txt = doc.getText(0, doc.getLength());
-        assertEquals("The right text is there", txt, "Ahoj");
+        assertEquals("The right text is there", txt, "Internal change\n");
         
         arr = getPanes();
         assertNotNull("Panes are still open", arr);
         assertTrue("Document is remains modified", edit.isModified());
-        
-        // explicit close request, shall show the get another dialog
-        // and now say yes to close
-        DD.clear(DialogDescriptor.OK_OPTION);
-        
-        ce.close();
+
+     //   DD.toReturn.push(DialogDescriptor.CLOSED_OPTION);
+
+        SaveCookie sc = obj.getLookup().lookup(SaveCookie.class);
+        assertNotNull("File is modified and has save cookie", sc);
+        try {
+            edit.saveDocument();
+            fail("External modification detected, expect UserQuestionException");
+        } catch (UserQuestionException ex) {
+            waitEQ();
+            String txt2 = doc.getText(0, doc.getLength());
+            assertEquals("The right text from the IDE remains", txt2, "Internal change\n");
+            assertFileObject("Ahoj\n");
+            // rerun the action
+            ex.confirmed();
+            String txt3 = doc.getText(0, doc.getLength());
+            assertEquals("No reload, text saved", "Internal change\n", txt3);
+        }
+        assertFalse("Editor saved", edit.isModified());
+        assertFileObject("Internal change\n");
+
         waitEQ();
-        
-        arr = getPanes();
-        assertNull("Now everything is closed", arr);
+        assertTrue("No dialog", DD.toReturn.isEmpty());
+        if (DD.error != null) {
+            fail("Error in dialog:\n" + DD.error);
+        }
     }
+
+    private void assertFileObject(String text) throws IOException {
+        byte[] stream = new byte[4096];
+        InputStream is = obj.getPrimaryFile().getInputStream();
+        int len = is.read(stream);
+        String s = new String(stream, 0, len);
+        assertEquals(text, s);
+        is.close();
+    }
+
     private JEditorPane[] getPanes() {
         return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane[]>() {
             public JEditorPane[] run() {
@@ -169,6 +204,22 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         });
     }
 
+    //
+    // Our fake lookup
+    //
+    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
+        static final long serialVersionUID = 3L;
+
+        public Lkp () {
+            this (new org.openide.util.lookup.InstanceContent ());
+        }
+        
+        private Lkp (org.openide.util.lookup.InstanceContent ic) {
+            super (ic);
+            ic.add (new DD ());
+        }
+    }
+
     /** Our own dialog displayer.
      */
     public static final class DD extends org.openide.DialogDisplayer {
@@ -176,6 +227,7 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         public static Stack<Object> toReturn;
         public static Object message;
         public static int type;
+        public static String error;
         
         public static void clear(Object t) {
             type = -1;
@@ -192,10 +244,12 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         public Object notify(org.openide.NotifyDescriptor descriptor) {
             assertNull (options);
             if (type != -1) {
-                fail("Second question: " + type);
+                error = "Second question: " + type;
+                fail(error);
             }
             if (toReturn.isEmpty()) {
-                fail("Not specified what we shall return: " + toReturn);
+                error = "Not specified what we shall return: " + toReturn;
+                fail(error);
             }
             Object r = toReturn.pop();
             if (toReturn.isEmpty()) {
