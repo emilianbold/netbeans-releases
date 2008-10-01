@@ -358,6 +358,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
             PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
             PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,PHPTokenId.PHP_CASE,
+            PHPTokenId.PHP_IF,PHPTokenId.PHP_ELSE,PHPTokenId.PHP_ELSEIF, 
+            PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,PHPTokenId.PHP_WHILE,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT
             );
 
@@ -374,19 +376,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         int rightExpressionBoundary = tokenSequence.offset();
 
-        while (!CTX_DELIMITERS.contains(tokenSequence.token().id())
-                && findLHSExpressionType_skipArgs(tokenSequence)
+        while (findLHSExpressionType_skipArgs(tokenSequence)
+                && !CTX_DELIMITERS.contains(tokenSequence.token().id())
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
-            if (!tokenSequence.movePrevious()){
+            if (!tokenSequence.movePrevious()) {
                 break;
             }
         }
-
         //move forward to the first text
         do {
             if (!tokenSequence.moveNext()){
                 return null;
             }
+            findLHSExpressionType_skipCondition(tokenSequence);
         } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
 
         int leftExpressionBoundary = tokenSequence.offset(); // dbg only
@@ -518,6 +520,23 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 && "(".equals(tokenSequence.token().text().toString())));
 
             tokenSequence.movePrevious();
+        }
+
+        return true;
+    }
+
+     private boolean findLHSExpressionType_skipCondition(TokenSequence<PHPTokenId> tokenSequence){
+        if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
+                && "(".equals(tokenSequence.token().text().toString())){
+
+            do {
+                if (!tokenSequence.moveNext()){
+                    return true;
+                }
+            } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
+                && ")".equals(tokenSequence.token().text().toString())));
+
+            tokenSequence.moveNext();
         }
 
         return true;

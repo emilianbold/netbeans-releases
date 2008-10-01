@@ -1,0 +1,3 @@
+Code completion result for source line:
+while(1) $this->factory()->|dieanyway();
+(QueryType=COMPLETION, NameKind=PREFIX)
