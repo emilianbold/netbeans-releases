@@ -86,7 +86,7 @@ public class YamlScanner implements StructureScanner {
         Node node = result.getObject();
         if (node != null) {
             // Skip root node
-            return YamlStructureItem.initialize(node);
+            return YamlStructureItem.initialize(result, node);
         }
 
         return Collections.emptyList();
@@ -110,7 +110,7 @@ public class YamlScanner implements StructureScanner {
 
         for (StructureItem item : items) {
             try {
-                addBlocks(doc, codeblocks, item);
+                addBlocks(result, doc, codeblocks, item);
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
                 break;
@@ -120,7 +120,7 @@ public class YamlScanner implements StructureScanner {
         return folds;
     }
 
-    private void addBlocks(BaseDocument doc, List<OffsetRange> codeblocks, StructureItem item) throws BadLocationException {
+    private void addBlocks(YamlParserResult result, BaseDocument doc, List<OffsetRange> codeblocks, StructureItem item) throws BadLocationException {
         int docLength = doc.getLength();
         int begin = Math.min((int) item.getPosition(), docLength);
         int end = Math.min((int) item.getEndPosition(), docLength);
@@ -135,7 +135,7 @@ public class YamlScanner implements StructureScanner {
             int childBegin = (int) child.getPosition();
             int childEnd = (int) child.getEndPosition();
             if (childBegin >= begin && childEnd <= end) {
-                addBlocks(doc, codeblocks, child);
+                addBlocks(result, doc, codeblocks, child);
             }
         }
     }
@@ -159,8 +159,8 @@ public class YamlScanner implements StructureScanner {
             this.end = end;
         }
 
-        YamlStructureItem(Node node, String name) {
-            this(node, name,  ((Positionable) node).getRange().start.offset, ((Positionable) node).getRange().end.offset);
+        YamlStructureItem(Node node, String name, OffsetRange positions) {
+            this(node, name, positions.getStart(), positions.getEnd());
         }
 
         public String getName() {
@@ -197,18 +197,18 @@ public class YamlScanner implements StructureScanner {
             return getNestedItems().size() == 0;
         }
 
-        private static List<? extends StructureItem> initialize(Node root) {
+        private static List<? extends StructureItem> initialize(YamlParserResult result, Node root) {
             // Really need IdentitySet or IdentityHashSet but there isn't one built in
             // or in our available libraries...
             IdentityHashMap<Object,Boolean> seen = new IdentityHashMap<Object,Boolean>(100);
             //return new YamlStructureItem(root, null).getNestedItems();
-            YamlStructureItem fakeRoot = new YamlStructureItem(root, null);
-            initializeChildren(fakeRoot, seen, 0);
+            YamlStructureItem fakeRoot = new YamlStructureItem(root, null, OffsetRange.NONE);
+            initializeChildren(result, fakeRoot, seen, 0);
             return fakeRoot.children;
         }
 
         @SuppressWarnings("unchecked")
-        private static void initializeChildren(YamlStructureItem item, IdentityHashMap<Object,Boolean> seen, int depth) {
+        private static void initializeChildren(YamlParserResult result, YamlStructureItem item, IdentityHashMap<Object,Boolean> seen, int depth) {
             if (depth > 20) {
                 // Avoid boundless recursion in some yaml parse trees
                 // This should already be handled now with the seen map, but
@@ -249,10 +249,10 @@ public class YamlScanner implements StructureScanner {
                             //String childName = o.getValue().toString();
                             Object childValue = o.getValue();
                             if (childValue instanceof List || childValue instanceof Map) {
-                                children.add(new YamlStructureItem(o, "list item"));
+                                children.add(new YamlStructureItem(o, "list item", result.getAstRange(o)));
                             } else {
                                 String childName = childValue.toString();
-                                children.add(new YamlStructureItem(o, childName));
+                                children.add(new YamlStructureItem(o, childName, result.getAstRange(o)));
                             }
                         }
                         Object entryValue = entry.getValue();
@@ -265,10 +265,10 @@ public class YamlScanner implements StructureScanner {
                                 //String childName = o.getValue().toString();
                                 Object childValue = o.getValue();
                                 if (childValue instanceof List || childValue instanceof Map) {
-                                    children.add(new YamlStructureItem(o, "list item"));
+                                    children.add(new YamlStructureItem(o, "list item", result.getAstRange(o)));
                                 } else {
                                     String childName = childValue.toString();
-                                    children.add(new YamlStructureItem(o, childName));
+                                    children.add(new YamlStructureItem(o, childName, result.getAstRange(o)));
                                 }
                             }
                         }
@@ -279,7 +279,7 @@ public class YamlScanner implements StructureScanner {
                         String childName = scalar.getValue().toString();
                         Node child = (Node) entry.getValue();
                         if (child != null) {
-                            int e = ((Positionable) child).getRange().end.offset;
+                            int e = result.convertByteToUtf8(((Positionable) child).getRange().end.offset);
                             // If you have an "empty" key, e.g.
                             //   foo:
                             //   bar: Hello World
@@ -287,11 +287,11 @@ public class YamlScanner implements StructureScanner {
                             // of "bar", which is wrong. In this case, don't include the child in the
                             // position bounds.
                             if (child.getValue() instanceof ByteList && ((ByteList)child.getValue()).length() == 0) {
-                                e = ((Positionable) scalar).getRange().end.offset;
+                                e = result.convertByteToUtf8(((Positionable) scalar).getRange().end.offset);
                             }
                             children.add(new YamlStructureItem(child, childName,
                                     // Range: beginning of -key- to ending of -value-
-                                    ((Positionable) scalar).getRange().start.offset,
+                                    result.convertByteToUtf8(((Positionable) scalar).getRange().start.offset),
                                     e));
                         }
                     }
@@ -308,10 +308,10 @@ public class YamlScanner implements StructureScanner {
                     //String childName = o.getValue().toString();
                     Object childValue = o.getValue();
                     if (childValue instanceof List || childValue instanceof Map) {
-                        children.add(new YamlStructureItem(o, "list item"));
+                        children.add(new YamlStructureItem(o, "list item", result.getAstRange(o)));
                     } else {
                         String childName = childValue.toString();
-                        children.add(new YamlStructureItem(o, childName));
+                        children.add(new YamlStructureItem(o, childName, result.getAstRange(o)));
                     }
                 }
             } else {
@@ -329,7 +329,7 @@ public class YamlScanner implements StructureScanner {
                         // include it <<.
                         child.children = Collections.emptyList();
                     } else {
-                        initializeChildren(child, seen, depth+1);
+                        initializeChildren(result, child, seen, depth+1);
                     }
                 }
             }
