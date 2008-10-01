@@ -61,13 +61,13 @@ public class Breakpoints_ClassTestSuite extends JellyTestCase {
     
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(ClassBreakpointsTest.class, 
+                .addTest(ClassBreakpointsTest.class,
+                    "testClassBreakpointCreation",
                     "testClassBreakpointPrefilledInClass",
                     "testClassBreakpointPrefilledInInitializer",
                     "testClassBreakpointPrefilledInConstructor",
                     "testClassBreakpointPrefilledInMethod",
                     "testClassBreakpointPrefilledInSecondClass",
-                    "testClassBreakpointCreation",
                     "testClassBreakpointFunctionalityOnPrimaryClass",
                     "testClassBreakpointFunctionalityOnSecondClass",
                     "testClassBreakpointFunctionalityWithFilter"

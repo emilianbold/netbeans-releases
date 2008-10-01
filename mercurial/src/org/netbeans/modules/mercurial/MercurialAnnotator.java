@@ -620,7 +620,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             File root = null; 
             for (File file : rootFiles) {
                 root = file;
-                repo = Mercurial.getInstance().getTopmostManagedParent(root);
+                repo = Mercurial.getInstance().getRepositoryRoot(root);
                 break;
             }
             if (!repo.getAbsolutePath().equals(root.getAbsolutePath())) {
@@ -644,7 +644,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 }
             }
             for (File file : rootFiles) {            
-                repo = Mercurial.getInstance().getTopmostManagedParent(file);
+                repo = Mercurial.getInstance().getRepositoryRoot(file);
                 if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
                     // not from repo root => do not annnotate with folder name 
                     return uptodateFormat.format(new Object [] { nameHtml, ""});

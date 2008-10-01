@@ -87,7 +87,8 @@ public class YamlParser implements Parser {
     public static Node load(String source, final InputStream io, final YAMLFactory fact, final YAMLConfig cfg) {
         ByteList byteList;
         try {
-            byteList = new ByteList(ByteList.plain(source),false);
+            byteList = new ByteList(source.getBytes("UTF-8"));
+            //byteList = new ByteList(ByteList.plain(source),false);
         } catch(Exception e) {
             return null;
         }
@@ -106,7 +107,7 @@ public class YamlParser implements Parser {
         try {
             Node yaml = load(source, null, new DefaultYAMLFactory(), new DefaultYAMLConfig());
             //Object yaml = YAML.load(stream);
-            return new YamlParserResult(yaml, this, file);
+            return new YamlParserResult(yaml, this, file, true);
         } catch (Exception ex) {
             int pos = 0;
             if (ex instanceof PositionedParserException) {
@@ -114,7 +115,7 @@ public class YamlParser implements Parser {
                 pos = ppe.getPosition().offset;
             }
 
-            YamlParserResult result = new YamlParserResult(null, this, file);
+            YamlParserResult result = new YamlParserResult(null, this, file, false);
             String message = ex.getMessage();
             if (message != null && message.length() > 0) {
                 // Strip off useless prefixes to make errors more readable

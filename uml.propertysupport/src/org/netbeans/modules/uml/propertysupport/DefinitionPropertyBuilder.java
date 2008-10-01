@@ -400,6 +400,16 @@ public final class DefinitionPropertyBuilder
       }
    }
    
+   public void loadOnDemandProperties(IPropertyElement element, boolean interpret)
+   {
+       loadOnDemandProperties(element);
+       if (interpret) 
+       {
+            IPropertyElementManager manager = getPropertyElementManager();
+            manager.interpretElementValue(element);           
+       }
+   }
+
    public IPropertyDefinition loadOnDemandDefintion(IPropertyDefinition def)
    {
       return mDefFactory.getPropertyDefinitionByName(def.getName());

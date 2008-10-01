@@ -50,10 +50,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -77,9 +73,8 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
-import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 
 public class ConfigurationMakefileWriter {
     private MakeConfigurationDescriptor projectDescriptor;
@@ -616,6 +611,11 @@ public class ConfigurationMakefileWriter {
             return;
         }
         
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(conf.getPackagingConfiguration().getType().getValue());
+        if (packager == null || packager instanceof DummyPackager) {
+            return;
+        }
+        
         FileOutputStream os = null;
         try {
             os = new FileOutputStream(outputFileName);
@@ -677,11 +677,11 @@ public class ConfigurationMakefileWriter {
         bw.write("# $1 directory path\n"); // NOI18N
         bw.write("# $2 permission (optional)\n"); // NOI18N
         bw.write("{\n"); // NOI18N
-        bw.write("    mkdir -p $1\n"); // NOI18N
+        bw.write("    mkdir -p \"$1\"\n"); // NOI18N
         bw.write("    checkReturnCode\n"); // NOI18N
         bw.write("    if [ \"$2\" != \"\" ]\n"); // NOI18N
         bw.write("    then\n"); // NOI18N
-        bw.write("      chmod $2 $1\n"); // NOI18N
+        bw.write("      chmod $2 \"$1\"\n"); // NOI18N
         bw.write("      checkReturnCode\n"); // NOI18N
         bw.write("    fi\n"); // NOI18N
         bw.write("}\n"); // NOI18N

@@ -36,50 +36,10 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.api;
 
-package org.netbeans.modules.groovy.editor.parser;
+import java.util.List;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.openide.filesystems.FileObject;
-
-/**
- *
- * @author schmidtm
- */
-public class GroovyParserManager {
-    private static GroovyParserManager INSTANCE;
-    
-    private Map<FileObject,GroovyParserResult> parsedFiles = new HashMap<FileObject,GroovyParserResult>();
-    
-    public GroovyParserManager() {
-        INSTANCE = this;
-    }
-    
-    public static synchronized GroovyParserManager getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new GroovyParserManager();
-        }
-        return INSTANCE;
-    }
-    
-    public void registerParsing(FileObject fo, GroovyParserResult parserResult){
-        assert fo != null;
-        assert parserResult != null;
-        
-        if (isRegistered(fo)) {
-            parsedFiles.remove(fo);
-        }
-        
-        parsedFiles.put(fo, parserResult);
-    }
-    
-    public GroovyParserResult getParsingResultByFileObject(FileObject fo){
-        return (GroovyParserResult)parsedFiles.get(fo);
-    }
-    
-    public boolean isRegistered(FileObject fo){
-        return parsedFiles.containsKey(fo);
-    }
-    
+public interface PackagerDescriptorProvider {
+    public List<PackagerDescriptor> getPackagerDescriptorProviderList();
 }

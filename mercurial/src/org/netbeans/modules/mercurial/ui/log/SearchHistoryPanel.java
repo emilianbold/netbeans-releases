@@ -303,7 +303,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     public String getSearchRepositoryRootUrl() throws HgException {
         if (repositoryUrl != null) return repositoryUrl;
         
-        File root = Mercurial.getInstance().getTopmostManagedParent(roots[0]);
+        File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
        
         return root != null? root.toString(): null;
     }

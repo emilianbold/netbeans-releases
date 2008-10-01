@@ -62,8 +62,8 @@ public class Breakpoints_FieldTestSuite extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(FieldBreakpointsTest.class,
-                    "testFieldBreakpointPrefilledValues",
                     "testFieldBreakpointCreation",
+                    "testFieldBreakpointPrefilledValues",
                     "testFieldBreakpointFunctionalityAccess",
                     "testFieldBreakpointFunctionalityModification",
                     "testConditionalFieldBreakpointFunctionality",

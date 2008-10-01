@@ -2049,9 +2049,9 @@ function_direct_declarator [boolean definition]
 
 		(options{warnWhenFollowAmbig = false;}:
 		 tq = cv_qualifier)*                
-		(ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
 		//{functionEndParameterList(definition);}
 		(exception_specification)?
+		(ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
                 (options {greedy=true;} :function_attribute_specification)?
                 (asm_block!)?
                 (options {greedy=true;} :function_attribute_specification)?
