@@ -41,7 +41,12 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.modules.cnd.makeproject.packaging.*;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import org.openide.util.Lookup;
 
 public class PackagerManager  {
     private static List<PackagerDescriptor> list = null;
@@ -52,20 +57,29 @@ public class PackagerManager  {
         if (instance == null) {
             instance = new PackagerManager();
             list = new ArrayList<PackagerDescriptor>();
-            instance.addDefaultPackagers();
+            instance.addRegisteredPackagers();
         }
         return instance;
     }
     
-    private void addDefaultPackagers() {
-        addPackagingDescriptor(new TarPackager());
-        addPackagingDescriptor(new ZipPackager());
-        addPackagingDescriptor(new SVR4Packager());
-        addPackagingDescriptor(new RPMPackager());
-        addPackagingDescriptor(new DebianPackager());
+    /*
+     * Installed via services
+     */
+    private void addRegisteredPackagers() {
+        Set<PackagerDescriptorProvider> set = getPackagerDescriptorProviders();
+        for (PackagerDescriptorProvider packagerDescriptorProvider : set) {
+            List<PackagerDescriptor> list = packagerDescriptorProvider.getPackagerDescriptorProviderList();
+            for (PackagerDescriptor packagerDescriptor : list) {
+                addPackagingDescriptor(packagerDescriptor);
+            }
+        }
     }
     
     public void addPackagingDescriptor(PackagerDescriptor packagingDescriptor) {
+        PackagerDescriptor packagerDescriptor = getPackager(packagingDescriptor.getName());
+        if (packagerDescriptor != null) {
+            return; // Already there...
+        }
         list.add(packagingDescriptor);
     }
     
@@ -114,5 +128,23 @@ public class PackagerManager  {
                 return packagerDescriptor.getName();
         }
         return null;
+    }
+    
+    /*
+     * Get list of packager providers registered via services
+     */
+    private static Set<PackagerDescriptorProvider> getPackagerDescriptorProviders() {
+        HashSet providers = new HashSet();
+        Lookup.Template template = new Lookup.Template(PackagerDescriptorProvider.class);
+        Lookup.Result result = Lookup.getDefault().lookup(template);
+        Collection collection = result.allInstances();
+        Iterator iterator = collection.iterator();
+        while (iterator.hasNext()) {
+            Object caop = iterator.next();
+            if (caop instanceof PackagerDescriptorProvider) {
+                providers.add(caop);
+            }
+        }
+        return providers;
     }
 }

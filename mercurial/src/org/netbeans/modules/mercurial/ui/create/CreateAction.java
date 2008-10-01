@@ -141,7 +141,7 @@ public class CreateAction extends ContextAction {
         
         for (File file : files) {
             if(!file.isDirectory()) file = file.getParentFile();
-            if (hg.getTopmostManagedParent(file) != null) {
+            if (hg.getRepositoryRoot(file) != null) {
                 Mercurial.LOG.log(Level.SEVERE, "Found .hg directory in ancestor of {0} ", // NOI18N
                         file);
                 return;

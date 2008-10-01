@@ -248,6 +248,7 @@ class CheckNodeListener implements MouseListener, KeyListener {
             if (path != null) {
                 CheckNode node = (CheckNode) path.getLastPathComponent();
                 node.setSelected(!node.isSelected());
+                tree.repaint();
                 e.consume();
             }
         }

@@ -1,0 +1,4 @@
+Code completion result for source line:
+echo Hello146648::|AAAABB;
+(QueryType=COMPLETION, NameKind=PREFIX)
+CONSTANT   ? AAAABB                                   Hello146648

@@ -41,30 +41,17 @@
 
 
 package org.netbeans.modules.uml.ui.swing.finddialog;
-import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.HashMap;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JTree;
-import javax.swing.event.EventListenerList;
 import javax.swing.event.TableModelListener;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 
-import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.addins.associateDialog.AssociateDlgGUI;
+import org.netbeans.modules.uml.ui.addins.associateDialog.AssociateDialogUI;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.netbeans.modules.uml.ui.support.finddialog.FindUtilities;
 import org.netbeans.modules.uml.ui.swing.preferencedialog.ISwingPreferenceTableModel;
@@ -79,7 +66,7 @@ public class FindTableModel extends AbstractTableModel implements ISwingPreferen
 {
 	private FindDialogUI m_FindControl = null;
 	private ReplaceDialogUI m_ReplaceControl = null;
-	private AssociateDlgGUI m_AssociateControl = null;
+	private AssociateDialogUI m_AssociateControl = null;
 	private ETList< Object > m_collection = null;
 	
 	private Hashtable <Integer, String> m_ColNameMap = new Hashtable <Integer, String>();
@@ -115,13 +102,13 @@ public class FindTableModel extends AbstractTableModel implements ISwingPreferen
 		m_collection = values;
 		buildColumnMap();
 	}
-	public FindTableModel(AssociateDlgGUI control)
+	public FindTableModel(AssociateDialogUI control)
 	{
 		super();
 		m_AssociateControl = control;
 		buildColumnMap();
 	}
-	public FindTableModel(AssociateDlgGUI control, ETList<Object> values)
+	public FindTableModel(AssociateDialogUI control, ETList<Object> values)
 	{
 		super();
 		m_AssociateControl = control;
