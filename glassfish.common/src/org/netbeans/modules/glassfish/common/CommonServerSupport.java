@@ -278,7 +278,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             }
         };
         FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new StartTask(properties, getRecognizers(), startServerListener, stateListener));
+                new StartTask(this, getRecognizers(), startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
         return task;
     }
@@ -299,7 +299,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             }
         };
         FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new StartTask(properties, getRecognizers(), jdkRoot, jvmArgs, startServerListener, stateListener));
+                new StartTask(this, getRecognizers(), jdkRoot, jvmArgs, startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
         return task;
     }
@@ -334,7 +334,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             }
         };
         FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new StopTask(properties, stopServerListener, stateListener));
+                new StopTask(this, stopServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
         return task;
     }
@@ -343,7 +343,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         Logger.getLogger("glassfish").log(Level.FINEST,
                 "CSS.restartServer called on thread \"" + Thread.currentThread().getName() + "\"");
         FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new RestartTask(this, properties, stateListener));
+                new RestartTask(this, stateListener));
         RequestProcessor.getDefault().post(task);
         return task;
     }

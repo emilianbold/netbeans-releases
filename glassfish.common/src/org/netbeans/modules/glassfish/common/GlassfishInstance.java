@@ -112,7 +112,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     // api instance
     private ServerInstance commonInstance;
     
-    GlassfishInstance(Map<String, String> ip) {
+    private GlassfishInstance(Map<String, String> ip) {
         ic = new InstanceContent();
         lookup = new AbstractLookup(ic);
         ic.add(this); // Server instance in lookup (to find instance from node lookup)

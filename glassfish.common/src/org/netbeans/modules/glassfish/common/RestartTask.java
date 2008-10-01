@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
@@ -59,18 +57,16 @@ public class RestartTask extends BasicTask<OperationState> {
 
     private static final int RESTART_DELAY = 5000;
 
-    private final GlassfishModule commonSupport;
+    private final CommonServerSupport support;
 
     /**
-     *
-     * @param properties
-     * @param stateListener
+     * 
+     * @param support common support object for the server instance being restarted
+     * @param stateListener state monitor to track start progress
      */
-    public RestartTask(GlassfishModule css, Map<String, String> properties,
-            OperationStateListener... stateListener) {
-        super(properties, stateListener);
-
-        commonSupport = css;
+    public RestartTask(CommonServerSupport support, OperationStateListener... stateListener) {
+        super(support.getInstanceProperties(), stateListener);
+        this.support = support;
     }
     
     /**
@@ -95,7 +91,7 @@ public class RestartTask extends BasicTask<OperationState> {
         fireOperationStateChanged(OperationState.RUNNING,
                 "MSG_RESTART_SERVER_IN_PROGRESS", instanceName);
 
-        ServerState state = commonSupport.getServerState();
+        ServerState state = support.getServerState();
 
         if(state == ServerState.STARTING) {
             // wait for start to finish, we are done.
@@ -108,7 +104,7 @@ public class RestartTask extends BasicTask<OperationState> {
                 } catch(InterruptedException ex) {
                     Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex);
                 }
-                currentState = commonSupport.getServerState();
+                currentState = support.getServerState();
             }
 
             if(currentState != ServerState.RUNNING) {
@@ -118,7 +114,7 @@ public class RestartTask extends BasicTask<OperationState> {
         } else {
             boolean postStopDelay = true;
             if(state == ServerState.RUNNING) {
-                Future<OperationState> stopTask = commonSupport.stopServer(null);
+                Future<OperationState> stopTask = support.stopServer(null);
                 OperationState stopResult = OperationState.FAILED;
                 try {
                     stopResult = stopTask.get(STOP_TIMEOUT, TIMEUNIT);
@@ -141,7 +137,7 @@ public class RestartTask extends BasicTask<OperationState> {
                     } catch(InterruptedException ex) {
                         Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex);
                     }
-                    currentState = commonSupport.getServerState();
+                    currentState = support.getServerState();
                 }
 
                 if(currentState != ServerState.STOPPED) {
@@ -163,7 +159,7 @@ public class RestartTask extends BasicTask<OperationState> {
             }
 
             // Server should be stopped. Start it.
-            Future<OperationState> startTask = commonSupport.startServer(null);
+            Future<OperationState> startTask = support.startServer(null);
             OperationState startResult = OperationState.FAILED;
             try {
                 startResult = startTask.get(START_TIMEOUT, TIMEUNIT);
@@ -176,7 +172,7 @@ public class RestartTask extends BasicTask<OperationState> {
                         "MSG_RESTART_SERVER_FAILED_WONT_START", instanceName); // NOI18N
             }
             
-            if(commonSupport.getServerState() != ServerState.RUNNING) {
+            if(support.getServerState() != ServerState.RUNNING) {
                 return fireOperationStateChanged(OperationState.FAILED,
                         "MSG_RESTART_SERVER_FAILED_REASON_UNKNOWN", instanceName); // NOI18N
             }
