@@ -373,6 +373,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.editor</friend>
                 <friend>org.netbeans.modules.diff</friend>
+                <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.java.source</friend>

@@ -94,7 +94,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     private boolean maintainVarStack;
     
 
-    public PHPVerificationVisitor(PHPRuleContext context, Collection rules, boolean maintainVarStack) {
+    public PHPVerificationVisitor(PHPRuleContext context, Collection<PHPRule> rules, boolean maintainVarStack) {
         this.maintainVarStack = maintainVarStack;
         this.context = context;
         

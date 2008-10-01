@@ -190,7 +190,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             // Do nothing (IZ 87557, 94935)
             if (!((Boolean)evt.getNewValue()).booleanValue()) {
 //                getFolder().removeItemAction(this);
-                getFolder().refresh(this);
+                Folder containingFolder = getFolder();
+                if (containingFolder != null) {
+                    containingFolder.refresh(this);
+                }
             }
         } else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
             // File has been moved
