@@ -122,6 +122,7 @@ public class FSyntax extends Syntax {
      *  3. adjust current position to signal different end of token;
      *     the character that offset points to is not included in the token
      */
+    @Override
     protected TokenID parseToken() {
         char actChar;
         //WHILE OFFSET
@@ -192,8 +193,11 @@ public class FSyntax extends Syntax {
                             break;
                         case 'C':
                         case 'c':
-                            if( (lastNL == offset-1 || offset == 0) && !CppSettings.getDefault().isFreeFormatFortran() )
+                            if( (lastNL == offset-1 || offset == 0) && !CppSettings.getDefault().isFreeFormatFortran() ) {
                                 state = IN_LINE_COMMENT;
+                            } else {
+                                state = IN_IDENTIFIER;
+                            } 
                             break;
                         case '<':
                             state = AFTER_LESSTHAN;
@@ -722,6 +726,7 @@ public class FSyntax extends Syntax {
         return null; // nothing found
     }
     
+    @Override
     public String getStateName(int stateNumber) {
         switch(stateNumber) {
             case IN_WHITESPACE:
@@ -2396,6 +2401,7 @@ public class FSyntax extends Syntax {
      * it must decrease tokenOffset by the preScan stored in the mark state.
      * @param markState mark state to be loaded into syntax. It must be non-null value.
      */
+    @Override
     public void loadState(StateInfo stateInfo) {
         super.loadState( stateInfo );
         // lastNL < 0 means that the last \n was somewhere in the previous buffer.
@@ -2403,12 +2409,14 @@ public class FSyntax extends Syntax {
     }
     
     /** Store state of this analyzer into given mark state. */
+    @Override
     public void storeState(StateInfo stateInfo) {
         super.storeState( stateInfo );
         ((MyStateInfo)stateInfo).setColumn( offset-lastNL  );
     }
     
     /** Compare state of this analyzer to given state info */
+    @Override
     public int compareState(StateInfo stateInfo) {
         if( super.compareState( stateInfo ) == DIFFERENT_STATE )
             return DIFFERENT_STATE;
@@ -2417,6 +2425,7 @@ public class FSyntax extends Syntax {
     }
     
     /** Create state info appropriate for particular analyzer */
+    @Override
     public StateInfo createStateInfo() {
         return new MyStateInfo();
     }

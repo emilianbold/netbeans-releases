@@ -73,6 +73,7 @@ public class FFormatSupport extends ExtFormatSupport {
         return tokenContextPath;
     }
     
+    @Override
     public boolean isComment(TokenItem token, int offset) {
         TokenID tokenID = token.getTokenID();
         return (token.getTokenContextPath() == tokenContextPath
@@ -112,14 +113,17 @@ public class FFormatSupport extends ExtFormatSupport {
         && !getFreeFormat() && getVisualColumnOffset(getPosition(token,0)) == 5;
     }
     
+    @Override
     public TokenID getWhitespaceTokenID() {
         return FTokenContext.WHITESPACE;
     }
     
+    @Override
     public TokenContextPath getWhitespaceTokenContextPath() {
         return tokenContextPath;
     }
     
+    @Override
     public boolean canModifyWhitespace(TokenItem inToken) {
         if (inToken.getTokenContextPath() == FTokenContext.contextPath) {
             switch (inToken.getTokenID().getNumericID()) {
@@ -358,6 +362,12 @@ public class FFormatSupport extends ExtFormatSupport {
                             FTokenContext.KW_ENDMODULE_ID);
                             break;
                             
+                        case FTokenContext.KW_PROGRAM_ID:
+                            matchToken = findMatchingToken(token,
+                            FTokenContext.KW_PROGRAM_ID,
+                            FTokenContext.KW_ENDPROGRAM_ID);
+                            break;
+ 
                         case FTokenContext.KW_SELECT_ID:
                             matchToken = findMatchingToken(token,
                             FTokenContext.KW_SELECT_ID,
@@ -370,7 +380,7 @@ public class FFormatSupport extends ExtFormatSupport {
                             FTokenContext.KW_ENDSTRUCTURE_ID);
                             break;
                             
-                        case FTokenContext.KW_ENDSUBROUTINE_ID:
+                        case FTokenContext.KW_SUBROUTINE_ID:
                             matchToken = findMatchingToken(token,
                             FTokenContext.KW_SUBROUTINE_ID,
                             FTokenContext.KW_ENDSUBROUTINE_ID);
@@ -701,7 +711,11 @@ public class FFormatSupport extends ExtFormatSupport {
                     token = getLastToken();
                 }
             }
-            indent = findIndent(pos.getToken());
+            if (token != null) {
+                indent = findIndent(token);
+            } else {
+                indent = findIndent(pos.getToken());
+            } 
         }
         
         // For indent-only always indent
