@@ -476,7 +476,7 @@ public final class ParseProjectXml extends Task {
                        }
                        if (testType.getCompileCP() != null) {
                            String cp = td.getCompileClassPath();
-                       if (cp != null && cp.trim().length() > 0) {
+                           if (cp != null && cp.trim().length() > 0) {
                                define(testType.getCompileCP(), cp);
                            }
                        }

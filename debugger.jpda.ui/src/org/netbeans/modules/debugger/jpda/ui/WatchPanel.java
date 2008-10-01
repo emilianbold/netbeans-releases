@@ -77,6 +77,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.ui.DialogBinding;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
+import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
@@ -134,8 +135,11 @@ public class WatchPanel {
 
     private static Context retrieveContext() {
         DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
-        JPDADebugger d = en.lookupFirst(null, JPDADebugger.class);
-        CallStackFrame csf = d.getCurrentCallStackFrame();
+        CallStackFrame csf = null;
+        if (en != null) {
+            JPDADebugger d = en.lookupFirst(null, JPDADebugger.class);
+            csf = d.getCurrentCallStackFrame();
+        }
         if (csf != null) {
             String language = DebuggerManager.getDebuggerManager ().getCurrentSession().getCurrentLanguage();
             SourcePath sp = en.lookupFirst(null, SourcePath.class);
@@ -144,7 +148,19 @@ public class WatchPanel {
             c.line = csf.getLineNumber(language);
             return c;
         } else {
-            return null;
+            EditorContext context = EditorContextBridge.getContext();
+            String url = context.getCurrentURL();
+            if (url != null) {
+                Context c = new Context();
+                c.url = url;
+                c.line = context.getCurrentLineNumber();
+                if (c.line == -1) {
+                    c.line = 0;
+                }
+                return c;
+            } else {
+                return null;
+            }
         }
     }
     

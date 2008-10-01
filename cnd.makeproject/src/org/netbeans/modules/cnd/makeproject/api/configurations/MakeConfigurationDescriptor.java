@@ -349,16 +349,18 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public Item findExternalItemByPath(String path) {
         // Try first as-is
+        path = FilePathAdaptor.normalize(path);
         Item item = externalFileItems.findItemByPath(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
             if (IpeUtils.isPathAbsolute(path)) {
-                newPath = IpeUtils.toRelativePath(getBaseDir(), path);
+                newPath = IpeUtils.toRelativePath(getBaseDir(), FilePathAdaptor.naturalize(path));
             } else {
                 newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
             }
-            item = projectItems.get(FilePathAdaptor.normalize(newPath));
+            newPath = FilePathAdaptor.normalize(newPath);
+            item = externalFileItems.findItemByPath(newPath);
         }
         return item;
     }

@@ -59,6 +59,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.*;
 
+import org.openide.loaders.DefaultDataObjectTest.JspLoader;
 import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
@@ -531,6 +532,41 @@ public class FolderChildrenTest extends NbTestCase {
         }
     }
 
+    public void testRenameOpenComponent() throws Exception {
+        JspLoader.cnt = 0;
+        Pool.setLoader(JspLoader.class);
+
+        String fsstruct [] = new String [] {
+            "AA/a.test"
+        };
+
+        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
+        Repository.getDefault().addFileSystem(lfs);
+
+        FileObject fo = lfs.findResource("AA/a.test");
+        assertNotNull("file not found", fo);
+        DataObject obj = DataObject.find(fo);
+
+        assertEquals("The right class", obj.getClass(), DefaultDataObject.class);
+
+        Node[] origNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes(true);
+        assertEquals("One node", 1, origNodes.length);
+        assertEquals("the obj", obj, origNodes[0].getLookup().lookup(DataObject.class));
+
+        obj.rename("ToSomeStrangeName.jsp");
+        assertFalse("Invalid now", obj.isValid());
+
+        DataObject newObj = DataObject.find(obj.getPrimaryFile());
+        if (newObj == obj) {
+            fail("They should be different now: " + obj + ", " + newObj);
+        }
+
+        Node[] newNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes(true);
+        assertEquals("One new node", 1, newNodes.length);
+        assertEquals("the new obj", newObj, newNodes[0].getLookup().lookup(DataObject.class));
+
+    }
+
     public void testCheckType() {
         DataFolder folder = DataFolder.findFolder(FileUtil.createMemoryFileSystem().getRoot());
         Children ch = folder.getNodeDelegate().getChildren();
@@ -660,7 +696,7 @@ public class FolderChildrenTest extends NbTestCase {
         /**
          * @param aLoader the loader to set
          */
-        private static void setLoader(Class<? extends DataLoader> aLoader) {
+        static void setLoader(Class<? extends DataLoader> aLoader) {
             loader = aLoader;
             ((Pool)getDefault()).fireChangeEvent(new ChangeEvent(getDefault()));
         }

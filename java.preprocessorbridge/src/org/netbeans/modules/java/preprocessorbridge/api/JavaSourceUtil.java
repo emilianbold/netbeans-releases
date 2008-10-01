@@ -82,7 +82,7 @@ public class JavaSourceUtil {
     }
 
 
-    public Handle createControllerHandle (final FileObject file, final Handle handle) throws IOException {
+    public static Handle createControllerHandle (final FileObject file, final Handle handle) throws IOException {
         assert file != null;
         final JavaSourceUtilImpl impl = getSPI();
         assert impl != null;

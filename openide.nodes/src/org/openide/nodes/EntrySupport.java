@@ -157,6 +157,10 @@ abstract class EntrySupport {
 
                 try {
                     Children.PR.enterReadAccess();
+                    if (this != children.entrySupport) {
+                        // support was switched while we were waiting for access
+                        return new Node[0];
+                    }
                     nodes = tmpArray.nodes();
                 } finally {
                     Children.PR.exitReadAccess();

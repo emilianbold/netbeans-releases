@@ -63,6 +63,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.php.dbgp.DebugSession.IDESessionBridge;
+import org.netbeans.modules.php.dbgp.models.ThreadsModel;
 import org.netbeans.modules.php.dbgp.packets.StatusCommand;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
@@ -170,19 +172,26 @@ public class StartActionProviderImpl {
             DebugSession debugSession )
     {
         myCurrentSessions.put(session, debugSession);
-        debugSession.getBridge().hideAnnotations();
-        debugSession.getBridge().setSuspended(false);
-        debugSession.getBridge().getThreadsModel().update();
+        IDESessionBridge bridge = debugSession.getBridge();
+        if (bridge != null) {
+            bridge.hideAnnotations();
+            bridge.setSuspended(false);
+            ThreadsModel threadsModel = bridge.getThreadsModel();
+            if (threadsModel != null) {
+                threadsModel.update();
+            }
+        }
     }
     
     synchronized void removeSession( DebugSession session ){
-        Session sess = (Session)
-            session.getBridge().getEngine().lookupFirst(null, Session.class );
         SessionId id = session.getSessionId();
         mySessions.remove( session );
         if ( id!= null ){
             Collection<DebugSession> collection = getSessions(id);
             if ( collection.size() >0 ){
+                IDESessionBridge bridge = session.getBridge();
+                DebuggerEngine engine = (bridge != null) ? bridge.getEngine() : null;
+                Session sess = engine != null ? ((Session) engine.lookupFirst(null, Session.class)) : null;
                 DebugSession debugSession = collection.iterator().next();
                 setCurrentSession(sess, debugSession);
                 StatusCommand command = new StatusCommand( 

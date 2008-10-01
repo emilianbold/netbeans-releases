@@ -112,6 +112,7 @@ class LuceneIndex extends Index {
     
     private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
     static final String REFERENCES = "gsf";    // NOI18N
+    private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     
@@ -382,6 +383,9 @@ class LuceneIndex extends Index {
             }
         } finally {
            this.directory.close();
+           if (PREINDEXING) {
+               return;
+           }
            this.closed = true;
         }
     }
@@ -413,7 +417,7 @@ class LuceneIndex extends Index {
         }
         return refRoot;
     }
-    
+
     private void checkPreconditions () {
         if (closed) {
             throw new IllegalStateException ("Index already closed");   //NOI18N

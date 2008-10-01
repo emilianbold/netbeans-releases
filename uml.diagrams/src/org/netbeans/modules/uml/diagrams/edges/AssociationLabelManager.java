@@ -256,22 +256,22 @@ public class AssociationLabelManager extends BasicUMLLabelManager
         {
             if(type == LabelType.SOURCE)
             {
-                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT;
+                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_SOURCE;
             }
             else
             {
-                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_LEFT;
+                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_TARGET;
             }
         }
         else if(name.equals(END_NAME) == true)
         {
             if(type == LabelType.SOURCE)
             {
-                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT;
+                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_SOURCE;
             }
             else
             {
-                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT;
+                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_TARGET;
             }
         }
         

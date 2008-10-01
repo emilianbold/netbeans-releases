@@ -56,7 +56,7 @@ public class ScriptingMeasureActionsTest2 {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
-        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureActionsTest");
+        System.setProperty("suitename", ScriptingMeasureActionsTest2.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EditorMenuPopup.class)
                 .addTest(FormatFileTest.class)

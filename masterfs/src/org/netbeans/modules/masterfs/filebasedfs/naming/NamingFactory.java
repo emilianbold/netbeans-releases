@@ -42,6 +42,7 @@
 package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -85,7 +86,7 @@ public final class NamingFactory {
         return NamingFactory.registerInstanceOfFileNaming(parentFn, file, FileType.unknown);
     }
     
-    public static synchronized void checkCaseSensitivity(final FileNaming childName, final File f) {
+    public static synchronized void checkCaseSensitivity(final FileNaming childName, final File f) throws IOException {
         if (!childName.getFile().getName().equals(f.getName())) {
             boolean isCaseSensitive = !new File(f,"a").equals(new File(f,"A"));//NOI18N
             if (!isCaseSensitive) {
@@ -94,11 +95,11 @@ public final class NamingFactory {
         }                        
     }
 
-    private static synchronized FileNaming[] rename (FileNaming fNaming, String newName) {        
+    private static synchronized FileNaming[] rename (FileNaming fNaming, String newName) throws IOException {
         return rename(fNaming, newName, null);
     }
     
-    public static FileNaming[] rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) {
+    public static FileNaming[] rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) throws IOException {
         final ArrayList all = new ArrayList();
         boolean retVal = false;
         synchronized(NamingFactory.class) {
