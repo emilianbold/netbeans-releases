@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.gsf.api.ElementHandle;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import javax.swing.tree.TreeNode;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
@@ -53,6 +56,7 @@ import org.netbeans.modules.css.parser.SimpleNode;
 public class CSSParserResult extends ParserResult {
 
     private SimpleNode root;
+    private AstTreeNode astNodesRoot = null;
     
     CSSParserResult(Parser parser, ParserFile parserFile, SimpleNode root) {
         super(parser, parserFile, Css.CSS_MIME_TYPE);
@@ -64,7 +68,75 @@ public class CSSParserResult extends ParserResult {
     }
     
     @Override
-    public AstTreeNode getAst() {
-        return  null;
+    public synchronized AstTreeNode getAst() {
+        if(astNodesRoot == null) {
+            astNodesRoot = new CssAstTreeNode(root);
+        }
+        return astNodesRoot;
     }
+    
+    private static final class CssAstTreeNode implements AstTreeNode {
+
+        private final SimpleNode node;
+        private ArrayList<CssAstTreeNode> children = null;
+        
+        public CssAstTreeNode(SimpleNode node) {
+            this.node = node;
+        }
+        
+        public Object getAstNode() {
+            return node;
+        }
+
+        public int getStartOffset() {
+            return node.startOffset();
+        }
+
+        public int getEndOffset() {
+            return node.endOffset();
+        }
+
+        public TreeNode getChildAt(int childIndex) {
+            if(children == null) {
+                initChildren();
+            }
+            return children.get(childIndex);
+        }
+
+        public int getChildCount() {
+            return node.jjtGetNumChildren();
+        }
+
+        public TreeNode getParent() {
+            return null;
+        }
+
+        public int getIndex(TreeNode tnode) {
+            if(children == null) {
+                initChildren();
+            }
+            return children.indexOf(tnode);
+        }
+
+        public boolean getAllowsChildren() {
+            return true;
+        }
+
+        public boolean isLeaf() {
+            return getChildCount() == 0;
+        }
+
+        public Enumeration children() {
+            return Collections.enumeration(children);
+        }
+        
+        private synchronized void initChildren() {
+            children = new ArrayList<CssAstTreeNode>(node.jjtGetNumChildren());
+            for(int i = 0; i < node.jjtGetNumChildren(); i++ ) {
+                children.set(i, new CssAstTreeNode((SimpleNode)node.jjtGetChild(i)));
+            }
+        }
+        
+    }
+    
 }
