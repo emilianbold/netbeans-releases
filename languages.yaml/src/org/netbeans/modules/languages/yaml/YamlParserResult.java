@@ -54,8 +54,8 @@ public class YamlParserResult extends ParserResult {
     private Node node;
     private List<? extends StructureItem> items;
 
-    public YamlParserResult(Node node, YamlParser parser, ParserFile file) {
-        super(parser, file, YamlTokenId.YAML_MIME_TYPE);
+    public YamlParserResult(Node node, YamlParser parser, ParserFile file, boolean valid) {
+        super(parser, file, YamlTokenId.YAML_MIME_TYPE, valid);
         this.node = node;
     }
 

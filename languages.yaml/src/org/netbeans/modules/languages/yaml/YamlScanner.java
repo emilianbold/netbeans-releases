@@ -121,8 +121,9 @@ public class YamlScanner implements StructureScanner {
     }
 
     private void addBlocks(BaseDocument doc, List<OffsetRange> codeblocks, StructureItem item) throws BadLocationException {
-        int begin = (int) item.getPosition();
-        int end = (int) item.getEndPosition();
+        int docLength = doc.getLength();
+        int begin = Math.min((int) item.getPosition(), docLength);
+        int end = Math.min((int) item.getEndPosition(), docLength);
         int firstRowEnd = Utilities.getRowEnd(doc, begin);
         if (begin < end && firstRowEnd != Utilities.getRowEnd(doc, end)) {
             codeblocks.add(new OffsetRange(firstRowEnd, end));

@@ -113,6 +113,10 @@ public class YamlScannerTest extends YamlTestBase {
         checkStructure("testfiles/fixture3.yml");
     }
 
+    public void test143747a() throws Exception {
+        checkStructure("testfiles/unicode.yml");
+    }
+
     public void testFolds1() throws Exception {
         checkFolds("testfiles/test1.yaml");
     }
@@ -173,7 +177,7 @@ public class YamlScannerTest extends YamlTestBase {
         checkFolds("testfiles/fixture3.yml");
     }
 
-    public void test143747() throws Exception {
+    public void test143747b() throws Exception {
         checkFolds("testfiles/unicode.yml");
     }
 }
