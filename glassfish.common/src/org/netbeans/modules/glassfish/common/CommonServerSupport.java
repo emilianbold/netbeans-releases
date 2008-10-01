@@ -474,36 +474,55 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     public boolean isReallyRunning() {
-        boolean isRunning = isRunning(getHostName(), getHttpPortNumber());
-        if(isRunning) {
+        return isRunning(getHostName(), getHttpPortNumber()) && isReady(false);
+    }
+
+    public boolean isReady(boolean retry) {
+        boolean isReady = false;
+        int maxtries = retry ? 3 : 1;
+        int tries = 0;
+
+        while(!isReady && tries++ < maxtries) {
+            long start = System.nanoTime();
             Commands.LocationCommand command = new Commands.LocationCommand();
-            Future<OperationState> result = execute(command);
             try {
-                if(result.get(3, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                Future<OperationState> result = execute(command);
+                if(result.get(30, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                    long end = System.nanoTime();
+                    Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() +
+                            " responded in " + (end - start)/1000000 + "ms");
                     String installRoot = getGlassfishRoot();
                     String targetInstallRoot = command.getInstallRoot();
                     if(installRoot != null && targetInstallRoot != null) {
                         File installDir = FileUtil.normalizeFile(new File(installRoot));
                         File targetInstallDir = FileUtil.normalizeFile(new File(targetInstallRoot));
-                        isRunning = installDir.equals(targetInstallDir);
+                        isReady = installDir.equals(targetInstallDir);
                     } else {
-                        isRunning = false;
-                    } 
-                } else {
-//                    isRunning = false;
+                        isReady = false;
+                    }
+                    break;
+                } else if(!command.retry()) {
                     // !PW temporary while some server versions support __locations
                     // and some do not but are still V3 and might the ones the user
                     // is using.
                     result = execute(new Commands.VersionCommand());
-                    isRunning = result.get(3, TimeUnit.SECONDS) == OperationState.COMPLETED;
+                    isReady = result.get(30, TimeUnit.SECONDS) == OperationState.COMPLETED;
+                    break;
+                } else {
+                    long end = System.nanoTime();
+                    Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() +
+                            " timed out inside server after " + (end - start)/1000000 + "ms");
                 }
             } catch(Exception ex) {
-                isRunning = false;
+                Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " timed out.", ex);
+                isReady = false;
+                break;
             }
         }
-        return isRunning;
+
+        return isReady;
     }
-    
+
     /**
      * !PW XXX Is there a more efficient way to implement a failed future object? 
      * 

@@ -68,7 +68,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -160,30 +159,29 @@ public class StartTask extends BasicTask<OperationState> {
         // Waiting for server to start
         while(System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
-            if(CommonServerSupport.isRunning(host, port)) {
-                // !PW FIXME V3 as of March 12 is starting Grizzly & listening
-                // for connections before the server is ready to take asadmin
-                // commands.  Until this is fixed, wait 1 second before assuming
-                // it's really ok.  Otherwise, domain.xml can get corrupted.
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException ex) {
-                }
+            boolean httpLive = CommonServerSupport.isRunning(host, port);
+
+            // Sleep for a little so that we do not make our checks too often
+            //
+            // Doing this before we check httpAlive also prevents us from
+            // pinging the server too quickly after the ports go live.
+            //
+            try {
+                Thread.sleep(DELAY);
+            } catch (InterruptedException e) {
+                // no op
+            }
+
+            if(httpLive) {
+                Logger.getLogger("glassfish").log(Level.FINE, "Server HTTP is live.");
                 OperationState state = OperationState.COMPLETED;
                 String messageKey = "MSG_SERVER_STARTED";
-                if (!gi.getCommonSupport().isReallyRunning()) {
+                if (!gi.getCommonSupport().isReady(true)) {
                     state = OperationState.FAILED;
                     messageKey = "MSG_START_SERVER_FAILED";
                 }
                 return fireOperationStateChanged(state,
                         messageKey, instanceName); // NOI18N
-            }
-            
-            // Sleep for a little so that we do not make our checks too often
-            try {
-                Thread.sleep(DELAY);
-            } catch (InterruptedException e) {
-                // no op
             }
             
             // if we are profiling, we need to lie about the status?
@@ -202,7 +200,7 @@ public class StartTask extends BasicTask<OperationState> {
                 "MSG_START_SERVER_FAILED", instanceName);
         return OperationState.FAILED;
     }
-    
+
     private String[] createEnvironment() {
         List<String> envp = new ArrayList<String>();
         String localJdkHome = getJdkHome();
