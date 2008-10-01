@@ -178,14 +178,50 @@ public class LexUtilities {
 
         return astRange;
     }
-    
-    /** Find the ruby token sequence (in case it's embedded in something else at the top level */
+
+    /** Find the NEXT JavaScript sequence in the buffer starting from the given offset */
+    @SuppressWarnings("unchecked")
+    public static TokenSequence<?extends JsTokenId> getNextJsTokenSequence(BaseDocument doc, int fromOffset, int max) {
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        TokenSequence<?> ts = th.tokenSequence();
+        ts.move(fromOffset);
+
+        return findNextJsTokenSequence(ts, fromOffset, max);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static TokenSequence<? extends JsTokenId> findNextJsTokenSequence(TokenSequence<?> ts, int fromOffset, int max) {
+        if (ts.language() == JsTokenId.language()) {
+            if (!ts.moveNext()) {
+                return null;
+            }
+            return (TokenSequence<? extends JsTokenId>) ts;
+        }
+
+        while (ts.moveNext() && ts.offset() <= max) {
+            int offset = ts.offset();
+
+            TokenSequence<?> ets = ts.embedded();
+            if (ets != null) {
+                ets.move(offset);
+                TokenSequence<? extends JsTokenId> result = findNextJsTokenSequence(ets, fromOffset, max);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
     public static TokenSequence<?extends JsTokenId> getJsTokenSequence(BaseDocument doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
         return getJsTokenSequence(th, offset);
     }
     
+    /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
     public static TokenSequence<?extends JsTokenId> getJsTokenSequence(TokenHierarchy<Document> th, int offset) {
         TokenSequence<?extends JsTokenId> ts = th.tokenSequence(JsTokenId.language());

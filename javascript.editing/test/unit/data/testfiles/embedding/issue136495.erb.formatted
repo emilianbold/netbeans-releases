@@ -1,0 +1,35 @@
+<script type="text/javascript">
+  YAHOO.util.Event.addListener(window, "load", function() {
+    YAHOO.example.EnhanceFromMarkup = new function() {
+      var myColumnDefs = [
+        {key:"name",label:"Name"},
+        {key:"obs_rollup",label:"OBS Rollup"},
+<% for week_header in @week_endings %>
+          {key:"<%=  week_header.id %>",label:"<%= week_header.week_ending %>"},
+<% end %>
+        {key:"totals_to_date",label:"Project Totals to Date"},
+        {key:"remaining_hours",label:"Remaining Hours"},
+        {key:"budgeted_hours",label:"Budgeted Hours"}
+      ];
+
+      this.myDataSource = new YAHOO.util.DataSource(YAHOO.util.Dom.get("charge"));
+      this.myDataSource.responseType = YAHOO.util.DataSource.TYPE_HTMLTABLE;
+      this.myDataSource.responseSchema = {
+        fields: [
+          {key:"name"},
+          {key:"obs_rollup"},
+<% for week_key in @week_endings%>
+            {key:"<%= week_header.id %>"},
+<% end %>
+          {key:"totals_to_date"},
+          {key:"remaining_hours"},
+          {key:"budgeted_hours"}
+        ]
+      };
+
+      this.myDataTable = new YAHOO.widget.DataTable("actualsData", myColumnDefs, this.myDataSource,
+      {sortedBy:{key:"name",dir:"desc"}}
+    );
+    };
+  });
+</script>
