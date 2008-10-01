@@ -7,6 +7,11 @@
 
     <property name="test.timeout" value="3600000"/>
 
+    <loadfile property="perftestrun.buildnumber"
+      srcFile="../../../build.number"
+      failonerror="false"
+    />
+
     <condition property="j2ee.appserver.path" value="e:\\space\\appserver">
         <os family="windows"/>
     </condition>
