@@ -572,6 +572,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 type = field.getTypeName();
             }
+            if (type == null && preceedingType != null && fieldName != null) {
+                VarTypeResolver typeResolver = VarTypeResolver.getInstance(request, preceedingType+"::"+fieldName);//NOI18N
+                type = typeResolver.resolveType();
+            }
         }
 
         do {
