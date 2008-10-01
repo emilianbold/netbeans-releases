@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.MoveProvider;
@@ -66,6 +67,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.drawingarea.actions.MoveNodeKeyAction;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
@@ -142,7 +144,12 @@ public abstract class AbstractLabelManager implements LabelManager
 
 
             label = createLabel(name, type);
-            if(label==null)throw new IllegalArgumentException("Unsupported label name-type combination, can't create label. name=\""+name+"\"; type=\""+type+"\".");
+            if(label==null)
+            {
+                //log incorrect state, it's not good to throw exception because it may block diagram loading for example.
+                UMLLogger.logMessage("Unsupported label name-type combination, can't create label. name=\""+name+"\"; type=\""+type+"\".",Level.INFO);
+                return;
+            }
             ConnectionLabelWidget child = new ConnectionLabelWidget(scene, label);
             Object data = createAttachedData(name, type);
             if(data == null)
