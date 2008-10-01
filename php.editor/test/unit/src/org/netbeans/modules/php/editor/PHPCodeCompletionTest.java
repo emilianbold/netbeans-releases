@@ -189,6 +189,18 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue146187.php",
                 "echo $tst->^", false);
     }
+    public void test146648() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue146648.php",
+                "$v146648::^", false);
+    }
+    public void test146648_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue146648.php",
+                "echo Hello146648::^", false);
+    }
+    public void test147191() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147191.php",
+                "case self::V^", false);
+    }
 
     /* TEMPORARILY DISABLED
     public void test136744_1() throws Exception {

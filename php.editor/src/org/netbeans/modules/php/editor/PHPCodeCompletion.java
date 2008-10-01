@@ -357,7 +357,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
             PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
             PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
-            PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,
+            PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,PHPTokenId.PHP_CASE,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT
             );
 
@@ -638,7 +638,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         TokenHierarchy<?> th = TokenHierarchy.get(document);
         TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence(PHPTokenId.language());
         assert tokenSequence != null;
-        
+
         tokenSequence.move(caretOffset);
         boolean offerMagicAndInherited = true;
         if (!(!tokenSequence.moveNext() && !tokenSequence.movePrevious())) {
