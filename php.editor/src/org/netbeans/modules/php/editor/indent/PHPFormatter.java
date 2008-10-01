@@ -150,7 +150,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return ts.offset();
     }
     
-    public int getTokenBalanceDelta(BaseDocument doc, Token<? extends PHPTokenId> token, TokenSequence<? extends PHPTokenId> ts, boolean includeKeywords) {
+    public static int getTokenBalanceDelta(BaseDocument doc, Token<? extends PHPTokenId> token, TokenSequence<? extends PHPTokenId> ts, boolean includeKeywords) {
         if (token.id() == PHPTokenId.PHP_VARIABLE) {
             // In some cases, the [ shows up as an identifier, for example in this expression:
             //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
@@ -190,7 +190,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     // return indent if we are not in switch/case, otherwise return 0
-    private int getIndentAfterBreak(BaseDocument doc, TokenSequence<? extends PHPTokenId> ts) {
+    private static int getIndentAfterBreak(BaseDocument doc, TokenSequence<? extends PHPTokenId> ts) {
         // we are inside a block
         final int index = ts.index();
         final int breakOffset = ts.offset();
@@ -210,6 +210,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 break;
             } else if (balance == 0 && token.id() == PHPTokenId.PHP_CASE) {
                 // in the same block
+                CodeStyle codeStyle = CodeStyle.get(doc);
                 int tplIndentSize = codeStyle.getIndentSize();
                 if (tplIndentSize > 0) {
                     try {
@@ -230,7 +231,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
-    public int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
+    public static int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
         int balance = 0;
 
         TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, begin);
