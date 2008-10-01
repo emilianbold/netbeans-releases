@@ -273,6 +273,7 @@ public class DbSchemaEjbGenerator {
                 true,
                 true,
                 false);
+        roleA.setEntityPkgName(roleAHelper.getPackage());
         roleAHelper.addRole(roleA);
         
         RelationshipRole roleB = new RelationshipRole(
@@ -282,6 +283,7 @@ public class DbSchemaEjbGenerator {
                 true,
                 true, 
                 false);
+        roleB.setEntityPkgName(roleBHelper.getPackage());
         roleBHelper.addRole(roleB);
         
         EntityRelation relation = new EntityRelation(roleA, roleB);
@@ -427,6 +429,7 @@ public class DbSchemaEjbGenerator {
                 !oneToOne,
                 !isNullable(key),
                 isNullable(key));
+        roleB.setEntityPkgName(roleBHelper.getPackage());
         roleBHelper.addRole(roleB);
         
         // role A
@@ -454,6 +457,7 @@ public class DbSchemaEjbGenerator {
                 false,
                 false,
                 isNullable(key));
+        roleA.setEntityPkgName(roleAHelper.getPackage());
         roleAHelper.addRole(roleA);
         
         EntityRelation relation = new EntityRelation(roleA, roleB);

@@ -70,13 +70,13 @@ public class DebugSingleCommand extends DebugCommand {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
+        if (!isRunConfigurationSet()) {
+            // property not set yet
+            return;
+        }
         if (isScriptSelected()) {
-            // we don't need to check anything here, because if the customizer show, then scriptSelected == false
             debugLocalCommand.invokeAction(context);
         } else {
-            if (!isUrlSet()) {
-                return;
-            }
             // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
             final FileObject startFile = fileForContext(context);
             final URL[] url = new URL[1];
@@ -126,7 +126,7 @@ public class DebugSingleCommand extends DebugCommand {
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
         FileObject file = fileForContext(context);
         boolean enabled = file != null;
-        if (isScriptSelected(false)) {
+        if (isScriptSelected()) {
             enabled = isPhpFileSelected(file);
         }
         return enabled && XDebugStarterFactory.getInstance() != null;

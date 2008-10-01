@@ -81,9 +81,9 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue101861.jspx");
     }
 
-    public void testIssue121046() throws Exception {
-        runTest("issue121046.jsp");
-    }
+//    public void testIssue121046() throws Exception {
+//        runTest("issue121046.jsp");
+//    }
 
     public void testIssue121768() throws Exception {
         runTest("issue121768.jsp");
@@ -97,13 +97,13 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue131871.jsp");
     }
 
-    public void testIssue133173() throws Exception {
-        runTest("issue133173.jsp");
-    }
-
-    public void testIssue133173_() throws Exception {
-        runTest("issue133173_.jsp");
-    }
+//    public void testIssue133173() throws Exception {
+//        runTest("issue133173.jsp");
+//    }
+//
+//    public void testIssue133173_() throws Exception {
+//        runTest("issue133173_.jsp");
+//    }
 
     public void testIssue99526() throws Exception {
         runTest("issue99526.html");
@@ -120,10 +120,10 @@ public class AnnotationsTest extends J2eeTestCase {
     public void testIssue133841() throws Exception {
         runTest("issue133841.html");
     }
-
-    public void testIssue134518() throws Exception {
-        runTest("issue134518.jsp");
-    }
+//  148720
+//    public void testIssue134518() throws Exception {
+//        runTest("issue134518.jsp");
+//    }
 
     public void testIssue134877() throws Exception {
         runTest("issue134877.jsp");
@@ -145,9 +145,9 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("issue127289.html", 7);
     }
 
-    public void testIssue141159() throws Exception{
-        runTest("issue141159.jsp");
-    }
+//    public void testIssue141159() throws Exception{
+//        runTest("issue141159.jsp");
+//    }
 
     public void testAnnotationsCSS() throws Exception {
         runTest("annotations.css", 5);
@@ -171,6 +171,7 @@ public class AnnotationsTest extends J2eeTestCase {
 
     private void runTest(String fileName, int annotationsCount) throws Exception {
         EditorOperator eOp = getEditorOperator(fileName);
+        eOp.makeComponentVisible();
         Thread.sleep(1000);//wait editor inicialization
         Object[] anns = eOp.getAnnotations();
         assertEquals(annotationsCount, anns.length);

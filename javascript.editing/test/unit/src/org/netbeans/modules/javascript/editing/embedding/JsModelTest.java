@@ -129,6 +129,10 @@ public class JsModelTest extends JsTestBase {
     }
 
     private void checkJavaScriptTranslation(String relFilePath) throws Exception {
+        checkJavaScriptTranslation(relFilePath, true);
+    }
+
+    private void checkJavaScriptTranslation(String relFilePath, boolean mustCompile) throws Exception {
         TranslatedSource translatedSource = getTranslatedSource(relFilePath);
         String generatedJs = translatedSource.getSource();
 
@@ -138,13 +142,15 @@ public class JsModelTest extends JsTestBase {
         File rubyFile = new File(getDataDir(), relFilePath + ".js");
         FileObject jsFo = FileUtil.toFileObject(rubyFile);
         assertNotNull(jsFo);
-        CompilationInfo info = getInfo(jsFo);
-        assertNotNull(info);
-        assertNotNull("Parse error on translated source", AstUtilities.getRoot(info));
-        // Warnings are okay:
-        //assertTrue(info.getErrors().toString(), info.getErrors().size() == 0);
-        for (Error error : info.getErrors()) {
-            assertTrue(error.toString(), error.getSeverity() != Severity.ERROR);
+        if (mustCompile) {
+            CompilationInfo info = getInfo(jsFo);
+            assertNotNull(info);
+            assertNotNull("Parse error on translated source", AstUtilities.getRoot(info));
+            // Warnings are okay:
+            //assertTrue(info.getErrors().toString(), info.getErrors().size() == 0);
+            for (Error error : info.getErrors()) {
+                assertTrue(error.toString(), error.getSeverity() != Severity.ERROR);
+            }
         }
     }
 
@@ -280,6 +286,10 @@ public class JsModelTest extends JsTestBase {
         checkJavaScriptTranslation("testfiles/embedding/sideeffects.html");
     }
 
+    public void testIssue136495() throws Exception {
+        checkJavaScriptTranslation("testfiles/embedding/issue136495.erb");
+    }
+
     public void testPositions1() throws Exception {
         checkPositionTranslations("testfiles/embedding/rails-index.html", "f^unction about", " ^</script>");
     }
@@ -401,6 +411,5 @@ public class JsModelTest extends JsTestBase {
         assertEquals(blockEnd, source.getLexicalOffset(astOffset+1));
         assertEquals(blockEnd, source.getLexicalOffset(astOffset+2));
         assertEquals(blockEnd, source.getLexicalOffset(astOffset+3));
-
     }
 }

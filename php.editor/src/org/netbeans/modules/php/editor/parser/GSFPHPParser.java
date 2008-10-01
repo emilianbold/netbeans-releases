@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
 import org.netbeans.modules.gsf.api.*;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
@@ -176,7 +177,7 @@ public class GSFPHPParser implements Parser {
                     }
                 }
                 if (ok) {
-                    result = new PHPParseResult(this, context.getFile(), program);
+                    result = new PHPParseResult(this, context.getFile(), program, true);
                 }
                 else {
                     result = sanitize(context, sanitizing, errorHandler);
@@ -419,9 +420,9 @@ public class GSFPHPParser implements Parser {
                 ASTError error = new ASTError(0, end);
                 List<Statement> statements = new ArrayList<Statement>();
                 statements.add(error);
-                Program emptyProgram = new Program(0, end, statements, Collections.EMPTY_LIST);
+                Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
 
-                return new PHPParseResult(this, context.getFile(), emptyProgram);
+                return new PHPParseResult(this, context.getFile(), emptyProgram, false);
         }
         
     }

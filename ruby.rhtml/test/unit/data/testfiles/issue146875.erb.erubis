@@ -1,0 +1,3 @@
+_buf = ''; disable_weight = false ; is_total = false ; _buf << '
+';
+_buf.to_s

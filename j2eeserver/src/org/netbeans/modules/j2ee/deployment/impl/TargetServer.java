@@ -74,6 +74,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
@@ -232,7 +233,7 @@ public class TargetServer {
         }
     }
 
-    private DeploymentChangeDescriptor distributeChangesOnSave(TargetModule targetModule, Iterable<File> artifacts) throws IOException {
+    private DeploymentChangeDescriptor distributeChangesOnSave(TargetModule targetModule, Iterable<Artifact> artifacts) throws IOException {
         ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
         ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
         DeploymentChangeDescriptor acd = sfd.distributeOnSave(targetModule, mcr, artifacts);
@@ -711,7 +712,7 @@ public class TargetServer {
     }
 
     public DeployOnSaveManager.DeploymentState notifyArtifactsUpdated(
-            J2eeModuleProvider provider, Iterable<File> artifacts) {
+            J2eeModuleProvider provider, Iterable<Artifact> artifacts) {
 
         if (!instance.isRunning()) {
             return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;

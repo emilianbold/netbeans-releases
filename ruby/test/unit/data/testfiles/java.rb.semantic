@@ -1,0 +1,25 @@
+// From http://www.netbeans.org/issues/show_bug.cgi?id=141742
+class Java::OrgApacheHadoopMapred::JobConf
+  def |>METHOD:input_paths<| |>PARAMETER:f<|
+    org.apache.hadoop.mapred.FileInputFormat.set_input_paths(self, |>PARAMETER:f<|)
+  end
+
+  def |>METHOD:add_input_paths<| |>PARAMETER:f<|
+    org.apache.hadoop.mapred.FileInputFormat.add_input_paths(self, |>PARAMETER:f<|)
+  end
+  
+  def |>METHOD:sequence_file_compress_output<| |>PARAMETER:do_compression<| = true
+    org.apache.hadoop.mapred.SequenceFileOutputFormat.setCompressOutput(|>METHOD:conf<|, |>PARAMETER:do_compression<|);
+  end
+  
+  def |>METHOD:sequence_file_output_compression_type<| |>PARAMETER:t<| = :record
+    |>PARAMETER:t<| = |>METHOD:eval<|("Java::OrgApacheHadoopIo::SequenceFile::CompressionType::#{|>PARAMETER:t<|.upcase}")
+    org.apache.hadoop.mapred.SequenceFileOutputFormat.setOutputCompressionType(|>PARAMETER:t<|)
+  end
+
+  # Others:
+  javax.swing.text.Foo.new
+  java.util.List.new
+  com.sun.foo.Bar.new
+
+end

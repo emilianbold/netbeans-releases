@@ -124,6 +124,7 @@ abstract class EntrySupport {
         private static final Object LOCK = new Object();
         private static final Logger LOG_GET_ARRAY = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
         private Thread initThread;
+        private boolean inited = false;
 
 
         public Default(Children ch) {
@@ -131,13 +132,15 @@ abstract class EntrySupport {
         }
 
         public boolean isInitialized() {
-            ChildrenArray arr = array.get();
-            return (arr != null) && arr.isInitialized();
+            return inited;
+            /*ChildrenArray arr = array.get();
+            return (arr != null) && arr.isInitialized();*/
         }
 
         protected List<Node> createSnapshot() {
             return new DefaultSnapshot(getNodes(), array.get());
         }
+
         public final Node[] getNodes() {
             //Thread.dumpStack();
             //System.err.println(off + "getNodes: " + getNode ());
@@ -154,6 +157,10 @@ abstract class EntrySupport {
 
                 try {
                     Children.PR.enterReadAccess();
+                    if (this != children.entrySupport) {
+                        // support was switched while we were waiting for access
+                        return new Node[0];
+                    }
                     nodes = tmpArray.nodes();
                 } finally {
                     Children.PR.exitReadAccess();
@@ -753,6 +760,7 @@ abstract class EntrySupport {
 
                     // now attach to entrySupport, so when entrySupport == null => we are
                     // not fully initialized!!!!
+                    inited = true;
                     arr.entrySupport = this;
                     class SetAndNotify implements Runnable {
 
@@ -880,6 +888,7 @@ abstract class EntrySupport {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         array = EMPTY;
+                        inited = false;
                         children.callRemoveNotify();
                         assert array == EMPTY;
                     }

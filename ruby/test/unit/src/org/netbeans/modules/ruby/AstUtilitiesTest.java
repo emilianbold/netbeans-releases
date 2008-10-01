@@ -63,6 +63,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -223,6 +224,53 @@ public class AstUtilitiesTest extends RubyTestBase {
             addAllNodes(child, list, node, parents);
         }
     }
+
+    public void testGuessName() throws Exception {
+        //public static String guessName(CompilationInfo info, OffsetRange lexRange, OffsetRange astRange) {
+        GsfTestCompilationInfo info = getInfo("testfiles/arguments.rb");
+        String text = info.getText();
+
+        int caretOffset = getCaretOffset(text, "call1(^x)");
+        OffsetRange range = new OffsetRange(caretOffset, caretOffset);
+        String name = AstUtilities.guessName(info, range, range);
+        assertEquals("foo", name);
+
+        caretOffset = getCaretOffset(text, "call2(^y)");
+        range = new OffsetRange(caretOffset, caretOffset);
+        name = AstUtilities.guessName(info, range, range);
+        assertEquals("foo", name);
+
+        caretOffset = getCaretOffset(text, "call3(^x,y,z)");
+        range = new OffsetRange(caretOffset, caretOffset);
+        name = AstUtilities.guessName(info, range, range);
+        assertEquals("a", name);
+
+        caretOffset = getCaretOffset(text, "call3(x,^y,z)");
+        range = new OffsetRange(caretOffset, caretOffset);
+        name = AstUtilities.guessName(info, range, range);
+        assertEquals("b", name);
+
+        caretOffset = getCaretOffset(text, "call4(^x,y,z,w)");
+        range = new OffsetRange(caretOffset, caretOffset);
+        name = AstUtilities.guessName(info, range, range);
+        assertEquals("a", name);
+
+        caretOffset = getCaretOffset(text, "call4(x,^y,z,w)");
+        range = new OffsetRange(caretOffset, caretOffset);
+        name = AstUtilities.guessName(info, range, range);
+        assertEquals("b", name);
+
+        caretOffset = getCaretOffset(text, "call4(x,y,^z,w)");
+        range = new OffsetRange(caretOffset, caretOffset);
+        name = AstUtilities.guessName(info, range, range);
+        assertEquals("c", name);
+
+        caretOffset = getCaretOffset(text, "call4(x,y,z,^w)");
+        range = new OffsetRange(caretOffset, caretOffset);
+        name = AstUtilities.guessName(info, range, range);
+        assertEquals("d", name);
+    }
+
 
     // Make sure we don't bomb out analyzing any of these files
     public void testStress() throws Throwable {

@@ -174,16 +174,12 @@ public class DataNode extends AbstractNode {
             super.setName (name);
             updateDisplayName ();
         } catch (IOException ex) {
-            String msg = null;
-            if ((ex.getLocalizedMessage() == null) || 
-                (ex.getLocalizedMessage().equals(ex.getMessage()))) {
-                msg = NbBundle.getMessage (DataNode.class, "MSG_renameError", getName (), name); // NOI18N
-            } else {
-                msg = ex.getLocalizedMessage();
+            String msg = Exceptions.findLocalizedMessage(ex);
+            if (msg == null) {
+                msg = NbBundle.getMessage(DataNode.class, "MSG_renameError", getName(), name); // NOI18N
             }
-            
-            RuntimeException e = new IllegalArgumentException();
-            UIException.annotateUser(e, null, msg, ex, null);
+            RuntimeException e = new IllegalArgumentException(ex);
+            Exceptions.attachLocalizedMessage(e, msg);
             throw e;
         }
     }

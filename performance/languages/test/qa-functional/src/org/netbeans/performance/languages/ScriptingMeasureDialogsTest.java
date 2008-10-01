@@ -60,7 +60,7 @@ public class ScriptingMeasureDialogsTest {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Dialogs suite");
-        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureDialogsTest");
+        System.setProperty("suitename", ScriptingMeasureDialogsTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(RubyPropertiesDialog.class)
         .addTest(RailsGeneratorDialog.class)

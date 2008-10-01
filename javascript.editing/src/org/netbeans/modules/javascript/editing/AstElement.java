@@ -278,6 +278,7 @@ public class AstElement extends JsElement {
         return js;
     }
     
+    @SuppressWarnings("fallthrough")
     public static AstElement getElement(CompilationInfo info, Node node) {
         if (node.element != null) {
             return (AstElement)node.element;

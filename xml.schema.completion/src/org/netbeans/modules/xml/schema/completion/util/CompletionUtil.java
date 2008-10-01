@@ -701,8 +701,10 @@ public class CompletionUtil {
                         }
                         if(t.id() == XMLTokenId.VALUE && lastAttrName != null) {
                             String value = t.text().toString();
-                            if(value.startsWith("'") || value.startsWith("\""))
-                                value = value.substring(1, value.length()-1);                        
+                            if(value == null || value.length() == 1)
+                                value = null;
+                            else if(value.startsWith("'") || value.startsWith("\""))
+                                value = value.substring(1, value.length()-1);
                             attributes.add(new DocRootAttribute(lastAttrName, value));
                             lastAttrName = null;
                         }

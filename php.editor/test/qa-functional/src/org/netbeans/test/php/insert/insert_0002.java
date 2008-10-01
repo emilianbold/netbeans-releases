@@ -129,7 +129,7 @@ public class insert_0002 extends insert
 
     JDialogOperator jdGenerator = new JDialogOperator( "Generate Getters" );
 
-    // Sleect all but $c
+    // Select all but $c
     JTreeOperator jtTree = new JTreeOperator( jdGenerator, 0 );
     jtTree.clickOnPath( jtTree.findPath( "a" ) );
     jtTree.clickOnPath( jtTree.findPath( "b" ) );

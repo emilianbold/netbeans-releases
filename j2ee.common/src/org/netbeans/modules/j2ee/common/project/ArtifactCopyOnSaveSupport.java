@@ -58,6 +58,7 @@ import java.util.zip.ZipEntry;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -138,13 +139,21 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         antHelper.addAntProjectListener(this);
     }
 
-    public abstract Map<ClassPathSupport.Item, String> getArtifacts();
+    protected abstract Map<ClassPathSupport.Item, String> getArtifacts();
+
+    protected ArtifactListener.Artifact filterArtifact(ArtifactListener.Artifact artifact) {
+        return artifact;
+    }
 
     public final synchronized void reload() {
         Map<File, String> toRemove  = new HashMap<File, String>(listeningTo);
         for (Map.Entry<ClassPathSupport.Item, String> entry : getArtifacts().entrySet()) {
             ClassPathSupport.Item item = entry.getKey();
             if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+                // FIXME more precise check when we should ignore it
+                if (item.getArtifact().getProject().getLookup().lookup(J2eeModuleProvider.class) != null) {
+                    continue;
+                }
                 File scriptLocation = item.getArtifact().getScriptLocation().getAbsoluteFile();
                 if (!scriptLocation.isDirectory()) {
                     scriptLocation = scriptLocation.getParentFile();
@@ -237,7 +246,8 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
             toFire = new ArrayList<ArtifactListener>(listeners);
         }
 
-        Iterable<File> iterable = Collections.singleton(file);
+        Iterable<ArtifactListener.Artifact> iterable = Collections.singleton(
+                filterArtifact(ArtifactListener.Artifact.forFile(file).referencedLibrary()));
         for (ArtifactListener listener : toFire) {
             listener.artifactsUpdated(iterable);
         }

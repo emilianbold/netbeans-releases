@@ -78,7 +78,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
     private int rightMarginOverride = -1;
 
     public Formatter() {
-        this.codeStyle = CodeStyle.getDefault(null);
+        this.codeStyle = null;
     }
     
     public Formatter(CodeStyle codeStyle, int rightMarginOverride) {
@@ -93,19 +93,37 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     public void reindent(Context context) {
-        reindent(context, null, true);
+        if (codeStyle != null) {
+            reindent(context, null, true);
+        } else {
+            Formatter f = new Formatter(CodeStyle.get(context.document()), -1);
+            f.reindent(context, null, true);
+        }
     }
 
     public void reformat(Context context, CompilationInfo compilationInfo) {
-        reindent(context, compilationInfo, false);
+        if (codeStyle != null) {
+            reindent(context, compilationInfo, false);
+        } else {
+            Formatter f = new Formatter(CodeStyle.get(context.document()), -1);
+            f.reindent(context, compilationInfo, false);
+        }
     }
     
     public int indentSize() {
-        return codeStyle.getIndentSize();
+        if (codeStyle != null) {
+            return codeStyle.getIndentSize();
+        } else {
+            return CodeStyle.get((Document) null).getIndentSize();
+        }
     }
     
     public int hangingIndentSize() {
-        return codeStyle.getContinuationIndentSize();
+        if (codeStyle != null) {
+            return codeStyle.getContinuationIndentSize();
+        } else {
+            return CodeStyle.get((Document) null).getContinuationIndentSize();
+        }
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -437,6 +455,8 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {
+        assert codeStyle != null;
+        
         Document document = context.document();
         final int endOffset = Math.min(context.endOffset(), document.getLength());
         isGspDocument = false;
@@ -444,9 +464,6 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
         try {
             final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
-            syncOptions(doc, codeStyle);
-
-            
             final int startOffset = Utilities.getRowStart(doc, context.startOffset());
             final int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
             int initialOffset = 0;
@@ -645,35 +662,10 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
     }
     
     void reformatComments(BaseDocument doc, int start, int end) {
-        int rightMargin = rightMarginOverride;
-        if (rightMargin == -1) {
-            CodeStyle style = codeStyle;
-            if (style == null) {
-                style = CodeStyle.getDefault(null);
-            }
-
-            rightMargin = style.getRightMargin();
-        }
+        int rightMargin = rightMarginOverride != -1 ? rightMarginOverride : codeStyle.getRightMargin();
 
 //        ReflowParagraphAction action = new ReflowParagraphAction();
 //        action.reflowComments(doc, start, end, rightMargin);
-    }
-    
-    /**
-     * Ensure that the editor-settings for tabs match our code style, since the
-     * primitive "doc.getFormatter().changeRowIndent" calls will be using
-     * those settings
-     */
-    private static void syncOptions(BaseDocument doc, CodeStyle style) {
-        // XXX THIS IS PROBABLY WRONG -- things used to be this way in the Ruby formatter
-        // before the editor options cleanup in 6.5 but it's been nuked from there now;
-        // editor options are settable on a per mime type basis rather than with
-        // editorkits (shared among languages) as it was before which had led to hacks
-        // like the below
-        org.netbeans.editor.Formatter formatter = doc.getFormatter();
-        if (formatter.getSpacesPerTab() != style.getIndentSize()) {
-            formatter.setSpacesPerTab(style.getIndentSize());
-        }
     }
 
 }

@@ -147,7 +147,6 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
-import org.netbeans.modules.gsf.GsfEditorKitFactory.GsfEditorKit;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
@@ -1714,6 +1713,11 @@ public abstract class GsfTestBase extends NbTestCase {
 
     protected void configureIndenters(final BaseDocument document, final Formatter formatter,
             final CompilationInfo compilationInfo, boolean indentOnly) throws BadLocationException {
+        configureIndenters(document, formatter, compilationInfo, indentOnly, getPreferredMimeType());
+    }
+
+    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
+            final CompilationInfo compilationInfo, boolean indentOnly, String mimeType) throws BadLocationException {
         ReformatTask.Factory reformatFactory = new ReformatTask.Factory() {
             public ReformatTask createTask(Context context) {
                 final Context ctx = context;
@@ -1748,7 +1752,6 @@ public abstract class GsfTestBase extends NbTestCase {
 
         };
 
-        String mimeType = getPreferredMimeType();
         MockServices.setServices(MockMimeLookup.class);
         if (indentOnly) {
             MockMimeLookup.setInstances(MimePath.parse(mimeType), indentFactory);
@@ -1763,6 +1766,7 @@ public abstract class GsfTestBase extends NbTestCase {
         configureIndenters(document, formatter, compilationInfo, indentOnly);
 
 //        formatter.reformat(doc, startPos, endPos, getInfoForText(source, "unittestdata"));
+        @SuppressWarnings("deprecation")
         final org.netbeans.editor.Formatter f = document.getFormatter();
         try {
             f.reformatLock();
@@ -1823,6 +1827,25 @@ public abstract class GsfTestBase extends NbTestCase {
         assertDescriptionMatches(file, after, false, ".formatted");
     }
 
+    protected BaseKit getEditorKit(String mimeType) {
+        org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        assertNotNull(language);
+        if (!language.useCustomEditorKit()) {
+            GsfEditorKitFactory factory = new GsfEditorKitFactory(language);
+            return factory.kit();
+        }
+        fail("Must override getEditorKit() for useCustomEditorKit languages");
+        return null;
+    }
+
+    protected void toggleComment(String text, String expected) throws Exception {
+        JEditorPane pane = getPane(text);
+
+        runKitAction(pane, "toggle-comment", "");
+
+        String toggled = pane.getText();
+        assertEquals(expected, toggled);
+    }
 
     protected JEditorPane getPane(String text) throws Exception {
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -1847,11 +1870,7 @@ public abstract class GsfTestBase extends NbTestCase {
 
         JEditorPane pane = new JEditorPane();
         pane.setContentType(getPreferredMimeType());
-        org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
-        if (!language.useCustomEditorKit()) {
-            GsfEditorKitFactory factory = new GsfEditorKitFactory(language);
-            pane.setEditorKit(factory.kit());
-    }
+        pane.setEditorKit(getEditorKit(getPreferredMimeType()));
         pane.setText(text);
 
         BaseDocument bdoc = (BaseDocument)pane.getDocument();
@@ -1864,9 +1883,8 @@ public abstract class GsfTestBase extends NbTestCase {
             assertTrue(sourceEndPos != -1);
             pane.setSelectionStart(sourceStartPos);
             pane.setSelectionEnd(sourceEndPos);
-        } else {
-            //assertTrue(caretPos != -1);
-            //pane.getCaret().setDot(caretPos);
+        } else if (caretPos != -1) {
+            pane.getCaret().setDot(caretPos);
         }
         pane.getCaret().setSelectionVisible(true);
 
@@ -1874,7 +1892,7 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     protected void runKitAction(JEditorPane jt, String actionName, String cmd) {
-        GsfEditorKit kit = (GsfEditorKit)jt.getEditorKit();
+        BaseKit kit = (BaseKit)jt.getEditorKit();
         Action a = kit.getActionByName(actionName);
         assertNotNull(a);
         a.actionPerformed(new ActionEvent(jt, 0, cmd));
@@ -3443,7 +3461,13 @@ public abstract class GsfTestBase extends NbTestCase {
 
         int caretOffset = -1;
         if (caretLine != null) {
-            caretOffset = getCaretOffset(text, caretLine);
+            int caretDelta = caretLine.indexOf("^");
+            assertTrue(caretDelta != -1);
+            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+            int lineOffset = text.indexOf(caretLine);
+            assertTrue("NOT FOUND: " + info.getFileObject().getName() + ":" + caretLine, lineOffset != -1);
+
+            caretOffset = lineOffset + caretDelta;
         }
 
         List<Hint> hints = new ArrayList<Hint>();
@@ -3508,11 +3532,27 @@ public abstract class GsfTestBase extends NbTestCase {
         FileObject fo = getTestFile(relFilePath);
         String text = read(fo);
 
-        assertNotNull(selStartLine);
-        assertNotNull(selEndLine);
+        assert selStartLine != null;
+        assert selEndLine != null;
+        
+        int selStartOffset = -1;
+        int lineDelta = selStartLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selStartLine = selStartLine.substring(0, lineDelta) + selStartLine.substring(lineDelta + 1);
+        int lineOffset = text.indexOf(selStartLine);
+        assertTrue(lineOffset != -1);
 
-        int selStartOffset = getCaretOffset(text, selStartLine);
-        int selEndOffset = getCaretOffset(text, selEndLine);
+        selStartOffset = lineOffset + lineDelta;
+        
+        int selEndOffset = -1;
+        lineDelta = selEndLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selEndLine = selEndLine.substring(0, lineDelta) + selEndLine.substring(lineDelta + 1);
+        lineOffset = text.indexOf(selEndLine);
+        assertTrue(lineOffset != -1);
+
+        selEndOffset = lineOffset + lineDelta;
+
         String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
         
         checkHints(this, hint, relFilePath, caretLine);
@@ -3548,12 +3588,27 @@ public abstract class GsfTestBase extends NbTestCase {
         FileObject fo = getTestFile(relFilePath);
         String text = read(fo);
 
-        assertNotNull(selStartLine);
-        assertNotNull(selEndLine);
+        assert selStartLine != null;
+        assert selEndLine != null;
         
-        int selStartOffset = getCaretOffset(text, selStartLine);
-        int selEndOffset = getCaretOffset(text, selEndLine);
+        int selStartOffset = -1;
+        int lineDelta = selStartLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selStartLine = selStartLine.substring(0, lineDelta) + selStartLine.substring(lineDelta + 1);
+        int lineOffset = text.indexOf(selStartLine);
+        assertTrue(lineOffset != -1);
+
+        selStartOffset = lineOffset + lineDelta;
         
+        int selEndOffset = -1;
+        lineDelta = selEndLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selEndLine = selEndLine.substring(0, lineDelta) + selEndLine.substring(lineDelta + 1);
+        lineOffset = text.indexOf(selEndLine);
+        assertTrue(lineOffset != -1);
+
+        selEndOffset = lineOffset + lineDelta;
+
         String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
         
         applyHint(test, hint, relFilePath, caretLine, fixDesc);

@@ -136,10 +136,17 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     Collections.sort(diffs);
                     for (int i = diffs.size()-1; i >= 0; i--) {
                         Diff diff = diffs.get(i);
+                        if (diff.text != null && diff.text.length() == (diff.end-diff.start) && diff.end > diff.start) {
+                            // See if we're replacing the exact same text we already have there
+                            String s = doc.getText(diff.start, diff.end-diff.start);
+                            if (s.equals(diff.text)) {
+                                continue;
+                            }
+                        }
                         if (diff.end > diff.start) {
                             doc.remove(diff.start, diff.end - diff.start);
                         }
-                        if (diff.text.length() > 0) {
+                        if (diff.text != null && diff.text.length() > 0) {
                             doc.insertString(diff.start, diff.text, null);
                         }
                     }
@@ -379,6 +386,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             return 0;
         }
 
+        int last = begin;
         do {
             Token<?extends JsTokenId> token = ts.token();
             if (token == null) {
@@ -392,8 +400,17 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             } else {
                 balance += getBracketBalanceDelta(id);
             }
+            last = ts.offset() + token.length();
         } while (ts.moveNext() && (ts.offset() < end));
 
+        if (embeddedJavaScript && last < end) {
+            // We're not done yet... find the next section...
+            TokenSequence<? extends JsTokenId> ets = LexUtilities.getNextJsTokenSequence(doc, last+1, end);
+            if (ets != null) {
+                return balance + getTokenBalance(ets, doc, ets.offset(), end, includeKeywords, indentOnly);
+            }
+        }
+        
         return balance;
     }
     
@@ -734,10 +751,16 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
 //                indentHtml = codeStyle.indentHtml();
 //            }
             
-            int originallockCommentIndention = 0;
+            //int originallockCommentIndention = 0;
             int adjustedBlockCommentIndention = 0;
 
             int endIndents;
+
+            final int IN_CODE = 0;
+            final int IN_LITERAL = 1;
+            final int IN_BLOCK_COMMENT_START = 2;
+            final int IN_BLOCK_COMMENT_MIDDLE = 3;
+
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
 
@@ -747,10 +770,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 }
 
                 
-                final int IN_CODE = 0;
-                final int IN_LITERAL = 1;
-                final int IN_BLOCK_COMMENT_START = 2;
-                final int IN_BLOCK_COMMENT_MIDDLE = 3;
                 int lineType = IN_CODE;
                 int pos = Utilities.getRowFirstNonWhite(doc, offset);
                 TokenSequence<?extends JsTokenId> ts = null;
@@ -767,7 +786,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         if (id == JsTokenId.BLOCK_COMMENT) {
                             if (ts.offset() == pos) {
                                 lineType = IN_BLOCK_COMMENT_START;
-                                originallockCommentIndention = GsfUtilities.getLineIndent(doc, offset);
+                                //originallockCommentIndention = GsfUtilities.getLineIndent(doc, offset);
                             } else {
                                 lineType =  IN_BLOCK_COMMENT_MIDDLE;
                             }

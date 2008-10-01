@@ -39,10 +39,6 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.util.List;
-import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.openide.filesystems.FileObject;
-
 public class JsFormatterTest extends JsTestBase {
     
     public JsFormatterTest(String testName) {
@@ -59,16 +55,16 @@ public class JsFormatterTest extends JsTestBase {
     //    addAllRubyFiles(root, files);
     //    reformatAll(files);
     //}
-
-    private void addAllRubyFiles(FileObject file, List<FileObject> files) {
-        if (file.isFolder()) {
-            for (FileObject c : file.getChildren()) {
-                addAllRubyFiles(c, files);
-            }
-        } else if (file.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
-            files.add(file);
-        }
-    }
+    //
+    //private void addAllRubyFiles(FileObject file, List<FileObject> files) {
+    //    if (file.isFolder()) {
+    //        for (FileObject c : file.getChildren()) {
+    //            addAllRubyFiles(c, files);
+    //        }
+    //    } else if (file.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
+    //        files.add(file);
+    //    }
+    //}
 
     public void testFormat1() throws Exception {
         // Check that the given source files reformat EXACTLY as specified

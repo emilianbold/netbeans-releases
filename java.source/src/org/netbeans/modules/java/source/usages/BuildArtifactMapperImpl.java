@@ -180,18 +180,22 @@ public class BuildArtifactMapperImpl {
         File result = null;
         
         for (URL u : binaryRoots.getRoots()) {
-            if (FileUtil.isArchiveFile(u)) {
-                continue;
-            }
-            
             File f = FileUtil.archiveOrDirForURL(u);
+
+            try {
+                if (FileUtil.isArchiveFile(f.toURI().toURL())) {
+                    continue;
+                }
             
-            if (f != null && result != null) {
-                Logger.getLogger(BuildArtifactMapperImpl.class.getName()).log(Level.WARNING, "More than one binary directory for root: {0}", source.toExternalForm());
-                return null;
+                if (f != null && result != null) {
+                    Logger.getLogger(BuildArtifactMapperImpl.class.getName()).log(Level.WARNING, "More than one binary directory for root: {0}", source.toExternalForm());
+                    return null;
+                }
+
+                result = f;
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            
-            result = f;
         }
         
         return result;

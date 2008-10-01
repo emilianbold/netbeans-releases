@@ -173,11 +173,13 @@ public class StackGetResponse extends DbgpResponse {
             final int lineno = stack.getLine();
             Line line = Utils.getLine(lineno > 0 ? lineno : 1,stack.getFileName() , 
                     session.getSessionId()  );
-            if ( level == 0 ) {
-                session.getBridge().showCurrentDebuggerLine(line);
-            }
-            else if ( line != null ){
-                session.getBridge().annotate( new CallStackAnnotation(line) );
+            if ( line != null ) {
+                if ( level == 0 ) {
+                    session.getBridge().showCurrentDebuggerLine(line);
+                }
+                else {
+                    session.getBridge().annotate( new CallStackAnnotation(line) );
+                }
             }
         }
     }

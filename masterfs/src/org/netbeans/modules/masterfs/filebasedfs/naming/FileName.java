@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
-import org.openide.util.Exceptions;
 
 /**
  * @author Radek Matous
@@ -66,19 +65,15 @@ public class FileName implements FileNaming {
         return parent == null ? file.getPath() : file.getName();
     }
 
-    public boolean rename(String name, ProvidedExtensions.IOHandler handler) {
+    public boolean rename(String name, ProvidedExtensions.IOHandler handler) throws IOException {
         boolean retVal = false;
         final File f = getFile();
 
         if (FileChangedManager.getInstance().exists(f)) {
             File newFile = new File(f.getParentFile(), name);
             if (handler != null) {
-                try {
-                    handler.handle();
-                    retVal = true;
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                handler.handle();
+                retVal = true;
             } else {
                 retVal = f.renameTo(newFile);
             }
@@ -94,7 +89,7 @@ public class FileName implements FileNaming {
         return retVal;
     }
 
-    public final boolean rename(final String name) {        
+    public final boolean rename(final String name) throws IOException {
         return rename(name, null);
     }
 

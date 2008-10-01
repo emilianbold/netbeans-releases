@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.mobility.project;
+import java.awt.EventQueue;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Profile;
@@ -70,7 +71,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
@@ -98,8 +98,12 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mobility.project.ui.customizer.MIDletScanner;
+import org.netbeans.modules.mobility.project.ui.wizard.ClassPreloader;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.cookies.OpenCookie;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Create a fresh J2MEProject from scratch.
@@ -274,69 +278,8 @@ public class J2MEProjectGenerator {
     }
     
     public static AntProjectHelper createNewProject(final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform, final Collection<DataObject> createHelloMIDlet, final Set<ConfigurationTemplateDescriptor> cfgTemplates) throws IOException {
-        return createProject(projectLocation, name, platform, new ProjectGeneratorCallback() {
-            public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, @SuppressWarnings("unused") File projectLocationFile, ArrayList<String> configurations) throws IOException {
-                final FileObject src = projectLocation.createFolder(SRC); // NOI18N
-                if (createHelloMIDlet != null) {
-                    FileObject hello = src.createFolder("hello"); // NOI18N
-                    if (hello == null)
-                        hello = src;
-                    final DataFolder helloFolder = DataFolder.findFolder(hello);
-                    final FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
-                    FileObject foTemplate = dfs.findResource("Templates/MIDP/HelloMIDlet.java"); //NOI18N
-                    if (foTemplate == null) foTemplate = dfs.findResource("Templates/MIDP/Midlet.java"); //NOI18N
-                    try {
-                        if (foTemplate != null) {
-                            final DataObject template = DataObject.find(foTemplate);
-                            if (template != null) {
-                                // Remove ".java" suffix
-                                String name=template.getName();
-                                if (name.endsWith(".java")) {
-                                    name=name.substring(0,name.length()-5);
-                                }
-                                DataObject fromTemplate = template.createFromTemplate (helloFolder);
-                                try {
-                                    fromTemplate.setValid (false);
-                                } catch (PropertyVetoException e) {
-                                    e.printStackTrace (); // TODO
-                                }
-                                fromTemplate = DataObject.find (fromTemplate.getPrimaryFile ());
-                                createHelloMIDlet.add(fromTemplate);
-                                addMIDletProperty(project, helper, name, hello != src ? "hello."+name : name, ""); // NOI18N
-                            }
-                        }
-                    } catch (DataObjectNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (cfgTemplates != null) {
-                    final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    final EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    for (ConfigurationTemplateDescriptor desc : cfgTemplates) {
-                        String cfgName = desc.getCfgName();
-                        String prefix = J2MEProjectProperties.CONFIG_PREFIX + cfgName + '.'; 
-                        if (!configurations.contains(cfgName)) {
-                            configurations.add(cfgName);
-                            Map<String, String> p = desc.getPrivateProperties();
-                            if (p != null) for(Map.Entry<String, String> en : p.entrySet()) {
-                                if (!priv.containsKey(en.getKey())) priv.put(en.getKey(), en.getValue());
-                            }
-                            p = desc.getProjectGlobalProperties();
-                            if (p != null) for(Map.Entry<String, String> en : p.entrySet()) {
-                                if (!proj.containsKey(en.getKey())) proj.put(en.getKey(), en.getValue());
-                            }
-                            p = desc.getProjectConfigurationProperties();
-                            if (p != null) for(Map.Entry<String, String> en : p.entrySet()) {
-                                proj.put(prefix + en.getKey(), en.getValue());
-                            }
-                        }
-                    }
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, proj);
-                }
-                refreshProject(projectLocation, src);
-            }
-        });
+        ClassPreloader.stop(); //#147403
+        return createProject(projectLocation, name, platform, new NewProjectGeneratorCallback(createHelloMIDlet, cfgTemplates));
     }
     
     public static AntProjectHelper createProjectFromTemplate(final FileObject template, final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform) throws IOException {
@@ -1173,5 +1116,111 @@ public class J2MEProjectGenerator {
     
     protected static ReferenceHelper getReferenceHelper(final Project p) {
         return p.getLookup().lookup(ReferenceHelper.class);
+    }
+
+    private static class NewProjectGeneratorCallback implements ProjectGeneratorCallback, Runnable {
+
+        private final Collection<DataObject> createHelloMIDlet;
+        private final Set<ConfigurationTemplateDescriptor> cfgTemplates;
+        private ArrayList<String> configurations;
+        private File projectLocationFile;
+        private FileObject projectLocation;
+        private AntProjectHelper helper;
+        private Project project;
+
+        public NewProjectGeneratorCallback(Collection<DataObject> createHelloMIDlet, Set<ConfigurationTemplateDescriptor> cfgTemplates) {
+            this.createHelloMIDlet = createHelloMIDlet;
+            this.cfgTemplates = cfgTemplates;
+        }
+
+        public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, @SuppressWarnings(value = "unused")
+        File projectLocationFile, ArrayList<String> configurations) throws IOException {
+            this.project = project;
+            this.helper = helper;
+            this.projectLocation = projectLocation;
+            this.projectLocationFile = projectLocationFile;
+            this.configurations = configurations;
+            //hotfix for issue 147403 - get this out of the event thread
+            RequestProcessor.getDefault().post(this);
+        }
+
+        public void run() {
+            try {
+                final FileObject src = projectLocation.createFolder(SRC); // NOI18N
+                if (createHelloMIDlet != null) {
+                    FileObject hello = src.createFolder("hello"); // NOI18N
+                    if (hello == null) {
+                        hello = src;
+                    }
+                    final DataFolder helloFolder = DataFolder.findFolder(hello);
+                    final FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
+                    FileObject foTemplate = dfs.findResource("Templates/MIDP/HelloMIDlet.java"); //NOI18N
+                    if (foTemplate == null) {
+                        foTemplate = dfs.findResource("Templates/MIDP/Midlet.java"); //NOI18N
+                    }
+                    if (foTemplate != null) {
+                        final DataObject template = DataObject.find(foTemplate);
+                        if (template != null) {
+                            // Remove ".java" suffix
+                            String name = template.getName();
+                            if (name.endsWith(".java")) {
+                                name = name.substring(0, name.length() - 5);
+                            }
+                            DataObject fromTemplate = template.createFromTemplate(helloFolder);
+                            try {
+                                fromTemplate.setValid(false);
+                            } catch (PropertyVetoException e) {
+                                e.printStackTrace(); // TODO
+                            }
+                            fromTemplate = DataObject.find(fromTemplate.getPrimaryFile());
+                            createHelloMIDlet.add(fromTemplate);
+                            addMIDletProperty(project, helper, name, hello != src ? "hello." + name : name, ""); // NOI18N
+                            OpenCookie open = fromTemplate.getLookup().lookup (OpenCookie.class);
+                            if (open != null) {
+                                open.open();
+                            }
+                        }
+                    }
+                }
+                if (cfgTemplates != null) {
+                    final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    final EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    for (ConfigurationTemplateDescriptor desc : cfgTemplates) {
+                        String cfgName = desc.getCfgName();
+                        String prefix = J2MEProjectProperties.CONFIG_PREFIX + cfgName + '.';
+                        if (!configurations.contains(cfgName)) {
+                            configurations.add(cfgName);
+                            Map<String, String> p = desc.getPrivateProperties();
+                            if (p != null) {
+                                for (Map.Entry<String, String> en : p.entrySet()) {
+                                    if (!priv.containsKey(en.getKey())) {
+                                        priv.put(en.getKey(), en.getValue());
+                                    }
+                                }
+                            }
+                            p = desc.getProjectGlobalProperties();
+                            if (p != null) {
+                                for (Map.Entry<String, String> en : p.entrySet()) {
+                                    if (!proj.containsKey(en.getKey())) {
+                                        proj.put(en.getKey(), en.getValue());
+                                    }
+                                }
+                            }
+                            p = desc.getProjectConfigurationProperties();
+                            if (p != null) {
+                                for (Map.Entry<String, String> en : p.entrySet()) {
+                                    proj.put(prefix + en.getKey(), en.getValue());
+                                }
+                            }
+                        }
+                    }
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, proj);
+                }
+                refreshProject(projectLocation, src);
+            } catch (Exception e) {
+                Exceptions.printStackTrace (e);
+            }
+        }
     }
 }

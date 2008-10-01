@@ -96,6 +96,7 @@ public class JsElementCtx {
                     if (AstUtilities.isLabelledFunction(leaf)) {
                         break FindNode;
                     }
+                    break;
                 case Token.FUNCNAME:
                 case Token.NAME:
                 case Token.BINDNAME:
@@ -156,6 +157,7 @@ public class JsElementCtx {
                 if (AstUtilities.isLabelledFunction(node)) {
                     kind = ElementKind.METHOD;
                 }
+                break;
             }
             case Token.FUNCNAME:
                 //case Token.FUNCTION:
