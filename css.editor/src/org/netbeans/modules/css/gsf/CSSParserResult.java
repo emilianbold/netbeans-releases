@@ -47,6 +47,7 @@ import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
 
 /**
@@ -130,10 +131,14 @@ public class CSSParserResult extends ParserResult {
             return Collections.enumeration(children);
         }
         
+        public String toString() {
+            return CSSParserTreeConstants.jjtNodeName[node.kind()] + " (" + node.startOffset() + "-" + node.endOffset() + ") '" + node.image() + "'"; 
+        }
+        
         private synchronized void initChildren() {
             children = new ArrayList<CssAstTreeNode>(node.jjtGetNumChildren());
             for(int i = 0; i < node.jjtGetNumChildren(); i++ ) {
-                children.set(i, new CssAstTreeNode((SimpleNode)node.jjtGetChild(i)));
+                children.add(new CssAstTreeNode((SimpleNode)node.jjtGetChild(i)));
             }
         }
         
