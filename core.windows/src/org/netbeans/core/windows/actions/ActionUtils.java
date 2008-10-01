@@ -293,12 +293,14 @@ public abstract class ActionUtils {
             List<TopComponent> tcs = getOpened(activeTC);
 
             for(TopComponent tc: tcs) {
+                tc.putClientProperty("inCloseAll", Boolean.TRUE);
                 tc.close();
             }
         } else {
             TopComponent[] tcs = WindowManagerImpl.getInstance().getEditorTopComponents();
 
             for(TopComponent tc: tcs) {
+                tc.putClientProperty("inCloseAll", Boolean.TRUE);
                 tc.close();
             }
         }
@@ -316,6 +318,7 @@ public abstract class ActionUtils {
 
             for(TopComponent curTC: tcs) {
                 if (curTC != tc) {
+                    curTC.putClientProperty("inCloseAll", Boolean.TRUE);
                     curTC.close();
                 }
             }
@@ -324,6 +327,7 @@ public abstract class ActionUtils {
 
             for(TopComponent curTC: tcs) {
                 if (curTC != tc) {
+                    curTC.putClientProperty("inCloseAll", Boolean.TRUE);
                     curTC.close();
                 }
             }
