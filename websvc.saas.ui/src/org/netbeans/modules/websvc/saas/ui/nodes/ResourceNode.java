@@ -45,6 +45,7 @@ import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.ImageUtilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -89,7 +90,7 @@ public class ResourceNode extends AbstractNode {
     }
     
     private static final java.awt.Image SERVICE_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/restservice.png" ); //NOI18N
+            ImageUtilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/restservice.png" ); //NOI18N
     
     @Override
     public java.awt.Image getIcon(int type) {

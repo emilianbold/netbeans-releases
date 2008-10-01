@@ -59,6 +59,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -99,7 +100,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     Color backgroundColor, int width, int height, boolean selected) {
         
         if (icon == null) {
-            icon = new ImageIcon(Utilities.loadImage(
+            icon = new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/lib/editor/codetemplates/resources/code_template.png")); // NOI18N
         }
         CompletionUtilities.renderHtml(icon, getLeftText(), getRightText(),

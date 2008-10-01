@@ -61,6 +61,7 @@ import org.netbeans.modules.visualweb.complib.Complib;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider;
 import org.netbeans.modules.visualweb.complib.ExtensionComplib;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -245,7 +246,7 @@ class ComplibChooser extends javax.swing.JPanel implements HelpCtx.Provider {
             String iconPath = ComplibChooser.class.getPackage().getName()
                     .replace('.', '/')
                     + "/images/library.png";
-            icon = new ImageIcon(Utilities.loadImage(iconPath));
+            icon = new ImageIcon(ImageUtilities.loadImage(iconPath));
         }
 
         public Component getListCellRendererComponent(JList list, Object value,

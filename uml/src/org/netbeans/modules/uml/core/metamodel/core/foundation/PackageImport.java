@@ -45,6 +45,7 @@ package org.netbeans.modules.uml.core.metamodel.core.foundation;
 import org.dom4j.Document;
 import org.dom4j.Node;
 
+import org.netbeans.modules.uml.core.metamodel.profiles.Profile;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
@@ -184,7 +185,7 @@ public class PackageImport extends DirectedRelationship implements IPackageImpor
                 pack.setNode(node);
                 
                 IProject proj = pack.getProject();
-                if (proj != null)
+                if (proj != null || pack instanceof Profile)
                 {
                     ITypeManager typeMan = UMLXMLManip.getTypeManager(this);
                     if (typeMan != null)

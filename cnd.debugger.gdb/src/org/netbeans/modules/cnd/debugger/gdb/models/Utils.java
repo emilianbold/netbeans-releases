@@ -51,6 +51,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 
@@ -130,7 +131,7 @@ public class Utils {
 //    }
     
     public static ImageIcon getIcon (String iconBase) {
-        return new ImageIcon (Utilities.loadImage (iconBase+".gif"));
+        return new ImageIcon (ImageUtilities.loadImage (iconBase+".gif"));
     }
     
     /**

@@ -51,6 +51,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
@@ -87,7 +88,7 @@ public class OperationNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png"); //NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png"); //NOI18N
     }
     
     @Override

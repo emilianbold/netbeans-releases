@@ -195,6 +195,12 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyCompositePanelProvider.createRun"/>
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="Formatting.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-ruby,application/x-httpd-eruby"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
             </folder>
             
             <folder name="Nodes">

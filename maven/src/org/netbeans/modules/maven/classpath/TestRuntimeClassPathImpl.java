@@ -64,7 +64,7 @@ class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
     }
     
    URI[] createPath() {
-        List lst = new ArrayList();
+        List<URI> lst = new ArrayList<URI>();
         MavenProject prj = getMavenProject().getOriginalMavenProject();
         if (prj != null && prj.getBuild() != null) {
             File fil = new File(prj.getBuild().getOutputDirectory());
@@ -74,11 +74,10 @@ class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
             fil = FileUtil.normalizeFile(fil);
             lst.add(fil.toURI());
         }
-        List arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
-        List assemblies = new ArrayList();
-        Iterator it = arts.iterator();
-        while (it.hasNext()) {
-            Artifact art = (Artifact)it.next();
+        @SuppressWarnings("unchecked")
+        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
+        List<File> assemblies = new ArrayList<File>();
+        for (Artifact art : arts) {
             if (art.getFile() != null) {
                 File fil = FileUtil.normalizeFile(art.getFile());
                 // the assemblied jars go as last ones, otherwise source for binaries don't really work.
@@ -92,14 +91,11 @@ class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
                 //null means dependencies were not resolved..
             } //NOPMD
         }
-        it = assemblies.iterator();
-        while (it.hasNext()) {
-            File ass = (File)it.next();
+        for (File ass : assemblies) {
             lst.add(ass.toURI());
         }
-        
         URI[] uris = new URI[lst.size()];
-        uris = (URI[])lst.toArray(uris);
+        uris = lst.toArray(uris);
         return uris;
     }    
     

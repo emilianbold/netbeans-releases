@@ -1,0 +1,41 @@
+Code completion result for source line:
+$$('li:|f');
+(QueryType=COMPLETION, NameKind=PREFIX)
+RULE       active                                     <i></i>
+RULE       button                                     <i>All other buttons (type="button")</i>
+RULE       checkbox                                   <i>All checkbox fields (type="checkbox")</i>
+RULE       checked                                    <i>Element which is checked (checkbox, ...)</i>
+RULE       contains('                                 <i>Elements which contain the specified text</i>
+RULE       disabled                                   <i>Element which is disabled</i>
+RULE       empty                                      <i>Has no children (including text nodes)</i>
+RULE       enabled                                    <i>Element which is not disabled</i>
+RULE       eq()                                       <i>Selects the Nth element</i>
+RULE       even                                       <i>Selects every other (even) element</i>
+RULE       file                                       <i>All file uploads (type="file")</i>
+RULE       first                                      <i>Equivalent to :eq(0)</i>
+RULE       first-child                                <i>First child of its parent</i>
+RULE       focus                                      <i>Element during user actions</i>
+RULE       gt()                                       <i>Selects elements whose index is greater than N</i>
+RULE       hidden                                     <i>Selects all hidden elements</i>
+RULE       hover                                      <i></i>
+RULE       image                                      <i>All form images (type="image")</i>
+RULE       input                                      <i>All form elements</i>
+RULE       lang()                                     <i>Element in given language</i>
+RULE       last                                       <i>Selects the last matched element</i>
+RULE       last-child                                 <i>Last child of its parent</i>
+RULE       link                                       <i>Not yet visited hyperlink</i>
+RULE       lt()                                       <i>Selects elements whose index is less than N</i>
+RULE       nth()                                      <i>Selects the Nth element</i>
+RULE       nth-child()                                <i>The n-th child of its parent</i>
+RULE       odd                                        <i>Selects every other (odd) element</i>
+RULE       only-child                                 <i>Only child of its parent</i>
+RULE       parent                                     <i>Elements that have children (including text)</i>
+RULE       password                                   <i>All password fields (type="password")</i>
+RULE       radio                                      <i>All radio fields (type="radio")</i>
+RULE       reset                                      <i>All reset buttons (type="reset")</i>
+RULE       selected                                   <i>Element which is selected (e.g. in a select)</i>
+RULE       submit                                     <i>All submit buttons (type="submit")</i>
+RULE       target                                     <i>Target of the referring URI</i>
+RULE       text                                       <i>All text fields (type="text")</i>
+RULE       visible                                    <i>Selects all visible elements</i>
+RULE       visited                                    <i>Already visited hyperlink</i>

@@ -349,10 +349,29 @@ class CopySupport {
                         break;
                     }
                 }
-                if (sourceContainer != null && sourceContainer.getLayoutSupport() != null
-                    && (getComponentBounds(sourceComponents.get(0)) == null
-                        || !isConvertibleLayout(sourceContainer))) {
-                    sourceContainer = null; // old layout not suitable for conversion
+                // check if all layout components are in the same layer
+                if (sourceContainer != null && sourceContainer.getLayoutSupport() == null) {
+                    LayoutInterval commonRoot = null;
+                    for (RADComponent sourceComp : sourceComponents) {
+                        RADVisualComponent sourceCompVisual = (RADVisualComponent) sourceComp;
+                        if (!sourceCompVisual.isMenuComponent()) {
+                            LayoutComponent layoutComp = sourceLayout.getLayoutComponent(sourceCompVisual.getId());
+                            LayoutInterval compInterval = layoutComp.getLayoutInterval(0);
+                            if (commonRoot == null) {
+                                commonRoot = compInterval.getRoot();
+                            } else if (!commonRoot.isParentOf(compInterval)) {
+                                commonRoot = null;
+                                break;
+                            }
+                        }
+                    }
+                    if (commonRoot == null) {
+                        sourceContainer = null;
+                    }
+                } else if (sourceContainer != null && sourceContainer.getLayoutSupport() != null
+                           && (getComponentBounds(sourceComponents.get(0)) == null
+                               || !isConvertibleLayout(sourceContainer))) {
+                    sourceContainer = null; // old layout which is not suitable for conversion
                 }
             }
 
@@ -401,7 +420,6 @@ class CopySupport {
                             && sourceComp instanceof RADVisualComponent) { // might be even a LayoutManager componen...
                         // for visual components we must care about the layout model (new layout)
                         if (targetNewLayout) {
-                            RADVisualContainer targetContainer = (RADVisualContainer) targetComponent;
                             if (sourceContainer != null) { // source is one visual container, we can copy the layout
                                 if (sourceContainer.getLayoutSupport() == null) { // copying from new layout
                                     if (sourceToTargetId == null) {

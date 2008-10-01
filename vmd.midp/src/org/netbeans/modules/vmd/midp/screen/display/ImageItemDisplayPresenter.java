@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import javax.swing.*;
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ import org.openide.filesystems.FileObject;
 public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
 
     private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
-    private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
+    private static final Icon ICON_BROKEN = new ImageIcon(ImageUtilities.loadImage(ICON_BROKEN_PATH));
     private JLabel label;
     private ScreenFileObjectListener imageFileListener;
     private FileObject imageFileObject;

@@ -57,6 +57,8 @@ import org.openide.windows.TopComponent;
  * @author Radek Matous
  */
 public class CommandUtils {
+    // XXX maybe can be obtained somewhere
+    private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
 
     private PhpProject project;
 
@@ -137,10 +139,16 @@ public class CommandUtils {
         return PhpSourcePath.MIME_TYPE.equals(FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE));
     }
 
+    public static boolean isPhpOrHtmlFile(FileObject file) {
+        assert file != null;
+        String mimeType = FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE, HTML_MIME_TYPE);
+        return PhpSourcePath.MIME_TYPE.equals(mimeType) || HTML_MIME_TYPE.equals(mimeType);
+    }
+
     private static FileObject[] filter(Collection<? extends FileObject> files, FileObject dir) {
         Collection<FileObject> retval = new LinkedHashSet<FileObject>();
         for (FileObject file : files) {
-            if (!isUnderSourceRoot(dir, file) || !isPhpFile(file)) {
+            if (!isUnderSourceRoot(dir, file)) {
                 return null;
             }
             retval.add(file);

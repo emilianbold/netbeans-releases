@@ -65,6 +65,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -144,7 +145,7 @@ public final class FileBrowserCD extends ComponentDescriptor {
             // inspector
             InspectorPositionPresenter.create(new DisplayablePC()),
             // screen
-            new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH_SD))
+            new DisplayableDisplayPresenter(ImageUtilities.loadImage(ICON_PATH_SD))
         );
     }
 

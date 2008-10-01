@@ -67,6 +67,7 @@ import javax.swing.JScrollPane;
 import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Utils;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -181,15 +182,15 @@ class Tabs extends BackgroundPanel implements Constants {
         public Tab( String title, boolean isLeftTab ) {
             super( new GridBagLayout() );
             this.isLeftTab = isLeftTab;
-            imgUnselBottom = Utilities.loadImage( IMAGE_TAB_UNSEL );
+            imgUnselBottom = ImageUtilities.loadImage( IMAGE_TAB_UNSEL );
             if( isLeftTab ) {
-                imgSelLeft = Utilities.loadImage( IMAGE_TAB_SEL_RIGHT );
-                imgSelUpperLeft = Utilities.loadImage( IMAGE_TAB_SEL_UPPER_RIGHT );
-                imgSelLowerLeft = Utilities.loadImage( IMAGE_TAB_SEL_LOWER_RIGHT );
+                imgSelLeft = ImageUtilities.loadImage( IMAGE_TAB_SEL_RIGHT );
+                imgSelUpperLeft = ImageUtilities.loadImage( IMAGE_TAB_SEL_UPPER_RIGHT );
+                imgSelLowerLeft = ImageUtilities.loadImage( IMAGE_TAB_SEL_LOWER_RIGHT );
             } else {
-                imgSelRight = Utilities.loadImage( IMAGE_TAB_SEL_LEFT );
-                imgSelUpperRight = Utilities.loadImage( IMAGE_TAB_SEL_UPPER_LEFT );
-                imgSelLowerRight = Utilities.loadImage( IMAGE_TAB_SEL_LOWER_LEFT );
+                imgSelRight = ImageUtilities.loadImage( IMAGE_TAB_SEL_LEFT );
+                imgSelUpperRight = ImageUtilities.loadImage( IMAGE_TAB_SEL_UPPER_LEFT );
+                imgSelLowerRight = ImageUtilities.loadImage( IMAGE_TAB_SEL_LOWER_LEFT );
             }
             lbl = new JLabel(title);
             lbl.setOpaque( false );

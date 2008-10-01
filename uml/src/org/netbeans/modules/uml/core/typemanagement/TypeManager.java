@@ -81,6 +81,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableEleme
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IPart;
+import org.netbeans.modules.uml.core.metamodel.profiles.Profile;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileManip;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
@@ -2652,7 +2653,7 @@ public class TypeManager implements ITypeManager, IElementLifeTimeEventsSink,
     	{
     		IElement actual = (IElement)element;
     		IProject proj = actual.getProject();
-    		if (proj != null)
+    		if (proj != null || element instanceof Profile)
     		{
     			State state = new State(m_State, proj, false);
     			addToTypes(element);

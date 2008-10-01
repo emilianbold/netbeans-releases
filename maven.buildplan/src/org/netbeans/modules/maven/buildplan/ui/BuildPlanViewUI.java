@@ -48,6 +48,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -85,7 +86,7 @@ public class BuildPlanViewUI extends javax.swing.JPanel implements ExplorerManag
 
             @Override
             public Image getIcon(int arg0) {
-                return Utilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/buildplangoals.png");
+                return ImageUtilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/buildplangoals.png");
             }
 
             @Override

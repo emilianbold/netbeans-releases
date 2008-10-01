@@ -71,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -291,7 +292,7 @@ public class PaletteItemDataObject extends MultiDataObject {
         }
         
         public java.awt.Image getIcon(final int type) {
-            return Utilities.loadImage(iconURL);
+            return ImageUtilities.loadImage(iconURL);
         }
 
         
@@ -352,7 +353,7 @@ public class PaletteItemDataObject extends MultiDataObject {
 //                    if (icon32 == null && isItemValid())
 //                        icon32 = paletteItem.getIcon(type);
                     if (icon32 == null)
-                        icon32 = Utilities.loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component_32.png"); // NOI18N
+                        icon32 = ImageUtilities.loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component_32.png"); // NOI18N
                 }
                 return icon32;
             } else { // small icon by default
@@ -364,7 +365,7 @@ public class PaletteItemDataObject extends MultiDataObject {
 //                        icon16 = paletteItem.getIcon(type);
                     if (icon16 == null) {                        
 //                        System.out.println("Small Icon is null after assignment");
-                        icon16 = Utilities.loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component.png"); // NOI18N
+                        icon16 = ImageUtilities.loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component.png"); // NOI18N
                     }
                 }
                 return icon16;

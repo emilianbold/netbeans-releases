@@ -56,7 +56,7 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.spi.xml.cookies.*;
 

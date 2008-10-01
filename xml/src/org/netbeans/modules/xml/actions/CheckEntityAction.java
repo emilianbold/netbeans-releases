@@ -47,7 +47,7 @@ import org.openide.util.actions.CookieAction;
 import org.netbeans.modules.xml.actions.CollectXMLAction;
 
 import org.netbeans.api.xml.cookies.*;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 
 /**
  * Checks well-formess of XML entity sending results to output window.

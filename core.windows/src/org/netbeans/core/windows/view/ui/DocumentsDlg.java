@@ -76,6 +76,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -556,7 +557,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         
         public Image getIcon (int type) {
             Image image = tc.getIcon();
-            return image == null ? Utilities.loadImage("org/openide/resources/actions/empty.gif") : image; // NOI18N
+            return image == null ? ImageUtilities.loadImage("org/openide/resources/actions/empty.gif") : image; // NOI18N
         }
         
         public String getDescription() {

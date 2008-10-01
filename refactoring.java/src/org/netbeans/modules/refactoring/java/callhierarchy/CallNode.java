@@ -51,6 +51,7 @@ import javax.swing.Icon;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -89,6 +90,13 @@ final class CallNode extends AbstractNode {
         
         return node;
     }
+
+    private static CallNode createBroken() {
+        CallNode node = new CallNode();
+        node.setDisplayName(NbBundle.getMessage(CallNode.class, "CallNode.Broken.displayName"));
+
+        return node;
+    }
     
     public static CallNode createCall(CallDescriptor desc) {
         CallNode node = new CallNode(desc.isLeaf() ? Children.LEAF : new CallChildren(), desc);
@@ -107,7 +115,7 @@ final class CallNode extends AbstractNode {
     public Image getIcon(int type) {
         CallDescriptor desc = getLookup().lookup(CallDescriptor.class);
         Icon icon = desc != null ? desc.getIcon() : null;
-        return icon != null ? Utilities.icon2Image(icon) : super.getIcon(type);
+        return icon != null ? ImageUtilities.icon2Image(icon) : super.getIcon(type);
     }
 
     @Override
@@ -206,10 +214,10 @@ final class CallNode extends AbstractNode {
                 keys = Collections.emptyList();
             } else {
                 keys = desc.getReferences();
-                if (!isOccurrenceView && desc.isCanceled()) {
+                if (!isOccurrenceView && (desc.isCanceled() || desc.isBroken())) {
                     ArrayList<Object> temp = new ArrayList<Object>(keys.size() + 1);
                     temp.addAll(keys);
-                    temp.add(CallNode.createCanceled());
+                    temp.add(desc.isBroken() ? CallNode.createBroken() : CallNode.createCanceled());
                     keys = temp;
                 }
             }

@@ -47,6 +47,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -62,7 +63,7 @@ public class PFENotModifiableScheme extends VMDColorScheme {
     private static final Color COLOR60_HOVER_BACKGROUND = new Color (0xB0C3E1);
     private static final Color COLOR_NORMAL =  new Color(230,230,230);
     private static final Color COLOR_HIGHLIGHTED = new Color (0x316AC5);
-    private static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape (Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin.png")); // NOI18N
+    private static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape (ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin.png")); // NOI18N
 
     private static final Border BORDER_PIN = BorderFactory.createOpaqueBorder (2, 8, 2, 8);
     private static final Border BORDER60_PIN_SELECT = BorderFactory.createCompositeBorder (BorderFactory.createLineBorder (0, 1, 0, 1, COLOR60_SELECT), BorderFactory.createLineBorder (2, 7, 2, 7, COLOR60_SELECT));
@@ -127,8 +128,8 @@ public class PFENotModifiableScheme extends VMDColorScheme {
 
     public Image getMinimizeWidgetImage (VMDNodeWidget widget) {
         return widget.isMinimized ()
-                ? Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand-60.png") // NOI18N
-                : Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse-60.png"); // NOI18N
+                ? ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand-60.png") // NOI18N
+                : ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse-60.png"); // NOI18N
     }
 
     public Widget createPinCategoryWidget (VMDNodeWidget widget, String categoryDisplayName) {

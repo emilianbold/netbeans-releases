@@ -85,6 +85,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicGraphicsUtils;
 import org.openide.awt.HtmlRenderer;
 import org.openide.nodes.Node.Property;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** 
@@ -938,7 +939,7 @@ final class RendererFactory {
             if (env != null) {
                 if (env.getState() == env.STATE_INVALID) {
                     setForeground(PropUtils.getErrorColor());
-                    i = Utilities.loadImage("org/openide/resources/propertysheet/invalid.gif"); //NOI18N
+                    i = ImageUtilities.loadImage("org/openide/resources/propertysheet/invalid.gif"); //NOI18N
                 } else {
                     Object o = env.getFeatureDescriptor().getValue("valueIcon"); //NOI18N
 

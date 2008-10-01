@@ -148,7 +148,7 @@ public class OutputCollabletFactoryBeanInfo extends SimpleBeanInfo {
     public Image getIcon(int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
             if (smallIcon == null) {
-                smallIcon = Utilities.loadImage(
+                smallIcon = ImageUtilities.loadImage(
                     //					"org/netbeans/modules/collab/channel/output/resources/output_png.gif"); // NOI18N
                     "org/netbeans/core/resources/frames/output.gif"
                     ); //NOI18N
@@ -157,7 +157,7 @@ public class OutputCollabletFactoryBeanInfo extends SimpleBeanInfo {
             return smallIcon;
         } else {
             if (largeIcon == null) {
-                largeIcon = Utilities.loadImage(
+                largeIcon = ImageUtilities.loadImage(
                     //					"org/netbeans/modules/collab/channel/output/resources/output_png.gif"); // NOI18N
                     "org/netbeans/core/resources/frames/output.gif"
                     ); //NOI18N

@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.xml.catalog.spi.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 /**
@@ -138,7 +139,7 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
      * @return icon representing current state or null
      */
     public java.awt.Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/maven/Maven2Icon.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/maven/Maven2Icon.gif"); // NOI18N
     }
     
     /**

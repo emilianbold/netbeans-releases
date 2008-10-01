@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
@@ -93,7 +94,9 @@ public final class DeployOnSaveManager {
 
     private static DeployOnSaveManager instance;
 
-    private final WeakHashMap<J2eeModuleProvider, CompileOnSaveListener> listeners = new WeakHashMap<J2eeModuleProvider, CompileOnSaveListener>();
+    private final WeakHashMap<J2eeModuleProvider, CompileOnSaveListener> compileListeners = new WeakHashMap<J2eeModuleProvider, CompileOnSaveListener>();
+
+    private final WeakHashMap<J2eeModuleProvider, CopyOnSaveListener> copyListeners = new WeakHashMap<J2eeModuleProvider, CopyOnSaveListener>();
 
     /**
      * We need a custom thread factory because the default one stores the
@@ -118,7 +121,7 @@ public final class DeployOnSaveManager {
     //private final ExecutorService EXECUTOR = Executors.newFixedThreadPool(1);
 
     /**<i>GuardedBy("this")</i>*/
-    private Map<J2eeModuleProvider, Set<File>> toDeploy = new HashMap<J2eeModuleProvider, Set<File>>();
+    private Map<J2eeModuleProvider, Set<Artifact>> toDeploy = new HashMap<J2eeModuleProvider, Set<Artifact>>();
 
     /**<i>GuardedBy("this")</i>*/
     private Map<J2eeModuleProvider, DeploymentState> lastDeploymentStates = new HashMap<J2eeModuleProvider, DeploymentState>();
@@ -139,7 +142,7 @@ public final class DeployOnSaveManager {
 
     public void startListening(J2eeModuleProvider j2eeProvider) {
         synchronized (this) {
-            if (listeners.containsKey(j2eeProvider)) {
+            if (compileListeners.containsKey(j2eeProvider)) {
                 // this is due to EAR childs :(
                 if (j2eeProvider instanceof J2eeApplicationProvider) {
                     stopListening(j2eeProvider);
@@ -173,30 +176,36 @@ public final class DeployOnSaveManager {
             for (URL url :urls) {
                 BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
             }
+            compileListeners.put(j2eeProvider, listener);
 
             // register WEB listener
             J2eeModuleProvider.DeployOnSaveSupport support = j2eeProvider.getDeployOnSaveSupport();
             if (support != null) {
-                support.addArtifactListener(listener);
+                CopyOnSaveListener copyListener = new CopyOnSaveListener(j2eeProvider);
+                support.addArtifactListener(copyListener);
+                copyListeners.put(j2eeProvider, copyListener);
             }
-
-            listeners.put(j2eeProvider, listener);
         }
     }
 
     public void stopListening(J2eeModuleProvider j2eeProvider) {
         synchronized (this) {
-            CompileOnSaveListener removed = listeners.remove(j2eeProvider);
+            CompileOnSaveListener removed = compileListeners.remove(j2eeProvider);
             if (removed == null) {
-                LOGGER.log(Level.FINE, "Not listening on {0}", j2eeProvider);
+                LOGGER.log(Level.FINE, "Not compile-listening on {0}", j2eeProvider);
             } else {
                 for (URL url : removed.getRegistered()) {
                     BuildArtifactMapper.removeArtifactsUpdatedListener(url, removed);
                 }
+            }
 
+            CopyOnSaveListener copyRemoved = copyListeners.remove(j2eeProvider);
+            if (removed == null) {
+                LOGGER.log(Level.FINE, "Not copy-listening on {0}", j2eeProvider);
+            } else {
                 J2eeModuleProvider.DeployOnSaveSupport support = j2eeProvider.getDeployOnSaveSupport();
                 if (support != null) {
-                    support.removeArtifactListener(removed);
+                    support.removeArtifactListener(copyRemoved);
                 }
             }
         }
@@ -208,7 +217,7 @@ public final class DeployOnSaveManager {
 
     public void notifyInitialDeployment(J2eeModuleProvider provider) {
         synchronized (this) {
-            if (listeners.containsKey(provider)) {
+            if (compileListeners.containsKey(provider)) {
                 // this is due to EAR childs :(
                 if (provider instanceof J2eeApplicationProvider) {
                     startListening(provider);
@@ -221,18 +230,18 @@ public final class DeployOnSaveManager {
         }
     }
 
-    public void submitChangedArtifacts(J2eeModuleProvider provider, Iterable<File> artifacts) {
+    public void submitChangedArtifacts(J2eeModuleProvider provider, Iterable<Artifact> artifacts) {
         assert provider != null;
         assert artifacts != null;
 
         synchronized (this) {
-            Set<File> files = toDeploy.get(provider);
-            if (files == null) {
-                files = new HashSet<File>();
-                toDeploy.put(provider, files);
+            Set<Artifact> preparedArtifacts = toDeploy.get(provider);
+            if (preparedArtifacts == null) {
+                preparedArtifacts = new HashSet<Artifact>();
+                toDeploy.put(provider, preparedArtifacts);
             }
-            for (File artifact : artifacts) {
-                files.add(artifact);
+            for (Artifact artifact : artifacts) {
+                preparedArtifacts.add(artifact);
             }
 
             boolean delayed = true;
@@ -247,7 +256,7 @@ public final class DeployOnSaveManager {
         }
     }
 
-    private static final class CompileOnSaveListener implements ArtifactsUpdated, ArtifactListener {
+    private static final class CompileOnSaveListener implements ArtifactsUpdated {
 
         private final J2eeModuleProvider provider;
 
@@ -263,8 +272,27 @@ public final class DeployOnSaveManager {
         }
 
         public void artifactsUpdated(Iterable<File> artifacts) {
+            Set<Artifact> realArtifacts = new HashSet<Artifact>();
+            for (File file : artifacts) {
+                realArtifacts.add(Artifact.forFile(file));
+            }
+            DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, realArtifacts);
+        }
+
+    }
+
+    private static final class CopyOnSaveListener implements ArtifactListener {
+
+        private final J2eeModuleProvider provider;
+
+        public CopyOnSaveListener(J2eeModuleProvider provider) {
+            this.provider = provider;
+        }
+
+        public void artifactsUpdated(Iterable<Artifact> artifacts) {
             DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, artifacts);
         }
+
     }
 
     private class DeployTask implements Runnable {
@@ -287,17 +315,17 @@ public final class DeployOnSaveManager {
 
             LOGGER.log(Level.FINE, "Performing pending deployments");
 
-            Map<J2eeModuleProvider, Set<File>> deployNow;
+            Map<J2eeModuleProvider, Set<Artifact>> deployNow;
             synchronized (DeployOnSaveManager.this) {
                 if (toDeploy.isEmpty()) {
                     return;
                 }
 
                 deployNow = toDeploy;
-                toDeploy = new HashMap<J2eeModuleProvider, Set<File>>();
+                toDeploy = new HashMap<J2eeModuleProvider, Set<Artifact>>();
             }
 
-            for (Map.Entry<J2eeModuleProvider, Set<File>> entry : deployNow.entrySet()) {
+            for (Map.Entry<J2eeModuleProvider, Set<Artifact>> entry : deployNow.entrySet()) {
                 if (entry.getValue().isEmpty()) {
                     continue;
                 }
@@ -305,11 +333,11 @@ public final class DeployOnSaveManager {
             }
         }
 
-        private void notifyServer(J2eeModuleProvider provider, Iterable<File> artifacts) {
+        private void notifyServer(J2eeModuleProvider provider, Iterable<Artifact> artifacts) {
             if (LOGGER.isLoggable(Level.FINEST)) {
                 StringBuilder builder = new StringBuilder("Artifacts updated: [");
-                for (File file : artifacts) {
-                    builder.append(file.getAbsolutePath()).append(",");
+                for (Artifact artifact : artifacts) {
+                    builder.append(artifact.getFile().getAbsolutePath()).append(",");
                 }
                 builder.setLength(builder.length() - 1);
                 builder.append("]");

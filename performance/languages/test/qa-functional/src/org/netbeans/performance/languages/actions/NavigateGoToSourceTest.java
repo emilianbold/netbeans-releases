@@ -128,7 +128,7 @@ public class NavigateGoToSourceTest extends org.netbeans.modules.performance.uti
         return null;
     }
     
-    public void testNavigateGoToSourceInTheCurrentClass() {
+    public void test_PHP_NavigateGoToSourceInTheCurrentClass() {
         testProject = Projects.PHP_PROJECT;
         pathName = "Source Files|classes|";
         docName = "guestitinerary.php";
@@ -139,7 +139,7 @@ public class NavigateGoToSourceTest extends org.netbeans.modules.performance.uti
         doMeasurement();
     }
 
-    public void testNavigateGoToSourceInTheParentClass() {
+    public void test_PHP_NavigateGoToSourceInTheParentClass() {
         testProject = Projects.PHP_PROJECT;
         pathName = "Source Files|classes|";
         docName = "guestitinerary.php";

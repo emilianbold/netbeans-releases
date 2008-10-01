@@ -48,6 +48,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -73,6 +74,6 @@ public class CDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
 
     @Override
     public Image getIcon(int type) {
-	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/CSrcIcon.gif");   // NOI18N
+	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CSrcIcon.gif");   // NOI18N
     }
 }

@@ -125,7 +125,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
      * @return the node's icon
      */
     public Image getIcon(int type) {
-        return Utilities.loadImage(ICON);
+        return ImageUtilities.loadImage(ICON);
     }
     
     /**
@@ -134,7 +134,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
      * @return the node's icon
      */
     public Image getOpenedIcon(int type) {
-        return Utilities.loadImage(ICON);
+        return ImageUtilities.loadImage(ICON);
     }
     
     /**

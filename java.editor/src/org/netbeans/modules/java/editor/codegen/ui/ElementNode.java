@@ -67,6 +67,7 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -99,7 +100,7 @@ public class ElementNode extends AbstractNode {
     public Image getIcon(int type) {
         if (description.elementHandle == null)
             return super.getIcon(type);
-        return Utilities.icon2Image(ElementIcons.getElementIcon(description.elementHandle.getKind(), description.modifiers));
+        return ImageUtilities.icon2Image(ElementIcons.getElementIcon(description.elementHandle.getKind(), description.modifiers));
     }
 
     @Override

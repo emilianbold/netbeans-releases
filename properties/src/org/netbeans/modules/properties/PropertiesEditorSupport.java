@@ -105,6 +105,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -1116,7 +1117,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         @Override
         public Image getIcon () {
             PropertiesDataObject propDO = (PropertiesDataObject) entry.getDataObject();
-            return Utilities.loadImage(
+            return ImageUtilities.loadImage(
                     propDO.isMultiLocale()
                     ? "org/netbeans/modules/properties/propertiesLocale.gif" // NOI18N
                     : "org/netbeans/modules/properties/propertiesObject.png"); // NOI18N

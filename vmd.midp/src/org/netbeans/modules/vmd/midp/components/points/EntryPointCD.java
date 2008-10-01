@@ -52,6 +52,7 @@ import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.sources.EntryStartEventSourceCD;
 import org.netbeans.api.editor.guards.GuardedSection;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -95,7 +96,7 @@ public class EntryPointCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
-            InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, NbBundle.getMessage (EntryPointCD.class, "TYPE_EntryPoint"))), // NOI18N
+            InfoPresenter.create (PointSupport.createInfoResolver (ImageUtilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, NbBundle.getMessage (EntryPointCD.class, "TYPE_EntryPoint"))), // NOI18N
             new GoToSourcePresenter() {
                 protected boolean matches (GuardedSection section) {
                     return MultiGuardedSection.matches(section, getComponent ().getComponentID () + "-entry", 0); // NOI18N

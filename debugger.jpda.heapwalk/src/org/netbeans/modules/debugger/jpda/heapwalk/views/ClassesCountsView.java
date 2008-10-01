@@ -64,6 +64,7 @@ import org.netbeans.modules.debugger.jpda.heapwalk.HeapImpl;
 import org.netbeans.spi.viewmodel.Models;
 
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -93,7 +94,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
      * Creates a new instance of ClassesCountsView
      */
     public ClassesCountsView () {
-        setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/resources/classesView/Classes.png")); // NOI18N
+        setIcon (ImageUtilities.loadImage ("org/netbeans/modules/debugger/resources/classesView/Classes.png")); // NOI18N
         setLayout (new BorderLayout ());
         // Remember the location of the component when closed.
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N

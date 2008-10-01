@@ -1778,12 +1778,12 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         private CsmClass createClassInstantiation(CsmClass cls, CsmCompletionExpression exp) {
             if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE && CsmKindUtilities.isTemplate(cls)) {
-                List<CsmTemplateParameter> patams = ((CsmTemplate) cls).getTemplateParameters();
-                if (patams != null) {
-                    int paramNumber = 1;
+                List<CsmTemplateParameter> params = ((CsmTemplate) cls).getTemplateParameters();
+                if (params != null) {
                     Map<CsmTemplateParameter, CsmType> mapping = new HashMap<CsmTemplateParameter, CsmType>();
-                    for (CsmTemplateParameter param : patams) {
-                        CsmCompletionExpression paramInst = exp.getParameter(paramNumber);
+                    for (int i = 0; i + 1 < exp.getParameterCount() && i < params.size(); ++i) {
+                        CsmTemplateParameter param = params.get(i);
+                        CsmCompletionExpression paramInst = exp.getParameter(i + 1);
                         if (paramInst != null) {
                             mapping.put(param, resolveType(paramInst));
                         } else {

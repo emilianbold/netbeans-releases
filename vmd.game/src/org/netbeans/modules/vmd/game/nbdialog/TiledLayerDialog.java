@@ -87,6 +87,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -97,7 +98,7 @@ import org.openide.util.Utilities;
 public class TiledLayerDialog extends javax.swing.JPanel implements ActionListener {
 
     private GlobalRepository gameDesign;
-    private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
+    private static final Icon ICON_ERROR = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
     private static final int DEFAULT_COLS = 20;
     private static final int DEFAULT_ROWS = 20;
     private static final int DEFAULT_TILE_WIDTH = 18;

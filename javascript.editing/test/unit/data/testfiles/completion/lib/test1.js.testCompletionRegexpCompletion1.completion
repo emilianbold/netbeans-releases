@@ -2,31 +2,31 @@ Code completion result for source line:
 y = /re|g/
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-KEYWORD    $                                          End of line
-KEYWORD    ()                                         Grouping
-KEYWORD    *                                          Zero or more repetitions of the preceding
-KEYWORD    +                                          One or more repetitions of the preceding
-KEYWORD    ?                                          At most one repetition of the preceding; same as {0,1}
-KEYWORD    [\b]                                       Literal backspace
-KEYWORD    []                                         Any one character between the brackets
-KEYWORD    [^]                                        Any one character not between the brackets
-KEYWORD    \0                                         The NUL character (\u0000)
-KEYWORD    \B                                         Non-word boundary
-KEYWORD    \D                                         Non-digit character; same as [^0-9]
-KEYWORD    \S                                         Non-space character
-KEYWORD    \W                                         Not a word character; same as [^0-9A-Za-z_]
-KEYWORD    \b                                         Word boundary (if not in a range specification)
-KEYWORD    \c                                         \c<i>X</i>: The control character ^<i>X</i>
-KEYWORD    \d                                         Digit character; same as [0-9]
-KEYWORD    \f                                         Form feed (\u000C)
-KEYWORD    \n                                         Newline (\u000A)
-KEYWORD    \r                                         Carriage return (\u000D)
-KEYWORD    \s                                         Unicode space character
-KEYWORD    \t                                         Tab (\u0009)
-KEYWORD    \u                                         \u<i>xxxx</i>: The Unicode character in hex <i>xxxx</i>
-KEYWORD    \v                                         Vertical tab (\u000B)
-KEYWORD    \w                                         Any ASCII word character; same as [0-9A-Za-z_]
-KEYWORD    \x                                         \x<i>nn</i>: The latin character in hex <i>nn</i>
-KEYWORD    ^                                          Start of line
-KEYWORD    {m,n}                                      At least m and at most n repetitions of the preceding
-KEYWORD    |                                          Either preceding or next expression may match
+KEYWORD    $ End of line                              null
+KEYWORD    () Grouping                                null
+KEYWORD    * Zero or more repetitions of              null
+KEYWORD    + One or more repetitions of t             null
+KEYWORD    ? At most one repetition of th             null
+KEYWORD    [\b] Literal backspace                     null
+KEYWORD    [] Any one character between t             null
+KEYWORD    [^] Any one character not betw             null
+KEYWORD    \0 The NUL character (\u0000)              null
+KEYWORD    \B Non-word boundary                       null
+KEYWORD    \D Non-digit character; same a             null
+KEYWORD    \S Non-space character                     null
+KEYWORD    \W Not a word character; same              null
+KEYWORD    \b Word boundary (if not in a              null
+KEYWORD    \c \c<i>X</i>: The control cha             null
+KEYWORD    \d Digit character; same as [0             null
+KEYWORD    \f Form feed (\u000C)                      null
+KEYWORD    \n Newline (\u000A)                        null
+KEYWORD    \r Carriage return (\u000D)                null
+KEYWORD    \s Unicode space character                 null
+KEYWORD    \t Tab (\u0009)                            null
+KEYWORD    \u \u<i>xxxx</i>: The Unicode              null
+KEYWORD    \v Vertical tab (\u000B)                   null
+KEYWORD    \w Any ASCII word character; s             null
+KEYWORD    \x \x<i>nn</i>: The latin char             null
+KEYWORD    ^ Start of line                            null
+KEYWORD    {m,n} At least m and at most n             null
+KEYWORD    | Either preceding or next exp             null

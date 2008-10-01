@@ -67,6 +67,7 @@ import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.profiler.heapwalk.HeapFragmentWalker;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
@@ -86,7 +87,7 @@ public class InstancesView extends TopComponent {
     
     /** Creates a new instance of InstancesView */
     public InstancesView() {
-        setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.gif")); // NOI18N
+        setIcon (ImageUtilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.gif")); // NOI18N
         setLayout (new BorderLayout ());
         // Remember the location of the component when closed.
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
@@ -308,7 +309,7 @@ public class InstancesView extends TopComponent {
                 }
             });
             org.openide.awt.Mnemonics.setLocalizedText(pauseButton, NbBundle.getMessage(InstancesView.class, "CTL_Pause"));
-            pauseButton.setIcon(new ImageIcon (Utilities.loadImage ("org/netbeans/modules/debugger/resources/actions/Pause.gif")));
+            pauseButton.setIcon(new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/debugger/resources/actions/Pause.gif")));
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 2;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;

@@ -2423,11 +2423,48 @@ Node pn = null;
         matched = matchToken(Token.RP);
         if (!matched) {
             boolean first = true;
+            // <netbeans>
+            boolean seenGenerated = false;
+            // </netbeans>
             do {
                 if (!first)
                     decompiler.addToken(Token.COMMA);
                 first = false;
-                nf.addChildToBack(listNode, assignExpr(false));
+
+                // <netbeans>
+                if (seenGenerated) {
+                    int peekToken = peekToken();
+                    if (peekToken == Token.RP) {
+                        break;
+                    }
+                }
+
+                //nf.addChildToBack(listNode, assignExpr(false));
+                Node assignExpr = assignExpr(false);
+                int peekToken = peekToken();
+                // Prevent scenarios like issue 120499:
+                // If I have "extra" tokens here, drop them
+                while (peekToken == Token.NAME || peekToken == Token.STRING) {
+                    if (peekToken == Token.NAME && GENERATED_IDENTIFIER.equals(ts.getString())) {
+                        seenGenerated = true;
+                        nextToken();
+                    } else if (peekToken == Token.STRING && ts.getString().indexOf(GENERATED_IDENTIFIER) != -1) {
+                        seenGenerated = true;
+                        nextToken();
+                    } else {
+                        break;
+                    }
+                    peekToken = peekToken();
+                }
+                peekToken = peekToken();
+                if (peekToken != Token.COMMA && peekToken != Token.RP) {
+                    if (assignExpr.getType() == Token.NAME &&
+                            GENERATED_IDENTIFIER.equals(assignExpr.getString())) {
+                        assignExpr = assignExpr(false);
+                    }
+                }
+                nf.addChildToBack(listNode, assignExpr);
+                // </netbeans>
             } while (matchToken(Token.COMMA));
 
             mustMatchToken(Token.RP, "msg.no.paren.arg");
@@ -2759,6 +2796,9 @@ Node pn = null;
             int skipCount = 0;
             decompiler.addToken(Token.LB);
             boolean after_lb_or_comma = true;
+            // <netbeans>
+            Node prevExpr = null;
+            // </netbeans>
             for (;;) {
                 tt = peekToken();
 
@@ -2777,9 +2817,21 @@ Node pn = null;
                     break;
                 } else {
                     if (!after_lb_or_comma) {
-                        reportError("msg.no.bracket.arg");
+                        // <netbeans>
+                        if (prevExpr != null && prevExpr.getType() == Token.NAME &&
+                                GENERATED_IDENTIFIER.equals(prevExpr.getString())) {
+                            // Looks like we need to insert a comma. See for example
+                            // issue 136495 for a scenario to reproduce this...
+                            after_lb_or_comma = true;
+                        } else
+                        // </netbeans>
+                          reportError("msg.no.bracket.arg");
                     }
-                    elems.add(assignExpr(false));
+                    // <netbeans>
+                    //elems.add(assignExpr(false));
+                    prevExpr = assignExpr(false);
+                    elems.add(prevExpr);
+                    // </netbeans>
                     after_lb_or_comma = false;
                 }
             }

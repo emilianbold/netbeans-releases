@@ -68,6 +68,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.text.Line;
@@ -225,7 +226,7 @@ public class SoaUtil {
         if (badgeImage == null) {
             return originalImage;
         }
-        Image image = org.openide.util.Utilities.mergeImages(originalImage, badgeImage, x, y );
+        Image image = ImageUtilities.mergeImages(originalImage, badgeImage, x, y );
         return image;
     }
     

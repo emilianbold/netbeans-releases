@@ -42,6 +42,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.status;
 
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -61,7 +62,7 @@ public class OpenVersioningAction extends StatusProjectsAction {
     
     public OpenVersioningAction() {
         putValue("noIconInMenu", Boolean.FALSE); // NOI18N
-        setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/window-versioning.png"))); // NOI18N
+        setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/window-versioning.png"))); // NOI18N
     }
 
     public String getName() {

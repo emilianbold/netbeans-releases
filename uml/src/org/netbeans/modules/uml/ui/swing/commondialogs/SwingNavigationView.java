@@ -43,19 +43,12 @@
 package org.netbeans.modules.uml.ui.swing.commondialogs;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
-import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -69,8 +62,6 @@ import org.netbeans.modules.uml.ui.support.UserSettings;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IPresentationTarget;
 import org.netbeans.modules.uml.ui.support.presentationnavigation.JNavigationTreeTable;
 import org.netbeans.modules.uml.ui.support.presentationnavigation.NavigationTreeTableModel;
-import org.netbeans.modules.uml.ui.swing.treetable.JTreeTable;
-import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
 /**

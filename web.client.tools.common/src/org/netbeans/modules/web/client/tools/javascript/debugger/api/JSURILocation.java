@@ -75,6 +75,7 @@ public class JSURILocation implements JSLocation {
     public JSURILocation(String uri, int lineNumber, int columnNumber) {
         try {
             String fileScheme = "file://";
+
             //In case of URI returned by IE, spaces are not encoded
             if( uri.indexOf(fileScheme) != -1 && uri.indexOf("\\") != -1) {
                 uri = uri.substring(fileScheme.length());
@@ -89,7 +90,17 @@ public class JSURILocation implements JSLocation {
             this.lineNumber = lineNumber;
             this.columnNumber = columnNumber;
         } catch (URISyntaxException ex) {
-            Log.getLogger().log(Level.SEVERE, "URI syntax exception", ex);
+            // Decode UTF-16 characters from the URL
+            if (uri.contains("%u")) { // NOI18N
+                uri = decodeUnicode16Escapes(uri);
+                try {
+                    this.uri = new URI(uri);
+                } catch (URISyntaxException uie) {
+                    Log.getLogger().log(Level.SEVERE, "URI syntax exception", uie);
+                }
+            } else {
+                Log.getLogger().log(Level.SEVERE, "URI syntax exception", ex);
+            }
         }
     }
 
@@ -130,5 +141,26 @@ public class JSURILocation implements JSLocation {
             extraURIs.remove(uri);
         }
     }
+    private static String decodeUnicode16Escapes(String url) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < url.length()-6; i++) {
+            String pattern = url.substring(i, i+6);
+            if (pattern.startsWith("%u")) { // NOI18N
+                String firstByte = pattern.substring(2, 4);
+                String secondByte = pattern.substring(4, 6);
+                try {
+                    byte[] b = new byte[] { Byte.parseByte(firstByte, 16), Byte.parseByte(secondByte, 16) };
+                    String s = new String(b, "UTF-16"); // NOI18N
+                    sb.append(s);
+                    i += 5;
+                } catch (Exception ex) {
+                    sb.append(url.charAt(i));
+                }
+            } else {
+                sb.append(url.charAt(i));
+            }
+        }
 
+        return sb.toString();
+    }
 }

@@ -46,6 +46,7 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -72,7 +73,7 @@ public final class JavadocTopComponent extends TopComponent {
         initComponents();
         setName(NbBundle.getMessage(JavadocTopComponent.class, "CTL_JavadocTopComponent"));
         setToolTipText(NbBundle.getMessage(JavadocTopComponent.class, "HINT_JavadocTopComponent"));
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         
         documentationPane = new DocumentationScrollPane( false );
         add( documentationPane, BorderLayout.CENTER );

@@ -46,6 +46,7 @@ import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -128,7 +129,7 @@ public final class PointSupport {
             }
 
             public Image getIcon (DesignComponent component, InfoPresenter.IconType iconType) {
-                return Utilities.loadImage (CallPointCD.ICON_PATH);
+                return ImageUtilities.loadImage (CallPointCD.ICON_PATH);
             }
         };
     }

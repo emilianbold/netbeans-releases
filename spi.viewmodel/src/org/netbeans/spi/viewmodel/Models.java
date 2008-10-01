@@ -537,8 +537,7 @@ public final class Models {
         }
         
         public boolean isEnabled () {
-            if (multiselectionType == MULTISELECTION_TYPE_ANY)
-                return true;
+            boolean any = multiselectionType == MULTISELECTION_TYPE_ANY;
             Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
             if (multiselectionType == MULTISELECTION_TYPE_EXACTLY_ONE) {
                 if (ns.length != 1) return false;
@@ -553,9 +552,14 @@ public final class Models {
                 }
             } else {
                 for (i = 0; i < k; i++)
-                    if (!performer.isEnabled (
-                        ns[i].getLookup().lookup(Object.class)
-                     )) return false;
+                    if (!performer.isEnabled(ns[i].getLookup().lookup(Object.class))) {
+                        if (!any) {
+                            return false;
+                        }
+                    } else if (any) {
+                        return true;
+                    }
+                if (any) return false;
             }
             return true;
         }

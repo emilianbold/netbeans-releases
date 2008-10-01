@@ -157,8 +157,8 @@ public class HtmlGSFParser implements Parser, PositionManager {
             return new OffsetRange(AstUtils.documentPosition(node.startOffset(), source), AstUtils.documentPosition(node.endOffset(), source));
 
         } else {
-            throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
-                    object) != null) ? object.getClass().getName() : "null"); //NOI18N
+            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
+                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
         }
     }
     

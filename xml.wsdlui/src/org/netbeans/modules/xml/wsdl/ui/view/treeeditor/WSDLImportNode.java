@@ -64,6 +64,7 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -79,7 +80,7 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class WSDLImportNode extends ImportNode {
     
-     @SuppressWarnings("hiding") Image ICON  = Utilities.loadImage
+     @SuppressWarnings("hiding") Image ICON  = ImageUtilities.loadImage
      ("org/netbeans/modules/xml/wsdl/ui/view/resources/import-wsdl.png");
    
     public WSDLImportNode(Import wsdlConstruct) {

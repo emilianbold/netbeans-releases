@@ -46,6 +46,7 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -72,7 +73,7 @@ public final class DeclarationTopComponent extends TopComponent {
         initComponents();
         setName(NbBundle.getMessage(DeclarationTopComponent.class, "CTL_DeclarationTopComponent"));
         setToolTipText(NbBundle.getMessage(DeclarationTopComponent.class, "HINT_DeclarationTopComponent"));
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         
         // Don't highlight caret row 
         declarationEditorPane.putClientProperty(

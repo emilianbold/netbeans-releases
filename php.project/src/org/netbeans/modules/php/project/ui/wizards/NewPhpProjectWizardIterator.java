@@ -453,10 +453,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         logRecord.setResourceBundle(NbBundle.getBundle(NewPhpProjectWizardIterator.class));
         logRecord.setResourceBundleName(NewPhpProjectWizardIterator.class.getPackage().getName() + ".Bundle"); // NOI18N
         logRecord.setParameters(new Object[] {
-            FileUtil.isParentOf(projectDir, sourceDir),
+            FileUtil.isParentOf(projectDir, sourceDir) ?  "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
             runAs != null ? runAs.name() : "", // NOI18N
             "1", // NOI18N
-            copyFiles != null ? copyFiles : "" // NOI18N
+            (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO" // NOI18N
         });
         Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
     }

@@ -61,6 +61,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -125,11 +126,11 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
         // XXX the "algorithm" based on the ant property name - in the case of
         // application client; is little odd. Also the rest is rather unclear.
         if (isWAR) { // NOI18N
-            return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/WebModuleNode.gif");//NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/WebModuleNode.gif");//NOI18N
         } else if (key.getReference().indexOf("j2ee-module-car") > 0) { //NOI18N
-            return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/CarModuleNodeIcon.gif");//NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/CarModuleNodeIcon.gif");//NOI18N
         } else {
-            return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/EjbModuleNodeIcon.gif");//NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/EjbModuleNodeIcon.gif");//NOI18N
         }
     }
     

@@ -127,7 +127,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             return null;
         }
         String name = javaIoFile.getAbsolutePath();
-        ProjectBase project;
+        ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
             CsmFile csmFile = ModelImpl.instance().findFile(name); 
@@ -135,8 +135,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 return csmFile;
             }
             NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
-            if (TRACE) trace("adding project %s", name); //NOI18N
-            project = ModelImpl.instance().addProject(platformProject, name, true);
+            if (platformProject != null) {
+                if (TRACE) trace("adding project %s", name); //NOI18N
+                project = ModelImpl.instance().addProject(platformProject, name, true);
+            }
         }
         if (project != null) {
             return project.getFile(javaIoFile);
@@ -242,30 +244,46 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             List<String> usrIncludes = new ArrayList<String>();
             List<String> sysMacros = new ArrayList<String>();
             List<String> usrMacros = new ArrayList<String>();
-            NativeFileItem.Language lang = getLanguage(file, getDataObject(file));
+            DataObject dao = getDataObject(file);
+            NativeFileItem.Language lang = getLanguage(file, dao);
             NativeProject prototype = null;
             for (CsmProject csmProject : model.projects()) {
-                NativeProject project = (NativeProject) csmProject.getPlatformProject();                
-                if (file.getAbsolutePath().startsWith(project.getProjectRoot())) {
-                    prototype = project;
-                    break;
-                }
-                for (String root : project.getSourceRoots()) {
-                    if (file.getAbsolutePath().startsWith(root)) {
+                Object p = csmProject.getPlatformProject();
+                if (p instanceof NativeProject) {
+                    NativeProject project = (NativeProject)p;
+                    if (file.getAbsolutePath().startsWith(project.getProjectRoot())) {
                         prototype = project;
                         break;
                     }
-                }
-                if (prototype != null) {
-                    break;
+                    for (String root : project.getSourceRoots()) {
+                        if (file.getAbsolutePath().startsWith(root)) {
+                            prototype = project;
+                            break;
+                        }
+                    }
+                    if (prototype != null) {
+                        break;
+                    }
                 }
             }
             
             if (prototype == null) {
+                NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
+                if (set != null) {
+                    for(NativeFileItem item : set.getItems()){
+                        NativeProject p = item.getNativeProject();
+                        if (p != null && ModelImpl.instance().isProjectDiabled(p)){
+                            return null;
+                        }
+                    }
+                }
                 // Some default implementation should be provided.
                 sysIncludes.addAll(DefaultSystemSettings.getDefault().getSystemIncludes(lang));
                 sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang));
             } else {
+                if (ModelImpl.instance().isProjectDiabled(prototype)){
+                    return null;
+                }
                 sysIncludes.addAll(prototype.getSystemIncludePaths());
                 sysMacros.addAll(prototype.getSystemMacroDefinitions());
                 usrIncludes.addAll(prototype.getUserIncludePaths());

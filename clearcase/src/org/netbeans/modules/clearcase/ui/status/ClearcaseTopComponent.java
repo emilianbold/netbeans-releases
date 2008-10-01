@@ -42,6 +42,7 @@
 package org.netbeans.modules.clearcase.ui.status;
 
 import javax.swing.SwingUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
@@ -78,7 +79,7 @@ public class ClearcaseTopComponent extends TopComponent implements Externalizabl
         
         setName(NbBundle.getMessage(ClearcaseTopComponent.class, "CTL_Clearcase_TopComponent_Title")); // NOI18N
         setToolTipText(NbBundle.getMessage(ClearcaseTopComponent.class, "HINT_ClearcaseTopComponent"));
-        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/clearcase/resources/icons/versioning-view.png"));  // NOI18N
+        setIcon(ImageUtilities.loadImage("org/netbeans/modules/clearcase/resources/icons/versioning-view.png"));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClearcaseTopComponent.class, "CTL_Clearcase_TopComponent_Title"));
         syncPanel = new VersioningPanel(this);

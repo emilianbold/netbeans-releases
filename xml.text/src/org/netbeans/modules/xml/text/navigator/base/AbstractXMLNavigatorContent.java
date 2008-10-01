@@ -58,6 +58,7 @@ import org.openide.explorer.view.TreeView;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -144,7 +145,7 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
     public void showWaitPanel() {
         removeAll();
         if (waitIcon == null) {
-            waitIcon = new ImageIcon( Utilities.loadImage(
+            waitIcon = new ImageIcon( ImageUtilities.loadImage(
             "org/netbeans/modules/xml/text/navigator/resources/wait.gif" ) ); //NOI18N
         }
         msgLabel.setIcon(waitIcon);
@@ -158,7 +159,7 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
        
     private static class WaitNode extends AbstractNode {
         
-        private Image waitIcon = Utilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/wait.gif"); // NOI18N
+        private Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/wait.gif"); // NOI18N
         
         WaitNode( ) {
             super( Children.LEAF );

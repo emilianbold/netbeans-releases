@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.api.screen.display.injector;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -97,7 +98,7 @@ public abstract class ScreenButtonInjectorPresenter extends ScreenInjectorPresen
 
         public Static (String displayName, String imageResource, int order) {
             this.displayName = displayName;
-            this.image = imageResource != null ? Utilities.loadImage (imageResource) : null;
+            this.image = imageResource != null ? ImageUtilities.loadImage (imageResource) : null;
             this.order = order;
         }
 

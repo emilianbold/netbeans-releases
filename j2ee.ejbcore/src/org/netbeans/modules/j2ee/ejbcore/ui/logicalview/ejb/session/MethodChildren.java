@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMeth
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodViewStrategy;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -106,7 +107,7 @@ public class MethodChildren extends ComponentMethodModel {
 
         public Image getIcon(MethodModel me, Collection interfaces) {
             IconVisitor iv = new IconVisitor();
-            return Utilities.loadImage(iv.getIconUrl(controller.getMethodTypeFromInterface(me)));
+            return ImageUtilities.loadImage(iv.getIconUrl(controller.getMethodTypeFromInterface(me)));
         }
 
         public void openMethod(final MethodModel me, final String implClass, FileObject implClassFO, Collection interfaces) {

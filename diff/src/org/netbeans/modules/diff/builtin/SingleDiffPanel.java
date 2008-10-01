@@ -45,6 +45,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -97,7 +98,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
                 onNext();
             }
         };
-        nextAction.putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png"))); // NOI18N
+        nextAction.putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png"))); // NOI18N
         bNext.setAction(nextAction);
             
         prevAction = new AbstractAction() {
@@ -105,7 +106,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
                 onPrev();
             }
         };
-        prevAction.putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png"))); // NOI18N
+        prevAction.putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png"))); // NOI18N
         bPrevious.setAction(prevAction);
         
         getActionMap().put("jumpNext", nextAction);  // NOI18N

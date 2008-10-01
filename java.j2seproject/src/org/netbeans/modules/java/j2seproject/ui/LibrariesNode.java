@@ -77,6 +77,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -119,7 +120,7 @@ final class LibrariesNode extends AbstractNode {
     private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
 
 
-    private static final Image ICON_BADGE = Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/libraries-badge.png");    //NOI18N
+    private static final Image ICON_BADGE = ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/libraries-badge.png");    //NOI18N
     static final RequestProcessor rp = new RequestProcessor ();
     private static Image folderIconCache;
     private static Image openedFolderIconCache;
@@ -221,7 +222,7 @@ final class LibrariesNode extends AbstractNode {
     
     private Image computeIcon( boolean opened, int type ) {
         Image image = getFolderIcon(opened);
-        image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
+        image = ImageUtilities.mergeImages(image, ICON_BADGE, 7, 7 );
         return image;        
     }
 
@@ -397,7 +398,7 @@ final class LibrariesNode extends AbstractNode {
                     Library lib = refHelper.findLibrary(val);
                     if (lib != null) {
                         List/*<URL>*/ roots = lib.getContent("classpath");  //NOI18N
-                        Icon libIcon = new ImageIcon (Utilities.loadImage(LIBRARIES_ICON));
+                        Icon libIcon = new ImageIcon (ImageUtilities.loadImage(LIBRARIES_ICON));
                         for (Iterator it = roots.iterator(); it.hasNext();) {
                             URL rootUrl = (URL) it.next();
                             rootsList.add (rootUrl);
@@ -471,7 +472,7 @@ final class LibrariesNode extends AbstractNode {
                 URL url = file.toURI().toURL();
                 if (FileUtil.isArchiveFile(url)) {
                     url = FileUtil.getArchiveRoot(url);
-                    icon = openedIcon = new ImageIcon (Utilities.loadImage(ARCHIVE_ICON));
+                    icon = openedIcon = new ImageIcon (ImageUtilities.loadImage(ARCHIVE_ICON));
                     displayName = file.getName();
                 }
                 else {

@@ -46,6 +46,7 @@ import java.beans.*;
 import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.openide.util.Exceptions;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Object that provides beaninfo for a SystemFileSystem.
@@ -64,7 +65,7 @@ public class SystemFileSystemBeanInfo extends SimpleBeanInfo {
     /** Provides the LocalFileSystem's icon */
     public Image getIcon(int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-            return Utilities.loadImage("org/netbeans/core/resources/systemFS.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/core/resources/systemFS.gif"); // NOI18N
         else
             return null;
     }

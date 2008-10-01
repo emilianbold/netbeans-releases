@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -111,7 +112,7 @@ public final class TaskGroupFactory {
         String displayName = bundle.getString( displayNameKey );
         String description = bundle.getString( descriptionKey );
         String iconPath = bundle.getString( iconKey );
-        Image icon = Utilities.loadImage( iconPath );
+        Image icon = ImageUtilities.loadImage( iconPath );
         
         return new TaskGroup( groupName, displayName, description, icon );
     }
@@ -135,7 +136,7 @@ public final class TaskGroupFactory {
             defaultGroup = new TaskGroup( "nb-unknown-group", //NOI18N
                     bundle.getString( "LBL_UnknownGroup" ), //NOI18N
                     bundle.getString( "HINT_UnknownGroup" ), //NOI18N
-                    Utilities.loadImage("org/netbeans/modules/tasklist/trampoline/unknown.gif")); //NOI18N
+                    ImageUtilities.loadImage("org/netbeans/modules/tasklist/trampoline/unknown.gif")); //NOI18N
         }
         return defaultGroup;
     }

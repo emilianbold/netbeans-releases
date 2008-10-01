@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -165,7 +166,7 @@ class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 case ClassPathSupport.Item.TYPE_LIBRARY:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_LIBRARY == null ) {
-                            ICON_BROKEN_LIBRARY = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_LIBRARY.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_LIBRARY = new ImageIcon( ImageUtilities.mergeImages( ProjectProperties.ICON_LIBRARY.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_LIBRARY;
                     }
@@ -175,7 +176,7 @@ class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_ARTIFACT == null ) {
-                            ICON_BROKEN_ARTIFACT = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_ARTIFACT.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_ARTIFACT = new ImageIcon( ImageUtilities.mergeImages( ProjectProperties.ICON_ARTIFACT.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_ARTIFACT;
                     }
@@ -190,7 +191,7 @@ class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 case ClassPathSupport.Item.TYPE_JAR:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_JAR == null ) {
-                            ICON_BROKEN_JAR = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_JAR.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_JAR = new ImageIcon( ImageUtilities.mergeImages( ProjectProperties.ICON_JAR.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_JAR;
                     }
@@ -198,10 +199,10 @@ class ClassPathListCellRenderer extends DefaultListCellRenderer {
                         File file = item.getResolvedFile();
                         ImageIcon icn = file.isDirectory() ? getFolderIcon() : ProjectProperties.ICON_JAR;
                         if (item.getSourceFilePath() != null) {
-                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ProjectProperties.ICON_SOURCE_BADGE.getImage(), 8, 8 ));
+                            icn =  new ImageIcon( ImageUtilities.mergeImages( icn.getImage(), ProjectProperties.ICON_SOURCE_BADGE.getImage(), 8, 8 ));
                         }
                         if (item.getJavadocFilePath() != null) {
-                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ProjectProperties.ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
+                            icn =  new ImageIcon( ImageUtilities.mergeImages( icn.getImage(), ProjectProperties.ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
                         }
                         return icn;
                     }

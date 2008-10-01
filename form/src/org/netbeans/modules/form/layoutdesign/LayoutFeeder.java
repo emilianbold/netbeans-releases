@@ -480,12 +480,7 @@ class LayoutFeeder implements LayoutConstants {
                         LayoutInterval li = LayoutUtils.getOutermostComponent(sub, dimension, alignment);
                         if (LayoutInterval.isAlignedAtBorder(li, parent, alignment)
                             || LayoutInterval.isPlacedAtBorder(li, parent, dimension, alignment))
-                        {   // here we have an aligned component (let's see if it is not nested)
-                            LayoutInterval p = LayoutInterval.getFirstParent(li, PARALLEL);
-                            while (p != parent) {
-                                li = p;
-                                p = LayoutInterval.getFirstParent(li, PARALLEL);
-                            }
+                        {   // here we have an aligned component
                             alignedInterval = li;
                         }
                         else continue; // not aligned subinterval

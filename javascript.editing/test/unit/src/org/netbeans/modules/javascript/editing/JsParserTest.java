@@ -168,8 +168,15 @@ public class JsParserTest extends JsTestBase {
         checkParseTree("testfiles/broken15.js", "__UNK^NOWN__", Token.FUNCTION);
     }
 
-//    // Not yet fixed
-//    public void test120499() throws Exception {
-//        checkParseTree("testfiles/issue120499.js", "__UNK^NOWN__", Token.FUNCTION);
-//    }
+    public void test136495a() throws Exception {
+        checkParseTree("testfiles/lbracketlist.js", "__UNK^NOWN__", Token.NAME);
+    }
+
+    public void test136495b() throws Exception {
+        checkParseTree("testfiles/embedding/issue136495.erb.js", "__UNK^NOWN__", Token.NAME);
+    }
+
+    public void test120499() throws Exception {
+        checkParseTree("testfiles/issue120499.js", "__UNK^NOWN__", Token.NAME);
+    }
 }

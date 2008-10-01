@@ -180,7 +180,7 @@ public class FilesharingCollablet extends Object implements InteractiveCollablet
         if (icon == null) {
             //Image image=(Image)UIManager.get("Nb.Explorer.Folder.icon");
             //New icons for filesharing
-            Image image = Utilities.loadImage(
+            Image image = ImageUtilities.loadImage(
                     "org/netbeans/modules/collab/channel/filesharing/resources/filesharing_png.gif", true
                 ); // NOI18N
 

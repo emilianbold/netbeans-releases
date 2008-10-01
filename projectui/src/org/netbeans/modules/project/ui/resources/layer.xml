@@ -443,6 +443,7 @@ made subject to such option by the copyright holder.
         </folder>
     
         <folder name="Build">            
+            <attr name="position" intvalue="400"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
 
             <!-- Dynamically inserted; see ActiveConfigAction$DynLayer

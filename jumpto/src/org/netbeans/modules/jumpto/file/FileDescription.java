@@ -76,6 +76,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -275,7 +276,7 @@ public class FileDescription {
     
     public static class Renderer extends DefaultListCellRenderer implements ChangeListener {
         
-        public static Icon WAIT_ICON = new ImageIcon( Utilities.loadImage("org/netbeans/modules/jumpto/resources/wait.gif") ); // NOI18N
+        public static Icon WAIT_ICON = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/jumpto/resources/wait.gif") ); // NOI18N
         
         
         private JPanel rendererComponent;

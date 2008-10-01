@@ -505,7 +505,7 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
 
         inputToolbar.addSeparator();
 
-        Image smileyButtonIcon = org.openide.util.Utilities.loadImage(
+        Image smileyButtonIcon = ImageUtilities.loadImage(
                 "org/netbeans/modules/collab/channel/chat/" + "resources/emoticons/emo_smiley16.png"
             ); // NOI18N        
         smileyButton = new JButton(new ImageIcon(smileyButtonIcon));
@@ -539,7 +539,7 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
     }
 
     private JButton createSmileButton(String smile, String icon, String key, ActionListener listener) {
-        Image img = org.openide.util.Utilities.loadImage(
+        Image img = ImageUtilities.loadImage(
                 "org/netbeans/modules/collab/channel/chat/resources/emoticons/" + icon + "16.png"); // NOI18N
         JButton button = new JButton(new ImageIcon(img));
         button.setActionCommand(smile.concat(" "));

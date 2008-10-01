@@ -69,6 +69,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -327,8 +328,8 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
         }
         
         protected Image createIcon() {
-            final Image icon = Utilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/mobile-project.png", true ); // NOI18N
-            return broken ? Utilities.mergeImages(icon, Utilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/brokenProjectBadge.gif" ), 8, 0) : icon; //NOI18N
+            final Image icon = ImageUtilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/mobile-project.png", true ); // NOI18N
+            return broken ? ImageUtilities.mergeImages(icon, ImageUtilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/brokenProjectBadge.gif" ), 8, 0) : icon; //NOI18N
         }
         
         public Image getIcon( final int type ) {

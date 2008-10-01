@@ -43,6 +43,7 @@ package org.netbeans.modules.diff.cmdline;
 
 import java.beans.*;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -126,7 +127,7 @@ public class CmdlineDiffProviderBeanInfo extends SimpleBeanInfo {
     public java.awt.Image getIcon(int iconKind) {
         switch (iconKind) {
             case ICON_COLOR_16x16:
-                return Utilities.loadImage("org/netbeans/modules/diff/diffSettingsIcon.gif", true); // NOI18N
+                return ImageUtilities.loadImage("org/netbeans/modules/diff/diffSettingsIcon.gif", true); // NOI18N
         }
         return null;
     }

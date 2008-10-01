@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -228,7 +229,7 @@ abstract class BadgedIconCache {
         if (badgeImage == null) {
             return baseImage;
         }
-        return Utilities.mergeImages(baseImage, badgeImage, badge_x, badge_y);
+        return ImageUtilities.mergeImages(baseImage, badgeImage, badge_x, badge_y);
     }
     
     /**

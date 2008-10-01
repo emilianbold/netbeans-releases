@@ -96,6 +96,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -111,7 +112,7 @@ import org.openide.util.datatransfer.PasteType;
 public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
     
     
-    private Image ICON = Utilities.loadImage
+    private Image ICON = ImageUtilities.loadImage
     ("org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png");
     
     private DefinitionsPropertyAdapter mPropertyAdapter;

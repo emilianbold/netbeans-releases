@@ -29,6 +29,7 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
 import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -40,7 +41,7 @@ import org.openide.util.Utilities;
 public class SimpleTreeInfoProvider 
         implements TreeItemInfoProvider, TreeItemActionsProvider {
 
-    public static Icon RESULT_IMAGE = new ImageIcon(Utilities.loadImage(
+    public static Icon RESULT_IMAGE = new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/bpel/mapper/tree/models/RESULT.png"));
     
     private static SimpleTreeInfoProvider singleton = new SimpleTreeInfoProvider();

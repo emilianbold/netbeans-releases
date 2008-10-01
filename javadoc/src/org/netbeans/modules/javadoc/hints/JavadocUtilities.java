@@ -611,8 +611,8 @@ public class JavadocUtilities {
             
             // javadoc was changed
             for (Tag tag : tags) {
-                if (this.name.equals(tags[this.index].name()) &&
-                        this.text.equals(tags[this.index].text())) {
+                if (this.name.equals(tag.name()) &&
+                        this.text.equals(tag.text())) {
                     return tag;
                 }
             }

@@ -40,6 +40,7 @@
 
 package org.netbeans.modules.profiler.j2ee.ui;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import javax.swing.ImageIcon;
 
@@ -52,26 +53,26 @@ public class Utils extends org.netbeans.modules.profiler.ui.Utils {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // J2EE projects
-    public static ImageIcon J2EEPROJECTS_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/j2eeProjects.png")); // NOI18N
+    public static ImageIcon J2EEPROJECTS_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/j2eeProjects.png")); // NOI18N
 
     // jsp
-    public static ImageIcon JSP_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/jsp16.png")); // NOI18N
+    public static ImageIcon JSP_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/jsp16.png")); // NOI18N
 
     // jsp folder
-    public static ImageIcon JSP_FOLDER_ICON = new ImageIcon(Utilities.mergeImages(org.netbeans.modules.profiler.ui.Utils.PACKAGE_ICON
+    public static ImageIcon JSP_FOLDER_ICON = new ImageIcon(ImageUtilities.mergeImages(org.netbeans.modules.profiler.ui.Utils.PACKAGE_ICON
                                                                                   .getImage(), // NOI18N
-                                                                                  Utilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/webPagesBadge.png"),
+                                                                                  ImageUtilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/webPagesBadge.png"),
                                                                                   0, 7)); // NOI18N
 
     // tag
-    public static ImageIcon TAG_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/tag16.png")); // NOI18N
+    public static ImageIcon TAG_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/tag16.png")); // NOI18N
 
     // servlet
-    public static ImageIcon SERVLET_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/servletObject.png")); // NOI18N
+    public static ImageIcon SERVLET_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/servletObject.png")); // NOI18N
 
     // filter
-    public static ImageIcon FILTER_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/servletObject.png")); // NOI18N
+    public static ImageIcon FILTER_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/servletObject.png")); // NOI18N
 
     // listener
-    public static ImageIcon LISTENER_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/servletObject.png")); // NOI18N
+    public static ImageIcon LISTENER_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/profiler/j2ee/ui/resources/servletObject.png")); // NOI18N
 }

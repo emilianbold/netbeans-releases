@@ -47,6 +47,7 @@ import java.beans.BeanDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.sun.ide.editors.CharsetDisplayPreferenceEditor;
 import org.netbeans.modules.j2ee.sun.ide.editors.LoggingLevelEditor;
@@ -87,6 +88,6 @@ public class PluginOptionsBeanInfo extends SimpleBeanInfo {
     }
     
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad.gif"); // NOI18N
     }
 }

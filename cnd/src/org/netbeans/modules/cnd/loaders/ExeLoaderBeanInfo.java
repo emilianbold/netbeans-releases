@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -67,6 +68,6 @@ public class ExeLoaderBeanInfo extends SimpleBeanInfo {
     }
 
     public Image getIcon(int type) {
-	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/ExeIcon.gif");   // NOI18N
+	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/ExeIcon.gif");   // NOI18N
     }
 }

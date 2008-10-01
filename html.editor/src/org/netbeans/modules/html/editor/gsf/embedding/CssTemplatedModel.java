@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.css.gsf.api.CssEmbeddingModelUtils;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
@@ -82,13 +83,6 @@ public class CssTemplatedModel extends CssModel {
         return model;
     }
 
-    private static final String PREFIX = "GENERATED_";
-    private static final String POSTFIX = ";";
-    
-    private static final String TEMPLATING = PREFIX + "CODE" + POSTFIX;
-    
-    private static final String FIXED_SELECTOR = PREFIX + "SLTR";
-    
     private CssParserAccess.CssParserResult cachedParserResult = null;
     
     private CssTemplatedModel(Document doc) {
@@ -174,6 +168,7 @@ public class CssTemplatedModel extends CssModel {
     private void sanitizeCode(final StringBuilder buff, final List<OffsetRange> templatingBlocks) {
         
         final boolean[] cleared = new boolean[1];
+        final boolean[] ignoreNextRuleError = new boolean[1];
             
             NodeVisitor visitor = new NodeVisitor() {
 
@@ -191,13 +186,73 @@ public class CssTemplatedModel extends CssModel {
                             if(siblingBefore != null && siblingBefore.kind() == CSSParserTreeConstants.JJTDECLARATION) {
                                 //force clear if there was fixes in the previous declaration
                                 fixesInPreviousDeclaration = containsGeneratedCode(siblingBefore, buff);
+                                
+                                //test if the sibling is a real part of the errorneous declaration or is a completely different declaration
+                                int semicolonIndex = buff.substring(siblingBefore.endOffset(), parent.startOffset()).lastIndexOf(';');
+                                boolean siblingIsMyPart = true;
+                                if(semicolonIndex > -1) {
+                                    //we found a semicolon, so the previous declaration is likely separate, but...
+                                    siblingIsMyPart = false;
+                                    //...test if the semicolon is a part of GENERATED_CODE; identifier
+                                    if(buff.substring(siblingBefore.endOffset() + semicolonIndex - CssEmbeddingModelUtils.getGeneratedCodeIdentifier().length() + 1, 
+                                            siblingBefore.endOffset() + semicolonIndex + 1).equals(CssEmbeddingModelUtils.getGeneratedCodeIdentifier())) {
+                                        //hmm, false alarm, it was just a generated semicolon
+                                        siblingIsMyPart = true;
+                                    }
+                                }
+                                    
+                                if(siblingIsMyPart && fixesInPreviousDeclaration && siblingBefore.image().contains(":") && parent.image().contains(";")) { //contains is there since sometimes??? the parent contains another declaration.
+                                    //looks like following case:
+                                    //padding: 1px GENERATED_CODE; 2px 4px;
+                                    //lets just try to clean the semicolon
+                                    clear(buff, siblingBefore.endOffset(), siblingBefore.endOffset() + 1);
+                                    cleared[0] = true;
+                                    return ;
+                                }
+                                
                             }
 
-                            if(clearNode(parent, buff, 0, 0, templatingBlocks, fixesInPreviousDeclaration, true)) {
+                            //test if the GENERATED_CODE represents the property name
+                            // h1 {
+                            //      ${"color"} : red;
+                            //    }
+                            boolean representsPropertyName = false;
+                            int offset = parent.endOffset();
+                            while(true) {
+                                char c = buff.charAt(++offset);
+                                if(c == ':') {
+                                    representsPropertyName = true;
+                                    break;
+                                } else if(Character.isWhitespace(c)) {
+                                    continue;
+                                } else {
+                                    break;
+                                }
+                            }
+                            
+                            if(representsPropertyName) {
+                                //only cut off the generated semicolon
+                                clear(buff, parent.endOffset() - 1, parent.endOffset());
                                 cleared[0] = true;
+                                
+                                //this situation includes the rest of the rule to be marked as error, we need to 
+                                //prevent this since we already fixed the error
+                                ignoreNextRuleError[0] = true;
+                                
+                            } else {
+                                //default clear
+                                if(clearNode(parent, buff, 0, 0, templatingBlocks, fixesInPreviousDeclaration, false)) {
+                                    cleared[0] = true;
+                                }
                             }
                         }
                         if (parent.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
+                            if(ignoreNextRuleError[0]) {
+                                ignoreNextRuleError[0] = false;
+                                return ;
+                            }
+                            
+                            
                             SimpleNode siblingBefore = SimpleNodeUtil.getSibling(node, true);
                             if (siblingBefore.kind() == CSSParserTreeConstants.JJTREPORTERROR) {
                                 siblingBefore = SimpleNodeUtil.getSibling(siblingBefore, true);
@@ -220,7 +275,7 @@ public class CssTemplatedModel extends CssModel {
                                         
                                     //test if there is a generated virtual code
                                     String selectorListText = buff.substring(from, curlyBracketIndex);
-                                    int idx = selectorListText.indexOf(TEMPLATING);
+                                    int idx = selectorListText.indexOf(CssEmbeddingModelUtils.getGeneratedCodeIdentifier());
                                     if(idx >= 0) {
                                         StringBuilder text = new StringBuilder(selectorListText);
                                         //remove all semicolons in the text - just the generated identifier(s) will be left
@@ -351,7 +406,7 @@ public class CssTemplatedModel extends CssModel {
         int to = node.endOffset();
 
         //fast hack, I should rather use the templating ranges
-        return buff.substring(from, to).contains(PREFIX);
+        return CssEmbeddingModelUtils.containsGeneratedCode(buff.substring(from, to));
     }
     
     private void clear(StringBuilder buff, int from, int to) {
@@ -414,7 +469,7 @@ public class CssTemplatedModel extends CssModel {
                     int sourceEnd = ts.offset();
 
                     int generatedStart = buffer.length();
-                    buffer.append(TEMPLATING); //NOI18N
+                    buffer.append(CssEmbeddingModelUtils.getGeneratedCodeIdentifier()); //NOI18N
                     int generatedEnd = buffer.length();
 
                     templatingBlocks.add(new OffsetRange(generatedStart, generatedEnd));

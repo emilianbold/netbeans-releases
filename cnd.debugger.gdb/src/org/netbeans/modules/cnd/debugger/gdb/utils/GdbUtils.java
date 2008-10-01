@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -247,11 +248,10 @@ public class GdbUtils {
      */
     public static Map<String, String> createMapFromString(String info) {
         HashMap<String, String> map = new HashMap<String, String>();
-        String key, value;
-        int tstart, tend;
         int len = info.length();
         int i = 0;
-        char ch;
+
+        boolean isWindows = Utilities.isWindows();
         
         // Debugger gdb can send different messages
         // Examples:
@@ -272,19 +272,38 @@ public class GdbUtils {
         //  file="quote.cc",fullname="g:/tmp/nik/Quote1/quote.cc",
         //  line="131"},gdb-result-var="$1",return-value="-1"
         
-        while (i < len) {
-            tstart = i++;
-            while (info.charAt(i++) != '=') {
-            }
-            key = info.substring(tstart, i - 1);
-            if ((ch = info.charAt(i++)) == '{') {
-                tend = findMatchingCurly(info, i);
-            } else if (ch == '"') {
-                tend = findEndOfString(info, i);
-            } else if (ch == '[') {
-                tend = findMatchingBrace(info, i);
-            } else {
+        mainLoop: while (i < len) {
+            int tstart = i++;
+            
+            i = info.indexOf('=', i);
+            if (i == -1) {
                 break;
+            }
+
+            String key = info.substring(tstart, i);
+            
+            // jump to the first symbol after =
+            i++;
+            
+            int tend;
+            switch (info.charAt(i)) {
+                case '{':
+                    tend = findMatchingCurly(info, i++);
+                    break;
+                case '"':
+                    i++;
+                    // Fix for memory view data
+                    if ("ascii".equals(key)) { // NOI18N
+                        tend = i + GdbProxy.MEMORY_READ_WIDTH;
+                    } else {
+                        tend = findEndOfString(info, i);
+                    }
+                    break;
+                case '[':
+                    tend = findMatchingBrace(info, i++);
+                    break;
+                default:
+                    break mainLoop;
             }
 
             if (tend == -1) {
@@ -292,8 +311,8 @@ public class GdbUtils {
             }
             
             // put the value in the map and prepare for the next property
-            value = info.substring(i, tend);
-            if (Utilities.isWindows() && value.startsWith("/cygdrive/")) { // NOI18N
+            String value = info.substring(i, tend);
+            if (isWindows && value.startsWith("/cygdrive/")) { // NOI18N
                 value = value.toUpperCase().charAt(10) + ":" + value.substring(11); // NOI18N
             }
             if (key.equals("fullname") || key.equals("file")) { // NOI18N
@@ -469,7 +488,7 @@ public class GdbUtils {
         String name, value; 
         List<GdbVariable> list = new ArrayList<GdbVariable>();
         int len = info.length();
-        int pos, pos2;
+        int pos;
         int idx = 0;
         
         while (len > 0) {
@@ -554,16 +573,14 @@ public class GdbUtils {
     /** Find the end of a string by looking for a non-escaped double quote */
     private static int findEndOfString(String s, int idx) {
         char last = '\0';
-        char ch;
         int len = s.length();
-        
-        while (len-- > 0) {
-            if ((ch = s.charAt(idx)) == '"' && last != '\\') {
+
+        for (;idx < len;idx++) {
+            char ch = s.charAt(idx);
+            if (ch == '"' && last != '\\') {
                 return idx;
-            } else {
-                idx++;
-                last = ch;
-            }
+            } 
+            last = ch;
         }
         throw new IllegalStateException(NbBundle.getMessage(
                 GdbUtils.class, "ERR_UnexpectedGDBStopMessage")); // NOI18N
@@ -649,11 +666,7 @@ public class GdbUtils {
             } else if (ch == rbrace && count == 0) {
                 return idx;
             } else if (ch == '\"' && last != '\\') {
-                if (inDoubleQuote) {
-                    inDoubleQuote = false;
-                } else {
-                    inDoubleQuote = true;
-                }
+                inDoubleQuote = !inDoubleQuote;
             } else if (ch == '\'') {
                 inSingleQuote = true;
             } else {

@@ -48,6 +48,7 @@ import java.io.Serializable;
 
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -83,7 +84,7 @@ public class WSDLSourceMultiviewDesc
     }
 
     public java.awt.Image getIcon() {
-        return Utilities.loadImage(WSDLDataObject.WSDL_ICON_BASE_WITH_EXT);
+        return ImageUtilities.loadImage(WSDLDataObject.WSDL_ICON_BASE_WITH_EXT);
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {

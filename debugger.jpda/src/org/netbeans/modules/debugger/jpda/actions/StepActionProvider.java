@@ -153,12 +153,13 @@ implements Executor {
     }
     
     public void runAction(final Object action) {
-        synchronized (getDebuggerImpl ().LOCK) {
-            //S ystem.out.println("\nStepAction.doAction");
-            try {
+        //S ystem.out.println("\nStepAction.doAction");
+        try {
+            int suspendPolicy;
+            synchronized (getDebuggerImpl ().LOCK) {
                 // 1) init info about current state & remove old
                 //    requests in the current thread
-                int suspendPolicy = getDebuggerImpl().getSuspend();
+                suspendPolicy = getDebuggerImpl().getSuspend();
                 JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
                 synchronized (resumeThread) {
                     resumeThread.waitUntilMethodInvokeDone();
@@ -195,21 +196,21 @@ implements Executor {
                 }
                 // 3) resume JVM
                 resumeThread.setInStep(true, stepRequest);
-                if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
-                    //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
-                    getDebuggerImpl().resumeCurrentThread();
-                    //resumeThread.resume();
-                } else {
-                    getDebuggerImpl ().resume ();
-                }
-            } catch (VMDisconnectedException e) {
-                ErrorManager.getDefault().notify(ErrorManager.USER,
-                    ErrorManager.getDefault().annotate(e,
-                        NbBundle.getMessage(StepActionProvider.class,
-                            "VMDisconnected")));
-            }   
-            //S ystem.out.println("/nStepAction.doAction end");
+            }
+            if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+                //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
+                getDebuggerImpl().resumeCurrentThread();
+                //resumeThread.resume();
+            } else {
+                getDebuggerImpl ().resume ();
+            }
+        } catch (VMDisconnectedException e) {
+            ErrorManager.getDefault().notify(ErrorManager.USER,
+                ErrorManager.getDefault().annotate(e,
+                    NbBundle.getMessage(StepActionProvider.class,
+                        "VMDisconnected")));
         }
+        //S ystem.out.println("/nStepAction.doAction end");
     }
     
     private void addMethodExitBP(ThreadReference tr, JPDAThread jtr) {

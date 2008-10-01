@@ -52,7 +52,7 @@ import org.openide.windows.CloneableOpenSupport;
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.DTDKit;
 import org.netbeans.spi.xml.cookies.*;
 import org.xml.sax.InputSource;

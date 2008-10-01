@@ -10,6 +10,7 @@ import java.awt.Font;
 import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -30,11 +31,11 @@ public class ReminderPanel extends javax.swing.JPanel {
         Image img; 
         ImageIcon icon;
         
-        img = Utilities.loadImage("org/netbeans/modules/registration/resources/sun.png");
+        img = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/sun.png");
         icon = new ImageIcon(img);
         jLeftLabel.setIcon(icon);
         
-        img = Utilities.loadImage("org/netbeans/modules/registration/resources/netbeans.png");
+        img = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/netbeans.png");
         icon = new ImageIcon(img);
         jRightLabel.setIcon(icon);
         

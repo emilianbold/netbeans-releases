@@ -1,0 +1,11 @@
+|-Address [107, 531] : ESCAPED{Address}
+|--$street [127, 143] : ESCAPED{$street}
+|--$city [148, 162] : ESCAPED{$city}
+|--$zip [167, 180] : ESCAPED{$zip}
+|--__construct [186, 325] : ESCAPED{__construct}ESCAPED{(}ESCAPED{$street}ESCAPED{, }ESCAPED{$city}ESCAPED{, }ESCAPED{$zip}ESCAPED{)}
+|--getStreet [331, 396] : ESCAPED{getStreet}ESCAPED{(}ESCAPED{)}
+|--getCity [402, 463] : ESCAPED{getCity}ESCAPED{(}ESCAPED{)}
+|--getZip [469, 528] : ESCAPED{getZip}ESCAPED{(}ESCAPED{)}
+|-"KOLESA" [533, 556] : ESCAPED{KOLESA}
+|-"KLADRUBY" [558, 583] : ESCAPED{KLADRUBY}
+|-"PRELOUC" [585, 609] : ESCAPED{PRELOUC}

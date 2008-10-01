@@ -150,7 +150,7 @@ public class FilesharingCollabletFactorySettingsBeanInfo extends SimpleBeanInfo 
     public Image getIcon(int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
             if (smallIcon == null) {
-                smallIcon = Utilities.loadImage(
+                smallIcon = ImageUtilities.loadImage(
                         "org/netbeans/modules/collab/channel/filesharing/" + // NOI18N
                         "resources/filesharing_png.gif"
                     ); // NOI18N
@@ -159,7 +159,7 @@ public class FilesharingCollabletFactorySettingsBeanInfo extends SimpleBeanInfo 
             return smallIcon;
         } else {
             if (largeIcon == null) {
-                largeIcon = Utilities.loadImage(
+                largeIcon = ImageUtilities.loadImage(
                         "org/netbeans/modules/collab/channel/filesharing/" + // NOI18N
                         "resources/filesharing_png.gif"
                     ); // NOI18N

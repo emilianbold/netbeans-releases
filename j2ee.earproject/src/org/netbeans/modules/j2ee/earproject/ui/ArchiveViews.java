@@ -69,6 +69,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -204,7 +205,7 @@ class ArchiveViews {
     private static final class DocBaseNode extends FilterNode {
 
         private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
-        private static final Image CONFIGURATION_FILES_BADGE = Utilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/archive.gif", true ); // NOI18N
+        private static final Image CONFIGURATION_FILES_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/archive.gif", true ); // NOI18N
         
         public DocBaseNode(DataFolder folder) {
             super(folder.getNodeDelegate(), folder.createNodeChildren(VISIBILITY_QUERY_FILTER));
@@ -223,7 +224,7 @@ class ArchiveViews {
         private Image computeIcon( boolean opened, int type ) {
             Node folderNode = getOriginal();
             Image image = opened ? folderNode.getOpenedIcon( type ) : folderNode.getIcon( type );
-            return Utilities.mergeImages( image, CONFIGURATION_FILES_BADGE, 7, 7 );
+            return ImageUtilities.mergeImages( image, CONFIGURATION_FILES_BADGE, 7, 7 );
         }
         
         @Override

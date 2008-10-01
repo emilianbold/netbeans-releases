@@ -68,6 +68,7 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -368,7 +369,7 @@ public final class J2eePlatform {
     public Image getIcon() {
         Image result = impl.getIcon();
         if (result == null)
-            result = Utilities.loadImage(DEFAULT_ICON);
+            result = ImageUtilities.loadImage(DEFAULT_ICON);
 
         return result;
     }

@@ -187,7 +187,11 @@ public class JsCodeCompletionTest extends JsTestBase {
     public void testLocalCompletion2() throws Exception {
         checkCompletion("testfiles/completion/lib/test2.js", "^alert('foo2", false);
     }
-    
+
+    public void testLocalCompletion3() throws Exception {
+        checkCompletion("testfiles/completion/lib/test2.js", "^var declaredglobal;", false);
+    }
+
     public void test129036() throws Exception {
         checkCompletion("testfiles/completion/lib/test129036.js", "my^ //Foo", false);
     }
@@ -200,12 +204,20 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkCompletion("testfiles/completion/lib/test1.js", "\"f\\^oo\"", false);
     }
     
+    public void testCompletionStringCompletion3() throws Exception {
+        checkCompletion("testfiles/completion/lib/test2.js", "alert('^foo1", false);
+    }
+
     public void testCompletionRegexpCompletion1() throws Exception {
         checkCompletion("testfiles/completion/lib/test1.js", "/re^g/", false);
     }
 
     public void testCompletionRegexpCompletion2() throws Exception {
         checkCompletion("testfiles/completion/lib/test1.js", "/b\\^ar/", false);
+    }
+
+    public void testEmpty() throws Exception {
+        checkCompletion("testfiles/completion/lib/empty.js", "^", false);
     }
 
     public void testExpression1() throws Exception {

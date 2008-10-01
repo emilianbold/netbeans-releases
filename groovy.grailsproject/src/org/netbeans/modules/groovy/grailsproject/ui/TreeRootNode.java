@@ -65,6 +65,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -80,7 +81,7 @@ import org.netbeans.modules.groovy.grailsproject.GrailsProject;
  */
 public final class TreeRootNode extends FilterNode implements PropertyChangeListener {
 
-    private static Image PACKAGE_BADGE = Utilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif"); // NOI18N
+    private static Image PACKAGE_BADGE = ImageUtilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif"); // NOI18N
     private final SourceGroup g;
 
     public TreeRootNode(SourceGroup g, GrailsProject project) {
@@ -129,9 +130,9 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         Icon icon = g.getIcon(opened);
         if (icon == null) {
             Image image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
-            return Utilities.mergeImages(image, PACKAGE_BADGE, 7, 7);
+            return ImageUtilities.mergeImages(image, PACKAGE_BADGE, 7, 7);
         } else {
-            return Utilities.icon2Image(icon);
+            return ImageUtilities.icon2Image(icon);
         }
     }
 

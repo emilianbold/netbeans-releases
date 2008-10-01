@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -83,8 +84,8 @@ class OthersRootNode extends AnnotatedAbstractNode {
     }
     
     private Image getIcon(boolean opened) {
-        Image badge = Utilities.loadImage("org/netbeans/modules/maven/others-badge.png", true); //NOI18N
-        return Utilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
+        Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/others-badge.png", true); //NOI18N
+        return ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
     }
 
     @Override

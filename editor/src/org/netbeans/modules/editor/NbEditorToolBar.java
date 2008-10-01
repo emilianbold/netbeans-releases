@@ -100,6 +100,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -562,7 +563,7 @@ import org.openide.util.lookup.ProxyLookup;
             if (resourceId == null) { // use default icon
                 resourceId = "org/netbeans/modules/editor/resources/default.gif"; // NOI18N
             }
-            Image img = org.openide.util.Utilities.loadImage(resourceId);
+            Image img = ImageUtilities.loadImage(resourceId);
             if (img != null) {
                 a.putValue(Action.SMALL_ICON, new ImageIcon(img));
             }

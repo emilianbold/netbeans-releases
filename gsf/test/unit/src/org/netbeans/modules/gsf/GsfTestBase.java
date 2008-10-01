@@ -2138,6 +2138,18 @@ public abstract class GsfTestBase extends NbTestCase {
         
         return sb.toString();
     }
+
+    private static org.netbeans.modules.gsf.Language getCompletableLanguage(Document doc, int offset) {
+        BaseDocument baseDoc = (BaseDocument)doc;
+        List<org.netbeans.modules.gsf.Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
+        for (org.netbeans.modules.gsf.Language l : list) {
+            if (l.getCompletionProvider() != null) {
+                return l;
+            }
+        }
+
+        return null;
+    }
     
     public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
         initializeClassPaths();
@@ -2157,7 +2169,10 @@ public abstract class GsfTestBase extends NbTestCase {
             ci.setCaretOffset(caretOffset);
         }
 
-        ParserResult pr = ci.getEmbeddedResult(ci.getPreferredMimeType(), 0);
+        //String targetMime = ci.getPreferredMimeType();
+        String targetMime = getCompletableLanguage(ci.getDocument(), caretOffset).getMimeType();
+
+        ParserResult pr = ci.getEmbeddedResult(targetMime, 0);
         assertNotNull(pr);
         
         CodeCompletionHandler cc = getCodeCompleter();
@@ -3428,7 +3443,13 @@ public abstract class GsfTestBase extends NbTestCase {
 
         int caretOffset = -1;
         if (caretLine != null) {
-            caretOffset = getCaretOffset(text, caretLine);
+            int caretDelta = caretLine.indexOf("^");
+            assertTrue(caretDelta != -1);
+            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+            int lineOffset = text.indexOf(caretLine);
+            assertTrue("NOT FOUND: " + info.getFileObject().getName() + ":" + caretLine, lineOffset != -1);
+
+            caretOffset = lineOffset + caretDelta;
         }
 
         List<Hint> hints = new ArrayList<Hint>();
@@ -3493,11 +3514,27 @@ public abstract class GsfTestBase extends NbTestCase {
         FileObject fo = getTestFile(relFilePath);
         String text = read(fo);
 
-        assertNotNull(selStartLine);
-        assertNotNull(selEndLine);
+        assert selStartLine != null;
+        assert selEndLine != null;
+        
+        int selStartOffset = -1;
+        int lineDelta = selStartLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selStartLine = selStartLine.substring(0, lineDelta) + selStartLine.substring(lineDelta + 1);
+        int lineOffset = text.indexOf(selStartLine);
+        assertTrue(lineOffset != -1);
 
-        int selStartOffset = getCaretOffset(text, selStartLine);
-        int selEndOffset = getCaretOffset(text, selEndLine);
+        selStartOffset = lineOffset + lineDelta;
+        
+        int selEndOffset = -1;
+        lineDelta = selEndLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selEndLine = selEndLine.substring(0, lineDelta) + selEndLine.substring(lineDelta + 1);
+        lineOffset = text.indexOf(selEndLine);
+        assertTrue(lineOffset != -1);
+
+        selEndOffset = lineOffset + lineDelta;
+
         String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
         
         checkHints(this, hint, relFilePath, caretLine);
@@ -3533,12 +3570,27 @@ public abstract class GsfTestBase extends NbTestCase {
         FileObject fo = getTestFile(relFilePath);
         String text = read(fo);
 
-        assertNotNull(selStartLine);
-        assertNotNull(selEndLine);
+        assert selStartLine != null;
+        assert selEndLine != null;
         
-        int selStartOffset = getCaretOffset(text, selStartLine);
-        int selEndOffset = getCaretOffset(text, selEndLine);
+        int selStartOffset = -1;
+        int lineDelta = selStartLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selStartLine = selStartLine.substring(0, lineDelta) + selStartLine.substring(lineDelta + 1);
+        int lineOffset = text.indexOf(selStartLine);
+        assertTrue(lineOffset != -1);
+
+        selStartOffset = lineOffset + lineDelta;
         
+        int selEndOffset = -1;
+        lineDelta = selEndLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selEndLine = selEndLine.substring(0, lineDelta) + selEndLine.substring(lineDelta + 1);
+        lineOffset = text.indexOf(selEndLine);
+        assertTrue(lineOffset != -1);
+
+        selEndOffset = lineOffset + lineDelta;
+
         String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
         
         applyHint(test, hint, relFilePath, caretLine, fixDesc);

@@ -329,8 +329,9 @@ public class CallStackFrameImpl implements CallStackFrame {
             if (argValues == null) return null;
             MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, sf.location().lineNumber());
             if (argumentNames == null) return null;
-            LocalVariable[] arguments = new LocalVariable[argumentNames.length];
-            for (int i = 0; i < arguments.length; i++) {
+            int n = Math.min(argValues.size(), argumentNames.length);
+            LocalVariable[] arguments = new LocalVariable[n];
+            for (int i = 0; i < n; i++) {
                 com.sun.jdi.Value value = argValues.get(i);
                 if (value instanceof ObjectReference) {
                     arguments[i] =

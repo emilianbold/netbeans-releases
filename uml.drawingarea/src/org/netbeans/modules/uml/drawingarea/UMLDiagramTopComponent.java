@@ -146,6 +146,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -653,14 +654,14 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         final String details = resource.getIconDetailsForElementType(kind);
         if (java.awt.EventQueue.isDispatchThread())
         {
-            setIcon(Utilities.loadImage(details, true));
+            setIcon(ImageUtilities.loadImage(details, true));
         } else
         {
             java.awt.EventQueue.invokeLater(new Runnable()
             {
                 public void run()
                 {
-                    setIcon(Utilities.loadImage(details, true));
+                    setIcon(ImageUtilities.loadImage(details, true));
                 }
             });
         }

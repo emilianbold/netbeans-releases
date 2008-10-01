@@ -107,6 +107,7 @@ made subject to such option by the copyright holder.
 
     <folder name="Toolbars">
         <folder name="Collaboration">
+            <attr name="position" intvalue="950"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.resources.Bundle"/>
             <!--
             <file name="ShowCollabExplorerAction.shadow">

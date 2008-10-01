@@ -52,6 +52,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.*;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 public class LayoutDesigner implements LayoutConstants {
@@ -874,15 +875,15 @@ public class LayoutDesigner implements LayoutConstants {
             }
             seq.add(gap, 0);
             if (interval != seq) {
-                seq.add(interval, -1);
-                interval.setAlignment(DEFAULT);
+                layoutModel.addInterval(interval, seq, -1);
+                layoutModel.setIntervalAlignment(interval, DEFAULT);
             }
             gap = new LayoutInterval(SINGLE);
             if (!resizing) {
                 gap.setSizes(0, 0, Short.MAX_VALUE);
             }
             seq.add(gap, -1);
-            targetRoots[dim].add(seq, -1);
+            layoutModel.addInterval(seq, targetRoots[dim], -1);
         }
     }
 
@@ -1286,19 +1287,19 @@ public class LayoutDesigner implements LayoutConstants {
     private Image getLinkBadge(int dimension) {
         if (dimension == (BOTH_DIMENSIONS)) {
             if (linkBadgeBoth == null) {
-                linkBadgeBoth = Utilities.loadImage("org/netbeans/modules/form/resources/sameboth.png"); //NOI18N
+                linkBadgeBoth = ImageUtilities.loadImage("org/netbeans/modules/form/resources/sameboth.png"); //NOI18N
             }
             return linkBadgeBoth;
         }
         if (dimension == HORIZONTAL) {
             if (linkBadgeHorizontal == null) {
-                linkBadgeHorizontal = Utilities.loadImage("org/netbeans/modules/form/resources/samewidth.png"); //NOI18N
+                linkBadgeHorizontal = ImageUtilities.loadImage("org/netbeans/modules/form/resources/samewidth.png"); //NOI18N
             }
             return linkBadgeHorizontal;
         }
         if (dimension == VERTICAL) {
             if (linkBadgeVertical == null) {
-                linkBadgeVertical = Utilities.loadImage("org/netbeans/modules/form/resources/sameheight.png"); //NOI18N
+                linkBadgeVertical = ImageUtilities.loadImage("org/netbeans/modules/form/resources/sameheight.png"); //NOI18N
             }
             return linkBadgeVertical;
         }
@@ -1558,28 +1559,33 @@ public class LayoutDesigner implements LayoutConstants {
             for (int dim=0; dim < DIM_COUNT; dim++) {
                 addingInts[dim] = restrictedCopy(commonParents[dim], sourceToTargetComp, overallSpace, dim, null);
             }
-            // in case components are moved (not copied) make sure both the
-            // components and intervals are correctly removed from the original place
-            if (targetComponents.length > 1) {
-                // for multiple components the intervals are extracted in restrictedCopy
-                // (their common parent is removed), so now also remove the components
-                // so addComponents does not try to remove the intervals later
-                for (LayoutComponent comp : targetComponents) {
-                    if (comp.getParent() != null) {
-                        layoutModel.removeComponent(comp, false);
-                    }
-                }
-            } // for single component both the component and intervals will be removed in addComponents
 
             // place the copied intervals
             int[] shift = getCopyShift(sourceComponents, targetContainer, overallSpace, sourceContainer == targetContainer);
-            if (shift != null) {
+            if (shift != null) { // place near the original positions
+                // in case components are moved (not copied) make sure both the
+                // components and intervals are correctly removed from the original place
+                if (targetComponents.length > 1) {
+                    // for multiple components the intervals are extracted in restrictedCopy
+                    // (their common parent is removed), so now also remove the components
+                    // so addComponents does not try to remove the intervals later
+                    for (LayoutComponent comp : targetComponents) {
+                        if (comp.getParent() != null) {
+                            layoutModel.removeComponent(comp, false);
+                        }
+                    }
+                } // for single component both the component and intervals will be removed in addComponents
                 prepareDragger(targetComponents, bounds, new Point(0, 0), LayoutDragger.ALL_EDGES);
                 dragger.setTargetContainer(targetContainer, getTargetRootsForCopy(targetContainer));
                 dragger.move(shift, false, false);
                 addComponents(targetComponents, targetContainer, addingInts, false);
                 dragger = null;
-            } else {
+            } else { // place in center
+                for (LayoutComponent comp : targetComponents) {
+                    if (comp.getParent() != null) { // moved component (not copied)
+                        layoutModel.removeComponentAndIntervals(comp, false);
+                    }
+                }
                 addUnspecified(targetComponents, targetContainer, addingInts);
             }
         }
@@ -2092,7 +2098,11 @@ public class LayoutDesigner implements LayoutConstants {
         if (targetLC == null) {
             targetLC = new LayoutComponent(targetId, false);
         } else if (targetLC.getParent() != null) {
-            throw new IllegalArgumentException("Target component already exists and is placed in the layout"); // NOI18N
+            if (targetLC.getParent() != targetContainer && targetId.equals(sourceId)) { // move from other container
+                layoutModel.removeComponentAndIntervals(targetLC, false);
+            } else {
+                throw new IllegalArgumentException("Target component already exists and is placed in the layout"); // NOI18N
+            }
         }
         LayoutComponent sourceLC = layoutModel.getLayoutComponent(sourceId);
         LayoutInterval[] addingInts = new LayoutInterval[DIM_COUNT];

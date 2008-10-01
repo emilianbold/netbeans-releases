@@ -49,6 +49,7 @@ import java.io.ObjectOutput;
 import javax.swing.JComponent;
 import org.netbeans.spi.viewmodel.Models;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -79,7 +80,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     
     private View (String icon, String name, String helpID, String propertiesHelpID,
                   String displayNameResource, String toolTipResource) {
-        setIcon (Utilities.loadImage (icon));
+        setIcon (ImageUtilities.loadImage (icon));
         // Remember the location of the component when closed.
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
         this.name = name;

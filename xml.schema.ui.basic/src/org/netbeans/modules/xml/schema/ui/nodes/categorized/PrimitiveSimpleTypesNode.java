@@ -54,6 +54,7 @@ import java.awt.Image;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
@@ -118,8 +119,8 @@ public class PrimitiveSimpleTypesNode extends AbstractNode
 	}
 	
 	private Image badgeImage(Image main) {
-	    Image badgeImage = Utilities.loadImage("org/netbeans/modules/xml/schema/ui/nodes/resources/simpleType_badge.png"); // NOI18N
-	    return Utilities.mergeImages(main, badgeImage, 8, 8);
+	    Image badgeImage = ImageUtilities.loadImage("org/netbeans/modules/xml/schema/ui/nodes/resources/simpleType_badge.png"); // NOI18N
+	    return ImageUtilities.mergeImages(main, badgeImage, 8, 8);
 	}
 	
 	public boolean canRename()

@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.openide.util.ImageUtilities;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -140,7 +141,7 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * @return icon representing current state or null
      */
     public java.awt.Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/websvc/core/resources/WSSchemaCatalog.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/core/resources/WSSchemaCatalog.png"); // NOI18N
     }
 
     /**
