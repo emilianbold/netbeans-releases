@@ -39,16 +39,10 @@
 
 package org.netbeans.modules.groovy.support;
 
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * Temporary solution to have GSF indexing enabled on projects with only
@@ -61,31 +55,28 @@ import org.openide.filesystems.FileObject;
 public class GsfClasspathHook extends ProjectOpenedHook {
 
     private final Project project;
-    private ClassPath cp;
     
-    public GsfClasspathHook(Project project) {
+    public GsfClasspathHook(Project project, Lookup baseContext) {
         this.project = project;
     }
     
     @Override
     protected void projectOpened() {
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (groups.length > 0) {
-            FileObject[] roots = new FileObject[groups.length];
-            for (int i = 0; i < groups.length; i++) {
-                roots[i] = groups[i].getRootFolder();
-            }
-            cp = ClassPathSupport.createClassPath(roots);
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { cp });
+        if (isGroovyEnabled()) {
+            GroovyProjectExtender.registerGsfClassPath(project);
         }
     }
 
     @Override
     protected void projectClosed() {
-        if (cp != null) {
-            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] { cp });
+        if (isGroovyEnabled()) {
+            GroovyProjectExtender.unregisterGsfClassPath(project);
         }
+    }
+
+    private boolean isGroovyEnabled() {
+        GroovyFeature groovyFeature = project.getLookup().lookup(GroovyFeature.class);
+        return groovyFeature == null ? false : groovyFeature.isGroovyEnabled();
     }
 
 }

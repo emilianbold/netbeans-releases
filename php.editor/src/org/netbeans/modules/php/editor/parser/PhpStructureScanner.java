@@ -107,9 +107,10 @@ public class PhpStructureScanner implements StructureScanner {
             if (program.getStatements().size() == 1) {
                 // check whether the ast is broken.
                 if (program.getStatements().get(0) instanceof ASTError) {
-                    Object lastCorrect = info.getDocument().getProperty(LAST_CORRECT_FOLDING_PROPERTY);
+                    @SuppressWarnings("unchecked")
+                    Map<String, List<OffsetRange>> lastCorrect = (Map<String, List<OffsetRange>>) info.getDocument().getProperty(LAST_CORRECT_FOLDING_PROPERTY);
                     if (lastCorrect != null){
-                        return ( Map<String, List<OffsetRange>>)lastCorrect;
+                        return lastCorrect;
                     }
                     else {
                         return Collections.emptyMap();

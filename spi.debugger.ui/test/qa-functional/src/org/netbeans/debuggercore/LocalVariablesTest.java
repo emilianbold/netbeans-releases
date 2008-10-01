@@ -353,9 +353,13 @@ public class LocalVariablesTest extends JellyTestCase {
             new RunToCursorAction().performMenu();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            new EventTool().waitNoEvent(500);
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            new EventTool().waitNoEvent(500);
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            new EventTool().waitNoEvent(500);
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            new EventTool().waitNoEvent(500);
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
             
             // TODO: Enable after fix of issue 132886 

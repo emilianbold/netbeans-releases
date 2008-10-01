@@ -133,6 +133,7 @@ public class JsfDesignerAdvancedOptionsPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         defaultFontSize = new javax.swing.JSpinner();
         jLabel1 = new javax.swing.JLabel();
@@ -152,144 +153,156 @@ public class JsfDesignerAdvancedOptionsPanel extends javax.swing.JPanel {
         dataProviderSuffix = new javax.swing.JTextField();
         promptForName = new javax.swing.JCheckBox();
 
+        setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
+        add(defaultFontSize, gridBagConstraints);
+
         jLabel1.setLabelFor(defaultFontSize);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.jLabel1.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 0, 0, 0);
+        add(jLabel1, gridBagConstraints);
 
         jLabel2.setLabelFor(gridHeight);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.jLabel2.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 0, 0, 0);
+        add(jLabel2, gridBagConstraints);
 
         jLabel3.setLabelFor(gridWidth);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.jLabel3.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 0, 0, 0);
+        add(jLabel3, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
+        add(gridHeight, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
+        add(gridWidth, gridBagConstraints);
 
         jLabel4.setLabelFor(resolution);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.jLabel4.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jLabel4, gridBagConstraints);
 
         resolution.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 7, 0, 0);
+        add(resolution, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(showGrid, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.showGrid.text")); // NOI18N
         showGrid.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
+        add(showGrid, gridBagConstraints);
+        showGrid.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.showGrid.desc")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(snapToGrid, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.snapToGrid.text")); // NOI18N
         snapToGrid.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
+        add(snapToGrid, gridBagConstraints);
+        snapToGrid.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.snapToGrid.desc")); // NOI18N
 
         jLabel6.setLabelFor(rowsetSuffix);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.jLabel6.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 0, 0, 0);
+        add(jLabel6, gridBagConstraints);
 
         rowsetSuffix.setText(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.rowsetSuffix.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
+        add(rowsetSuffix, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(rowsetInSession, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.rowsetInSession.text")); // NOI18N
         rowsetInSession.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
+        add(rowsetInSession, gridBagConstraints);
+        rowsetInSession.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.rowsetInSession.desc")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(checkRowsetDuplicate, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.checkRowsetDuplicate.text")); // NOI18N
         checkRowsetDuplicate.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
+        add(checkRowsetDuplicate, gridBagConstraints);
+        checkRowsetDuplicate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.checkRowsetDuplicate.desc")); // NOI18N
 
         jLabel5.setLabelFor(dataProviderSuffix);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.jLabel5.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(14, 0, 0, 0);
+        add(jLabel5, gridBagConstraints);
 
         dataProviderSuffix.setText(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.dataProviderSuffix.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(14, 7, 0, 0);
+        add(dataProviderSuffix, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(promptForName, org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.promptForName.text")); // NOI18N
         promptForName.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 160, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(47, 47, 47))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 96, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(82, 82, 82))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(88, 88, 88))
-                    .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 178, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 139, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(39, 39, 39)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(promptForName)
-                        .addContainerGap())
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(layout.createSequentialGroup()
-                            .add(checkRowsetDuplicate)
-                            .addContainerGap())
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(rowsetInSession)
-                                .addContainerGap())
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(layout.createSequentialGroup()
-                                    .add(snapToGrid)
-                                    .addContainerGap())
-                                .add(layout.createSequentialGroup()
-                                    .add(showGrid)
-                                    .addContainerGap())
-                                .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, rowsetSuffix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
-                                        .add(resolution, 0, 210, Short.MAX_VALUE)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, dataProviderSuffix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE))
-                                    .add(14, 14, 14))
-                                .add(layout.createSequentialGroup()
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, gridWidth)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, gridHeight)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, defaultFontSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE))
-                                    .addContainerGap(180, Short.MAX_VALUE)))))))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(resolution, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel4))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(defaultFontSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(gridHeight, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(gridWidth, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel3))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(showGrid)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(snapToGrid)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel5)
-                    .add(dataProviderSuffix, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(rowsetSuffix, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel6))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rowsetInSession)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(checkRowsetDuplicate)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(promptForName)
-                .addContainerGap())
-        );
-
-        showGrid.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.showGrid.desc")); // NOI18N
-        snapToGrid.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.snapToGrid.desc")); // NOI18N
-        rowsetInSession.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.rowsetInSession.desc")); // NOI18N
-        checkRowsetDuplicate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.checkRowsetDuplicate.desc")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
+        add(promptForName, gridBagConstraints);
         promptForName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.promptForName.desc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     

@@ -1,14 +1,65 @@
 #!/bin/sh -x
 
+verifyClassName=
+verifyClassPath=
+doVerify=0
+
+if [ -n "$2" ] && [ -n "$3" ] ; then
+   verifyClassName="$2"
+   verifyClassPath="$3"
+   doVerify=1
+fi
+
+javaPath="/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home"
+unpackCommand="$javaPath/bin/unpack200"
+javaCommand="$javaPath/bin/java"
+packCommand="$javaPath/bin/pack200"
+
+verify(){
+  filenamePacked="$1"
+  filenameSource="$2"
+  tmpFile="$2.tmp"
+  $unpackCommand "$1" "$tmpFile"
+  result=1
+  if [ 0 -eq $? ] ; then
+	$javaCommand -cp "$verifyClassPath" "$verifyClassName" "$tmpFile" >/dev/null
+	result=$?
+  fi
+
+  if [ -f "$tmpFile" ] ; then
+      rm "$tmpFile"
+  fi
+
+  return $result
+}
+
 for f in `find $1 -name "*.jar"`
 do
   bn=`basename $f`
   if  [ "$bn" != "jhall.jar" ] && [ "$bn" != "derby.jar" ] && [ "$bn" != "derbyclient.jar" ]
   then
     echo Packing $f
-    pack200 -J-Xmx256m -g $f.pack $f
-    chmod `stat -f %Lp $f` $f.pack && touch -r $f $f.pack
-    rm $f
+    $packCommand -J-Xmx256m -g $f.pack $f
+    if [ 0 -eq $? ] ; then
+        res=0
+        if [ 1 -eq $doVerify ] ; then
+	    verify $f.pack $f
+            res=$?
+	fi
+
+        if [ 0 -eq $res ] ; then
+            chmod `stat -f %Lp $f` $f.pack && touch -r $f $f.pack
+            rm $f
+        else
+            echo Error verification packed jar : $f
+	    rm $f.pack
+        fi
+    else
+	if [ -f $f.pack ] ; then
+	    echo Error packing jar : $f
+	    rm $f.pack
+	fi
+    fi
   fi
 done
 
