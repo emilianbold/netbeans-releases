@@ -305,6 +305,10 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
 
         FileObject webBuildBase = destDir == null ? null : antHelper.resolveFileObject(destDir);
 
+        if (webBuildBase == null) {
+            return;
+        }
+
         FileObject destFile = null;
         try {
             destFile = FileUtil.createData(webBuildBase, destPath + "/" + sourceFile.getName());

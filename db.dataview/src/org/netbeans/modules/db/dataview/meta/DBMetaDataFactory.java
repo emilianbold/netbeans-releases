@@ -175,7 +175,7 @@ public final class DBMetaDataFactory {
             rs = dbmeta.getImportedKeys(setToNullIfEmpty(table.getCatalog()), setToNullIfEmpty(table.getSchema()), table.getName());
             fkList = DBForeignKey.createForeignKeyColumnMap(table, rs);
         } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         } finally {
             DataViewUtils.closeResources(rs);
         }

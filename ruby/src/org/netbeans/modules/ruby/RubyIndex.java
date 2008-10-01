@@ -86,7 +86,7 @@ import org.openide.util.Exceptions;
  */
 public final class RubyIndex {
 
-    private static final Logger LOGGER = Logger.getLogger(RubyIndex.class.getName());
+    //private static final Logger LOGGER = Logger.getLogger(RubyIndex.class.getName());
     
     public static final String UNKNOWN_CLASS = "<Unknown>"; // NOI18N
     public static final String OBJECT = "Object"; // NOI18N
@@ -1802,8 +1802,8 @@ public final class RubyIndex {
                 Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
                 while (it.hasNext()) {
                     RubyPlatform platform = it.next();
-                    url = platform.getHomeUrl() + url.substring(RUBYHOME_URL.length());
-                    FileObject fo = URLMapper.findFileObject(new URL(url));
+                    String u = platform.getHomeUrl() + url.substring(RUBYHOME_URL.length());
+                    FileObject fo = URLMapper.findFileObject(new URL(u));
                     if (fo != null) {
                         return fo;
                     }
@@ -1820,8 +1820,8 @@ public final class RubyIndex {
                     }
                     GemManager gemManager = platform.getGemManager();
                     if (gemManager != null) {
-                        url = gemManager.getGemHomeUrl() + url.substring(GEM_URL.length());
-                        FileObject fo = URLMapper.findFileObject(new URL(url));
+                        String u = gemManager.getGemHomeUrl() + url.substring(GEM_URL.length());
+                        FileObject fo = URLMapper.findFileObject(new URL(u));
                         if (fo != null) {
                             return fo;
                         }

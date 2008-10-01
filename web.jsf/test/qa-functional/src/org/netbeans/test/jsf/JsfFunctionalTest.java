@@ -76,6 +76,8 @@ import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
+import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.util.Exceptions;
 
 /** Test JSF support.
@@ -120,7 +122,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         conf = addServerTests(Server.GLASSFISH, conf,
                 "testPreconditions",
                 "testNewJSFWebProject",
-                "testRedeployProject", 
+                "testRedeployProject",
                 "testCleanAndBuildProject",
                 "testCompileAllJSP",
                 "testCleanAndBuildProject",
@@ -134,7 +136,8 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
                 "testAddNavigationCaseWithNewRule",
                 "testAddJSFToProject",
                 "testJSFPalette",
-                "testCreateEntityClassAndPU"
+                "testCreateEntityClassAndPU",
+                "testShutdownDb"
                 );
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
@@ -150,6 +153,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
      * - check index.jsp is opened
      */
     public void testNewJSFWebProject() throws IOException {
+        final String serverNodeName = getServerNode(Server.ANY).getText();
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
         String category = Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",
@@ -164,7 +168,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         nameStep.txtProjectLocation().typeText(sFolder);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer(getServerNode(Server.ANY).getText());
+        serverStep.selectServer(serverNodeName);
         serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50"));
         serverStep.next();
 
@@ -467,6 +471,16 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         new JButtonOperator(persistenceDialog, "Create").push();
         
         locationOper.finish();
+    }
+
+    /** Shutdown databases */
+    public void testShutdownDb(){
+        DatabaseRuntime[] runtimes = DatabaseRuntimeManager.getDefault().getRuntimes();
+        for (DatabaseRuntime runtime : runtimes) {
+            if (runtime.isRunning()) {
+                runtime.stop();
+            }
+        }
     }
 
     /** If installed visualweb cluster in IDE, switch from PageFlow to XML view of faces-config.xml. 

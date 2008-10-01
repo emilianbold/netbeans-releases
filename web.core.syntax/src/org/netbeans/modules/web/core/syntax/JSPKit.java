@@ -52,6 +52,7 @@ import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.SelectCodeElementAction;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.html.editor.HTMLAutoCompletion;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
@@ -478,7 +479,10 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             }
             
             super.insertString(doc, dotPos, caret, str, overwrite);
+            //handle reformat
             handleTagClosingSymbol(doc, dotPos, str.charAt(0));
+            //handle html quotations completion
+            HTMLAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
         }
         
         @Override

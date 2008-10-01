@@ -183,7 +183,12 @@ public class DeclarationPopup extends JPanel implements FocusListener {
                     StatusDisplayer.getDefault().setStatusText(invalid);
                     Toolkit.getDefaultToolkit().beep();
                 } else {
-                    UiUtils.open(location.getFileObject(), location.getOffset());
+                    FileObject fileObject = location.getFileObject();
+                    if (fileObject != null) {
+                        UiUtils.open(fileObject,location.getOffset());
+                    } else {
+                        Toolkit.getDefaultToolkit().beep();
+                    }
                 }
             }
         }
