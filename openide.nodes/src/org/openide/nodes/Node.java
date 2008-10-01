@@ -54,6 +54,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -1044,8 +1045,14 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     *   Can be null if one should find indices from current set of nodes
     */
     final void fireSubNodesChange(boolean addAction, Node[] delta, Node[] from) {
-        NodeMemberEvent ev = null;
+        if (err.isLoggable(Level.FINER)) {
+            err.finer("fireSubNodesChange() " + this); // NOI18N
+            err.finer("    added: " + addAction); // NOI18N
+            err.finer("    delta: " + Arrays.toString(delta)); // NOI18N
+            err.finer("    from: " + Arrays.toString(from)); // NOI18N
+        }
 
+        NodeMemberEvent ev = null;
         Object[] listeners = this.listeners.getListenerList();
 
         // Process the listeners last to first, notifying
@@ -1071,8 +1078,15 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * @param indices removed indicies, 
      */
     final void fireSubNodesChangeIdx(boolean added, int[] idxs, Children.Entry sourceEntry, List<Node> current, List<Node> previous) {
-        NodeMemberEvent ev = null;
+        if (err.isLoggable(Level.FINER)) {
+            err.finer("fireSubNodesChangeIdx() " + this); // NOI18N
+            err.finer("    added: " + added); // NOI18N
+            err.finer("    idxs: " + Arrays.toString(idxs)); // NOI18N
+            err.finer("    current size: " + current.size() + "    current: " + current); // NOI18N
+            err.finer(previous != null ? ("    previous size: " + previous.size() + "    previous: " + previous) : "    null"); // NOI18N
+        }
 
+        NodeMemberEvent ev = null;
         Object[] tmpListeners = this.listeners.getListenerList();
         // Process the listeners last to first, notifying
         // those that are interested in this event
