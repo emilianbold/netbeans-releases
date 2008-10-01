@@ -450,15 +450,15 @@ public class FileStatusCache {
         files = scanFolder(dir, interestingFiles);
         assert files.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, files.size() == 0 ? null : files);
-        if(interestingFiles != null) {
-            for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-                File file = (File) i.next();
-                FileInformation info = files.get(file);
-                if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
-                    fireFileStatusChanged(file, null, info);
-                }
+        //if(interestingFiles != null) {
+        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            FileInformation info = files.get(file);
+            if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
+                fireFileStatusChanged(file, null, info);
             }
         }
+        //}
         return files;
     }
 
