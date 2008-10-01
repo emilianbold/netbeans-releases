@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import junit.framework.AssertionFailedError;
+
 /**
  *
  * @author eu155513
@@ -51,5 +53,14 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testClassForward() throws Exception {
         // IZ144869 : fixed instantiation of class forward declaration
         performTest("classForward.h", 21, 12, "classForward.h", 16, 5);
+    }
+
+    public void testCyclicTypedef() throws Exception {
+        // IZ148453 : Highlighting thread hangs on boost
+        try {
+            performTest("cyclic_typedef.cc", 25, 66, "cyclic_typedef.cc", 25, 66);
+        } catch (AssertionFailedError e) {
+            // it's ok: it won't find: it just shouldn't hang
+        }
     }
 }

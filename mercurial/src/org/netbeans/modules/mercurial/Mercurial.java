@@ -43,11 +43,14 @@ package org.netbeans.modules.mercurial;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.*;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -104,7 +107,7 @@ public class Mercurial {
     private static final String MERCURIAL_SUPPORTED_VERSION_100 = "1.0"; // NOI18N
     private static Mercurial instance;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private List<File> knownRoots = Collections.synchronizedList(new ArrayList<File>());
+    private Set<File> knownRoots = Collections.synchronizedSet(new HashSet<File>());
 
     public static synchronized Mercurial getInstance() {
         if (instance == null) {
@@ -267,7 +270,44 @@ public class Mercurial {
         return VersioningSupport.getOwner(file) instanceof MercurialVCS && !HgUtils.isPartOfMercurialMetadata(file);
     }
 
-    public File getTopmostManagedParent(File file) {
+    private final Map<File, File> foldersToRoot = new HashMap<File, File>();
+    public File getRepositoryRoot(File file) {
+        File root = getTopmostManagedParent(file);
+        if(root != null) {
+            if(file.isFile()) file = file.getParentFile();
+            List<File> folders = new ArrayList<File>();
+            folders.add(root);
+            for (; file != null && !file.getAbsolutePath().equals(root.getAbsolutePath()) ; file = file.getParentFile()) {
+                File knownRoot;
+                synchronized(foldersToRoot) {
+                    knownRoot = foldersToRoot.get(file);
+                }
+                if(knownRoot != null) {
+                    addFoldersToRoot(folders, knownRoot);
+                    return knownRoot;
+                }
+                folders.add(file);
+                if(canWrite(file)) {
+                    addFoldersToRoot(folders, file);
+                    return file;
+                }
+            }
+            addFoldersToRoot(folders, root);
+            return root;
+        }
+        return null;
+    }
+
+    private void addFoldersToRoot(Collection<File> folders, File root) {
+        synchronized(foldersToRoot) {
+            if(foldersToRoot.size() > 1500) foldersToRoot.clear(); // XXX simple
+            for (File folder : folders) {
+                foldersToRoot.put(folder, root);
+            }
+        }
+    }
+
+    File getTopmostManagedParent(File file) {
         long t = System.currentTimeMillis();
         LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
         if(unversionedParents.contains(file)) {
@@ -301,7 +341,6 @@ public class Mercurial {
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
                 topmost =  file;
-                break;
             } else {
                 LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
                 if(file.exists()) { // could be created later ...
