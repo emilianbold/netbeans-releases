@@ -1614,7 +1614,8 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             // not in PHP section
             return false;
         }
-        
+
+        @SuppressWarnings("unchecked")
         TokenSequence<? extends PHPTokenId> ts = (TokenSequence<? extends PHPTokenId>)result[0];
         int sectionStart = (Integer) result[1];
         int sectionEnd = (Integer) result[2];
