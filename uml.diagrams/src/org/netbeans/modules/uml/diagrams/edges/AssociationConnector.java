@@ -860,41 +860,46 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
                 relatedWidget = getTargetAnchor().getRelatedWidget();
             }
 
-            Rectangle relatedBounds = relatedWidget.convertLocalToScene(relatedWidget.getClientArea());
+            // When in the process of reconnecting the edge there will not be a
+            // related widget.
             Line2D[] retVal = new Line2D[3];
-            int right = bounds.x + bounds.width;
-            int bottom = bounds.y + bounds.height;
+            if(relatedWidget != null)
+            {
+                Rectangle relatedBounds = relatedWidget.convertLocalToScene(relatedWidget.getClientArea());
+                int right = bounds.x + bounds.width;
+                int bottom = bounds.y + bounds.height;
 
-            int relatedRight = relatedBounds.x + relatedBounds.width;
-            int relatedBottom = relatedBounds.y + relatedBounds.height;
+                int relatedRight = relatedBounds.x + relatedBounds.width;
+                int relatedBottom = relatedBounds.y + relatedBounds.height;
 
-            if(right <= relatedBounds.x)
-            {
-                // LEFT
-                retVal[0] = new Line2D.Float(bounds.x, bounds.y, right, bounds.y);
-                retVal[1] = new Line2D.Float(bounds.x, bounds.y, bounds.x, bottom);
-                retVal[2] = new Line2D.Float(bounds.x, bottom, right, bottom);
-            }
-            else if (bounds.x >= relatedRight)
-            {
-                // RIGHT
-                retVal[0] = new Line2D.Float(bounds.x, bounds.y, right, bounds.y);
-                retVal[1] = new Line2D.Float(right, bounds.y, right, bottom);
-                retVal[2] = new Line2D.Float(bounds.x, bottom, right, bottom);
-            }
-            else if (bounds.y >= relatedBottom)
-            {
-                // BOTTOM
-                retVal[0] = new Line2D.Float(bounds.x, bottom, right, bottom);
-                retVal[1] = new Line2D.Float(bounds.x, bounds.y, bounds.x, bottom);
-                retVal[2] = new Line2D.Float(right, bounds.y, right, bottom);
-            }
-            else if (bottom <= relatedBounds.y)
-            {
-                // TOP
-                retVal[0] = new Line2D.Float(bounds.x, bounds.y, right, bounds.y);
-                retVal[1] = new Line2D.Float(bounds.x, bounds.y, bounds.x, bottom);
-                retVal[2] = new Line2D.Float(right, bounds.y, right, bottom);
+                if(right <= relatedBounds.x)
+                {
+                    // LEFT
+                    retVal[0] = new Line2D.Float(bounds.x, bounds.y, right, bounds.y);
+                    retVal[1] = new Line2D.Float(bounds.x, bounds.y, bounds.x, bottom);
+                    retVal[2] = new Line2D.Float(bounds.x, bottom, right, bottom);
+                }
+                else if (bounds.x >= relatedRight)
+                {
+                    // RIGHT
+                    retVal[0] = new Line2D.Float(bounds.x, bounds.y, right, bounds.y);
+                    retVal[1] = new Line2D.Float(right, bounds.y, right, bottom);
+                    retVal[2] = new Line2D.Float(bounds.x, bottom, right, bottom);
+                }
+                else if (bounds.y >= relatedBottom)
+                {
+                    // BOTTOM
+                    retVal[0] = new Line2D.Float(bounds.x, bottom, right, bottom);
+                    retVal[1] = new Line2D.Float(bounds.x, bounds.y, bounds.x, bottom);
+                    retVal[2] = new Line2D.Float(right, bounds.y, right, bottom);
+                }
+                else if (bottom <= relatedBounds.y)
+                {
+                    // TOP
+                    retVal[0] = new Line2D.Float(bounds.x, bounds.y, right, bounds.y);
+                    retVal[1] = new Line2D.Float(bounds.x, bounds.y, bounds.x, bottom);
+                    retVal[2] = new Line2D.Float(right, bounds.y, right, bottom);
+                }
             }
             return retVal;
         }
