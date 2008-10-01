@@ -383,12 +383,18 @@ No
         </question>
 -->
 <answer id="exec-reflection">
-<a href="@TOP@/org/openide/nodes/BeanNode.html">BeanNode</a>
+<p><a href="@TOP@/org/openide/nodes/BeanNode.html">BeanNode</a>
 obviously depends on reflection to get values of beans
 properties, which shouldn't be considered lack of API. Same 
 applyies to 
 <a href="@TOP@/org/openide/nodes/PropertySupport.html">PropertySupport</a> and 
-<a href="@TOP@/org/openide/nodes/IndexedPropertySupport.html">IndexedPropertySupport.</a>
+<a href="@TOP@/org/openide/nodes/IndexedPropertySupport.html">IndexedPropertySupport.</a></p>
+<api name="ProjectManagerMutex" group="java" type="import" category="private">
+<p>A test in <a href="@TOP@/org/openide/nodes/Children.html">Children</a> checks that
+<code>org.netbeans.api.project.ProjectManager.mutex()</code> is not held by the current
+thread when acquiring <a href="@TOP@/org/openide/nodes/Children.html#MUTEX">Children.MUTEX</a>.
+Since this module cannot depend on the module providing <code>ProjectManager</code>,
+the test uses reflection to retrieve the <code>ProjectManager.mutex()</code> instance.</p></api>
 </answer>
 
 
