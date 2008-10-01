@@ -86,7 +86,7 @@ import org.openide.util.Exceptions;
  */
 public final class RubyIndex {
 
-    private static final Logger LOGGER = Logger.getLogger(RubyIndex.class.getName());
+    //private static final Logger LOGGER = Logger.getLogger(RubyIndex.class.getName());
     
     public static final String UNKNOWN_CLASS = "<Unknown>"; // NOI18N
     public static final String OBJECT = "Object"; // NOI18N

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,11 +21,23 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.rhtml;
+
+package org.netbeans.modules.javascript.editing;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -35,15 +47,17 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.ruby.rhtml.RhtmlIndentTaskFactory;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 
 /**
  *
  * @author Tor Norbye
  */
-public class RhtmlFormattingTest extends RhtmlTestBase {
-    public RhtmlFormattingTest(String testName) {
-        super(testName);
+public class EmbeddedFormatterTest extends JsTestBase {
+    public EmbeddedFormatterTest(String name) {
+        super(name);
     }
 
     @Override
@@ -57,6 +71,11 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         }
         try {
             TestLanguageProvider.register(HTMLTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Already registered?
+        }
+        try {
+            TestLanguageProvider.register(JsTokenId.language());
         } catch (IllegalStateException ise) {
             // Already registered?
         }
@@ -76,49 +95,19 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         return doc;
     }
 
-    @Override
-    protected String getPreferredMimeType() {
-        return RubyInstallation.RUBY_MIME_TYPE;
+    public void testFormat1() throws Exception {
+        reformatFileContents("testfiles/embedding/issue146936.erb", new IndentPrefs(2,2));
     }
 
-    public void reformatFileContents(String file) throws Exception {
-        reformatFileContents(file, new IndentPrefs(2,2));
-    }
-    
-    public void testFormat1() throws Exception {
-        reformatFileContents("testfiles/format1.rhtml");
-    }
-    
     public void testFormat2() throws Exception {
-        reformatFileContents("testfiles/format2.rhtml");
+        reformatFileContents("testfiles/embedding/embed124916.erb", new IndentPrefs(2,2));
     }
-    
-    public void testFormat2b() throws Exception {
-        // Same as format2.rhtml, but flushed left to ensure that
-        // we're not reformatting correctly just by luck
-        reformatFileContents("testfiles/format2b.rhtml");
-    }
-    
+
     public void testFormat3() throws Exception {
-        reformatFileContents("testfiles/format3.rhtml");
+        reformatFileContents("testfiles/embedding/issue136495.erb", new IndentPrefs(2,2));
     }
-    
+
     public void testFormat4() throws Exception {
-        reformatFileContents("testfiles/format4.rhtml");
+        reformatFileContents("testfiles/embedding/mixed.erb", new IndentPrefs(2,2));
     }
-    
-//    public void testFormat5() throws Exception {
-//        format("<%\ndef foo\nwhatever\nend\n%>\n",
-//                "<%\ndef foo\n  whatever\nend\n%>\n", null);
-//    }
-//
-//    public void testFormat6() throws Exception {
-//        format("<% if true %>\nhello\n%<= foo %>\n<% end %>\n",
-//                "<% if true %>\n  hello\n%  <= foo %>\n<% end %>\n", null);
-//    }
-//
-//    public void testFormat7() throws Exception {
-//        format("<% foo %><% if true %>\nhello\n%<= foo %>\n<% end %>\n",
-//                "<% foo %><% if true %>\n  hello\n%  <= foo %>\n<% end %>\n", null);
-//    }
 }
