@@ -378,18 +378,18 @@ public class CompletionResolverImpl implements CompletionResolver {
                 boolean staticContext = false;
                 // get class methods visible in this method
                 CsmOffsetableDeclaration contextDeclaration = fun != null ? fun : clazz;
-                if (needClassMethods(context, offset) && !CsmContextUtilities.isInType(context, offset)) {
+                if (needClassMethods(context, offset)) {
                     if (clazz != null) {
                         resImpl.classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, true,false);
                         if (isEnough(strPrefix, match, resImpl.classMethods)) return true;
                     }
                 }
-                if (needClassFields(context, offset) && !CsmContextUtilities.isInType(context, offset)) {
+                if (needClassFields(context, offset)) {
                     // get class variables visible in this context
                     resImpl.classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, true,false);
                     if (isEnough(strPrefix, match, resImpl.classFields)) return true;
                 }
-                if (needClassEnumerators(context, offset) && !CsmContextUtilities.isInType(context, offset)) {
+                if (needClassEnumerators(context, offset)) {
                     // get class enumerators visible in this context
                     resImpl.classEnumerators = contResolver.getEnumerators(clazz, contextDeclaration, strPrefix, match, true,false);
                     if (isEnough(strPrefix, match, resImpl.classEnumerators)) return true;
@@ -575,6 +575,11 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (match) {
             hideTypes |= RESOLVE_CLASSES;
             hideTypes |= RESOLVE_LIB_CLASSES;
+        }
+        if (CsmContextUtilities.isInType(context, offset)){
+            hideTypes &= ~RESOLVE_CLASS_FIELDS;
+            hideTypes &= ~RESOLVE_CLASS_METHODS;
+            hideTypes &= ~RESOLVE_CLASS_ENUMERATORS;
         }
         return hideTypes;
     }

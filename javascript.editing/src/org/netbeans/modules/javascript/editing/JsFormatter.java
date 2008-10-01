@@ -386,6 +386,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             return 0;
         }
 
+        int last = begin;
         do {
             Token<?extends JsTokenId> token = ts.token();
             if (token == null) {
@@ -399,8 +400,17 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             } else {
                 balance += getBracketBalanceDelta(id);
             }
+            last = ts.offset() + token.length();
         } while (ts.moveNext() && (ts.offset() < end));
 
+        if (embeddedJavaScript && last < end) {
+            // We're not done yet... find the next section...
+            TokenSequence<? extends JsTokenId> ets = LexUtilities.getNextJsTokenSequence(doc, last+1, end);
+            if (ets != null) {
+                return balance + getTokenBalance(ets, doc, ets.offset(), end, includeKeywords, indentOnly);
+            }
+        }
+        
         return balance;
     }
     
@@ -741,10 +751,16 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
 //                indentHtml = codeStyle.indentHtml();
 //            }
             
-            int originallockCommentIndention = 0;
+            //int originallockCommentIndention = 0;
             int adjustedBlockCommentIndention = 0;
 
             int endIndents;
+
+            final int IN_CODE = 0;
+            final int IN_LITERAL = 1;
+            final int IN_BLOCK_COMMENT_START = 2;
+            final int IN_BLOCK_COMMENT_MIDDLE = 3;
+
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
 
@@ -754,10 +770,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 }
 
                 
-                final int IN_CODE = 0;
-                final int IN_LITERAL = 1;
-                final int IN_BLOCK_COMMENT_START = 2;
-                final int IN_BLOCK_COMMENT_MIDDLE = 3;
                 int lineType = IN_CODE;
                 int pos = Utilities.getRowFirstNonWhite(doc, offset);
                 TokenSequence<?extends JsTokenId> ts = null;
@@ -774,7 +786,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         if (id == JsTokenId.BLOCK_COMMENT) {
                             if (ts.offset() == pos) {
                                 lineType = IN_BLOCK_COMMENT_START;
-                                originallockCommentIndention = GsfUtilities.getLineIndent(doc, offset);
+                                //originallockCommentIndention = GsfUtilities.getLineIndent(doc, offset);
                             } else {
                                 lineType =  IN_BLOCK_COMMENT_MIDDLE;
                             }

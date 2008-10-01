@@ -139,11 +139,27 @@ public class DataNodeTest extends NbTestCase {
                 throw t1;
             }
         }
+
+        fs.fireStatusChange(new FileStatusEvent(fs, true, true));
+
+        assertEquals ("Still just Primary entry created", 1, TwoPartLoader.get ().primary);
+        if (TwoPartLoader.get ().secondary != 0) {
+            try {
+                assertEquals ("Still Secondary entry not", 0, TwoPartLoader.get ().secondary);
+            } catch (Error t1) {
+                Throwable t2 = TwoPartLoader.get ().whoCreatedSecondary;
+                if (t2 != null) {
+                    t1.initCause (t2);
+                }
+                throw t1;
+            }
+        }
+
         assertEquals ("Size is two", 2, fs.lastFiles.size ());
         assertEquals ("Now the secondary entry had to be created", 1, TwoPartLoader.get ().secondary);
     }
 
-    
+
     public void testWhatIsAddedToNodeLookupIsByDefaultVisibleInDataObjectLookup() throws Exception {
         org.openide.filesystems.FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
             "F.java", "F.form"
@@ -227,7 +243,8 @@ public class DataNodeTest extends NbTestCase {
 
         private void checkFirst (Set files) {
             lastFiles = files;
-            assertNotNull ("There is first file", files.iterator ().next ());
+            assertFalse("There is always at least the primary file", files.isEmpty());
+            assertNotNull("There is first file", files.iterator ().next ());
         }
         
         public java.awt.Image annotateIcon(java.awt.Image icon, int iconType, java.util.Set files) {

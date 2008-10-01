@@ -59,6 +59,7 @@ import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.openide.filesystems.FileUtil;
 
 /**
  * A singleton Subversion manager class, center of Subversion module. Use {@link #getInstance()} to get access
@@ -324,8 +325,9 @@ public class Subversion {
      * @return true if file is listed in parent's ignore list
      * or IDE thinks it should be.
      */
-    boolean isIgnored(final File file) {
+    boolean isIgnored(File file) {
         String name = file.getName();
+        file = FileUtil.normalizeFile(file);
 
         // ask SVN
 

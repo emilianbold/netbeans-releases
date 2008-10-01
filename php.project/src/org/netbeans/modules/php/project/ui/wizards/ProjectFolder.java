@@ -78,8 +78,8 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         initComponents();
 
         init();
-        projectFolderScrollPane.setVisible(false);
         projectFolderTextArea.setFont(BOLD_FONT);
+        setWarning(false);
     }
 
     private void init() {
@@ -117,7 +117,16 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderTextField.setEnabled(enabled);
         projectFolderBrowseButton.setEnabled(enabled);
         // warning
-        projectFolderScrollPane.setVisible(enabled);
+        setWarning(enabled);
+    }
+
+    private void setWarning(boolean enabled) {
+        if (enabled) {
+            projectFolderScrollPane.getViewport().add(projectFolderTextArea);
+        } else {
+            projectFolderScrollPane.getViewport().remove(projectFolderTextArea);
+        }
+        projectFolderScrollPane.repaint();
     }
 
     /** This method is called from within the constructor to

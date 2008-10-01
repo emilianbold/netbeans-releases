@@ -131,24 +131,32 @@ public class Commit extends GeneralPHP
     endTest( );
   }
 
-  protected CompletionJListOperator GetCompletion( )
+  private class CompletionInfo
   {
-    CompletionJListOperator comp = null;
+    public CompletionJListOperator listItself;
+    public List listItems;
+  }
+
+  protected CompletionInfo GetCompletion( )
+  {
+    CompletionInfo result = new CompletionInfo( );
+    result.listItself = null;
     int iRedo = 10;
     while( true )
     {
       try
       {
-        comp = new CompletionJListOperator( );
+        result.listItself = new CompletionJListOperator( );
         try
         {
-          Object o = comp.getCompletionItems( ).get( 0 );
+          result.listItems = result.listItself.getCompletionItems( );
+          Object o = result.listItems.get( 0 );
           if(
               !o.toString( ).contains( "No suggestions" )
               && !o.toString( ).contains( "Scanning in progress..." )
             )
           {
-            return comp;
+            return result;
           }
           Sleep( 1000 );
         }
@@ -221,6 +229,31 @@ public class Commit extends GeneralPHP
     return sCode + sSuffix;
   }
 
+    protected void CheckCompletionItems(
+        CompletionJListOperator jlist,
+        String[] asIdeal
+      )
+    {
+      for( String sCode : asIdeal )
+      {
+        int iIndex = jlist.findItemIndex( sCode );
+        if( -1 == iIndex )
+        {
+          try
+          {
+            List list = jlist.getCompletionItems();
+            for( int i = 0; i < list.size( ); i++ )
+              System.out.println( "******" + list.get( i ) );
+          }
+          catch( java.lang.Exception ex )
+          {
+            System.out.println( "#" + ex.getMessage( ) );
+          }
+          fail( "Unable to find " + sCode + " completion." );
+        }
+      }
+    }
+
   protected void TestPHPFile(
       String sProjectName,
       String sFileName,
@@ -260,21 +293,42 @@ public class Commit extends GeneralPHP
     // Check code completion list
     try
     {
-      CompletionJListOperator jCompl = GetCompletion( );
-      List list = jCompl.getCompletionItems( );
+      CompletionInfo completionInfo = GetCompletion( );
+      if( null == completionInfo )
+        fail( "NPE instead of competion info." );
       // Magic CC number for complete list
       if(
           ( bInclass ? COMPLETION_LIST_INCLASS : COMPLETION_LIST_THRESHOLD )
-          > list.size( )
+          > completionInfo.listItems.size( )
         )
       {
-        fail( "CC list looks to small, there are only: " + list.size( ) + " items in." );
+        fail( "CC list looks to small, there are only: " + completionInfo.listItems.size( ) + " items in." );
       }
 
-      jCompl.hideAll( );
+      if( !bInclass )
+      {
+        // Check some completions
+        String[] asCompletions =
+        {
+          "$GLOBALS",
+          "LC_MONETARY",
+          "ibase_wait_event",
+          "mysql_error",
+          "openssl_pkcs12_export_to_file",
+          "str_word_count",
+          "ZendAPI_Queue"
+        };
+        CheckCompletionItems( completionInfo.listItself, asCompletions );
+        //jCompl.clickOnItem( "$GLOBALS" );
+        //Sleep( 500 );
+        //CheckResult( eoPHP, "$GLOBALS" );
+
+        completionInfo.listItself.hideAll( );
+      }
     }
     catch( Exception ex )
     {
+      ex.printStackTrace( System.out );
       fail( "Completion check failed: \"" + ex.getMessage( ) + "\"" );
     }
 

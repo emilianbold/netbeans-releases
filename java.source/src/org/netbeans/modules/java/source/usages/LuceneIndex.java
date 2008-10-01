@@ -850,7 +850,12 @@ class LuceneIndex extends Index {
 
     public boolean isValid (boolean tryOpen) throws IOException {  
         checkPreconditions();
-        boolean res = IndexReader.indexExists(this.directory);
+        boolean res = false;
+        try {
+            res = IndexReader.indexExists(this.directory);
+        } catch (IOException e) {
+            return res;
+        }
         if (res && tryOpen) {
             try {
                 getReader();
@@ -956,9 +961,9 @@ class LuceneIndex extends Index {
         return refRoot;
     }
     
-    private void checkPreconditions () {
+    private void checkPreconditions () throws ClassIndexImpl.IndexAlreadyClosedException{
         if (closed) {
-            throw new IllegalStateException ("Index already closed");   //NOI18N
+            throw new ClassIndexImpl.IndexAlreadyClosedException();
         }
     }
     

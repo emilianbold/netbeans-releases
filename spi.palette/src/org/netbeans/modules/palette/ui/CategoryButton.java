@@ -65,6 +65,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     private static final Color AQUA_BK_COLOR = new Color(225, 235, 240);
     
     static final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
+    static final boolean isNimbus = "Nimbus".equals( UIManager.getLookAndFeel().getID() );
     static final boolean isAqua = "Aqua".equals( UIManager.getLookAndFeel().getID() );
 
     private CategoryDescriptor descriptor;
@@ -129,7 +130,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
             public void focusLost(FocusEvent e) {
             }
         });
-        
+
         initActions();
     }
     
@@ -155,8 +156,10 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     }
     
     void updateProperties() {
-        setIcon( (Icon)UIManager.get("Tree.collapsedIcon") );
-        setSelectedIcon( (Icon)UIManager.get("Tree.expandedIcon") );
+        setIcon( UIManager.getIcon(isGTK ? "Tree.gtk_collapsedIcon" : "Tree.collapsedIcon") );
+        setSelectedIcon( UIManager.getIcon(isGTK ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon") );
+        setRolloverIcon( UIManager.getIcon(isGTK ? "Tree.gtk_collapsedIcon" : "Tree.collapsedIcon") );
+        setRolloverSelectedIcon( UIManager.getIcon(isGTK ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon") );
         Mnemonics.setLocalizedText( this, category.getDisplayName() );
         setToolTipText( category.getShortDescription() );
         getAccessibleContext().setAccessibleName( category.getDisplayName() );
@@ -166,6 +169,10 @@ class CategoryButton extends JCheckBox implements Autoscroll {
             setOpaque(true);
             setBackground( new Color(0,0,0) );
             setForeground( new Color(255,255,255) );
+        }
+        if( isNimbus ) {
+            setOpaque(true);
+            setContentAreaFilled(true);
         }
     }
     
@@ -218,13 +225,18 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         if( isFocusOwner() ) {
             if( isAqua )
                 return UIManager.getColor("Table.selectionBackground"); //NOI18N
+            if( isGTK || isNimbus )
+                return UIManager.getColor("Tree.selectionBackground"); //NOI18N
             return UIManager.getColor( "PropSheet.selectedSetBackground" ); //NOI18N
         } else {
-            if( isAqua ) {
+            if( isAqua )
                 return AQUA_BK_COLOR;
-            } else {
-                return UIManager.getColor( "PropSheet.setBackground" ); //NOI18N
+            if( isGTK || isNimbus ) {
+                if( getModel().isRollover() )
+                    return new Color( UIManager.getColor( "Menu.background" ).getRGB() ).darker(); //NOI18N
+                return new Color( UIManager.getColor( "Menu.background" ).getRGB() );//NOI18N
             }
+            return UIManager.getColor( "PropSheet.setBackground" ); //NOI18N
         }
     }
 
@@ -233,6 +245,8 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         if( isFocusOwner() ) {
             if( isAqua )
                 return UIManager.getColor( "Table.selectionForeground" ); //NOI18N
+            else if( isGTK || isNimbus )
+                return UIManager.getColor( "Tree.selectionForeground" ); //NOI18N
             return UIManager.getColor( "PropSheet.selectedSetForeground" ); //NOI18N
         } else {
             if( isAqua ) {
@@ -250,6 +264,9 @@ class CategoryButton extends JCheckBox implements Autoscroll {
                     }
                 }
                 return res;
+            }
+            if( isGTK || isNimbus ) {
+                return new Color( UIManager.getColor( "Menu.foreground" ).getRGB() ); //NOI18N
             }
             return super.getForeground();
         }
