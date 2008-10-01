@@ -53,6 +53,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.apache.maven.model.CiManagement;
+import org.apache.maven.model.Contributor;
+import org.apache.maven.model.Developer;
 import org.apache.maven.model.IssueManagement;
 import org.apache.maven.model.MailingList;
 import org.apache.maven.model.Model;
@@ -266,6 +268,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             @SuppressWarnings("unchecked")
             List<Organization> org = getValue(models, "getOrganization", Model.class);
             nds.add(new ObjectNode(Lookup.EMPTY, new OrgChildren(org, key), key, "Organization", org));
+
             @SuppressWarnings("unchecked")
             List<List> mailingLists = getValue(models, "getMailingLists", Model.class);
             nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
@@ -282,6 +285,38 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 }
             }, key, "Mailing Lists", mailingLists));
 
+            @SuppressWarnings("unchecked")
+            List<List> developers = getValue(models, "getDevelopers", Model.class);
+            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
+                public Children createChildren(Object value, ModelLineage lineage) {
+                    @SuppressWarnings("unchecked")
+                    Developer ml = (Developer)value;
+                    List<Developer> lst = Collections.<Developer>singletonList(ml);
+                    return new DeveloperChildren(lst, lineage);
+                }
+
+                public String createName(Object value) {
+                    String[] name = getStringValue(new Object[] {value}, "getName", Developer.class);
+                    String[] id = getStringValue(new Object[] {value}, "getId", Developer.class);
+                    return name.length > 0 ? name[0] : (id.length > 0 ? id[0] : "Developer");
+                }
+            }, key, "Developers", developers));
+
+            @SuppressWarnings("unchecked")
+            List<List> contributors = getValue(models, "getContributors", Model.class);
+            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
+                public Children createChildren(Object value, ModelLineage lineage) {
+                    @SuppressWarnings("unchecked")
+                    Contributor ml = (Contributor)value;
+                    List<Contributor> lst = Collections.<Contributor>singletonList(ml);
+                    return new ContributorChildren(lst, lineage);
+                }
+
+                public String createName(Object value) {
+                    String[] name = getStringValue(new Object[] {value}, "getName", Contributor.class);
+                    return name.length > 0 ? name[0] : "Contributor";
+                }
+            }, key, "Contributors", contributors));
 
             List<Properties> props = getValue(models, "getProperties", Model.class);
             nds.add(new ObjectNode(Lookup.EMPTY, new PropsChildren(props, key), key, "Properties", props));
@@ -435,6 +470,65 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     }
     // </editor-fold>
 
+    // <editor-fold defaultstate="collapsed" desc="Developers Children">
+    private static class DeveloperChildren extends Children.Keys<List<Developer>> {
+        private ModelLineage lineage;
+        public DeveloperChildren(List<Developer> list, ModelLineage lin) {
+            setKeys(new List[] {list});
+            lineage = lin;
+        }
+
+        @Override
+        protected Node[] createNodes(List<Developer> key) {
+            Developer[] models = key.toArray(new Developer[key.size()]);
+            List<Node> nds = new ArrayList<Node>();
+            String[] vals = getStringValue(models, "getId", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Id", vals));
+            vals = getStringValue(models, "getName", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Name", vals));
+            vals = getStringValue(models, "getEmail", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Email", vals));
+            vals = getStringValue(models, "getUrl", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Url", vals));
+            vals = getStringValue(models, "getOrganization", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Organization", vals));
+            vals = getStringValue(models, "getOrganizationUrl", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Organization Url", vals));
+            vals = getStringValue(models, "getTimezone", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Timezone", vals));
+            return nds.toArray(new Node[0]);
+        }
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Contributors Children">
+    private static class ContributorChildren extends Children.Keys<List<Contributor>> {
+        private ModelLineage lineage;
+        public ContributorChildren(List<Contributor> list, ModelLineage lin) {
+            setKeys(new List[] {list});
+            lineage = lin;
+        }
+
+        @Override
+        protected Node[] createNodes(List<Contributor> key) {
+            Contributor[] models = key.toArray(new Contributor[key.size()]);
+            List<Node> nds = new ArrayList<Node>();
+            String[] vals = getStringValue(models, "getName", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Name", vals));
+            vals = getStringValue(models, "getEmail", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Email", vals));
+            vals = getStringValue(models, "getUrl", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Url", vals));
+            vals = getStringValue(models, "getOrganization", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Organization", vals));
+            vals = getStringValue(models, "getOrganizationUrl", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Organization Url", vals));
+            vals = getStringValue(models, "getTimezone", Developer.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Timezone", vals));
+            return nds.toArray(new Node[0]);
+        }
+    }
+    // </editor-fold>
 
     static Map<String, List<String>> getPropertyValues(Properties[] models) {
         TreeMap<String, List<String>> toRet = new TreeMap<String, List<String>>();
@@ -466,7 +560,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         String[] toRet = new String[models.length];
         Method meth = null;
         try {
-            meth = modelClazz.getDeclaredMethod(getter);
+            meth = modelClazz.getMethod(getter);
         } catch (Exception ex) {
             //ignore
         }
