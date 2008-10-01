@@ -85,13 +85,13 @@ public abstract class ClassIndexImpl {
     
     public static ClassIndexFactory FACTORY;    
     
-    public abstract <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException;
+    public abstract <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
     
-    public abstract <T> void getDeclaredTypes (String name, ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException;
+    public abstract <T> void getDeclaredTypes (String name, ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
     
-    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws InterruptedException;
+    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException;
     
-    public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws InterruptedException;
+    public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
     
     public abstract FileObject[] getSourceRoots ();
    
@@ -99,7 +99,7 @@ public abstract class ClassIndexImpl {
     
     public abstract SourceAnalyser getSourceAnalyser ();
     
-    public abstract String getSourceName (String binaryName);
+    public abstract String getSourceName (String binaryName) throws IOException;
     
     public abstract void setDirty (JavaSource js);
 
@@ -144,6 +144,9 @@ public abstract class ClassIndexImpl {
                 }
             }
         }
+    }
+    
+    public static final class IndexAlreadyClosedException extends IOException {        
     }
     
     private class Ref extends WeakReference<ClassIndexImplListener> implements Runnable {
