@@ -45,6 +45,10 @@ import java.util.Map;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.CharArrayWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -60,17 +64,21 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /**
-* Various services related to indentation and text formatting
-* are located here. Each kit can have different formatter
-* so the first action should be getting the right formatter
-* for the given kit by calling Formatter.getFormatter(kitClass).
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
+ * Various services related to indentation and text formatting
+ * are located here. Each kit can have different formatter
+ * so the first action should be getting the right formatter
+ * for the given kit by calling Formatter.getFormatter(kitClass).
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ *
+ * @deprecated Please use Editor Indentation API instead, for details see
+ *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
+ */
 
 public class Formatter {
 
@@ -237,6 +245,10 @@ public class Formatter {
         return kitClass;
     }
 
+    // ------------------------------------------------------------------------
+    // Formatting Settings setters and getters
+    // ------------------------------------------------------------------------
+
     /** Get the number of spaces the TAB character ('\t') visually represents
      * for non-BaseDocument documents. It shouldn't be used for BaseDocument
      * based documents. The reason for that is that the returned value 
@@ -249,6 +261,14 @@ public class Formatter {
      * @see BaseDocument.getTabSize()
      */
     public int getTabSize() {
+        Document doc = getFormattingContextDocument();
+        if (doc != null) {
+            Object ret = callIndentUtils("tabSize", doc); //NOI18N
+            if (ret instanceof Integer) {
+                return (Integer) ret;
+            }
+        }
+
         if (!customTabSize && !inited) {
             prefsListener.preferenceChange(null);
         }
@@ -277,6 +297,14 @@ public class Formatter {
      * @see getSpacesPerTab()
      */
     public int getShiftWidth() {
+        Document doc = getFormattingContextDocument();
+        if (doc != null) {
+            Object ret = callIndentUtils("indentLevelSize", doc); //NOI18N
+            if (ret instanceof Integer) {
+                return (Integer) ret;
+            }
+        }
+
         if (!customShiftWidth && !inited) {
             prefsListener.preferenceChange(null);
         }
@@ -298,6 +326,14 @@ public class Formatter {
 
     /** Should the typed tabs be expanded to the spaces? */
     public boolean expandTabs() {
+        Document doc = getFormattingContextDocument();
+        if (doc != null) {
+            Object ret = callIndentUtils("isExpandTabs", doc); //NOI18N
+            if (ret instanceof Boolean) {
+                return (Boolean) ret;
+            }
+        }
+
         if (!customExpandTabs && !inited) {
             prefsListener.preferenceChange(null);
         }
@@ -314,6 +350,14 @@ public class Formatter {
     * instead of one typed tab.
     */
     public int getSpacesPerTab() {
+        Document doc = getFormattingContextDocument();
+        if (doc != null) {
+            Object ret = callIndentUtils("indentLevelSize", doc); //NOI18N
+            if (ret instanceof Integer) {
+                return (Integer) ret;
+            }
+        }
+
         if (!customSpacesPerTab && !inited) {
             prefsListener.preferenceChange(null);
         }
@@ -326,45 +370,18 @@ public class Formatter {
         this.spacesPerTab = spacesPerTab;
     }
 
-    static String getIndentString(int indent, boolean expandTabs, int tabSize) {
-        if (indent <= 0) {
-            return "";
-        }
-
-        if (expandTabs) { // store in 0th slot
-            tabSize = 0;
-        }
-
-        synchronized (indentStringCache) {
-            boolean large = (tabSize >= indentStringCache.length)
-                || (indent > ISC_MAX_INDENT_SIZE); // indexed by (indent - 1)
-            String indentString = null;
-            String[] tabCache = null;
-            if (!large) {
-                tabCache = indentStringCache[tabSize]; // cache for this tab
-                if (tabCache == null) {
-                    tabCache = new String[ISC_MAX_INDENT_SIZE];
-                    indentStringCache[tabSize] = tabCache;
-                }
-                indentString = tabCache[indent - 1];
-            }
-
-            if (indentString == null) {
-                indentString = Analyzer.getIndentString(indent, expandTabs, tabSize);
-
-                if (!large) {
-                    tabCache[indent - 1] = indentString;
-                }
-            }
-
-            return indentString;
-        }
-    }
+    // ------------------------------------------------------------------------
+    // Pure API methods
+    // ------------------------------------------------------------------------
 
     public String getIndentString(BaseDocument doc, int indent) {
-        return getIndentString(indent, expandTabs(), doc.getTabSize());
+        pushFormattingContextDocument(doc);
+        try {
+            return getIndentString(indent, expandTabs(), doc.getTabSize());
+        } finally {
+            popFormattingContextDocument(doc);
+        }
     }
-        
         
     /** Get the string that is appropriate for the requested indentation.
     * The returned string respects the <tt>expandTabs()</tt> and
@@ -383,36 +400,41 @@ public class Formatter {
      */
     public void insertTabString (final BaseDocument doc, final int dotPos)
     throws BadLocationException {
-        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
-        doc.runAtomic (new Runnable () {
-            public void run () {
-                try {
-                    // Determine first white char before dotPos
-                    int rsPos = Utilities.getRowStart(doc, dotPos);
-                    int startPos = Utilities.getFirstNonWhiteBwd(doc, dotPos, rsPos);
-                    startPos = (startPos >= 0) ? (startPos + 1) : rsPos;
+        pushFormattingContextDocument(doc);
+        try {
+            final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+            doc.runAtomic (new Runnable () {
+                public void run () {
+                    try {
+                        // Determine first white char before dotPos
+                        int rsPos = Utilities.getRowStart(doc, dotPos);
+                        int startPos = Utilities.getFirstNonWhiteBwd(doc, dotPos, rsPos);
+                        startPos = (startPos >= 0) ? (startPos + 1) : rsPos;
 
-                    int startCol = Utilities.getVisualColumn(doc, startPos);
-                    int endCol = Utilities.getNextTabColumn(doc, dotPos);
-                    String tabStr = Analyzer.getWhitespaceString(startCol, endCol, expandTabs(), doc.getTabSize());
+                        int startCol = Utilities.getVisualColumn(doc, startPos);
+                        int endCol = Utilities.getNextTabColumn(doc, dotPos);
+                        String tabStr = Analyzer.getWhitespaceString(startCol, endCol, expandTabs(), doc.getTabSize());
 
-                    // Search for the first non-common char
-                    char[] removeChars = doc.getChars(startPos, dotPos - startPos);
-                    int ind = 0;
-                    while (ind < removeChars.length && removeChars[ind] == tabStr.charAt(ind)) {
-                        ind++;
+                        // Search for the first non-common char
+                        char[] removeChars = doc.getChars(startPos, dotPos - startPos);
+                        int ind = 0;
+                        while (ind < removeChars.length && removeChars[ind] == tabStr.charAt(ind)) {
+                            ind++;
+                        }
+
+                        startPos += ind;
+                        doc.remove(startPos, dotPos - startPos);
+                        doc.insertString(startPos, tabStr.substring(ind), null);
+                    } catch (BadLocationException ex) {
+                        badLocationExceptions [0] = ex;
                     }
-
-                    startPos += ind;
-                    doc.remove(startPos, dotPos - startPos);
-                    doc.insertString(startPos, tabStr.substring(ind), null);
-                } catch (BadLocationException ex) {
-                    badLocationExceptions [0] = ex;
                 }
-            }
-        });
-        if (badLocationExceptions[0] != null)
-            throw badLocationExceptions [0];
+            });
+            if (badLocationExceptions[0] != null)
+                throw badLocationExceptions [0];
+        } finally {
+            popFormattingContextDocument(doc);
+        }
     }
 
     /** Change the indent of the given row. Document is atomically locked
@@ -420,42 +442,47 @@ public class Formatter {
     */
     public void changeRowIndent (final BaseDocument doc, final int pos, final int newIndent)
     throws BadLocationException {
-        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
-        doc.runAtomic (new Runnable () {
-            public void run () {
-                try {
-                    int indent = newIndent < 0 ? 0 : newIndent;
-                    int firstNW = Utilities.getRowFirstNonWhite(doc, pos);
-                    if (firstNW == -1) { // valid first non-blank
-                        firstNW = Utilities.getRowEnd(doc, pos);
-                    }
-                    int replacePos = Utilities.getRowStart(doc, pos);
-                    int removeLen = firstNW - replacePos;
-                    CharSequence removeText = DocumentUtilities.getText(doc, replacePos, removeLen);
-                    String newIndentText = getIndentString(doc, indent);
-                    if (CharSequenceUtilities.startsWith(newIndentText, removeText)) {
-                        // Skip removeLen chars at start
-                        newIndentText = newIndentText.substring(removeLen);
-                        replacePos += removeLen;
-                        removeLen = 0;
-                    } else if (CharSequenceUtilities.endsWith(newIndentText, removeText)) {
-                        // Skip removeLen chars at the end
-                        newIndentText = newIndentText.substring(0, newIndentText.length() - removeLen);
-                        removeLen = 0;
-                    }
+        pushFormattingContextDocument(doc);
+        try {
+            final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+            doc.runAtomic (new Runnable () {
+                public void run () {
+                    try {
+                        int indent = newIndent < 0 ? 0 : newIndent;
+                        int firstNW = Utilities.getRowFirstNonWhite(doc, pos);
+                        if (firstNW == -1) { // valid first non-blank
+                            firstNW = Utilities.getRowEnd(doc, pos);
+                        }
+                        int replacePos = Utilities.getRowStart(doc, pos);
+                        int removeLen = firstNW - replacePos;
+                        CharSequence removeText = DocumentUtilities.getText(doc, replacePos, removeLen);
+                        String newIndentText = getIndentString(doc, indent);
+                        if (CharSequenceUtilities.startsWith(newIndentText, removeText)) {
+                            // Skip removeLen chars at start
+                            newIndentText = newIndentText.substring(removeLen);
+                            replacePos += removeLen;
+                            removeLen = 0;
+                        } else if (CharSequenceUtilities.endsWith(newIndentText, removeText)) {
+                            // Skip removeLen chars at the end
+                            newIndentText = newIndentText.substring(0, newIndentText.length() - removeLen);
+                            removeLen = 0;
+                        }
 
-                    if (removeLen != 0) {
-                        doc.remove(replacePos, removeLen);
-                    }
+                        if (removeLen != 0) {
+                            doc.remove(replacePos, removeLen);
+                        }
 
-                    doc.insertString(replacePos, newIndentText, null);
-                } catch (BadLocationException ex) {
-                    badLocationExceptions [0] = ex;
+                        doc.insertString(replacePos, newIndentText, null);
+                    } catch (BadLocationException ex) {
+                        badLocationExceptions [0] = ex;
+                    }
                 }
-            }
-        });
-        if (badLocationExceptions[0] != null)
-            throw badLocationExceptions [0];
+            });
+            if (badLocationExceptions[0] != null)
+                throw badLocationExceptions [0];
+        } finally {
+            popFormattingContextDocument(doc);
+        }
     }
 
     /** Increase/decrease indentation of the block of the code. Document
@@ -468,62 +495,70 @@ public class Formatter {
     */
     public void changeBlockIndent (final BaseDocument doc, final int startPos, final int endPos,
                                   final int shiftCnt) throws BadLocationException {
-
-       
-        GuardedDocument gdoc = (doc instanceof GuardedDocument)
-                               ? (GuardedDocument)doc : null;
-        if (gdoc != null){
-            for (int i = startPos; i<endPos; i++){
-                if (gdoc.isPosGuarded(i)){
-                    java.awt.Toolkit.getDefaultToolkit().beep();
-                    return;
-                }
-            }
-        }
-        
-        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
-        doc.runAtomic (new Runnable () {
-            public void run () {
-                try {
-                    int indentDelta = shiftCnt * doc.getShiftWidth();
-                    int end = (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) ?
-                        endPos - 1 : endPos;
-
-                    int pos = Utilities.getRowStart(doc, startPos );
-                    for (int lineCnt = Utilities.getRowCount(doc, startPos, end);
-                            lineCnt > 0; lineCnt--
-                        ) {
-                        int indent = Utilities.getRowIndent(doc, pos);
-                        if (Utilities.isRowWhite(doc, pos)) {
-                            indent = -indentDelta; // zero indentation for white line
-                        }
-                        changeRowIndent(doc, pos, Math.max(indent + indentDelta, 0));
-                        pos = Utilities.getRowStart(doc, pos, +1);
+        pushFormattingContextDocument(doc);
+        try {
+            GuardedDocument gdoc = (doc instanceof GuardedDocument)
+                                   ? (GuardedDocument)doc : null;
+            if (gdoc != null){
+                for (int i = startPos; i<endPos; i++){
+                    if (gdoc.isPosGuarded(i)){
+                        java.awt.Toolkit.getDefaultToolkit().beep();
+                        return;
                     }
-                } catch (BadLocationException ex) {
-                    badLocationExceptions [0] = ex;
                 }
             }
-        });
-        if (badLocationExceptions[0] != null)
-            throw badLocationExceptions [0];
+
+            final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+            doc.runAtomic (new Runnable () {
+                public void run () {
+                    try {
+                        int indentDelta = shiftCnt * doc.getShiftWidth();
+                        int end = (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) ?
+                            endPos - 1 : endPos;
+
+                        int pos = Utilities.getRowStart(doc, startPos );
+                        for (int lineCnt = Utilities.getRowCount(doc, startPos, end);
+                                lineCnt > 0; lineCnt--
+                            ) {
+                            int indent = Utilities.getRowIndent(doc, pos);
+                            if (Utilities.isRowWhite(doc, pos)) {
+                                indent = -indentDelta; // zero indentation for white line
+                            }
+                            changeRowIndent(doc, pos, Math.max(indent + indentDelta, 0));
+                            pos = Utilities.getRowStart(doc, pos, +1);
+                        }
+                    } catch (BadLocationException ex) {
+                        badLocationExceptions [0] = ex;
+                    }
+                }
+            });
+            if (badLocationExceptions[0] != null)
+                throw badLocationExceptions [0];
+        } finally {
+            popFormattingContextDocument(doc);
+        }
     }
 
     /** Shift line either left or right */
     public void shiftLine(BaseDocument doc, int dotPos, boolean right)
     throws BadLocationException {
-        int ind = doc.getShiftWidth();
-        if (!right) {
-            ind = -ind;
-        }
+        pushFormattingContextDocument(doc);
+        try {
+            int ind = doc.getShiftWidth();
+            if (!right) {
+                ind = -ind;
+            }
 
-        if (Utilities.isRowWhite(doc, dotPos)) {
-            ind += Utilities.getVisualColumn(doc, dotPos);
-        } else {
-            ind += Utilities.getRowIndent(doc, dotPos);
+            if (Utilities.isRowWhite(doc, dotPos)) {
+                ind += Utilities.getVisualColumn(doc, dotPos);
+            } else {
+                ind += Utilities.getRowIndent(doc, dotPos);
+            }
+            ind = Math.max(ind, 0);
+            changeRowIndent(doc, dotPos, ind);
+        } finally {
+            popFormattingContextDocument(doc);
         }
-        ind = Math.max(ind, 0);
-        changeRowIndent(doc, dotPos, ind);
     }
 
     /** Reformat a block of code.
@@ -534,20 +569,29 @@ public class Formatter {
     */
     public int reformat(BaseDocument doc, int startOffset, int endOffset)
     throws BadLocationException {
+        pushFormattingContextDocument(doc);
         try {
-            CharArrayWriter cw = new CharArrayWriter();
-            Writer w = createWriter(doc, startOffset, cw);
-            w.write(doc.getChars(startOffset, endOffset - startOffset));
-            w.close();
-            String out = new String(cw.toCharArray());
-            doc.remove(startOffset, endOffset - startOffset);
-            doc.insertString(startOffset, out, null);
-            return out.length();
-        } catch (IOException e) {
-            Utilities.annotateLoggable(e);
-            return 0;
+            try {
+                CharArrayWriter cw = new CharArrayWriter();
+                Writer w = createWriter(doc, startOffset, cw);
+                w.write(doc.getChars(startOffset, endOffset - startOffset));
+                w.close();
+                String out = new String(cw.toCharArray());
+                doc.remove(startOffset, endOffset - startOffset);
+                doc.insertString(startOffset, out, null);
+                return out.length();
+            } catch (IOException e) {
+                Utilities.annotateLoggable(e);
+                return 0;
+            }
+        } finally {
+            popFormattingContextDocument(doc);
         }
     }
+
+    // ------------------------------------------------------------------------
+    // Pure SPI methods
+    // ------------------------------------------------------------------------
 
     /** Indents the current line. Should not affect any other
     * lines.
@@ -601,6 +645,10 @@ public class Formatter {
     public Writer createWriter(Document doc, int offset, Writer writer) {
         return writer;
     }
+
+    // ------------------------------------------------------------------------
+    // Methods that are called by API clients and overriden by SPI implementors
+    // ------------------------------------------------------------------------
 
     /**
      * Formatter clients should call this method
@@ -709,6 +757,99 @@ public class Formatter {
      */
     public void reformatUnlock() {
         // No extra locking by default
+    }
+
+    // ------------------------------------------------------------------------
+    // private implementation
+    // ------------------------------------------------------------------------
+
+    private static ThreadLocal<Stack<Reference<Document>>> FORMATTING_CONTEXT_DOCUMENT = new ThreadLocal<Stack<Reference<Document>>>() {
+        @Override
+        protected Stack<Reference<Document>> initialValue() {
+            return new Stack<Reference<Document>>();
+        }
+    };
+
+    private static Document getFormattingContextDocument() {
+        Stack<Reference<Document>> stack = FORMATTING_CONTEXT_DOCUMENT.get();
+        return stack.isEmpty() ? null : stack.peek().get();
+    }
+
+    /* package */ static void pushFormattingContextDocument(Document doc) {
+        FORMATTING_CONTEXT_DOCUMENT.get().push(new WeakReference<Document>(doc));
+    }
+
+    /* package */ static void popFormattingContextDocument(Document doc) {
+        Stack<Reference<Document>> stack = FORMATTING_CONTEXT_DOCUMENT.get();
+        assert !stack.empty() : "Calling popFormattingContextDocument without pushFormattingContextDocument"; //NOI18N
+
+        Reference<Document> ref = stack.pop();
+        Document docFromStack = ref.get();
+        assert docFromStack == doc : "Popping " + doc + ", but the stack contains " + docFromStack;
+
+        ref.clear();
+    }
+
+    private static boolean noIndentUtils = false;
+    private static WeakReference<Class> indentUtilsClassRef = null;
+    private static Object callIndentUtils(String methodName, Document doc) {
+        if (noIndentUtils) {
+            return null;
+        }
+        
+        Class indentUtilsClass = indentUtilsClassRef == null ? null : indentUtilsClassRef.get();
+        if (indentUtilsClass == null) {
+            try {
+                ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+                indentUtilsClass = loader.loadClass("org.netbeans.modules.editor.indent.api.IndentUtils"); //NOI18N
+                indentUtilsClassRef = new WeakReference<Class>(indentUtilsClass);
+            } catch (Exception e) {
+                noIndentUtils = true;
+                return null;
+            }
+        }
+
+        try {
+            Method m = indentUtilsClass.getDeclaredMethod(methodName, Document.class);
+            return m.invoke(null, doc);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static String getIndentString(int indent, boolean expandTabs, int tabSize) {
+        if (indent <= 0) {
+            return "";
+        }
+
+        if (expandTabs) { // store in 0th slot
+            tabSize = 0;
+        }
+
+        synchronized (indentStringCache) {
+            boolean large = (tabSize >= indentStringCache.length)
+                || (indent > ISC_MAX_INDENT_SIZE); // indexed by (indent - 1)
+            String indentString = null;
+            String[] tabCache = null;
+            if (!large) {
+                tabCache = indentStringCache[tabSize]; // cache for this tab
+                if (tabCache == null) {
+                    tabCache = new String[ISC_MAX_INDENT_SIZE];
+                    indentStringCache[tabSize] = tabCache;
+                }
+                indentString = tabCache[indent - 1];
+            }
+
+            if (indentString == null) {
+                indentString = Analyzer.getIndentString(indent, expandTabs, tabSize);
+
+                if (!large) {
+                    tabCache[indent - 1] = indentString;
+                }
+            }
+
+            return indentString;
+        }
     }
 
 }

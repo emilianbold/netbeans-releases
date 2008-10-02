@@ -71,29 +71,32 @@ import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /**
-* Unlike the formatter class, the ExtFormatter concentrates
-* on providing a support for the real formatting process.
-* Each formatter (there's only one per each kit) can contain
-* one or more formatting layers. The <tt>FormatLayer</tt>
-* operates over the chain of the tokens provided
-* by the <tt>FormatWriter</tt>. The formatting consist
-* of changing the chain of the tokens until it gets
-* the desired look.
-* Each formatting requires a separate instance
-* of <tt>FormatWriter</tt> but the same set of format-layers
-* is used for all the format-writers. Although the base
-* implementation is synchronized so that only one
-* format-writer at time is processed by each format-writer,
-* in general it's not necessary.
-* The basic implementation processes all the format-layers
-* sequentialy in the order they were added to the formatter
-* but this can be redefined.
-* The <tt>getSettingValue</tt> enables to get the up-to-date
-* value for the particular setting.
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
+ * Unlike the formatter class, the ExtFormatter concentrates
+ * on providing a support for the real formatting process.
+ * Each formatter (there's only one per each kit) can contain
+ * one or more formatting layers. The <tt>FormatLayer</tt>
+ * operates over the chain of the tokens provided
+ * by the <tt>FormatWriter</tt>. The formatting consist
+ * of changing the chain of the tokens until it gets
+ * the desired look.
+ * Each formatting requires a separate instance
+ * of <tt>FormatWriter</tt> but the same set of format-layers
+ * is used for all the format-writers. Although the base
+ * implementation is synchronized so that only one
+ * format-writer at time is processed by each format-writer,
+ * in general it's not necessary.
+ * The basic implementation processes all the format-layers
+ * sequentialy in the order they were added to the formatter
+ * but this can be redefined.
+ * The <tt>getSettingValue</tt> enables to get the up-to-date
+ * value for the particular setting.
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ *
+ * @deprecated Please use Editor Indentation API instead, for details see
+ *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
+ */
 
 public class ExtFormatter extends Formatter implements FormatLayer {
 
@@ -266,31 +269,35 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     * @return formatting writer. The text was already reformatted
     *  but the writer can contain useful information.
     */
-    public Writer reformat(BaseDocument doc, int startOffset, int endOffset,
-    boolean indentOnly) throws BadLocationException, IOException {
-        CharArrayWriter cw = new CharArrayWriter();
-        Writer w = createWriter(doc, startOffset, cw);
-        FormatWriter fw = (w instanceof FormatWriter) ? (FormatWriter)w : null;
-        
-        boolean fix5620 = true; // whether apply fix for #5620 or not
+    public Writer reformat(BaseDocument doc, int startOffset, int endOffset, boolean indentOnly) throws BadLocationException, IOException {
+        pushFormattingContextDocument(doc);
+        try {
+            CharArrayWriter cw = new CharArrayWriter();
+            Writer w = createWriter(doc, startOffset, cw);
+            FormatWriter fw = (w instanceof FormatWriter) ? (FormatWriter)w : null;
 
-        if (fw != null) {
-            fw.setIndentOnly(indentOnly);
-            if (fix5620) {
-                fw.setReformatting(true); // #5620
+            boolean fix5620 = true; // whether apply fix for #5620 or not
+
+            if (fw != null) {
+                fw.setIndentOnly(indentOnly);
+                if (fix5620) {
+                    fw.setReformatting(true); // #5620
+                }
             }
-        }
 
-        w.write(doc.getChars(startOffset, endOffset - startOffset));
-        w.close();
+            w.write(doc.getChars(startOffset, endOffset - startOffset));
+            w.close();
 
-        if (!fix5620 || fw == null) { // #5620 - for (fw != null) the doc was already modified
-            String out = new String(cw.toCharArray());
-            doc.remove(startOffset, endOffset - startOffset);
-            doc.insertString(startOffset, out, null);
+            if (!fix5620 || fw == null) { // #5620 - for (fw != null) the doc was already modified
+                String out = new String(cw.toCharArray());
+                doc.remove(startOffset, endOffset - startOffset);
+                doc.insertString(startOffset, out, null);
+            }
+
+            return w;
+        } finally {
+            popFormattingContextDocument(doc);
         }
-        
-        return w;
     }
 
     /** Fix of #5620 - same method exists in Formatter (predecessor */
@@ -489,6 +496,26 @@ public class ExtFormatter extends Formatter implements FormatLayer {
             return offset;
         }
         
+    }
+
+    /* package */ static void pushFormattingContextDocument(Document doc) {
+        try {
+            Method m = Formatter.class.getDeclaredMethod("pushFormattingContextDocument", Document.class); //NOI18N
+            m.setAccessible(true);
+            m.invoke(null, doc);
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    /* package */ static void popFormattingContextDocument(Document doc) {
+        try {
+            Method m = Formatter.class.getDeclaredMethod("popFormattingContextDocument", Document.class); //NOI18N
+            m.setAccessible(true);
+            m.invoke(null, doc);
+        } catch (Exception e) {
+            // ignore
+        }
     }
 
 }
