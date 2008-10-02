@@ -163,6 +163,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <friend>org.netbeans.modules.xml.schema.core</friend>
+                <friend>org.netbeans.modules.xml.wsdlui.api</friend>
                 <package>org.netbeans.modules.xml.wsdl.refactoring</package>
             </friend-packages>
         </data>

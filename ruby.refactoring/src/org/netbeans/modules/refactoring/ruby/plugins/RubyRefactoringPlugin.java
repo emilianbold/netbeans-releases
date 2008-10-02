@@ -203,6 +203,10 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
                 if (RubyUtils.isRubyFile(file)) {
                     rubyFiles.add(file);
                 } else if (RubyUtils.isRhtmlOrYamlFile(file)) {
+                    // Avoid opening HUGE Yaml files - they may be containing primarily data
+                    if (file.getSize() > 512*1024) {
+                        continue;
+                    }
                     rhtmlFiles.add(file);
                 }
             }

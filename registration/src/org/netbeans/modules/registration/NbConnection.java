@@ -400,7 +400,7 @@ class NbConnection {
             throws IOException {
         File registerPage = 
         NbServiceTagSupport.getRegistrationHtmlPage
-        (product, new String [] {NbBundle.getMessage(NbConnection.class,"nb.product.name")});
+        (product, new String [] {NbServiceTagSupport.getProductName()});
         if (BrowserSupport.isSupported()) {
             try {
                 BrowserSupport.browse(registerPage.toURI());

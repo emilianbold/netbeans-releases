@@ -460,8 +460,13 @@ public abstract class GsfTestBase extends NbTestCase {
 
     protected void assertDescriptionMatches(String relFilePath,
             String description, boolean includeTestName, String ext) throws Exception {
+        assertDescriptionMatches(relFilePath, description, includeTestName, ext, true);
+    }
+
+    protected void assertDescriptionMatches(String relFilePath,
+            String description, boolean includeTestName, String ext, boolean checkFileExistence) throws Exception {
         File rubyFile = getDataFile(relFilePath);
-        if (!rubyFile.exists()) {
+        if (checkFileExistence && !rubyFile.exists()) {
             NbTestCase.fail("File " + rubyFile + " not found.");
         }
 
@@ -689,7 +694,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".errors");
     }
 
-    private String annotateErrors(String text, List<Error> errors) {
+    protected String annotateErrors(String text, List<Error> errors) {
         List<String> descs = new ArrayList<String>();
         for (Error error : errors) {
             StringBuilder desc = new StringBuilder();

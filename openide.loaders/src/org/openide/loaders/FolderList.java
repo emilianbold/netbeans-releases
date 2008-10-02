@@ -150,6 +150,10 @@ implements FileChangeListener, DataObject.Container {
         }
     }
 
+    public final FileObject getPrimaryFile() {
+        return folder;
+    }
+
 /*    final void reassign(DataFolder df, FileObject fo) {
         folder = df;
         // reassign is called from DataFolder.handleMove()
@@ -358,6 +362,9 @@ implements FileChangeListener, DataObject.Container {
     /** Refreshes the list of children.
      */
     public void refresh () {
+        if (pcs != null) {
+            pcs.firePropertyChange ("refresh", null, null); // NOI18N
+        }
         final long now = System.currentTimeMillis();
         final boolean LOG = err.isLoggable(Level.FINE);
         if (LOG) err.fine("refresh on " + folder + " @" + now);

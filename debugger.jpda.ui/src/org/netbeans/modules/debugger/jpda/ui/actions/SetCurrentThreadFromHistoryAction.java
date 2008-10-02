@@ -42,6 +42,7 @@ package org.netbeans.modules.debugger.jpda.ui.actions;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -49,6 +50,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.debugging.KeyboardPopupSwitcher;
 import org.netbeans.modules.debugger.jpda.ui.debugging.ThreadsHistoryAction;
@@ -87,7 +89,7 @@ public class SetCurrentThreadFromHistoryAction extends AbstractAction implements
                 }
             }
         });
-        //item.setAccelerator();
+        //item.setAccelerator(KeyStroke.getKeyStroke('T', InputEvent.SHIFT_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
         return item;
     }
 

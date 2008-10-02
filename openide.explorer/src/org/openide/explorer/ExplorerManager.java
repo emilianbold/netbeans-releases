@@ -52,6 +52,7 @@ import java.io.*;
 
 import java.util.*;
 import java.util.ArrayList;
+import javax.swing.SwingUtilities;
 
 
 /**
@@ -881,6 +882,7 @@ bigloop:
         public ExplorerManager getExplorerManager();
     }
 
+    static boolean SCHEDULE_REMOVE_ASYNCH = true;
     /** Listener to be notified when root node has been destroyed.
     * Then the root node is changed to Node.EMPTY
     */
@@ -902,7 +904,17 @@ bigloop:
                 setRootContext(Node.EMPTY);
             } else {
                 // assume that the node is among currently selected nodes
-                scheduleRemove(ev.getNode());
+                final Node n = ev.getNode();
+                Runnable r = new Runnable() {
+                    public void run() {
+                        scheduleRemove(n);
+                    }
+                };
+                if (SCHEDULE_REMOVE_ASYNCH) {
+                    SwingUtilities.invokeLater(r);
+                } else {
+                    r.run();
+                }
             }
         }
 

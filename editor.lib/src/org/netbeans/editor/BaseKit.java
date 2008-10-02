@@ -1309,6 +1309,7 @@ public class BaseKit extends DefaultEditorKit {
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
+                        Formatter.pushFormattingContextDocument(doc);
                         try {
                         if (Utilities.isSelectionShowing(caret)) { // block selected
                             try {
@@ -1366,6 +1367,7 @@ public class BaseKit extends DefaultEditorKit {
                             }
                         }
                         } finally {
+                            Formatter.popFormattingContextDocument(doc);
                             DocumentUtilities.setTypingModification(doc, false);
                         }
                     }

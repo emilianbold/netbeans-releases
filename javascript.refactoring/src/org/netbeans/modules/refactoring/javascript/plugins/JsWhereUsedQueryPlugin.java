@@ -185,8 +185,21 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
 //                        return;
 //                    }
 //                }
-                
-                if (tph.getKind() == ElementKind.VARIABLE || tph.getKind() == ElementKind.PARAMETER) {
+
+                boolean isLocal = false;
+                if (tph.getKind() == ElementKind.PARAMETER) {
+                    isLocal = true;
+                } else if (tph.getKind() == ElementKind.VARIABLE) {
+                    Node n = tph.getNode();
+                    while (n != null) {
+                        if (n.getType() == org.mozilla.nb.javascript.Token.FUNCTION) {
+                            isLocal = true;
+                            break;
+                        }
+                        n = n.getParentNode();
+                    }
+                }
+                if (isLocal) {
                     // For local variables, only look in the current file!
                     set.add(info.getFileObject());
                 }  else {
@@ -342,7 +355,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
             compiler.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 
             Error error = null;
-            
+
             JsElementCtx searchCtx = searchHandle;
             
             Node root = AstUtilities.getRoot(compiler);
@@ -443,7 +456,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                     new ParseTreeWalker(v).walk(searchRoot);
                     scopeNode = v.getDefiningScope(node);
                 }
-                if (scopeNode != null) {
+                if (scopeNode != null && (scopeNode.getType() == org.mozilla.nb.javascript.Token.FUNCTION)) {
                     findLocal(searchCtx, fileCtx, scopeNode, targetName);
                 } else {
                     // Full AST search
@@ -538,7 +551,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                 // No children to consider
                 return;
             }
-            
+
             case org.mozilla.nb.javascript.Token.FUNCNAME: {
                 if (node.getString().equals(name)) {
                     boolean skip = false;
@@ -583,6 +596,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                     break;
             }
 
+            case org.mozilla.nb.javascript.Token.NEW:
             case org.mozilla.nb.javascript.Token.CALL: {
                 String s = AstUtilities.getCallName(node, false);
                 if (s.equals(name)) {
@@ -598,7 +612,8 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
             }
             
             case org.mozilla.nb.javascript.Token.NAME:
-                if (node.getParentNode().getType() == org.mozilla.nb.javascript.Token.CALL) {
+                if (node.getParentNode().getType() == org.mozilla.nb.javascript.Token.CALL ||
+                        node.getParentNode().getType() == org.mozilla.nb.javascript.Token.NEW) {
                     // Skip - call name is already handled as part of parent
                     break;
                 }
@@ -635,7 +650,8 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
         private void findLocal(JsElementCtx searchCtx, JsElementCtx fileCtx, Node node, String name) {
             switch (node.getType()) {
             case org.mozilla.nb.javascript.Token.NAME:
-                if (node.getParentNode().getType() == org.mozilla.nb.javascript.Token.CALL &&
+                if ((node.getParentNode().getType() == org.mozilla.nb.javascript.Token.CALL ||
+                        node.getParentNode().getType() == org.mozilla.nb.javascript.Token.NEW) &&
                         node.getParentNode().getFirstChild() == node) {
                     // Ignore calls
                     break;

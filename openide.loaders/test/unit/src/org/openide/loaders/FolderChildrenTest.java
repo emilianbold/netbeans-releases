@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -73,6 +74,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public class FolderChildrenTest extends NbTestCase {
+    private Logger LOG;
     public FolderChildrenTest() {
         super("");
     }
@@ -113,6 +115,8 @@ public class FolderChildrenTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+
+        LOG = Logger.getLogger("test." + getName());
         MockServices.setServices(Pool.class);
         Pool.setLoader(null);
         assertEquals("The right pool initialized", Pool.class, DataLoaderPool.getDefault().getClass());
@@ -562,6 +566,42 @@ public class FolderChildrenTest extends NbTestCase {
         }
 
         Node[] newNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes(true);
+        assertEquals("One new node", 1, newNodes.length);
+        assertEquals("the new obj", newObj, newNodes[0].getLookup().lookup(DataObject.class));
+
+    }
+
+    public void testRefreshInvalidDO() throws Exception {
+        String fsstruct [] = new String [] {
+            "AA/a.test"
+        };
+
+        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
+        Repository.getDefault().addFileSystem(lfs);
+
+        FileObject fo = lfs.findResource("AA/a.test");
+        assertNotNull("file not found", fo);
+        DataObject obj = DataObject.find(fo);
+
+        assertEquals("The right class", obj.getClass(), DefaultDataObject.class);
+
+        Node folderNode = obj.getFolder().getNodeDelegate();
+
+        Node[] origNodes = folderNode.getChildren().getNodes(true);
+        assertEquals("One node", 1, origNodes.length);
+        assertEquals("the obj", obj, origNodes[0].getLookup().lookup(DataObject.class));
+
+        LOG.info("before setValid");
+        obj.setValid(false);
+        LOG.info("end of setValid");
+        assertFalse("Invalid now", obj.isValid());
+
+        DataObject newObj = DataObject.find(obj.getPrimaryFile());
+        assertNotSame(newObj, obj);
+
+        LOG.info("before getNodes: " + Arrays.asList(origNodes));
+        Node[] newNodes = folderNode.getChildren().getNodes(true);
+        LOG.info("end    getNodes: " + Arrays.asList(newNodes));
         assertEquals("One new node", 1, newNodes.length);
         assertEquals("the new obj", newObj, newNodes[0].getLookup().lookup(DataObject.class));
 

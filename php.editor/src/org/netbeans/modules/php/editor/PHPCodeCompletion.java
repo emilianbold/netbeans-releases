@@ -358,7 +358,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
             PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
             PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,PHPTokenId.PHP_CASE,
-            PHPTokenId.PHP_IF,PHPTokenId.PHP_ELSE,PHPTokenId.PHP_ELSEIF, 
+            PHPTokenId.PHP_IF,PHPTokenId.PHP_ELSE,PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_PRINT,
             PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,PHPTokenId.PHP_WHILE,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT
             );
@@ -633,10 +633,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (tokenTxt.length() == 1 && tokenTxt.charAt(0) == '(') {
                 // confirmed, it is a function call
                 // position the token sequence after the call
-                do {
-                    tokenSequence.moveNext();
-                } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
-                        && ")".equals(tokenSequence.token().text().toString()))); //NOI18N
+                findLHSExpressionType_skipArgs(tokenSequence, false);
+                tokenSequence.movePrevious();
             } else {
                 functionName = null;
             }

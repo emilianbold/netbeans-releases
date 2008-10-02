@@ -207,6 +207,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.iep.editor</friend>
+                <friend>org.netbeans.modules.xml.wsdlui.api</friend>
                 <package>org.netbeans.modules.xml.refactoring</package>
                 <package>org.netbeans.modules.xml.refactoring.actions</package>
                 <package>org.netbeans.modules.xml.refactoring.spi</package>

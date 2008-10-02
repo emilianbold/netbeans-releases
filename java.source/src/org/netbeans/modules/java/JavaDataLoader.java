@@ -59,7 +59,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -68,7 +68,7 @@ import org.openide.util.Utilities;
 *
 * @author Petr Hamernik
 */
-public final class JavaDataLoader extends MultiFileLoader {
+public final class JavaDataLoader extends UniFileLoader {
     
     public static final String JAVA_MIME_TYPE = "text/x-java";  //NOI18N
     
@@ -146,21 +146,7 @@ public final class JavaDataLoader extends MultiFileLoader {
             return new FileEntry(obj, primaryFile);
         }
     }
-
-    /** Create a secondary file entry.
-    * By default, {@link FileEntry.Numb} is used for the class files; subclasses wishing to have useful
-    * secondary files should override this for those files, typically to {@link FileEntry}.
-    *
-    * @param secondaryFile secondary file to create entry for
-    * @return the entry
-    */
-    protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
-        //The JavaDataObject itself has no secondary entries, but its subclasses have.
-        //So we have to keep it as MultiFileLoader
-        ErrorManager.getDefault().log ("Subclass of JavaDataLoader ("+this.getClass().getName()
-                +") has secondary entries but does not override createSecondaryEntries (MultidataObject, FileObject) method."); // NOI18N
-        return new FileEntry.Numb(obj, secondaryFile);
-    }   
+       
     
     /** Create the map of replaceable strings which is used
     * in the <code>JavaFileEntry</code>. This method may be extended in subclasses

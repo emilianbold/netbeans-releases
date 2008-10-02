@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -76,10 +77,10 @@ import org.netbeans.modules.db.mysql.Database;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.DatabaseUser;
 import org.netbeans.modules.db.mysql.util.ExecSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.util.Cancellable;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -93,10 +94,12 @@ import org.openide.util.Utilities;
  * @author David Van Couvering
  */
 public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListener {
-    // Synchronized on this
-    private String displayName;
-    // Synchronized on this
-    private String shortDescription;
+    private static final Image ICON = ImageUtilities.loadImage("org/netbeans/modules/db/mysql/resources/catalog.gif");
+    private static final Image ERROR_BADGE = ImageUtilities.loadImage("org/netbeans/modules/db/mysql/resources/error-badge.gif");
+
+    private volatile String displayName;
+    private volatile String shortDescription;
+    private volatile Image icon;
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseServer.class.getName());
 
@@ -131,6 +134,9 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
     // True if running, false otherwise.  Not synchronized.
     private volatile boolean running = false;
 
+    // This is set if checkRunning encounters an error which shows the configuration is broken
+    // (e.g. bad host or number format error
+    private volatile String configError = null;
 
     // Cache list of databases, refresh only if connection is changed
     // or an explicit refresh is requested
@@ -156,7 +162,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         addPropertyChangeListener(StopManager.getDefault().getStopListener());
 
         checkRunning(1000);
-        updateDisplayName();
+        updateDisplayInformation();
     }
 
     public String getHost() {
@@ -166,7 +172,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
 
     public void setHost(String host) {
         OPTIONS.setHost(host);
-        updateDisplayName();
+        updateDisplayInformation();
         notifyChange();
     }
 
@@ -181,7 +187,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
 
     public void setPort(String port) {
         OPTIONS.setPort(port);
-        updateDisplayName();
+        updateDisplayInformation();
         notifyChange();
     }
 
@@ -196,7 +202,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
 
     public void setUser(String adminUser) {
         OPTIONS.setAdminUser(adminUser);
-        updateDisplayName();
+        updateDisplayInformation();
         notifyChange();
     }
 
@@ -285,11 +291,12 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         this.displayName = displayName;
     }
 
-    private synchronized void updateDisplayName() {
+    private synchronized void updateDisplayInformation() {
         String stateLabel;
         String displayNameLabel = "LBL_ServerDisplayName";
-        String shortDescriptionLabel = "LBL_ServerShortDescription";
-        if (!isRunning()) {
+        if (configError != null) {
+            stateLabel = "LBL_Error";
+        } else if (!isRunning()) {
             stateLabel="LBL_NotRunning";
         } else if (!isConnected()) {
             stateLabel="LBL_Disconnected";
@@ -299,8 +306,16 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         
         String hostPort = getHostPort();
         String user = getUser();
+
         setDisplayName(Utils.getMessage(displayNameLabel, hostPort, user, Utils.getMessage(stateLabel)));
-        setShortDescription(Utils.getMessage(shortDescriptionLabel, hostPort, user));
+        if (configError == null) {
+            icon = ICON;
+            setShortDescription(Utils.getMessage("LBL_ServerShortDescription", hostPort, user));
+        } else {
+            icon = ImageUtilities.mergeImages(ICON, ERROR_BADGE, 6, 6);
+            setDisplayName(Utils.getMessage(displayNameLabel, hostPort, user, Utils.getMessage(stateLabel)));
+            setShortDescription(Utils.getMessage("LBL_ServerShortDescriptionError", configError));
+        }
     }
 
     public String getShortDescription() {
@@ -435,7 +450,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
 
                 connProcessor.setConnection(null);
 
-                updateDisplayName();
+                updateDisplayInformation();
                 refreshDatabaseList();
             }
         };
@@ -492,7 +507,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
                          break;
                      }
                 } finally {
-                    updateDisplayName();
+                    updateDisplayInformation();
                     refreshDatabaseList();
                     progress.finish();
                 }
@@ -691,26 +706,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             throw new DatabaseException(Utils.getMessage("MSG_InvalidStopCommand"));
         }
 
-        final DatabaseServer server = this;
-
-        new DatabaseCommand() {
-            @Override
-            public void execute() throws Exception {
-                ProgressHandle handle = ProgressHandleFactory.createHandle(Utils.getMessage("LBL_StoppingMySQLServer"));
-                        
-                handle.start();
-                handle.switchToIndeterminate();
-                Process proc = null;
-
-                proc = runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
-                if (proc != null) {
-                    proc.destroy();
-                }
-                
-                handle.finish();
-                
-            }
-        }.postCommand("stop"); // NOI18N
+        new StopDatabaseCommand().postCommand("stop"); // NOI18N
     }
 
     /**
@@ -804,21 +800,33 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
     public boolean checkRunning(long timeToWait) {
         Task task = checkRunningRequestProcessor.post(new Runnable() {
             public void run() {
+                boolean oldRunning = running;
+                String oldConnectError = configError;
+                
                 // Open a socket to the database port and see if it responds.  If it
                 // does, let's assume we're running.  There's a possibility that another
                 // service is running on that port, but that's an uncommon scenario...
                 try {
                     new Socket(getHost(), Integer.parseInt(getPort()));
                     running = true;
+                    configError = null;
                 } catch (UnknownHostException ex) {
+                    LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                    configError = NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_UnknownHost", getHost());
                     running = false;
                 } catch (IOException ex) {
                     running = false;
+                    configError = null;
                 } catch (NumberFormatException nfe) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_MySQL_InvalidPortNumber", getPort()), NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    LOGGER.log(Level.WARNING, nfe.getMessage());
+                    LOGGER.log(Level.INFO, nfe.getMessage(), nfe);
+                    configError = configError = NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_InvalidPortNumber", getPort());
                     running = false;
+                }
+
+                updateDisplayInformation();
+
+                if (oldRunning != running || ! Utils.stringEquals(configError, oldConnectError)) {
+                    notifyChange();
                 }
 
             }
@@ -855,6 +863,14 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         postCheckRunning();
         
         pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+    }
+
+    public Image getIcon() {
+        return icon;
+    }
+
+    public boolean hasConfigurationError() {
+        return configError != null;
     }
 
     private abstract class DatabaseCommand<T> implements Runnable {
@@ -949,5 +965,32 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         public Throwable getException() {
             return throwable;
         }
-    }    
+    }
+
+    private class StopDatabaseCommand extends DatabaseCommand implements Cancellable {
+        private Process proc = null;
+
+        @Override
+        public void execute() throws Exception {
+            ProgressHandle handle = ProgressHandleFactory.createHandle(Utils.getMessage("LBL_StoppingMySQLServer"), this);
+            try {
+                handle.start();
+                handle.switchToIndeterminate();
+                proc = runProcess(getStopPath(), getStopArgs(), true, Utils.getMessage("LBL_MySQLOutputTab"));
+                // wait until server is shut down
+                proc.waitFor();
+            } finally {
+                if (proc != null) {
+                    proc.destroy();
+                }
+                handle.finish();
+            }
+        }
+        
+        public boolean cancel() {
+            proc.destroy();
+            return true;
+        }
+
+    }
 }

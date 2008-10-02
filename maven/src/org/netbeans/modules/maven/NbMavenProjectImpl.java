@@ -286,26 +286,12 @@ public final class NbMavenProjectImpl implements Project {
                 
             } finally {
                 if (project == null) {
+                    File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
                     try {
-                        if (projectFile.exists()) { //#120860
-
-                            project = new MavenProject(getEmbedder().readModel(projectFile));
-                        }
-                    } catch (FileNotFoundException ex2) {
-                        ex2.printStackTrace();
-                    } catch (IOException ex2) {
-                        ex2.printStackTrace();
-                    } catch (XmlPullParserException ex2) {
-                        ex2.printStackTrace();
-                    } finally {
-                        File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
-
-                        try {
-                            project = getEmbedder().readProject(fallback);
-                        } catch (Exception x) {
-                            // oh well..
-                            //NOPMD
-                        }
+                        project = getEmbedder().readProject(fallback);
+                    } catch (Exception x) {
+                        // oh well..
+                        //NOPMD
                     }
                 }
             }

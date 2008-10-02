@@ -62,12 +62,11 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
     
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         File archiveFile = FileUtil.archiveOrDirForURL(binaryRoot);
-
         if (archiveFile != null) {
             SourceForBinaryQuery.Result result = cache.get(binaryRoot);
             if (result == null) {
                 Project prj = FileOwnerQuery.getOwner(archiveFile.toURI());
-                if (prj != null) {
+                if (prj != null && !isLibraryJar(prj,archiveFile)) {
                     JAXWSClientSupport jaxWSCS = JAXWSClientSupport.getJaxWsClientSupport(prj.getProjectDirectory());
                     if (jaxWSCS != null) {
                         result = new Result(prj);
@@ -100,5 +99,18 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         public void removeChangeListener (ChangeListener l) {
         }
 
+    }
+    
+    boolean isLibraryJar(Project prj, File archiveFile) {
+        FileObject projectRoot = prj.getProjectDirectory();
+        FileObject binaryFo = FileUtil.toFileObject(archiveFile);
+        if (binaryFo != null) {
+            if (FileUtil.isParentOf(projectRoot, binaryFo)) {
+                if (FileUtil.getRelativePath(projectRoot, binaryFo).startsWith("lib")) { //NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
