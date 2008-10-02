@@ -201,6 +201,98 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue147191.php",
                 "case self::V^", false);
     }
+    public void test147575_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "else $this->^", false);
+    }
+    public void test147575_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "else $this->factory()->^", false);
+    }
+    public void test147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "if (1) $this->^", false);
+    }
+    public void test147575_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "if (1) $this->factory()->^", false);
+    }
+    public void test147575_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "for ($i = 0 ; $i < 10 ; $i++) $this->^", false);
+    }
+    public void test147575_5() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "for ($i = 0 ; $i < 10 ; $i++) $this->factory()->^", false);
+    }
+    public void test147575_6() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "while (1) $this->^", false);
+    }
+    public void test147575_7() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "while (1) $this->factory()->^", false);
+    }
+    
+    ///
+    public void test147575_8() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "if(1) $this->^", false);
+    }
+    public void test147575_9() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "if(1) $this->factory()->^", false);
+    }
+    public void test2i147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "if(1) $this->factory()->^", false);
+    }
+    public void test3i147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "for($i = 0 ; $i < 10 ; $i++) $this->^", false);
+    }
+    public void test4i147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "for($i = 0 ; $i < 10 ; $i++) $this->factory()->^", false);
+    }
+    public void test5i147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "while(1) $this->^", false);
+    }
+    public void test6i147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "while(1) $this->factory()->^", false);
+    }
+
+    ///
+    public void test7i147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "if(1)$this->^", false);
+    }
+    public void test8i147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "if(1)$this->factory()->^", false);
+    }
+    public void test9i147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "for($i = 0 ; $i < 10 ; $i++)$this->^", false);
+    }
+    public void test1o147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "for($i = 0 ; $i < 10 ; $i++)$this->factory()->^", false);
+    }
+    public void test2o147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "while(1)$this->^", false);
+    }
+    public void test3o147575() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147575.php",
+                "while(1)$this->factory()->^", false);
+    }
+    public void test140784() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue140784.php",
+                "return $this->teacher->^", false);
+    }
 
     /* TEMPORARILY DISABLED
     public void test136744_1() throws Exception {
@@ -221,6 +313,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     
     public void test147883() throws Exception {
         checkCompletion("testfiles/completion/lib/issue147883.php", "echo $a->^", false);
+    }
+    
+    public void test148856() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue148856.php", "test148856Func(1))->^", false);
     }
     
     public void test142919() throws Exception {

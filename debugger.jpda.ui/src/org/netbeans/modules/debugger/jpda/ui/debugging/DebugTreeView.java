@@ -42,19 +42,24 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.plaf.TreeUI;
+import javax.swing.plaf.basic.BasicTreeUI;
+import javax.swing.tree.FixedHeightLayoutCache;
+import javax.swing.tree.RowMapper;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 
 import org.openide.explorer.view.BeanTreeView;
@@ -87,6 +92,42 @@ public class DebugTreeView extends BeanTreeView {
     public JTree getTree() {
         return tree;
     }
+
+    void resetSelection() {
+        tree.getSelectionModel().clearSelection(); // To flush selection cache
+        clearSelectionCache(tree.getSelectionModel().getRowMapper());
+        clearDrawingCache(tree);
+        tree.repaint(); // To flush SynthTreeUI.drawingCache
+    }
+
+    // HACK to clear Swing caches
+    private static void clearSelectionCache(RowMapper rm) {
+        if (rm instanceof FixedHeightLayoutCache) {
+            try {
+                Field infoField = rm.getClass().getDeclaredField("info");
+                infoField.setAccessible(true);
+                Object searchInfo = infoField.get(rm);
+                if (searchInfo != null) {
+                    Field nodeField = searchInfo.getClass().getDeclaredField("node");
+                    nodeField.setAccessible(true);
+                    nodeField.set(searchInfo, null);
+                }
+            } catch (Exception ex) {}
+        }
+    }
+
+    // HACK http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6258067
+    private static void clearDrawingCache(JTree tree) {
+        TreeUI tui = tree.getUI();
+        if (tui instanceof BasicTreeUI) {
+            try {
+                Field drawingCacheField = BasicTreeUI.class.getDeclaredField("drawingCache");
+                drawingCacheField.setAccessible(true);
+                Map table = (Map) drawingCacheField.get(tui);
+                table.clear();
+            } catch (Exception ex) {}
+        }
+     }
 
     public List<TreePath> getVisiblePaths() {
         synchronized(tree) {
@@ -187,7 +228,8 @@ public class DebugTreeView extends BeanTreeView {
         ThreadsListener threadsListener = ThreadsListener.getDefault();
         JPDADebugger debugger = threadsListener != null ? threadsListener.getDebugger() : null;
         JPDAThread currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
-        if (currentThread != null && !currentThread.isSuspended()) {
+        if (currentThread != null && !currentThread.isSuspended() &&
+                !DebuggingTreeModel.isMethodInvoking(currentThread)) {
             currentThread = null;
         }
         boolean isHighlighted = false;

@@ -49,5 +49,5 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
 
 -->
 <bindings>
-    <bind actionName="fix-groovy-imports" key="DS-Y"/>
+    <bind actionName="fix-groovy-imports" key="DS-I"/>
 </bindings>

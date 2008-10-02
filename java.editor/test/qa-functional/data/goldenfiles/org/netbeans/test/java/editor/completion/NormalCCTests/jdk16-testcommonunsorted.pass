@@ -9,6 +9,7 @@ toString#00#()
 wait#00#()
 wait#01#(long)
 wait#02#(long,int)
+super#00#()
 assert
 boolean
 byte

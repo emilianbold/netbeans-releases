@@ -41,6 +41,9 @@
 
 package org.openide.nodes;
 
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,6 +55,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Mutex;
@@ -91,7 +96,7 @@ public abstract class Children extends Object {
     * needs for a certain amount of time to forbid modification,
     * he can execute his code in {@link Mutex#readAccess}.
     */
-    public static final Mutex MUTEX = new Mutex(PR);
+    public static final Mutex MUTEX = new Mutex(PR, new ProjectManagerDeadlockDetector());
 
     /** The object representing an empty set of children. Should
     * be used to represent the children of leaf nodes. The same
@@ -1790,4 +1795,61 @@ public abstract class Children extends Object {
       });
     }
     */
+
+    private static final class ProjectManagerDeadlockDetector implements Executor {
+
+        private final AtomicReference<WeakReference<Mutex>> pmMutexRef = new AtomicReference<WeakReference<Mutex>>();
+
+        public void execute(Runnable command) {
+            boolean ea = false;
+            assert ea = true;
+            if (ea) {
+                Mutex mutex = getPMMutex();
+                if (mutex != null && (mutex.isReadAccess() || mutex.isWriteAccess())) {
+                    throw new IllegalStateException("Should not acquire Children.MUTEX while holding ProjectManager.mutex()");
+                }
+            }
+            command.run();
+        }
+
+        private Mutex getPMMutex() {
+            for (;;) {
+                Mutex mutex = null;
+                WeakReference<Mutex> weakRef = pmMutexRef.get();
+                if (weakRef != null) {
+                    mutex = weakRef.get();
+                }
+                if (mutex != null) {
+                    return mutex;
+                }
+                mutex = callPMMutexMethod();
+                if (mutex != null) {
+                    WeakReference<Mutex> newWeakRef = new WeakReference<Mutex>(mutex);
+                    if (pmMutexRef.compareAndSet(weakRef, newWeakRef)) {
+                        return mutex;
+                    }
+                } else {
+                    return null;
+                }
+            }
+        }
+
+        private Mutex callPMMutexMethod() {
+            try {
+                Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass("org.netbeans.api.project.ProjectManager"); // NOI18N
+                Method method = clazz.getMethod("mutex"); // NOI18N
+                return (Mutex) method.invoke(null);
+            } catch (ClassNotFoundException e) {
+                return null;
+            } catch (IllegalAccessException e) {
+                return null;
+            } catch (IllegalArgumentException e) {
+                return null;
+            } catch (InvocationTargetException e) {
+                return null;
+            } catch (NoSuchMethodException e) {
+                return null;
+            }
+        }
+    }
 }
