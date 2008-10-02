@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
+import java.util.List;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
@@ -128,6 +129,9 @@ public interface IElement extends IBaseElement, Node.Cookie
 
     /** Retrieves the tagged values in a comma delimited string. */
     public String getTaggedValuesAsString();
+    
+    /** Retrieves the tagged values a  list of "name=value" string */
+    public List<String> getTaggedValuesAsList();
 
     /** Adds a UML 1.3 conformant TaggedValue to this Element. */
     public ITaggedValue addTaggedValue(String tagName, String value);

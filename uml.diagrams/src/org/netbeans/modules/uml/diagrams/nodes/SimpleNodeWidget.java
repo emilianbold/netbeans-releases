@@ -58,7 +58,7 @@ public abstract class SimpleNodeWidget extends UMLNodeWidget
 {
     protected LabelWidget stereotypeWidget = null;
     protected LabelWidget nameWidget = null;
-    protected LabelWidget taggedValueWidget = null;
+    protected MultiLineTaggedValueWidget taggedValueWidget = null;
     private String contextPaletteRes = "UML/context-palette/Activity";
     protected static ResourceBundle bundle = NbBundle.getBundle(EditableCompartmentWidget.class);
 
@@ -183,32 +183,20 @@ public abstract class SimpleNodeWidget extends UMLNodeWidget
         return (nameWidget != null && nameWidget.isEnabled() && nameWidget.isVisible());
     }
 
-    protected LabelWidget createTaggedValueWidget()
+    protected MultiLineTaggedValueWidget createTaggedValueWidget()
     {
         if (taggedValueWidget == null)
         {
-            taggedValueWidget = new UMLLabelWidget(this.getScene(),
+            taggedValueWidget = new MultiLineTaggedValueWidget(this.getScene(),
                                                    getWidgetID() + ".taggedValue", //NO I18N
                                                    bundle.getString("LBL_taggedValue"));
-            taggedValueWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
         }
         return taggedValueWidget;
     }
 
     protected void enableTaggedValueWidget(IElement elem)
     {
-        String taggedValues = elem.getTaggedValuesAsString();
-
-        if (taggedValues.length() > 0 && taggedValueWidget != null)
-        {
-            taggedValueWidget.setVisible(true);
-            taggedValueWidget.setLabel("{" + taggedValues + "}");
-        }
-        else
-        {
-            taggedValueWidget.setLabel("");
-            taggedValueWidget.setVisible(false);
-        }
+        taggedValueWidget.updateTaggedValues(elem.getTaggedValuesAsList());
     }
 
     @Override
