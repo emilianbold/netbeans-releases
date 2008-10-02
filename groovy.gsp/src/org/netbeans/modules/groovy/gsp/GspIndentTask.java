@@ -81,7 +81,7 @@ public class GspIndentTask implements IndentTask {
         reindent(doc, start, end);
     }
 
-    public static void reindent(BaseDocument doc, int start, int end) throws BadLocationException {
+    private void reindent(BaseDocument doc, int start, int end) throws BadLocationException {
         //doc.putProperty(HTMLLexerFormatter.HTML_FORMATTER_ACTS_ON_TOP_LEVEL, Boolean.TRUE);
         doc.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE);
         
@@ -92,7 +92,6 @@ public class GspIndentTask implements IndentTask {
         }
         
         int offset = Utilities.getRowStart(doc, end);
-        org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
         List<Integer> offsets = new ArrayList<Integer>();
         boolean prevWasNonHtml = false;
         while (offset >= start) {
@@ -125,7 +124,7 @@ public class GspIndentTask implements IndentTask {
         // Process offsets to be reformatted
         if (offsets.size() > 0) {
             for (Integer lineOffset : offsets) {
-                editorFormatter.changeRowIndent(doc, lineOffset, 0);
+                context.modifyIndent(Utilities.getRowStart(doc, lineOffset), 0);
             }
         }
     }
