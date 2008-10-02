@@ -88,6 +88,11 @@ public class DebugTreeView extends BeanTreeView {
         return tree;
     }
 
+    void resetSelection() {
+        tree.getSelectionModel().clearSelection(); // To flush selection cache
+        tree.repaint(); // To flush SynthTreeUI.drawingCache
+    }
+
     public List<TreePath> getVisiblePaths() {
         synchronized(tree) {
             List<TreePath> result = new ArrayList<TreePath>();
