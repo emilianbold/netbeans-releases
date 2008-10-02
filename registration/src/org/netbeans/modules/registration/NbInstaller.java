@@ -97,12 +97,12 @@ public class NbInstaller extends ModuleInstall {
         
         try {
             NbServiceTagSupport.createNbServiceTag
-            (NbBundle.getMessage(NbInstaller.class,"nb.product.name"),
+            (NbServiceTagSupport.getProductName(),
              System.getProperty("java.version"));
             if (isCndShouldBeRegistered()) {
-                NbServiceTagSupport.createCndServiceTag(NbBundle.getMessage(
-                        NbInstaller.class, "nb.product.name"),
-                        System.getProperty("java.version"));
+                NbServiceTagSupport.createCndServiceTag
+                (NbServiceTagSupport.getProductName(),
+                System.getProperty("java.version"));
             }
 
             //NbServiceTagSupport.createGfServiceTag("NetBeans IDE 6.0","","","","v2");
