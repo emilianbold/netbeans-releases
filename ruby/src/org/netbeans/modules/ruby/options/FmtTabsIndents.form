@@ -15,9 +15,6 @@
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
         </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
       </Properties>
     </Component>
   </NonVisualComponents>
@@ -67,9 +64,9 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="reformatCommentsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="indentHtmlCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="18" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -91,9 +88,6 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/ruby/options/Bundle.properties" key="LBL_ReformatComments" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
     </Component>
