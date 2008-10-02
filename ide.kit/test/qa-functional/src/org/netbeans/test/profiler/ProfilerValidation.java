@@ -86,8 +86,8 @@ public class ProfilerValidation extends JellyTestCase {
     static String[] tests = new String[]{
             "testProfilerMenus",
             "testProfilerProperties",
-            "testProfilerCalibration",
-            "testProfiler"
+            "testProfilerCalibration"//,
+          //  "testProfiler"
     };
     /** Default constructor.
      * @param name test case name
