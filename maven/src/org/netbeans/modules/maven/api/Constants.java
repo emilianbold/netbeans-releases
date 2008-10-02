@@ -140,5 +140,18 @@ public interface Constants {
      * Optional property, complementary to ACTION_PROPERTY_DEPLOY.
      */
     public static final String ACTION_PROPERTY_DEPLOY_REDEPLOY = "netbeans.deploy.forceRedeploy"; //NOI18N
+
+    /**
+     * Optional property, if defined the project type will attempt to redirect meaningful
+     * run/debug/profile/test action invokations to the compile on save infrastructure.
+     * Possible values
+     * <ul>
+     * <li>all  - both tests and application gets run by netbeans quick run infrastructure</li>
+     * <li>test  - only tests are run by netbeans quick run infrastructure, not application</li>
+     * <li>app  - only application is run by netbeans quick run infrastructure, not tests</li>
+     * </ul>
+     * @since NetBeans 7.0
+     */
+    public static final String HINT_COMPILE_ON_SAVE = "netbeans.compile.on.save"; //NOI18N
     
 }

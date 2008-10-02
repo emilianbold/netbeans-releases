@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.api.execute;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
@@ -89,5 +90,32 @@ public final class RunUtils {
         return task;
     }
 
+    /**
+     *
+     * @param config
+     * @return true if compile on save is allowed for running the application.
+     */
+    public static boolean hasApplicationCompileOnSaveEnabled(RunConfig config) {
+        Project prj = config.getProject();
+        if (prj != null) {
+              String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
+              return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
+        }
+        return false;
+    }
+
+    /**
+     *
+     * @param config
+     * @return true if compile on save is allowed for running tests.
+     */
+    public static boolean hasTestCompileOnSaveEnabled(RunConfig config) {
+        Project prj = config.getProject();
+        if (prj != null) {
+              String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
+              return cos != null && ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
+        }
+        return false;
+    }
 
 }

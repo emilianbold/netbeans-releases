@@ -41,14 +41,18 @@ package org.netbeans.modules.maven.runjar;
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
@@ -59,10 +63,14 @@ import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
@@ -124,7 +132,77 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                 }
             }
         }
+
+        //compile on save stuff
+        if (config.getProject() != null &&
+            NbMavenProject.TYPE_JAR.equals(
+                config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType())) {
+            Project prj = config.getProject();
+            //TODO replace with an api method call
+
+            if (RunUtils.hasApplicationCompileOnSaveEnabled(config) &&
+                   (ActionProvider.COMMAND_RUN.equals(actionName) ||
+                    ActionProvider.COMMAND_DEBUG.equals(actionName) ||
+                    ActionProvider.COMMAND_RUN_SINGLE.equals(actionName) ||
+                    ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName))) {
+                //TODO check the COS timestamp against critical files (pom.xml)
+                // if changed, don't do COS.
+
+                //TODO check the COS timestamp against resources etc.
+                //if changed, perform part of the maven build. (or skip COS)
+
+                Map<String, Object> params = new HashMap<String, Object>();
+                params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
+                params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
+                ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
+                params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cpp.getProjectClassPaths(ClassPath.EXECUTE)[0]);
+                //exec:exec property
+                String exargs = config.getProperties().getProperty("exec.args"); //NOI18N
+                if (exargs != null) {
+                    String[] args = RunJarPanel.splitAll(exargs);
+                    System.out.println("jvmargs=" + args[0]);
+                    System.out.println("clazz=" + args[1]);
+                    System.out.println("args=" + args[2]);
+                    params.put(JavaRunner.PROP_CLASSNAME, args[1]);
+                    String[] appargs = args[2].split(" ");
+                    params.put(JavaRunner.PROP_APPLICATION_ARGS, Arrays.asList(appargs));
+                    //TODO jvm args, add and for debugging, remove the debugging ones..
+//                    params.put(JavaRunner.PROP_RUN_JVMARGS, args[2]);
+                    String action2Quick = action2Quick(actionName);
+                    boolean supported = JavaRunner.isSupported(action2Quick, params);
+                    if (supported) {
+                        try {
+                            JavaRunner.execute(action2Quick, params);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (UnsupportedOperationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return false;
+                    } else {
+                    }
+                } else {
+                    //TODO what to do now? skip?
+                }
+            }
+        }
         return true;
+    }
+
+    private String action2Quick(String actionName) {
+        if (ActionProvider.COMMAND_CLEAN.equals(actionName)) {
+            return JavaRunner.QUICK_CLEAN;
+        } else if (ActionProvider.COMMAND_RUN.equals(actionName) || ActionProvider.COMMAND_RUN_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_RUN;
+        } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_DEBUG;
+        } else if (ActionProvider.COMMAND_TEST.equals(actionName) || ActionProvider.COMMAND_TEST_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_TEST;
+        } else if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_TEST_DEBUG;
+        }
+        assert false: "Cannot convert " + actionName + " to quick actions.";
+        return null;
     }
 
     private String eventuallyShowDialog(Project project, String actionName) {
