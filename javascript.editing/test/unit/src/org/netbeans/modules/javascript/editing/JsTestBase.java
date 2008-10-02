@@ -87,6 +87,9 @@ public abstract class JsTestBase extends GsfTestBase {
 
     @Override
     protected void validateParserResult(ParserResult result) {
+        if (JsParser.runtimeException != null) {
+            JsParser.runtimeException.printStackTrace();
+        }
         JsTestBase.assertNull(JsParser.runtimeException != null ? JsParser.runtimeException.toString() : "", JsParser.runtimeException);
     }
     

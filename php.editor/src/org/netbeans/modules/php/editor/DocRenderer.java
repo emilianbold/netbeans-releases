@@ -357,6 +357,12 @@ class DocRenderer {
 
             if (program != null) {
                 ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+
+                if (node == null){ // issue #118222
+                    LOGGER.warning("Could not find AST node for element "
+                            + indexedElement.getName() + " defined in " + indexedElement.getFilenameUrl());
+                    return;
+                }
                 //header.appendHtml("<br/>"); //NOI18N
 
                 if (node instanceof FunctionDeclaration) {

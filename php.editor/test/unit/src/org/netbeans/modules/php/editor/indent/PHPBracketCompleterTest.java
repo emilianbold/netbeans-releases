@@ -223,6 +223,64 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertBreak("function a() {\n    array(\n        'a',^\n    )\n}", "function a() {\n    array(\n        'a',\n        ^\n    )\n}");
     }
 
+    // XXX out of scope for NB 6.5
+//    public void testInsertBreakInArray5() throws Exception {
+//        insertBreak("array(array(array(^)))", "array(array(array(\n^)))");
+//    }
+
+    // this would be ideal
+//    public void testInsertBreakInArray6() throws Exception {
+//        insertBreak("array(array(array(^\n)))", "array(array(array(\n    ^\n)))");
+//    }
+
+    public void testInsertBreakInSwitch1() throws Exception {
+        insertBreak("switch ($a) {\n    case 'a':^\n}", "switch ($a) {\n    case 'a':\n        ^\n}");
+    }
+
+    public void testInsertBreakInSwitch2() throws Exception {
+        insertBreak("switch ($a) {\n    case 'a':\n        echo 'a';\n        break;^\n}", "switch ($a) {\n    case 'a':\n        echo 'a';\n        break;\n    ^\n}");
+    }
+
+    public void testInsertBreakInSwitch3() throws Exception {
+        insertBreak("switch ($a) {\n    case 'a':\n        echo 'a';\n        break 1;^\n}", "switch ($a) {\n    case 'a':\n        echo 'a';\n        break 1;\n    ^\n}");
+    }
+
+    public void testInsertBreakInSwitch4() throws Exception {
+        insertBreak("switch ($a) {\n    case 'a':\n        echo 'a';\n    break;^\n}", "switch ($a) {\n    case 'a':\n        echo 'a';\n    break;\n    ^\n}");
+    }
+
+    public void testInsertBreakInSwitch5() throws Exception {
+        insertBreak("switch ($a) {\n    case 'a':\n        for (;;) {\n            echo 'a';\n        }\n        break;^\n}", "switch ($a) {\n    case 'a':\n        for (;;) {\n            echo 'a';\n        }\n        break;\n    ^\n}");
+    }
+
+    public void testInsertBreakInSwitch6() throws Exception {
+        insertBreak("switch ($a) {\n    case 'a':\n        for (;;):\n            echo 'a';\n        endfor;\n        break;^\n}", "switch ($a) {\n    case 'a':\n        for (;;):\n            echo 'a';\n        endfor;\n        break;\n    ^\n}");
+    }
+
+    public void testInsertBreakInSwitch7() throws Exception {
+        insertBreak("switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n        }\n       \n    break;^\n}", "switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n        }\n       \n    break;\n    ^\n}");
+    }
+
+    public void testInsertBreakInSwitch8() throws Exception {
+        insertBreak("switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;^\n        }\n       \nbreak;^\n}", "switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n            ^\n        }\n       \nbreak;\n}");
+    }
+
+    public void testInsertBreakInFor() throws Exception {
+        insertBreak("for (;;) {\n    break;^\n}", "for (;;) {\n    break;\n    ^\n}");
+    }
+
+    public void testInsertBreakInForeach() throws Exception {
+        insertBreak("foreach ($arr as $val) {\n    break;^\n}", "foreach ($arr as $val) {\n    break;\n    ^\n}");
+    }
+
+    public void testInsertBreakInWhile() throws Exception {
+        insertBreak("while (true) {\n    break;^\n}", "while (true) {\n    break;\n    ^\n}");
+    }
+
+    public void testInsertBreakInDo() throws Exception {
+        insertBreak("do {\n    break;^\n} while (true)", "do {\n    break;\n    ^\n} while (true)");
+    }
+
     public void testNoMatchInComments() throws Exception {
         insertChar("// Hello^", '"', "// Hello\"^");
         insertChar("// Hello^", '\'', "// Hello'^");
@@ -281,7 +339,7 @@ public class PHPBracketCompleterTest extends PHPTestBase {
     public void testDobuleQuotes5() throws Exception {
         insertChar("x = \"\\\"^", '"', "x = \"\\\"\"^");
     }
-    
+
 // XXX: ruby specific
 //    public void testDocs() throws Exception {
 //        insertBreak("=begin^\n", "=begin\n^\n=end\n");

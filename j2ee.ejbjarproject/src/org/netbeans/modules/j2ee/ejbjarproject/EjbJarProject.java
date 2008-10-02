@@ -1296,8 +1296,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     deleted = FileUtil.toFile(toDelete);
                     toDelete.delete();
                 }
+                if (deleted != null) {
+                    fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(deleted)));
+                }
             }
-            fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(deleted)));
         }
 
         private void handleCopyFileToDestDir(FileObject fo) throws IOException {
@@ -1341,7 +1343,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                                 fl.releaseLock();
                             }
                             File file = FileUtil.toFile(destFile);
-                            fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
+                            if (file != null) {
+                                fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
+                            }
                         }
                     }
                 }
