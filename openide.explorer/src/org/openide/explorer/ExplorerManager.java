@@ -52,6 +52,7 @@ import java.io.*;
 
 import java.util.*;
 import java.util.ArrayList;
+import javax.swing.SwingUtilities;
 
 
 /**
@@ -902,7 +903,12 @@ bigloop:
                 setRootContext(Node.EMPTY);
             } else {
                 // assume that the node is among currently selected nodes
-                scheduleRemove(ev.getNode());
+                final Node n = ev.getNode();
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        scheduleRemove(n);
+                    }
+                });
             }
         }
 
