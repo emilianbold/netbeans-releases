@@ -160,7 +160,14 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
         } else if (sc instanceof ComplexType) {
             visitChildren(sc);
         } else if (sc instanceof Schema) {
-            visitChildren(sc);
+           // Look for a global schema object
+           lookGlobalOnly = true;
+           try {
+               visitChildren(sc);
+           } finally {
+               lookGlobalOnly = false;
+           }
+
         } else {
             // Other elements can't containg nested elements or attributes
         }

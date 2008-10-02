@@ -197,8 +197,14 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
             visitChildren(sc);
         }
         else if (sc instanceof Schema) {
-//out("3");
-            visitChildren(sc);
+           // Look for a global schema object
+           lookGlobalOnly = true;
+           try {
+               visitChildren(sc);
+           } finally {
+               lookGlobalOnly = false;
+           }
+
         }
         else {
 //out("4");

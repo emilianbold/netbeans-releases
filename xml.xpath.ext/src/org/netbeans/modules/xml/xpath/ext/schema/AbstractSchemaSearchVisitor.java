@@ -54,6 +54,11 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  */
 public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     
+    
+    // Indicates if it necessary to look the global objects only.
+    // It is used when the schema is the parent of searching.
+    protected boolean lookGlobalOnly = false; 
+   
     public AbstractSchemaSearchVisitor() {
     }
     
@@ -203,22 +208,27 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
         //
         visitChildren(ce);
     }
-    
-    @Override
-    public void visit(GlobalComplexType gct) {
-        visitChildren(gct);
-    }
-    
-    @Override
-    public void visit(LocalComplexType lct) {
-        visitChildren(lct);
-    }
-    
-    @Override
-    public void visit(GlobalGroup gg) {
-        visitChildren(gg);
-    }
-    
+   @Override
+   public void visit(GlobalComplexType gct) {
+       if (!lookGlobalOnly) {
+           visitChildren(gct);
+       }
+   }
+
+   @Override
+   public void visit(LocalComplexType lct) {
+       if (!lookGlobalOnly) {
+           visitChildren(lct);
+       }
+   }
+
+   @Override
+   public void visit(GlobalGroup gg) {
+       if (!lookGlobalOnly) {
+           visitChildren(gg);
+       }
+   } 
+
     @Override
     public void visit(Redefine r) {
         visitChildren(r);
