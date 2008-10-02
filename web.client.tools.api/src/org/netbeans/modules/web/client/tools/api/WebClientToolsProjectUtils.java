@@ -43,13 +43,19 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -61,10 +67,17 @@ import org.openide.util.Utilities;
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
 public final class WebClientToolsProjectUtils {
-    private static final String CLIENT_DEBUG_PROP = "clientdebug"; // NOI18N
-    private static final String SERVER_DEBUG_PROP = "serverdebug"; // NOI18N
+    // Do not show again state
+    static final String DIALOG_DISPLAY_CONFIG = "dialogShowDebugPanel"; // NOI18N
+    // server/client selection state
+    static final String DIALOG_CLIENT_DEBUG = "dialogClientDebug"; // NOI18N
+    // browser selection state
+    static final String DIALOG_BROWSER = "dialogDebugConfigBrowser"; // NOI18N
+
+    static final String CLIENT_DEBUG_PROP = "clientdebug"; // NOI18N
+    static final String SERVER_DEBUG_PROP = "serverdebug"; // NOI18N
     
-    private static final boolean CLIENT_DEBUG_DEFAULT = true;
+    private static final boolean CLIENT_DEBUG_DEFAULT = false;
     private static final boolean SERVER_DEBUG_DEFAULT = true;
     
     public static enum Browser {
@@ -72,8 +85,79 @@ public final class WebClientToolsProjectUtils {
         INTERNET_EXPLORER;
     }
 
-    public static final Browser BROWSER_DEFAULT = Browser.FIREFOX;
-    
+    static final Browser BROWSER_DEFAULT = Browser.FIREFOX;
+
+    /**
+     *
+     * Displays the Debug Project dialog that allows the user to select server/client
+     * debugging.  User selection in the dialog saves the project's preferences as well
+     * as the default value for subsequent projects.
+     *
+     * @param project the project to debug
+     * @return true if the user pressed the Debug button, false if the user cancels
+     */
+    public static boolean showDebugDialog(Project project) {
+        Preferences globalPrefs = NbPreferences.forModule(WebClientToolsProjectUtils.class);
+        boolean showDialog = globalPrefs.getBoolean(DIALOG_DISPLAY_CONFIG, true);
+        if (!showDialog) {
+            return true;
+        } else {
+            String projectName = ProjectUtils.getInformation(project).getDisplayName();
+            String dialogTitle = NbBundle.getMessage(WebClientToolsProjectUtils.class, "DebugProjectPanel_DialogTitle", projectName);
+
+            JButton debugButton = new JButton();
+            Mnemonics.setLocalizedText(debugButton, NbBundle.getMessage(WebClientToolsProjectUtils.class, "DebugProjectPanel_OkButton"));
+            debugButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(WebClientToolsProjectUtils.class, "DebugProjectPanel_OkButton.accessibleDescription"));
+
+            Object[] dialogButtons = new Object[] { debugButton, DialogDescriptor.CANCEL_OPTION };
+            DebugProjectPanel panel = new DebugProjectPanel(project);
+
+            DialogDescriptor dd = new DialogDescriptor(
+                    panel,
+                    dialogTitle,
+                    true,
+                    dialogButtons,
+                    debugButton,
+                    DialogDescriptor.BOTTOM_ALIGN,
+                    null,
+                    panel.getPanelCloseHandler(debugButton));
+
+            dd.setClosingOptions(null);
+            return DialogDisplayer.getDefault().notify(dd) == debugButton;
+        }
+    }
+
+    public static Browser getDefaultBrowser() {
+        Preferences globalPrefs = NbPreferences.forModule(WebClientToolsProjectUtils.class);
+        String browserName = globalPrefs.get(DIALOG_BROWSER, null);
+
+        if (browserName != null) {
+            try {
+                return Browser.valueOf(browserName);
+            } catch (IllegalArgumentException ex) {
+                // value is somehow invalid
+                }
+        }
+
+        if (isFirefoxSupported()) {
+            return Browser.FIREFOX;
+        } else if (isInternetExplorerSupported()) {
+            return Browser.INTERNET_EXPLORER;
+        } else {
+            return BROWSER_DEFAULT;
+        }
+    }
+
+    public static boolean getClientDebugDefault() {
+        Preferences globalPrefs = NbPreferences.forModule(WebClientToolsProjectUtils.class);
+        return globalPrefs.getBoolean(DIALOG_CLIENT_DEBUG, CLIENT_DEBUG_DEFAULT);
+    }
+
+    public static boolean getServerDebugDefault() {
+        return SERVER_DEBUG_DEFAULT;
+    }
+
     public static HtmlBrowser.Factory getFirefoxBrowser() {
         return findBrowser("org.netbeans.modules.extbrowser.FirefoxBrowser"); // NOI18N
     }
@@ -83,7 +167,7 @@ public final class WebClientToolsProjectUtils {
     }
     
     public static boolean getClientDebugProperty(Project project) {
-        return getProjectProperty(project, CLIENT_DEBUG_PROP, CLIENT_DEBUG_DEFAULT);
+        return getProjectProperty(project, CLIENT_DEBUG_PROP, getClientDebugDefault());
     }
 
     public static boolean getServerDebugProperty(Project project) {
@@ -98,18 +182,29 @@ public final class WebClientToolsProjectUtils {
     }
     
     public static boolean isDebugPropertySet(Project project) {
+        return isPropertySet(project, CLIENT_DEBUG_PROP);
+    }
+
+    static boolean isPropertySet(Project project, String propKey) {
+        Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, false);
+        assert prefs != null;
+
+        return prefs.get(propKey, null) != null;
+    }
+
+    static Preferences getPreferencesForProject(Project project) {
         Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, false);
         assert prefs != null;
         
-        return prefs.get(CLIENT_DEBUG_PROP, null) != null;
+        return prefs;
     }
-    
+
     public static boolean isFirefox(Project project) {
-        return getProjectProperty(project, Browser.FIREFOX.name(), (BROWSER_DEFAULT == Browser.FIREFOX));
+        return getProjectProperty(project, Browser.FIREFOX.name(), (getDefaultBrowser() == Browser.FIREFOX));
     }
 
     public static boolean isInternetExplorer(Project project) {
-        return getProjectProperty(project, Browser.INTERNET_EXPLORER.name(), (BROWSER_DEFAULT == Browser.INTERNET_EXPLORER));
+        return getProjectProperty(project, Browser.INTERNET_EXPLORER.name(), (getDefaultBrowser() == Browser.INTERNET_EXPLORER));
     }
     
     private static boolean getProjectProperty(Project project, String propKey, boolean def) {
@@ -117,7 +212,7 @@ public final class WebClientToolsProjectUtils {
         assert prefs != null;
         
         return prefs.getBoolean(propKey, def);
-    }    
+    }
 
     public static void setProjectProperties(final Project project, final boolean serverDebug, final boolean clientDebug, final Browser browser) {
         try {
