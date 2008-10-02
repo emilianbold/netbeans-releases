@@ -111,7 +111,7 @@ public class ClassPathRootsListenerTest extends NbTestCase {
         final AtomicInteger counter = new AtomicInteger();
         
         ClassPathRootsChangedListener l = new ClassPathRootsChangedListener() {
-            public void rootsChanged(Collection<ClassPath> forCPs) {
+            public void rootsChanged(Collection<ClassPath> forCPs, File f) {
                 counter.incrementAndGet();
             }
         };
