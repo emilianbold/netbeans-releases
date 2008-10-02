@@ -633,10 +633,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (tokenTxt.length() == 1 && tokenTxt.charAt(0) == '(') {
                 // confirmed, it is a function call
                 // position the token sequence after the call
-                do {
-                    tokenSequence.moveNext();
-                } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
-                        && ")".equals(tokenSequence.token().text().toString()))); //NOI18N
+                findLHSExpressionType_skipArgs(tokenSequence, false);
+                tokenSequence.movePrevious();
             } else {
                 functionName = null;
             }
