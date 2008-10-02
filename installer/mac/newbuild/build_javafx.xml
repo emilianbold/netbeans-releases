@@ -257,7 +257,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- temp workaround with productid for NB in NBFX bundles: replace "NB" with "NBFX" in postflight for baseide.pkg-->     
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="sed -i '' 's/addproduct_id.sh &quot;NB&quot;/addproduct_id.sh &quot;NBMYSQL&quot;/'
+            <arg value="sed -i '' 's/addproduct_id.sh &quot;NB&quot;/addproduct_id.sh &quot;NBFX&quot;/'
                             ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
         </exec>
                  
