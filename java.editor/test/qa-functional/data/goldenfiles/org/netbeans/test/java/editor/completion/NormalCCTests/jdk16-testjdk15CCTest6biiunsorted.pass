@@ -1,4 +1,17 @@
 #02#(int,String...)
+copyValueOf#01#(char[])#String
+copyValueOf#03#(char[],int,int)#String
+format#02#(String,Object...)#String
+format#03#(Locale,String,Object...)#String
+valueOf#01#(Object)#String
+valueOf#01#(boolean)#String
+valueOf#01#(char)#String
+valueOf#01#(char[])#String
+valueOf#01#(double)#String
+valueOf#01#(float)#String
+valueOf#01#(int)#String
+valueOf#01#(long)#String
+valueOf#03#(char[],int,int)#String
 args
 t
 main#01#(String[])

@@ -719,7 +719,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
                    // wait until server is shut down
                    synchronized(proc) {
                        while(checkRunning()) {
-                           proc.wait();
+                           proc.waitFor();
                        }
                    }
                } finally {

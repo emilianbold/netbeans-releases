@@ -142,7 +142,8 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
         String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);
         category.setErrorMessage(err);
-        category.setValid(err == null);
+        // #148957 always allow to save customizer
+        category.setValid(true);
     }
 
     private FileObject getWebRoot() {
