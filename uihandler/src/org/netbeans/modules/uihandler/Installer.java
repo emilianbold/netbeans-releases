@@ -417,12 +417,36 @@ public class Installer extends ModuleInstall implements Runnable {
                     RP.post(new Auto()).waitFinished();
                 }
                 File f = logFile(0);
-                f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
+                File f1 = logFile(1);
+                if (f1.exists()) {
+                    f1.delete();
+                }
+                f.renameTo(f1);
                 logsSize = 0;
             } else {
                 logsSize++;
                 if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
                     prefs.putInt("count", logsSize);
+                }
+            }
+            if ((logsSize % 100) == 0) {
+                //This is fallback to avoid growing log file over any limit.
+                File f = logFile(0);
+                File f1 = logFile(1);
+                if (f.exists() && (f.length() > UIHandler.MAX_LOGS_SIZE)) {
+                    LOG.log(Level.INFO, "UIGesture Collector log file size is over limit. It will be deleted."); // NOI18N
+                    LOG.log(Level.INFO, "Log file:" + f + " Size:" + f.length() + " Bytes"); // NOI18N
+                    closeLogStream();
+                    logsSize = 0;
+                    if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
+                        prefs.putInt("count", logsSize);
+                    }
+                    f.delete();
+                }
+                if (f1.exists() && (f1.length() > UIHandler.MAX_LOGS_SIZE)) {
+                    LOG.log(Level.INFO, "UIGesture Collector backup log file size is over limit. It will be deleted."); // NOI18N
+                    LOG.log(Level.INFO, "Log file:" + f1 + " Size:" + f1.length() + " Bytes"); // NOI18N
+                    f1.delete();
                 }
             }
         } catch (IOException ex) {
