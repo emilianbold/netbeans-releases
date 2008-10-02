@@ -89,7 +89,6 @@ public class FmtTabsIndents extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox3, "jCheckBox3");
         jCheckBox3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jCheckBox3.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         setName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_Indents")); // NOI18N
         setOpaque(false);
@@ -99,7 +98,6 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         continuationIndentSizeField.setColumns(3);
 
         org.openide.awt.Mnemonics.setLocalizedText(reformatCommentsCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_ReformatComments")); // NOI18N
-        reformatCommentsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(indentHtmlCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_IndentHTML")); // NOI18N
 
@@ -127,9 +125,9 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                     .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(reformatCommentsCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(indentHtmlCheckBox)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     

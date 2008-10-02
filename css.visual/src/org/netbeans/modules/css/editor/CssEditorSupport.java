@@ -317,14 +317,19 @@ public class CssEditorSupport {
 
         //select the first rule if the caret in on zero offset
         //once the model is updated/created the caret is set and this listener unregistered
-        model.addPropertyChangeListener( new PropertyChangeListener() {
+        
+        //access the final refs to the model and editorPane instead of this.* refs objects 
+        //since the code is unsynchronized and they may become null at any time
+        final CssModel model_ref = model;
+        final JEditorPane pane_ref = editorPane;
+        model_ref.addPropertyChangeListener( new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(CssModel.MODEL_UPDATED)) {
-                    model.removePropertyChangeListener(this);
-                    if (editorPane.getCaret().getDot() == 0) {
-                        if (model.rules().size() > 0) {
+                    model_ref.removePropertyChangeListener(this);
+                    if (pane_ref.getCaret().getDot() == 0) {
+                        if (model_ref.rules().size() > 0) {
                             d("setting caret to first rule: " + tc.getName());
-                            editorPane.getCaret().setDot(model.rules().get(0).getRuleNameOffset());
+                            pane_ref.getCaret().setDot(model_ref.rules().get(0).getRuleNameOffset());
                         }
                     }
                 }

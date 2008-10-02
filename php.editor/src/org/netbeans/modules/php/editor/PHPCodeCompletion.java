@@ -358,6 +358,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
             PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
             PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,PHPTokenId.PHP_CASE,
+            PHPTokenId.PHP_IF,PHPTokenId.PHP_ELSE,PHPTokenId.PHP_ELSEIF, 
+            PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,PHPTokenId.PHP_WHILE,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT
             );
 
@@ -374,19 +376,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         int rightExpressionBoundary = tokenSequence.offset();
 
-        while (!CTX_DELIMITERS.contains(tokenSequence.token().id())
-                && findLHSExpressionType_skipArgs(tokenSequence)
+        while (findLHSExpressionType_skipArgs(tokenSequence, true)
+                && !CTX_DELIMITERS.contains(tokenSequence.token().id())
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
-            if (!tokenSequence.movePrevious()){
+            if (!tokenSequence.movePrevious()) {
                 break;
             }
         }
-
         //move forward to the first text
         do {
             if (!tokenSequence.moveNext()){
                 return null;
             }
+            findLHSExpressionType_skipArgs(tokenSequence, false);
         } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
 
         int leftExpressionBoundary = tokenSequence.offset(); // dbg only
@@ -506,18 +508,48 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 preceedingType, staticContex, rightExpressionBoundary);
     }
 
-     private boolean findLHSExpressionType_skipArgs(TokenSequence<PHPTokenId> tokenSequence){
-        if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
-                && ")".equals(tokenSequence.token().text().toString())){
+    private boolean findLHSExpressionType_skipArgs(TokenSequence<PHPTokenId> tokenSequence, boolean backwards) {
+
+        String startingSymbol = "(";
+        String closingSymbol = ")";
+
+        if (backwards){
+            startingSymbol = ")"; //NOI18N
+            closingSymbol = "("; //NOI18N
+        }
+
+        if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
+                && startingSymbol.equals(tokenSequence.token().text().toString())) {
+
+            int balance = 1;
+            boolean endingParenthesis;
 
             do {
-                if (!tokenSequence.movePrevious()){
+                if (backwards && !tokenSequence.movePrevious() 
+                        || !backwards && !tokenSequence.moveNext()) {
+                    
                     return true;
                 }
-            } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
-                && "(".equals(tokenSequence.token().text().toString())));
 
-            tokenSequence.movePrevious();
+                if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
+                        && startingSymbol.equals(tokenSequence.token().text().toString())) {
+                    balance++;
+                }
+
+                endingParenthesis = tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
+                        && closingSymbol.equals(tokenSequence.token().text().toString()); //NOI18N
+
+                if (endingParenthesis) {
+                    balance--;
+                }
+
+            } while (!(endingParenthesis && balance == 0));
+
+            if (backwards){
+                tokenSequence.movePrevious();
+            } else {
+                tokenSequence.moveNext();
+            }
         }
 
         return true;
@@ -552,6 +584,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     fieldName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
 
                 type = field.getTypeName();
+            }
+            if (type == null && preceedingType != null && fieldName != null) {
+                VarTypeResolver typeResolver = VarTypeResolver.getInstance(request, preceedingType+"::"+fieldName);//NOI18N
+                type = typeResolver.resolveType();
             }
         }
 
