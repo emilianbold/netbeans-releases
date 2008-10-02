@@ -109,5 +109,8 @@ public abstract class ClassIndexImpl {
 
     public abstract void storeEmpty();
     // END TOR MODIFICATIONS
-    
+
+    @SuppressWarnings("serial")
+    public static final class IndexAlreadyClosedException extends IOException {
+    }
 }

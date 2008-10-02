@@ -67,7 +67,15 @@ public class ErrorInfoPanel extends javax.swing.JPanel {
     /** Creates new form ErrorInfoPanel */
     public ErrorInfoPanel() {
         initComponents();
+        add(emptyPanel, EMPTYCARD);
+    }
 
+    /**
+     * This method must be called by users of ErrorInfoPanel after the
+     * panel has been constructed.  This is done so that ErrorInfoPanel
+     * can be used in the form designer.
+     */
+    public void setup() {
         errorColor = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (errorColor == null) 
         {
@@ -83,9 +91,8 @@ public class ErrorInfoPanel extends javax.swing.JPanel {
         errorIcon = new ImageIcon(ImageUtilities.loadImage(ERRORICON));
         infoIcon = new ImageIcon(ImageUtilities.loadImage(INFOICON));
 
-        add(emptyPanel, EMPTYCARD);
     }
-
+    
     public void clear()
     {
         ((CardLayout)getLayout()).show(this, EMPTYCARD);

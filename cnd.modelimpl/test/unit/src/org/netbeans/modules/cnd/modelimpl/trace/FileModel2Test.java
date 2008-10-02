@@ -130,4 +130,9 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz147574.c");
     }
 
+    public void testIZ148014() throws Exception {
+        // IZ#148014 Unable to resolve pure virtual method that throws
+        performTest("iz148014.cc");
+    }
+
 }

@@ -41,6 +41,7 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.StructureScanner;
@@ -76,6 +77,11 @@ public class JsonLanguage extends JsLanguage {
     @Override
     public Indexer getIndexer() {
         // No JSON indexing
+        return null;
+    }
+
+    @Override
+    public IndexSearcher getIndexSearcher() {
         return null;
     }
 

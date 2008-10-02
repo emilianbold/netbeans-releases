@@ -159,6 +159,8 @@ public class FilterNode extends Node {
 
     /** children provided or created the default ones? */
     private boolean childrenProvided;
+    
+    static final Logger LOGGER = Logger.getLogger(FilterNode.class.getName());
 
     /** Create proxy.
     * @param original the node to delegate to
@@ -1315,6 +1317,16 @@ public class FilterNode extends Node {
             try {
                 PR.enterWriteAccess();
 
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer("changeOriginal() " + this); // NOI18N
+                    LOGGER.finer("    old original children: " + this.original.getChildren()); // NOI18N
+                    LOGGER.finer("    old original lazy support: " + this.original.getChildren().lazySupport); // NOI18N
+                    LOGGER.finer("    new original: " + original); // NOI18N
+                    LOGGER.finer("    new original children: " + original.getChildren()); // NOI18N
+                    LOGGER.finer("    new original lazy support: " + original.getChildren().lazySupport); // NOI18N
+                    LOGGER.finer("    Children adapter: " + nodeL); // NOI18N
+                }
+
                 boolean wasAttached = nodeL != null;
 
                 // uregister from the original node
@@ -1340,8 +1352,17 @@ public class FilterNode extends Node {
         }
         
         private void changeSupport(Node newOriginal) {
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             boolean init = entrySupport().isInitialized();
             boolean changed = false;
+
+            if (LOG_ENABLED) {
+                LOGGER.finer("changeSupport() " + this); // NOI18N
+                LOGGER.finer("    newOriginal: " + newOriginal); // NOI18N
+                LOGGER.finer("    entrySupport().isInitialized(): " + init); // NOI18N
+                LOGGER.finer("    parent: " + parent); // NOI18N
+            }
+
             if (init && parent != null) {
                 List<Node> snapshot = entrySupport().createSnapshot();
                 if (snapshot.size() > 0) {
@@ -1351,6 +1372,10 @@ public class FilterNode extends Node {
                     }
                     changed = true;
                     entrySupport = null;
+
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("   firing node removal: " + snapshot); // NOI18N
+                    }
                     parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);
                 }
             }
@@ -1363,6 +1388,10 @@ public class FilterNode extends Node {
 
             if (newOriginal == null) {
                 entrySupport().notifySetEntries();
+
+                if (LOG_ENABLED) {
+                    LOGGER.log(Level.FINER, "    initializing new support"); // NOI18N
+                }
                 // force initialization
                 entrySupport().getNodesCount(false);
             }
@@ -1625,9 +1654,20 @@ public class FilterNode extends Node {
             }
 
             private void updateKeys() {
+                final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+                if (LOG_ENABLED) {
+                    LOGGER.finer("updateKeys() " + this); // NOI18N
+                }
                 ChildrenAdapter cha = nodeL;
                 if (cha != null) {
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    getting original nodes"); // NOI18N
+                    }
                     Node[] arr = original.getChildren().getNodes();
+
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    setKeys(), keys: " + Arrays.toString(arr)); // NOI18N
+                    }
                     setKeys(arr);
                     if (!origSupport.isInitialized()) {
                         origSupport.notifySetEntries();
@@ -1697,11 +1737,22 @@ public class FilterNode extends Node {
             }
 
             private void updateEntries() {
+                final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+                if (LOG_ENABLED) {
+                    LOGGER.finer("updateEntries() " + this); // NOI18N
+                }
                 ChildrenAdapter cha = nodeL;
                 if (cha != null) {
                     int count = origSupport.getNodesCount(false);
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    origSupport.getNodesCount(): " + count); // NOI18N
+                    }
 
                     List<Entry> origEntries = origSupport.getEntries();
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    origSupport.getEntries() - size: " + origEntries.size() + " data: " + origEntries); // NOI18N
+                    }
+
                     ArrayList<Entry> filtEntries = new ArrayList<Entry>(origEntries.size());
                     for (Entry e : origEntries) {
                         filtEntries.add(new FilterNodeEntry(e));

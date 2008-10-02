@@ -85,16 +85,19 @@ import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.WeakListeners;
 
 public class ConnectUsingDriverAction extends DatabaseAction {
     static final long serialVersionUID =8245005834483564671L;
+    private static final Logger LOGGER = Logger.getLogger(ConnectUsingDriverAction.class.getName());
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return (activatedNodes != null && activatedNodes.length == 1);
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
         Node node = activatedNodes[0];
         DriverNodeInfo info = (DriverNodeInfo) node.getCookie(DatabaseNodeInfo.class);
@@ -200,7 +203,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                             if (conn != null && !conn.isClosed())
                                 conn.close();
                         } catch (SQLException exc) {
-                            //unable to close the connection
+                            LOGGER.log(Level.FINE, null, exc);
                         }
 
                     }
@@ -236,16 +239,9 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                                 }
                                 catch (DatabaseException dbe)
                                 {
-                                    Logger.getLogger("global").log(Level.INFO, null, dbe);
+                                    LOGGER.log(Level.INFO, null, dbe);
                                     DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), dbe.getMessage()); // NOI18N
-                                    try {
-                                        cinfo.getConnection().close();
-                                        cinfo.setConnection(null);
-                                    } catch (SQLException e) {
-                                        //unable to close db connection
-                                        cinfo.setConnection(null);
-                                    } finally {
-                                    }
+                                    cinfo.setConnection(null);
                                 }
                                 
                                 if (dlg != null)
@@ -255,7 +251,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                                 }
                             }
                         }
-                        
+
                         //switch to schema panel
                         dlg.setSelectedComponent(schemaPanel);
                         return;
@@ -275,7 +271,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                     
                     String message = null;
                     if (exc instanceof ClassNotFoundException) {
-                        message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
+                        message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), exc.getMessage()); //NOI18N
                     } else {
                         StringBuffer buffer = new StringBuffer();
                         buffer.append(DbUtilities.formatError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage())); // NOI18N
@@ -317,7 +313,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                             //isClosed() method failed, try to connect
                             activeTask = cinfo.connectAsync();
                         } catch (DatabaseException exc) {
-                            Logger.getLogger("global").log(Level.INFO, null, exc);
+                            LOGGER.log(Level.INFO, null, exc);
                             DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
                             closeConnection();
                         }
@@ -345,6 +341,9 @@ public class ConnectUsingDriverAction extends DatabaseAction {
             dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), new HelpCtx("new_db_save_password"), actionListener, changeTabListener);  // NOI18N
             basePanel.setWindow(dlg.getWindow());
             dlg.setVisible(true);
+
+            cinfo.removeExceptionListener(excListener);
+            cinfo.removePropertyChangeListener(connectionListener);
             
             return ConnectionList.getDefault().getConnection(cinfo);
         }
@@ -404,7 +403,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
         
         protected boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema) {
             fireConnectionStep(bundle().getString("ConnectionProgress_Schemas")); // NOI18N
-            Vector schemas = new Vector();
+            Vector<String> schemas = new Vector<String>();
             try {
                 ResultSet rs = dbcon.getConnection().getMetaData().getSchemas();
                 if (rs != null)
@@ -416,7 +415,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                 // hack for Pointbase Network Server
 //            if (dbcon.getDriver().equals(PointbasePlus.DRIVER))
 //                if (exc.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED) {
-                        String message = MessageFormat.format(bundle().getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
+                        String message = MessageFormat.format(bundle().getString("ERR_UnableObtainSchemas"), exc.getMessage()); // NOI18N
 //                    message = MessageFormat.format(bundle().getString("EXC_PointbaseServerRejected"), new String[] {message, dbcon.getDatabase()}); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
 //                    schema will be set to null

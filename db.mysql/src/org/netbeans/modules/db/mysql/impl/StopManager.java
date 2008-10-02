@@ -88,6 +88,10 @@ public class StopManager {
         return listener;
     }
 
+    public boolean isStopRequested() {
+        return stopRequested;
+    }
+
     private void disconnectConnections() {
         // Disconnect any connections that are for this database
         DatabaseConnection[] connections = ConnectionManager.getDefault().getConnections();

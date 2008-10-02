@@ -105,6 +105,7 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
         }
         
         conditionsPanel = new ConditionsPanel(HELP_ID);
+        conditionsPanel.setupConditionPaneContext();
         conditionsPanel.showClassFilter(false);
         conditionsPanel.showCondition(false);
         conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());

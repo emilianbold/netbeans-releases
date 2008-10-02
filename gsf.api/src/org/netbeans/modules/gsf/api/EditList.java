@@ -158,6 +158,7 @@ public class EditList {
                                 }
                             }
                             if (edit.format) {
+                                @SuppressWarnings("deprecation")
                                 final org.netbeans.editor.Formatter f = doc.getFormatter();
                                 try {
                                     f.reformatLock();
@@ -172,6 +173,7 @@ public class EditList {
                     if (formatAll) {
                         int firstOffset = edits.get(edits.size() - 1).offset;
                         lastOffset = lastPos.getOffset();
+                        @SuppressWarnings("deprecation")
                         final org.netbeans.editor.Formatter f = doc.getFormatter();
                         try {
                             f.reformatLock();

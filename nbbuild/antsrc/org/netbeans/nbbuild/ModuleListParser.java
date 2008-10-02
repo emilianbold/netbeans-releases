@@ -826,6 +826,13 @@ final class ModuleListParser {
         public File[] getClassPathExtensions() {
             return classPathExtensions;
         }
+
+        /**
+         * @return the sourceLocation, may be null.
+         */
+        public File getSourceLocation() {
+            return sourceLocation;
+        }
         
         /**
          * Get the path within netbeans.org, if this is a netbeans.org module (else null).

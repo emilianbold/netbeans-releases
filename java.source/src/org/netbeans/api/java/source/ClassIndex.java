@@ -274,7 +274,13 @@ public final class ClassIndex {
         try {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
-                    query.search(binaryName, ut, thConvertor, result);
+                    try {
+                        query.search(binaryName, ut, thConvertor, result);
+                    } catch (ClassIndexImpl.IndexAlreadyClosedException e) {
+                        logClosedIndex (query);
+                    } catch (IOException e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
             }
             return Collections.unmodifiableSet(result);
@@ -304,7 +310,13 @@ public final class ClassIndex {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
                     final ResultConvertor<FileObject> foConvertor = ResultConvertor.fileObjectConvertor (query.getSourceRoots());
-                    query.search (binaryName, ut, foConvertor, result);
+                    try {
+                        query.search (binaryName, ut, foConvertor, result);
+                    } catch (ClassIndexImpl.IndexAlreadyClosedException e) {
+                        logClosedIndex (query);
+                    } catch (IOException e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
             }
             return Collections.unmodifiableSet(result);
@@ -332,7 +344,13 @@ public final class ClassIndex {
         final ResultConvertor<ElementHandle<TypeElement>> thConvertor = ResultConvertor.elementHandleConvertor();
         try {
             for (ClassIndexImpl query : queries) {
-                query.getDeclaredTypes (name, kind, thConvertor, result);
+                try {
+                    query.getDeclaredTypes (name, kind, thConvertor, result);
+                } catch (ClassIndexImpl.IndexAlreadyClosedException e) {
+                    logClosedIndex (query);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
             }
             LOGGER.fine(String.format("ClassIndex.getDeclaredTypes returned %d elements\n", result.size()));
             return Collections.unmodifiableSet(result);
@@ -357,7 +375,13 @@ public final class ClassIndex {
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
         try {
             for (ClassIndexImpl query : queries) {
-                query.getPackageNames (prefix, directOnly, result);
+                try {
+                    query.getPackageNames (prefix, directOnly, result);
+                } catch (ClassIndexImpl.IndexAlreadyClosedException e) {
+                    logClosedIndex (query);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
             }
             return Collections.unmodifiableSet(result);
         } catch (InterruptedException e) {
@@ -376,6 +400,11 @@ public final class ClassIndex {
     }
     
     //Private methods
+    
+    private static void logClosedIndex (final ClassIndexImpl query) {
+        assert query != null;
+        LOGGER.info("Ignoring closed index: " + query.toString());  //NOI18N
+    }
     
     
     private  void reset (final boolean source, final boolean deps) {

@@ -360,7 +360,8 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                         case '!':
                             lexerState = ISA_SGML_ESCAPE;
                             break;
-                        default:                // Part of text, RELAXED
+                        default:               
+                            input.backup(1);
                             lexerState = ISI_TEXT;
                             break;
                     }

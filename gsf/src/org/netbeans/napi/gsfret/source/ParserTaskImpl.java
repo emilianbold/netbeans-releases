@@ -58,6 +58,7 @@ import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.gsfret.source.parsing.SourceFileObject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -129,7 +130,7 @@ public class ParserTaskImpl {
 
                 if (model != null) {
                     FileObject bufferFo = file.getFileObject();
-                    Document document = UiUtils.getDocument(bufferFo, true);
+                    Document document = GsfUtilities.getDocument(bufferFo, true, true);
                     if (document == null) {
                         continue;
                     }

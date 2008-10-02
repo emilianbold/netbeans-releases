@@ -20,6 +20,7 @@ package org.netbeans.modules.php.dbgp.models;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -108,31 +109,38 @@ public abstract class AbstractIDEBridge {
     }
     
     public VariablesModel getVariablesModel() {
-        if ( getEngine() == null ) {
+        DebuggerEngine engine = getEngine();
+        if ( engine == null ) {
             return null;
         }
-        return (VariablesModel)getEngine().lookupFirst(LOCALS_VIEW_NAME, 
+        return (VariablesModel)engine.lookupFirst(LOCALS_VIEW_NAME, 
                 TreeModel.class);
     }
     
     public CallStackModel getCallStackModel() {
-        if ( getEngine() == null ) {
+        DebuggerEngine engine = getEngine();
+        if ( engine == null ) {
             return null;
         }
-        return (CallStackModel)getEngine().lookupFirst(CALLSTACK_VIEW_NAME, 
+        return (CallStackModel)engine.lookupFirst(CALLSTACK_VIEW_NAME,
                 TreeModel.class);
     }
     
     public WatchesModel getWatchesModel() {
-        return (WatchesModel)getEngine().lookupFirst(WATCHES_VIEW_NAME, 
+        DebuggerEngine engine = getEngine();
+        if ( engine == null ) {
+            return null;
+        }
+        return (WatchesModel)engine.lookupFirst(WATCHES_VIEW_NAME, 
                 TreeModel.class);
     }
     
     public BreakpointModel getBreakpointModel() {
-        Iterator it = DebuggerManager.getDebuggerManager().lookup(
-                BREAKPOINTS_VIEW_NAME, TableModel.class).iterator();
+        DebuggerManager debuggerManager = DebuggerManager.getDebuggerManager();
+        Iterator it = debuggerManager != null ? debuggerManager.lookup(
+                BREAKPOINTS_VIEW_NAME, TableModel.class).iterator() : null;
 
-        while(it.hasNext()) {
+        while(it != null && it.hasNext()) {
             TableModel model = (TableModel)it.next();
             if (model instanceof BreakpointModel) {
                 return (BreakpointModel) model;
@@ -143,7 +151,11 @@ public abstract class AbstractIDEBridge {
     }
     
     public ThreadsModel getThreadsModel() {
-        return (ThreadsModel)getEngine().lookupFirst(THREADS_VIEW_NAME, 
+        DebuggerEngine engine = getEngine();
+        if ( engine == null ) {
+            return null;
+        }
+        return (ThreadsModel)engine.lookupFirst(THREADS_VIEW_NAME, 
                 TreeModel.class);
     }
     
@@ -160,7 +172,8 @@ public abstract class AbstractIDEBridge {
                 return;
             }
         }
-        List list = getEngine().lookup( null , ActionsProvider.class );
+        DebuggerEngine engine = getEngine();
+        List list = engine != null ? engine.lookup( null , ActionsProvider.class ) : Collections.emptyList();
         for (Object object : list) {
             assert object instanceof AbstractActionProvider;
             AbstractActionProvider provider = (AbstractActionProvider) object;

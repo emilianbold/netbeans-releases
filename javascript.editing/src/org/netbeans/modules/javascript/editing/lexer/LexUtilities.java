@@ -60,7 +60,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.javascript.editing.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -103,14 +103,14 @@ public class LexUtilities {
             }
             BaseDocument doc = (BaseDocument) info.getDocument();
             if (doc == null && forceOpen) {
-                doc = NbUtilities.getBaseDocument(info.getFileObject(), true);
+                doc = GsfUtilities.getDocument(info.getFileObject(), true);
             }
             
             return doc;
         } catch (ClassCastException ex) {
             // TESTS! If data object for GSF isn't found it will be a FilterDocument
             // rather than a BaseDocument
-            return NbUtilities.getBaseDocument(info.getFileObject(), true);
+            return GsfUtilities.getDocument(info.getFileObject(), true);
         }
     }
 
@@ -178,14 +178,50 @@ public class LexUtilities {
 
         return astRange;
     }
-    
-    /** Find the ruby token sequence (in case it's embedded in something else at the top level */
+
+    /** Find the NEXT JavaScript sequence in the buffer starting from the given offset */
+    @SuppressWarnings("unchecked")
+    public static TokenSequence<?extends JsTokenId> getNextJsTokenSequence(BaseDocument doc, int fromOffset, int max) {
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        TokenSequence<?> ts = th.tokenSequence();
+        ts.move(fromOffset);
+
+        return findNextJsTokenSequence(ts, fromOffset, max);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static TokenSequence<? extends JsTokenId> findNextJsTokenSequence(TokenSequence<?> ts, int fromOffset, int max) {
+        if (ts.language() == JsTokenId.language()) {
+            if (!ts.moveNext()) {
+                return null;
+            }
+            return (TokenSequence<? extends JsTokenId>) ts;
+        }
+
+        while (ts.moveNext() && ts.offset() <= max) {
+            int offset = ts.offset();
+
+            TokenSequence<?> ets = ts.embedded();
+            if (ets != null) {
+                ets.move(offset);
+                TokenSequence<? extends JsTokenId> result = findNextJsTokenSequence(ets, fromOffset, max);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
     public static TokenSequence<?extends JsTokenId> getJsTokenSequence(BaseDocument doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
         return getJsTokenSequence(th, offset);
     }
     
+    /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
     public static TokenSequence<?extends JsTokenId> getJsTokenSequence(TokenHierarchy<Document> th, int offset) {
         TokenSequence<?extends JsTokenId> ts = th.tokenSequence(JsTokenId.language());

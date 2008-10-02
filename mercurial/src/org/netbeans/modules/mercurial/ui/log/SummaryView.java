@@ -443,7 +443,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         for (RepositoryRevision.Event event : events) {
             if (event.getFile() == null) continue;
          
-            File root = Mercurial.getInstance().getTopmostManagedParent(event.getFile());
+            File root = Mercurial.getInstance().getRepositoryRoot(event.getFile());
             if(revertMap == null){
                 revertMap = new HashMap<File, List<RepositoryRevision.Event>>();    
             }

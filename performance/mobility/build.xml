@@ -7,7 +7,12 @@
 
     <property name="nbextra.dir" location="../../../nbextra"/>
     <property name="test.timeout" value="3600000"/>
-    <property name="test.run.args" value="-client -Xss2m -Xms32m -Xmx512m -XX:PermSize=32m -XX:MaxPermSize=200m -Xverify:none -ea -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot;"/>
+    <property name="test.run.args" value="-client -Xss2m -Xms32m -Xmx512m -XX:PermSize=32m -XX:MaxPermSize=200m -Xverify:none -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot;"/>
+
+    <loadfile property="perftestrun.buildnumber"
+      srcFile="../../../build.number"
+      failonerror="false"
+    />
 
     <target name="test-preinit" depends="init, prepare-wtk"/>
 

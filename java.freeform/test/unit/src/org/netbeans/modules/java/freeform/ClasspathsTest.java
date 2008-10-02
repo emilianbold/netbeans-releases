@@ -285,6 +285,7 @@ public class ClasspathsTest extends TestBase {
          */
     }
 
+    @RandomlyFails // NB-Core-Build #1440, 1447
     public void testCompilationUnitChanges() throws Exception {
         clearWorkDir();
         FreeformProject simple2 = copyProject(simple);
@@ -315,6 +316,7 @@ public class ClasspathsTest extends TestBase {
         Set<ClassPath> expected = new HashSet<ClassPath>();
         expected.add(cpSrc);
         expected.add(cpAnt);
+        // randomly fails here; same path elements but different ClassPath objects?
         assertEquals("correct set of COMPILE classpaths", expected, compile);
         
         AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(helper2);

@@ -306,7 +306,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Runnab
             inBuffer.delete(off - startOff, off - startOff + len);
             DocumentEvent ev = new DocumentEvent() {
             public int getOffset() {
-                return off - len;
+                return off;
             }
 
             public int getLength() {

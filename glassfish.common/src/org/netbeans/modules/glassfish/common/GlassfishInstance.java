@@ -112,7 +112,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     // api instance
     private ServerInstance commonInstance;
     
-    GlassfishInstance(Map<String, String> ip) {
+    private GlassfishInstance(Map<String, String> ip) {
         ic = new InstanceContent();
         lookup = new AbstractLookup(ic);
         ic.add(this); // Server instance in lookup (to find instance from node lookup)
@@ -225,12 +225,24 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         return commonSupport.getServerState();
     }
 
-    void stopIfStartedByIde() {
+    void stopIfStartedByIde(long timeout) {
         if(commonSupport.isStartedByIde()) {
             ServerState state = commonSupport.getServerState();
             if(state == ServerState.STARTING ||
                     (state == ServerState.RUNNING && commonSupport.isReallyRunning())) {
-                commonSupport.stopServer(null);
+                try {
+                    Future<OperationState> stopServerTask = commonSupport.stopServer(null);
+                    if(timeout > 0) {
+                        OperationState opState = stopServerTask.get(timeout, TimeUnit.MILLISECONDS);
+                        if(opState != OperationState.COMPLETED) {
+                            Logger.getLogger("glassfish").info("Stop server failed...");
+                        }
+                    }
+                } catch(TimeoutException ex) {
+                    Logger.getLogger("glassfish").fine("Server " + getDeployerUri() + " timed out sending stop-domain command.");
+                } catch(Exception ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                }
             }
         }
     }
@@ -291,21 +303,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         // !PW FIXME Remove debugger hooks, if any
 //        DebuggerManager.getDebuggerManager().removeDebuggerListener(debuggerStateListener);
 
-        // !PW FIXME Stop server, if running & started by IDE
-//        stopIfStartedByIde();
-        if(commonSupport.isReallyRunning()) {
-            try {
-                Future<OperationState> stopServerTask = commonSupport.stopServer(null);
-                OperationState opState = stopServerTask.get(3000, TimeUnit.MILLISECONDS);
-                if(opState != OperationState.COMPLETED) {
-                    Logger.getLogger("glassfish").info("Stop server failed...");
-                }
-            } catch(TimeoutException ex) {
-                Logger.getLogger("glassfish").fine("Server " + getDeployerUri() + " timed out sending stop-domain command.");
-            } catch(Exception ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
-            }
-        }
+        stopIfStartedByIde(3000L);
         
         // close the server io window
         String uri = commonSupport.getDeployerUri();

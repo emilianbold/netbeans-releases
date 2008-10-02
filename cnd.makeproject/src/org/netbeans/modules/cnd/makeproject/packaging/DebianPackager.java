@@ -155,15 +155,15 @@ public class DebianPackager implements PackagerDescriptor {
                     }
                     bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
-                    bw.write("makeDirectory " + " ${TMPDIR}/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("makeDirectory " + " \"${TMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     String toDir = IpeUtils.getDirName(elem.getTo());
                     String toName = IpeUtils.getBaseName(elem.getTo());
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                        bw.write("makeDirectory " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     }
-                    bw.write("cd " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
-                    bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
+                    bw.write("cd " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                    bw.write("ln -s " + "\"" + elem.getFrom() + "\"" + " " + "\"" + toName + "\"" + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.UNKNOWN) {
                     // skip ???
                 } else {

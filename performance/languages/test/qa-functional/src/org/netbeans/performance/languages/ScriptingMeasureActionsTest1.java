@@ -56,11 +56,11 @@ public class ScriptingMeasureActionsTest1 {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
-        System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureActionsTest");
+        System.setProperty("suitename", ScriptingMeasureActionsTest1.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
                 .addTest(CreatePHPProject.class)
-                // TODO: Enable once browser problem is fixed
+                // TODO: Enable once browser problem is fixed (Issue 148463)
 //                .addTest(CreatePHPSampleProject.class)
                 
                 .addTest(SavingPHPProjectProperties.class)
