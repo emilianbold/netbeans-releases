@@ -130,11 +130,11 @@ public class ClassPathRootsListenerTest extends NbTestCase {
         
         FileUtil.toFileObject(b).delete();
 
-        assertEquals(2, counter.get());
+        assertEquals(3, counter.get());
         
         assertNotNull(FileUtil.createFolder(c));
         
-        assertEquals(3, counter.get());
+        assertEquals(4, counter.get());
         
         i = null;
         cp = null;
