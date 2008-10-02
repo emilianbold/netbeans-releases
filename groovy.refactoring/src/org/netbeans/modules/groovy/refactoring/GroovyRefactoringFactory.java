@@ -165,6 +165,11 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
 
         try{
             JavaSource source = JavaSource.forFileObject(treePathHandle.getFileObject());
+
+            if(source == null) {
+                return null;
+            }
+
             source.runUserActionTask(new CancellableTask<CompilationController>() {
 
                 public void cancel() {

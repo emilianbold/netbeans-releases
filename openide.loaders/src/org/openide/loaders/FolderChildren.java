@@ -63,7 +63,7 @@ import org.openide.util.WeakListeners;
 *
 * @author Jaroslav Tulach
 */
-final class FolderChildren extends Children.Keys<FileObject>
+final class FolderChildren extends Children.Keys<FolderChildrenPair>
 implements PropertyChangeListener, ChangeListener, FileChangeListener {
    /** Private req processor for the refresh tasks */
     private static RequestProcessor refRP = new RequestProcessor("FolderChildren_Refresh"); // NOI18N
@@ -151,17 +151,20 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
 
                 try {
                     if (op == -1) {
-                        setKeys(Collections.<FileObject>emptyList());
+                        setKeys(Collections.<FolderChildrenPair>emptyList());
                         return;
                     }
 
                     final FileObject[] arr = folder.getPrimaryFile().getChildren();
                     FolderOrder order = FolderOrder.findFor(folder.getPrimaryFile());
                     Arrays.sort(arr, order);
-                    List<FileObject> positioned = FileUtil.getOrder(Arrays.asList(arr), false);
+                    List<FolderChildrenPair> positioned = new ArrayList<FolderChildrenPair>(arr.length);
+                    for (FileObject fo : FileUtil.getOrder(Arrays.asList(arr), false)) {
+                        positioned.add(new FolderChildrenPair(fo));
+                    }
 
                     if (op == 2) {
-                        setKeys(Collections.<FileObject>emptyList());
+                        setKeys(Collections.<FolderChildrenPair>emptyList());
                         setKeys(positioned);
                         return;
                     }
@@ -191,13 +194,14 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     /** Create a node for one data object.
     * @param key DataObject
     */
-    protected Node[] createNodes(FileObject fo) {
+    protected Node[] createNodes(FolderChildrenPair pair) {
         DataObject obj;
         long time = System.currentTimeMillis();
         try {
-            obj = DataObject.find (fo);
+            FileObject pf = pair.primaryFile;
+            obj = DataObject.find (pf);
             if (
-                fo.equals(obj.getPrimaryFile()) && 
+                pf.equals(obj.getPrimaryFile()) &&
                 (filter == null || filter.acceptDataObject (obj))
             ) {
                 return new Node[] { obj.getClonedNodeDelegate (filter) };
@@ -207,7 +211,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         } finally {
             long took = System.currentTimeMillis() - time;
             if (err.isLoggable(Level.FINE)) {
-                err.fine("createNodes: " + fo + " took: " + took + " ms");
+                err.fine("createNodes: " + pair + " took: " + took + " ms");
             }
         }
         return null;
@@ -290,7 +294,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         }
 
         // we need to clear the children now
-        List<FileObject> emptyList = Collections.emptyList();
+        List<FolderChildrenPair> emptyList = Collections.emptyList();
         setKeys(emptyList);
         err.fine("removeNotify end");
     }
@@ -305,7 +309,8 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         if (DataObject.EA_ASSIGNED_LOADER.equals(fe.getName())) {
             // make sure this event is processed by the data system
             DataObjectPool.checkAttributeChanged(fe);
-            refreshKey(fe.getFile());
+            refreshKey(new FolderChildrenPair(fe.getFile()));
+            refreshChildren(10);
         }
     }
 

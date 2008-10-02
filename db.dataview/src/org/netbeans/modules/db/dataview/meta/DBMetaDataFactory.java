@@ -55,9 +55,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
-import org.openide.util.Exceptions;
 
 /**
  * Extracts database metadata information (table names and constraints, their
@@ -67,6 +68,7 @@ import org.openide.util.Exceptions;
  */
 public final class DBMetaDataFactory {
 
+    private static Logger LOGGER = Logger.getLogger(DBMetaDataFactory.class.getName());
     public static final int DB2 = 0;
     public static final int ORACLE = 1;
     public static final int SQLSERVER = 2;
@@ -173,7 +175,7 @@ public final class DBMetaDataFactory {
             rs = dbmeta.getImportedKeys(setToNullIfEmpty(table.getCatalog()), setToNullIfEmpty(table.getSchema()), table.getName());
             fkList = DBForeignKey.createForeignKeyColumnMap(table, rs);
         } catch (SQLException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         } finally {
             DataViewUtils.closeResources(rs);
         }

@@ -183,7 +183,7 @@ public class PropertyElementCustomizer extends JPanel
                IPropertyDefinition def = curType.getPropertyDefinition();
                if(def.isOnDemand() == true)
                {                  
-                  builder.loadOnDemandProperties(curType);
+                  builder.loadOnDemandProperties(curType, true);
                }
                // mDataModel.addPropertyElement(curType);
             }

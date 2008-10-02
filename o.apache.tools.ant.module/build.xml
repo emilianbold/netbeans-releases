@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
         </jar>
     </target>
 
-    <target name="release" depends="init">
+    <target name="netbeans-extra" depends="jar-bridge">
         <mkdir dir="${cluster}/ant/lib"/>
         <copy todir="${cluster}/ant/lib">
             <fileset dir="external/lib"/>
@@ -91,8 +91,6 @@ made subject to such option by the copyright holder.
             </fileset>
         </chmod>
     </target>
-
-    <target name="netbeans-extra" depends="jar-bridge,release"/>
 
     <target name="test-build" depends="jar-bridge,projectized-common.test-build"/>
 

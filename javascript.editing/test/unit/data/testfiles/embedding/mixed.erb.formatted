@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <script type="text/javascript" src="javascripts/effects.js"></script>
+    <script type="text/javascript">
+      function negate(x) {
+        return -1;
+      }
+      function multiply(x) {
+        return factor * <% @field %>
+      }
+    </script>
+  </head>
+  <body>
+    <script>puts("Hello <%= get_name %>")</script>
+    <form>
+      <input id="<%= id %>" type="submit"/>
+    </form>
+  </body>
+</html>
+

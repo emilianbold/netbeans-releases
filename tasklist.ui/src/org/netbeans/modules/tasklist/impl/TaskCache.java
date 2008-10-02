@@ -142,13 +142,19 @@ class TaskCache {
         }
         lock.writeLock().unlock();
     }
-    
+
     public void clear( FileObject resource ) {
         lock.writeLock().lock();
         ScanResult scanRes = cache.get( resource );
         if( null != scanRes ) {
             cache.remove( resource );
         }
+        lock.writeLock().unlock();
+    }
+
+    public void clear() {
+        lock.writeLock().lock();
+        cache.clear();
         lock.writeLock().unlock();
     }
 }

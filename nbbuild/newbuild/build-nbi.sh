@@ -124,7 +124,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
 fi
 
 cd $DIST
-bash ${SCRIPTS_DIR}/files-info.sh bundles zip
+bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters
 ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"

@@ -3629,8 +3629,6 @@ org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory
 org.netbeans.modules.refactoring.api.ui.ExplorerContext
 org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory
 org.netbeans.modules.refactoring.impl.ClipboardConvertor
-org.netbeans.modules.refactoring.java.CopyHandler
-org.netbeans.modules.refactoring.java.RefactoringModule
 org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory
 org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider
 org.netbeans.modules.refactoring.java.ui.ChangeParametersAction

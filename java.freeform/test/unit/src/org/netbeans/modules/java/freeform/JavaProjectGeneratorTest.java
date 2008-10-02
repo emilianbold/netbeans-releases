@@ -95,6 +95,11 @@ public class JavaProjectGeneratorTest extends NbTestCase {
     protected void setUp() throws Exception {
         clearWorkDir();
     }
+
+    @Override
+    protected int timeOut() {
+        return 300000;
+    }
     
     private AntProjectHelper createEmptyProject(String projectFolder, String projectName, boolean notSoEmpty) throws Exception {
         File base = new File(getWorkDir(), projectFolder);

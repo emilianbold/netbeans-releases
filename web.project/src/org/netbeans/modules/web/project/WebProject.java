@@ -46,12 +46,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.lang.ref.WeakReference;
-import java.net.URI;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -59,6 +61,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
@@ -82,7 +86,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
@@ -94,6 +97,7 @@ import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
 import org.netbeans.modules.j2ee.common.project.BinaryForSourceQueryImpl;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
@@ -163,6 +167,8 @@ public final class WebProject implements Project, AntProjectListener {
     
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
     
+    private static final Pattern TLD_PATTERN = Pattern.compile("(META-INF/.*\\.tld)|(META-INF/tlds/.*\\.tld)");
+    
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
@@ -170,7 +176,7 @@ public final class WebProject implements Project, AntProjectListener {
     private final Lookup lookup;
     private final ProjectWebModule webModule;
     private final CopyOnSaveSupport css;
-    private final ArtifactSupport artifactSupport;
+    private final ArtifactCopyOnSaveSupport artifactSupport;
     private final DeployOnSaveSupport deployOnSaveSupport;
     private WebModule apiWebModule;
     private WebServicesSupport apiWebServicesSupport;
@@ -346,7 +352,7 @@ public final class WebProject implements Project, AntProjectListener {
         lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
-        artifactSupport = new ArtifactSupport();
+        artifactSupport = new ArtifactCopySupport();
         deployOnSaveSupport = new DeployOnSaveSupportProxy();
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
         webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
@@ -912,7 +918,7 @@ public final class WebProject implements Project, AntProjectListener {
                     WebProjectProperties.DISABLE_DEPLOY_ON_SAVE))) {
                 Deployment.getDefault().enableCompileOnSaveSupport(webModule);
             }
-            artifactSupport.setArtifactSynchronization(true);
+            artifactSupport.enableArtifactSynchronization(true);
             
             WebLogicalViewProvider logicalViewProvider = (WebLogicalViewProvider) WebProject.this.getLookup().lookup (WebLogicalViewProvider.class);
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
@@ -977,7 +983,21 @@ public final class WebProject implements Project, AntProjectListener {
             if (!props.containsKey(ProjectProperties.EXCLUDES)) {
                 props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
             }
-            
+
+            // configure DoS
+            if (!props.containsKey(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE)) {
+                boolean deployOnSaveEnabled = false;
+                try {
+                    String instanceId = ep.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+                    if (instanceId != null) {
+                        deployOnSaveEnabled = Deployment.getDefault().getServerInstance(instanceId)
+                                .isDeployOnSaveSupported();
+                    }
+                } catch (InstanceRemovedException ex) {
+                    // false
+                }
+                props.setProperty(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
+            }
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
             try {
@@ -1099,7 +1119,7 @@ public final class WebProject implements Project, AntProjectListener {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
-            artifactSupport.setArtifactSynchronization(false);
+            artifactSupport.enableArtifactSynchronization(false);
             Deployment.getDefault().disableCompileOnSaveSupport(webModule);
             
             // unregister project's classpaths to GlobalPathRegistry
@@ -1502,9 +1522,9 @@ public final class WebProject implements Project, AntProjectListener {
             return true;
         }
 
-        private void fireArtifactChange(Iterable<File> files) {
+        private void fireArtifactChange(Iterable<ArtifactListener.Artifact> artifacts) {
             for (ArtifactListener listener : listeners) {
-                listener.artifactsUpdated(files);
+                listener.artifactsUpdated(artifacts);
             }
         }
 
@@ -1518,8 +1538,10 @@ public final class WebProject implements Project, AntProjectListener {
                     deleted = FileUtil.toFile(toDelete);
                     toDelete.delete();
                 }
+                if (deleted != null) {
+                    fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(deleted)));
+                }
             }
-            fireArtifactChange(Collections.singleton(deleted));
         }
 
         private void handleCopyFileToDestDir(FileObject fo) throws IOException {
@@ -1583,7 +1605,9 @@ public final class WebProject implements Project, AntProjectListener {
                                 fl.releaseLock();
                             }
                             File file = FileUtil.toFile(destFile);
-                            fireArtifactChange(Collections.singleton(file));
+                            if (file != null) {
+                                fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
+                            }
                         }
                     }
                 }
@@ -1619,271 +1643,69 @@ public final class WebProject implements Project, AntProjectListener {
         }
     }
 
-    /**
-     * This listens for external dependencies (right now only projects) and
-     * fire events for deploy on save.
-     *
-     * It listens for classpath changes and (due to path-in-war) for changes
-     * of project.xml. Synchronization of library is performed on change.
-     */
-    private class ArtifactSupport implements FileChangeSupportListener,
-            PropertyChangeListener, AntProjectListener, DeployOnSaveSupport {
+    private class ArtifactCopySupport extends ArtifactCopyOnSaveSupport {
 
-        private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
-
-        private final Map<File, String> listeningTo = new HashMap<File, String>();
-
-        private boolean synchronize;
-
-        private volatile String buildWeb;
-
-        public ArtifactSupport() {
-            super();
+        public ArtifactCopySupport() {
+            super(WebProjectProperties.BUILD_WEB_DIR, evaluator(), getAntProjectHelper());
         }
 
-        public synchronized void setArtifactSynchronization(boolean synchronize) {
-            this.synchronize = synchronize;
-        }
+        @Override
+        public Map<Item, String> getArtifacts() {
+            final AntProjectHelper helper = getAntProjectHelper();
 
-        public void addArtifactListener(ArtifactListener listener) {
-            if (listener == null) {
-                return;
-            }
+            ClassPathSupport cs = new ClassPathSupport(evaluator(), getReferenceHelper(),
+                    helper, getUpdateHelper(), new ClassPathSupportCallbackImpl(helper));
 
-            synchronized (this) {
-                boolean init = listeners.isEmpty();
-                listeners.add(listener);
-                if (init) {
-                    initialize();
-                    reload();
+            Map<Item, String> result = new HashMap<Item, String>();
+            for (ClassPathSupport.Item item : cs.itemsList(
+                    helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ProjectProperties.JAVAC_CLASSPATH),
+                    WebProjectProperties.TAG_WEB_MODULE_LIBRARIES)) {
+
+                if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+                    String path = item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
+                    if (path != null) {
+                        result.put(item, path);
+                    }
                 }
             }
+            return result;
         }
 
-        public void removeArtifactListener(ArtifactListener listener) {
-            if (listener == null) {
-                return;
+        @Override
+        protected Artifact filterArtifact(Artifact artifact) {
+            if (containsTLD(artifact.getFile())) {
+                return artifact;
             }
 
-            synchronized (this) {
-                listeners.remove(listener);
-                if (listeners.isEmpty()) {
-                    close();
-                }
-            }
+            return artifact.relocatable();
         }
 
-        public void initialize() {
-            buildWeb = evaluator().getProperty(WebProjectProperties.BUILD_WEB_DIR);
-            WebProject.this.evaluator().addPropertyChangeListener(this);
-            WebProject.this.getAntProjectHelper().addAntProjectListener(this);
-        }
-
-        public void reload() {
-            ClassPathSupport cs = new ClassPathSupport(evaluator(),
-                    getReferenceHelper(), getAntProjectHelper(), getUpdateHelper(), 
-                    new ClassPathSupportCallbackImpl(getAntProjectHelper()));
-
-            synchronized (this) {
-                Map<File, String> toRemove  = new HashMap<File, String>(listeningTo);
-                for (ClassPathSupport.Item item : cs.itemsList(
-                        helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ProjectProperties.JAVAC_CLASSPATH),
-                        WebProjectProperties.TAG_WEB_MODULE_LIBRARIES)) {
-                    if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
-                        File scriptLocation = item.getArtifact().getScriptLocation().getAbsoluteFile();
-                        if (!scriptLocation.isDirectory()) {
-                            scriptLocation = scriptLocation.getParentFile();
-                        }
-
-                        String path = item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
-                        if (path != null) {
-                            for (URI artifactURI : item.getArtifact().getArtifactLocations()) {
-                                File file = null;
-                                if (artifactURI.isAbsolute()) {
-                                    file = new File(artifactURI);
-                                } else {
-                                    file = new File(scriptLocation, artifactURI.getPath());
-                                }
-                                file = FileUtil.normalizeFile(file);
-
-                                if (!listeningTo.containsKey(file)) {
-                                    FileChangeSupport.DEFAULT.addListener(this, file);
-                                    listeningTo.put(file, path);
-                                    if (synchronize) {
-                                        try {
-                                            updateFile(file, path);
-                                        } catch (IOException ex) {
-                                            LOGGER.log(Level.FINE, "Initial copy failed", ex);
-                                        }
-                                    }
-                                }
-                                toRemove.remove(file);
-                            }
+        private boolean containsTLD(File f) {
+            if (f.exists() && f.isFile() && f.canRead()) {
+                ZipFile zip = null;
+                try {
+                    zip = new ZipFile(f);
+                    for (Enumeration entries = zip.entries(); entries.hasMoreElements();) {
+                        String zipEntryName = ((ZipEntry) entries.nextElement()).getName();
+                        if (TLD_PATTERN.matcher(zipEntryName).matches()) {
+                            return true;
                         }
                     }
-                    for (Map.Entry<File, String> entry : toRemove.entrySet()) {
-                        FileChangeSupport.DEFAULT.removeListener(this, entry.getKey());
-                        listeningTo.remove(entry.getKey());
-                        if (synchronize) {
-                            deleteFile(entry.getKey(), entry.getValue());
+                    return false;
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                } finally {
+                    if (zip != null) {
+                        try {
+                            zip.close();
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
                         }
                     }
                 }
             }
-        }
 
-        public void close() {
-            synchronized (this) {
-                for (Map.Entry<File, String> entry : listeningTo.entrySet()) {
-                    FileChangeSupport.DEFAULT.removeListener(this, entry.getKey());
-                }
-                listeningTo.clear();
-            }
-            WebProject.this.getAntProjectHelper().removeAntProjectListener(this);
-            WebProject.this.evaluator().removePropertyChangeListener(this);
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (ProjectProperties.JAVAC_CLASSPATH.equals(evt.getPropertyName())) {
-                LOGGER.log(Level.FINEST, "Classpath changed");
-                reload();
-            } else if (WebProjectProperties.BUILD_WEB_DIR.equals(evt.getPropertyName())) {
-                // TODO copy all files ?
-                buildWeb = evaluator().getProperty(WebProjectProperties.BUILD_WEB_DIR);
-            }
-        }
-
-        public void configurationXmlChanged(AntProjectEvent ev) {
-            if (AntProjectHelper.PROJECT_XML_PATH.equals(ev.getPath())) {
-                LOGGER.log(Level.FINEST, "Project XML changed");
-                reload();
-            }
-        }
-
-        public void propertiesChanged(AntProjectEvent ev) {
-            // noop
-        }
-
-        public void fileCreated(FileChangeSupportEvent event) {
-            updateFile(event);
-        }
-
-        public void fileModified(FileChangeSupportEvent event) {
-            updateFile(event);
-        }
-
-        public void fileDeleted(FileChangeSupportEvent event) {
-            // noop - this usually means clean
-        }
-
-        private void fireArtifactChange(File file) {
-            List<ArtifactListener> toFire = null;
-            synchronized (this) {
-                toFire = new ArrayList<ArtifactListener>(listeners);
-            }
-
-            Iterable<File> iterable = Collections.singleton(file);
-            for (ArtifactListener listener : toFire) {
-                listener.artifactsUpdated(iterable);
-            }
-        }
-
-        private void updateFile(FileChangeSupportEvent event) {
-            File sourceFile = null;
-            String path = null;
-
-            synchronized (this) {
-                sourceFile = FileUtil.normalizeFile(event.getPath());
-                path = listeningTo.get(event.getPath());
-                if (path == null) {
-                    return;
-                }
-            }
-            try {
-                updateFile(sourceFile, path);
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-        }
-
-        private void updateFile(File sourceFile, String destPath) throws IOException {
-            assert sourceFile != null;
-            assert destPath != null;
-
-            FileObject webBuildBase = buildWeb == null ? null : helper.resolveFileObject(buildWeb);
-
-            if (webBuildBase == null) {
-                return;
-            }
-
-            FileObject sourceObject = FileUtil.toFileObject(sourceFile);
-            if (sourceObject == null) {
-                LOGGER.log(Level.FINE, "Source file does not exist");
-                return;
-            }
-
-            FileObject destFile = FileUtil.createData(webBuildBase, destPath + "/" + sourceObject.getNameExt());
-            copy(sourceObject, destFile);
-
-            // fire event
-            File dest = FileUtil.toFile(destFile);
-            if (dest != null) {
-                fireArtifactChange(dest);
-            }
-            LOGGER.log(Level.FINE, "Artifact jar successfully copied " + sourceFile.getAbsolutePath()
-                    + " " + sourceFile.length());
-        }
-
-        private void deleteFile(File sourceFile, String destPath) {
-            assert sourceFile != null;
-            assert destPath != null;
-
-            FileObject webBuildBase = buildWeb == null ? null : helper.resolveFileObject(buildWeb);
-
-            FileObject destFile = null;
-            try {
-                destFile = FileUtil.createData(webBuildBase, destPath + "/" + sourceFile.getName());
-
-                if (destFile == null) {
-                    return;
-                }
-
-                destFile.delete();
-                LOGGER.log(Level.FINE, "Artifact jar successfully deleted");
-            } catch (IOException ex) {
-                // FIXME null it out
-                LOGGER.log(Level.INFO, null, ex);
-            }
-
-            // fire event
-            if (destFile != null) {
-                File dest = FileUtil.toFile(destFile);
-                if (dest != null) {
-                    fireArtifactChange(dest);
-                }
-            }
-        }
-
-        private void copy(FileObject sourceFile, FileObject destFile) throws IOException {
-            InputStream is = null;
-            OutputStream os = null;
-            FileLock fl = null;
-            try {
-                is = sourceFile.getInputStream();
-                fl = destFile.lock();
-                os = destFile.getOutputStream(fl);
-                FileUtil.copy(is, os);
-            } finally {
-                if (is != null) {
-                    is.close();
-                }
-                if (os != null) {
-                    os.close();
-                }
-                if (fl != null) {
-                    fl.releaseLock();
-                }
-            }
+            return false;
         }
     }
 

@@ -555,6 +555,8 @@ public class SceneAcceptProvider implements AcceptProvider
             if (!presentations.isEmpty())
             {
                 engine.getScene().userSelectionSuggested(new HashSet<IPresentationElement>(presentations), false);
+                //also one of dropped elements need to get focus, so one of newly selected widget will get key events instead of one of old selected elements
+                engine.getScene().setFocusedObject(presentations.get(0));
             }
         } catch (UnsupportedFlavorException ex)
         {

@@ -42,8 +42,11 @@ package org.netbeans.modules.editor.settings.storage.spi.support;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -57,6 +60,7 @@ import org.openide.util.Utilities;
 public final class StorageSupport {
 
     private static final Logger LOG = Logger.getLogger(StorageSupport.class.getName());
+    private static HashMap<String, Integer> names;
 
     private StorageSupport() {
 
@@ -176,8 +180,29 @@ public final class StorageSupport {
         KeyStroke ks = Utilities.stringToKey(keyStroke);
         if (ks != null) {
             return KeyStroke.getKeyStroke(ks.getKeyCode(), modifiers);
+        } else {// probably a VK_* key
+            return KeyStroke.getKeyStroke(getName2Keycode().get(keyStroke), modifiers);
+        }
+    }
+
+    private static HashMap<String, Integer> getName2Keycode() {
+        if (names != null) {
+            return names;
         } else {
-            return null;
+            Field[] fields = KeyEvent.class.getDeclaredFields();
+            names = new HashMap<String, Integer>(fields.length * 4 / 3 + 5, 0.75f);
+
+            for (Field f : fields) {
+                if (Modifier.isStatic(f.getModifiers())) {
+                    try {
+                        int numb = f.getInt(null);
+                        names.put(KeyEvent.getKeyText(numb), numb);
+                    } catch (IllegalArgumentException ex) {
+                    } catch (IllegalAccessException ex) {
+                    }
+                }
+            }
+            return names;
         }
     }
 

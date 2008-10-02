@@ -256,22 +256,33 @@ public final class ServerUtilities {
      * @param jarList the list "so far"
      * @param parent the directory to look into
      * @param depth depth of the server
+     * @param escape pass true if backslashes in jar names should be escaped
      * @return the complete list of jars that match the selection criteria
      */
-    public static List<String> filterByManifest(List<String> jarList, File parent, int depth) {
+    public static List<String> filterByManifest(List<String> jarList, File parent, int depth, boolean escape) {
         if(parent.exists()) {
             int parentLength = parent.getPath().length();
+            /* modules/web/jsf-impl.jar was not seen (or added with wrong relative name).
+             * need to calculate size relative to the modules/ dir and not the subdirs
+             * notice: this works only for depth=0 or 1
+             * not need to make it work deeper anyway
+             * with this test, we now also return "web/jsf-impl.jar" which is correct
+             */
+            if (depth==1){
+                parentLength = parent.getParentFile().getPath().length();
+            }
             for(File candidate: parent.listFiles()) {
                 if(candidate.isDirectory()) {
                     if(depth < 1) {
-                        filterByManifest(jarList, candidate, depth+1);
+                        filterByManifest(jarList, candidate, depth+1, escape);
                     }
                     continue;
                 } else if(!candidate.getName().endsWith(".jar")) {
                     continue;
                 }
+                JarFile jarFile = null;
                 try {
-                    JarFile jarFile = new JarFile(candidate, false);
+                    jarFile = new JarFile(candidate, false);
                     Manifest manifest = jarFile.getManifest();
                     if(manifest != null) {
                         Attributes attrs = manifest.getMainAttributes();
@@ -280,6 +291,9 @@ public final class ServerUtilities {
                             //String bundleName = attrs.getValue("Extension-Name");
                             if(bundleName != null  && bundleName.contains("javax")) {
                                 String val = candidate.getPath().substring(parentLength+1);
+                                if(escape) {
+                                    val = val.replace("\\", "\\\\");
+                                }
                                 jarList.add(val);
                             }
                         }
@@ -287,6 +301,16 @@ public final class ServerUtilities {
                 } catch (IOException ex) {
                     Logger.getLogger(ServerUtilities.class.getName()).log(Level.INFO, 
                             candidate.getAbsolutePath(), ex);
+                } finally {
+                    if (null != jarFile) {
+                        try {
+                            jarFile.close();
+                        } catch (IOException ex) {
+                            Logger.getLogger(ServerUtilities.class.getName()).log(Level.INFO,
+                                    candidate.getAbsolutePath(), ex);
+                        }
+                        jarFile = null;
+                    }
                 }
 
             }

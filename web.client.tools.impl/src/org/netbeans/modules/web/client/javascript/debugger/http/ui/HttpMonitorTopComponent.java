@@ -20,8 +20,10 @@ import javax.swing.JComponent;
 
 
 import javax.swing.SwingUtilities;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpHeaderModel;
@@ -222,6 +224,10 @@ final class HttpMonitorTopComponent extends TopComponent {
                                 }else if ( mime.contains("xml")){
                                     contentType = "text/xml";
                                 }
+                            }
+                            if(contentType.equals("text/html")){
+                                EditorKit kit = MimeLookup.getLookup(contentType).lookup(EditorKit.class);
+                                resBodyEditorPane.setEditorKitForContentType(contentType,kit);
                             }
                             resBodyEditorPane.setContentType(contentType);
                             resBodyEditorPane.setText(activity.getResponseText());

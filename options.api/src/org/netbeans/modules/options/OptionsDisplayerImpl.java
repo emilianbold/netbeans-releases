@@ -120,6 +120,7 @@ public class OptionsDisplayerImpl {
             String subpath = path.indexOf('/') == -1 ? null : path.substring(path.indexOf('/') + 1);
             optionsPanel.initCurrentCategory(categoryId, subpath);
         }
+        dialog.toFront();
     }
 
     public void showOptionsDialog (String categoryID, String subpath) {

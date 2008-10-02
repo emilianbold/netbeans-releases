@@ -51,6 +51,7 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -982,19 +983,92 @@ public abstract class UMLNodeWidget extends Widget
     public void remove()
     {
         //Before we remove, we need see if this widget is contained in a container widget
-        UMLNodeWidget parent = PersistenceUtil.getParentUMLNodeWidget(this);
-
+       UMLNodeWidget parent = PersistenceUtil.getParentUMLNodeWidget(this);
+        
         // remove all node object that are associated with child widget 
         for (Object o : Util.getAllNodeChildren(this)) 
         {
             if (scene.isNode(o)) 
-            {
+            {   
+                Widget childW = scene.findWidget(o);
+                Collection <Object> edges = scene.findNodeEdges (o, true, true);
+//                scene.removeNodeWithEdges(o);
+                
+                // Fixed iz #139489 and 148365
+                // find the entries that attached to the edges of the removed node
+                // and delete these entries from both source and target nodes
+               for (Object edge : edges)
+               {
+                    if (scene.isEdge (edge))
+                    {
+                        Widget edgeWidget = scene.findWidget(edge);
+                        if (edgeWidget instanceof ConnectionWidget)
+                        {
+                            ConnectionWidget connectionW = (ConnectionWidget) edgeWidget;
+                            Widget sourceWidget = connectionW.getSourceAnchor().getRelatedWidget();
+                            Widget targetWidget = connectionW.getTargetAnchor().getRelatedWidget();
+                            
+                            if (sourceWidget != null && sourceWidget instanceof UMLNodeWidget)
+                            {
+                                ((UMLNodeWidget)sourceWidget).removeAttachedEntries(connectionW);
+                            }
+                             if (targetWidget != null && targetWidget instanceof UMLNodeWidget)
+                            {
+                                ((UMLNodeWidget)targetWidget).removeAttachedEntries(connectionW);
+                            }
+                        }
+                    }
+               }
+               // remove the node and its input an output edges
                 scene.removeNodeWithEdges(o);
             }
-        }
+        } 
         //notify the container
         if (parent != null && parent instanceof ContainerNode) {
             parent.notifyElementDeleted();
+        }
+    }
+    
+    public void removeAttachedEntries (ConnectionWidget connectionWidget) 
+    {
+        if (connectionWidget != null)
+        {
+            Collection<Widget.Dependency> deps = this.getDependencies();
+            ArrayList<Anchor.Entry> removedEntryList=new ArrayList<Anchor.Entry>();
+            if (deps.size() > 0)
+            {
+                Widget.Dependency[] depArray = new Widget.Dependency[deps.size()];
+                deps.toArray(depArray);
+
+                for(Widget.Dependency dep: depArray)
+                {
+                    if (dep instanceof Anchor)
+                    {
+                        Anchor anchor = ((Anchor) dep);
+                        List<Anchor.Entry> entries = anchor.getEntries();
+                        if (entries != null && entries.size() > 0)
+                        {
+                            // find the entry(ies) attached to this ConectionWidget
+                            // and save them to a list of entries to be removed.
+                            for (Anchor.Entry entry : entries)
+                            {
+                                ConnectionWidget connectionW = entry.getAttachedConnectionWidget();
+                            
+                                if (connectionWidget.equals(connectionW) || 
+                                        connectionWidget == connectionW)
+                                {
+                                    removedEntryList.add(entry);
+                                }
+                            }
+                            // removed all the entries attached to this connection widget
+                            if (removedEntryList.size() > 0)
+                            {
+                                anchor.removeEntries(removedEntryList);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     

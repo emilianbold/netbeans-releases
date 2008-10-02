@@ -95,7 +95,7 @@ public class DataLoaderPoolTest extends NbTestCase {
      * association of preferred loader in different way
      */
     protected void doSetPreferredLoader (FileObject fo, DataLoader loader) throws IOException {
-        pool.setPreferredLoader (fo, loader);
+        DataLoaderPool.setPreferredLoader (fo, loader);
     }
     
     /** DataObject should be invalidated after the setPrefferedLoader call sets

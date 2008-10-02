@@ -67,7 +67,17 @@ made subject to such option by the copyright holder.
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.CustomerDBSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/CustomerDBSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
+                    </file> 
+                    <!-- CustomerDBSpring Sample -->
+                    <file name="CustomerDBSpringSampleProject" url="CustomerDBSpring.zip">
+                        <attr name="position" intvalue="520"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.CustomerDBSpringSampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/CustomerDBSpringSampleDescription.html"/>
+                        <attr name="template" boolvalue="true"/>
                     </file>
+                    
                     <!-- CustomerDBClient Sample -->
                     <!--<file name="CustomerDBClientSampleProject" url="CustomerDBClient.zip">
                         <attr name="position" intvalue="520"/>

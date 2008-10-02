@@ -72,7 +72,6 @@ var PAGELANG_SEP = "pagelang=";
 
 var OMNITURE_CODE_JS = "http://www.netbeans.org/images/js/s_code_remote.js";
 var GOOGLE_ANALYTICS_JS = "http://www.google-analytics.com/ga.js";
-var BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
 function getNameById(id,ids,names) {
     for(var i = 0 ; i < ids.length; i++) {
@@ -214,6 +213,21 @@ function startList() {
     }
 }
 
+function get_file_list(dir) {	
+	lst = new Array();
+	if(typeof file_names!='undefined' && typeof file_sizes!='undefined') {
+            for (var i = 0; i < file_names.length; i++) {		
+		if(file_names[i].indexOf(dir)==0) {
+			var stripped = file_names[i].substring(dir.length, file_names[i].length);
+			if(stripped.indexOf('/')==-1) {
+			    lst[lst.length] = stripped;
+			}
+		}
+            }
+	}
+	return lst;
+}
+
 function getSize(filename) {
 	var size = "";
 	if(typeof file_names!='undefined' && typeof file_sizes!='undefined') {
@@ -228,6 +242,17 @@ function getSize(filename) {
 }
 
 function get_file_name(platform, option) {
+    var fn = "";
+    if(platform=="zip") {
+        fn += "zip/";
+    } else {
+        fn += "bundles/";
+    }
+    return fn + get_file_name_short(platform, option);
+}
+
+
+function get_file_name_short(platform, option) {
     var file_name = "";
     if(platform=="zip") {
         file_name += ZIP_FILES_PREFIX;
@@ -255,17 +280,12 @@ function get_file_name(platform, option) {
     return file_name;
 }
 
-function get_file_url(platform, option) {
+function get_file_url(filename) {
     var url  = BUILD_LOCATION;
-	
-    if(platform=="zip") {
-        url += "zip/";
-    } else {
-        url += "bundles/";
-    }    
-    url += get_file_name(platform, option);    
+    url += filename;    
     return url;
 }
+
 
 function get_file_bouncer_url(platform, option) {
     var url = BOUNCER_URL;

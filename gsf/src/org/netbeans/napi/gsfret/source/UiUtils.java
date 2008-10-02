@@ -88,10 +88,6 @@ public final class UiUtils {
     private UiUtils() {
     }
 
-    public static BaseDocument getDocument(FileObject fileObject, boolean openIfNecessary) {
-        return GsfUtilities.getDocument(fileObject, openIfNecessary);
-    }
-
     /** Gets correct icon for given ElementKind.
      *@param modifiers Can be null for empty modifiers collection
      */
@@ -221,7 +217,7 @@ public final class UiUtils {
                             try {
                                 OffsetRange range = parser.getPositionManager().getOffsetRange(info, handle);
  
-                                if (range != OffsetRange.NONE) {
+                                if (range != OffsetRange.NONE && range != null) {
                                     result[0] = new DeclarationLocation(fileObject, range.getStart());
                                 }
                             } catch (IllegalArgumentException iae) {

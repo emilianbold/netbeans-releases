@@ -107,9 +107,10 @@ public class PhpStructureScanner implements StructureScanner {
             if (program.getStatements().size() == 1) {
                 // check whether the ast is broken.
                 if (program.getStatements().get(0) instanceof ASTError) {
-                    Object lastCorrect = info.getDocument().getProperty(LAST_CORRECT_FOLDING_PROPERTY);
+                    @SuppressWarnings("unchecked")
+                    Map<String, List<OffsetRange>> lastCorrect = (Map<String, List<OffsetRange>>) info.getDocument().getProperty(LAST_CORRECT_FOLDING_PROPERTY);
                     if (lastCorrect != null){
-                        return ( Map<String, List<OffsetRange>>)lastCorrect;
+                        return lastCorrect;
                     }
                     else {
                         return Collections.emptyMap();
@@ -291,8 +292,10 @@ public class PhpStructureScanner implements StructureScanner {
             boolean thesame = false;
             if (obj instanceof PHPStructureItem) {
                 PHPStructureItem item = (PHPStructureItem)obj;
-                thesame = item.elementHandle.getName().equals(elementHandle.getName())
-                        && item.elementHandle.getASTNode().getStartOffset() == elementHandle.getASTNode().getStartOffset();
+                if (item.getName() != null && this.getName() != null) {
+                    thesame = item.elementHandle.getName().equals(elementHandle.getName())
+                            && item.elementHandle.getASTNode().getStartOffset() == elementHandle.getASTNode().getStartOffset();
+                }
             }
             return thesame;
         }
@@ -301,8 +304,10 @@ public class PhpStructureScanner implements StructureScanner {
         public int hashCode() {
             //int hashCode = super.hashCode();
             int hashCode = 11;
-            hashCode = 31 * elementHandle.getName().hashCode() + hashCode;
-            hashCode = 31 * elementHandle.getASTNode().getStartOffset() + hashCode;
+            if (getName() != null) {
+                hashCode = 31 * getName().hashCode() + hashCode;
+            }
+            hashCode = (int) (31 * getPosition() + hashCode);
             return hashCode;
         }
 

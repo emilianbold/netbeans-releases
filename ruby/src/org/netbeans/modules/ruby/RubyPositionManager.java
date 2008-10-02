@@ -102,7 +102,7 @@ public class RubyPositionManager implements PositionManager {
         int end = pos.getEndOffset();
 
         if ((offset >= begin) && (offset <= end)) {
-            List<Node> children = (List<Node>)node.childNodes();
+            List<Node> children = node.childNodes();
 
             for (Node child : children) {
                 if (child.isInvisible()) {
@@ -119,7 +119,7 @@ public class RubyPositionManager implements PositionManager {
 
             return node;
         } else {
-            List<Node> children = (List<Node>)node.childNodes();
+            List<Node> children = node.childNodes();
 
             for (Node child : children) {
                 if (child.isInvisible()) {
@@ -146,7 +146,7 @@ public class RubyPositionManager implements PositionManager {
             return true;
         }
 
-        List<Node> children = (List<Node>)node.childNodes();
+        List<Node> children = node.childNodes();
 
         for (Node child : children) {
             if (child.isInvisible()) {

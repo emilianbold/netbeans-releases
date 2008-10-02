@@ -52,7 +52,9 @@ import java.util.ResourceBundle;
 import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -82,8 +84,9 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         env.addPropertyChangeListener(this);
         
         // Add tabs
-        int type = packagingConfiguration.getType().getValue();
-        if (type == PackagingConfiguration.TYPE_SVR4_PACKAGE || type == PackagingConfiguration.TYPE_RPM_PACKAGE || type == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+        String type = packagingConfiguration.getType().getValue();
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
+        if (packager.hasInfoList()) {
             packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeaderSubList(type), packagingConfiguration));
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
@@ -94,33 +97,18 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         
         tabbedPane.addTab(getString("InfoPanelText"), packagingInfoOuterPanel);
         tabbedPane.addTab(getString("FilePanelText"), packagingFilesOuterPanel);
-            
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
-            // Add tabs
-            tabbedPane.setEnabledAt(0,false);
-            tabbedPane.setEnabledAt(1,true);
-            tabbedPane.setSelectedIndex(1);
-        }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            // Add tabs
-            tabbedPane.setEnabledAt(0,true);
-            tabbedPane.setEnabledAt(1,true);
-            tabbedPane.setSelectedIndex(0);
-        }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            // Add tabs
-            tabbedPane.setEnabledAt(0,true);
-            tabbedPane.setEnabledAt(1,true);
-            tabbedPane.setSelectedIndex(0);
-        }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+        
+        if (packager.hasInfoList()) {
             // Add tabs
             tabbedPane.setEnabledAt(0,true);
             tabbedPane.setEnabledAt(1,true);
             tabbedPane.setSelectedIndex(0);
         }
         else {
-            assert false;
+            // Add tabs
+            tabbedPane.setEnabledAt(0,false);
+            tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setSelectedIndex(1);
         }
         
         //  See IZ 142846
@@ -137,19 +125,19 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private Object getPropertyValue() throws IllegalStateException {
-        int type = packagingConfiguration.getType().getValue();
-        if (type == PackagingConfiguration.TYPE_SVR4_PACKAGE || type == PackagingConfiguration.TYPE_RPM_PACKAGE || type == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-            List<InfoElement> oldList = packagingConfiguration.getInfo().getValue();
-            List<InfoElement> newList = new ArrayList<InfoElement>();
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
+        if (packager.hasInfoList()) {
+            List<PackagerInfoElement> oldList = packagingConfiguration.getInfo().getValue();
+            List<PackagerInfoElement> newList = new ArrayList<PackagerInfoElement>();
             // Copy all other types over
-            for (InfoElement elem : oldList) {
-                if (elem.getType() != packagingConfiguration.getType().getValue()) {
+            for (PackagerInfoElement elem : oldList) {
+                if (elem.getPackager() != packagingConfiguration.getType().getValue()) {
                     newList.add(elem);
                 }
             }
             // Copy edited list
-            Vector<InfoElement> editedList = packagingInfoPanel.getListData();
-            for (InfoElement elem : editedList) {
+            Vector<PackagerInfoElement> editedList = packagingInfoPanel.getListData();
+            for (PackagerInfoElement elem : editedList) {
                 newList.add(elem);
             }
             packagingConfiguration.getInfo().setValue(newList);

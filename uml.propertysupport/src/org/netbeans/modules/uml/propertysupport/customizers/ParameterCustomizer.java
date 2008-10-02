@@ -142,7 +142,7 @@ public class ParameterCustomizer extends JPanel
                     if (typeMan != null) {
                         IPickListManager pickMan = typeMan.getPickListManager();
                         if (pickMan != null) {
-                            String filter = "DataType Class Interface";  // NO I18N
+                            String filter = "DataType Class Interface DerivationClassifier";  // NO I18N
                             list = pickMan.getTypeNamesWithStringFilter(filter);
                             // Fixed IZ=83449. Remove "void" type from the list if found
                             if ( list != null) {

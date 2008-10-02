@@ -41,6 +41,9 @@
 
 package org.openide.nodes;
 
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,6 +55,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Mutex;
@@ -91,7 +96,7 @@ public abstract class Children extends Object {
     * needs for a certain amount of time to forbid modification,
     * he can execute his code in {@link Mutex#readAccess}.
     */
-    public static final Mutex MUTEX = new Mutex(PR);
+    public static final Mutex MUTEX = new Mutex(PR, new ProjectManagerDeadlockDetector());
 
     /** The object representing an empty set of children. Should
     * be used to represent the children of leaf nodes. The same
@@ -137,12 +142,16 @@ public abstract class Children extends Object {
      */
     final EntrySupport entrySupport() {
         synchronized (Children.class) {
+            checkSupportValidity();
             if (entrySupport == null) {
                 entrySupport = createEntrySource();
                 postInitializeEntrySupport();
             }
             return entrySupport;
         }
+    }
+    
+    void checkSupportValidity() {
     }
     
     boolean lazySupport;
@@ -503,6 +512,14 @@ public abstract class Children extends Object {
         }
     }
 
+    static final int[] getSnapshotIdxs(List<Node> snapshot) {
+        int[] idxs = new int[snapshot.size()];
+        for (int i = 0; i < idxs.length; i++) {
+            idxs[i] = i;
+        }
+        return idxs;
+    }    
+    
     //
     // StateNotifications
     //
@@ -638,7 +655,12 @@ public abstract class Children extends Object {
         @Override
         void postInitializeEntrySupport() {
             if (!lazySupport) {
+                if (getNodesEntry() == null) {
+                    nodesEntry = createNodesEntry();
+                }
                 entrySupport().setEntries(Collections.singleton(getNodesEntry()));
+            } else if (getNodesEntry() != null) {
+                nodesEntry = null;
             }
         }
 
@@ -1292,27 +1314,45 @@ public abstract class Children extends Object {
         @Override
         void checkSupport() {
             if (lazySupport && nodes != null && nodes.size() > 0) {
-                changeSupportToDefault();
+                fallbackToDefaultSupport();
             }
         }
 
-        void changeSupportToDefault() {
-            if (!lazySupport) {
+        void fallbackToDefaultSupport() {
+            LOG.warning("Fallbacking entry support from lazy to default - Children.Array method was used"); // NOI18N
+            switchSupport(false);
+        }
+
+        void switchSupport(boolean toLazy) {
+            if (toLazy == lazySupport) {
                 return;
             }
             try {
                 Children.PR.enterWriteAccess();
-                LOG.warning("Fallbacking entry support from lazy to default - Children.Array method was used");
                 List<Entry> entries = entrySupport().getEntries();
+
                 boolean init = entrySupport().isInitialized();
-                entrySupport = null;
-                lazySupport = false;
-                nodesEntry = createNodesEntry();
-                entries.add(before ? 0 : entries.size(), nodesEntry);
-                entrySupport().setEntries(entries);
-                if (init) {
-                    entrySupport.getNodesCount(false);
+                if (init && parent != null) {
+                    List<Node> snapshot = entrySupport.createSnapshot();
+                    if (snapshot.size() > 0) {
+                        int[] idxs = getSnapshotIdxs(snapshot);
+                        parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);
+                    }
                 }
+
+                entrySupport = null;
+                lazySupport = toLazy;
+                if (toLazy) {
+                    nodesEntry = null;
+                } else {
+                    nodesEntry = createNodesEntry();
+                    entries.add(before ? 0 : entries.size(), nodesEntry);
+                }
+
+                if (init) {
+                    entrySupport().notifySetEntries();
+                }
+                entrySupport().setEntries(entries);
             } finally {
                 Children.PR.exitWriteAccess();
             }
@@ -1325,7 +1365,7 @@ public abstract class Children extends Object {
         @Override
         public boolean add(Node[] arr) {
             if (lazySupport) {
-                changeSupportToDefault();
+                fallbackToDefaultSupport();
             }
             return super.add(arr);
         }
@@ -1755,4 +1795,61 @@ public abstract class Children extends Object {
       });
     }
     */
+
+    private static final class ProjectManagerDeadlockDetector implements Executor {
+
+        private final AtomicReference<WeakReference<Mutex>> pmMutexRef = new AtomicReference<WeakReference<Mutex>>();
+
+        public void execute(Runnable command) {
+            boolean ea = false;
+            assert ea = true;
+            if (ea) {
+                Mutex mutex = getPMMutex();
+                if (mutex != null && (mutex.isReadAccess() || mutex.isWriteAccess())) {
+                    throw new IllegalStateException("Should not acquire Children.MUTEX while holding ProjectManager.mutex()");
+                }
+            }
+            command.run();
+        }
+
+        private Mutex getPMMutex() {
+            for (;;) {
+                Mutex mutex = null;
+                WeakReference<Mutex> weakRef = pmMutexRef.get();
+                if (weakRef != null) {
+                    mutex = weakRef.get();
+                }
+                if (mutex != null) {
+                    return mutex;
+                }
+                mutex = callPMMutexMethod();
+                if (mutex != null) {
+                    WeakReference<Mutex> newWeakRef = new WeakReference<Mutex>(mutex);
+                    if (pmMutexRef.compareAndSet(weakRef, newWeakRef)) {
+                        return mutex;
+                    }
+                } else {
+                    return null;
+                }
+            }
+        }
+
+        private Mutex callPMMutexMethod() {
+            try {
+                Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass("org.netbeans.api.project.ProjectManager"); // NOI18N
+                Method method = clazz.getMethod("mutex"); // NOI18N
+                return (Mutex) method.invoke(null);
+            } catch (ClassNotFoundException e) {
+                return null;
+            } catch (IllegalAccessException e) {
+                return null;
+            } catch (IllegalArgumentException e) {
+                return null;
+            } catch (InvocationTargetException e) {
+                return null;
+            } catch (NoSuchMethodException e) {
+                return null;
+            }
+        }
+    }
 }

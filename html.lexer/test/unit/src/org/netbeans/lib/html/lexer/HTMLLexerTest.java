@@ -40,6 +40,8 @@
 package org.netbeans.lib.html.lexer;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
@@ -63,4 +65,29 @@ public class HTMLLexerTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.rb.txt",
                 HTMLTokenId.language());
     }
+    
+    public void test146930() {
+        TokenHierarchy th = TokenHierarchy.create("<<body>", HTMLTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+        
+        assertTrue(ts.moveNext());
+        assertEquals("<", ts.token().text().toString());
+        assertEquals(HTMLTokenId.TEXT, ts.token().id());
+        
+        assertTrue(ts.moveNext());
+        assertEquals("<", ts.token().text().toString());
+        assertEquals(HTMLTokenId.TAG_OPEN_SYMBOL, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals("body", ts.token().text().toString());
+        assertEquals(HTMLTokenId.TAG_OPEN, ts.token().id());
+        
+        assertTrue(ts.moveNext());
+        assertEquals(">", ts.token().text().toString());
+        assertEquals(HTMLTokenId.TAG_CLOSE_SYMBOL, ts.token().id());
+        
+        assertFalse(ts.moveNext());
+    }
+    
 }

@@ -80,6 +80,7 @@ class SQLExecutionHelper {
     private static final String LIMIT_CLAUSE = " LIMIT "; // NOI18N
 
     public static final String OFFSET_CLAUSE = " OFFSET "; // NOI18N
+    private static Logger LOGGER = Logger.getLogger(SQLExecutionHelper.class.getName());
 
 
     SQLExecutionHelper(DataView dataView, DatabaseConnection dbConn) {
@@ -517,7 +518,12 @@ class SQLExecutionHelper {
             stmt = conn.createStatement();
         }
         int pageSize = dataView.getDataViewPageContext().getPageSize();
-        stmt.setFetchSize(pageSize);
+        try {
+            stmt.setFetchSize(pageSize);
+        } catch (SQLException e) {
+            // ignore -  used only as a hint to the driver to optimize
+            LOGGER.log(Level.INFO, e.getMessage(), e);
+        }
 
         if (dataView.isLimitSupported() && select && sql.toUpperCase().indexOf(LIMIT_CLAUSE) == -1) {
             stmt.setMaxRows(pageSize);

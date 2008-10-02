@@ -52,8 +52,8 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.JTextField;
 
-import org.netbeans.swing.outline.NodeRowModel;
-import org.netbeans.swing.outline.OutlineModel;
+import org.netbeans.modules.websvc.manager.swing.outline.NodeRowModel;
+import org.netbeans.modules.websvc.manager.swing.outline.OutlineModel;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
@@ -66,13 +66,13 @@ import java.awt.Dialog;
  * @author  david
  */
 public class ResultCellEditor extends DefaultCellEditor implements TableCellEditor {
-    
+
     private Dialog dialog;
     private DialogDescriptor dlg;
     private ResultViewerDialog viewerDialog;
     private Object saveValue;
     private ClassLoader classLoader;
-    
+
     /** Creates a new instance of TypeCellRenderer */
     public ResultCellEditor(ClassLoader loader) {
         super(new JTextField());
@@ -85,7 +85,7 @@ public class ResultCellEditor extends DefaultCellEditor implements TableCellEdit
     public Object getCellEditorValue() {
         return saveValue;
     }
-    
+
     public java.awt.Component getTableCellEditorComponent(javax.swing.JTable table, Object value, boolean isSelected, int row, int column) {
         saveValue = value;
         NodeRowModel rowModel = ((OutlineModel)table.getModel()).getRowNodeModel();
@@ -96,7 +96,7 @@ public class ResultCellEditor extends DefaultCellEditor implements TableCellEdit
         viewerDialog = new ResultViewerDialog();
         if(null == node.getUserObject()) {
             viewerDialog.setText((String)value);
-            
+
         } else {
             TypeNodeData data = (TypeNodeData)node.getUserObject();
             String type = data.getTypeClass();
@@ -107,19 +107,19 @@ public class ResultCellEditor extends DefaultCellEditor implements TableCellEdit
                     return null;
                 }
             }
-            
+
             dlg = new DialogDescriptor(viewerDialog, data.getRealTypeName(),
             true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION,
             DialogDescriptor.DEFAULT_ALIGN, viewerDialog.getHelpCtx(), null);
             dlg.setOptions(new Object[] { viewerDialog.getOkButton() });
-            
+
             dialog = DialogDisplayer.getDefault().createDialog(dlg);
             dialog.setSize(300,300);
             dialog.setVisible(true);
         }
-        
-        
+
+
         return null;
     }
-    
+
 }
