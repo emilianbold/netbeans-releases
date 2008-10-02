@@ -44,7 +44,6 @@ package org.netbeans.modules.tasklist.impl;
 import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner;
@@ -67,6 +66,11 @@ public class TaskManagerImplTest extends NbTestCase {
     }
 
     @Override
+    protected int timeOut() {
+        return 300000;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         
@@ -82,7 +86,7 @@ public class TaskManagerImplTest extends NbTestCase {
     
     /**IZ #100463
      */
-    public void testProviderCanStartImmediatelly() throws Exception {
+    public void testProviderCanStartImmediately() throws Exception {
         final PushTaskScanner scanner = new PushTaskScanner("", "", null) {
             public void setScope(TaskScanningScope scope, Callback callback) {
                 callback.setTasks(file1, Collections.singletonList(Task.create(file1, "unknown", "x", 2)));
@@ -123,7 +127,6 @@ public class TaskManagerImplTest extends NbTestCase {
         assertEquals(1, impl.getTasks().getTasks().size());
     }
 
-    @RandomlyFails // timeout in NB-Core-Build #1186
     public void testProviderCanRemoveTasks() throws Exception {
         final Callback[] cb = new Callback[1];
         final PushTaskScanner scanner = new PushTaskScanner("", "", null) {
