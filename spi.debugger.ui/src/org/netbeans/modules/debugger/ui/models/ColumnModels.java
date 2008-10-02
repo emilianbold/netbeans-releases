@@ -43,6 +43,8 @@ package org.netbeans.modules.debugger.ui.models;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -504,12 +506,18 @@ public class ColumnModels {
                 ErrorManager.getDefault().notify(
                         new IllegalArgumentException("Value "+value+" is not an instance of Session!"));
             }
-            super.setValue(value);
+            super.setValue(new WeakReference(value));
+        }
+
+        private Session getSession() {
+            Reference<Session> sRef = (Reference<Session>) getValue();
+            Session s = (sRef != null) ? sRef.get() : null;
+            return s;
         }
 
         @Override
         public String[] getTags () {
-            Session s = (Session) getValue ();
+            Session s = getSession();
             if (s == null) {
                 return new String [0];
             } else {
@@ -519,7 +527,7 @@ public class ColumnModels {
         
         @Override
         public String getAsText () {
-            Session s = (Session) getValue ();
+            Session s = getSession();
             if (s == null) {
                 return "null";
             } else {
@@ -529,7 +537,7 @@ public class ColumnModels {
         
         @Override
         public void setAsText (String text) {
-            Session s = (Session) getValue ();
+            Session s = getSession();
             if (s != null) {
                 s.setCurrentLanguage (text);
             }

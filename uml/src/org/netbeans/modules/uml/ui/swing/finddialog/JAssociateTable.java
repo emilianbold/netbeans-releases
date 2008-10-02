@@ -64,7 +64,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-import org.netbeans.modules.uml.ui.addins.associateDialog.AssociateDlgGUI;
+import org.netbeans.modules.uml.ui.addins.associateDialog.AssociateDialogUI;
 import org.netbeans.modules.uml.ui.support.finddialog.FindUtilities;
 import org.netbeans.modules.uml.ui.swing.preferencedialog.ISwingPreferenceTableModel;
 
@@ -75,14 +75,14 @@ import org.netbeans.modules.uml.ui.swing.preferencedialog.ISwingPreferenceTableM
  */
 public class JAssociateTable extends JTable
 {
-	private AssociateDlgGUI m_UI = null;
+	private AssociateDialogUI m_UI = null;
 	
 	public JAssociateTable()
 	{
 		super();
 	}
 	
-	public JAssociateTable(ISwingPreferenceTableModel model, AssociateDlgGUI ui)
+	public JAssociateTable(ISwingPreferenceTableModel model, AssociateDialogUI ui)
 	{
 		super(model);
 		
@@ -198,7 +198,7 @@ public class JAssociateTable extends JTable
 			 TableCellEditor 
 	{
 		boolean focusChange = false;
-		AssociateDlgGUI m_UI = null;
+		AssociateDialogUI m_UI = null;
 
 		/**
 		 * 
@@ -207,7 +207,7 @@ public class JAssociateTable extends JTable
 		{
 			super();
 		}
-		public AssocTableCellEditor(AssociateDlgGUI ui)
+		public AssocTableCellEditor(AssociateDialogUI ui)
 		{
 			super();
 			m_UI = ui;

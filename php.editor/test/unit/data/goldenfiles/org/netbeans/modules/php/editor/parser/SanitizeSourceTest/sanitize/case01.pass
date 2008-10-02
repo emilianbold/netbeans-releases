@@ -1,0 +1,71 @@
+<Program start='0' end='276'>
+    <Statements>
+        <ClassDeclaration start='6' end='276' modifier='NONE'>
+            <ClassName>
+                <Identifier start='12' end='28' name='blog_Application'/>
+            </ClassName>
+            <SuperClassName>
+            </SuperClassName>
+            <Interfaces>
+                <Identifier start='40' end='51' name='Application'/>
+            </Interfaces>
+            <Block start='52' end='276' isCurly='true'>
+                <ClassConstantDeclaration start='56' end='84'>
+                    <Names>
+                        <Identifier start='62' end='74' name='VARNAME_VIEW'/>
+                    </Names>
+                    <Initializers>
+                        <Scalar start='77' end='83' type='STRING' value='&apos;view&apos;'/>
+                    </Initializers>
+                </ClassConstantDeclaration>
+                <ClassConstantDeclaration start='87' end='113'>
+                    <Names>
+                        <Identifier start='93' end='104' name='VARNAME_ADD'/>
+                    </Names>
+                    <Initializers>
+                        <Scalar start='107' end='112' type='STRING' value='&apos;add&apos;'/>
+                    </Initializers>
+                </ClassConstantDeclaration>
+                <FieldsDeclaration start='116' end='132' modifier='protected'>
+                    <VariableNames>
+                        <Variable start='126' end='131' isDollared='true'>
+                            <Identifier start='127' end='131' name='test'/>
+                        </Variable>
+                    </VariableNames>
+                    <InitialValues>
+                        <Variable start='126' end='131' isDollared='true'>
+                            <Identifier start='127' end='131' name='test'/>
+                        </Variable>
+                    </InitialValues>
+                </FieldsDeclaration>
+                <MethodDeclaration start='136' end='274' modifiers='public'>
+                    <FunctionDeclaration start='143' end='274' isReference='false'>
+                        <Identifier start='152' end='159' name='process'/>
+                        <FormalParameters>
+                            <FormalParameter start='160' end='165' isMandatory='false'>
+                                <ParametrType>
+                                </ParametrType>
+                                <ParametrName>
+                                    <Variable start='160' end='165' isDollared='true'>
+                                        <Identifier start='161' end='165' name='path'/>
+                                    </Variable>
+                                </ParametrName>
+                                <DefaultValue>
+                                </DefaultValue>
+                            </FormalParameter>
+                        </FormalParameters>
+                        <Block start='167' end='274' isCurly='true'>
+                            <SwitchStatement start='173' end='270'>
+                                <Variable start='181' end='186' isDollared='true'>
+                                    <Identifier start='182' end='186' name='path'/>
+                                </Variable>
+                                <Block start='188' end='270' isCurly='true'>
+                                </Block>
+                            </SwitchStatement>
+                        </Block>
+                    </FunctionDeclaration>
+                </MethodDeclaration>
+            </Block>
+        </ClassDeclaration>
+    </Statements>
+</Program>

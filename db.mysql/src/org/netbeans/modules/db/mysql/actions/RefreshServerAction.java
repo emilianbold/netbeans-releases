@@ -78,12 +78,14 @@ public class RefreshServerAction extends CookieAction {
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
         
-        return server != null && server.isConnected();
+        return server != null;
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
+
+        server.checkRunning(1000);
 
         server.refreshDatabaseList();
     }
