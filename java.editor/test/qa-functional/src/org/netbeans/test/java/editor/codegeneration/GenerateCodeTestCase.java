@@ -63,9 +63,9 @@ public class GenerateCodeTestCase extends EditorTestCase {
     }
 
     protected  void waitAndCompare(String expected) {
-        if (isWin()) {
-            expected = expected.replace("\n", "\r\n");
-        }
+//        if (isWin()) {
+//            expected = expected.replace("\n", "\r\n");
+//        }
         waitMaxMilisForValue(1500, new EditorValueResolver(expected), Boolean.TRUE);
         if (!contains(editor.getText(), expected)) {
             System.out.println("Pattern:");
