@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Connecting to a Database</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+        <h2>Create Table Dialog Box</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+    <p>This dialox box appears when you right-click a database's Tables node in the Services window and choose Create Table. 
+    Using this dialog box, you can create a table, add columns,  specify parameters for columns, and select an owner for the table.
+    <ul><li><strong>Table Name.</strong> Type the name of the table in this text field. </li>
+    
+    
+    <li><strong>Owner.</strong> Select the owner (if any) of the table from the drop down list.</li>
+    <li><strong>Add Column</strong>. When you click this, a new column is added to the table.</li>
+    <li><strong>Remove.</strong> This button removed the selected column from the table.</li>
+    <p><strong>Creating Columns</strong></p>
+    <p>When the Create Tabel dialog box opens, one column is dislplayed in the dialog box, ready to be configured. You can configure the following parameters:</p>
+    <ul>
+      <li><strong>Key.</strong> The primary key for the dialog. When you select this checkbox, Index and Unique are also selected.</li>
+      <li><strong>Index.</strong> This is used for indexing the database by column name.</li>
+      <li><strong>Null.</strong> When this box is slected,  an unknown or  missing value can be represented. </li>
+      <li><strong>Column Name.</strong> Type the name of the column in this field. Use underscore instead of hyphens.</li>
+      <li><strong>Data Type.</strong> Select the data type for the column from the drop down list.</li>
+      <li><strong>Size.</strong> Specify the size of the column. The default is set to 0.</li>
+      <li><strong>Scale.</strong> Specify the scale of the column. </li>
+      <li><strong>Comment.</strong> Type any comment you want to associate with the column.</li>
+      <li><strong>Default value.</strong> Specify the default value of the column. </li>
+      <li><strong>Check.</strong> When the check box is selected, the IDE performs a check of the column to determine if it meets the required criteria.</li>
+      <li><strong>Check constraint.</strong> Type the condition that defines valid data when adding or updating an entry in the column.    </li>
+    </ul>
+    <p><a name="seealso">See Also</a>
+    <dl>
+      <dd><a href="createtables.html">Creating Database Tables</a></dd>
+    
+      <dd><a href="createviews.html">Creating Database Views</a></dd>
+</dl>
+
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+</body>
+
+</html>
+
+
