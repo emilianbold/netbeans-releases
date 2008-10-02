@@ -494,7 +494,12 @@ public final class EditorBridge extends KeymapManager {
 
         public String getDisplayName() {
             if (name == null) {
-                name = (String) action.getValue (Action.SHORT_DESCRIPTION);
+                try {
+                    name = (String) action.getValue (Action.SHORT_DESCRIPTION);
+                } catch (MissingResourceException mre) {
+                    LOG.log(Level.WARNING, null, mre);
+                    name = null;
+                }
                 if (name == null) {
                     LOG.warning("The action " + action + " doesn't provide short description, using its name."); //NOI18N
                     name = getId();
