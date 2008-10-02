@@ -378,7 +378,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     // Clean up the UI from memory leaks:
                     setActivatedNodes (new Node[] {});
                     treeView.resetSelection();
-                    treeView.updateUI();
+                    //treeView.updateUI(); -- corrupts the UI!
                 }
             }
         });
