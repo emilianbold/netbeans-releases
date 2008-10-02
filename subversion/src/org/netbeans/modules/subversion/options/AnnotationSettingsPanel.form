@@ -18,29 +18,22 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="expressionsPane" pref="508" max="32767" attributes="2"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="tableLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="270" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="upButton" pref="141" max="32767" attributes="1"/>
-                          <Component id="removeButton" alignment="0" pref="141" max="32767" attributes="1"/>
-                          <Component id="editButton" alignment="0" min="-2" pref="141" max="-2" attributes="0"/>
-                          <Component id="wizardButton" alignment="0" min="-2" pref="141" max="-2" attributes="0"/>
-                          <Component id="newButton" alignment="0" pref="141" max="32767" attributes="1"/>
-                          <Component id="downButton" alignment="0" pref="141" max="32767" attributes="1"/>
-                      </Group>
-                  </Group>
+                  <Component id="tableLabel" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="resetButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="warningLabel" pref="501" max="32767" attributes="0"/>
+                      <Component id="warningLabel" pref="225" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="expressionsPane" alignment="0" pref="386" max="32767" attributes="2"/>
+              </Group>
+              <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                  <Component id="removeButton" max="32767" attributes="1"/>
+                  <Component id="editButton" alignment="0" max="32767" attributes="1"/>
+                  <Component id="newButton" alignment="1" max="32767" attributes="1"/>
+                  <Component id="wizardButton" alignment="1" max="32767" attributes="1"/>
+                  <Component id="upButton" alignment="0" pref="141" max="32767" attributes="1"/>
+                  <Component id="downButton" alignment="0" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -53,7 +46,7 @@
               <Component id="tableLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" attributes="0">
                       <Component id="newButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="wizardButton" min="-2" max="-2" attributes="0"/>
@@ -61,14 +54,14 @@
                       <Component id="editButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="30" max="32767" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="upButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="downButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="expressionsPane" alignment="0" pref="220" max="32767" attributes="2"/>
+                  <Component id="expressionsPane" pref="219" max="32767" attributes="2"/>
               </Group>
-              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="resetButton" min="-2" max="-2" attributes="0"/>
                   <Component id="warningLabel" min="-2" max="-2" attributes="0"/>
